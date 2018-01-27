@@ -75,54 +75,54 @@ if ('onhashchange' in window) {
 <span id="L13" class="LineNr"> 13 </span><span class="Comment"># position is (row+1, 0). If it isn't, the new cursor position is (row, 0).</span>
 <span id="L14" class="LineNr"> 14 </span><span class="Comment"># Because scrolling.</span>
 <span id="L15" class="LineNr"> 15 </span>
-<span id="L16" class="LineNr"> 16 </span><span class="muData">container</span> screen [
+<span id="L16" class="LineNr"> 16 </span><span class="muData">container</span> <a href='081print.mu.html#L16'>screen</a> [
 <span id="L17" class="LineNr"> 17 </span>  num-rows:num
 <span id="L18" class="LineNr"> 18 </span>  num-columns:num
 <span id="L19" class="LineNr"> 19 </span>  cursor-row:num
 <span id="L20" class="LineNr"> 20 </span>  cursor-column:num
-<span id="L21" class="LineNr"> 21 </span>  data:&amp;:@:screen-cell  <span class="Comment"># capacity num-rows*num-columns</span>
+<span id="L21" class="LineNr"> 21 </span>  data:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a>  <span class="Comment"># capacity num-rows*num-columns</span>
 <span id="L22" class="LineNr"> 22 </span>  pending-scroll?:bool
 <span id="L23" class="LineNr"> 23 </span>  top-idx:num  <span class="Comment"># index inside data that corresponds to top-left of screen</span>
 <span id="L24" class="LineNr"> 24 </span>               <span class="Comment"># modified on scroll, wrapping around to the top of data</span>
 <span id="L25" class="LineNr"> 25 </span>]
 <span id="L26" class="LineNr"> 26 </span>
-<span id="L27" class="LineNr"> 27 </span><span class="muData">container</span> screen-cell [
+<span id="L27" class="LineNr"> 27 </span><span class="muData">container</span> <a href='081print.mu.html#L27'>screen-cell</a> [
 <span id="L28" class="LineNr"> 28 </span>  contents:char
 <span id="L29" class="LineNr"> 29 </span>  color:num
 <span id="L30" class="LineNr"> 30 </span>]
 <span id="L31" class="LineNr"> 31 </span>
-<span id="L32" class="LineNr"> 32 </span><span class="muRecipe">def</span> new-fake-screen w:num, h:num<span class="muRecipe"> -&gt; </span>result:&amp;:screen [
+<span id="L32" class="LineNr"> 32 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L32'>new-fake-screen</a> w:num, h:num<span class="muRecipe"> -&gt; </span>result:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L33" class="LineNr"> 33 </span>  <span class="Constant">local-scope</span>
 <span id="L34" class="LineNr"> 34 </span>  <span class="Constant">load-inputs</span>
-<span id="L35" class="LineNr"> 35 </span>  result <span class="Special">&lt;-</span> new <span class="Constant">screen:type</span>
+<span id="L35" class="LineNr"> 35 </span>  result <span class="Special">&lt;-</span> new <span class="Constant"><a href='081print.mu.html#L16'>screen</a>:type</span>
 <span id="L36" class="LineNr"> 36 </span>  non-zero-width?:bool <span class="Special">&lt;-</span> greater-than w,<span class="Constant"> 0</span>
 <span id="L37" class="LineNr"> 37 </span>  assert non-zero-width?, <span class="Constant">[screen can't have zero width]</span>
 <span id="L38" class="LineNr"> 38 </span>  non-zero-height?:bool <span class="Special">&lt;-</span> greater-than h,<span class="Constant"> 0</span>
 <span id="L39" class="LineNr"> 39 </span>  assert non-zero-height?, <span class="Constant">[screen can't have zero height]</span>
 <span id="L40" class="LineNr"> 40 </span>  bufsize:num <span class="Special">&lt;-</span> multiply w, h
-<span id="L41" class="LineNr"> 41 </span>  data:&amp;:@:screen-cell <span class="Special">&lt;-</span> new <span class="Constant">screen-cell:type</span>, bufsize
+<span id="L41" class="LineNr"> 41 </span>  data:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> new <span class="Constant"><a href='081print.mu.html#L27'>screen-cell</a>:type</span>, bufsize
 <span id="L42" class="LineNr"> 42 </span>  *result <span class="Special">&lt;-</span> merge h/num-rows, w/num-columns, <span class="Constant">0/cursor-row</span>, <span class="Constant">0/cursor-column</span>, data, <span class="Constant">0/pending-scroll?</span>, <span class="Constant">0/top-idx</span>
-<span id="L43" class="LineNr"> 43 </span>  result <span class="Special">&lt;-</span> clear-screen result
+<span id="L43" class="LineNr"> 43 </span>  result <span class="Special">&lt;-</span> <a href='081print.mu.html#L46'>clear-screen</a> result
 <span id="L44" class="LineNr"> 44 </span>]
 <span id="L45" class="LineNr"> 45 </span>
-<span id="L46" class="LineNr"> 46 </span><span class="muRecipe">def</span> clear-screen screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L46" class="LineNr"> 46 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L46'>clear-screen</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L47" class="LineNr"> 47 </span>  <span class="Constant">local-scope</span>
 <span id="L48" class="LineNr"> 48 </span>  <span class="Constant">load-inputs</span>
 <span id="L49" class="LineNr"> 49 </span><span class="CommentedCode">#?   stash [clear-screen]</span>
 <span id="L50" class="LineNr"> 50 </span>  <span class="Delimiter">{</span>
-<span id="L51" class="LineNr"> 51 </span>    <span class="muControl">break-if</span> screen
+<span id="L51" class="LineNr"> 51 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L52" class="LineNr"> 52 </span>    <span class="Comment"># real screen</span>
 <span id="L53" class="LineNr"> 53 </span>    clear-display
 <span id="L54" class="LineNr"> 54 </span>   <span class="muControl"> return</span>
 <span id="L55" class="LineNr"> 55 </span>  <span class="Delimiter">}</span>
 <span id="L56" class="LineNr"> 56 </span>  <span class="Comment"># fake screen</span>
-<span id="L57" class="LineNr"> 57 </span>  buf:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
+<span id="L57" class="LineNr"> 57 </span>  buf:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
 <span id="L58" class="LineNr"> 58 </span>  max:num <span class="Special">&lt;-</span> length *buf
 <span id="L59" class="LineNr"> 59 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
 <span id="L60" class="LineNr"> 60 </span>  <span class="Delimiter">{</span>
 <span id="L61" class="LineNr"> 61 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, max
 <span id="L62" class="LineNr"> 62 </span>    <span class="muControl">break-if</span> done?
-<span id="L63" class="LineNr"> 63 </span>    curr:screen-cell <span class="Special">&lt;-</span> merge <span class="Constant">0/empty</span>, <span class="Constant">7/white</span>
+<span id="L63" class="LineNr"> 63 </span>    curr:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> merge <span class="Constant">0/empty</span>, <span class="Constant">7/white</span>
 <span id="L64" class="LineNr"> 64 </span>    *buf <span class="Special">&lt;-</span> put-index *buf, i, curr
 <span id="L65" class="LineNr"> 65 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
 <span id="L66" class="LineNr"> 66 </span>   <span class="muControl"> loop</span>
@@ -133,18 +133,18 @@ if ('onhashchange' in window) {
 <span id="L71" class="LineNr"> 71 </span>  *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">top-idx:offset</span>,<span class="Constant"> 0</span>
 <span id="L72" class="LineNr"> 72 </span>]
 <span id="L73" class="LineNr"> 73 </span>
-<span id="L74" class="LineNr"> 74 </span><span class="muRecipe">def</span> fake-screen-is-empty? screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L74" class="LineNr"> 74 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L74'>fake-screen-is-empty?</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>result:bool [
 <span id="L75" class="LineNr"> 75 </span>  <span class="Constant">local-scope</span>
 <span id="L76" class="LineNr"> 76 </span>  <span class="Constant">load-inputs</span>
 <span id="L77" class="LineNr"> 77 </span><span class="CommentedCode">#?   stash [fake-screen-is-empty?]</span>
-<span id="L78" class="LineNr"> 78 </span>  <span class="muControl">return-unless</span> screen, <span class="Constant">1/true</span>  <span class="Comment"># do nothing for real screens</span>
-<span id="L79" class="LineNr"> 79 </span>  buf:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
+<span id="L78" class="LineNr"> 78 </span>  <span class="muControl">return-unless</span> <a href='081print.mu.html#L16'>screen</a>, <span class="Constant">1/true</span>  <span class="Comment"># do nothing for real screens</span>
+<span id="L79" class="LineNr"> 79 </span>  buf:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
 <span id="L80" class="LineNr"> 80 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
 <span id="L81" class="LineNr"> 81 </span>  len:num <span class="Special">&lt;-</span> length *buf
 <span id="L82" class="LineNr"> 82 </span>  <span class="Delimiter">{</span>
 <span id="L83" class="LineNr"> 83 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
 <span id="L84" class="LineNr"> 84 </span>    <span class="muControl">break-if</span> done?
-<span id="L85" class="LineNr"> 85 </span>    curr:screen-cell <span class="Special">&lt;-</span> index *buf, i
+<span id="L85" class="LineNr"> 85 </span>    curr:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> index *buf, i
 <span id="L86" class="LineNr"> 86 </span>    curr-contents:char <span class="Special">&lt;-</span> get curr, <span class="Constant">contents:offset</span>
 <span id="L87" class="LineNr"> 87 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
 <span id="L88" class="LineNr"> 88 </span>    <span class="muControl">loop-unless</span> curr-contents
@@ -154,7 +154,7 @@ if ('onhashchange' in window) {
 <span id="L92" class="LineNr"> 92 </span> <span class="muControl"> return</span> <span class="Constant">1/true</span>
 <span id="L93" class="LineNr"> 93 </span>]
 <span id="L94" class="LineNr"> 94 </span>
-<span id="L95" class="LineNr"> 95 </span><span class="muRecipe">def</span> print screen:&amp;:screen, c:char<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L95" class="LineNr"> 95 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, c:char<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L96" class="LineNr"> 96 </span>  <span class="Constant">local-scope</span>
 <span id="L97" class="LineNr"> 97 </span>  <span class="Constant">load-inputs</span>
 <span id="L98" class="LineNr"> 98 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
@@ -173,7 +173,7 @@ if ('onhashchange' in window) {
 <span id="L111" class="LineNr">111 </span>  trace<span class="Constant"> 90</span>, <span class="Constant">[print-character]</span>, c2
 <span id="L112" class="LineNr">112 </span>  <span class="Delimiter">{</span>
 <span id="L113" class="LineNr">113 </span>    <span class="Comment"># real screen</span>
-<span id="L114" class="LineNr">114 </span>    <span class="muControl">break-if</span> screen
+<span id="L114" class="LineNr">114 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L115" class="LineNr">115 </span>    print-character-to-display c, color, bg-color
 <span id="L116" class="LineNr">116 </span>   <span class="muControl"> return</span>
 <span id="L117" class="LineNr">117 </span>  <span class="Delimiter">}</span>
@@ -181,10 +181,10 @@ if ('onhashchange' in window) {
 <span id="L119" class="LineNr">119 </span>  <span class="Comment"># (handle special cases exactly like in the real screen)</span>
 <span id="L120" class="LineNr">120 </span>  width:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">num-columns:offset</span>
 <span id="L121" class="LineNr">121 </span>  height:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">num-rows:offset</span>
-<span id="L122" class="LineNr">122 </span>  capacity:num <span class="Special">&lt;-</span> multiply width, height
+<span id="L122" class="LineNr">122 </span>  <a href='075channel.mu.html#L399'>capacity</a>:num <span class="Special">&lt;-</span> multiply width, height
 <span id="L123" class="LineNr">123 </span>  row:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-row:offset</span>
 <span id="L124" class="LineNr">124 </span>  column:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-column:offset</span>
-<span id="L125" class="LineNr">125 </span>  buf:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
+<span id="L125" class="LineNr">125 </span>  buf:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
 <span id="L126" class="LineNr">126 </span>  <span class="Comment"># some potentially slow sanity checks for preconditions {</span>
 <span id="L127" class="LineNr">127 </span>  <span class="Comment"># eliminate fractions from column and row</span>
 <span id="L128" class="LineNr">128 </span>  row <span class="Special">&lt;-</span> round row
@@ -211,7 +211,7 @@ if ('onhashchange' in window) {
 <span id="L149" class="LineNr">149 </span>    pending-scroll?:bool <span class="Special">&lt;-</span> get *screen, <span class="Constant">pending-scroll?:offset</span>
 <span id="L150" class="LineNr">150 </span>    <span class="muControl">break-unless</span> pending-scroll?
 <span id="L151" class="LineNr">151 </span><span class="CommentedCode">#?     stash [scroll]</span>
-<span id="L152" class="LineNr">152 </span>    scroll-fake-screen screen
+<span id="L152" class="LineNr">152 </span>    <a href='081print.mu.html#L225'>scroll-fake-screen</a> <a href='081print.mu.html#L16'>screen</a>
 <span id="L153" class="LineNr">153 </span>    *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">pending-scroll?:offset</span>, <span class="Constant">0/false</span>
 <span id="L154" class="LineNr">154 </span>  <span class="Delimiter">}</span>
 <span id="L155" class="LineNr">155 </span><span class="CommentedCode">#?     $print [print-character (], row, [, ], column, [): ], c, 10/newline</span>
@@ -219,7 +219,7 @@ if ('onhashchange' in window) {
 <span id="L157" class="LineNr">157 </span>  <span class="Delimiter">{</span>
 <span id="L158" class="LineNr">158 </span>    newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
 <span id="L159" class="LineNr">159 </span>    <span class="muControl">break-unless</span> newline?
-<span id="L160" class="LineNr">160 </span>    cursor-down-on-fake-screen screen  <span class="Comment"># doesn't modify column</span>
+<span id="L160" class="LineNr">160 </span>    <a href='081print.mu.html#L206'>cursor-down-on-fake-screen</a> <a href='081print.mu.html#L16'>screen</a>  <span class="Comment"># doesn't modify column</span>
 <span id="L161" class="LineNr">161 </span>   <span class="muControl"> return</span>
 <span id="L162" class="LineNr">162 </span>  <span class="Delimiter">}</span>
 <span id="L163" class="LineNr">163 </span>  <span class="Comment"># special-case: linefeed</span>
@@ -243,8 +243,8 @@ if ('onhashchange' in window) {
 <span id="L181" class="LineNr">181 </span>  <span class="Delimiter">}</span>
 <span id="L182" class="LineNr">182 </span>  <span class="Comment"># save character in fake screen</span>
 <span id="L183" class="LineNr">183 </span>  top-idx:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">top-idx:offset</span>
-<span id="L184" class="LineNr">184 </span>  index:num <span class="Special">&lt;-</span> data-index row, column, width, height, top-idx
-<span id="L185" class="LineNr">185 </span>  cursor:screen-cell <span class="Special">&lt;-</span> merge c, color
+<span id="L184" class="LineNr">184 </span>  index:num <span class="Special">&lt;-</span> <a href='081print.mu.html#L253'>data-index</a> row, column, width, height, top-idx
+<span id="L185" class="LineNr">185 </span>  cursor:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> merge c, color
 <span id="L186" class="LineNr">186 </span>  *buf <span class="Special">&lt;-</span> put-index *buf, index, cursor
 <span id="L187" class="LineNr">187 </span>  <span class="Comment"># move cursor to next character, wrapping as necessary</span>
 <span id="L188" class="LineNr">188 </span>  <span class="Comment"># however, don't scroll just yet</span>
@@ -265,7 +265,7 @@ if ('onhashchange' in window) {
 <span id="L203" class="LineNr">203 </span>  *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">cursor-column:offset</span>, column
 <span id="L204" class="LineNr">204 </span>]
 <span id="L205" class="LineNr">205 </span>
-<span id="L206" class="LineNr">206 </span><span class="muRecipe">def</span> cursor-down-on-fake-screen screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L206" class="LineNr">206 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L206'>cursor-down-on-fake-screen</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L207" class="LineNr">207 </span>  <span class="Constant">local-scope</span>
 <span id="L208" class="LineNr">208 </span>  <span class="Constant">load-inputs</span>
 <span id="L209" class="LineNr">209 </span><span class="CommentedCode">#?   stash [cursor-down]</span>
@@ -280,21 +280,21 @@ if ('onhashchange' in window) {
 <span id="L218" class="LineNr">218 </span>  <span class="Delimiter">}</span>
 <span id="L219" class="LineNr">219 </span>  <span class="Delimiter">{</span>
 <span id="L220" class="LineNr">220 </span>    <span class="muControl">break-unless</span> at-bottom?
-<span id="L221" class="LineNr">221 </span>    scroll-fake-screen screen  <span class="Comment"># does not modify row</span>
+<span id="L221" class="LineNr">221 </span>    <a href='081print.mu.html#L225'>scroll-fake-screen</a> <a href='081print.mu.html#L16'>screen</a>  <span class="Comment"># does not modify row</span>
 <span id="L222" class="LineNr">222 </span>  <span class="Delimiter">}</span>
 <span id="L223" class="LineNr">223 </span>]
 <span id="L224" class="LineNr">224 </span>
-<span id="L225" class="LineNr">225 </span><span class="muRecipe">def</span> scroll-fake-screen screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L225" class="LineNr">225 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L225'>scroll-fake-screen</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L226" class="LineNr">226 </span>  <span class="Constant">local-scope</span>
 <span id="L227" class="LineNr">227 </span>  <span class="Constant">load-inputs</span>
 <span id="L228" class="LineNr">228 </span><span class="CommentedCode">#?   stash [scroll-fake-screen]</span>
 <span id="L229" class="LineNr">229 </span>  width:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">num-columns:offset</span>
 <span id="L230" class="LineNr">230 </span>  height:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">num-rows:offset</span>
-<span id="L231" class="LineNr">231 </span>  buf:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
+<span id="L231" class="LineNr">231 </span>  buf:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
 <span id="L232" class="LineNr">232 </span>  <span class="Comment"># clear top line and 'rotate' it to the bottom</span>
 <span id="L233" class="LineNr">233 </span>  top-idx:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">top-idx:offset</span>  <span class="Comment"># 0 &lt;= top-idx &lt; len(buf)</span>
 <span id="L234" class="LineNr">234 </span>  next-top-idx:num <span class="Special">&lt;-</span> add top-idx, width  <span class="Comment"># 0 &lt;= next-top-idx &lt;= len(buf)</span>
-<span id="L235" class="LineNr">235 </span>  empty-cell:screen-cell <span class="Special">&lt;-</span> merge <span class="Constant">0/empty</span>, <span class="Constant">7/white</span>
+<span id="L235" class="LineNr">235 </span>  empty-cell:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> merge <span class="Constant">0/empty</span>, <span class="Constant">7/white</span>
 <span id="L236" class="LineNr">236 </span>  <span class="Delimiter">{</span>
 <span id="L237" class="LineNr">237 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal top-idx, next-top-idx
 <span id="L238" class="LineNr">238 </span>    <span class="muControl">break-if</span> done?
@@ -305,14 +305,14 @@ if ('onhashchange' in window) {
 <span id="L243" class="LineNr">243 </span>   <span class="muControl"> loop</span>
 <span id="L244" class="LineNr">244 </span>  <span class="Delimiter">}</span>
 <span id="L245" class="LineNr">245 </span>  <span class="Comment"># top-idx now same as next-top-idx; wrap around if necessary</span>
-<span id="L246" class="LineNr">246 </span>  capacity:num <span class="Special">&lt;-</span> multiply width, height
-<span id="L247" class="LineNr">247 </span>  _, top-idx <span class="Special">&lt;-</span> divide-with-remainder, top-idx, capacity
+<span id="L246" class="LineNr">246 </span>  <a href='075channel.mu.html#L399'>capacity</a>:num <span class="Special">&lt;-</span> multiply width, height
+<span id="L247" class="LineNr">247 </span>  _, top-idx <span class="Special">&lt;-</span> divide-with-remainder, top-idx, <a href='075channel.mu.html#L399'>capacity</a>
 <span id="L248" class="LineNr">248 </span>  *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">top-idx:offset</span>, top-idx
 <span id="L249" class="LineNr">249 </span>]
 <span id="L250" class="LineNr">250 </span>
 <span id="L251" class="LineNr">251 </span><span class="Comment"># translate from screen (row, column) coordinates to an index into data</span>
 <span id="L252" class="LineNr">252 </span><span class="Comment"># while accounting for scrolling (sliding top-idx)</span>
-<span id="L253" class="LineNr">253 </span><span class="muRecipe">def</span> data-index row:num, column:num, width:num, height:num, top-idx:num<span class="muRecipe"> -&gt; </span>result:num [
+<span id="L253" class="LineNr">253 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L253'>data-index</a> row:num, column:num, width:num, height:num, top-idx:num<span class="muRecipe"> -&gt; </span>result:num [
 <span id="L254" class="LineNr">254 </span>  <span class="Constant">local-scope</span>
 <span id="L255" class="LineNr">255 </span>  <span class="Constant">load-inputs</span>
 <span id="L256" class="LineNr">256 </span>  <span class="Delimiter">{</span>
@@ -322,18 +322,18 @@ if ('onhashchange' in window) {
 <span id="L260" class="LineNr">260 </span>  <span class="Delimiter">}</span>
 <span id="L261" class="LineNr">261 </span>  result <span class="Special">&lt;-</span> multiply width, row
 <span id="L262" class="LineNr">262 </span>  result <span class="Special">&lt;-</span> add result, column, top-idx
-<span id="L263" class="LineNr">263 </span>  capacity:num <span class="Special">&lt;-</span> multiply width, height
-<span id="L264" class="LineNr">264 </span>  _, result <span class="Special">&lt;-</span> divide-with-remainder result, capacity
+<span id="L263" class="LineNr">263 </span>  <a href='075channel.mu.html#L399'>capacity</a>:num <span class="Special">&lt;-</span> multiply width, height
+<span id="L264" class="LineNr">264 </span>  _, result <span class="Special">&lt;-</span> divide-with-remainder result, <a href='075channel.mu.html#L399'>capacity</a>
 <span id="L265" class="LineNr">265 </span>]
 <span id="L266" class="LineNr">266 </span>
 <span id="L267" class="LineNr">267 </span><span class="muScenario">scenario</span> print-character-at-top-left [
 <span id="L268" class="LineNr">268 </span>  <span class="Constant">local-scope</span>
-<span id="L269" class="LineNr">269 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L269" class="LineNr">269 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L270" class="LineNr">270 </span>  run [
 <span id="L271" class="LineNr">271 </span>    a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L272" class="LineNr">272 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, a:char
-<span id="L273" class="LineNr">273 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L274" class="LineNr">274 </span>    1:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L273" class="LineNr">273 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L274" class="LineNr">274 </span>    1:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L275" class="LineNr">275 </span>  ]
 <span id="L276" class="LineNr">276 </span>  memory-should-contain [
 <span id="L277" class="LineNr">277 </span>   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 6</span>  <span class="Comment"># width*height</span>
@@ -346,13 +346,13 @@ if ('onhashchange' in window) {
 <span id="L284" class="LineNr">284 </span>
 <span id="L285" class="LineNr">285 </span><span class="muScenario">scenario</span> print-character-at-fractional-coordinate [
 <span id="L286" class="LineNr">286 </span>  <span class="Constant">local-scope</span>
-<span id="L287" class="LineNr">287 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L287" class="LineNr">287 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L288" class="LineNr">288 </span>  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L289" class="LineNr">289 </span>  run [
-<span id="L290" class="LineNr">290 </span>    move-cursor fake-screen, 0.5,<span class="Constant"> 0</span>
+<span id="L290" class="LineNr">290 </span>    <a href='081print.mu.html#L591'>move-cursor</a> fake-screen, 0.5,<span class="Constant"> 0</span>
 <span id="L291" class="LineNr">291 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, a:char
-<span id="L292" class="LineNr">292 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L293" class="LineNr">293 </span>    1:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L292" class="LineNr">292 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L293" class="LineNr">293 </span>    1:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L294" class="LineNr">294 </span>  ]
 <span id="L295" class="LineNr">295 </span>  memory-should-contain [
 <span id="L296" class="LineNr">296 </span>   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 6</span>  <span class="Comment"># width*height</span>
@@ -365,12 +365,12 @@ if ('onhashchange' in window) {
 <span id="L303" class="LineNr">303 </span>
 <span id="L304" class="LineNr">304 </span><span class="muScenario">scenario</span> print-character-in-color [
 <span id="L305" class="LineNr">305 </span>  <span class="Constant">local-scope</span>
-<span id="L306" class="LineNr">306 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L306" class="LineNr">306 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L307" class="LineNr">307 </span>  run [
 <span id="L308" class="LineNr">308 </span>    a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L309" class="LineNr">309 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, a:char, <span class="Constant">1/red</span>
-<span id="L310" class="LineNr">310 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L311" class="LineNr">311 </span>    1:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L310" class="LineNr">310 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L311" class="LineNr">311 </span>    1:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L312" class="LineNr">312 </span>  ]
 <span id="L313" class="LineNr">313 </span>  memory-should-contain [
 <span id="L314" class="LineNr">314 </span>   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 6</span>  <span class="Comment"># width*height</span>
@@ -383,15 +383,15 @@ if ('onhashchange' in window) {
 <span id="L321" class="LineNr">321 </span>
 <span id="L322" class="LineNr">322 </span><span class="muScenario">scenario</span> print-backspace-character [
 <span id="L323" class="LineNr">323 </span>  <span class="Constant">local-scope</span>
-<span id="L324" class="LineNr">324 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L324" class="LineNr">324 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L325" class="LineNr">325 </span>  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L326" class="LineNr">326 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, a
 <span id="L327" class="LineNr">327 </span>  run [
 <span id="L328" class="LineNr">328 </span>    backspace:char <span class="Special">&lt;-</span> copy <span class="Constant">8/backspace</span>
 <span id="L329" class="LineNr">329 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, backspace
 <span id="L330" class="LineNr">330 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
-<span id="L331" class="LineNr">331 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L332" class="LineNr">332 </span>    11:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L331" class="LineNr">331 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L332" class="LineNr">332 </span>    11:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L333" class="LineNr">333 </span>  ]
 <span id="L334" class="LineNr">334 </span>  memory-should-contain [
 <span id="L335" class="LineNr">335 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># cursor column</span>
@@ -405,7 +405,7 @@ if ('onhashchange' in window) {
 <span id="L343" class="LineNr">343 </span>
 <span id="L344" class="LineNr">344 </span><span class="muScenario">scenario</span> print-extra-backspace-character [
 <span id="L345" class="LineNr">345 </span>  <span class="Constant">local-scope</span>
-<span id="L346" class="LineNr">346 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L346" class="LineNr">346 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L347" class="LineNr">347 </span>  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L348" class="LineNr">348 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, a
 <span id="L349" class="LineNr">349 </span>  run [
@@ -413,8 +413,8 @@ if ('onhashchange' in window) {
 <span id="L351" class="LineNr">351 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, backspace
 <span id="L352" class="LineNr">352 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, backspace  <span class="Comment"># cursor already at left margin</span>
 <span id="L353" class="LineNr">353 </span>    1:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
-<span id="L354" class="LineNr">354 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L355" class="LineNr">355 </span>    3:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L354" class="LineNr">354 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L355" class="LineNr">355 </span>    3:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L356" class="LineNr">356 </span>  ]
 <span id="L357" class="LineNr">357 </span>  memory-should-contain [
 <span id="L358" class="LineNr">358 </span>   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># cursor column</span>
@@ -429,7 +429,7 @@ if ('onhashchange' in window) {
 <span id="L367" class="LineNr">367 </span><span class="muScenario">scenario</span> print-character-at-right-margin [
 <span id="L368" class="LineNr">368 </span>  <span class="Comment"># fill top row of screen with text</span>
 <span id="L369" class="LineNr">369 </span>  <span class="Constant">local-scope</span>
-<span id="L370" class="LineNr">370 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
+<span id="L370" class="LineNr">370 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
 <span id="L371" class="LineNr">371 </span>  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L372" class="LineNr">372 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, a
 <span id="L373" class="LineNr">373 </span>  b:char <span class="Special">&lt;-</span> copy <span class="Constant">98/b</span>
@@ -440,8 +440,8 @@ if ('onhashchange' in window) {
 <span id="L378" class="LineNr">378 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, c
 <span id="L379" class="LineNr">379 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-row:offset</span>
 <span id="L380" class="LineNr">380 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
-<span id="L381" class="LineNr">381 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L382" class="LineNr">382 </span>    12:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L381" class="LineNr">381 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L382" class="LineNr">382 </span>    12:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L383" class="LineNr">383 </span>  ]
 <span id="L384" class="LineNr">384 </span>  memory-should-contain [
 <span id="L385" class="LineNr">385 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># cursor row</span>
@@ -460,7 +460,7 @@ if ('onhashchange' in window) {
 <span id="L398" class="LineNr">398 </span>
 <span id="L399" class="LineNr">399 </span><span class="muScenario">scenario</span> print-newline-character [
 <span id="L400" class="LineNr">400 </span>  <span class="Constant">local-scope</span>
-<span id="L401" class="LineNr">401 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L401" class="LineNr">401 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L402" class="LineNr">402 </span>  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L403" class="LineNr">403 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, a
 <span id="L404" class="LineNr">404 </span>  run [
@@ -468,8 +468,8 @@ if ('onhashchange' in window) {
 <span id="L406" class="LineNr">406 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, newline
 <span id="L407" class="LineNr">407 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-row:offset</span>
 <span id="L408" class="LineNr">408 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
-<span id="L409" class="LineNr">409 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L410" class="LineNr">410 </span>    12:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L409" class="LineNr">409 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L410" class="LineNr">410 </span>    12:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L411" class="LineNr">411 </span>  ]
 <span id="L412" class="LineNr">412 </span>  memory-should-contain [
 <span id="L413" class="LineNr">413 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># cursor row</span>
@@ -484,7 +484,7 @@ if ('onhashchange' in window) {
 <span id="L422" class="LineNr">422 </span>
 <span id="L423" class="LineNr">423 </span><span class="muScenario">scenario</span> print-newline-at-bottom-line [
 <span id="L424" class="LineNr">424 </span>  <span class="Constant">local-scope</span>
-<span id="L425" class="LineNr">425 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L425" class="LineNr">425 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L426" class="LineNr">426 </span>  newline:char <span class="Special">&lt;-</span> copy <span class="Constant">10/newline</span>
 <span id="L427" class="LineNr">427 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, newline
 <span id="L428" class="LineNr">428 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, newline
@@ -503,7 +503,7 @@ if ('onhashchange' in window) {
 <span id="L441" class="LineNr">441 </span>
 <span id="L442" class="LineNr">442 </span><span class="muScenario">scenario</span> print-character-at-bottom-right [
 <span id="L443" class="LineNr">443 </span>  <span class="Constant">local-scope</span>
-<span id="L444" class="LineNr">444 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
+<span id="L444" class="LineNr">444 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
 <span id="L445" class="LineNr">445 </span>  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L446" class="LineNr">446 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, a
 <span id="L447" class="LineNr">447 </span>  b:char <span class="Special">&lt;-</span> copy <span class="Constant">98/b</span>
@@ -518,8 +518,8 @@ if ('onhashchange' in window) {
 <span id="L456" class="LineNr">456 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
 <span id="L457" class="LineNr">457 </span>    12:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">top-idx:offset</span>
 <span id="L458" class="LineNr">458 </span>    13:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">pending-scroll?:offset</span>
-<span id="L459" class="LineNr">459 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L460" class="LineNr">460 </span>    20:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L459" class="LineNr">459 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L460" class="LineNr">460 </span>    20:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L461" class="LineNr">461 </span>  ]
 <span id="L462" class="LineNr">462 </span>  <span class="Comment"># cursor column wraps but the screen doesn't scroll yet</span>
 <span id="L463" class="LineNr">463 </span>  memory-should-contain [
@@ -543,8 +543,8 @@ if ('onhashchange' in window) {
 <span id="L481" class="LineNr">481 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-row:offset</span>
 <span id="L482" class="LineNr">482 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
 <span id="L483" class="LineNr">483 </span>    12:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">top-idx:offset</span>
-<span id="L484" class="LineNr">484 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L485" class="LineNr">485 </span>    20:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L484" class="LineNr">484 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L485" class="LineNr">485 </span>    20:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L486" class="LineNr">486 </span>  ]
 <span id="L487" class="LineNr">487 </span>  memory-should-contain [
 <span id="L488" class="LineNr">488 </span>    <span class="Comment"># text scrolls by 1, we lose the top line</span>
@@ -568,28 +568,28 @@ if ('onhashchange' in window) {
 <span id="L506" class="LineNr">506 </span><span class="Comment"># even though our screen supports scrolling, some apps may want to avoid</span>
 <span id="L507" class="LineNr">507 </span><span class="Comment"># scrolling</span>
 <span id="L508" class="LineNr">508 </span><span class="Comment"># these helpers help check for scrolling at development time</span>
-<span id="L509" class="LineNr">509 </span><span class="muRecipe">def</span> save-top-idx screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:num [
+<span id="L509" class="LineNr">509 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L509'>save-top-idx</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>result:num [
 <span id="L510" class="LineNr">510 </span>  <span class="Constant">local-scope</span>
 <span id="L511" class="LineNr">511 </span>  <span class="Constant">load-inputs</span>
-<span id="L512" class="LineNr">512 </span>  <span class="muControl">return-unless</span> screen,<span class="Constant"> 0</span>  <span class="Comment"># check is only for fake screens</span>
+<span id="L512" class="LineNr">512 </span>  <span class="muControl">return-unless</span> <a href='081print.mu.html#L16'>screen</a>,<span class="Constant"> 0</span>  <span class="Comment"># check is only for fake screens</span>
 <span id="L513" class="LineNr">513 </span>  result <span class="Special">&lt;-</span> get *screen, <span class="Constant">top-idx:offset</span>
 <span id="L514" class="LineNr">514 </span>]
-<span id="L515" class="LineNr">515 </span><span class="muRecipe">def</span> assert-no-scroll screen:&amp;:screen, old-top-idx:num [
+<span id="L515" class="LineNr">515 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L515'>assert-no-scroll</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, old-top-idx:num [
 <span id="L516" class="LineNr">516 </span>  <span class="Constant">local-scope</span>
 <span id="L517" class="LineNr">517 </span>  <span class="Constant">load-inputs</span>
-<span id="L518" class="LineNr">518 </span>  <span class="muControl">return-unless</span> screen
+<span id="L518" class="LineNr">518 </span>  <span class="muControl">return-unless</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L519" class="LineNr">519 </span>  new-top-idx:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">top-idx:offset</span>
 <span id="L520" class="LineNr">520 </span>  no-scroll?:bool <span class="Special">&lt;-</span> equal old-top-idx, new-top-idx
-<span id="L521" class="LineNr">521 </span>  assert no-scroll?, <span class="Constant">[render should never use screen's scrolling capabilities]</span>
+<span id="L521" class="LineNr">521 </span>  assert no-scroll?, <span class="Constant">[render should never use <a href='081print.mu.html#L16'>screen</a>'s scrolling capabilities]</span>
 <span id="L522" class="LineNr">522 </span>]
 <span id="L523" class="LineNr">523 </span>
-<span id="L524" class="LineNr">524 </span><span class="muRecipe">def</span> clear-line screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L524" class="LineNr">524 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L524'>clear-line</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L525" class="LineNr">525 </span>  <span class="Constant">local-scope</span>
 <span id="L526" class="LineNr">526 </span>  <span class="Constant">load-inputs</span>
 <span id="L527" class="LineNr">527 </span><span class="CommentedCode">#?   stash [clear-line]</span>
 <span id="L528" class="LineNr">528 </span>  space:char <span class="Special">&lt;-</span> copy <span class="Constant">0/nul</span>
 <span id="L529" class="LineNr">529 </span>  <span class="Delimiter">{</span>
-<span id="L530" class="LineNr">530 </span>    <span class="muControl">break-if</span> screen
+<span id="L530" class="LineNr">530 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L531" class="LineNr">531 </span>    <span class="Comment"># real screen</span>
 <span id="L532" class="LineNr">532 </span>    clear-line-on-display
 <span id="L533" class="LineNr">533 </span>   <span class="muControl"> return</span>
@@ -603,7 +603,7 @@ if ('onhashchange' in window) {
 <span id="L541" class="LineNr">541 </span>    right:num <span class="Special">&lt;-</span> subtract width,<span class="Constant"> 1</span>
 <span id="L542" class="LineNr">542 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal column, right
 <span id="L543" class="LineNr">543 </span>    <span class="muControl">break-if</span> done?
-<span id="L544" class="LineNr">544 </span>    print screen, space
+<span id="L544" class="LineNr">544 </span>    print <a href='081print.mu.html#L16'>screen</a>, space
 <span id="L545" class="LineNr">545 </span>    column <span class="Special">&lt;-</span> add column,<span class="Constant"> 1</span>
 <span id="L546" class="LineNr">546 </span>   <span class="muControl"> loop</span>
 <span id="L547" class="LineNr">547 </span>  <span class="Delimiter">}</span>
@@ -612,12 +612,12 @@ if ('onhashchange' in window) {
 <span id="L550" class="LineNr">550 </span>]
 <span id="L551" class="LineNr">551 </span>
 <span id="L552" class="LineNr">552 </span><span class="Comment"># only for non-scrolling apps</span>
-<span id="L553" class="LineNr">553 </span><span class="muRecipe">def</span> clear-line-until screen:&amp;:screen, right:num/inclusive<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L553" class="LineNr">553 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L553'>clear-line-until</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, right:num/inclusive<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L554" class="LineNr">554 </span>  <span class="Constant">local-scope</span>
 <span id="L555" class="LineNr">555 </span>  <span class="Constant">load-inputs</span>
-<span id="L556" class="LineNr">556 </span>  row:num, column:num <span class="Special">&lt;-</span> cursor-position screen
+<span id="L556" class="LineNr">556 </span>  row:num, column:num <span class="Special">&lt;-</span> <a href='081print.mu.html#L577'>cursor-position</a> <a href='081print.mu.html#L16'>screen</a>
 <span id="L557" class="LineNr">557 </span><span class="CommentedCode">#?   stash [clear-line-until] row column</span>
-<span id="L558" class="LineNr">558 </span>  height:num <span class="Special">&lt;-</span> screen-height screen
+<span id="L558" class="LineNr">558 </span>  height:num <span class="Special">&lt;-</span> <a href='081print.mu.html#L782'>screen-height</a> <a href='081print.mu.html#L16'>screen</a>
 <span id="L559" class="LineNr">559 </span>  past-bottom?:bool <span class="Special">&lt;-</span> greater-or-equal row, height
 <span id="L560" class="LineNr">560 </span>  <span class="muControl">return-if</span> past-bottom?
 <span id="L561" class="LineNr">561 </span>  space:char <span class="Special">&lt;-</span> copy <span class="Constant">32/space</span>
@@ -630,17 +630,17 @@ if ('onhashchange' in window) {
 <span id="L568" class="LineNr">568 </span>  <span class="Delimiter">{</span>
 <span id="L569" class="LineNr">569 </span>    done?:bool <span class="Special">&lt;-</span> greater-than column, right
 <span id="L570" class="LineNr">570 </span>    <span class="muControl">break-if</span> done?
-<span id="L571" class="LineNr">571 </span>    screen <span class="Special">&lt;-</span> print screen, space, <span class="Constant">7/white</span>, bg-color  <span class="Comment"># foreground color is mostly unused except if the cursor shows up at this cell</span>
+<span id="L571" class="LineNr">571 </span>    <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, space, <span class="Constant">7/white</span>, bg-color  <span class="Comment"># foreground color is mostly unused except if the cursor shows up at this cell</span>
 <span id="L572" class="LineNr">572 </span>    column <span class="Special">&lt;-</span> add column,<span class="Constant"> 1</span>
 <span id="L573" class="LineNr">573 </span>   <span class="muControl"> loop</span>
 <span id="L574" class="LineNr">574 </span>  <span class="Delimiter">}</span>
 <span id="L575" class="LineNr">575 </span>]
 <span id="L576" class="LineNr">576 </span>
-<span id="L577" class="LineNr">577 </span><span class="muRecipe">def</span> cursor-position screen:&amp;:screen<span class="muRecipe"> -&gt; </span>row:num, column:num [
+<span id="L577" class="LineNr">577 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L577'>cursor-position</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>row:num, column:num [
 <span id="L578" class="LineNr">578 </span>  <span class="Constant">local-scope</span>
 <span id="L579" class="LineNr">579 </span>  <span class="Constant">load-inputs</span>
 <span id="L580" class="LineNr">580 </span>  <span class="Delimiter">{</span>
-<span id="L581" class="LineNr">581 </span>    <span class="muControl">break-if</span> screen
+<span id="L581" class="LineNr">581 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L582" class="LineNr">582 </span>    <span class="Comment"># real screen</span>
 <span id="L583" class="LineNr">583 </span>    row, column <span class="Special">&lt;-</span> cursor-position-on-display
 <span id="L584" class="LineNr">584 </span>   <span class="muControl"> return</span>
@@ -650,12 +650,12 @@ if ('onhashchange' in window) {
 <span id="L588" class="LineNr">588 </span>  column:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-column:offset</span>
 <span id="L589" class="LineNr">589 </span>]
 <span id="L590" class="LineNr">590 </span>
-<span id="L591" class="LineNr">591 </span><span class="muRecipe">def</span> move-cursor screen:&amp;:screen, new-row:num, new-column:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L591" class="LineNr">591 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L591'>move-cursor</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, new-row:num, new-column:num<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L592" class="LineNr">592 </span>  <span class="Constant">local-scope</span>
 <span id="L593" class="LineNr">593 </span>  <span class="Constant">load-inputs</span>
 <span id="L594" class="LineNr">594 </span><span class="CommentedCode">#?   stash [move-cursor] new-row new-column</span>
 <span id="L595" class="LineNr">595 </span>  <span class="Delimiter">{</span>
-<span id="L596" class="LineNr">596 </span>    <span class="muControl">break-if</span> screen
+<span id="L596" class="LineNr">596 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L597" class="LineNr">597 </span>    <span class="Comment"># real screen</span>
 <span id="L598" class="LineNr">598 </span>    move-cursor-on-display new-row, new-column
 <span id="L599" class="LineNr">599 </span>   <span class="muControl"> return</span>
@@ -675,16 +675,16 @@ if ('onhashchange' in window) {
 <span id="L613" class="LineNr">613 </span>
 <span id="L614" class="LineNr">614 </span><span class="muScenario">scenario</span> clear-line-erases-printed-characters [
 <span id="L615" class="LineNr">615 </span>  <span class="Constant">local-scope</span>
-<span id="L616" class="LineNr">616 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L616" class="LineNr">616 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L617" class="LineNr">617 </span>  <span class="Comment"># print a character</span>
 <span id="L618" class="LineNr">618 </span>  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L619" class="LineNr">619 </span>  fake-screen <span class="Special">&lt;-</span> print fake-screen, a
 <span id="L620" class="LineNr">620 </span>  <span class="Comment"># move cursor to start of line</span>
-<span id="L621" class="LineNr">621 </span>  fake-screen <span class="Special">&lt;-</span> move-cursor fake-screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
+<span id="L621" class="LineNr">621 </span>  fake-screen <span class="Special">&lt;-</span> <a href='081print.mu.html#L591'>move-cursor</a> fake-screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
 <span id="L622" class="LineNr">622 </span>  run [
-<span id="L623" class="LineNr">623 </span>    fake-screen <span class="Special">&lt;-</span> clear-line fake-screen
-<span id="L624" class="LineNr">624 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L625" class="LineNr">625 </span>    10:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L623" class="LineNr">623 </span>    fake-screen <span class="Special">&lt;-</span> <a href='081print.mu.html#L524'>clear-line</a> fake-screen
+<span id="L624" class="LineNr">624 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L625" class="LineNr">625 </span>    10:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L626" class="LineNr">626 </span>  ]
 <span id="L627" class="LineNr">627 </span>  <span class="Comment"># screen should be blank</span>
 <span id="L628" class="LineNr">628 </span>  memory-should-contain [
@@ -704,30 +704,30 @@ if ('onhashchange' in window) {
 <span id="L642" class="LineNr">642 </span>  ]
 <span id="L643" class="LineNr">643 </span>]
 <span id="L644" class="LineNr">644 </span>
-<span id="L645" class="LineNr">645 </span><span class="muRecipe">def</span> cursor-down screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L645" class="LineNr">645 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L645'>cursor-down</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L646" class="LineNr">646 </span>  <span class="Constant">local-scope</span>
 <span id="L647" class="LineNr">647 </span>  <span class="Constant">load-inputs</span>
 <span id="L648" class="LineNr">648 </span><span class="CommentedCode">#?   stash [cursor-down]</span>
 <span id="L649" class="LineNr">649 </span>  <span class="Delimiter">{</span>
-<span id="L650" class="LineNr">650 </span>    <span class="muControl">break-if</span> screen
+<span id="L650" class="LineNr">650 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L651" class="LineNr">651 </span>    <span class="Comment"># real screen</span>
 <span id="L652" class="LineNr">652 </span>    move-cursor-down-on-display
 <span id="L653" class="LineNr">653 </span>   <span class="muControl"> return</span>
 <span id="L654" class="LineNr">654 </span>  <span class="Delimiter">}</span>
 <span id="L655" class="LineNr">655 </span>  <span class="Comment"># fake screen</span>
-<span id="L656" class="LineNr">656 </span>  cursor-down-on-fake-screen screen
+<span id="L656" class="LineNr">656 </span>  <a href='081print.mu.html#L206'>cursor-down-on-fake-screen</a> <a href='081print.mu.html#L16'>screen</a>
 <span id="L657" class="LineNr">657 </span>]
 <span id="L658" class="LineNr">658 </span>
 <span id="L659" class="LineNr">659 </span><span class="muScenario">scenario</span> cursor-down-scrolls [
 <span id="L660" class="LineNr">660 </span>  <span class="Constant">local-scope</span>
-<span id="L661" class="LineNr">661 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L661" class="LineNr">661 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L662" class="LineNr">662 </span>  <span class="Comment"># print something to screen and scroll</span>
 <span id="L663" class="LineNr">663 </span>  run [
 <span id="L664" class="LineNr">664 </span>    print fake-screen, <span class="Constant">[abc]</span>
-<span id="L665" class="LineNr">665 </span>    cursor-to-next-line fake-screen
-<span id="L666" class="LineNr">666 </span>    cursor-to-next-line fake-screen
-<span id="L667" class="LineNr">667 </span>    data:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L668" class="LineNr">668 </span>    10:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *data
+<span id="L665" class="LineNr">665 </span>    <a href='081print.mu.html#L752'>cursor-to-next-line</a> fake-screen
+<span id="L666" class="LineNr">666 </span>    <a href='081print.mu.html#L752'>cursor-to-next-line</a> fake-screen
+<span id="L667" class="LineNr">667 </span>    data:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L668" class="LineNr">668 </span>    10:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *data
 <span id="L669" class="LineNr">669 </span>  ]
 <span id="L670" class="LineNr">670 </span>  <span class="Comment"># screen is now blank</span>
 <span id="L671" class="LineNr">671 </span>  memory-should-contain [
@@ -747,12 +747,12 @@ if ('onhashchange' in window) {
 <span id="L685" class="LineNr">685 </span>  ]
 <span id="L686" class="LineNr">686 </span>]
 <span id="L687" class="LineNr">687 </span>
-<span id="L688" class="LineNr">688 </span><span class="muRecipe">def</span> cursor-up screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L688" class="LineNr">688 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L688'>cursor-up</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L689" class="LineNr">689 </span>  <span class="Constant">local-scope</span>
 <span id="L690" class="LineNr">690 </span>  <span class="Constant">load-inputs</span>
 <span id="L691" class="LineNr">691 </span><span class="CommentedCode">#?   stash [cursor-up]</span>
 <span id="L692" class="LineNr">692 </span>  <span class="Delimiter">{</span>
-<span id="L693" class="LineNr">693 </span>    <span class="muControl">break-if</span> screen
+<span id="L693" class="LineNr">693 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L694" class="LineNr">694 </span>    <span class="Comment"># real screen</span>
 <span id="L695" class="LineNr">695 </span>    move-cursor-up-on-display
 <span id="L696" class="LineNr">696 </span>   <span class="muControl"> return</span>
@@ -765,12 +765,12 @@ if ('onhashchange' in window) {
 <span id="L703" class="LineNr">703 </span>  *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">cursor-row:offset</span>, row
 <span id="L704" class="LineNr">704 </span>]
 <span id="L705" class="LineNr">705 </span>
-<span id="L706" class="LineNr">706 </span><span class="muRecipe">def</span> cursor-right screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L706" class="LineNr">706 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L706'>cursor-right</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L707" class="LineNr">707 </span>  <span class="Constant">local-scope</span>
 <span id="L708" class="LineNr">708 </span>  <span class="Constant">load-inputs</span>
 <span id="L709" class="LineNr">709 </span><span class="CommentedCode">#?   stash [cursor-right]</span>
 <span id="L710" class="LineNr">710 </span>  <span class="Delimiter">{</span>
-<span id="L711" class="LineNr">711 </span>    <span class="muControl">break-if</span> screen
+<span id="L711" class="LineNr">711 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L712" class="LineNr">712 </span>    <span class="Comment"># real screen</span>
 <span id="L713" class="LineNr">713 </span>    move-cursor-right-on-display
 <span id="L714" class="LineNr">714 </span>   <span class="muControl"> return</span>
@@ -785,12 +785,12 @@ if ('onhashchange' in window) {
 <span id="L723" class="LineNr">723 </span>  *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">cursor-column:offset</span>, column
 <span id="L724" class="LineNr">724 </span>]
 <span id="L725" class="LineNr">725 </span>
-<span id="L726" class="LineNr">726 </span><span class="muRecipe">def</span> cursor-left screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L726" class="LineNr">726 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L726'>cursor-left</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L727" class="LineNr">727 </span>  <span class="Constant">local-scope</span>
 <span id="L728" class="LineNr">728 </span>  <span class="Constant">load-inputs</span>
 <span id="L729" class="LineNr">729 </span><span class="CommentedCode">#?   stash [cursor-left]</span>
 <span id="L730" class="LineNr">730 </span>  <span class="Delimiter">{</span>
-<span id="L731" class="LineNr">731 </span>    <span class="muControl">break-if</span> screen
+<span id="L731" class="LineNr">731 </span>    <span class="muControl">break-if</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L732" class="LineNr">732 </span>    <span class="Comment"># real screen</span>
 <span id="L733" class="LineNr">733 </span>    move-cursor-left-on-display
 <span id="L734" class="LineNr">734 </span>   <span class="muControl"> return</span>
@@ -803,36 +803,36 @@ if ('onhashchange' in window) {
 <span id="L741" class="LineNr">741 </span>  *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">cursor-column:offset</span>, column
 <span id="L742" class="LineNr">742 </span>]
 <span id="L743" class="LineNr">743 </span>
-<span id="L744" class="LineNr">744 </span><span class="muRecipe">def</span> cursor-to-start-of-line screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L744" class="LineNr">744 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L744'>cursor-to-start-of-line</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L745" class="LineNr">745 </span>  <span class="Constant">local-scope</span>
 <span id="L746" class="LineNr">746 </span>  <span class="Constant">load-inputs</span>
 <span id="L747" class="LineNr">747 </span><span class="CommentedCode">#?   stash [cursor-to-start-of-line]</span>
-<span id="L748" class="LineNr">748 </span>  row:num <span class="Special">&lt;-</span> cursor-position screen
-<span id="L749" class="LineNr">749 </span>  screen <span class="Special">&lt;-</span> move-cursor screen, row, <span class="Constant">0/column</span>
+<span id="L748" class="LineNr">748 </span>  row:num <span class="Special">&lt;-</span> <a href='081print.mu.html#L577'>cursor-position</a> <a href='081print.mu.html#L16'>screen</a>
+<span id="L749" class="LineNr">749 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L591'>move-cursor</a> <a href='081print.mu.html#L16'>screen</a>, row, <span class="Constant">0/column</span>
 <span id="L750" class="LineNr">750 </span>]
 <span id="L751" class="LineNr">751 </span>
-<span id="L752" class="LineNr">752 </span><span class="muRecipe">def</span> cursor-to-next-line screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L752" class="LineNr">752 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L752'>cursor-to-next-line</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L753" class="LineNr">753 </span>  <span class="Constant">local-scope</span>
 <span id="L754" class="LineNr">754 </span>  <span class="Constant">load-inputs</span>
 <span id="L755" class="LineNr">755 </span><span class="CommentedCode">#?   stash [cursor-to-next-line]</span>
-<span id="L756" class="LineNr">756 </span>  screen <span class="Special">&lt;-</span> cursor-down screen
-<span id="L757" class="LineNr">757 </span>  screen <span class="Special">&lt;-</span> cursor-to-start-of-line screen
+<span id="L756" class="LineNr">756 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L645'>cursor-down</a> <a href='081print.mu.html#L16'>screen</a>
+<span id="L757" class="LineNr">757 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L744'>cursor-to-start-of-line</a> <a href='081print.mu.html#L16'>screen</a>
 <span id="L758" class="LineNr">758 </span>]
 <span id="L759" class="LineNr">759 </span>
-<span id="L760" class="LineNr">760 </span><span class="muRecipe">def</span> move-cursor-to-column screen:&amp;:screen, column:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L760" class="LineNr">760 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L760'>move-cursor-to-column</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, column:num<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L761" class="LineNr">761 </span>  <span class="Constant">local-scope</span>
 <span id="L762" class="LineNr">762 </span>  <span class="Constant">load-inputs</span>
-<span id="L763" class="LineNr">763 </span>  row:num, _ <span class="Special">&lt;-</span> cursor-position screen
+<span id="L763" class="LineNr">763 </span>  row:num, _ <span class="Special">&lt;-</span> <a href='081print.mu.html#L577'>cursor-position</a> <a href='081print.mu.html#L16'>screen</a>
 <span id="L764" class="LineNr">764 </span><span class="CommentedCode">#?   stash [move-cursor-to-column] row</span>
-<span id="L765" class="LineNr">765 </span>  move-cursor screen, row, column
+<span id="L765" class="LineNr">765 </span>  <a href='081print.mu.html#L591'>move-cursor</a> <a href='081print.mu.html#L16'>screen</a>, row, column
 <span id="L766" class="LineNr">766 </span>]
 <span id="L767" class="LineNr">767 </span>
-<span id="L768" class="LineNr">768 </span><span class="muRecipe">def</span> screen-width screen:&amp;:screen<span class="muRecipe"> -&gt; </span>width:num [
+<span id="L768" class="LineNr">768 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L768'>screen-width</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>width:num [
 <span id="L769" class="LineNr">769 </span>  <span class="Constant">local-scope</span>
 <span id="L770" class="LineNr">770 </span>  <span class="Constant">load-inputs</span>
 <span id="L771" class="LineNr">771 </span><span class="CommentedCode">#?   stash [screen-width]</span>
 <span id="L772" class="LineNr">772 </span>  <span class="Delimiter">{</span>
-<span id="L773" class="LineNr">773 </span>    <span class="muControl">break-unless</span> screen
+<span id="L773" class="LineNr">773 </span>    <span class="muControl">break-unless</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L774" class="LineNr">774 </span>    <span class="Comment"># fake screen</span>
 <span id="L775" class="LineNr">775 </span>    width <span class="Special">&lt;-</span> get *screen, <span class="Constant">num-columns:offset</span>
 <span id="L776" class="LineNr">776 </span>   <span class="muControl"> return</span>
@@ -841,12 +841,12 @@ if ('onhashchange' in window) {
 <span id="L779" class="LineNr">779 </span>  width <span class="Special">&lt;-</span> display-width
 <span id="L780" class="LineNr">780 </span>]
 <span id="L781" class="LineNr">781 </span>
-<span id="L782" class="LineNr">782 </span><span class="muRecipe">def</span> screen-height screen:&amp;:screen<span class="muRecipe"> -&gt; </span>height:num [
+<span id="L782" class="LineNr">782 </span><span class="muRecipe">def</span> <a href='081print.mu.html#L782'>screen-height</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>height:num [
 <span id="L783" class="LineNr">783 </span>  <span class="Constant">local-scope</span>
 <span id="L784" class="LineNr">784 </span>  <span class="Constant">load-inputs</span>
 <span id="L785" class="LineNr">785 </span><span class="CommentedCode">#?   stash [screen-height]</span>
 <span id="L786" class="LineNr">786 </span>  <span class="Delimiter">{</span>
-<span id="L787" class="LineNr">787 </span>    <span class="muControl">break-unless</span> screen
+<span id="L787" class="LineNr">787 </span>    <span class="muControl">break-unless</span> <a href='081print.mu.html#L16'>screen</a>
 <span id="L788" class="LineNr">788 </span>    <span class="Comment"># fake screen</span>
 <span id="L789" class="LineNr">789 </span>    height <span class="Special">&lt;-</span> get *screen, <span class="Constant">num-rows:offset</span>
 <span id="L790" class="LineNr">790 </span>   <span class="muControl"> return</span>
@@ -855,7 +855,7 @@ if ('onhashchange' in window) {
 <span id="L793" class="LineNr">793 </span>  height <span class="Special">&lt;-</span> display-height
 <span id="L794" class="LineNr">794 </span>]
 <span id="L795" class="LineNr">795 </span>
-<span id="L796" class="LineNr">796 </span><span class="muRecipe">def</span> print screen:&amp;:screen, s:text<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L796" class="LineNr">796 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, s:text<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L797" class="LineNr">797 </span>  <span class="Constant">local-scope</span>
 <span id="L798" class="LineNr">798 </span>  <span class="Constant">load-inputs</span>
 <span id="L799" class="LineNr">799 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
@@ -876,7 +876,7 @@ if ('onhashchange' in window) {
 <span id="L814" class="LineNr">814 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
 <span id="L815" class="LineNr">815 </span>    <span class="muControl">break-if</span> done?
 <span id="L816" class="LineNr">816 </span>    c:char <span class="Special">&lt;-</span> index *s, i
-<span id="L817" class="LineNr">817 </span>    print screen, c, color, bg-color
+<span id="L817" class="LineNr">817 </span>    print <a href='081print.mu.html#L16'>screen</a>, c, color, bg-color
 <span id="L818" class="LineNr">818 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
 <span id="L819" class="LineNr">819 </span>   <span class="muControl"> loop</span>
 <span id="L820" class="LineNr">820 </span>  <span class="Delimiter">}</span>
@@ -884,14 +884,14 @@ if ('onhashchange' in window) {
 <span id="L822" class="LineNr">822 </span>
 <span id="L823" class="LineNr">823 </span><span class="muScenario">scenario</span> print-text-wraps-past-right-margin [
 <span id="L824" class="LineNr">824 </span>  <span class="Constant">local-scope</span>
-<span id="L825" class="LineNr">825 </span>  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+<span id="L825" class="LineNr">825 </span>  fake-screen:&amp;:<a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='081print.mu.html#L32'>new-fake-screen</a> <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
 <span id="L826" class="LineNr">826 </span>  run [
 <span id="L827" class="LineNr">827 </span>    fake-screen <span class="Special">&lt;-</span> print fake-screen, <span class="Constant">[abcd]</span>
 <span id="L828" class="LineNr">828 </span>    5:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-row:offset</span>
 <span id="L829" class="LineNr">829 </span>    6:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
 <span id="L830" class="LineNr">830 </span>    7:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">top-idx:offset</span>
-<span id="L831" class="LineNr">831 </span>    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
-<span id="L832" class="LineNr">832 </span>    10:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+<span id="L831" class="LineNr">831 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+<span id="L832" class="LineNr">832 </span>    10:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L833" class="LineNr">833 </span>  ]
 <span id="L834" class="LineNr">834 </span>  memory-should-contain [
 <span id="L835" class="LineNr">835 </span>   <span class="Constant"> 5</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># cursor-row</span>
@@ -911,7 +911,7 @@ if ('onhashchange' in window) {
 <span id="L849" class="LineNr">849 </span>  ]
 <span id="L850" class="LineNr">850 </span>]
 <span id="L851" class="LineNr">851 </span>
-<span id="L852" class="LineNr">852 </span><span class="muRecipe">def</span> print screen:&amp;:screen, n:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L852" class="LineNr">852 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, n:num<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L853" class="LineNr">853 </span>  <span class="Constant">local-scope</span>
 <span id="L854" class="LineNr">854 </span>  <span class="Constant">load-inputs</span>
 <span id="L855" class="LineNr">855 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
@@ -928,10 +928,10 @@ if ('onhashchange' in window) {
 <span id="L866" class="LineNr">866 </span>  <span class="Delimiter">}</span>
 <span id="L867" class="LineNr">867 </span>  <span class="Comment"># todo: other bases besides decimal</span>
 <span id="L868" class="LineNr">868 </span>  s:text <span class="Special">&lt;-</span> to-text n
-<span id="L869" class="LineNr">869 </span>  screen <span class="Special">&lt;-</span> print screen, s, color, bg-color
+<span id="L869" class="LineNr">869 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, s, color, bg-color
 <span id="L870" class="LineNr">870 </span>]
 <span id="L871" class="LineNr">871 </span>
-<span id="L872" class="LineNr">872 </span><span class="muRecipe">def</span> print screen:&amp;:screen, n:bool<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L872" class="LineNr">872 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, n:bool<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L873" class="LineNr">873 </span>  <span class="Constant">local-scope</span>
 <span id="L874" class="LineNr">874 </span>  <span class="Constant">load-inputs</span>
 <span id="L875" class="LineNr">875 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
@@ -947,10 +947,10 @@ if ('onhashchange' in window) {
 <span id="L885" class="LineNr">885 </span>    bg-color <span class="Special">&lt;-</span> copy <span class="Constant">0/black</span>
 <span id="L886" class="LineNr">886 </span>  <span class="Delimiter">}</span>
 <span id="L887" class="LineNr">887 </span>  n2:num <span class="Special">&lt;-</span> copy n
-<span id="L888" class="LineNr">888 </span>  screen <span class="Special">&lt;-</span> print screen, n2, color, bg-color
+<span id="L888" class="LineNr">888 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, n2, color, bg-color
 <span id="L889" class="LineNr">889 </span>]
 <span id="L890" class="LineNr">890 </span>
-<span id="L891" class="LineNr">891 </span><span class="muRecipe">def</span> print screen:&amp;:screen, n:&amp;:_elem<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L891" class="LineNr">891 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, n:&amp;:_elem<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L892" class="LineNr">892 </span>  <span class="Constant">local-scope</span>
 <span id="L893" class="LineNr">893 </span>  <span class="Constant">load-inputs</span>
 <span id="L894" class="LineNr">894 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
@@ -966,7 +966,7 @@ if ('onhashchange' in window) {
 <span id="L904" class="LineNr">904 </span>    bg-color <span class="Special">&lt;-</span> copy <span class="Constant">0/black</span>
 <span id="L905" class="LineNr">905 </span>  <span class="Delimiter">}</span>
 <span id="L906" class="LineNr">906 </span>  n2:num <span class="Special">&lt;-</span> copy n
-<span id="L907" class="LineNr">907 </span>  screen <span class="Special">&lt;-</span> print screen, n2, color, bg-color
+<span id="L907" class="LineNr">907 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, n2, color, bg-color
 <span id="L908" class="LineNr">908 </span>]
 </pre>
 </body>
