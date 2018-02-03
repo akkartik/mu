@@ -1,7 +1,7 @@
 Original prototype, last modified 2015-03-14
 
-First install [Racket](http://racket-lang.org) (just for the initial
-prototype). Then:
+First install [Racket](http://racket-lang.org) (just for this prototype).
+Then:
 
   ```shell
   $ cd mu/arc
