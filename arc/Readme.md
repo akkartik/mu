@@ -1,11 +1,14 @@
 Original prototype, last modified 2015-03-14
 
-First install [Racket](http://racket-lang.org) (just for this prototype).
-Then:
+First install [Racket](http://racket-lang.org) (just for this prototype;
+last tested with v6.3). Then:
 
   ```shell
   $ cd mu/arc
   $ git clone http://github.com/arclanguage/anarki
+  $ cd anarki
+  $   git checkout d7290130a7  # last compatible snapshot
+  $ cd ..
   $ ./mu test mu.arc.t  # run tests
   ```
 
