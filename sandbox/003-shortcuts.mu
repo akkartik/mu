@@ -1047,6 +1047,51 @@ def move-to-previous-line editor:&:editor -> editor:&:editor [
   }
 ]
 
+# Takes a pointer into the doubly-linked list, scans back to before start of
+# previous *wrapped* line.
+# Returns original if no next newline.
+# Beware: never return null pointer.
+def before-previous-screen-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
+  local-scope
+  load-inputs
+  curr:&:duplex-list:char <- copy in
+  c:char <- get *curr, value:offset
+  # compute max, number of characters to skip
+  #   1 + len%(width-1)
+  #   except rotate second term to vary from 1 to width-1 rather than 0 to width-2
+  left:num <- get *editor, left:offset
+  right:num <- get *editor, right:offset
+  max-line-length:num <- subtract right, left, -1/exclusive-right, 1/wrap-icon
+  sentinel:&:duplex-list:char <- get *editor, data:offset
+  len:num <- previous-line-length curr, sentinel
+  {
+    break-if len
+    # empty line; just skip this newline
+    prev:&:duplex-list:char <- prev curr
+    return-unless prev, curr
+    return prev
+  }
+  _, max:num <- divide-with-remainder len, max-line-length
+  # remainder 0 => scan one width-worth
+  {
+    break-if max
+    max <- copy max-line-length
+  }
+  max <- add max, 1
+  count:num <- copy 0
+  # skip 'max' characters
+  {
+    done?:bool <- greater-or-equal count, max
+    break-if done?
+    prev:&:duplex-list:char <- prev curr
+    break-unless prev
+    curr <- copy prev
+    count <- add count, 1
+    loop
+  }
+  return curr
+]
+
 scenario editor-adjusts-column-at-previous-line [
   local-scope
   assume-screen 10/width, 5/height
@@ -2514,51 +2559,6 @@ def before-start-of-next-line original:&:duplex-list:char, max:num -> curr:&:dup
     loop
   }
   return-unless curr, original
-  return curr
-]
-
-# takes a pointer into the doubly-linked list, scans back to before start of
-# previous *wrapped* line
-# returns original if no next newline
-# beware: never return null pointer
-def before-previous-screen-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
-  local-scope
-  load-inputs
-  curr:&:duplex-list:char <- copy in
-  c:char <- get *curr, value:offset
-  # compute max, number of characters to skip
-  #   1 + len%(width-1)
-  #   except rotate second term to vary from 1 to width-1 rather than 0 to width-2
-  left:num <- get *editor, left:offset
-  right:num <- get *editor, right:offset
-  max-line-length:num <- subtract right, left, -1/exclusive-right, 1/wrap-icon
-  sentinel:&:duplex-list:char <- get *editor, data:offset
-  len:num <- previous-line-length curr, sentinel
-  {
-    break-if len
-    # empty line; just skip this newline
-    prev:&:duplex-list:char <- prev curr
-    return-unless prev, curr
-    return prev
-  }
-  _, max:num <- divide-with-remainder len, max-line-length
-  # remainder 0 => scan one width-worth
-  {
-    break-if max
-    max <- copy max-line-length
-  }
-  max <- add max, 1
-  count:num <- copy 0
-  # skip 'max' characters
-  {
-    done?:bool <- greater-or-equal count, max
-    break-if done?
-    prev:&:duplex-list:char <- prev curr
-    break-unless prev
-    curr <- copy prev
-    count <- add count, 1
-    loop
-  }
   return curr
 ]
 
