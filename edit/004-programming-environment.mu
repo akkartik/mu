@@ -438,8 +438,6 @@ def render-recipes screen:&:screen, env:&:environment, render-editor:render-reci
   left:num <- get *recipes, left:offset
   right:num <- get *recipes, right:offset
   row:num, column:num, screen <- call render-editor, screen, recipes
-  clear-line-until screen, right
-  row <- add row, 1
   <end-render-recipe-components>
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
@@ -459,8 +457,6 @@ def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
   row:num, column:num, screen, current-sandbox <- call render-editor, screen, current-sandbox
-  clear-line-until screen, right
-  row <- add row, 1
   # draw solid line after code (you'll see why in later layers)
   draw-horizontal screen, row, left, right
   row <- add row, 1

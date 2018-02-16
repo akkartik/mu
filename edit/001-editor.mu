@@ -201,7 +201,9 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
   *editor <- put *editor, cursor-row:offset, cursor-row
   *editor <- put *editor, cursor-column:offset, cursor-column
   *editor <- put *editor, before-cursor:offset, before-cursor
-  return row, column
+  clear-line-until screen, right
+  row <- add row, 1
+  return row, left/column
 ]
 
 def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num -> screen:&:screen [
