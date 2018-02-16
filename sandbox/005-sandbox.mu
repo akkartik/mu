@@ -250,8 +250,6 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
     render-current-sandbox?:bool <- equal render-from, -1
     break-unless render-current-sandbox?
     row, column, screen, current-sandbox <- call render-editor, screen, current-sandbox
-    clear-screen-from screen, row, column, left, right
-    row <- add row, 1
   }
   # render sandboxes
   draw-horizontal screen, row, left, right

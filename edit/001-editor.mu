@@ -209,7 +209,6 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
 def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num -> screen:&:screen [
   local-scope
   load-inputs
-#?   stash [clear-screen-from] row column [between] left [and] right
   # if it's the real screen, use the optimized primitive
   {
     break-if screen

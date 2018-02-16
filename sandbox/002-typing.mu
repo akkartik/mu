@@ -269,8 +269,6 @@ def editor-render screen:&:screen, editor:&:editor -> screen:&:screen, editor:&:
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   row:num, column:num <- render screen, editor
-  clear-line-until screen, right
-  row <- add row, 1
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
