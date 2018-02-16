@@ -273,13 +273,22 @@ void load_all(string dir) {
   int num_files = scandir(dir.c_str(), &files, NULL, alphasort);
   for (int i = 0;  i < num_files;  ++i) {
     string curr_file = files[i]->d_name;
-    if (isdigit(curr_file.at(0)))
+    if (isdigit(curr_file.at(0)) && ends_with(curr_file, ".mu"))
       load_file_or_directory(dir+'/'+curr_file);
     free(files[i]);
     files[i] = NULL;
   }
   free(files);
 }
+
+bool ends_with(const string& s, const string& pat) {
+  for (string::const_reverse_iterator p = s.rbegin(), q = pat.rbegin();  q != pat.rend();  ++p, ++q) {
+    if (p == s.rend()) return false;  // pat too long
+    if (*p != *q) return false;
+  }
+  return true;
+}
+
 :(before "End Includes")
 #include <dirent.h>
 #include <sys/stat.h>
