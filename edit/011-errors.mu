@@ -32,22 +32,23 @@ before <end-run-sandboxes-on-F4> [
     break-unless old-recipe-errors
     screen <- render-recipes screen, env, render
   }
-  screen <- render-recipe-errors env, screen
+  render-recipe-errors env, screen
 ]
 
 before <end-render-recipe-components> [
-  screen <- render-recipe-errors env, screen
+  row <- render-recipe-errors env, screen
 ]
 
-def render-recipe-errors env:&:environment, screen:&:screen -> screen:&:screen [
+def render-recipe-errors env:&:environment, screen:&:screen -> row:num, screen:&:screen [
   local-scope
   load-inputs
   recipe-errors:text <- get *env, recipe-errors:offset
-  return-unless recipe-errors
   recipes:&:editor <- get *env, recipes:offset
+  row:num <- get *recipes, bottom:offset
+  row <- add row, 1
+  return-unless recipe-errors
   left:num <- get *recipes, left:offset
   right:num <- get *recipes, right:offset
-  row:num <- get *recipes, bottom:offset
   row, screen <- render-text screen, recipe-errors, left, right, 1/red, row
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
@@ -164,6 +165,7 @@ scenario run-shows-errors-in-get [
     .recipe foo [                                      ┊foo                                              .
     .  get 123:num, foo:offset                         ┊─────────────────────────────────────────────────.
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: unknown element 'foo' in container 'number'  ┊                                                 .
     .foo: first ingredient of 'get' should be a contai↩┊                                                 .
     .ner, but got '123:num'                            ┊                                                 .
@@ -175,10 +177,37 @@ scenario run-shows-errors-in-get [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
+    .                                                                                                    .
     .foo: unknown element 'foo' in container 'number'                                                    .
     .foo: first ingredient of 'get' should be a contai                                                   .
     .ner, but got '123:num'                                                                              .
     .                                                                                                    .
+  ]
+]
+
+scenario run-shows-errors-without-final-newline-in-recipe-side [
+  local-scope
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 15/height
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen
+  render-all screen, env, render
+  assume-console [
+    type [recipe foo x [
+]]
+    press F4
+  ]
+  run [
+    event-loop screen, console, env, resources
+  ]
+  screen-should-contain [
+    .  errors found                                                                   run (F4)           .
+    .recipe foo x [                                    ┊                                                 .
+    .]                                                 ┊─────────────────────────────────────────────────.
+    .foo: ingredient 'x' has no type                   ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -416,6 +445,7 @@ scenario run-shows-missing-type-errors [
     .recipe foo [                                      ┊foo                                              .
     .  x <- copy 0                                     ┊─────────────────────────────────────────────────.
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: missing type for 'x' in 'x <- copy 0'        ┊                                                 .
     .foo: can't copy '0' to 'x'; types don't match     ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -446,6 +476,7 @@ scenario run-shows-unbalanced-bracket-errors [
     .  errors found                                                                   run (F4)           .
     .recipe foo \\[                                      ┊foo                                              .
     .  x <- copy 0                                     ┊─────────────────────────────────────────────────.
+    .                                                  ┊                                                 .
     .9: unbalanced '\\[' for recipe                      ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
@@ -480,6 +511,7 @@ scenario run-shows-get-on-non-container-errors [
     .  x:&:point <- new point:type                     ┊                                                 .
     .  get x:&:point, 1:offset                         ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: first ingredient of 'get' should be a contai↩┊                                                 .
     .ner, but got 'x:&:point'                          ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -517,6 +549,7 @@ scenario run-shows-non-literal-get-argument-errors [
     .  y:&:point <- new point:type                     ┊                                                 .
     .  get *y:&:point, x:num                           ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: second ingredient of 'get' should have type ↩┊                                                 .
     .'offset', but got 'x:num'                         ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -549,6 +582,7 @@ scenario run-shows-errors-every-time [
     .  local-scope                                     ┊─────────────────────────────────────────────────.
     .  x:num <- copy y:num                             ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
     .py y:num' but it hasn't been written to yet       ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -567,6 +601,7 @@ scenario run-shows-errors-every-time [
     .  local-scope                                     ┊─────────────────────────────────────────────────.
     .  x:num <- copy y:num                             ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
     .py y:num' but it hasn't been written to yet       ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -599,6 +634,7 @@ scenario run-hides-errors [
     .  local-scope                                     ┊─────────────────────────────────────────────────.
     .  x:num <- copy y:num                             ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
     .py y:num' but it hasn't been written to yet       ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -654,8 +690,8 @@ scenario scrolling-recipe-side-reveals-errors [
     .  errors found                                                                   run (F4)           .
     .  get 123:num, foo:offset                         ┊foo                                              .
     .\\]                                                 ┊─────────────────────────────────────────────────.
+    .                                                  ┊                                                 .
     .foo: unknown element 'foo' in container 'number'  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
   ]
 ]
 
