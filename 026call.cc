@@ -133,6 +133,14 @@ routine::routine(recipe_ordinal r) {
 //?   return get(Recipe, call.running_recipe).steps.at(call.running_step_index);
 //? }
 
+:(code)
+void dump_callstack() {
+  if (!Current_routine) return;
+  if (Current_routine->calls.size() <= 1) return;
+  for (call_stack::const_iterator p = ++Current_routine->calls.begin();  p != Current_routine->calls.end();  ++p)
+    raise << "  called from " << get(Recipe, p->running_recipe).name << ": " << to_original_string(to_instruction(*p)) << '\n' << end();
+}
+
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes
 if (!contains_key(Recipe, inst.operation)) {

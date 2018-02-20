@@ -44,7 +44,19 @@ def main [
   1:address:num <- copy 0
   2:num <- copy 1:address:num/lookup
 ]
-+error: main: tried to /lookup 0 in '2:num <- copy 1:address:num/lookup'
++error: main: tried to lookup 0 in '2:num <- copy 1:address:num/lookup'
+
+:(scenario lookup_0_dumps_callstack)
+% Hide_errors = true;
+def main [
+  foo 0
+]
+def foo [
+  1:address:num <- next-input
+  2:num <- copy 1:address:num/lookup
+]
++error: foo: tried to lookup 0 in '2:num <- copy 1:address:num/lookup'
++error:   called from main: foo 0
 
 :(code)
 void canonize(reagent& x) {
@@ -56,12 +68,14 @@ void canonize(reagent& x) {
 
 void lookup_memory(reagent& x) {
   if (!x.type || x.type->atom || x.type->left->value != get(Type_ordinal, "address")) {
-    raise << maybe(current_recipe_name()) << "tried to /lookup '" << x.original_string << "' but it isn't an address\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to lookup '" << x.original_string << "' but it isn't an address\n" << end();
+    dump_callstack();
     return;
   }
   // compute value
   if (x.value == 0) {
-    raise << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to lookup 0\n" << end();
+    dump_callstack();
     return;
   }
   lookup_memory_core(x, /*check_for_null*/true);
@@ -73,10 +87,13 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
   x.set_value(get_or_insert(Memory, x.value));
   drop_from_type(x, "address");
   if (check_for_null && x.value == 0) {
-    if (Current_routine)
-      raise << maybe(current_recipe_name()) << "tried to /lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
-    else
-      raise << "tried to /lookup 0\n" << end();
+    if (Current_routine) {
+      raise << maybe(current_recipe_name()) << "tried to lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+      dump_callstack();
+    }
+    else {
+      raise << "tried to lookup 0\n" << end();
+    }
   }
   drop_one_lookup(x);
 }
