@@ -1,5 +1,6 @@
 #!/bin/sh
 # Run interpreter, first compiling if necessary.
+set -e
 
 ./build  &&  ./mu_bin "$@"
 
