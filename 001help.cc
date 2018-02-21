@@ -161,7 +161,7 @@ void dump_and_exit(int sig, unused siginfo_t* dummy1, unused void* dummy2) {
   switch (sig) {
     case SIGABRT:
       #ifndef __APPLE__
-        cerr << "SIGABRT: might be an integer overflow if it wasn't an assert() failure\n";
+        cerr << "SIGABRT: might be an integer overflow if it wasn't an assert() failure or exception\n";
         _Exit(1);
       #endif
       break;
