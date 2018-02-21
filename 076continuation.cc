@@ -118,6 +118,9 @@ CALL_WITH_CONTINUATION_MARK,
 Recipe_ordinal["call-with-continuation-mark"] = CALL_WITH_CONTINUATION_MARK;
 :(before "End Primitive Recipe Checks")
 case CALL_WITH_CONTINUATION_MARK: {
+  if (SIZE(inst.ingredients) < 2) {
+    raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' requires at least two ingredients: a mark number and a recipe to call\n" << end();
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
