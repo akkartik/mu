@@ -445,10 +445,11 @@ def foo {f: (recipe num -> num)} [
 
 :(before "End Mu Types Initialization")
 put(Type_abbreviations, "function", new_type_tree("recipe"));
+put(Type_abbreviations, "fn", new_type_tree("recipe"));
 
 :(scenario call_function)
 def main [
-  {1: (function number -> number)} <- copy f
+  {1: (fn number -> number)} <- copy f
   2:num <- call {1: (function number -> number)}, 34
 ]
 def f x:num -> y:num [

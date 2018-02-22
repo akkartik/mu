@@ -84,7 +84,7 @@ highlight muControl ctermfg=3
 
 syntax match muRecipe "->"
 syntax match muRecipe "^recipe\>\|^def\>\|^before\>\|^after\>\| -> "
-syntax keyword muRecipe recipe! def!
+syntax keyword muRecipe recipe! def! function fn
 highlight muRecipe ctermfg=208
 
 syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
