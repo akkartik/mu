@@ -36,9 +36,9 @@ easily without getting locked in to a single one as currently happens.
 In this quest, Mu is currently experimenting with the following mechanisms:
 
 1. New, testable interfaces for the operating system. Currently manual tests
-   are hard to automate because a file you assumed might vanish, the network
-   might go down, etc. To make manual tests reproducible it suffices to
-   improve the 15 or so OS syscalls through which a computer talks to the
+   are hard to automate because a file you rely on might be deleted, the
+   network might go down, etc. To make manual tests reproducible it suffices
+   to improve the 15 or so OS syscalls through which a computer talks to the
    outside world. We have to allow programs to transparently write to a fake
    screen, read from a fake disk/network, etc. In Mu, printing to screen
    explicitly takes a screen object, so it can be called on the real screen,
