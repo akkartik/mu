@@ -1,6 +1,8 @@
 #!/bin/sh
 # Alternative to build0 that supports a --until flag to include only a subset
 # of layers.
+#   $ ./build1 --until 050
+UNTIL_LAYER=${2:-zzz}
 
 set -v
 set -e  # stop immediately on error
@@ -17,10 +19,6 @@ export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
 # [0-9]*.cc -> mu.cc -> mu_bin
 # (layers)   |        |
 #          tangle   $CXX
-
-# can also be called with a layer to only build until
-#   $ ./build1 --until 050
-UNTIL_LAYER=${2:-zzz}
 
 $CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
 
