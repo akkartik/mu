@@ -1,15 +1,12 @@
 #!/bin/sh
-# Alternative to build1 that tries to avoid redoing redundant work.
-# Also splits compilation into multiple .cc files (see 'cleave' below).
-# Faster than build1 for recompiling after small changes.
-#
-# For details on the basic form of this script, see https://notabug.org/akkartik/basic-build.
+# Alternative to build2 that can stop after any step. For example:
+#   $ ./build3 mu.cc
 
 set -e  # stop immediately on error
 
 # Some environment variables that can be passed in. For example, to turn off
 # optimization:
-#   $ CFLAGS=-g ./build2
+#   $ CFLAGS=-g ./build0
 test "$CXX" || export CXX=c++
 test "$CC" || export CC=cc
 test "$CFLAGS" || export CFLAGS="-g -O3"
@@ -20,9 +17,29 @@ export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
 # (layers)   |        |              |             |
 #          tangle  cleave          $CXX          $CXX
 
+## arg parsing
+
+# can be called with a target to stop after a partial build
+#   $ ./build3 mu.cc
 # can also be called with a layer to only build until
-#   $ ./build2 --until 050
-UNTIL_LAYER=${2:-zzz}
+#   $ ./build3 --until 050
+# scenarios:
+#   ./build3              => TARGET=  UNTIL_LAYER=zzz
+#   ./build3 x            => TARGET=x UNTIL_LAYER=zzz
+#   ./build3 --until      => TARGET=  UNTIL_LAYER=zzz
+#   ./build3 --until 050  => TARGET=  UNTIL_LAYER=050
+TARGET=
+UNTIL_LAYER=zzz
+if [ $# -ge 1 ] && [ $1 != "--until" ]
+then
+  TARGET=$1
+fi
+if [ $# -ge 2 ] && [ $1 = "--until" ]
+then
+  UNTIL_LAYER=$2
+fi
+
+##
 
 # there's two mechanisms for fast builds here:
 # - if a command is quick to run, always run it but update the result only on any change
@@ -33,9 +50,12 @@ UNTIL_LAYER=${2:-zzz}
 # risk: a file may unnecessarily update without changes, causing unnecessary work downstream
 
 # return 1 if $1 is older than _any_ of the remaining args
+# also exit the entire script if previous invocation was to update $TARGET
 older_than() {
+  test $TARGET  &&  test "$last_target" = "$TARGET"  &&  exit 0
   local target=$1
   shift
+  last_target=$target
   if [ ! -e $target ]
   then
 #?     echo "$target doesn't exist"
@@ -55,6 +75,7 @@ older_than() {
 }
 
 # redirect to $1, unless it's already identical
+# no point checking for an early exit, because this usually runs in a pipeline/subshell
 update() {
   if [ ! -e $1 ]
   then
@@ -65,7 +86,11 @@ update() {
   fi
 }
 
+# cp file $1 to directory $2, unless it's already identical
+# also exit the entire script if previous invocation was to update $TARGET
 update_cp() {
+  test $TARGET  &&  test "$last_target" = "$TARGET"  &&  exit 0
+  last_target=$2/$1
   if [ ! -e $2/$1 ]
   then
     cp $1 $2
