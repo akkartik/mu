@@ -1,0 +1,53 @@
+#!/bin/sh
+# Compile mu from scratch.
+
+set -v
+set -e  # stop immediately on error
+
+# Some environment variables that can be passed in. For example, to turn off
+# optimization:
+#   $ CFLAGS=-g ./build0
+test "$CXX" || export CXX=c++
+test "$CC" || export CC=cc
+test "$CFLAGS" || export CFLAGS="-g -O3"
+export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+
+# Outline:
+# [0-9]*.cc -> mu.cc -> mu_bin
+# (layers)   |        |
+#          tangle   $CXX
+
+# can also be called with a layer to only build until
+#   $ ./build0 --until 050
+UNTIL_LAYER=${2:-zzz}
+
+$CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
+
+cd tangle
+  {
+    grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'
+    grep -h "^typedef " [0-9]*.cc
+  }  > type_list
+  grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  > function_list
+  ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  > file_list
+  ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  > test_file_list
+  grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  > test_list
+  $CXX $CFLAGS boot.cc -o tangle
+cd ..
+
+cd termbox
+  $CC $CFLAGS -c termbox.c
+  $CC $CFLAGS -c utf8.c
+  ar rcs libtermbox.a *.o
+cd ..
+
+LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
+./tangle/tangle $LAYERS  > mu.cc
+grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  > function_list
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  > test_list
+$CXX $CFLAGS mu.cc termbox/libtermbox.a -o mu_bin
+
+## [0-9]*.mu -> core.mu
+
+MU_LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
+cat $MU_LAYERS  > core.mu

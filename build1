@@ -1,14 +1,27 @@
 #!/bin/sh
+# Alternative to build0 that tries to avoid redoing redundant work.
+# Also splits compilation into multiple .cc files (see 'cleave' below).
+# Faster than build0 for recompiling after small changes.
+#
 # For details on the basic form of this script, see https://notabug.org/akkartik/basic-build.
 
 set -e  # stop immediately on error
 
+# Some environment variables that can be passed in. For example, to turn off
+# optimization:
+#   $ CFLAGS=-g ./build0
+test "$CXX" || export CXX=c++
+test "$CC" || export CC=cc
+test "$CFLAGS" || export CFLAGS="-g -O3"
+export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+
+# Outline:
 # [0-9]*.cc -> mu.cc -> .build/*.cc -> .build/*.o -> .build/mu_bin
 # (layers)   |        |              |             |
 #          tangle  cleave          $CXX          $CXX
 
 # can also be called with a layer to only build until
-#   $ ./build --until 050
+#   $ ./build1 --until 050
 UNTIL_LAYER=${2:-zzz}
 
 # there's two mechanisms for fast builds here:
@@ -18,11 +31,6 @@ UNTIL_LAYER=${2:-zzz}
 # avoid combining both mechanisms for a single file
 # otherwise you'll see spurious messages about files being updated
 # risk: a file may unnecessarily update without changes, causing unnecessary work downstream
-
-test "$CXX" || export CXX=c++
-test "$CC" || export CC=cc
-test "$CFLAGS" || export CFLAGS="-g -O3"
-export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
 
 # return 1 if $1 is older than _any_ of the remaining args
 older_than() {

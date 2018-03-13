@@ -2,7 +2,7 @@
 # Run interpreter, first compiling if necessary.
 set -e
 
-./build  &&  ./mu_bin "$@"
+./build1  &&  ./mu_bin "$@"
 
 # Scenarios considered:
 #   mu
