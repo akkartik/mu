@@ -402,6 +402,12 @@ c) Try running the tests:
 d) Check out [the programming environment](https://github.com/akkartik/mu/tree/master/edit#readme),
 the largest app built so far in Mu.
 
+e) Look at the `build` scripts. Mu's compilation process is itself designed to
+support staged learning. Each of the scripts (`build0`, `build1`, `build2`,
+etc.) is self-contained and can compile the project by itself. Successive
+versions add new features and configurability -- and complexity -- to the
+compilation process.
+
 **Credits**
 
 Mu builds on many ideas that have come before, especially:

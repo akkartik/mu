@@ -23,14 +23,22 @@ export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
 $CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
 
 cd tangle
+  # auto-generate various lists (ending in '_list' by convention) {
+  # list of types
   {
     grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'
     grep -h "^typedef " [0-9]*.cc
   }  > type_list
+  # list of function declarations, so I can define them in any order
   grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  > function_list
+  # list of code files to compile
   ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  > file_list
+  # list of test files to compile
   ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  > test_file_list
+  # list of tests to run
   grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  > test_list
+  # }
+  # Now that we have all the _lists, compile 'tangle'
   $CXX $CFLAGS boot.cc -o tangle
 cd ..
 
@@ -42,7 +50,12 @@ cd ..
 
 LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
 ./tangle/tangle $LAYERS  > mu.cc
+# auto-generate function declarations, so I can define them in any order
+# functions start out unindented, have all args on the same line, and end in ') {'
+#
+#                                      \/ ignore methods
 grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  > function_list
+# auto-generate list of tests to run
 grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  > test_list
 $CXX $CFLAGS mu.cc termbox/libtermbox.a -o mu_bin
 
