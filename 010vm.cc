@@ -58,6 +58,7 @@ struct reagent {
   // End reagent Fields
   reagent(const string& s);
   reagent() :type(NULL), value(0), initialized(false) {}
+  reagent(type_tree* t) :type(t), value(0), initialized(false) {}
   ~reagent();
   void clear();
   reagent(const reagent& original);

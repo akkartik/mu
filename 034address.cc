@@ -101,8 +101,7 @@ bool product_of_new_is_valid(const instruction& inst) {
       return false;
     drop_from_type(product, "array");
   }
-  reagent/*local*/ expected_product;
-  expected_product.type = new_type_tree(inst.ingredients.at(0).name);
+  reagent/*local*/ expected_product(new_type_tree(inst.ingredients.at(0).name));
   return types_strictly_match(product, expected_product);
 }
 

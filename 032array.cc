@@ -338,8 +338,7 @@ case INDEX: {
   if (inst.products.empty()) break;
   reagent/*copy*/ product = inst.products.at(0);
   // Update INDEX product in Check
-  reagent/*local*/ element;
-  element.type = copy_array_element(base.type);
+  reagent/*local*/ element(copy_array_element(base.type));
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'index' on '" << base.original_string << "' can't be saved in '" << product.original_string << "'; type should be '" << names_to_string_without_quotes(element.type) << "'\n" << end();
     break;
@@ -363,8 +362,7 @@ case INDEX: {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  reagent/*local*/ element;
-  element.type = copy_array_element(base.type);
+  reagent/*local*/ element(copy_array_element(base.type));
   element.set_value(base_address + /*skip length*/1 + index_val.at(0)*size_of(element.type));
   trace(9998, "run") << "address to copy is " << element.value << end();
   trace(9998, "run") << "its type is " << to_string(element.type) << end();
@@ -523,8 +521,7 @@ case PUT_INDEX: {
   }
   reagent/*copy*/ value = inst.ingredients.at(2);
   // Update PUT_INDEX value in Check
-  reagent/*local*/ element;
-  element.type = copy_array_element(base.type);
+  reagent/*local*/ element(copy_array_element(base.type));
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;

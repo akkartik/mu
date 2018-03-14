@@ -113,8 +113,7 @@ void transform_braces(const recipe_ordinal r) {
       }
     }
     // if implicit, compute target
-    reagent target;
-    target.type = new type_tree("offset");
+    reagent target(new type_tree("offset"));
     target.set_value(0);
     if (open_braces.empty())
       raise << maybe(get(Recipe, r).name) << "'" << old_name << "' needs a '{' before\n" << end();

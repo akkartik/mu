@@ -331,10 +331,7 @@ void test_from_reagent_reads_sole_ingredient_at_end() {
 :(code)
 reagent next_recipe_reagent(const type_tree* curr) {
   if (!curr->left) return reagent("recipe:"+curr->name);
-  reagent result;
-  result.name = "recipe";
-  result.type = new type_tree(*curr);
-  return result;
+  return reagent(new type_tree(*curr));
 }
 
 bool is_mu_recipe(const reagent& r) {
