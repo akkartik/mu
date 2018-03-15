@@ -1,8 +1,6 @@
 //: So far we've been calling a fixed recipe in each instruction, but we'd
 //: also like to make the recipe a variable, pass recipes to "higher-order"
 //: recipes, return recipes from recipes and so on.
-//:
-//: todo: support storing shape-shifting recipes into recipe variables and calling them
 
 :(scenario call_literal_recipe)
 def main [
@@ -444,7 +442,9 @@ def foo {f: (recipe num -> num)} [
 put(Type_abbreviations, "function", new_type_tree("recipe"));
 put(Type_abbreviations, "fn", new_type_tree("recipe"));
 
-:(scenario call_function)
+//: copying functions to variables
+
+:(scenario copy_recipe_to_variable)
 def main [
   {1: (fn number -> number)} <- copy f
   2:num <- call {1: (function number -> number)}, 34
@@ -455,3 +455,162 @@ def f x:num -> y:num [
   y <- copy x
 ]
 +mem: storing 34 in location 2
+
+:(scenario copy_overloaded_recipe_to_variable)
+def main [
+  local-scope
+  {x: (fn num -> num)} <- copy f
+  1:num/raw <- call x, 34
+]
+# variant f
+def f x:bool -> y:bool [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
+# variant f_2
+def f x:num -> y:num [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
+# x contains f_2
++mem: storing 34 in location 1
+
+:(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
+if (inst.name == "copy") {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
+    if (!is_recipe_literal(inst.ingredients.at(i))) continue;
+    if (non_ghost_size(get_or_insert(Recipe_variants, inst.ingredients.at(i).name)) < 1) continue;
+    // potentially overloaded recipe
+    string new_name = resolve_ambiguous_call(inst.ingredients.at(i).name, inst.products.at(i), r, index, caller_recipe);
+    if (new_name == "") continue;
+    inst.ingredients.at(i).name = new_name;
+    inst.ingredients.at(i).value = get(Recipe_ordinal, new_name);
+  }
+  return;
+}
+:(code)
+string resolve_ambiguous_call(const string& recipe_name, const reagent& call_types, const recipe_ordinal r, int index, const recipe& caller_recipe) {
+  instruction inst;
+  inst.name = recipe_name;
+  if (!is_mu_recipe(call_types)) return "";  // error raised elsewhere
+  if (is_recipe_literal(call_types)) return "";  // error raised elsewhere
+  construct_fake_call(call_types, inst);
+  resolve_ambiguous_call(r, index, inst, caller_recipe);
+  return inst.name;
+}
+void construct_fake_call(const reagent& recipe_var, instruction& out) {
+  assert(recipe_var.type->left->name == "recipe");
+  type_tree* stem = NULL;
+  for (stem = recipe_var.type->right;  stem && stem->left->name != "->";  stem = stem->right)
+    out.ingredients.push_back(copy(stem->left));
+  if (stem == NULL) return;
+  for (/*skip '->'*/stem = stem->right;  stem;  stem = stem->right)
+    out.products.push_back(copy(stem->left));
+}
+
+:(scenario copy_shape_shifting_recipe_to_variable)
+def main [
+  local-scope
+  {x: (fn num -> num)} <- copy f
+  1:num/raw <- call x, 34
+]
+def f x:_elem -> y:_elem [
+  local-scope
+  load-inputs
+  y <- copy x
+]
++mem: storing 34 in location 1
+
+//: passing function literals to (higher-order) functions
+
+:(scenario pass_overloaded_recipe_literal_to_ingredient)
+# like copy_overloaded_recipe_to_variable except we bind 'x' in the course of
+# a 'call' rather than 'copy'
+def main [
+  1:num <- g f
+]
+def g {x: (fn num -> num)} -> result:num [
+  local-scope
+  load-ingredients
+  result <- call x, 34
+]
+# variant f
+def f x:bool -> y:bool [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
+# variant f_2
+def f x:num -> y:num [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
+# x contains f_2
++mem: storing 34 in location 1
+
+:(after "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
+for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
+  if (!is_mu_recipe(inst.ingredients.at(i))) continue;
+  if (non_ghost_size(get_or_insert(Recipe_variants, inst.ingredients.at(i).name)) < 1) continue;
+  if (get(Recipe_ordinal, inst.name) < MAX_PRIMITIVE_RECIPES) continue;
+  if (non_ghost_size(get_or_insert(Recipe_variants, inst.name)) > 1) {
+    raise << maybe(caller_recipe.name) << "sorry, we're not yet smart enough to simultaneously guess which overloads you want for '" << inst.name << "' and '" << inst.ingredients.at(i).name << "'\n" << end();
+    return;
+  }
+  const recipe& callee = get(Recipe, get(Recipe_ordinal, inst.name));
+  if (!callee.has_header) {
+    raise << maybe(caller_recipe.name) << "sorry, we're not yet smart enough to guess which variant of '" << inst.ingredients.at(i).name << "' you want, when the caller '" << inst.name << "' doesn't have a header\n" << end();
+    return;
+  }
+  string new_name = resolve_ambiguous_call(inst.ingredients.at(i).name, callee.ingredients.at(i), r, index, caller_recipe);
+  if (new_name != "") {
+    inst.ingredients.at(i).name = new_name;
+    inst.ingredients.at(i).value = get(Recipe_ordinal, new_name);
+  }
+}
+
+:(scenario return_overloaded_recipe_literal_to_caller)
+def main [
+  local-scope
+  {x: (fn num -> num)} <- g
+  1:num/raw <- call x, 34
+]
+def g -> {x: (fn num -> num)} [
+  local-scope
+  return f
+]
+# variant f
+def f x:bool -> y:bool [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
+# variant f_2
+def f x:num -> y:num [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
+# x contains f_2
++mem: storing 34 in location 1
+
+:(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
+if (inst.name == "return" || inst.name == "reply") {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
+    if (!is_recipe_literal(inst.ingredients.at(i))) continue;
+    if (non_ghost_size(get_or_insert(Recipe_variants, inst.ingredients.at(i).name)) < 1) continue;
+    // potentially overloaded recipe
+    if (!caller_recipe.has_header) {
+      raise << maybe(caller_recipe.name) << "sorry, we're not yet smart enough to guess which variant of '" << inst.ingredients.at(i).name << "' you want, without a recipe header\n" << end();
+      return;
+    }
+    string new_name = resolve_ambiguous_call(inst.ingredients.at(i).name, caller_recipe.products.at(i), r, index, caller_recipe);
+    if (new_name == "") continue;
+    inst.ingredients.at(i).name = new_name;
+    inst.ingredients.at(i).value = get(Recipe_ordinal, new_name);
+  }
+  return;
+}
