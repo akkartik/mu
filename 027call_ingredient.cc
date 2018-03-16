@@ -63,7 +63,7 @@ case NEXT_INGREDIENT: {
     }
     else if (!types_coercible(product,
                               current_call().ingredients.at(current_call().next_ingredient_to_process))) {
-      raise << maybe(current_recipe_name()) << "wrong type for ingredient '" << product.original_string << "'\n" << end();
+      raise << maybe(current_recipe_name()) << "wrong type for ingredient '" << product.original_string << "': " << current_call().ingredients.at(current_call().next_ingredient_to_process).original_string << '\n' << end();
       // End next-ingredient Type Mismatch Error
     }
     products.push_back(

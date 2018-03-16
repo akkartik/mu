@@ -34,6 +34,11 @@
 //:  * Conversely, you can pass ingredients to a continuation when calling it,
 //:    to make it available to products of 'return-continuation-until-mark'.
 //:    See continuation5.mu.
+//:  * There can be multiple continuation marks on the stack at once;
+//:    'call-with-continuation-mark' and 'return-continuation-until-mark' both
+//:    need to pass in a tag to coordinate on the correct mark. This allows us
+//:    to save multiple continuations for different purposes (say if one is
+//:    for exceptions) with overlapping stack frames. See exception.mu.
 //:
 //: Inspired by James and Sabry, "Yield: Mainstream delimited continuations",
 //: Workshop on the Theory and Practice of Delimited Continuations, 2011.
@@ -132,14 +137,27 @@ case CALL_WITH_CONTINUATION_MARK: {
     trace("trace") << "delimited continuation; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
-  const instruction& caller_instruction = current_instruction();
+  instruction/*copy*/ caller_instruction = current_instruction();
   Current_routine->calls.front().continuation_mark_tag = current_instruction().ingredients.at(0).value;
   Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(1).name]));
-  ingredients.erase(ingredients.begin());  // drop the mark
-  ingredients.erase(ingredients.begin());  // drop the callee
+  // drop the mark
+  caller_instruction.ingredients.erase(caller_instruction.ingredients.begin());
+  ingredients.erase(ingredients.begin());
+  // drop the callee
+  caller_instruction.ingredients.erase(caller_instruction.ingredients.begin());
+  ingredients.erase(ingredients.begin());
   finish_call_housekeeping(caller_instruction, ingredients);
   continue;
 }
+
+:(scenario next_ingredient_inside_continuation)
+recipe main [
+  call-with-continuation-mark 233/mark, f, 1/true
+]
+recipe f [
+  10:bool <- next-input
+]
++mem: storing 1 in location 10
 
 //: save the slice of current call stack until the 'call-with-continuation-mark'
 //: call, and return it as the result.
