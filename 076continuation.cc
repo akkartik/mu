@@ -108,9 +108,9 @@ recipe g [
 -mem: storing 9 in location 2
 
 :(before "End call Fields")
-int is_base_of_continuation;
+int continuation_mark_tag;
 :(before "End call Constructor")
-is_base_of_continuation = 0;
+continuation_mark_tag = 0;
 
 :(before "End Primitive Recipe Declarations")
 CALL_WITH_CONTINUATION_MARK,
@@ -133,7 +133,7 @@ case CALL_WITH_CONTINUATION_MARK: {
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   const instruction& caller_instruction = current_instruction();
-  Current_routine->calls.front().is_base_of_continuation = current_instruction().ingredients.at(0).value;
+  Current_routine->calls.front().continuation_mark_tag = current_instruction().ingredients.at(0).value;
   Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(1).name]));
   ingredients.erase(ingredients.begin());  // drop the mark
   ingredients.erase(ingredients.begin());  // drop the callee
@@ -174,7 +174,7 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
   Current_routine->calls.front().next_ingredient_to_process = 0;
   // copy the current call stack until the most recent marked call
   call_stack::iterator find_base_of_continuation(call_stack&, int);  // manual prototype containing '::'
-  call_stack::iterator base = find_base_of_continuation(Current_routine->calls, /*mark identifier*/current_instruction().ingredients.at(0).value);
+  call_stack::iterator base = find_base_of_continuation(Current_routine->calls, /*mark tag*/current_instruction().ingredients.at(0).value);
   if (base == Current_routine->calls.end()) {
     raise << maybe(current_recipe_name()) << "couldn't find a 'call-with-continuation-mark' to return to\n" << end();
     raise << maybe(current_recipe_name()) << "call stack:\n" << end();
@@ -195,15 +195,15 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
   products.resize(1);
   products.at(0).push_back(Next_delimited_continuation_id);
   // return any other ingredients passed in
-  copy(/*skip mark identifier*/++ingredients.begin(), ingredients.end(), inserter(products, products.end()));
+  copy(/*skip mark tag*/++ingredients.begin(), ingredients.end(), inserter(products, products.end()));
   ++Next_delimited_continuation_id;
   break;  // continue to process rest of marked call
 }
 
 :(code)
-call_stack::iterator find_base_of_continuation(call_stack& c, int mark) {
+call_stack::iterator find_base_of_continuation(call_stack& c, int mark_tag) {
   for (call_stack::iterator p = c.begin(); p != c.end(); ++p)
-    if (p->is_base_of_continuation == mark) return p;
+    if (p->continuation_mark_tag == mark_tag) return p;
   return c.end();
 }
 
