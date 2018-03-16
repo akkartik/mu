@@ -7,10 +7,8 @@
 
 def main [
   local-scope
-  no-exception:bool <- copy 0/false
-  foo no-exception
-  raise-exception:bool <- copy 1/true
-  foo raise-exception
+  foo 0/no-exception
+  foo 1/raise-exception
 ]
 
 # example showing exception handling
