@@ -13,9 +13,7 @@ exclusive-container error-or:_elem [
 
 def main [
   local-scope
-  no-exception:bool <- copy 0/false
   foo 0/no-exception
-  raise-exception:bool <- copy 1/true
   foo 1/raise-exception
 ]
 
