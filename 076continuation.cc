@@ -139,7 +139,7 @@ case CALL_WITH_CONTINUATION_MARK: {
   }
   instruction/*copy*/ caller_instruction = current_instruction();
   Current_routine->calls.front().continuation_mark_tag = current_instruction().ingredients.at(0).value;
-  Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(1).name]));
+  Current_routine->calls.push_front(call(ingredients.at(1).at(0)));
   // drop the mark
   caller_instruction.ingredients.erase(caller_instruction.ingredients.begin());
   ingredients.erase(ingredients.begin());
@@ -153,6 +153,16 @@ case CALL_WITH_CONTINUATION_MARK: {
 :(scenario next_ingredient_inside_continuation)
 recipe main [
   call-with-continuation-mark 233/mark, f, 1/true
+]
+recipe f [
+  10:bool <- next-input
+]
++mem: storing 1 in location 10
+
+:(scenario delimited_continuation_out_of_recipe_variable)
+recipe main [
+  x:recipe <- copy f
+  call-with-continuation-mark 233/mark, x, 1/true
 ]
 recipe f [
   10:bool <- next-input
@@ -194,7 +204,7 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
   call_stack::iterator find_base_of_continuation(call_stack&, int);  // manual prototype containing '::'
   call_stack::iterator base = find_base_of_continuation(Current_routine->calls, /*mark tag*/current_instruction().ingredients.at(0).value);
   if (base == Current_routine->calls.end()) {
-    raise << maybe(current_recipe_name()) << "couldn't find a 'call-with-continuation-mark' to return to\n" << end();
+    raise << maybe(current_recipe_name()) << "couldn't find a 'call-with-continuation-mark' to return to with tag " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     raise << maybe(current_recipe_name()) << "call stack:\n" << end();
     for (call_stack::iterator p = Current_routine->calls.begin();  p != Current_routine->calls.end();  ++p)
       raise << maybe(current_recipe_name()) << "  " << get(Recipe, p->running_recipe).name << '\n' << end();
