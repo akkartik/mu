@@ -1,5 +1,5 @@
 # Example program showing exceptions built out of delimited continuations.
-# Slightly less klunky than exception.mu.
+# Slightly less klunky than exception1.mu.
 
 # Since Mu is statically typed, we can't build an all-purpose higher-order
 # function called 'try'; it wouldn't know how many arguments the function

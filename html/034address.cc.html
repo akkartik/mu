@@ -164,238 +164,237 @@ if ('onhashchange' in window) {
 <span id="L101" class="LineNr">101 </span>      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L102" class="LineNr">102 </span>    drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
 <span id="L103" class="LineNr">103 </span>  <span class="Delimiter">}</span>
-<span id="L104" class="LineNr">104 </span>  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_product<span class="Delimiter">;</span>
-<span id="L105" class="LineNr">105 </span>  expected_product<span class="Delimiter">.</span>type = <a href='018type_abbreviations.cc.html#L58'>new_type_tree</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
-<span id="L106" class="LineNr">106 </span>  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> expected_product<span class="Delimiter">);</span>
-<span id="L107" class="LineNr">107 </span><span class="Delimiter">}</span>
-<span id="L108" class="LineNr">108 </span>
-<span id="L109" class="LineNr">109 </span><span class="Normal">void</span> drop_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> string expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L110" class="LineNr">110 </span>  assert<span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
-<span id="L111" class="LineNr">111 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L112" class="LineNr">112 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;can't drop2 &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from '&quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L113" class="LineNr">113 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L114" class="LineNr">114 </span>  <span class="Delimiter">}</span>
-<span id="L115" class="LineNr">115 </span>  <span class="Comment">// r.type = r.type-&gt;right</span>
-<span id="L116" class="LineNr">116 </span>  type_tree* tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
-<span id="L117" class="LineNr">117 </span>  r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
-<span id="L118" class="LineNr">118 </span>  tmp<span class="Delimiter">-&gt;</span>right = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-<span id="L119" class="LineNr">119 </span>  <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
-<span id="L120" class="LineNr">120 </span>  <span class="Comment">// if (!r.type-&gt;right) r.type = r.type-&gt;left</span>
-<span id="L121" class="LineNr">121 </span>  assert<span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
-<span id="L122" class="LineNr">122 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L123" class="LineNr">123 </span>  tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
-<span id="L124" class="LineNr">124 </span>  r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
-<span id="L125" class="LineNr">125 </span>  tmp<span class="Delimiter">-&gt;</span>left = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-<span id="L126" class="LineNr">126 </span>  <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
-<span id="L127" class="LineNr">127 </span><span class="Delimiter">}</span>
-<span id="L128" class="LineNr">128 </span>
-<span id="L129" class="LineNr">129 </span><span class="Delimiter">:(scenario new_returns_incorrect_type)</span>
-<span id="L130" class="LineNr">130 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L131" class="LineNr">131 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L132" class="LineNr">132 </span>  <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">num:type</span>
-<span id="L133" class="LineNr">133 </span>]
-<span id="L134" class="LineNr">134 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: product of 'new' has incorrect type: '1:bool &lt;- new num:type'</span>
-<span id="L135" class="LineNr">135 </span>
-<span id="L136" class="LineNr">136 </span><span class="Delimiter">:(scenario new_discerns_singleton_list_from_atom_container)</span>
-<span id="L137" class="LineNr">137 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L138" class="LineNr">138 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L139" class="LineNr">139 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>  <span class="Comment"># should be '{num: type}'</span>
-<span id="L140" class="LineNr">140 </span>]
-<span id="L141" class="LineNr">141 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: product of 'new' has incorrect type: '1:address:num/raw &lt;- new {(num): type}'</span>
-<span id="L142" class="LineNr">142 </span>
-<span id="L143" class="LineNr">143 </span><span class="Delimiter">:(scenario new_with_type_abbreviation)</span>
-<span id="L144" class="LineNr">144 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L145" class="LineNr">145 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">num:type</span>
-<span id="L146" class="LineNr">146 </span>]
-<span id="L147" class="LineNr">147 </span>$error: <span class="Constant">0</span>
-<span id="L148" class="LineNr">148 </span>
-<span id="L149" class="LineNr">149 </span><span class="Delimiter">:(scenario new_with_type_abbreviation_inside_compound)</span>
-<span id="L150" class="LineNr">150 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L151" class="LineNr">151 </span>  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span><a href='043space.cc.html#L80'>address</a> <a href='043space.cc.html#L80'>address</a> number<span class="Delimiter">),</span> <span class="Special">raw</span>: <span class="Delimiter">()}</span><span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>&amp; num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
-<span id="L152" class="LineNr">152 </span>]
-<span id="L153" class="LineNr">153 </span>$error: <span class="Constant">0</span>
-<span id="L154" class="LineNr">154 </span>
-<span id="L155" class="LineNr">155 </span><span class="Comment">//: To implement 'new', a Mu transform turns all 'new' instructions into</span>
-<span id="L156" class="LineNr">156 </span><span class="Comment">//: 'allocate' instructions that precompute the amount of memory they want to</span>
-<span id="L157" class="LineNr">157 </span><span class="Comment">//: allocate.</span>
-<span id="L158" class="LineNr">158 </span>
-<span id="L159" class="LineNr">159 </span><span class="Comment">//: Ensure that we never call 'allocate' directly, and that there's no 'new'</span>
-<span id="L160" class="LineNr">160 </span><span class="Comment">//: instructions left after the transforms have run.</span>
-<span id="L161" class="LineNr">161 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span id="L162" class="LineNr">162 </span><span class="Normal">case</span> ALLOCATE: <span class="Delimiter">{</span>
-<span id="L163" class="LineNr">163 </span>  <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;never call 'allocate' directly'; always use 'new'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L164" class="LineNr">164 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L165" class="LineNr">165 </span><span class="Delimiter">}</span>
-<span id="L166" class="LineNr">166 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span id="L167" class="LineNr">167 </span><span class="Normal">case</span> NEW: <span class="Delimiter">{</span>
-<span id="L168" class="LineNr">168 </span>  <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;no implementation for 'new'; why wasn't it translated to 'allocate'? Please save a copy of your program and send it to Kartik.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L169" class="LineNr">169 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L170" class="LineNr">170 </span><span class="Delimiter">}</span>
-<span id="L171" class="LineNr">171 </span>
-<span id="L172" class="LineNr">172 </span><span class="Delimiter">:(after &quot;Transform.push_back(check_instruction)&quot;)</span>  <span class="Comment">// check_instruction will guard against direct 'allocate' instructions below</span>
-<span id="L173" class="LineNr">173 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_new_to_allocate<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
-<span id="L174" class="LineNr">174 </span>
-<span id="L175" class="LineNr">175 </span><span class="Delimiter">:(code)</span>
-<span id="L176" class="LineNr">176 </span><span class="Normal">void</span> transform_new_to_allocate<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L177" class="LineNr">177 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- convert 'new' to 'allocate' for <a href='010vm.cc.html#L19'>recipe</a> &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L178" class="LineNr">178 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L179" class="LineNr">179 </span>    instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L180" class="LineNr">180 </span>    <span class="Comment">// Convert 'new' To 'allocate'</span>
-<span id="L181" class="LineNr">181 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L182" class="LineNr">182 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
-<span id="L183" class="LineNr">183 </span>      inst<span class="Delimiter">.</span>operation = ALLOCATE<span class="Delimiter">;</span>
-<span id="L184" class="LineNr">184 </span>      type_tree* type = <a href='018type_abbreviations.cc.html#L58'>new_type_tree</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
-<span id="L185" class="LineNr">185 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span><a href='010vm.cc.html#L65'>set_value</a><span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>type<span class="Delimiter">));</span>
-<span id="L186" class="LineNr">186 </span>      <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;size of '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;' is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L187" class="LineNr">187 </span>      <span class="Normal">delete</span> type<span class="Delimiter">;</span>
-<span id="L188" class="LineNr">188 </span>    <span class="Delimiter">}</span>
-<span id="L189" class="LineNr">189 </span>  <span class="Delimiter">}</span>
-<span id="L190" class="LineNr">190 </span><span class="Delimiter">}</span>
-<span id="L191" class="LineNr">191 </span>
-<span id="L192" class="LineNr">192 </span><span class="Comment">//: implement 'allocate' based on size</span>
-<span id="L193" class="LineNr">193 </span>
-<span id="L194" class="LineNr">194 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L195" class="LineNr">195 </span><span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
-<span id="L196" class="LineNr">196 </span><span class="Normal">int</span> Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
-<span id="L197" class="LineNr">197 </span><span class="Normal">int</span> Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
-<span id="L198" class="LineNr">198 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
-<span id="L199" class="LineNr">199 </span>Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
-<span id="L200" class="LineNr">200 </span>Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
-<span id="L201" class="LineNr">201 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span id="L202" class="LineNr">202 </span><span class="Normal">int</span> alloc<span class="Delimiter">,</span> alloc_max<span class="Delimiter">;</span>
-<span id="L203" class="LineNr">203 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-<span id="L204" class="LineNr">204 </span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
-<span id="L205" class="LineNr">205 </span>Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
-<span id="L206" class="LineNr">206 </span>alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
-<span id="L207" class="LineNr">207 </span><a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; alloc_max &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L208" class="LineNr">208 </span>
-<span id="L209" class="LineNr">209 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-<span id="L210" class="LineNr">210 </span>ALLOCATE<span class="Delimiter">,</span>
-<span id="L211" class="LineNr">211 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L212" class="LineNr">212 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;allocate&quot;</span><span class="Delimiter">,</span> ALLOCATE<span class="Delimiter">);</span>
-<span id="L213" class="LineNr">213 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span id="L214" class="LineNr">214 </span><span class="Normal">case</span> ALLOCATE: <span class="Delimiter">{</span>
-<span id="L215" class="LineNr">215 </span>  <span class="Comment">// compute the space we need</span>
-<span id="L216" class="LineNr">216 </span>  <span class="Normal">int</span> size = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L217" class="LineNr">217 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L218" class="LineNr">218 </span>    <span class="Comment">// array allocation</span>
-<span id="L219" class="LineNr">219 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array length is &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L220" class="LineNr">220 </span>    size = <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span> + size*ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L221" class="LineNr">221 </span>  <span class="Delimiter">}</span>
-<span id="L222" class="LineNr">222 </span>  <span class="Normal">int</span> result = allocate<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
-<span id="L223" class="LineNr">223 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span><a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L224" class="LineNr">224 </span>    <span class="Comment">// initialize array length</span>
-<span id="L225" class="LineNr">225 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; result &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L226" class="LineNr">226 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-<span id="L227" class="LineNr">227 </span>  <span class="Delimiter">}</span>
-<span id="L228" class="LineNr">228 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L229" class="LineNr">229 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-<span id="L230" class="LineNr">230 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L231" class="LineNr">231 </span><span class="Delimiter">}</span>
-<span id="L232" class="LineNr">232 </span><span class="Delimiter">:(code)</span>
-<span id="L233" class="LineNr">233 </span><span class="Normal">int</span> allocate<span class="Delimiter">(</span><span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L234" class="LineNr">234 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;allocating size &quot;</span> &lt;&lt; size &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L235" class="LineNr">235 </span><span class="CommentedCode">//?   Total_alloc += size;</span>
-<span id="L236" class="LineNr">236 </span><span class="CommentedCode">//?   ++Num_alloc;</span>
-<span id="L237" class="LineNr">237 </span>  <span class="Comment">// Allocate Special-cases</span>
-<span id="L238" class="LineNr">238 </span>  <span class="Comment">// compute the region of memory to return</span>
-<span id="L239" class="LineNr">239 </span>  <span class="Comment">// really crappy at the moment</span>
-<span id="L240" class="LineNr">240 </span>  ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
-<span id="L241" class="LineNr">241 </span>  <span class="Normal">const</span> <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
-<span id="L242" class="LineNr">242 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc: &quot;</span> &lt;&lt; result &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L243" class="LineNr">243 </span>  <span class="Comment">// initialize allocated space</span>
-<span id="L244" class="LineNr">244 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> <a href='043space.cc.html#L80'>address</a> = result<span class="Delimiter">;</span>  <a href='043space.cc.html#L80'>address</a> &lt; result+size<span class="Delimiter">;</span>  ++address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L245" class="LineNr">245 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0 in location &quot;</span> &lt;&lt; <a href='043space.cc.html#L80'>address</a> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L246" class="LineNr">246 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <a href='043space.cc.html#L80'>address</a><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L247" class="LineNr">247 </span>  <span class="Delimiter">}</span>
-<span id="L248" class="LineNr">248 </span>  Current_routine<span class="Delimiter">-&gt;</span>alloc += size<span class="Delimiter">;</span>
-<span id="L249" class="LineNr">249 </span>  <span class="Comment">// no support yet for reclaiming memory between routines</span>
-<span id="L250" class="LineNr">250 </span>  assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;= Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">);</span>
-<span id="L251" class="LineNr">251 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span id="L252" class="LineNr">252 </span><span class="Delimiter">}</span>
-<span id="L253" class="LineNr">253 </span>
-<span id="L254" class="LineNr">254 </span><span class="Comment">//: statistics for debugging</span>
-<span id="L255" class="LineNr">255 </span><span class="CommentedCode">//? :(before &quot;End Globals&quot;)</span>
-<span id="L256" class="LineNr">256 </span><span class="CommentedCode">//? int Total_alloc = 0;</span>
-<span id="L257" class="LineNr">257 </span><span class="CommentedCode">//? int Num_alloc = 0;</span>
-<span id="L258" class="LineNr">258 </span><span class="CommentedCode">//? int Total_free = 0;</span>
-<span id="L259" class="LineNr">259 </span><span class="CommentedCode">//? int Num_free = 0;</span>
-<span id="L260" class="LineNr">260 </span><span class="CommentedCode">//? :(before &quot;End Reset&quot;)</span>
-<span id="L261" class="LineNr">261 </span><span class="CommentedCode">//? if (!Memory.empty()) {</span>
-<span id="L262" class="LineNr">262 </span><span class="CommentedCode">//?   cerr &lt;&lt; Total_alloc &lt;&lt; &quot;/&quot; &lt;&lt; Num_alloc</span>
-<span id="L263" class="LineNr">263 </span><span class="CommentedCode">//?        &lt;&lt; &quot; vs &quot; &lt;&lt; Total_free &lt;&lt; &quot;/&quot; &lt;&lt; Num_free &lt;&lt; '\n';</span>
-<span id="L264" class="LineNr">264 </span><span class="CommentedCode">//?   cerr &lt;&lt; SIZE(Memory) &lt;&lt; '\n';</span>
-<span id="L265" class="LineNr">265 </span><span class="CommentedCode">//? }</span>
-<span id="L266" class="LineNr">266 </span><span class="CommentedCode">//? Total_alloc = Num_alloc = Total_free = Num_free = 0;</span>
-<span id="L267" class="LineNr">267 </span>
-<span id="L268" class="LineNr">268 </span><span class="Delimiter">:(code)</span>
-<span id="L269" class="LineNr">269 </span><span class="Normal">void</span> ensure_space<span class="Delimiter">(</span><span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L270" class="LineNr">270 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>size &gt; Initial_memory_per_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L271" class="LineNr">271 </span>    cerr &lt;&lt; <span class="Constant">&quot;can't allocate &quot;</span> &lt;&lt; size &lt;&lt; <span class="Constant">&quot; locations, that's too much compared to &quot;</span> &lt;&lt; Initial_memory_per_routine &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L272" class="LineNr">272 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L273" class="LineNr">273 </span>  <span class="Delimiter">}</span>
-<span id="L274" class="LineNr">274 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc + size &gt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L275" class="LineNr">275 </span>    <span class="Comment">// waste the remaining space and create a new chunk</span>
-<span id="L276" class="LineNr">276 </span>    Current_routine<span class="Delimiter">-&gt;</span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
-<span id="L277" class="LineNr">277 </span>    Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
-<span id="L278" class="LineNr">278 </span>    Current_routine<span class="Delimiter">-&gt;</span>alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
-<span id="L279" class="LineNr">279 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L280" class="LineNr">280 </span>  <span class="Delimiter">}</span>
-<span id="L281" class="LineNr">281 </span><span class="Delimiter">}</span>
-<span id="L282" class="LineNr">282 </span>
-<span id="L283" class="LineNr">283 </span><span class="Delimiter">:(scenario new_initializes)</span>
-<span id="L284" class="LineNr">284 </span><span class="Special">% Memory_allocated_until = 10;</span>
-<span id="L285" class="LineNr">285 </span><span class="Special">% put(Memory, Memory_allocated_until, 1);</span>
-<span id="L286" class="LineNr">286 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L287" class="LineNr">287 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L288" class="LineNr">288 </span>]
-<span id="L289" class="LineNr">289 </span><span class="traceContains">+mem: storing 0 in location 10</span>
-<span id="L290" class="LineNr">290 </span>
-<span id="L291" class="LineNr">291 </span><span class="Delimiter">:(scenario new_size)</span>
-<span id="L292" class="LineNr">292 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L293" class="LineNr">293 </span>  <span class="Constant">11</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L294" class="LineNr">294 </span>  <span class="Constant">12</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L295" class="LineNr">295 </span>  <span class="Constant">13</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">12</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">11</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span>
-<span id="L296" class="LineNr">296 </span>]
-<span id="L297" class="LineNr">297 </span><span class="Comment"># size of number</span>
-<span id="L298" class="LineNr">298 </span><span class="traceContains">+mem: storing 1 in location 13</span>
-<span id="L299" class="LineNr">299 </span>
-<span id="L300" class="LineNr">300 </span><span class="Delimiter">:(scenario new_array_size)</span>
-<span id="L301" class="LineNr">301 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L302" class="LineNr">302 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-<span id="L303" class="LineNr">303 </span>  <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L304" class="LineNr">304 </span>  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw</span>
-<span id="L305" class="LineNr">305 </span>]
-<span id="L306" class="LineNr">306 </span><span class="Comment"># 5 locations for array contents + array length</span>
-<span id="L307" class="LineNr">307 </span><span class="traceContains">+mem: storing 6 in location 3</span>
-<span id="L308" class="LineNr">308 </span>
-<span id="L309" class="LineNr">309 </span><span class="Delimiter">:(scenario new_empty_array)</span>
-<span id="L310" class="LineNr">310 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L311" class="LineNr">311 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">0</span>
-<span id="L312" class="LineNr">312 </span>  <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L313" class="LineNr">313 </span>  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw</span>
-<span id="L314" class="LineNr">314 </span>]
-<span id="L315" class="LineNr">315 </span><span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {0: &quot;literal&quot;}</span>
-<span id="L316" class="LineNr">316 </span><span class="traceContains">+mem: array length is 0</span>
-<span id="L317" class="LineNr">317 </span><span class="Comment"># one location for array length</span>
-<span id="L318" class="LineNr">318 </span><span class="traceContains">+mem: storing 1 in location 3</span>
-<span id="L319" class="LineNr">319 </span>
-<span id="L320" class="LineNr">320 </span><span class="Comment">//: If a routine runs out of its initial allocation, it should allocate more.</span>
-<span id="L321" class="LineNr">321 </span><span class="Delimiter">:(scenario new_overflow)</span>
-<span id="L322" class="LineNr">322 </span><span class="Special">% Initial_memory_per_routine = 2;  // barely enough room for point allocation below</span>
-<span id="L323" class="LineNr">323 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L324" class="LineNr">324 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L325" class="LineNr">325 </span>  <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:point/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>  <span class="Comment"># not enough room in initial page</span>
-<span id="L326" class="LineNr">326 </span>]
-<span id="L327" class="LineNr">327 </span><span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
-<span id="L328" class="LineNr">328 </span><span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
-<span id="L329" class="LineNr">329 </span>
-<span id="L330" class="LineNr">330 </span><span class="Delimiter">:(scenario new_without_ingredient)</span>
-<span id="L331" class="LineNr">331 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L332" class="LineNr">332 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L333" class="LineNr">333 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:number<span class="Special"> &lt;- </span><span class="Normal">new</span>  <span class="Comment"># missing ingredient</span>
-<span id="L334" class="LineNr">334 </span>]
-<span id="L335" class="LineNr">335 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: 'new' requires one or two ingredients, but got '1:address:number &lt;- new'</span>
+<span id="L104" class="LineNr">104 </span>  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_product<span class="Delimiter">(</span><a href='018type_abbreviations.cc.html#L58'>new_type_tree</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+<span id="L105" class="LineNr">105 </span>  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> expected_product<span class="Delimiter">);</span>
+<span id="L106" class="LineNr">106 </span><span class="Delimiter">}</span>
+<span id="L107" class="LineNr">107 </span>
+<span id="L108" class="LineNr">108 </span><span class="Normal">void</span> drop_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> string expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L109" class="LineNr">109 </span>  assert<span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+<span id="L110" class="LineNr">110 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L111" class="LineNr">111 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;can't drop2 &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from '&quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L112" class="LineNr">112 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L113" class="LineNr">113 </span>  <span class="Delimiter">}</span>
+<span id="L114" class="LineNr">114 </span>  <span class="Comment">// r.type = r.type-&gt;right</span>
+<span id="L115" class="LineNr">115 </span>  type_tree* tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
+<span id="L116" class="LineNr">116 </span>  r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+<span id="L117" class="LineNr">117 </span>  tmp<span class="Delimiter">-&gt;</span>right = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span id="L118" class="LineNr">118 </span>  <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
+<span id="L119" class="LineNr">119 </span>  <span class="Comment">// if (!r.type-&gt;right) r.type = r.type-&gt;left</span>
+<span id="L120" class="LineNr">120 </span>  assert<span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+<span id="L121" class="LineNr">121 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L122" class="LineNr">122 </span>  tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
+<span id="L123" class="LineNr">123 </span>  r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+<span id="L124" class="LineNr">124 </span>  tmp<span class="Delimiter">-&gt;</span>left = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span id="L125" class="LineNr">125 </span>  <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
+<span id="L126" class="LineNr">126 </span><span class="Delimiter">}</span>
+<span id="L127" class="LineNr">127 </span>
+<span id="L128" class="LineNr">128 </span><span class="Delimiter">:(scenario new_returns_incorrect_type)</span>
+<span id="L129" class="LineNr">129 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L130" class="LineNr">130 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L131" class="LineNr">131 </span>  <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">num:type</span>
+<span id="L132" class="LineNr">132 </span>]
+<span id="L133" class="LineNr">133 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: product of 'new' has incorrect type: '1:bool &lt;- new num:type'</span>
+<span id="L134" class="LineNr">134 </span>
+<span id="L135" class="LineNr">135 </span><span class="Delimiter">:(scenario new_discerns_singleton_list_from_atom_container)</span>
+<span id="L136" class="LineNr">136 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L137" class="LineNr">137 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L138" class="LineNr">138 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>  <span class="Comment"># should be '{num: type}'</span>
+<span id="L139" class="LineNr">139 </span>]
+<span id="L140" class="LineNr">140 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: product of 'new' has incorrect type: '1:address:num/raw &lt;- new {(num): type}'</span>
+<span id="L141" class="LineNr">141 </span>
+<span id="L142" class="LineNr">142 </span><span class="Delimiter">:(scenario new_with_type_abbreviation)</span>
+<span id="L143" class="LineNr">143 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L144" class="LineNr">144 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">num:type</span>
+<span id="L145" class="LineNr">145 </span>]
+<span id="L146" class="LineNr">146 </span>$error: <span class="Constant">0</span>
+<span id="L147" class="LineNr">147 </span>
+<span id="L148" class="LineNr">148 </span><span class="Delimiter">:(scenario new_with_type_abbreviation_inside_compound)</span>
+<span id="L149" class="LineNr">149 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L150" class="LineNr">150 </span>  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span><a href='043space.cc.html#L80'>address</a> <a href='043space.cc.html#L80'>address</a> number<span class="Delimiter">),</span> <span class="Special">raw</span>: <span class="Delimiter">()}</span><span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>&amp; num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+<span id="L151" class="LineNr">151 </span>]
+<span id="L152" class="LineNr">152 </span>$error: <span class="Constant">0</span>
+<span id="L153" class="LineNr">153 </span>
+<span id="L154" class="LineNr">154 </span><span class="Comment">//: To implement 'new', a Mu transform turns all 'new' instructions into</span>
+<span id="L155" class="LineNr">155 </span><span class="Comment">//: 'allocate' instructions that precompute the amount of memory they want to</span>
+<span id="L156" class="LineNr">156 </span><span class="Comment">//: allocate.</span>
+<span id="L157" class="LineNr">157 </span>
+<span id="L158" class="LineNr">158 </span><span class="Comment">//: Ensure that we never call 'allocate' directly, and that there's no 'new'</span>
+<span id="L159" class="LineNr">159 </span><span class="Comment">//: instructions left after the transforms have run.</span>
+<span id="L160" class="LineNr">160 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span id="L161" class="LineNr">161 </span><span class="Normal">case</span> ALLOCATE: <span class="Delimiter">{</span>
+<span id="L162" class="LineNr">162 </span>  <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;never call 'allocate' directly'; always use 'new'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L163" class="LineNr">163 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L164" class="LineNr">164 </span><span class="Delimiter">}</span>
+<span id="L165" class="LineNr">165 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span id="L166" class="LineNr">166 </span><span class="Normal">case</span> NEW: <span class="Delimiter">{</span>
+<span id="L167" class="LineNr">167 </span>  <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;no implementation for 'new'; why wasn't it translated to 'allocate'? Please save a copy of your program and send it to Kartik.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L168" class="LineNr">168 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L169" class="LineNr">169 </span><span class="Delimiter">}</span>
+<span id="L170" class="LineNr">170 </span>
+<span id="L171" class="LineNr">171 </span><span class="Delimiter">:(after &quot;Transform.push_back(check_instruction)&quot;)</span>  <span class="Comment">// check_instruction will guard against direct 'allocate' instructions below</span>
+<span id="L172" class="LineNr">172 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_new_to_allocate<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L173" class="LineNr">173 </span>
+<span id="L174" class="LineNr">174 </span><span class="Delimiter">:(code)</span>
+<span id="L175" class="LineNr">175 </span><span class="Normal">void</span> transform_new_to_allocate<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L176" class="LineNr">176 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- convert 'new' to 'allocate' for <a href='010vm.cc.html#L19'>recipe</a> &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L177" class="LineNr">177 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L178" class="LineNr">178 </span>    instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L179" class="LineNr">179 </span>    <span class="Comment">// Convert 'new' To 'allocate'</span>
+<span id="L180" class="LineNr">180 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L181" class="LineNr">181 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+<span id="L182" class="LineNr">182 </span>      inst<span class="Delimiter">.</span>operation = ALLOCATE<span class="Delimiter">;</span>
+<span id="L183" class="LineNr">183 </span>      type_tree* type = <a href='018type_abbreviations.cc.html#L58'>new_type_tree</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+<span id="L184" class="LineNr">184 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span><a href='010vm.cc.html#L66'>set_value</a><span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>type<span class="Delimiter">));</span>
+<span id="L185" class="LineNr">185 </span>      <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;size of '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;' is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L186" class="LineNr">186 </span>      <span class="Normal">delete</span> type<span class="Delimiter">;</span>
+<span id="L187" class="LineNr">187 </span>    <span class="Delimiter">}</span>
+<span id="L188" class="LineNr">188 </span>  <span class="Delimiter">}</span>
+<span id="L189" class="LineNr">189 </span><span class="Delimiter">}</span>
+<span id="L190" class="LineNr">190 </span>
+<span id="L191" class="LineNr">191 </span><span class="Comment">//: implement 'allocate' based on size</span>
+<span id="L192" class="LineNr">192 </span>
+<span id="L193" class="LineNr">193 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L194" class="LineNr">194 </span><span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
+<span id="L195" class="LineNr">195 </span><span class="Normal">int</span> Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
+<span id="L196" class="LineNr">196 </span><span class="Normal">int</span> Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
+<span id="L197" class="LineNr">197 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
+<span id="L198" class="LineNr">198 </span>Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
+<span id="L199" class="LineNr">199 </span>Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
+<span id="L200" class="LineNr">200 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<span id="L201" class="LineNr">201 </span><span class="Normal">int</span> alloc<span class="Delimiter">,</span> alloc_max<span class="Delimiter">;</span>
+<span id="L202" class="LineNr">202 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<span id="L203" class="LineNr">203 </span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
+<span id="L204" class="LineNr">204 </span>Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
+<span id="L205" class="LineNr">205 </span>alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
+<span id="L206" class="LineNr">206 </span><a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; alloc_max &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L207" class="LineNr">207 </span>
+<span id="L208" class="LineNr">208 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<span id="L209" class="LineNr">209 </span>ALLOCATE<span class="Delimiter">,</span>
+<span id="L210" class="LineNr">210 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<span id="L211" class="LineNr">211 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;allocate&quot;</span><span class="Delimiter">,</span> ALLOCATE<span class="Delimiter">);</span>
+<span id="L212" class="LineNr">212 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span id="L213" class="LineNr">213 </span><span class="Normal">case</span> ALLOCATE: <span class="Delimiter">{</span>
+<span id="L214" class="LineNr">214 </span>  <span class="Comment">// compute the space we need</span>
+<span id="L215" class="LineNr">215 </span>  <span class="Normal">int</span> size = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L216" class="LineNr">216 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L217" class="LineNr">217 </span>    <span class="Comment">// array allocation</span>
+<span id="L218" class="LineNr">218 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array length is &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L219" class="LineNr">219 </span>    size = <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span> + size*ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L220" class="LineNr">220 </span>  <span class="Delimiter">}</span>
+<span id="L221" class="LineNr">221 </span>  <span class="Normal">int</span> result = allocate<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
+<span id="L222" class="LineNr">222 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span><a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L223" class="LineNr">223 </span>    <span class="Comment">// initialize array length</span>
+<span id="L224" class="LineNr">224 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; result &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L225" class="LineNr">225 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<span id="L226" class="LineNr">226 </span>  <span class="Delimiter">}</span>
+<span id="L227" class="LineNr">227 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L228" class="LineNr">228 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+<span id="L229" class="LineNr">229 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L230" class="LineNr">230 </span><span class="Delimiter">}</span>
+<span id="L231" class="LineNr">231 </span><span class="Delimiter">:(code)</span>
+<span id="L232" class="LineNr">232 </span><span class="Normal">int</span> allocate<span class="Delimiter">(</span><span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L233" class="LineNr">233 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;allocating size &quot;</span> &lt;&lt; size &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L234" class="LineNr">234 </span><span class="CommentedCode">//?   Total_alloc += size;</span>
+<span id="L235" class="LineNr">235 </span><span class="CommentedCode">//?   ++Num_alloc;</span>
+<span id="L236" class="LineNr">236 </span>  <span class="Comment">// Allocate Special-cases</span>
+<span id="L237" class="LineNr">237 </span>  <span class="Comment">// compute the region of memory to return</span>
+<span id="L238" class="LineNr">238 </span>  <span class="Comment">// really crappy at the moment</span>
+<span id="L239" class="LineNr">239 </span>  ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
+<span id="L240" class="LineNr">240 </span>  <span class="Normal">const</span> <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+<span id="L241" class="LineNr">241 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc: &quot;</span> &lt;&lt; result &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L242" class="LineNr">242 </span>  <span class="Comment">// initialize allocated space</span>
+<span id="L243" class="LineNr">243 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> <a href='043space.cc.html#L80'>address</a> = result<span class="Delimiter">;</span>  <a href='043space.cc.html#L80'>address</a> &lt; result+size<span class="Delimiter">;</span>  ++address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L244" class="LineNr">244 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0 in location &quot;</span> &lt;&lt; <a href='043space.cc.html#L80'>address</a> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L245" class="LineNr">245 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <a href='043space.cc.html#L80'>address</a><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L246" class="LineNr">246 </span>  <span class="Delimiter">}</span>
+<span id="L247" class="LineNr">247 </span>  Current_routine<span class="Delimiter">-&gt;</span>alloc += size<span class="Delimiter">;</span>
+<span id="L248" class="LineNr">248 </span>  <span class="Comment">// no support yet for reclaiming memory between routines</span>
+<span id="L249" class="LineNr">249 </span>  assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;= Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">);</span>
+<span id="L250" class="LineNr">250 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span id="L251" class="LineNr">251 </span><span class="Delimiter">}</span>
+<span id="L252" class="LineNr">252 </span>
+<span id="L253" class="LineNr">253 </span><span class="Comment">//: statistics for debugging</span>
+<span id="L254" class="LineNr">254 </span><span class="CommentedCode">//? :(before &quot;End Globals&quot;)</span>
+<span id="L255" class="LineNr">255 </span><span class="CommentedCode">//? int Total_alloc = 0;</span>
+<span id="L256" class="LineNr">256 </span><span class="CommentedCode">//? int Num_alloc = 0;</span>
+<span id="L257" class="LineNr">257 </span><span class="CommentedCode">//? int Total_free = 0;</span>
+<span id="L258" class="LineNr">258 </span><span class="CommentedCode">//? int Num_free = 0;</span>
+<span id="L259" class="LineNr">259 </span><span class="CommentedCode">//? :(before &quot;End Reset&quot;)</span>
+<span id="L260" class="LineNr">260 </span><span class="CommentedCode">//? if (!Memory.empty()) {</span>
+<span id="L261" class="LineNr">261 </span><span class="CommentedCode">//?   cerr &lt;&lt; Total_alloc &lt;&lt; &quot;/&quot; &lt;&lt; Num_alloc</span>
+<span id="L262" class="LineNr">262 </span><span class="CommentedCode">//?        &lt;&lt; &quot; vs &quot; &lt;&lt; Total_free &lt;&lt; &quot;/&quot; &lt;&lt; Num_free &lt;&lt; '\n';</span>
+<span id="L263" class="LineNr">263 </span><span class="CommentedCode">//?   cerr &lt;&lt; SIZE(Memory) &lt;&lt; '\n';</span>
+<span id="L264" class="LineNr">264 </span><span class="CommentedCode">//? }</span>
+<span id="L265" class="LineNr">265 </span><span class="CommentedCode">//? Total_alloc = Num_alloc = Total_free = Num_free = 0;</span>
+<span id="L266" class="LineNr">266 </span>
+<span id="L267" class="LineNr">267 </span><span class="Delimiter">:(code)</span>
+<span id="L268" class="LineNr">268 </span><span class="Normal">void</span> ensure_space<span class="Delimiter">(</span><span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L269" class="LineNr">269 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>size &gt; Initial_memory_per_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L270" class="LineNr">270 </span>    cerr &lt;&lt; <span class="Constant">&quot;can't allocate &quot;</span> &lt;&lt; size &lt;&lt; <span class="Constant">&quot; locations, that's too much compared to &quot;</span> &lt;&lt; Initial_memory_per_routine &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L271" class="LineNr">271 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L272" class="LineNr">272 </span>  <span class="Delimiter">}</span>
+<span id="L273" class="LineNr">273 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc + size &gt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L274" class="LineNr">274 </span>    <span class="Comment">// waste the remaining space and create a new chunk</span>
+<span id="L275" class="LineNr">275 </span>    Current_routine<span class="Delimiter">-&gt;</span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
+<span id="L276" class="LineNr">276 </span>    Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
+<span id="L277" class="LineNr">277 </span>    Current_routine<span class="Delimiter">-&gt;</span>alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
+<span id="L278" class="LineNr">278 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L279" class="LineNr">279 </span>  <span class="Delimiter">}</span>
+<span id="L280" class="LineNr">280 </span><span class="Delimiter">}</span>
+<span id="L281" class="LineNr">281 </span>
+<span id="L282" class="LineNr">282 </span><span class="Delimiter">:(scenario new_initializes)</span>
+<span id="L283" class="LineNr">283 </span><span class="Special">% Memory_allocated_until = 10;</span>
+<span id="L284" class="LineNr">284 </span><span class="Special">% put(Memory, Memory_allocated_until, 1);</span>
+<span id="L285" class="LineNr">285 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L286" class="LineNr">286 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L287" class="LineNr">287 </span>]
+<span id="L288" class="LineNr">288 </span><span class="traceContains">+mem: storing 0 in location 10</span>
+<span id="L289" class="LineNr">289 </span>
+<span id="L290" class="LineNr">290 </span><span class="Delimiter">:(scenario new_size)</span>
+<span id="L291" class="LineNr">291 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L292" class="LineNr">292 </span>  <span class="Constant">11</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L293" class="LineNr">293 </span>  <span class="Constant">12</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L294" class="LineNr">294 </span>  <span class="Constant">13</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">12</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">11</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span>
+<span id="L295" class="LineNr">295 </span>]
+<span id="L296" class="LineNr">296 </span><span class="Comment"># size of number</span>
+<span id="L297" class="LineNr">297 </span><span class="traceContains">+mem: storing 1 in location 13</span>
+<span id="L298" class="LineNr">298 </span>
+<span id="L299" class="LineNr">299 </span><span class="Delimiter">:(scenario new_array_size)</span>
+<span id="L300" class="LineNr">300 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L301" class="LineNr">301 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+<span id="L302" class="LineNr">302 </span>  <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L303" class="LineNr">303 </span>  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw</span>
+<span id="L304" class="LineNr">304 </span>]
+<span id="L305" class="LineNr">305 </span><span class="Comment"># 5 locations for array contents + array length</span>
+<span id="L306" class="LineNr">306 </span><span class="traceContains">+mem: storing 6 in location 3</span>
+<span id="L307" class="LineNr">307 </span>
+<span id="L308" class="LineNr">308 </span><span class="Delimiter">:(scenario new_empty_array)</span>
+<span id="L309" class="LineNr">309 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L310" class="LineNr">310 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">0</span>
+<span id="L311" class="LineNr">311 </span>  <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L312" class="LineNr">312 </span>  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:array:num/<span class="Special">raw</span>
+<span id="L313" class="LineNr">313 </span>]
+<span id="L314" class="LineNr">314 </span><span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {0: &quot;literal&quot;}</span>
+<span id="L315" class="LineNr">315 </span><span class="traceContains">+mem: array length is 0</span>
+<span id="L316" class="LineNr">316 </span><span class="Comment"># one location for array length</span>
+<span id="L317" class="LineNr">317 </span><span class="traceContains">+mem: storing 1 in location 3</span>
+<span id="L318" class="LineNr">318 </span>
+<span id="L319" class="LineNr">319 </span><span class="Comment">//: If a routine runs out of its initial allocation, it should allocate more.</span>
+<span id="L320" class="LineNr">320 </span><span class="Delimiter">:(scenario new_overflow)</span>
+<span id="L321" class="LineNr">321 </span><span class="Special">% Initial_memory_per_routine = 2;  // barely enough room for point allocation below</span>
+<span id="L322" class="LineNr">322 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L323" class="LineNr">323 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L324" class="LineNr">324 </span>  <span class="Constant">2</span>:<a href='043space.cc.html#L80'>address</a>:point/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>  <span class="Comment"># not enough room in initial page</span>
+<span id="L325" class="LineNr">325 </span>]
+<span id="L326" class="LineNr">326 </span><span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
+<span id="L327" class="LineNr">327 </span><span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
+<span id="L328" class="LineNr">328 </span>
+<span id="L329" class="LineNr">329 </span><span class="Delimiter">:(scenario new_without_ingredient)</span>
+<span id="L330" class="LineNr">330 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L331" class="LineNr">331 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L332" class="LineNr">332 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L80'>address</a>:number<span class="Special"> &lt;- </span><span class="Normal">new</span>  <span class="Comment"># missing ingredient</span>
+<span id="L333" class="LineNr">333 </span>]
+<span id="L334" class="LineNr">334 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: 'new' requires one or two ingredients, but got '1:address:number &lt;- new'</span>
 </pre>
 </body>
 </html>
