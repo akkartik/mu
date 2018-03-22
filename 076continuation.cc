@@ -191,6 +191,9 @@ RETURN_CONTINUATION_UNTIL_MARK,
 Recipe_ordinal["return-continuation-until-mark"] = RETURN_CONTINUATION_UNTIL_MARK;
 :(before "End Primitive Recipe Checks")
 case RETURN_CONTINUATION_UNTIL_MARK: {
+  if (inst.ingredients.empty()) {
+    raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' requires at least one ingredient: a mark tag (number)\n" << end();
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
