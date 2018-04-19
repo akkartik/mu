@@ -118,7 +118,7 @@ operates on some *ingredients* and returns some *products*.
   [products] <- instruction [ingredients]
   ```
 
-Result and ingredient *reagents* cannot contain instructions or infix
+Product and ingredient *reagents* cannot contain instructions or infix
 expressions. On the other hand, you can have any number of them. In
 particular, you can have any number of products. For example, you can perform
 integer division as follows:
@@ -258,8 +258,8 @@ option of imperatively modifying variables willy-nilly.
 
 ---
 
-You can append arbitrary properties to reagents besides types and spaces. Just
-separate them with slashes.
+You can append arbitrary properties to reagents besides types. Just separate
+them with slashes.
 
   ```nim
   x:array:number:3/uninitialized
@@ -280,7 +280,7 @@ within a row separated by colons. So the last example above would become
 something like this:
 
   ```
-  z           : integer  /
+  z           : number   /
   assign-once : true     /
   assigned    : false
   ```
