@@ -761,7 +761,7 @@ Transform.push_back(expand_type_abbreviations_in_containers);  // idempotent
 :(code)
 // extremely inefficient; we process all types over and over again, once for every single recipe
 // but it doesn't seem to cause any noticeable slowdown
-void expand_type_abbreviations_in_containers(unused const recipe_ordinal r) {
+void expand_type_abbreviations_in_containers(vestigial const recipe_ordinal r) {
   for (map<type_ordinal, type_info>::iterator p = Type.begin();  p != Type.end();  ++p) {
     for (int i = 0;  i < SIZE(p->second.elements);  ++i)
       expand_type_abbreviations(p->second.elements.at(i).type);

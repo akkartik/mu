@@ -205,7 +205,7 @@ bool contains_type_ingredient_name(const type_tree* type) {
   return contains_type_ingredient_name(type->left) || contains_type_ingredient_name(type->right);
 }
 
-int number_of_concrete_type_names(unused const instruction& inst, recipe_ordinal r) {
+int number_of_concrete_type_names(vestigial const instruction& inst, recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   int result = 0;
   for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
@@ -223,7 +223,7 @@ int number_of_concrete_type_names(const type_tree* type) {
        + number_of_concrete_type_names(type->right);
 }
 
-int number_of_type_ingredients(unused const instruction& inst, recipe_ordinal r) {
+int number_of_type_ingredients(vestigial const instruction& inst, recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   int result = 0;
   for (int i = 0;  i < SIZE(caller.ingredients);  ++i)

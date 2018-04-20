@@ -202,7 +202,7 @@ bool trace_contains_errors() {
 :(before "End Types")
 struct end {};
 :(code)
-ostream& operator<<(ostream& os, unused end) {
+ostream& operator<<(ostream& os, vestigial end) {
   if (Trace_stream) Trace_stream->newline();
   return os;
 }
