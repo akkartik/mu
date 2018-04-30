@@ -1,0 +1,284 @@
+#!/bin/sh
+# Experimental alternative to build2 that can run steps in parallel if their
+# dependencies are met. Caveats:
+#
+#   1. We rely on the OS to schedule steps, so thousands of independent tasks
+#      will likely be counter-productive.
+#   2. Can run out of virtual memory if you spawn too many say $CC processes.
+#   3. Compilation errors can cause the script to hang.
+#   4. Ugly as heck! Really needs simpler versions to compare against. And
+#      even then, diff gets confused.
+#   5. There's a mechanical difficulty: we use mktemp to reliably create
+#      temporary filenames, which has the side effect of also creating the
+#      files. So zero-size files are considered equivalent to empty files.
+#      When some commands have trouble with this (e.g. ar) we need to delete
+#      the empty file, which can expose us to a race condition wrt mktemp.
+
+set -e  # stop immediately on error
+
+# Some environment variables that can be passed in. For example, to turn off
+# optimization:
+#   $ CFLAGS=-g ./build2
+test "$CXX" || export CXX=c++
+test "$CC" || export CC=cc
+test "$CFLAGS" || export CFLAGS="-g -O2"
+export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+
+# Outline:
+# [0-9]*.cc -> mu.cc -> .build/*.cc -> .build/*.o -> .build/mu_bin
+# (layers)   |        |              |             |
+#          tangle  cleave          $CXX          $CXX
+
+# can also be called with a layer to only build until
+#   $ ./build2 --until 050
+UNTIL_LAYER=${2:-zzz}
+
+# there's two mechanisms for fast builds here:
+# - if a command is quick to run, always run it but update the result only on any change
+# - otherwise run it only if the output is 'older_than' the inputs
+#
+# avoid combining both mechanisms for a single file
+# otherwise you'll see spurious messages about files being updated
+# risk: a file may unnecessarily update without changes, causing unnecessary work downstream
+
+# return 1 if $1 is older than _any_ of the remaining args
+older_than() {
+  local target=$1
+  shift
+  if [ ! -s $target ]
+  then
+#?     echo "$target has size zero"
+#?     echo "updating $target" >&2
+    return 0  # success
+  fi
+  local f
+  for f in $*
+  do
+    if [ $f -nt $target ]
+    then
+#?       echo "updating $target" >&2
+      return 0  # success
+    fi
+  done
+  return 1  # failure
+}
+
+# redirect to $1, unless it's already identical
+update() {
+  if [ ! -e $1 ]
+  then
+    cat > $1
+  else
+    cat > $1.tmp
+    diff -q $1 $1.tmp >/dev/null  &&  rm $1.tmp  ||  mv $1.tmp $1
+  fi
+}
+
+update_cp() {
+  if [ ! -e $2/$1 ]
+  then
+    cp $1 $2
+  elif [ $1 -nt $2/$1 ]
+  then
+    cp $1 $2
+  fi
+}
+
+noisy_cd() {
+  cd $1
+  echo "-- `pwd`" >&2
+}
+
+mv_if_exists() {
+  test -e $1  &&  mv $1 $2
+  return 0
+}
+
+wait_for_all() {
+  # could use inotify on Linux
+  while ! all_exist "$@"
+  do
+    sleep 1
+  done
+}
+
+all_exist() {
+  for f in "$@"
+  do
+    test -e $f  ||  return 1
+  done
+  return 0
+}
+
+TMP=`mktemp`
+mv_if_exists enumerate/enumerate $TMP
+(
+  wait_for_all enumerate/enumerate.cc
+  older_than $TMP enumerate/enumerate.cc && {
+    echo "building enumerate"
+    $CXX $CFLAGS enumerate/enumerate.cc -o $TMP
+    echo "done building enumerate"
+  }
+  mv $TMP enumerate/enumerate
+) &
+
+TMP=`mktemp`
+mv_if_exists tangle/tangle $TMP
+(
+  wait_for_all tangle/*.cc
+  older_than $TMP tangle/*.cc && {
+    echo "building tangle"
+    cd tangle
+      # auto-generate various lists (ending in '_list' by convention) {
+      # list of types
+      {
+        grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'
+        grep -h "^typedef " [0-9]*.cc
+      }  |update type_list
+      # list of function declarations, so I can define them in any order
+      grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  |update function_list
+      # list of code files to compile
+      ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  |update file_list
+      # list of test files to compile
+      ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  |update test_file_list
+      # list of tests to run
+      grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update test_list
+      # }
+      # Now that we have all the _lists, compile 'tangle'
+      $CXX $CFLAGS boot.cc -o $TMP
+    cd ..
+    echo "done building tangle"
+  }
+  mv $TMP tangle/tangle
+) &
+
+wait_for_all enumerate/enumerate
+echo "enumerating layers"
+LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
+echo "done enumerating layers"
+
+TMP=`mktemp`
+mv_if_exists mu.cc $TMP
+(
+  wait_for_all $LAYERS enumerate/enumerate tangle/tangle
+  older_than $TMP $LAYERS enumerate/enumerate tangle/tangle && {
+    echo "running tangle"
+    # no update here; rely on 'update' calls downstream
+    ./tangle/tangle $LAYERS  > $TMP
+    echo "done running tangle"
+  }
+  mv $TMP mu.cc
+) &
+
+TMP=`mktemp`
+mv_if_exists cleave/cleave $TMP
+(
+  wait_for_all cleave/cleave.cc
+  older_than $TMP cleave/cleave.cc && {
+    echo "building cleave"
+    $CXX $CFLAGS cleave/cleave.cc -o $TMP
+    rm -rf .build
+    echo "done building cleave"
+  }
+  mv $TMP cleave/cleave
+) &
+
+wait_for_all mu.cc cleave/cleave  # cleave/cleave just for the .build cleanup
+mkdir -p .build
+# auto-generate function declarations, so I can define them in any order
+# functions start out unindented, have all args on the same line, and end in ') {'
+#
+#                                      \/ ignore methods
+grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |update .build/function_list
+# auto-generate list of tests to run
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |update .build/test_list
+mkdir -p .build/termbox
+update_cp termbox/termbox.h .build/termbox
+
+TMP=`mktemp`
+mv_if_exists mu_bin $TMP
+(
+  wait_for_all mu.cc cleave/cleave termbox/*.c termbox/*.h termbox/*.inl
+  older_than $TMP mu.cc *_list cleave/cleave termbox/* && {
+    echo "building mu_bin"
+    ./cleave/cleave mu.cc .build
+    cd .build
+      # create the list of global variable declarations from the corresponding definitions
+      grep ';' global_definitions_list  |sed 's/[=(].*/;/'  |sed 's/^[^\/# ]/extern &/'  |sed 's/^extern extern /extern /'  |update global_declarations_list
+      for f in mu_*.cc
+      do
+        OBJ=`echo $f |sed 's/\.cc$/.o/'`
+        TMP=`mktemp`
+        mv_if_exists $OBJ $TMP
+        (
+          older_than $TMP $f header global_declarations_list function_list test_list && {
+            echo "building $OBJ"
+            $CXX $CFLAGS -c $f -o $TMP
+            echo "done building $OBJ"
+          }
+          mv $TMP $OBJ
+        ) &
+      done
+    cd ../termbox
+      TMP=`mktemp`
+      mv_if_exists utf8.o $TMP
+      (
+        older_than $TMP utf8.c && {
+          echo "building termbox/utf8.o"
+          $CC $CFLAGS -c utf8.c -o $TMP
+          echo "done building termbox/utf8.o"
+        }
+        mv $TMP utf8.o
+      ) &
+      TMP=`mktemp`
+      mv_if_exists termbox.o $TMP
+      (
+        older_than $TMP termbox.c termbox.h input.inl output.inl bytebuffer.inl && {
+          echo "building termbox/termbox.o"
+          $CC $CFLAGS -c termbox.c -o $TMP
+          echo "done building termbox/termbox.o"
+        }
+        mv $TMP termbox.o
+      ) &
+      TMP=`mktemp`
+      mv_if_exists libtermbox.a $TMP
+      (
+        wait_for_all termbox.o utf8.o
+        older_than $TMP termbox.o utf8.o && {
+          echo "building termbox/libtermbox.a"
+          rm $TMP;  ar rcs $TMP termbox.o utf8.o  # race condition; later mktemp may end up reusing this file
+          echo "done building termbox/libtermbox.a"
+        }
+        mv $TMP libtermbox.a
+      ) &
+    cd ..
+    MU_OBJS=`echo .build/mu_*.cc |sed 's/\.cc/.o/g'`
+    echo wait_for_all $MU_OBJS termbox/libtermbox.a
+    wait_for_all $MU_OBJS termbox/libtermbox.a
+    echo "building .build/mu_bin"
+    $CXX $CFLAGS $MU_OBJS termbox/libtermbox.a -o $TMP
+    echo "done building .build/mu_bin"
+    echo "done building mu_bin"
+  }
+  mv $TMP mu_bin
+) &
+
+## [0-9]*.mu -> core.mu
+
+wait_for_all enumerate/enumerate
+echo "building core.mu"
+MU_LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
+cat $MU_LAYERS  |update core.mu
+echo "done building core.mu"
+
+wait_for_all mu_bin
+exit 0
+
+# scenarios considered:
+#   0 status when nothing needs updating
+#   no output when nothing needs updating
+#     no output for mu.cc when .mu files modified
+#     touch mu.cc but don't modify it; no output on second build
+#     touch a .cc layer but don't modify it; no output on second build
+#   only a single layer is recompiled when changing a C++ function
+#   stop immediately after failure in tangle
