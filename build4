@@ -6,8 +6,8 @@
 #      will likely be counter-productive.
 #   2. Can run out of virtual memory if you spawn too many say $CC processes.
 #   3. Compilation errors can cause the script to hang.
-#   4. Ugly as heck! Really needs simpler versions to compare against. And
-#      even then, diff gets confused.
+#   4. Ugly as heck! This version really benefits from comparisons with its
+#      'upstream', build2. And even then, diff gets confused.
 #   5. There's a mechanical difficulty: we use mktemp to reliably create
 #      temporary filenames, which has the side effect of also creating the
 #      files. So zero-size files are considered equivalent to empty files.
@@ -18,7 +18,7 @@ set -e  # stop immediately on error
 
 # Some environment variables that can be passed in. For example, to turn off
 # optimization:
-#   $ CFLAGS=-g ./build2
+#   $ CFLAGS=-g ./build4
 test "$CXX" || export CXX=c++
 test "$CC" || export CC=cc
 test "$CFLAGS" || export CFLAGS="-g -O2"
@@ -30,7 +30,7 @@ export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
 #          tangle  cleave          $CXX          $CXX
 
 # can also be called with a layer to only build until
-#   $ ./build2 --until 050
+#   $ ./build4 --until 050
 UNTIL_LAYER=${2:-zzz}
 
 # there's two mechanisms for fast builds here:
