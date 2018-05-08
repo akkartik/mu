@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 076continuation.cc</title>
-<meta name="Generator" content="Vim/8.0">
+<meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
@@ -15,18 +15,18 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
-.traceAbsent { color: #c00000; }
-.LineNr { color: #444444; }
 .Constant { color: #00a0a0; }
-.muRecipe { color: #ff8700; }
-.Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #c0a020; }
-.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
-.cSpecial { color: #008000; }
+.Delimiter { color: #800080; }
+.LineNr { color: #444444; }
+.Identifier { color: #c0a020; }
+.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
 .traceContains { color: #008000; }
+.traceAbsent { color: #c00000; }
+.cSpecial { color: #008000; }
 -->
 </style>
 
@@ -202,7 +202,7 @@ if ('onhashchange' in window) {
 <span id="L139" class="LineNr">139 </span>  <span class="Delimiter">}</span>
 <span id="L140" class="LineNr">140 </span>  <a href='010vm.cc.html#L32'>instruction</a><span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> caller_instruction = <a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">();</span>
 <span id="L141" class="LineNr">141 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>continuation_mark_tag = <a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value<span class="Delimiter">;</span>
-<span id="L142" class="LineNr">142 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>Recipe_ordinal[current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name]<span class="Delimiter">));</span>
+<span id="L142" class="LineNr">142 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
 <span id="L143" class="LineNr">143 </span>  <span class="Comment">// drop the mark</span>
 <span id="L144" class="LineNr">144 </span>  caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">());</span>
 <span id="L145" class="LineNr">145 </span>  ingredients<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">());</span>
@@ -222,202 +222,215 @@ if ('onhashchange' in window) {
 <span id="L159" class="LineNr">159 </span>]
 <span id="L160" class="LineNr">160 </span><span class="traceContains">+mem: storing 1 in location 10</span>
 <span id="L161" class="LineNr">161 </span>
-<span id="L162" class="LineNr">162 </span><span class="Comment">//: save the slice of current call stack until the 'call-with-continuation-mark'</span>
-<span id="L163" class="LineNr">163 </span><span class="Comment">//: call, and return it as the result.</span>
-<span id="L164" class="LineNr">164 </span><span class="Comment">//: todo: implement delimited continuations in Mu's memory</span>
-<span id="L165" class="LineNr">165 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
-<span id="L166" class="LineNr">166 </span><span class="Normal">struct</span> delimited_continuation <span class="Delimiter">{</span>
-<span id="L167" class="LineNr">167 </span>  call_stack frames<span class="Delimiter">;</span>
-<span id="L168" class="LineNr">168 </span>  <span class="Normal">int</span> nrefs<span class="Delimiter">;</span>
-<span id="L169" class="LineNr">169 </span>  delimited_continuation<span class="Delimiter">(</span>call_stack::iterator begin<span class="Delimiter">,</span> call_stack::iterator <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">)</span> :frames<span class="Delimiter">(</span>call_stack<span class="Delimiter">(</span>begin<span class="Delimiter">,</span> <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">)),</span> nrefs<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
-<span id="L170" class="LineNr">170 </span><span class="Delimiter">};</span>
-<span id="L171" class="LineNr">171 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L172" class="LineNr">172 </span>map&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span><span class="Delimiter">,</span> delimited_continuation&gt; Delimited_continuation<span class="Delimiter">;</span>
-<span id="L173" class="LineNr">173 </span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Next_delimited_continuation_id = <span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// 0 is null just like an address</span>
-<span id="L174" class="LineNr">174 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
-<span id="L175" class="LineNr">175 </span>Delimited_continuation<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
-<span id="L176" class="LineNr">176 </span>Next_delimited_continuation_id = <span class="Constant">1</span><span class="Delimiter">;</span>
-<span id="L177" class="LineNr">177 </span>
-<span id="L178" class="LineNr">178 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-<span id="L179" class="LineNr">179 </span>RETURN_CONTINUATION_UNTIL_MARK<span class="Delimiter">,</span>
-<span id="L180" class="LineNr">180 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L181" class="LineNr">181 </span>Recipe_ordinal[<span class="Constant">&quot;return-continuation-until-mark&quot;</span>] = RETURN_CONTINUATION_UNTIL_MARK<span class="Delimiter">;</span>
-<span id="L182" class="LineNr">182 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span id="L183" class="LineNr">183 </span><span class="Normal">case</span> RETURN_CONTINUATION_UNTIL_MARK: <span class="Delimiter">{</span>
-<span id="L184" class="LineNr">184 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L185" class="LineNr">185 </span><span class="Delimiter">}</span>
-<span id="L186" class="LineNr">186 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span id="L187" class="LineNr">187 </span><span class="Normal">case</span> RETURN_CONTINUATION_UNTIL_MARK: <span class="Delimiter">{</span>
-<span id="L188" class="LineNr">188 </span>  <span class="Comment">// I don't know how to think about next-ingredient in combination with</span>
-<span id="L189" class="LineNr">189 </span>  <span class="Comment">// continuations, so seems cleaner to just kill it. Functions have to read</span>
-<span id="L190" class="LineNr">190 </span>  <span class="Comment">// their inputs before ever returning a continuation.</span>
-<span id="L191" class="LineNr">191 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
-<span id="L192" class="LineNr">192 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L193" class="LineNr">193 </span>  <span class="Comment">// copy the current call stack until the most recent marked call</span>
-<span id="L194" class="LineNr">194 </span>  call_stack::iterator find_base_of_continuation<span class="Delimiter">(</span>call_stack&amp;<span class="Delimiter">,</span> <span class="Normal">int</span><span class="Delimiter">);</span>  <span class="Comment">// manual prototype containing '::'</span>
-<span id="L195" class="LineNr">195 </span>  call_stack::iterator base = find_base_of_continuation<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">mark tag</span><span class="Comment">*/</span><a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value<span class="Delimiter">);</span>
-<span id="L196" class="LineNr">196 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>base == Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L197" class="LineNr">197 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;couldn't find a 'call-with-continuation-mark' to return to</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L198" class="LineNr">198 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;call stack:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L199" class="LineNr">199 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::iterator p = Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
-<span id="L200" class="LineNr">200 </span>      <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L201" class="LineNr">201 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L202" class="LineNr">202 </span>  <span class="Delimiter">}</span>
-<span id="L203" class="LineNr">203 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;creating continuation &quot;</span> &lt;&lt; Next_delimited_continuation_id &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L204" class="LineNr">204 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> Next_delimited_continuation_id<span class="Delimiter">,</span> delimited_continuation<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> base<span class="Delimiter">));</span>
-<span id="L205" class="LineNr">205 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L206" class="LineNr">206 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L207" class="LineNr">207 </span>      --Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-<span id="L208" class="LineNr">208 </span>      assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L209" class="LineNr">209 </span>    <span class="Delimiter">}</span>
-<span id="L210" class="LineNr">210 </span>    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
-<span id="L211" class="LineNr">211 </span>  <span class="Delimiter">}</span>
-<span id="L212" class="LineNr">212 </span>  <span class="Comment">// return it as the result of the marked call</span>
-<span id="L213" class="LineNr">213 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L214" class="LineNr">214 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>Next_delimited_continuation_id<span class="Delimiter">);</span>
-<span id="L215" class="LineNr">215 </span>  <span class="Comment">// return any other ingredients passed in</span>
-<span id="L216" class="LineNr">216 </span>  copy<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark tag</span><span class="Comment">*/</span>++ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">()));</span>
-<span id="L217" class="LineNr">217 </span>  ++Next_delimited_continuation_id<span class="Delimiter">;</span>
-<span id="L218" class="LineNr">218 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// continue to process rest of marked call</span>
-<span id="L219" class="LineNr">219 </span><span class="Delimiter">}</span>
-<span id="L220" class="LineNr">220 </span>
-<span id="L221" class="LineNr">221 </span><span class="Delimiter">:(code)</span>
-<span id="L222" class="LineNr">222 </span>call_stack::iterator find_base_of_continuation<span class="Delimiter">(</span>call_stack&amp; c<span class="Delimiter">,</span> <span class="Normal">int</span> mark_tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L223" class="LineNr">223 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::iterator p = c<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != c<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-<span id="L224" class="LineNr">224 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>continuation_mark_tag == mark_tag<span class="Delimiter">)</span> <span class="Identifier">return</span> p<span class="Delimiter">;</span>
-<span id="L225" class="LineNr">225 </span>  <span class="Identifier">return</span> c<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L226" class="LineNr">226 </span><span class="Delimiter">}</span>
-<span id="L227" class="LineNr">227 </span>
-<span id="L228" class="LineNr">228 </span><span class="Comment">//: overload 'call' for continuations</span>
-<span id="L229" class="LineNr">229 </span><span class="Delimiter">:(after &quot;Begin Call&quot;)</span>
-<span id="L230" class="LineNr">230 </span><span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_continuation<span class="Delimiter">(</span><a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-<span id="L231" class="LineNr">231 </span>  <span class="Comment">// copy multiple calls on to current call stack</span>
-<span id="L232" class="LineNr">232 </span>  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-<span id="L233" class="LineNr">233 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;calling continuation &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L234" class="LineNr">234 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
-<span id="L235" class="LineNr">235 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;no such delimited continuation &quot;</span> &lt;&lt; <a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L236" class="LineNr">236 </span>  <span class="Normal">const</span> call_stack&amp; new_frames = get<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)).</span>frames<span class="Delimiter">;</span>
-<span id="L237" class="LineNr">237 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_reverse_iterator p = new_frames<span class="Delimiter">.</span>rbegin<span class="Delimiter">();</span> p != new_frames<span class="Delimiter">.</span>rend<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-<span id="L238" class="LineNr">238 </span>    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>*p<span class="Delimiter">);</span>
-<span id="L239" class="LineNr">239 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L240" class="LineNr">240 </span>    Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth += <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>new_frames<span class="Delimiter">);</span>
-<span id="L241" class="LineNr">241 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;calling delimited continuation; growing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L242" class="LineNr">242 </span>    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
-<span id="L243" class="LineNr">243 </span>  <span class="Delimiter">}</span>
-<span id="L244" class="LineNr">244 </span>  <span class="Comment">// no call housekeeping; continuations don't support next-ingredient</span>
-<span id="L245" class="LineNr">245 </span>  copy<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">drop continuation</span><span class="Comment">*/</span>++ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
-<span id="L246" class="LineNr">246 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// record results of resuming 'return-continuation-until-mark' instruction</span>
-<span id="L247" class="LineNr">247 </span><span class="Delimiter">}</span>
-<span id="L248" class="LineNr">248 </span>
-<span id="L249" class="LineNr">249 </span><span class="Delimiter">:(scenario continuations_can_return_values)</span>
-<span id="L250" class="LineNr">250 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L251" class="LineNr">251 </span>  local-scope
-<span id="L252" class="LineNr">252 </span>  <span class="Normal">k</span>:continuation<span class="Delimiter">,</span> <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f
-<span id="L253" class="LineNr">253 </span>]
-<span id="L254" class="LineNr">254 </span><span class="muRecipe">def</span> f [
-<span id="L255" class="LineNr">255 </span>  local-scope
-<span id="L256" class="LineNr">256 </span>  g
-<span id="L257" class="LineNr">257 </span>]
-<span id="L258" class="LineNr">258 </span><span class="muRecipe">def</span> g [
-<span id="L259" class="LineNr">259 </span>  local-scope
-<span id="L260" class="LineNr">260 </span>  <span class="Identifier">return</span>-continuation-until-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> <span class="Constant">34</span>
-<span id="L261" class="LineNr">261 </span>  stash [continuation called]
-<span id="L262" class="LineNr">262 </span>]
-<span id="L263" class="LineNr">263 </span><span class="traceContains">+mem: storing 34 in location 1</span>
-<span id="L264" class="LineNr">264 </span>
-<span id="L265" class="LineNr">265 </span><span class="Delimiter">:(scenario continuations_continue_to_matching_mark)</span>
-<span id="L266" class="LineNr">266 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L267" class="LineNr">267 </span>  local-scope
-<span id="L268" class="LineNr">268 </span>  <span class="Normal">k</span>:continuation<span class="Delimiter">,</span> <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f
-<span id="L269" class="LineNr">269 </span>  add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>
+<span id="L162" class="LineNr">162 </span><span class="Delimiter">:(scenario delimited_continuation_out_of_recipe_variable)</span>
+<span id="L163" class="LineNr">163 </span><span class="muRecipe"><a href='010vm.cc.html#L19'>recipe</a></span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L164" class="LineNr">164 </span>  <span class="Normal">x</span>:<a href='010vm.cc.html#L19'>recipe</a><span class="Special"> &lt;- </span>copy f
+<span id="L165" class="LineNr">165 </span>  call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> x<span class="Delimiter">,</span> <span class="Constant">1</span>/<span class="Constant">true</span>
+<span id="L166" class="LineNr">166 </span>]
+<span id="L167" class="LineNr">167 </span><span class="muRecipe"><a href='010vm.cc.html#L19'>recipe</a></span> f [
+<span id="L168" class="LineNr">168 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>next-input
+<span id="L169" class="LineNr">169 </span>]
+<span id="L170" class="LineNr">170 </span><span class="traceContains">+mem: storing 1 in location 10</span>
+<span id="L171" class="LineNr">171 </span>
+<span id="L172" class="LineNr">172 </span><span class="Comment">//: save the slice of current call stack until the 'call-with-continuation-mark'</span>
+<span id="L173" class="LineNr">173 </span><span class="Comment">//: call, and return it as the result.</span>
+<span id="L174" class="LineNr">174 </span><span class="Comment">//: todo: implement delimited continuations in Mu's memory</span>
+<span id="L175" class="LineNr">175 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
+<span id="L176" class="LineNr">176 </span><span class="Normal">struct</span> delimited_continuation <span class="Delimiter">{</span>
+<span id="L177" class="LineNr">177 </span>  call_stack frames<span class="Delimiter">;</span>
+<span id="L178" class="LineNr">178 </span>  <span class="Normal">int</span> nrefs<span class="Delimiter">;</span>
+<span id="L179" class="LineNr">179 </span>  delimited_continuation<span class="Delimiter">(</span>call_stack::iterator begin<span class="Delimiter">,</span> call_stack::iterator <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">)</span> :frames<span class="Delimiter">(</span>call_stack<span class="Delimiter">(</span>begin<span class="Delimiter">,</span> <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">)),</span> nrefs<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span id="L180" class="LineNr">180 </span><span class="Delimiter">};</span>
+<span id="L181" class="LineNr">181 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L182" class="LineNr">182 </span>map&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span><span class="Delimiter">,</span> delimited_continuation&gt; Delimited_continuation<span class="Delimiter">;</span>
+<span id="L183" class="LineNr">183 </span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Next_delimited_continuation_id = <span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// 0 is null just like an address</span>
+<span id="L184" class="LineNr">184 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
+<span id="L185" class="LineNr">185 </span>Delimited_continuation<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
+<span id="L186" class="LineNr">186 </span>Next_delimited_continuation_id = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span id="L187" class="LineNr">187 </span>
+<span id="L188" class="LineNr">188 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<span id="L189" class="LineNr">189 </span>RETURN_CONTINUATION_UNTIL_MARK<span class="Delimiter">,</span>
+<span id="L190" class="LineNr">190 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<span id="L191" class="LineNr">191 </span>Recipe_ordinal[<span class="Constant">&quot;return-continuation-until-mark&quot;</span>] = RETURN_CONTINUATION_UNTIL_MARK<span class="Delimiter">;</span>
+<span id="L192" class="LineNr">192 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span id="L193" class="LineNr">193 </span><span class="Normal">case</span> RETURN_CONTINUATION_UNTIL_MARK: <span class="Delimiter">{</span>
+<span id="L194" class="LineNr">194 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span id="L195" class="LineNr">195 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' requires at least one ingredient: a mark tag (number)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L196" class="LineNr">196 </span>  <span class="Delimiter">}</span>
+<span id="L197" class="LineNr">197 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L198" class="LineNr">198 </span><span class="Delimiter">}</span>
+<span id="L199" class="LineNr">199 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span id="L200" class="LineNr">200 </span><span class="Normal">case</span> RETURN_CONTINUATION_UNTIL_MARK: <span class="Delimiter">{</span>
+<span id="L201" class="LineNr">201 </span>  <span class="Comment">// I don't know how to think about next-ingredient in combination with</span>
+<span id="L202" class="LineNr">202 </span>  <span class="Comment">// continuations, so seems cleaner to just kill it. Functions have to read</span>
+<span id="L203" class="LineNr">203 </span>  <span class="Comment">// their inputs before ever returning a continuation.</span>
+<span id="L204" class="LineNr">204 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
+<span id="L205" class="LineNr">205 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L206" class="LineNr">206 </span>  <span class="Comment">// copy the current call stack until the most recent marked call</span>
+<span id="L207" class="LineNr">207 </span>  call_stack::iterator find_base_of_continuation<span class="Delimiter">(</span>call_stack&amp;<span class="Delimiter">,</span> <span class="Normal">int</span><span class="Delimiter">);</span>  <span class="Comment">// manual prototype containing '::'</span>
+<span id="L208" class="LineNr">208 </span>  call_stack::iterator base = find_base_of_continuation<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">mark tag</span><span class="Comment">*/</span><a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value<span class="Delimiter">);</span>
+<span id="L209" class="LineNr">209 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>base == Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span id="L210" class="LineNr">210 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;couldn't find a 'call-with-continuation-mark' to return to with tag &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L211" class="LineNr">211 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;call stack:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L212" class="LineNr">212 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::iterator p = Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
+<span id="L213" class="LineNr">213 </span>      <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L214" class="LineNr">214 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L215" class="LineNr">215 </span>  <span class="Delimiter">}</span>
+<span id="L216" class="LineNr">216 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;creating continuation &quot;</span> &lt;&lt; Next_delimited_continuation_id &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L217" class="LineNr">217 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> Next_delimited_continuation_id<span class="Delimiter">,</span> delimited_continuation<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> base<span class="Delimiter">));</span>
+<span id="L218" class="LineNr">218 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L219" class="LineNr">219 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L220" class="LineNr">220 </span>      --Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
+<span id="L221" class="LineNr">221 </span>      assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L222" class="LineNr">222 </span>    <span class="Delimiter">}</span>
+<span id="L223" class="LineNr">223 </span>    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
+<span id="L224" class="LineNr">224 </span>  <span class="Delimiter">}</span>
+<span id="L225" class="LineNr">225 </span>  <span class="Comment">// return it as the result of the marked call</span>
+<span id="L226" class="LineNr">226 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L227" class="LineNr">227 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>Next_delimited_continuation_id<span class="Delimiter">);</span>
+<span id="L228" class="LineNr">228 </span>  <span class="Comment">// return any other ingredients passed in</span>
+<span id="L229" class="LineNr">229 </span>  copy<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark tag</span><span class="Comment">*/</span>++ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">()));</span>
+<span id="L230" class="LineNr">230 </span>  ++Next_delimited_continuation_id<span class="Delimiter">;</span>
+<span id="L231" class="LineNr">231 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// continue to process rest of marked call</span>
+<span id="L232" class="LineNr">232 </span><span class="Delimiter">}</span>
+<span id="L233" class="LineNr">233 </span>
+<span id="L234" class="LineNr">234 </span><span class="Delimiter">:(code)</span>
+<span id="L235" class="LineNr">235 </span>call_stack::iterator find_base_of_continuation<span class="Delimiter">(</span>call_stack&amp; c<span class="Delimiter">,</span> <span class="Normal">int</span> mark_tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L236" class="LineNr">236 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::iterator p = c<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != c<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+<span id="L237" class="LineNr">237 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>continuation_mark_tag == mark_tag<span class="Delimiter">)</span> <span class="Identifier">return</span> p<span class="Delimiter">;</span>
+<span id="L238" class="LineNr">238 </span>  <span class="Identifier">return</span> c<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L239" class="LineNr">239 </span><span class="Delimiter">}</span>
+<span id="L240" class="LineNr">240 </span>
+<span id="L241" class="LineNr">241 </span><span class="Comment">//: overload 'call' for continuations</span>
+<span id="L242" class="LineNr">242 </span><span class="Delimiter">:(after &quot;Begin Call&quot;)</span>
+<span id="L243" class="LineNr">243 </span><span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_continuation<span class="Delimiter">(</span><a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<span id="L244" class="LineNr">244 </span>  <span class="Comment">// copy multiple calls on to current call stack</span>
+<span id="L245" class="LineNr">245 </span>  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+<span id="L246" class="LineNr">246 </span>  <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;calling continuation &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L247" class="LineNr">247 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
+<span id="L248" class="LineNr">248 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;no such delimited continuation &quot;</span> &lt;&lt; <a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L249" class="LineNr">249 </span>  <span class="Normal">const</span> call_stack&amp; new_frames = get<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)).</span>frames<span class="Delimiter">;</span>
+<span id="L250" class="LineNr">250 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_reverse_iterator p = new_frames<span class="Delimiter">.</span>rbegin<span class="Delimiter">();</span> p != new_frames<span class="Delimiter">.</span>rend<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+<span id="L251" class="LineNr">251 </span>    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>*p<span class="Delimiter">);</span>
+<span id="L252" class="LineNr">252 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L253" class="LineNr">253 </span>    Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth += <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>new_frames<span class="Delimiter">);</span>
+<span id="L254" class="LineNr">254 </span>    <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;calling delimited continuation; growing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L255" class="LineNr">255 </span>    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
+<span id="L256" class="LineNr">256 </span>  <span class="Delimiter">}</span>
+<span id="L257" class="LineNr">257 </span>  <span class="Comment">// no call housekeeping; continuations don't support next-ingredient</span>
+<span id="L258" class="LineNr">258 </span>  copy<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">drop continuation</span><span class="Comment">*/</span>++ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span><a href='003trace.cc.html#L203'>end</a><span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
+<span id="L259" class="LineNr">259 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// record results of resuming 'return-continuation-until-mark' instruction</span>
+<span id="L260" class="LineNr">260 </span><span class="Delimiter">}</span>
+<span id="L261" class="LineNr">261 </span>
+<span id="L262" class="LineNr">262 </span><span class="Delimiter">:(scenario continuations_can_return_values)</span>
+<span id="L263" class="LineNr">263 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L264" class="LineNr">264 </span>  local-scope
+<span id="L265" class="LineNr">265 </span>  <span class="Normal">k</span>:continuation<span class="Delimiter">,</span> <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f
+<span id="L266" class="LineNr">266 </span>]
+<span id="L267" class="LineNr">267 </span><span class="muRecipe">def</span> f [
+<span id="L268" class="LineNr">268 </span>  local-scope
+<span id="L269" class="LineNr">269 </span>  g
 <span id="L270" class="LineNr">270 </span>]
-<span id="L271" class="LineNr">271 </span><span class="muRecipe">def</span> f [
+<span id="L271" class="LineNr">271 </span><span class="muRecipe">def</span> g [
 <span id="L272" class="LineNr">272 </span>  local-scope
-<span id="L273" class="LineNr">273 </span>  <span class="Normal">k2</span>:continuation<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">234</span>/mark<span class="Delimiter">,</span> g
-<span id="L274" class="LineNr">274 </span>  add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>
+<span id="L273" class="LineNr">273 </span>  <span class="Identifier">return</span>-continuation-until-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> <span class="Constant">34</span>
+<span id="L274" class="LineNr">274 </span>  stash [continuation called]
 <span id="L275" class="LineNr">275 </span>]
-<span id="L276" class="LineNr">276 </span><span class="muRecipe">def</span> g [
-<span id="L277" class="LineNr">277 </span>  local-scope
-<span id="L278" class="LineNr">278 </span>  <span class="Identifier">return</span>-continuation-until-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> <span class="Constant">34</span>
-<span id="L279" class="LineNr">279 </span>  stash [continuation called]
-<span id="L280" class="LineNr">280 </span>]
-<span id="L281" class="LineNr">281 </span><span class="traceContains">+run: add {1: &quot;literal&quot;}, {1: &quot;literal&quot;}</span>
-<span id="L282" class="LineNr">282 </span><span class="traceAbsent">-run: add {2: &quot;literal&quot;}, {2: &quot;literal&quot;}</span>
-<span id="L283" class="LineNr">283 </span>
-<span id="L284" class="LineNr">284 </span><span class="Comment">//: Allow shape-shifting recipes to return continuations.</span>
-<span id="L285" class="LineNr">285 </span>
-<span id="L286" class="LineNr">286 </span><span class="Delimiter">:(scenario call_shape_shifting_recipe_with_continuation_mark)</span>
-<span id="L287" class="LineNr">287 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L288" class="LineNr">288 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f<span class="Delimiter">,</span> <span class="Constant">34</span>
-<span id="L289" class="LineNr">289 </span>]
-<span id="L290" class="LineNr">290 </span><span class="muRecipe">def</span> f x:_elem<span class="muRecipe"> -&gt; </span>y:_elem [
-<span id="L291" class="LineNr">291 </span>  local-scope
-<span id="L292" class="LineNr">292 </span>  load-ingredients
-<span id="L293" class="LineNr">293 </span>  y<span class="Special"> &lt;- </span>copy x
-<span id="L294" class="LineNr">294 </span>]
-<span id="L295" class="LineNr">295 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<span id="L276" class="LineNr">276 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<span id="L277" class="LineNr">277 </span>
+<span id="L278" class="LineNr">278 </span><span class="Delimiter">:(scenario continuations_continue_to_matching_mark)</span>
+<span id="L279" class="LineNr">279 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L280" class="LineNr">280 </span>  local-scope
+<span id="L281" class="LineNr">281 </span>  <span class="Normal">k</span>:continuation<span class="Delimiter">,</span> <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f
+<span id="L282" class="LineNr">282 </span>  add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>
+<span id="L283" class="LineNr">283 </span>]
+<span id="L284" class="LineNr">284 </span><span class="muRecipe">def</span> f [
+<span id="L285" class="LineNr">285 </span>  local-scope
+<span id="L286" class="LineNr">286 </span>  <span class="Normal">k2</span>:continuation<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">234</span>/mark<span class="Delimiter">,</span> g
+<span id="L287" class="LineNr">287 </span>  add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>
+<span id="L288" class="LineNr">288 </span>]
+<span id="L289" class="LineNr">289 </span><span class="muRecipe">def</span> g [
+<span id="L290" class="LineNr">290 </span>  local-scope
+<span id="L291" class="LineNr">291 </span>  <span class="Identifier">return</span>-continuation-until-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> <span class="Constant">34</span>
+<span id="L292" class="LineNr">292 </span>  stash [continuation called]
+<span id="L293" class="LineNr">293 </span>]
+<span id="L294" class="LineNr">294 </span><span class="traceContains">+run: add {1: &quot;literal&quot;}, {1: &quot;literal&quot;}</span>
+<span id="L295" class="LineNr">295 </span><span class="traceAbsent">-run: add {2: &quot;literal&quot;}, {2: &quot;literal&quot;}</span>
 <span id="L296" class="LineNr">296 </span>
-<span id="L297" class="LineNr">297 </span><span class="Delimiter">:(before &quot;End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases&quot;)</span>
-<span id="L298" class="LineNr">298 </span><span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;call-with-continuation-mark&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L299" class="LineNr">299 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; <a href='072recipe.cc.html#L208'>is_recipe_literal</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-<span id="L300" class="LineNr">300 </span>  resolve_indirect_continuation_call<span class="Delimiter">(</span>r<span class="Delimiter">,</span> index<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
-<span id="L301" class="LineNr">301 </span>  <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L302" class="LineNr">302 </span>  <span class="Delimiter">}</span>
-<span id="L303" class="LineNr">303 </span><span class="Delimiter">}</span>
-<span id="L304" class="LineNr">304 </span><span class="Delimiter">:(code)</span>
-<span id="L305" class="LineNr">305 </span><span class="Normal">void</span> resolve_indirect_continuation_call<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">,</span> <span class="Normal">int</span> index<span class="Delimiter">,</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L306" class="LineNr">306 </span>  <a href='010vm.cc.html#L32'>instruction</a> inst2<span class="Delimiter">;</span>
-<span id="L307" class="LineNr">307 </span>  inst2<span class="Delimiter">.</span>name = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
-<span id="L308" class="LineNr">308 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Comment">/*</span><span class="Comment">skip mark and <a href='010vm.cc.html#L19'>recipe</a></span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
-<span id="L309" class="LineNr">309 </span>    inst2<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-<span id="L310" class="LineNr">310 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Comment">/*</span><span class="Comment">skip continuation</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
-<span id="L311" class="LineNr">311 </span>    inst2<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-<span id="L312" class="LineNr">312 </span>  <a href='054static_dispatch.cc.html#L173'>resolve_ambiguous_call</a><span class="Delimiter">(</span>r<span class="Delimiter">,</span> index<span class="Delimiter">,</span> inst2<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
-<span id="L313" class="LineNr">313 </span>  inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">).</span>name = inst2<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-<span id="L314" class="LineNr">314 </span>  inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">).</span><a href='010vm.cc.html#L66'>set_value</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> inst2<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
-<span id="L315" class="LineNr">315 </span><span class="Delimiter">}</span>
-<span id="L316" class="LineNr">316 </span>
-<span id="L317" class="LineNr">317 </span><span class="Delimiter">:(scenario call_shape_shifting_recipe_with_continuation_mark_and_no_outputs)</span>
-<span id="L318" class="LineNr">318 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L319" class="LineNr">319 </span>  <span class="Constant">1</span>:continuation<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f<span class="Delimiter">,</span> <span class="Constant">34</span>
-<span id="L320" class="LineNr">320 </span>]
-<span id="L321" class="LineNr">321 </span><span class="muRecipe">def</span> f x:_elem [
-<span id="L322" class="LineNr">322 </span>  local-scope
-<span id="L323" class="LineNr">323 </span>  load-ingredients
-<span id="L324" class="LineNr">324 </span>  <span class="Identifier">return</span>-continuation-until-mark <span class="Constant">233</span>/mark
-<span id="L325" class="LineNr">325 </span>]
-<span id="L326" class="LineNr">326 </span>$error: <span class="Constant">0</span>
-<span id="L327" class="LineNr">327 </span>
-<span id="L328" class="LineNr">328 </span><span class="Delimiter">:(scenario continuation1)</span>
-<span id="L329" class="LineNr">329 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L330" class="LineNr">330 </span>  local-scope
-<span id="L331" class="LineNr">331 </span>  <span class="Normal">k</span>:continuation<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> create-yielder
-<span id="L332" class="LineNr">332 </span>  <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>call k
+<span id="L297" class="LineNr">297 </span><span class="Comment">//: Allow shape-shifting recipes to return continuations.</span>
+<span id="L298" class="LineNr">298 </span>
+<span id="L299" class="LineNr">299 </span><span class="Delimiter">:(scenario call_shape_shifting_recipe_with_continuation_mark)</span>
+<span id="L300" class="LineNr">300 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L301" class="LineNr">301 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f<span class="Delimiter">,</span> <span class="Constant">34</span>
+<span id="L302" class="LineNr">302 </span>]
+<span id="L303" class="LineNr">303 </span><span class="muRecipe">def</span> f x:_elem<span class="muRecipe"> -&gt; </span>y:_elem [
+<span id="L304" class="LineNr">304 </span>  local-scope
+<span id="L305" class="LineNr">305 </span>  load-ingredients
+<span id="L306" class="LineNr">306 </span>  y<span class="Special"> &lt;- </span>copy x
+<span id="L307" class="LineNr">307 </span>]
+<span id="L308" class="LineNr">308 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<span id="L309" class="LineNr">309 </span>
+<span id="L310" class="LineNr">310 </span><span class="Delimiter">:(before &quot;End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases&quot;)</span>
+<span id="L311" class="LineNr">311 </span><span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;call-with-continuation-mark&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L312" class="LineNr">312 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; <a href='072recipe.cc.html#L208'>is_recipe_literal</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<span id="L313" class="LineNr">313 </span>  resolve_indirect_continuation_call<span class="Delimiter">(</span>r<span class="Delimiter">,</span> index<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
+<span id="L314" class="LineNr">314 </span>  <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L315" class="LineNr">315 </span>  <span class="Delimiter">}</span>
+<span id="L316" class="LineNr">316 </span><span class="Delimiter">}</span>
+<span id="L317" class="LineNr">317 </span><span class="Delimiter">:(code)</span>
+<span id="L318" class="LineNr">318 </span><span class="Normal">void</span> resolve_indirect_continuation_call<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">,</span> <span class="Normal">int</span> index<span class="Delimiter">,</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L319" class="LineNr">319 </span>  <a href='010vm.cc.html#L32'>instruction</a> inst2<span class="Delimiter">;</span>
+<span id="L320" class="LineNr">320 </span>  inst2<span class="Delimiter">.</span>name = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+<span id="L321" class="LineNr">321 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Comment">/*</span><span class="Comment">skip mark and <a href='010vm.cc.html#L19'>recipe</a></span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
+<span id="L322" class="LineNr">322 </span>    inst2<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<span id="L323" class="LineNr">323 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Comment">/*</span><span class="Comment">skip continuation</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
+<span id="L324" class="LineNr">324 </span>    inst2<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<span id="L325" class="LineNr">325 </span>  <a href='054static_dispatch.cc.html#L173'>resolve_ambiguous_call</a><span class="Delimiter">(</span>r<span class="Delimiter">,</span> index<span class="Delimiter">,</span> inst2<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
+<span id="L326" class="LineNr">326 </span>  inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">).</span>name = inst2<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+<span id="L327" class="LineNr">327 </span>  inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip mark</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">).</span><a href='010vm.cc.html#L66'>set_value</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> inst2<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
+<span id="L328" class="LineNr">328 </span><span class="Delimiter">}</span>
+<span id="L329" class="LineNr">329 </span>
+<span id="L330" class="LineNr">330 </span><span class="Delimiter">:(scenario call_shape_shifting_recipe_with_continuation_mark_and_no_outputs)</span>
+<span id="L331" class="LineNr">331 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L332" class="LineNr">332 </span>  <span class="Constant">1</span>:continuation<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> f<span class="Delimiter">,</span> <span class="Constant">34</span>
 <span id="L333" class="LineNr">333 </span>]
-<span id="L334" class="LineNr">334 </span><span class="muRecipe">def</span> create-yielder<span class="muRecipe"> -&gt; </span>n:num [
+<span id="L334" class="LineNr">334 </span><span class="muRecipe">def</span> f x:_elem [
 <span id="L335" class="LineNr">335 </span>  local-scope
-<span id="L336" class="LineNr">336 </span>  load-inputs
+<span id="L336" class="LineNr">336 </span>  load-ingredients
 <span id="L337" class="LineNr">337 </span>  <span class="Identifier">return</span>-continuation-until-mark <span class="Constant">233</span>/mark
-<span id="L338" class="LineNr">338 </span>  <span class="Identifier">return</span> <span class="Constant">1</span>
-<span id="L339" class="LineNr">339 </span>]
-<span id="L340" class="LineNr">340 </span><span class="traceContains">+mem: storing 1 in location 10</span>
-<span id="L341" class="LineNr">341 </span>$error: <span class="Constant">0</span>
-<span id="L342" class="LineNr">342 </span>
-<span id="L343" class="LineNr">343 </span><span class="Delimiter">:(code)</span>
-<span id="L344" class="LineNr">344 </span><span class="Normal">bool</span> is_mu_continuation<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L345" class="LineNr">345 </span>  canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-<span id="L346" class="LineNr">346 </span>  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;continuation&quot;</span><span class="Delimiter">);</span>
-<span id="L347" class="LineNr">347 </span><span class="Delimiter">}</span>
-<span id="L348" class="LineNr">348 </span>
-<span id="L349" class="LineNr">349 </span><span class="Comment">// helper for debugging</span>
-<span id="L350" class="LineNr">350 </span><span class="Normal">void</span> <a href='003trace.cc.html#L120'>dump</a><span class="Delimiter">(</span><span class="Normal">const</span> <span class="Normal">int</span> continuation_id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L351" class="LineNr">351 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> continuation_id<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L352" class="LineNr">352 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;missing delimited continuation: &quot;</span> &lt;&lt; continuation_id &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
-<span id="L353" class="LineNr">353 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L354" class="LineNr">354 </span>  <span class="Delimiter">}</span>
-<span id="L355" class="LineNr">355 </span>  delimited_continuation&amp; curr = get<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> continuation_id<span class="Delimiter">);</span>
-<span id="L356" class="LineNr">356 </span>  <a href='003trace.cc.html#L120'>dump</a><span class="Delimiter">(</span>curr<span class="Delimiter">.</span>frames<span class="Delimiter">);</span>
-<span id="L357" class="LineNr">357 </span><span class="Delimiter">}</span>
+<span id="L338" class="LineNr">338 </span>]
+<span id="L339" class="LineNr">339 </span>$error: <span class="Constant">0</span>
+<span id="L340" class="LineNr">340 </span>
+<span id="L341" class="LineNr">341 </span><span class="Delimiter">:(scenario continuation1)</span>
+<span id="L342" class="LineNr">342 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L343" class="LineNr">343 </span>  local-scope
+<span id="L344" class="LineNr">344 </span>  <span class="Normal">k</span>:continuation<span class="Special"> &lt;- </span>call-with-continuation-mark <span class="Constant">233</span>/mark<span class="Delimiter">,</span> create-yielder
+<span id="L345" class="LineNr">345 </span>  <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>call k
+<span id="L346" class="LineNr">346 </span>]
+<span id="L347" class="LineNr">347 </span><span class="muRecipe">def</span> create-yielder<span class="muRecipe"> -&gt; </span>n:num [
+<span id="L348" class="LineNr">348 </span>  local-scope
+<span id="L349" class="LineNr">349 </span>  load-inputs
+<span id="L350" class="LineNr">350 </span>  <span class="Identifier">return</span>-continuation-until-mark <span class="Constant">233</span>/mark
+<span id="L351" class="LineNr">351 </span>  <span class="Identifier">return</span> <span class="Constant">1</span>
+<span id="L352" class="LineNr">352 </span>]
+<span id="L353" class="LineNr">353 </span><span class="traceContains">+mem: storing 1 in location 10</span>
+<span id="L354" class="LineNr">354 </span>$error: <span class="Constant">0</span>
+<span id="L355" class="LineNr">355 </span>
+<span id="L356" class="LineNr">356 </span><span class="Delimiter">:(code)</span>
+<span id="L357" class="LineNr">357 </span><span class="Normal">bool</span> is_mu_continuation<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L358" class="LineNr">358 </span>  canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+<span id="L359" class="LineNr">359 </span>  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;continuation&quot;</span><span class="Delimiter">);</span>
+<span id="L360" class="LineNr">360 </span><span class="Delimiter">}</span>
+<span id="L361" class="LineNr">361 </span>
+<span id="L362" class="LineNr">362 </span><span class="Comment">// helper for debugging</span>
+<span id="L363" class="LineNr">363 </span><span class="Normal">void</span> <a href='003trace.cc.html#L120'>dump</a><span class="Delimiter">(</span><span class="Normal">const</span> <span class="Normal">int</span> continuation_id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L364" class="LineNr">364 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> continuation_id<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L365" class="LineNr">365 </span>    <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <span class="Constant">&quot;missing delimited continuation: &quot;</span> &lt;&lt; continuation_id &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L366" class="LineNr">366 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L367" class="LineNr">367 </span>  <span class="Delimiter">}</span>
+<span id="L368" class="LineNr">368 </span>  delimited_continuation&amp; curr = get<span class="Delimiter">(</span>Delimited_continuation<span class="Delimiter">,</span> continuation_id<span class="Delimiter">);</span>
+<span id="L369" class="LineNr">369 </span>  <a href='003trace.cc.html#L120'>dump</a><span class="Delimiter">(</span>curr<span class="Delimiter">.</span>frames<span class="Delimiter">);</span>
+<span id="L370" class="LineNr">370 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 001help.cc</title>
-<meta name="Generator" content="Vim/8.0">
+<meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
@@ -15,16 +15,16 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
-.CommentedCode { color: #6c6c6c; }
-.PreProc { color: #800080; }
-.LineNr { color: #444444; }
 .Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
 .SalientComment { color: #00ffff; }
-.Identifier { color: #c0a020; }
-.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
+.Delimiter { color: #800080; }
+.LineNr { color: #444444; }
+.Identifier { color: #c0a020; }
+.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
+.CommentedCode { color: #6c6c6c; }
 .cSpecial { color: #008000; }
 -->
 </style>
@@ -219,19 +219,19 @@ if ('onhashchange' in window) {
 <span id="L157" class="LineNr">157 </span>  sigaction<span class="Delimiter">(</span><span class="Constant">SIGABRT</span><span class="Delimiter">,</span> &amp;action<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>  <span class="Comment">// assert() failure or integer overflow on linux (with -ftrapv)</span>
 <span id="L158" class="LineNr">158 </span>  sigaction<span class="Delimiter">(</span><span class="Constant">SIGILL</span><span class="Delimiter">,</span>  &amp;action<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>  <span class="Comment">// integer overflow on OS X (with -ftrapv)</span>
 <span id="L159" class="LineNr">159 </span><span class="Delimiter">}</span>
-<span id="L160" class="LineNr">160 </span><span class="Normal">void</span> <a href='001help.cc.html#L160'>dump_and_exit</a><span class="Delimiter">(</span><span class="Normal">int</span> sig<span class="Delimiter">,</span> <a href='001help.cc.html#L259'>unused</a> siginfo_t* dummy1<span class="Delimiter">,</span> <a href='001help.cc.html#L259'>unused</a> <span class="Normal">void</span>* dummy2<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L160" class="LineNr">160 </span><span class="Normal">void</span> <a href='001help.cc.html#L160'>dump_and_exit</a><span class="Delimiter">(</span><span class="Normal">int</span> sig<span class="Delimiter">,</span> <a href='001help.cc.html#L259'>vestigial</a> siginfo_t* dummy1<span class="Delimiter">,</span> <a href='001help.cc.html#L259'>vestigial</a> <span class="Normal">void</span>* dummy2<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L161" class="LineNr">161 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>sig<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L162" class="LineNr">162 </span>    <span class="Normal">case</span> <span class="Constant">SIGABRT</span>:
-<span id="L163" class="LineNr">163 </span>      <span class="PreProc">#ifndef __APPLE__</span>
+<span id="L163" class="LineNr">163 </span><span class="PreProc">      #ifndef __APPLE__</span>
 <span id="L164" class="LineNr">164 </span>        cerr &lt;&lt; <span class="Constant">&quot;SIGABRT: might be an integer overflow if it wasn't an assert() failure or exception</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
 <span id="L165" class="LineNr">165 </span>        _Exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L166" class="LineNr">166 </span>      <span class="PreProc">#endif</span>
+<span id="L166" class="LineNr">166 </span><span class="PreProc">      #endif</span>
 <span id="L167" class="LineNr">167 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L168" class="LineNr">168 </span>    <span class="Normal">case</span> <span class="Constant">SIGILL</span>:
-<span id="L169" class="LineNr">169 </span>      <span class="PreProc">#ifdef __APPLE__</span>
+<span id="L169" class="LineNr">169 </span><span class="PreProc">      #ifdef __APPLE__</span>
 <span id="L170" class="LineNr">170 </span>        cerr &lt;&lt; <span class="Constant">&quot;SIGILL: most likely caused by integer overflow</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
 <span id="L171" class="LineNr">171 </span>        _Exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L172" class="LineNr">172 </span>      <span class="PreProc">#endif</span>
+<span id="L172" class="LineNr">172 </span><span class="PreProc">      #endif</span>
 <span id="L173" class="LineNr">173 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L174" class="LineNr">174 </span>    <span class="Normal">default</span>:
 <span id="L175" class="LineNr">175 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -318,7 +318,7 @@ if ('onhashchange' in window) {
 <span id="L256" class="LineNr">256 </span><span class="PreProc">#include </span><span class="Constant">&lt;string&gt;</span>
 <span id="L257" class="LineNr">257 </span><span class="Normal">using</span> std::string<span class="Delimiter">;</span>
 <span id="L258" class="LineNr">258 </span>
-<span id="L259" class="LineNr">259 </span><span class="PreProc">#define unused  __attribute__((unused))</span>
+<span id="L259" class="LineNr">259 </span><span class="PreProc">#define vestigial  __attribute__((unused))</span>
 <span id="L260" class="LineNr">260 </span>
 <span id="L261" class="LineNr">261 </span><span class="PreProc">#include </span><span class="Constant">&lt;algorithm&gt;</span>
 <span id="L262" class="LineNr">262 </span><span class="Normal">using</span> std::min<span class="Delimiter">;</span>
