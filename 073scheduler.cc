@@ -178,10 +178,9 @@ case START_RUNNING: {
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
   for (int i = /*skip callee*/1;  i < SIZE(current_instruction().ingredients);  ++i) {
+    new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
     reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     new_routine->calls.front().ingredients.push_back(ingredient);
-    vector<double> new_ingredient_atoms = deep_copy(ingredient);
-    new_routine->calls.front().ingredient_atoms.push_back(new_ingredient_atoms);
     // End Populate start-running Ingredient
   }
   Routines.push_back(new_routine);

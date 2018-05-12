@@ -1,18 +1,11 @@
 # Mu synchronizes between routines using channels rather than locks, like
 # Erlang and Go.
 #
-# Key properties of channels:
+# The key property of channels: Writing to a full channel or reading from an
+# empty one will put the current routine in 'waiting' state until the
+# operation can be completed.
 #
-#   a) Writing to a full channel or reading from an empty one will put the
-#   current routine in 'waiting' state until the operation can be completed.
-#
-#   b) Writing to a channel implicitly performs a deep copy. This prevents
-#   addresses from being shared between routines, and therefore eliminates all
-#   possibility of race conditions.
-#
-# There's still a narrow window for race conditions: the inputs passed in
-# to 'start-running'. Pass only channels into routines and you should be fine.
-# Any other mutable inputs will require locks.
+# Beware of addresses passed into channels. They can cause race conditions.
 
 scenario channel [
   run [
@@ -92,8 +85,7 @@ def write out:&:sink:_elem, val:_elem -> out:&:sink:_elem [
   # store a deep copy of val
   circular-buffer:&:@:_elem <- get *chan, data:offset
   free:num <- get *chan, first-free:offset
-  val-copy:_elem <- deep-copy val  # on this instruction rests all Mu's concurrency-safety
-  *circular-buffer <- put-index *circular-buffer, free, val-copy
+  *circular-buffer <- put-index *circular-buffer, free, val
   # mark its slot as filled
   free <- add free, 1
   {

@@ -22,12 +22,12 @@ base_type = get_base_type(base_type);
 base_type = get_base_type(base_type);
 :(after "Update base_type in element_type")
 base_type = get_base_type(base_type);
-:(after "Update base_type in compute_container_address_offsets")
-base_type = get_base_type(base_type);
-:(after "Update base_type in append_container_address_offsets")
-base_type = get_base_type(base_type);
-:(after "Update element_base_type For Exclusive Container in append_addresses")
-element_base_type = get_base_type(element_base_type);
+//? :(after "Update base_type in compute_container_address_offsets")
+//? base_type = get_base_type(base_type);
+//? :(after "Update base_type in append_container_address_offsets")
+//? base_type = get_base_type(base_type);
+//? :(after "Update element_base_type For Exclusive Container in append_addresses")
+//? element_base_type = get_base_type(element_base_type);
 :(after "Update base_type in skip_addresses")
 base_type = get_base_type(base_type);
 :(replace{} "const type_tree* get_base_type(const type_tree* t)")
@@ -320,9 +320,9 @@ replace_type_ingredients(element, type, info, " while computing element type of 
 replace_type_ingredients(element, full_type, container_info, location_for_error_messages);
 :(before "Compute Exclusive Container Size(element, full_type)")
 replace_type_ingredients(element, full_type, exclusive_container_info, location_for_error_messages);
-:(before "Compute Container Address Offset(element)")
-replace_type_ingredients(element, type, info, location_for_error_messages);
-if (contains_type_ingredient(element)) return;  // error raised elsewhere
+//? :(before "Compute Container Address Offset(element)")
+//? replace_type_ingredients(element, type, info, location_for_error_messages);
+//? if (contains_type_ingredient(element)) return;  // error raised elsewhere
 
 :(after "Compute size_of Container")
 assert(!contains_type_ingredient(type));
@@ -613,62 +613,6 @@ void test_container_sizes_recursive_shape_shifting_container() {
   reagent r2("x:foo:num");
   compute_container_sizes(r2, "");
   CHECK_EQ(r2.metadata.size, 2);
-}
-
-:(before "End compute_container_address_offsets Non-atom Special-cases")
-const type_tree* root = get_base_type(type);
-if (!contains_key(Type, root->value)) return;  // error raised elsewhere
-type_info& info = get(Type, root->value);
-if (info.kind == CONTAINER) {
-  compute_container_address_offsets(info, type, location_for_error_messages);
-  return;
-}
-if (info.kind == EXCLUSIVE_CONTAINER) {
-  compute_exclusive_container_address_offsets(info, type, location_for_error_messages);
-  return;
-}
-
-:(before "End Unit Tests")
-void test_container_address_offsets_in_shape_shifting_container() {
-  run("container foo:_t [\n"
-      "  x:num\n"
-      "  y:_t\n"
-      "]\n");
-  reagent r("x:foo:&:num");
-  compute_container_sizes(r, "");
-  compute_container_address_offsets(r, "");
-  CHECK_EQ(SIZE(r.metadata.address), 1);
-  CHECK(contains_key(r.metadata.address, set<tag_condition_info>()));
-  set<address_element_info>& offset_info = get(r.metadata.address, set<tag_condition_info>());
-  CHECK_EQ(SIZE(offset_info), 1);
-  CHECK_EQ(offset_info.begin()->offset, 1);  //
-  CHECK(offset_info.begin()->payload_type->atom);
-  CHECK_EQ(offset_info.begin()->payload_type->name, "number");
-}
-
-void test_container_address_offsets_in_nested_shape_shifting_container() {
-  run("container foo:_t [\n"
-      "  x:num\n"
-      "  y:_t\n"
-      "]\n"
-      "container bar:_t [\n"
-      "  x:_t\n"
-      "  y:foo:_t\n"
-      "]\n");
-  reagent r("x:bar:&:num");
-  CLEAR_TRACE;
-  compute_container_sizes(r, "");
-  compute_container_address_offsets(r, "");
-  CHECK_EQ(SIZE(r.metadata.address), 1);
-  CHECK(contains_key(r.metadata.address, set<tag_condition_info>()));
-  set<address_element_info>& offset_info = get(r.metadata.address, set<tag_condition_info>());
-  CHECK_EQ(SIZE(offset_info), 2);
-  CHECK_EQ(offset_info.begin()->offset, 0);  //
-  CHECK(offset_info.begin()->payload_type->atom);
-  CHECK_EQ(offset_info.begin()->payload_type->name, "number");
-  CHECK_EQ((++offset_info.begin())->offset, 2);  //
-  CHECK((++offset_info.begin())->payload_type->atom);
-  CHECK_EQ((++offset_info.begin())->payload_type->name, "number");
 }
 
 :(scenario typos_in_container_definitions)
