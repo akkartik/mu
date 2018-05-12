@@ -345,7 +345,7 @@ type_tree* new_type_tree(const string_tree* properties) {
     int value = 0;
     if (contains_key(Type_ordinal, type_name))
       value = get(Type_ordinal, type_name);
-    else if (is_integer(type_name))  // sometimes types will contain non-type tags, like numbers for the size of an array
+    else if (is_integer(type_name))  // sometimes types will contain literal integers, like for the size of an array
       value = 0;
     else if (properties->value == "->")  // used in recipe types
       value = 0;
