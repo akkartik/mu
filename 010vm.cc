@@ -401,7 +401,7 @@ bool type_tree::operator==(const type_tree& other) const {
 // only constraint we care about: if a < b then !(b < a)
 bool type_tree::operator<(const type_tree& other) const {
   if (atom != other.atom) return atom > other.atom;  // atoms before non-atoms
-  if (atom) return name < other.name;  // sort atoms in lexical order
+  if (atom) return value < other.value;
   // first location in one that's missing in the other makes that side 'smaller'
   if (left && !other.left) return false;
   if (!left && other.left) return true;
@@ -455,7 +455,7 @@ void test_compare_list_with_extra_element() {
   CHECK(!(*b.type < *a.type));
 }
 void test_compare_list_with_smaller_left_but_larger_right() {
-  reagent a("a:address:number"), b("b:character:array");
+  reagent a("a:number:character"), b("b:boolean:array");
   CHECK(*a.type < *b.type);
   CHECK(!(*b.type < *a.type));
 }
