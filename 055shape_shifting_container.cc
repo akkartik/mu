@@ -2,12 +2,6 @@
 
 //: pre-requisite: extend our notion of containers to not necessarily be
 //: atomic types
-:(before "End is_mu_container(type) Special-cases")
-if (!type->atom)
-  return is_mu_container(get_base_type(type));
-:(before "End is_mu_exclusive_container(type) Special-cases")
-if (!type->atom)
-  return is_mu_exclusive_container(get_base_type(type));
 :(after "Update GET base_type in Check")
 base_type = get_base_type(base_type);
 :(after "Update GET base_type in Run")

@@ -55,6 +55,12 @@ void abandon(int address, int payload_size) {
   put(Current_routine->free_list, payload_size, address);
 }
 
+int payload_size(reagent/*copy*/ x) {
+  x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
+  lookup_memory_core(x, /*check_for_null*/false);
+  return size_of(x);
+}
+
 :(after "Allocate Special-cases")
 if (get_or_insert(Current_routine->free_list, size)) {
   trace("abandon") << "picking up space from free-list of size " << size << end();

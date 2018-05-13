@@ -409,6 +409,32 @@ set<int> scan_contained_in_product_indices(const instruction& inst, set<int>& in
   return result;
 }
 
+bool is_mu_container(const reagent& r) {
+  return is_mu_container(r.type);
+}
+bool is_mu_container(const type_tree* type) {
+  if (!type) return false;
+  if (!type->atom)
+    return is_mu_container(get_base_type(type));
+  if (type->value == 0) return false;
+  if (!contains_key(Type, type->value)) return false;  // error raised elsewhere
+  type_info& info = get(Type, type->value);
+  return info.kind == CONTAINER;
+}
+
+bool is_mu_exclusive_container(const reagent& r) {
+  return is_mu_exclusive_container(r.type);
+}
+bool is_mu_exclusive_container(const type_tree* type) {
+  if (!type) return false;
+  if (!type->atom)
+    return is_mu_exclusive_container(get_base_type(type));
+  if (type->value == 0) return false;
+  if (!contains_key(Type, type->value)) return false;  // error raised elsewhere
+  type_info& info = get(Type, type->value);
+  return info.kind == EXCLUSIVE_CONTAINER;
+}
+
 :(scenarios transform)
 :(scenario immutability_infects_contained_in_variables)
 % Hide_errors = true;
