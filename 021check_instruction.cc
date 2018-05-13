@@ -131,8 +131,7 @@ bool types_match(const reagent& to, const reagent& from) {
     // allow writing 0 to any address
     if (is_mu_address(to)) return from.name == "0";
     if (!to.type) return false;
-    if (to.type->atom && to.type->value == get(Type_ordinal, "boolean"))
-      return from.name == "0" || from.name == "1";
+    if (is_mu_boolean(to)) return from.name == "0" || from.name == "1";
     return size_of(to) == 1;  // literals are always scalars
   }
   return types_strictly_match(to, from);
@@ -142,7 +141,7 @@ bool types_match(const reagent& to, const reagent& from) {
 bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
   // End Preprocess types_strictly_match(reagent to, reagent from)
   if (to.type == NULL) return false;  // error
-  if (is_literal(from) && to.type->value == get(Type_ordinal, "number")) return true;
+  if (is_literal(from) && to.type->value == Number_type_ordinal) return true;
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
   if (is_unsafe(from)) return true;
@@ -211,7 +210,7 @@ bool is_mu_array(const type_tree* type) {
     raise << "invalid type " << to_string(type) << '\n' << end();
     return false;
   }
-  return type->left->value == get(Type_ordinal, "array");
+  return type->left->value == Array_type_ordinal;
 }
 
 bool is_mu_address(reagent/*copy*/ r) {
@@ -226,7 +225,7 @@ bool is_mu_address(const type_tree* type) {
     raise << "invalid type " << to_string(type) << '\n' << end();
     return false;
   }
-  return type->left->value == get(Type_ordinal, "address");
+  return type->left->value == Address_type_ordinal;
 }
 
 bool is_mu_boolean(reagent/*copy*/ r) {
@@ -234,7 +233,7 @@ bool is_mu_boolean(reagent/*copy*/ r) {
   if (!r.type) return false;
   if (is_literal(r)) return false;
   if (!r.type->atom) return false;
-  return r.type->value == get(Type_ordinal, "boolean");
+  return r.type->value == Boolean_type_ordinal;
 }
 
 bool is_mu_number(reagent/*copy*/ r) {
@@ -250,7 +249,7 @@ bool is_real_mu_number(reagent/*copy*/ r) {
     return r.type->name == "literal-fractional-number"
         || r.type->name == "literal";
   }
-  return r.type->value == get(Type_ordinal, "number");
+  return r.type->value == Number_type_ordinal;
 }
 
 bool is_mu_character(reagent/*copy*/ r) {
@@ -261,7 +260,7 @@ bool is_mu_character(const type_tree* type) {
   if (!type) return false;
   if (!type->atom) return false;
   if (is_literal(type)) return false;
-  return type->value == get(Type_ordinal, "character");
+  return type->value == Character_type_ordinal;
 }
 
 bool is_mu_scalar(reagent/*copy*/ r) {

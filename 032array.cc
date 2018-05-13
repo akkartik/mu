@@ -103,7 +103,7 @@ if (is_mu_array(from) && is_mu_array(to))
   return types_strictly_match(array_element(from.type), array_element(to.type));
 
 :(before "End size_of(reagent r) Special-cases")
-if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordinal, "array")) {
+if (!r.type->atom && r.type->left->atom && r.type->left->value == Array_type_ordinal) {
   if (!r.type->right) {
     raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
@@ -112,7 +112,7 @@ if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordin
 }
 
 :(before "End size_of(type) Non-atom Special-cases")
-if (type->left->value == get(Type_ordinal, "array")) return static_array_length(type);
+if (type->left->value == Array_type_ordinal) return static_array_length(type);
 :(code)
 int static_array_length(const type_tree* type) {
   if (!type->atom && type->right && !type->right->atom && type->right->right && !type->right->right->atom && !type->right->right->right  // exactly 3 types
@@ -127,7 +127,7 @@ int static_array_length(const type_tree* type) {
 //: disable the size mismatch check for arrays since the destination array
 //: need not be initialized
 :(before "End size_mismatch(x) Special-cases")
-if (x.type && !x.type->atom && x.type->left->value == get(Type_ordinal, "array")) return false;
+if (x.type && !x.type->atom && x.type->left->value == Array_type_ordinal) return false;
 
 //:: arrays inside containers
 //: arrays are disallowed inside containers unless their length is fixed in

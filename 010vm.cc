@@ -126,25 +126,30 @@ typedef int type_ordinal;
 map<string, type_ordinal> Type_ordinal;
 map<type_ordinal, type_info> Type;
 type_ordinal Next_type_ordinal = 1;
+type_ordinal Number_type_ordinal = 0;
+type_ordinal Boolean_type_ordinal = 0;
+type_ordinal Character_type_ordinal = 0;
+type_ordinal Address_type_ordinal = 0;
+type_ordinal Array_type_ordinal = 0;
 :(code)
 void setup_types() {
   Type.clear();  Type_ordinal.clear();
   put(Type_ordinal, "literal", 0);
   Next_type_ordinal = 1;
   // Mu Types Initialization
-  type_ordinal number = put(Type_ordinal, "number", Next_type_ordinal++);
-  get_or_insert(Type, number).name = "number";
-  put(Type_ordinal, "location", number);  // synonym of number to indicate we only care about its size
-  type_ordinal address = put(Type_ordinal, "address", Next_type_ordinal++);
-  get_or_insert(Type, address).name = "address";
-  type_ordinal boolean = put(Type_ordinal, "boolean", Next_type_ordinal++);
-  get_or_insert(Type, boolean).name = "boolean";
-  type_ordinal character = put(Type_ordinal, "character", Next_type_ordinal++);
-  get_or_insert(Type, character).name = "character";
+  Number_type_ordinal = put(Type_ordinal, "number", Next_type_ordinal++);
+  get_or_insert(Type, Number_type_ordinal).name = "number";
+  put(Type_ordinal, "location", Number_type_ordinal);  // synonym of number for addresses we'll never look up
+  Address_type_ordinal = put(Type_ordinal, "address", Next_type_ordinal++);
+  get_or_insert(Type, Address_type_ordinal).name = "address";
+  Boolean_type_ordinal = put(Type_ordinal, "boolean", Next_type_ordinal++);
+  get_or_insert(Type, Boolean_type_ordinal).name = "boolean";
+  Character_type_ordinal = put(Type_ordinal, "character", Next_type_ordinal++);
+  get_or_insert(Type, Character_type_ordinal).name = "character";
   // Array types are a special modifier to any other type. For example,
   // array:number or array:address:boolean.
-  type_ordinal array = put(Type_ordinal, "array", Next_type_ordinal++);
-  get_or_insert(Type, array).name = "array";
+  Array_type_ordinal = put(Type_ordinal, "array", Next_type_ordinal++);
+  get_or_insert(Type, Array_type_ordinal).name = "array";
   // End Mu Types Initialization
 }
 void teardown_types() {

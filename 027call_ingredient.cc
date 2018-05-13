@@ -179,13 +179,13 @@ bool is_mu_text(reagent/*copy*/ x) {
   return x.type
       && !x.type->atom
       && x.type->left->atom
-      && x.type->left->value == get(Type_ordinal, "address")
+      && x.type->left->value == Address_type_ordinal
       && x.type->right
       && !x.type->right->atom
       && x.type->right->left->atom
-      && x.type->right->left->value == get(Type_ordinal, "array")
+      && x.type->right->left->value == Array_type_ordinal
       && x.type->right->right
       && !x.type->right->right->atom
-      && x.type->right->right->left->value == get(Type_ordinal, "character")
+      && x.type->right->right->left->value == Character_type_ordinal
       && x.type->right->right->right == NULL;
 }

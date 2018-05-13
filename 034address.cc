@@ -92,12 +92,12 @@ case NEW: {
 bool product_of_new_is_valid(const instruction& inst) {
   reagent/*copy*/ product = inst.products.at(0);
   // Update NEW product in Check
-  if (!product.type || product.type->atom || product.type->left->value != get(Type_ordinal, "address"))
+  if (!product.type || product.type->atom || product.type->left->value != Address_type_ordinal)
     return false;
   drop_from_type(product, "address");
   if (SIZE(inst.ingredients) > 1) {
     // array allocation
-    if (!product.type || product.type->atom || product.type->left->value != get(Type_ordinal, "array"))
+    if (!product.type || product.type->atom || product.type->left->value != Array_type_ordinal)
       return false;
     drop_from_type(product, "array");
   }

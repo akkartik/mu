@@ -358,7 +358,7 @@ int size_of(const type_tree* type) {
       raise << "invalid type " << to_string(type) << '\n' << end();
       return 0;
     }
-    if (type->left->value == get(Type_ordinal, "address")) return 1;
+    if (type->left->value == Address_type_ordinal) return 1;
     // End size_of(type) Non-atom Special-cases
   }
   // End size_of(type) Special-cases
