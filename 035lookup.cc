@@ -85,7 +85,6 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
   if (x.value == 0) return;
   trace("mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
   x.set_value(get_or_insert(Memory, x.value));
-  drop_from_type(x, "address");
   if (check_for_null && x.value == 0) {
     if (Current_routine) {
       raise << maybe(current_recipe_name()) << "tried to lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -95,6 +94,7 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
       raise << "tried to lookup 0\n" << end();
     }
   }
+  drop_from_type(x, "address");
   drop_one_lookup(x);
 }
 
