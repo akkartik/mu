@@ -82,7 +82,6 @@ void lookup_memory(reagent& x) {
 }
 
 void lookup_memory_core(reagent& x, bool check_for_null) {
-  if (x.value == 0) return;
   trace("mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
   x.set_value(get_or_insert(Memory, x.value));
   if (check_for_null && x.value == 0) {
