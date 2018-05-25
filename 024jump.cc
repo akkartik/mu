@@ -23,6 +23,10 @@ case JUMP: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '" << to_original_string(inst) << "' should be a label or offset, but '" << inst.ingredients.at(0).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(0).type) << "'\n" << end();
     break;
   }
+  if (!inst.products.empty()) {
+    raise << maybe(get(Recipe, r).name) << "'jump' instructions write no products\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -51,6 +55,13 @@ def main [
 +run: jump {-2: "offset"}
 +run: jump {3: "offset"}
 
+:(scenario jump_takes_no_products)
+% Hide_errors = true;
+def main [
+  1:num <- jump 1
+]
++error: main: 'jump' instructions write no products
+
 :(before "End Primitive Recipe Declarations")
 JUMP_IF,
 :(before "End Primitive Recipe Numbers")
@@ -67,6 +78,10 @@ case JUMP_IF: {
   }
   if (!is_literal(inst.ingredients.at(1))) {
     raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' requires a label or offset for its second ingredient, but '" << inst.ingredients.at(1).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(1).type) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty()) {
+    raise << maybe(get(Recipe, r).name) << "'jump-if' instructions write no products\n" << end();
     break;
   }
   // End JUMP_IF Checks
@@ -123,6 +138,10 @@ case JUMP_UNLESS: {
   }
   if (!is_literal(inst.ingredients.at(1))) {
     raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' requires a label or offset for its second ingredient, but '" << inst.ingredients.at(1).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(1).type) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty()) {
+    raise << maybe(get(Recipe, r).name) << "'jump' instructions write no products\n" << end();
     break;
   }
   // End JUMP_UNLESS Checks
