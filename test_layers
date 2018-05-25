@@ -30,7 +30,7 @@ do
   if [[ $f < $1 ]]; then continue; fi
   if [[ $2 && $f > $2 ]]; then exit 0; fi
   echo "=== $f"
-  rm -rf .build mu.cc mu_bin core.mu  # force full rebuild for top-level, but not subsidiary tools like tangle and cleave
+  ./clean top-level  # preserve subsidiary tools like tangle and cleave
   ./$BUILD --until $f || exit 1
   # valgrind requires Linux
   valgrind --leak-check=yes --num-callers=40 -q --error-exitcode=1 ./mu_bin test || exit 1
