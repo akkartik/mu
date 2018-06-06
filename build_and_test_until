@@ -1,5 +1,16 @@
 #!/bin/sh
+# Usage:
+#   build_and_test_until [file prefix] [test name]
+# Provide the second arg to run just a single (Mu) scenario.
 set -e
 
-./clean top-level
-./build3 --until $1  &&  ./mu_bin test
+# clean previous builds if they were building until a different layer
+touch .until
+PREV_UNTIL=`cat .until`
+if [ "$PREV_UNTIL" != $1 ]
+then
+  ./clean top-level
+  echo $1 > .until
+fi
+
+./build3 --until $1  &&  ./mu_bin test $2
