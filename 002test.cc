@@ -15,6 +15,9 @@ typedef void (*test_fn)(void);
 const test_fn Tests[] = {
   #include "test_list"  // auto-generated; see 'build*' scripts
 };
+const string Test_names[] = {
+  #include "test_name_list"
+};
 
 :(before "End Globals")
 bool Run_tests = false;
@@ -80,6 +83,19 @@ void run_test(size_t i) {
   // End Test Setup
   (*Tests[i])();
   // End Test Teardown
+}
+
+//: Convenience: run a single test
+:(after "Test Runs")
+string maybe_single_test_to_run = argv[argc-1];
+if (!starts_with(maybe_single_test_to_run, "test_"))
+  maybe_single_test_to_run.insert(0, "test_");
+for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
+  if (Test_names[i] == maybe_single_test_to_run) {
+    run_test(i);
+    if (Passed) cerr << ".\n";
+    return 0;
+  }
 }
 
 :(before "End Includes")

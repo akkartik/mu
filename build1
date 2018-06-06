@@ -57,6 +57,7 @@ LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
 grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  > function_list
 # auto-generate list of tests to run
 grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  > test_list
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  > test_name_list
 $CXX $CFLAGS mu.cc termbox/libtermbox.a -o mu_bin
 
 ## [0-9]*.mu -> core.mu
