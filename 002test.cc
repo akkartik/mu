@@ -15,9 +15,6 @@ typedef void (*test_fn)(void);
 const test_fn Tests[] = {
   #include "test_list"  // auto-generated; see 'build*' scripts
 };
-const string Test_names[] = {
-  #include "test_name_list"
-};
 
 :(before "End Globals")
 bool Run_tests = false;
@@ -86,6 +83,11 @@ void run_test(size_t i) {
 }
 
 //: Convenience: run a single test
+:(before "Globals")
+// Names for each element of the 'Tests' global, respectively.
+const string Test_names[] = {
+  #include "test_name_list"  // auto-generated; see 'build*' scripts
+};
 :(after "Test Runs")
 string maybe_single_test_to_run = argv[argc-1];
 if (!starts_with(maybe_single_test_to_run, "test_"))
