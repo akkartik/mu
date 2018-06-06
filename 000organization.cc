@@ -94,7 +94,7 @@
 // Types
 // End Types
 
-// Function prototypes are auto-generated in the 'build' script; define your
+// Function prototypes are auto-generated in the 'build*' scripts; define your
 // functions in any order. Just be sure to declare each function header all on
 // one line, ending with the '{'. Our auto-generation scripts are too minimal
 // and simple-minded to handle anything else.
@@ -103,7 +103,7 @@
 // Globals
 //
 // All statements in this section should always define a single variable on a
-// single line. The 'build' script will simple-mindedly auto-generate extern
+// single line. The 'build*' scripts will simple-mindedly auto-generate extern
 // declarations for them. Remember to define (not just declare) constants with
 // extern linkage in this section, since C++ global constants have internal
 // linkage by default.
