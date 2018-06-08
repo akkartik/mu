@@ -54,7 +54,7 @@ if (Run_tests) {
   time_t t;  time(&t);
   cerr << "C tests: " << ctime(&t);
   for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
-//?     cerr << "running .build/test_list line " << (i+1) << '\n';
+//?     cerr << "running " << Test_names[i] << '\n';
     run_test(i);
     if (Passed) cerr << '.';
     else ++num_failures;
