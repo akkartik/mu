@@ -18,7 +18,7 @@ def main [
 +error: main: tried to read ingredient 'y' in 'x:num <- copy y:num' but it hasn't been written to yet
 # todo: detect conditional defines
 
-:(after "Transform.push_back(compute_container_sizes)")
+:(after "End Type Modifying Transforms")
 Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")

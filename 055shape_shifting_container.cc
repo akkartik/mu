@@ -12,16 +12,8 @@ base_type = get_base_type(base_type);
 base_type = get_base_type(base_type);
 :(after "Update MAYBE_CONVERT base_type in Check")
 base_type = get_base_type(base_type);
-:(after "Update base_type in size_of(type)")
-base_type = get_base_type(base_type);
 :(after "Update base_type in element_type")
 base_type = get_base_type(base_type);
-//? :(after "Update base_type in compute_container_address_offsets")
-//? base_type = get_base_type(base_type);
-//? :(after "Update base_type in append_container_address_offsets")
-//? base_type = get_base_type(base_type);
-//? :(after "Update element_base_type For Exclusive Container in append_addresses")
-//? element_base_type = get_base_type(element_base_type);
 :(after "Update base_type in skip_addresses")
 base_type = get_base_type(base_type);
 :(replace{} "const type_tree* get_base_type(const type_tree* t)")
@@ -38,6 +30,8 @@ def main [
   {1: ((foo) num)} <- copy 0
 ]
 # no crash
+
+//: update size_of to handle non-atom container types
 
 :(scenario size_of_shape_shifting_container)
 container foo:_t [
@@ -310,18 +304,53 @@ def main [
 
 :(before "End element_type Special-cases")
 replace_type_ingredients(element, type, info, " while computing element type of container");
-:(before "Compute Container Size(element, full_type)")
-replace_type_ingredients(element, full_type, container_info, location_for_error_messages);
-:(before "Compute Exclusive Container Size(element, full_type)")
-replace_type_ingredients(element, full_type, exclusive_container_info, location_for_error_messages);
-//? :(before "Compute Container Address Offset(element)")
-//? replace_type_ingredients(element, type, info, location_for_error_messages);
-//? if (contains_type_ingredient(element)) return;  // error raised elsewhere
 
-:(after "Compute size_of Container")
-assert(!contains_type_ingredient(type));
-:(after "Compute size_of Exclusive Container")
-assert(!contains_type_ingredient(type));
+:(before "End size_of(type) Non-atom Special-cases")
+assert(type->left->atom);
+if (!contains_key(Type, type->left->value)) {
+  raise << "no such type " << type->left->value << '\n' << end();
+  return 0;
+}
+type_info t = get(Type, type->left->value);
+if (t.kind == CONTAINER) {
+  // size of a container is the sum of the sizes of its elements
+  int result = 0;
+  for (int i = 0; i < SIZE(t.elements); ++i) {
+    // todo: strengthen assertion to disallow mutual type recursion
+    if (get_base_type(t.elements.at(i).type)->value == get_base_type(type)->value) {
+      raise << "container " << t.name << " can't include itself as a member\n" << end();
+      return 0;
+    }
+    result += size_of(element_type(type, i));
+  }
+  return result;
+}
+if (t.kind == EXCLUSIVE_CONTAINER) {
+  // size of an exclusive container is the size of its largest variant
+  // (So like containers, it can't contain arrays.)
+  int result = 0;
+  for (int i = 0; i < SIZE(t.elements); ++i) {
+    reagent tmp;
+    tmp.type = new type_tree(*type);
+    int size = size_of(variant_type(tmp, i));
+    if (size > result) result = size;
+  }
+  // ...+1 for its tag.
+  return result+1;
+}
+
+:(scenario complex_shape_shifting_exclusive_container)
+exclusive-container foo:_a [
+  x:_a
+  y:num
+]
+def main [
+  1:text <- new [abc]
+  2:foo:point <- merge 0/variant, 34/xx, 35/xy
+  10:point, 20:bool <- maybe-convert 2:foo:point, 0/variant
+]
++mem: storing 1 in location 20
++mem: storing 35 in location 11
 
 :(code)
 bool contains_type_ingredient(const reagent& x) {
@@ -539,75 +568,8 @@ def main [
   10:foo:point <- merge 14, 15, 16
   1:num <- get 10:foo, 1:offset
 ]
-+error: illegal type "foo" seems to be missing a type ingredient or three in '1:num <- get 10:foo, 1:offset'
-
-//:: fix up previous layers
-
-//: We have two transforms in previous layers -- for computing sizes and
-//: offsets containing addresses for containers and exclusive containers --
-//: that we need to teach about type ingredients.
-
-:(before "End compute_container_sizes Non-atom Special-cases")
-const type_tree* root = get_base_type(type);
-if (contains_key(Type, root->value)) {
-  type_info& info = get(Type, root->value);
-  if (info.kind == CONTAINER) {
-    compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
-    return;
-  }
-  if (info.kind == EXCLUSIVE_CONTAINER) {
-    compute_exclusive_container_sizes(info, type, pending_metadata, location_for_error_messages);
-    return;
-  }
-}  // otherwise error raised elsewhere
-
-:(before "End Unit Tests")
-void test_container_sizes_shape_shifting_container() {
-  run("container foo:_t [\n"
-      "  x:num\n"
-      "  y:_t\n"
-      "]\n");
-  reagent r("x:foo:point");
-  compute_container_sizes(r, "");
-  CHECK_EQ(r.metadata.size, 3);
-}
-
-void test_container_sizes_shape_shifting_exclusive_container() {
-  run("exclusive-container foo:_t [\n"
-      "  x:num\n"
-      "  y:_t\n"
-      "]\n");
-  reagent r("x:foo:point");
-  compute_container_sizes(r, "");
-  CHECK_EQ(r.metadata.size, 3);
-  reagent r2("x:foo:num");
-  compute_container_sizes(r2, "");
-  CHECK_EQ(r2.metadata.size, 2);
-}
-
-void test_container_sizes_compound_type_ingredient() {
-  run("container foo:_t [\n"
-      "  x:num\n"
-      "  y:_t\n"
-      "]\n");
-  reagent r("x:foo:&:point");
-  compute_container_sizes(r, "");
-  CHECK_EQ(r.metadata.size, 2);
-  // scan also pre-computes metadata for type ingredient
-  reagent point("x:point");
-  CHECK(contains_key(Container_metadata, point.type));
-  CHECK_EQ(get(Container_metadata, point.type).size, 2);
-}
-
-void test_container_sizes_recursive_shape_shifting_container() {
-  run("container foo:_t [\n"
-      "  x:num\n"
-      "  y:&:foo:_t\n"
-      "]\n");
-  reagent r2("x:foo:num");
-  compute_container_sizes(r2, "");
-  CHECK_EQ(r2.metadata.size, 2);
-}
+# todo: improve error message
++error: illegal type "foo" seems to be missing a type ingredient or three while computing element type of container
 
 :(scenario typos_in_container_definitions)
 % Hide_errors = true;

@@ -127,14 +127,6 @@ canonize_type(product);
 canonize_type(lhs);
 canonize_type(rhs);
 
-:(before "Compute Container Size(reagent rcopy)")
-if (!canonize_type(rcopy)) return;
-
-:(before "Compute Container Size(element, full_type)")
-assert(!has_property(element, "lookup"));
-:(before "Compute Exclusive Container Size(element, full_type)")
-assert(!has_property(element, "lookup"));
-
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
