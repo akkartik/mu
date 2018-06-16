@@ -35,7 +35,7 @@ case _OPEN_FILE_FOR_READING: {
 }
 :(before "End Primitive Recipe Implementations")
 case _OPEN_FILE_FOR_READING: {
-  string filename = read_mu_text(ingredients.at(0).at(/*skip alloc id*/1));
+  string filename = read_mu_text(ingredients.at(0).at(0));
   assert(sizeof(long long int) >= sizeof(FILE*));
   FILE* f = fopen(filename.c_str(), "r");
   long long int result = reinterpret_cast<long long int>(f);
@@ -70,7 +70,7 @@ case _OPEN_FILE_FOR_WRITING: {
 }
 :(before "End Primitive Recipe Implementations")
 case _OPEN_FILE_FOR_WRITING: {
-  string filename = read_mu_text(ingredients.at(0).at(/*skip alloc id*/1));
+  string filename = read_mu_text(ingredients.at(0).at(0));
   assert(sizeof(long long int) >= sizeof(FILE*));
   long long int result = reinterpret_cast<long long int>(fopen(filename.c_str(), "w"));
   products.resize(1);

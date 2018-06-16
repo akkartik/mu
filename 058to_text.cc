@@ -18,7 +18,6 @@ case TO_TEXT: {
 :(before "End Primitive Recipe Implementations")
 case TO_TEXT: {
   products.resize(1);
-  products.at(0).push_back(/*alloc id*/0);
   products.at(0).push_back(new_mu_text(inspect(current_instruction().ingredients.at(0), ingredients.at(0))));
   break;
 }

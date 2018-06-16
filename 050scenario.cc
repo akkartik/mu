@@ -79,7 +79,6 @@ Scenario_names = Scenario_names_snapshot;
 :(before "End Command Handlers")
 else if (command == "scenario") {
   scenario result = parse_scenario(in);
-//?   result.name.clear();  // disable running scenarios
   if (!result.name.empty())
     Scenarios.push_back(result);
 }

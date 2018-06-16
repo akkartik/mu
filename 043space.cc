@@ -13,31 +13,25 @@
 put(Type_abbreviations, "space", new_type_tree("address:array:location"));
 
 :(scenario set_default_space)
-# if default-space is 10, then:
-#   10: alloc id
-#   11: array size
-#   12: local 0 (space for the chaining slot; described later; often unused)
-#   13: local 0 (space for the chaining slot; described later; often unused)
-#   14: local 2 (assuming it is a scalar)
-#   15: local 3
-#   ..and so on
+# if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
+# then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
   # pretend address:array:location; in practice we'll use 'new'
-  11:num <- copy 5  # length
-  default-space:space <- copy 10/unsafe/skip-alloc-id
-  2:num <- copy 23
+  10:num <- copy 5  # length
+  default-space:space <- copy 10/unsafe
+  1:num <- copy 23
 ]
-+mem: storing 23 in location 14
++mem: storing 23 in location 12
 
 :(scenario lookup_sidesteps_default_space)
 def main [
   # pretend pointer from outside
-  2001:num <- copy 34
+  2000:num <- copy 34
   # pretend address:array:location; in practice we'll use 'new'
-  1001:num <- copy 5  # length
+  1000:num <- copy 5  # length
   # actual start of this recipe
-  default-space:space <- copy 1000/unsafe/skip-alloc-id
-  1:&:num <- copy 2000/unsafe/skip-alloc-id  # even local variables always contain raw addresses
+  default-space:space <- copy 1000/unsafe
+  1:&:num <- copy 2000/unsafe  # even local variables always contain raw addresses
   8:num/raw <- copy *1:&:num
 ]
 +mem: storing 34 in location 8
@@ -49,9 +43,8 @@ def main [
 def main [
   default-space:num, x:num <- copy 0, 1
 ]
-+name: assign x 2
++name: assign x 1
 -name: assign default-space 1
--name: assign default-space 2
 
 :(before "End is_disqualified Special-cases")
 if (x.name == "default-space")
@@ -81,7 +74,7 @@ void absolutize(reagent& x) {
 
 //: hook replaced in a later layer
 int space_base(const reagent& x) {
-  return current_call().default_space ? (current_call().default_space + /*skip alloc id*/1) : 0;
+  return current_call().default_space ? current_call().default_space : 0;
 }
 
 int address(int offset, int base) {
@@ -102,13 +95,9 @@ int address(int offset, int base) {
 
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
-  if (!is_mu_space(x)) {
+  if (!scalar(data) || !is_mu_space(x))
     raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but is " << to_string(x.type) << '\n' << end();
-    return;
-  }
-  double space_location = data.at(/*skip alloc id*/1);
-  trace("mem") << "storing " << no_scientific(space_location) << " to default_space" << end();
-  current_call().default_space = space_location;
+  current_call().default_space = data.at(0);
   return;
 }
 :(code)
@@ -126,13 +115,11 @@ def main [
   default-space:space <- copy 10/unsafe
   1:space/raw <- copy default-space:space
 ]
-# skip alloc id
-+mem: storing 10 in location 2
++mem: storing 10 in location 1
 
 :(after "Begin Preprocess read_memory(x)")
 if (x.name == "default-space") {
   vector<double> result;
-  result.push_back(/*alloc id*/0);
   result.push_back(current_call().default_space);
   return result;
 }
@@ -142,13 +129,13 @@ if (x.name == "default-space") {
 :(scenario lookup_sidesteps_default_space_in_get)
 def main [
   # pretend pointer to container from outside
-  2001:num <- copy 34
-  2002:num <- copy 35
+  2000:num <- copy 34
+  2001:num <- copy 35
   # pretend address:array:location; in practice we'll use 'new'
-  1001:num <- copy 5  # length
+  1000:num <- copy 5  # length
   # actual start of this recipe
-  default-space:space <- copy 1000/unsafe/skip-alloc-id
-  1:&:point <- copy 2000/unsafe/skip-alloc-id
+  default-space:space <- copy 1000/unsafe
+  1:&:point <- copy 2000/unsafe
   9:num/raw <- get *1:&:point, 1:offset
 ]
 +mem: storing 35 in location 9
@@ -161,14 +148,14 @@ element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 :(scenario lookup_sidesteps_default_space_in_index)
 def main [
   # pretend pointer to array from outside
-  2001:num <- copy 2  # length
-  2002:num <- copy 34
-  2003:num <- copy 35
+  2000:num <- copy 2  # length
+  2001:num <- copy 34
+  2002:num <- copy 35
   # pretend address:array:location; in practice we'll use 'new'
-  1001:num <- copy 5  # length
+  1000:num <- copy 5  # length
   # actual start of this recipe
-  default-space:space <- copy 1000/unsafe/skip-alloc-id
-  1:&:@:num <- copy 2000/unsafe/skip-alloc-id
+  default-space:space <- copy 1000/unsafe
+  1:&:@:num <- copy 2000/unsafe
   9:num/raw <- index *1:&:@:num, 1
 ]
 +mem: storing 35 in location 9
@@ -185,8 +172,8 @@ def main [
   x:num <- copy 0
   y:num <- copy 3
 ]
-# allocate space for x and y, as well as the chaining slot at indices 0 and 1
-+mem: array length is 4
+# allocate space for x and y, as well as the chaining slot at 0
++mem: array length is 3
 
 :(before "End is_disqualified Special-cases")
 if (x.name == "number-of-locals")

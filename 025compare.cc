@@ -29,8 +29,6 @@ case EQUAL: {
 }
 :(before "End Primitive Recipe Implementations")
 case EQUAL: {
-  // todo: keep the address exception from slowing down the common case
-  drop_alloc_ids_if_comparing_address_to_literal_0(ingredients);
   vector<double>& exemplar = ingredients.at(0);
   bool result = true;
   for (int i = /*skip exemplar*/1;  i < SIZE(ingredients);  ++i) {
@@ -42,23 +40,6 @@ case EQUAL: {
   products.resize(1);
   products.at(0).push_back(result);
   break;
-}
-:(code)
-void drop_alloc_ids_if_comparing_address_to_literal_0(vector<vector<double> >& ingredients) {
-  bool any_ingredient_is_null = false;
-  bool any_ingredient_is_address = false;
-  for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
-    if (current_instruction().ingredients.at(i).name == "0")
-      any_ingredient_is_null = true;
-    if (is_mu_address(current_instruction().ingredients.at(i)))
-      any_ingredient_is_address = true;
-  }
-  if (any_ingredient_is_null && any_ingredient_is_address) {
-    for (int i = 0;  i < SIZE(ingredients);  ++i) {
-      if (is_mu_address(current_instruction().ingredients.at(i)))
-        ingredients.at(i).erase(ingredients.at(i).begin());
-    }
-  }
 }
 
 :(scenario equal)
@@ -93,42 +74,6 @@ def main [
 ]
 +mem: storing 0 in location 1
 
-:(scenario equal_address_null)
-def main [
-  1:&:num <- copy 0
-  10:bool <- equal 1:&:num, 0
-]
-+mem: storing 1 in location 10
-
-:(scenario equal_address_null_2)
-def main [
-  1:&:num <- copy 0
-  10:bool <- equal 0, 1:&:num
-]
-+mem: storing 1 in location 10
-
-:(scenario equal_address_null_3)
-def main [
-  1:&:num <- new num:type
-  10:bool <- equal 1:&:num, 0
-]
-+mem: storing 0 in location 10
-
-:(scenario equal_address_null_multiple)
-def main [
-  1:&:num <- copy 0
-  10:bool <- equal 0, 1:&:num, 0
-]
-+mem: storing 1 in location 10
-
-:(scenario equal_address_null_multiple_2)
-def main [
-  1:&:num <- copy 0
-  3:&:num <- copy 0
-  10:bool <- equal 0, 1:&:num, 0, 3:&:num
-]
-+mem: storing 1 in location 10
-
 :(before "End Primitive Recipe Declarations")
 NOT_EQUAL,
 :(before "End Primitive Recipe Numbers")
@@ -156,8 +101,6 @@ case NOT_EQUAL: {
 }
 :(before "End Primitive Recipe Implementations")
 case NOT_EQUAL: {
-  // todo: keep the address exception from slowing down the common case
-  drop_alloc_ids_if_comparing_address_to_literal_0(ingredients);
   vector<double>& exemplar = ingredients.at(0);
   products.resize(1);
   bool equal_ingredients = equal(ingredients.at(1).begin(), ingredients.at(1).end(), exemplar.begin());

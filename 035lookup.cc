@@ -6,8 +6,7 @@
 :(scenario copy_indirect)
 def main [
   1:address:num <- copy 10/unsafe
-  # skip alloc id
-  11:num <- copy 34
+  10:num <- copy 34
   # This loads location 1 as an address and looks up *that* location.
   2:num <- copy 1:address:num/lookup
 ]
@@ -23,7 +22,7 @@ def main [
   1:address:num <- copy 10/unsafe
   1:address:num/lookup <- copy 34
 ]
-+mem: storing 34 in location 11
++mem: storing 34 in location 10
 
 :(before "End Preprocess write_memory(x, data)")
 canonize(x);
@@ -36,7 +35,7 @@ def main [
   1:address:num/lookup <- copy 34
 ]
 -mem: storing 34 in location 0
-+error: main: tried to lookup 0 in '1:address:num/lookup <- copy 34'
++error: can't write to location 0 in '1:address:num/lookup <- copy 34'
 
 //: attempts to /lookup address 0 always loudly fail
 :(scenario lookup_0_fails)
@@ -83,7 +82,7 @@ void lookup_memory(reagent& x) {
 }
 
 void lookup_memory_core(reagent& x, bool check_for_null) {
-  double address = x.value + /*skip alloc id in address*/1;
+  double address = x.value;
   double new_value = get_or_insert(Memory, address);
   trace("mem") << "location " << address << " contains " << no_scientific(new_value) << end();
   if (check_for_null && new_value == 0) {
@@ -95,18 +94,12 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
       raise << "tried to lookup 0\n" << end();
     }
   }
-  x.set_value(new_value+/*skip alloc id in payload*/1);
+  x.set_value(new_value);
   drop_from_type(x, "address");
   drop_one_lookup(x);
 }
 
-:(after "Begin types_coercible(reagent to, reagent from)")
-if (!canonize_type(to)) return false;
-if (!canonize_type(from)) return false;
-:(after "Begin types_match(reagent to, reagent from)")
-if (!canonize_type(to)) return false;
-if (!canonize_type(from)) return false;
-:(after "Begin types_strictly_match(reagent to, reagent from)")
+:(before "End Preprocess types_strictly_match(reagent to, reagent from)")
 if (!canonize_type(to)) return false;
 if (!canonize_type(from)) return false;
 
@@ -164,33 +157,30 @@ void drop_one_lookup(reagent& r) {
 :(scenario get_indirect)
 def main [
   1:address:point <- copy 10/unsafe
-  # skip alloc id
-  11:num <- copy 34
-  12:num <- copy 35
-  20:num <- get 1:address:point/lookup, 0:offset
+  10:num <- copy 34
+  11:num <- copy 35
+  2:num <- get 1:address:point/lookup, 0:offset
 ]
-+mem: storing 34 in location 20
++mem: storing 34 in location 2
 
 :(scenario get_indirect2)
 def main [
   1:address:point <- copy 10/unsafe
-  # skip alloc id
-  11:num <- copy 94
-  12:num <- copy 95
-  20:address:num <- copy 30/unsafe
-  20:address:num/lookup <- get 1:address:point/lookup, 0:offset
+  10:num <- copy 34
+  11:num <- copy 35
+  2:address:num <- copy 20/unsafe
+  2:address:num/lookup <- get 1:address:point/lookup, 0:offset
 ]
-+mem: storing 94 in location 31
++mem: storing 34 in location 20
 
 :(scenario include_nonlookup_properties)
 def main [
   1:address:point <- copy 10/unsafe
-  # skip alloc id
-  11:num <- copy 34
-  12:num <- copy 35
-  20:num <- get 1:address:point/lookup/foo, 0:offset
+  10:num <- copy 34
+  11:num <- copy 35
+  2:num <- get 1:address:point/lookup/foo, 0:offset
 ]
-+mem: storing 34 in location 20
++mem: storing 34 in location 2
 
 :(after "Update GET base in Check")
 if (!canonize_type(base)) break;
@@ -202,12 +192,11 @@ canonize(base);
 :(scenario put_indirect)
 def main [
   1:address:point <- copy 10/unsafe
-  # skip alloc id
-  11:num <- copy 34
-  12:num <- copy 35
+  10:num <- copy 34
+  11:num <- copy 35
   1:address:point/lookup <- put 1:address:point/lookup, 0:offset, 36
 ]
-+mem: storing 36 in location 11
++mem: storing 36 in location 10
 
 :(after "Update PUT base in Check")
 if (!canonize_type(base)) break;
@@ -252,7 +241,7 @@ def main [
   11:num <- copy 14
   12:num <- copy 15
   13:num <- copy 16
-  1:address:array:num <- copy 9/unsafe/skip-alloc-id
+  1:address:array:num <- copy 10/unsafe
   2:array:num <- copy 1:address:array:num/lookup
 ]
 +mem: storing 3 in location 2
@@ -265,7 +254,7 @@ def main [
   1:address:array:num:3 <- copy 1000/unsafe  # pretend allocation
   1:address:array:num:3/lookup <- create-array
 ]
-+mem: storing 3 in location 1001
++mem: storing 3 in location 1000
 
 :(after "Update CREATE_ARRAY product in Check")
 if (!canonize_type(product)) break;
@@ -278,7 +267,7 @@ def main [
   11:num <- copy 14
   12:num <- copy 15
   13:num <- copy 16
-  1:address:array:num <- copy 9/unsafe/skip-alloc-id
+  1:address:array:num <- copy 10/unsafe
   2:num <- index 1:address:array:num/lookup, 1
 ]
 +mem: storing 15 in location 2
@@ -301,7 +290,7 @@ def main [
   11:num <- copy 14
   12:num <- copy 15
   13:num <- copy 16
-  1:address:array:num <- copy 9/unsafe/skip-alloc-id
+  1:address:array:num <- copy 10/unsafe
   1:address:array:num/lookup <- put-index 1:address:array:num/lookup, 1, 34
 ]
 +mem: storing 34 in location 12
@@ -312,7 +301,7 @@ def main [
   2:num <- copy 14
   3:num <- copy 15
   4:num <- copy 16
-  5:address:num <- copy 9/unsafe/skip-alloc-id
+  5:address:num <- copy 10/unsafe
   10:num <- copy 1
   1:array:num:3 <- put-index 1:array:num:3, 5:address:num/lookup, 34
 ]
@@ -325,7 +314,7 @@ def main [
   11:num <- copy 14
   12:num <- copy 15
   13:num <- copy 16
-  1:address:array:num <- copy 9/unsafe/skip-alloc-id
+  1:address:array:num <- copy 10/unsafe
   1:address:array:num <- put-index 1:address:array:num/lookup, 1, 34
 ]
 +error: main: product of 'put-index' must be first ingredient '1:address:array:num/lookup', but got '1:address:array:num'
@@ -348,7 +337,7 @@ def main [
   *5:address:num <- copy 34
   6:num <- copy *5:address:num
 ]
-+run: creating array from 7 locations
++run: creating array of size 4
 +mem: storing 34 in location 6
 
 :(before "Update PUT_INDEX base in Check")
@@ -369,7 +358,7 @@ def main [
   11:num <- copy 14
   12:num <- copy 15
   13:num <- copy 16
-  1:address:array:num <- copy 9/unsafe/skip-alloc-id
+  1:address:array:num <- copy 10/unsafe
   2:num <- length 1:address:array:num/lookup
 ]
 +mem: storing 3 in location 2
@@ -381,8 +370,8 @@ canonize(array);
 
 :(scenario maybe_convert_indirect)
 def main [
-  11:number-or-point <- merge 0/number, 34
-  1:address:number-or-point <- copy 10/unsafe/skip-alloc-id
+  10:number-or-point <- merge 0/number, 34
+  1:address:number-or-point <- copy 10/unsafe
   2:num, 3:bool <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
 +mem: storing 1 in location 3
@@ -390,23 +379,23 @@ def main [
 
 :(scenario maybe_convert_indirect_2)
 def main [
-  11:number-or-point <- merge 0/number, 34
-  1:address:number-or-point <- copy 10/unsafe/skip-alloc-id
-  3:address:num <- copy 20/unsafe
-  3:address:num/lookup, 5:bool <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  10:number-or-point <- merge 0/number, 34
+  1:address:number-or-point <- copy 10/unsafe
+  2:address:num <- copy 20/unsafe
+  2:address:num/lookup, 3:bool <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
-+mem: storing 1 in location 5
-+mem: storing 34 in location 21
++mem: storing 1 in location 3
++mem: storing 34 in location 20
 
 :(scenario maybe_convert_indirect_3)
 def main [
-  11:number-or-point <- merge 0/number, 34
-  1:address:number-or-point <- copy 10/unsafe/skip-alloc-id
-  3:address:bool <- copy 20/unsafe
-  5:num, 3:address:bool/lookup <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  10:number-or-point <- merge 0/number, 34
+  1:address:number-or-point <- copy 10/unsafe
+  2:address:bool <- copy 20/unsafe
+  3:num, 2:address:bool/lookup <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
-+mem: storing 1 in location 21
-+mem: storing 34 in location 5
++mem: storing 1 in location 20
++mem: storing 34 in location 3
 
 :(before "Update MAYBE_CONVERT base in Check")
 if (!canonize_type(base)) break;
@@ -427,9 +416,8 @@ def main [
   1:address:number-or-point <- copy 10/unsafe
   1:address:number-or-point/lookup <- merge 0/number, 34
 ]
-# skip alloc id
-+mem: storing 0 in location 11
-+mem: storing 34 in location 12
++mem: storing 0 in location 10
++mem: storing 34 in location 11
 
 :(before "Update size_mismatch Check for MERGE(x)
 canonize(x);
@@ -439,7 +427,7 @@ canonize(x);
 :(scenario lookup_abbreviation)
 def main [
   1:address:number <- copy 10/unsafe
-  11:number <- copy 34
+  10:number <- copy 34
   3:number <- copy *1:address:number
 ]
 +parse: ingredient: {1: ("address" "number"), "lookup": ()}

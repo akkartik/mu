@@ -8,24 +8,24 @@
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
 def main [
   # pretend address:array:location; in practice we'll use 'new'
-  11:num <- copy 5  # length
+  10:num <- copy 5  # length
   # pretend address:array:location; in practice we'll use 'new"
-  21:num <- copy 5  # length
+  20:num <- copy 5  # length
   # actual start of this recipe
-  default-space:space <- copy 10/unsafe/skip-alloc-id
+  default-space:space <- copy 10/unsafe
   #: later layers will explain the /names: property
-  0:space/names:dummy <- copy 20/unsafe/skip-alloc-id
-  2:num <- copy 32
-  2:num/space:1 <- copy 33
+  0:space/names:dummy <- copy 20/unsafe
+  1:num <- copy 32
+  1:num/space:1 <- copy 33
 ]
 def dummy [  # just for the /names: property above
 ]
-# write chained space: 10 + (alloc id for default-space) 1 + (length) 1 + (alloc id for chained space) 1
-+mem: storing 20 in location 13
-# store to inside default space: 10 + (alloc id) 1 + (length) 1 + (index) 2
-+mem: storing 32 in location 14
-# store to inside chained space: (contents of location 12) 20 + (alloc id) 1 + (length) 1 + (index) 2
-+mem: storing 33 in location 24
+# chain space: 10 + (length) 1
++mem: storing 20 in location 11
+# store to default space: 10 + (skip length) 1 + (index) 1
++mem: storing 32 in location 12
+# store to chained space: (contents of location 12) 20 + (length) 1 + (index) 1
++mem: storing 33 in location 22
 
 //: If you think of a space as a collection of variables with a common
 //: lifetime, surrounding allows managing shorter lifetimes inside a longer
@@ -33,17 +33,14 @@ def dummy [  # just for the /names: property above
 
 :(replace{} "int space_base(const reagent& x)")
 int space_base(const reagent& x) {
-  int base = current_call().default_space ? (current_call().default_space+/*skip alloc id*/1) : 0;
+  int base = current_call().default_space ? current_call().default_space : 0;
   return space_base(x, space_index(x), base);
 }
 
 int space_base(const reagent& x, int space_index, int base) {
-  trace("space") << "default_space is at location " << base << " with " << space_index << " chained spaces to go" << end();
   if (space_index == 0)
     return base;
-  double chained_space_address = base+/*skip length*/1+/*skip alloc id of chaining slot*/1;
-  double chained_space_base = get_or_insert(Memory, chained_space_address) + /*skip alloc id of chained space*/1;
-  return space_base(x, space_index-1, chained_space_base);
+  return space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1));
 }
 
 int space_index(const reagent& x) {

@@ -2006,13 +2006,7 @@ after <handle-special-character> [
     delete-to-start-of-line?:bool <- equal c, 21/ctrl-u
     break-unless delete-to-start-of-line?
     <begin-delete-to-start-of-line>
-    $print [before: ] cursor-row [ ] cursor-column 10/newline
     deleted-cells:&:duplex-list:char <- delete-to-start-of-line editor
-    x:text <- to-text deleted-cells
-    $print x 10/newline
-    cursor-row <- get *editor, cursor-row:offset
-    cursor-column <- get *editor, cursor-column:offset
-    $print [after: ] cursor-row [ ] cursor-column 10/newline
     <end-delete-to-start-of-line>
     go-render?:bool <- minimal-render-for-ctrl-u screen, editor, deleted-cells
     return
@@ -2022,7 +2016,6 @@ after <handle-special-character> [
 def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
   local-scope
   load-inputs
-  $print [minimal render for ctrl-u] 10/newline
   curr-column:num <- get *editor, cursor-column:offset
   # accumulate the current line as text and render it
   buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
@@ -2032,7 +2025,6 @@ def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor, deleted-cells:&:
   {
     # if we have a wrapped line, give up and render the whole screen
     wrap?:bool <- greater-or-equal i, right
-    $print [wrap? ] wrap? 10/newline
     return-if wrap?, 1/go-render
     curr <- next curr
     break-unless curr
@@ -2069,7 +2061,6 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
   {
     at-start-of-text?:bool <- equal start, init
     break-if at-start-of-text?
-    $print [0] 10/newline
     curr:char <- get *start, value:offset
     at-start-of-line?:bool <- equal curr, 10/newline
     break-if at-start-of-line?
@@ -2080,23 +2071,14 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
     assert start, [delete-to-start-of-line tried to move before start of text]
     loop
   }
-  $print [1] 10/newline
   # snip it out
   result:&:duplex-list:char <- next start
-  x:text <- to-text start
-  $print [start: ] x 10/newline
-  x:text <- to-text end
-  $print [end: ] x 10/newline
   remove-between start, end
-  x:text <- to-text result
-  $print [snip: ] x 10/newline
   # update top-of-screen if it's just been invalidated
   {
     break-unless update-top-of-screen?
-    $print [2] 10/newline
     put *editor, top-of-screen:offset, start
   }
-  $print [3] 10/newline
   # adjust cursor
   before-cursor <- copy start
   *editor <- put *editor, before-cursor:offset, before-cursor
@@ -2107,22 +2089,17 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
   width:num <- subtract right, left
   num-deleted:num <- length result
   cursor-row-adjustment:num <- divide-with-remainder num-deleted, width
-  $print [adj ] num-deleted [/] width [=] cursor-row-adjustment 10/newline
   return-unless cursor-row-adjustment
-  $print [4] 10/newline
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-row-in-editor:num <- subtract cursor-row, 1  # ignore menubar
   at-top?:bool <- lesser-or-equal cursor-row-in-editor, cursor-row-adjustment
   {
     break-unless at-top?
-    $print [5] 10/newline
     cursor-row <- copy 1  # top of editor, below menubar
   }
   {
     break-if at-top?
-    $print [6] 10/newline
     cursor-row <- subtract cursor-row, cursor-row-adjustment
-    $print cursor-row 10/newline
   }
   put *editor, cursor-row:offset, cursor-row
 ]

@@ -145,14 +145,8 @@ assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
 
 :(before "End Globals")
 // Scenario Globals.
-extern const int SCREEN = next_predefined_global_for_scenarios(/*size_of(address:screen)*/2);
+extern const int SCREEN = Next_predefined_global_for_scenarios++;
 // End Scenario Globals.
-:(code)
-int next_predefined_global_for_scenarios(int size) {
-  int result = Next_predefined_global_for_scenarios;
-  Next_predefined_global_for_scenarios += size;
-  return result;
-}
 
 //: give 'screen' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")
@@ -256,27 +250,19 @@ struct raw_string_stream {
 
 :(code)
 void check_screen(const string& expected_contents, const int color) {
-  int screen_location = get_or_insert(Memory, SCREEN+/*skip address alloc id*/1) + /*skip payload alloc id*/1;
-  reagent screen("x:screen");  // just to ensure screen.type is reclaimed
-  int screen_data_location = find_element_location(screen_location, "data", screen.type, "check_screen");  // type: address:array:character
-  assert(screen_data_location >= 0);
-//?   cerr << "screen data is at location " << screen_data_location << '\n';
-  int screen_data_start = get_or_insert(Memory, screen_data_location+/*skip address alloc id*/1) + /*skip payload alloc id*/1;  // type: array:character
-//?   cerr << "screen data start is at " << screen_data_start << '\n';
-  int screen_width_location = find_element_location(screen_location, "num-columns", screen.type, "check_screen");
-//?   cerr << "screen width is at location " << screen_width_location << '\n';
-  int screen_width = get_or_insert(Memory, screen_width_location);
-//?   cerr << "screen width: " << screen_width << '\n';
-  int screen_height_location = find_element_location(screen_location, "num-rows", screen.type, "check_screen");
-//?   cerr << "screen height is at location " << screen_height_location << '\n';
-  int screen_height = get_or_insert(Memory, screen_height_location);
-//?   cerr << "screen height: " << screen_height << '\n';
-  int top_index_location= find_element_location(screen_location, "top-idx", screen.type, "check_screen");
-//?   cerr << "top of screen is at location " << top_index_location << '\n';
-  int top_index = get_or_insert(Memory, top_index_location);
-//?   cerr << "top of screen is index " << top_index << '\n';
+  int screen_location = get_or_insert(Memory, SCREEN);
+  int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
+  assert(data_offset >= 0);
+  int screen_data_location = screen_location+data_offset;  // type: address:array:character
+  int screen_data_start = get_or_insert(Memory, screen_data_location);  // type: array:character
+  int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
+  int screen_width = get_or_insert(Memory, screen_location+width_offset);
+  int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
+  int screen_height = get_or_insert(Memory, screen_location+height_offset);
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
+  int top_index_offset = find_element_name(get(Type_ordinal, "screen"), "top-idx", "");
+  int top_index = get_or_insert(Memory, screen_location+top_index_offset);
   for (int i=0, row=top_index/screen_width;  i < screen_height;  ++i, row=(row+1)%screen_height) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
@@ -399,25 +385,18 @@ case _DUMP_SCREEN: {
 
 :(code)
 void dump_screen() {
-  int screen_location = get_or_insert(Memory, SCREEN+/*skip address alloc id*/1) + /*skip payload alloc id*/1;
-  reagent screen("x:screen");  // just to ensure screen.type is reclaimed
-  int screen_data_location = find_element_location(screen_location, "data", screen.type, "check_screen");  // type: address:array:character
-  assert(screen_data_location >= 0);
-//?   cerr << "screen data is at location " << screen_data_location << '\n';
-  int screen_data_start = get_or_insert(Memory, screen_data_location+/*skip address alloc id*/1) + /*skip payload alloc id*/1;  // type: array:character
-//?   cerr << "screen data start is at " << screen_data_start << '\n';
-  int screen_width_location = find_element_location(screen_location, "num-columns", screen.type, "check_screen");
-//?   cerr << "screen width is at location " << screen_width_location << '\n';
-  int screen_width = get_or_insert(Memory, screen_width_location);
-//?   cerr << "screen width: " << screen_width << '\n';
-  int screen_height_location = find_element_location(screen_location, "num-rows", screen.type, "check_screen");
-//?   cerr << "screen height is at location " << screen_height_location << '\n';
-  int screen_height = get_or_insert(Memory, screen_height_location);
-//?   cerr << "screen height: " << screen_height << '\n';
-  int top_index_location= find_element_location(screen_location, "top-idx", screen.type, "check_screen");
-//?   cerr << "top of screen is at location " << top_index_location << '\n';
-  int top_index = get_or_insert(Memory, top_index_location);
-//?   cerr << "top of screen is index " << top_index << '\n';
+  int screen_location = get_or_insert(Memory, SCREEN);
+  int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
+  int screen_width = get_or_insert(Memory, screen_location+width_offset);
+  int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
+  int screen_height = get_or_insert(Memory, screen_location+height_offset);
+  int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
+  assert(data_offset >= 0);
+  int screen_data_location = screen_location+data_offset;  // type: address:array:character
+  int screen_data_start = get_or_insert(Memory, screen_data_location);  // type: array:character
+  assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
+  int top_index_offset = find_element_name(get(Type_ordinal, "screen"), "top-idx", "");
+  int top_index = get_or_insert(Memory, screen_location+top_index_offset);
   for (int i=0, row=top_index/screen_width;  i < screen_height;  ++i, row=(row+1)%screen_height) {
     cerr << '.';
     int curr = screen_data_start+/*length*/1+row*screen_width* /*size of screen-cell*/2;
