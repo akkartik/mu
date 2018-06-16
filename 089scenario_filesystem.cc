@@ -71,7 +71,7 @@ scenario escaping-file-contents [
 ]
 
 :(before "End Globals")
-extern const int RESOURCES = Next_predefined_global_for_scenarios++;
+extern const int RESOURCES = next_predefined_global_for_scenarios(/*size_of(address:resources)*/2);
 //: give 'resources' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["resources"] = RESOURCES;
@@ -203,26 +203,28 @@ string munge_resources_contents(const string& data, const string& filename, cons
 }
 
 void construct_resources_object(const map<string, string>& contents) {
-  int resources_data_address = allocate(SIZE(contents)*2 + /*array length*/1);
-  int curr = resources_data_address + /*skip length*/1;
+  int resources_data_address = allocate(SIZE(contents) * /*size of resource*/4 + /*array length*/1);
+  int curr = resources_data_address + /*skip alloc id*/1 + /*skip array length*/1;
   for (map<string, string>::const_iterator p = contents.begin();  p != contents.end();  ++p) {
+    ++curr;  // skip alloc id of resource.name
     put(Memory, curr, new_mu_text(p->first));
     trace("mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
     ++curr;
+    ++curr;  // skip alloc id of resource.contents
     put(Memory, curr, new_mu_text(p->second));
     trace("mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
     ++curr;
   }
-  curr = resources_data_address;
-  put(Memory, curr, SIZE(contents));  // size of array
+  curr = resources_data_address + /*skip alloc id of resources.data*/1;
+  put(Memory, curr, SIZE(contents));  // array length
   trace("mem") << "storing resources size " << get(Memory, curr) << " in location " << curr << end();
   // wrap the resources data in a 'resources' object
   int resources_address = allocate(size_of_resources());
-  curr = resources_address+/*offset of 'data' element*/1;
+  curr = resources_address+/*alloc id*/1+/*offset of 'data' element*/1+/*skip alloc id of 'data' element*/1;
   put(Memory, curr, resources_data_address);
   trace("mem") << "storing resources data address " << resources_data_address << " in location " << curr << end();
   // save in product
-  put(Memory, RESOURCES, resources_address);
+  put(Memory, RESOURCES+/*skip alloc id*/1, resources_address);
   trace("mem") << "storing resources address " << resources_address << " in location " << RESOURCES << end();
 }
 

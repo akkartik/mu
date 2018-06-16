@@ -207,6 +207,9 @@ case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
   if (current_call().next_ingredient_to_process < SIZE(current_call().ingredient_atoms)) {
     products.push_back(
         current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));
+    if (is_mu_scalar(current_call().ingredients.at(current_call().next_ingredient_to_process))
+        && is_mu_address(current_instruction().products.at(0)))
+      products.at(0).insert(products.at(0).begin(), /*alloc id*/0);
     assert(SIZE(products) == 1);  products.resize(2);  // push a new vector
     products.at(1).push_back(1);
     ++current_call().next_ingredient_to_process;

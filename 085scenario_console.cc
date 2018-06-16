@@ -34,7 +34,7 @@ scenario keyboard-in-scenario [
 ]
 
 :(before "End Scenario Globals")
-extern const int CONSOLE = Next_predefined_global_for_scenarios++;
+extern const int CONSOLE = next_predefined_global_for_scenarios(/*size_of(address:console)*/2);
 //: give 'console' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["console"] = CONSOLE;
@@ -61,8 +61,8 @@ case ASSUME_CONSOLE: {
   int size = /*length*/1 + num_events*size_of_event();
   int event_data_address = allocate(size);
   // store length
-  put(Memory, event_data_address, num_events);
-  int curr_address = event_data_address + /*skip length*/1;
+  put(Memory, event_data_address+/*skip alloc id*/1, num_events);
+  int curr_address = event_data_address + /*skip alloc id*/1 + /*skip length*/1;
   for (int i = 0;  i < SIZE(r.steps);  ++i) {
     const instruction& inst = r.steps.at(i);
     if (inst.name == "left-click") {
@@ -113,13 +113,13 @@ case ASSUME_CONSOLE: {
       }
     }
   }
-  assert(curr_address == event_data_address+size);
+  assert(curr_address == event_data_address+/*skip alloc id*/1+size);
   // wrap the array of events in a console object
   int console_address = allocate(size_of_console());
   trace("mem") << "storing console in " << console_address << end();
-  put(Memory, CONSOLE, console_address);
+  put(Memory, CONSOLE+/*skip alloc id*/1, console_address);
   trace("mem") << "storing console data in " << console_address+/*offset of 'data' in container 'events'*/1 << end();
-  put(Memory, console_address+/*offset of 'data' in container 'events'*/1, event_data_address);
+  put(Memory, console_address+/*skip alloc id*/1+/*offset of 'data' in container 'events'*/1+/*skip alloc id of 'data'*/1, event_data_address);
   break;
 }
 

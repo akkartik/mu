@@ -52,6 +52,10 @@ case RETURN: {
     trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
   // make return products available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
+  for (int i = 0;  i < SIZE(current_instruction().products);  ++i) {
+    if (is_mu_address(current_instruction().products.at(i)) && scalar(ingredients.at(i)))
+      products.at(i).insert(products.at(i).begin(), /*alloc id*/0);
+  }
   // End Return
   break;  // continue to process rest of *caller* instruction
 }

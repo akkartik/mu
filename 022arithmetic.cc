@@ -95,18 +95,25 @@ case SUBTRACT: {
   }
   break;
 }
+:(code)
+bool is_raw(const reagent& r) {
+  return has_property(r, "raw");
+}
+
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
-  double result = ingredients.at(0).at(0);
+  double result = scalar_ingredient(ingredients, 0);
   for (int i = 1;  i < SIZE(ingredients);  ++i)
-    result -= ingredients.at(i).at(0);
+    result -= scalar_ingredient(ingredients, i);
   products.resize(1);
   products.at(0).push_back(result);
   break;
 }
 :(code)
-bool is_raw(const reagent& r) {
-  return has_property(r, "raw");
+double scalar_ingredient(const vector<vector<double> >& ingredients, int i) {
+  if (is_mu_address(current_instruction().ingredients.at(i)))
+    return ingredients.at(i).at(1);  // skip alloc id
+  return ingredients.at(i).at(0);
 }
 
 :(scenario subtract_literal)

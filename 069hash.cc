@@ -62,7 +62,7 @@ size_t hash_mu_address(size_t h, reagent& r) {
 }
 
 size_t hash_mu_text(size_t h, const reagent& r) {
-  string input = read_mu_text(get_or_insert(Memory, r.value));
+  string input = read_mu_text(get_or_insert(Memory, r.value+/*skip alloc id*/1));
   for (int i = 0;  i < SIZE(input);  ++i) {
     h = hash_iter(h, static_cast<size_t>(input.at(i)));
 //?     cerr << i << ": " << h << '\n';
@@ -319,11 +319,11 @@ def main [
 :(scenario hash_matches_old_version)
 def main [
   1:text <- new [abc]
-  2:num <- hash 1:text
-  3:num <- hash_old 1:text
-  4:bool <- equal 2:num, 3:num
+  3:num <- hash 1:text
+  4:num <- hash_old 1:text
+  5:bool <- equal 3:num, 4:num
 ]
-+mem: storing 1 in location 4
++mem: storing 1 in location 5
 
 :(before "End Primitive Recipe Declarations")
 HASH_OLD,
@@ -343,7 +343,7 @@ case HASH_OLD: {
 }
 :(before "End Primitive Recipe Implementations")
 case HASH_OLD: {
-  string input = read_mu_text(ingredients.at(0).at(0));
+  string input = read_mu_text(ingredients.at(0).at(/*skip alloc id*/1));
   size_t h = 0 ;
 
   for (int i = 0;  i < SIZE(input);  ++i) {

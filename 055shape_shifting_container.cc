@@ -295,12 +295,12 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:text <- new [abc]
-  {2: (foo number (address array character))} <- merge 34/x, 1:text/y
-  3:text <- get {2: (foo number (address array character))}, y:offset
-  4:bool <- equal 1:text, 3:text
+  10:text <- new [abc]
+  {20: (foo number (address array character))} <- merge 34/x, 10:text/y
+  30:text <- get {20: (foo number (address array character))}, y:offset
+  40:bool <- equal 10:text, 30:text
 ]
-+mem: storing 1 in location 4
++mem: storing 1 in location 40
 
 :(before "End element_type Special-cases")
 replace_type_ingredients(element, type, info, " while computing element type of container");
@@ -346,8 +346,8 @@ exclusive-container foo:_a [
 ]
 def main [
   1:text <- new [abc]
-  2:foo:point <- merge 0/variant, 34/xx, 35/xy
-  10:point, 20:bool <- maybe-convert 2:foo:point, 0/variant
+  3:foo:point <- merge 0/variant, 34/xx, 35/xy
+  10:point, 20:bool <- maybe-convert 3:foo:point, 0/variant
 ]
 +mem: storing 1 in location 20
 +mem: storing 35 in location 11

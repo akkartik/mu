@@ -393,12 +393,17 @@ def remove-between start:&:duplex-list:_elem, end:&:duplex-list:_elem/contained-
   # start->next = end
   *next <- put *next, prev:offset, 0
   *start <- put *start, next:offset, end
-  return-unless end
+  {
+    break-if end
+    stash [spliced:] next
+    return
+  }
   # end->prev->next = 0
   # end->prev = start
   prev:&:duplex-list:_elem <- get *end, prev:offset
   assert prev, [malformed duplex list - 2]
   *prev <- put *prev, next:offset, 0
+  stash [spliced:] next
   *end <- put *end, prev:offset, start
 ]
 
@@ -430,6 +435,9 @@ scenario remove-range [
     11 <- 14
     12 <- 15
     20 <- 0
+  ]
+  trace-should-contain [
+    app: spliced: 16 <-> 17 <-> 18
   ]
 ]
 
@@ -465,6 +473,49 @@ scenario remove-range-to-final [
     11 <- 14
     12 <- 18
     20 <- 0  # no more elements
+  ]
+  trace-should-contain [
+    app: spliced: 15 <-> 16 <-> 17
+  ]
+]
+
+scenario remove-range-to-penultimate [
+  local-scope
+  # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
+  list:&:duplex-list:num <- push 18, 0
+  list <- push 17, list
+  list <- push 16, list
+  list <- push 15, list
+  list <- push 14, list
+  list <- push 13, list
+  run [
+    # delete 15 and 16
+    # start pointer: to the second element
+    list2:&:duplex-list:num <- next list
+    # end pointer: to the last (sixth) element
+    end:&:duplex-list:num <- next list2
+    end <- next end
+    end <- next end
+    remove-between list2, end
+    # now check the list
+    10:num/raw <- get *list, value:offset
+    list <- next list
+    11:num/raw <- get *list, value:offset
+    list <- next list
+    12:num/raw <- get *list, value:offset
+    list <- next list
+    13:num/raw <- get *list, value:offset
+    20:&:duplex-list:num/raw <- next list
+  ]
+  memory-should-contain [
+    10 <- 13
+    11 <- 14
+    12 <- 17
+    13 <- 18
+    20 <- 0  # no more elements
+  ]
+  trace-should-contain [
+    app: spliced: 15 <-> 16
   ]
 ]
 

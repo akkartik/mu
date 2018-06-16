@@ -18,6 +18,37 @@
 //: write to the payload of an ingredient rather than its value, simply add
 //: the /lookup property to it. Modern computers provide efficient support for
 //: addresses and lookups, making this a realistic feature.
+//:
+//: To create addresses and allocate memory exclusively for their use, use
+//: 'new'. Memory is a finite resource so if the computer can't satisfy your
+//: request, 'new' may return a 0 (null) address.
+//:
+//: Computers these days have lots of memory so in practice we can often
+//: assume we'll never run out. If you start running out however, say in a
+//: long-running program, you'll need to switch mental gears and start
+//: husbanding our memory more carefully. The most important tool to avoid
+//: wasting memory is to 'abandon' an address when you don't need it anymore.
+//: That frees up the memory allocated to it to be reused in future calls to
+//: 'new'.
+
+//: Since memory can be reused multiple times, it can happen that you have a
+//: stale copy to an address that has since been abandoned and reused. Using
+//: the stale address is almost never safe, but it can be very hard to track
+//: down such copies because any errors caused by them may occur even millions
+//: of instructions after the copy or abandon instruction. To help track down
+//: such issues, Mu tracks an 'alloc id' for each allocation it makes. The
+//: first call to 'new' has an alloc id of 1, the second gets 2, and so on.
+//: The alloc id is never reused.
+:(before "End Globals")
+long long Next_alloc_id = 0;
+:(before "End Reset")
+Next_alloc_id = 0;
+
+//: The 'new' instruction records alloc ids both in the memory being allocated
+//: and *also* in the address. The 'abandon' instruction clears alloc ids in
+//: both places as well. Tracking alloc ids in this manner allows us to raise
+//: errors about stale addresses much earlier: 'lookup' operations always
+//: compare alloc ids between the address and its payload.
 
 //: todo: give 'new' a custodian ingredient. Following malloc/free is a temporary hack.
 
@@ -26,28 +57,30 @@
 # should get back different results
 def main [
   1:address:num/raw <- new number:type
-  2:address:num/raw <- new number:type
-  3:bool/raw <- equal 1:address:num/raw, 2:address:num/raw
+  3:address:num/raw <- new number:type
+  5:bool/raw <- equal 1:address:num/raw, 3:address:num/raw
 ]
++mem: storing 1000 in location 2
 +mem: storing 0 in location 3
 
 :(scenario new_array)
 # call 'new' with a second ingredient to allocate an array of some type rather than a single copy
 def main [
   1:address:array:num/raw <- new number:type, 5
-  2:address:num/raw <- new number:type
-  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
+  3:address:num/raw <- new number:type
+  5:num/raw <- subtract 3:address:num/raw, 1:address:array:num/raw
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
 +mem: array length is 5
++mem: storing 1000 in location 2
 # don't forget the extra location for array length
-+mem: storing 6 in location 3
++mem: storing 7 in location 5
 
 :(scenario dilated_reagent_with_new)
 def main [
   1:address:address:num <- new {(address number): type}
 ]
-+new: size of '(address number)' is 1
++new: size of '(address number)' is 2
 
 //: 'new' takes a weird 'type' as its first ingredient; don't error on it
 :(before "End Mu Types Initialization")
@@ -151,6 +184,13 @@ def main [
 ]
 $error: 0
 
+:(scenario equal_result_of_new_with_null)
+def main [
+  1:&:num <- new num:type
+  10:bool <- equal 1:&:num, 0
+]
++mem: storing 0 in location 10
+
 //: To implement 'new', a Mu transform turns all 'new' instructions into
 //: 'allocate' instructions that precompute the amount of memory they want to
 //: allocate.
@@ -221,15 +261,18 @@ case ALLOCATE: {
   int result = allocate(size);
   if (SIZE(current_instruction().ingredients) > 1) {
     // initialize array length
-    trace("mem") << "storing " << ingredients.at(1).at(0) << " in location " << result << end();
-    put(Memory, result, ingredients.at(1).at(0));
+    trace("mem") << "storing array length " << ingredients.at(1).at(0) << " in location " << result+/*skip alloc id*/1 << end();
+    put(Memory, result+/*skip alloc id*/1, ingredients.at(1).at(0));
   }
   products.resize(1);
+  products.at(0).push_back(0);
   products.at(0).push_back(result);
   break;
 }
 :(code)
 int allocate(int size) {
+  // include space for alloc id
+  ++size;
   trace("mem") << "allocating size " << size << end();
 //?   Total_alloc += size;
 //?   ++Num_alloc;
@@ -290,41 +333,41 @@ def main [
 :(scenario new_size)
 def main [
   11:address:num/raw <- new number:type
-  12:address:num/raw <- new number:type
-  13:num/raw <- subtract 12:address:num/raw, 11:address:num/raw
+  13:address:num/raw <- new number:type
+  15:num/raw <- subtract 13:address:num/raw, 11:address:num/raw
 ]
-# size of number
-+mem: storing 1 in location 13
+# size of number + alloc id
++mem: storing 2 in location 15
 
 :(scenario new_array_size)
 def main [
   1:address:array:num/raw <- new number:type, 5
-  2:address:num/raw <- new number:type
-  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
+  3:address:num/raw <- new number:type
+  5:num/raw <- subtract 3:address:num/raw, 1:address:array:num/raw
 ]
 # 5 locations for array contents + array length
-+mem: storing 6 in location 3
++mem: storing 7 in location 5
 
 :(scenario new_empty_array)
 def main [
   1:address:array:num/raw <- new number:type, 0
-  2:address:num/raw <- new number:type
-  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
+  3:address:num/raw <- new number:type
+  5:num/raw <- subtract 3:address:num/raw, 1:address:array:num/raw
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {0: "literal"}
 +mem: array length is 0
 # one location for array length
-+mem: storing 1 in location 3
++mem: storing 2 in location 5
 
 //: If a routine runs out of its initial allocation, it should allocate more.
 :(scenario new_overflow)
-% Initial_memory_per_routine = 2;  // barely enough room for point allocation below
+% Initial_memory_per_routine = 3;  // barely enough room for point allocation below
 def main [
   1:address:num/raw <- new number:type
   2:address:point/raw <- new point:type  # not enough room in initial page
 ]
-+new: routine allocated memory from 1000 to 1002
-+new: routine allocated memory from 1002 to 1004
++new: routine allocated memory from 1000 to 1003
++new: routine allocated memory from 1003 to 1006
 
 :(scenario new_without_ingredient)
 % Hide_errors = true;

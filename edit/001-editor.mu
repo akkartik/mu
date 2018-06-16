@@ -81,18 +81,20 @@ scenario editor-initializes-without-data [
   assume-screen 5/width, 3/height
   run [
     e:&:editor <- new-editor 0/data, 2/left, 5/right
-    2:editor/raw <- copy *e
+    1:editor/raw <- copy *e
   ]
   memory-should-contain [
-    # 2 (data) <- just the § sentinel
-    # 3 (top of screen) <- the § sentinel
-    4 <- 0  # bottom-of-screen; null since text fits on screen
-    # 5 (before cursor) <- the § sentinel
-    6 <- 2  # left
-    7 <- 4  # right  (inclusive)
-    8 <- 0  # bottom (not set until render)
-    9 <- 1  # cursor row
-    10 <- 2  # cursor column
+    # 1,2 (data) <- just the § sentinel
+    # 3,4 (top of screen) <- the § sentinel
+    # 5 (bottom of screen) <- null since text fits on screen
+    5 <- 0
+    6 <- 0
+    # 7,8 (before cursor) <- the § sentinel
+    9 <- 2  # left
+    10 <- 4  # right  (inclusive)
+    11 <- 0  # bottom (not set until render)
+    12 <- 1  # cursor row
+    13 <- 2  # cursor column
   ]
   screen-should-contain [
     .     .

@@ -3,20 +3,23 @@
 
 :(scenario run_interactive_code)
 def main [
-  1:num <- copy 0
-  2:text <- new [1:num/raw <- copy 34]
-  run-sandboxed 2:text
-  3:num <- copy 1:num
+  1:num <- copy 0  # reserve space for the sandbox
+  10:text <- new [1:num/raw <- copy 34]
+#?   $print 10:num [|] 11:num [: ] 1000:num [|] *10:text [ (] 10:text [)] 10/newline
+  run-sandboxed 10:text
+  20:num <- copy 1:num
 ]
-+mem: storing 34 in location 3
+#? ?
++mem: storing 34 in location 20
 
 :(scenario run_interactive_empty)
 def main [
-  1:text <- copy 0/unsafe
-  2:text <- run-sandboxed 1:text
+  10:text <- copy 0/unsafe
+  20:text <- run-sandboxed 10:text
 ]
 # result is null
-+mem: storing 0 in location 2
++mem: storing 0 in location 20
++mem: storing 0 in location 21
 
 //: As the name suggests, 'run-sandboxed' will prevent certain operations that
 //: regular Mu code can perform.
@@ -52,12 +55,16 @@ case RUN_SANDBOXED: {
 }
 :(before "End Primitive Recipe Implementations")
 case RUN_SANDBOXED: {
-  bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
+  bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(/*skip alloc id*/1));
   if (!new_code_pushed_to_stack) {
     products.resize(5);
+    products.at(0).push_back(/*alloc id*/0);
     products.at(0).push_back(0);
+    products.at(1).push_back(/*alloc id*/0);
     products.at(1).push_back(trace_error_contents());
+    products.at(2).push_back(/*alloc id*/0);
     products.at(2).push_back(0);
+    products.at(3).push_back(/*alloc id*/0);
     products.at(3).push_back(trace_app_contents());
     products.at(4).push_back(1);  // completed
     run_code_end();
@@ -90,6 +97,7 @@ string Save_trace_file;
 // all errors.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(int address) {
+//?   cerr << "run_interactive: " << address << '\n';
   assert(contains_key(Recipe_ordinal, "interactive") && get(Recipe_ordinal, "interactive") != 0);
   // try to sandbox the run as best you can
   // todo: test this
@@ -98,6 +106,7 @@ bool run_interactive(int address) {
       Memory.erase(i);
   }
   string command = trim(strip_comments(read_mu_text(address)));
+//?   cerr << "command: " << command << '\n';
   Name[get(Recipe_ordinal, "interactive")].clear();
   run_code_begin(/*should_stash_snapshots*/true);
   if (command.empty()) return false;
@@ -213,15 +222,20 @@ load(string(
 "]\n" +
 "recipe sandbox [\n" +
   "local-scope\n" +
+//?   "$print [aaa] 10/newline\n" +
   "screen:&:screen <- new-fake-screen 30, 5\n" +
   "routine-id:num <- start-running interactive, screen\n" +
   "limit-time routine-id, 100000/instructions\n" +
   "wait-for-routine routine-id\n" +
+//?   "$print [bbb] 10/newline\n" +
   "instructions-run:num <- number-of-instructions routine-id\n" +
   "stash instructions-run [instructions run]\n" +
   "sandbox-state:num <- routine-state routine-id\n" +
   "completed?:bool <- equal sandbox-state, 1/completed\n" +
+//?   "$print [completed: ] completed? 10/newline\n" +
   "output:text <- $most-recent-products\n" +
+//?   "$print [zzz] 10/newline\n" +
+//?   "$print output\n" +
   "errors:text <- save-errors\n" +
   "stashes:text <- save-app-trace\n" +
   "$cleanup-run-sandboxed\n" +
@@ -281,6 +295,7 @@ case _MOST_RECENT_PRODUCTS: {
 :(before "End Primitive Recipe Implementations")
 case _MOST_RECENT_PRODUCTS: {
   products.resize(1);
+  products.at(0).push_back(/*alloc id*/0);
   products.at(0).push_back(new_mu_text(Most_recent_products));
   break;
 }
@@ -296,6 +311,7 @@ case SAVE_ERRORS: {
 :(before "End Primitive Recipe Implementations")
 case SAVE_ERRORS: {
   products.resize(1);
+  products.at(0).push_back(/*alloc id*/0);
   products.at(0).push_back(trace_error_contents());
   break;
 }
@@ -311,6 +327,7 @@ case SAVE_APP_TRACE: {
 :(before "End Primitive Recipe Implementations")
 case SAVE_APP_TRACE: {
   products.resize(1);
+  products.at(0).push_back(/*alloc id*/0);
   products.at(0).push_back(trace_app_contents());
   break;
 }
@@ -332,64 +349,64 @@ case _CLEANUP_RUN_SANDBOXED: {
 :(scenario "run_interactive_converts_result_to_text")
 def main [
   # try to interactively add 2 and 2
-  1:text <- new [add 2, 2]
-  2:text <- run-sandboxed 1:text
-  10:@:char <- copy *2:text
+  10:text <- new [add 2, 2]
+  20:text <- run-sandboxed 10:text
+  30:@:char <- copy *20:text
 ]
 # first letter in the output should be '4' in unicode
-+mem: storing 52 in location 11
++mem: storing 52 in location 31
 
 :(scenario "run_interactive_ignores_products_in_nested_functions")
 def main [
-  1:text <- new [foo]
-  2:text <- run-sandboxed 1:text
-  10:@:char <- copy *2:text
+  10:text <- new [foo]
+  20:text <- run-sandboxed 10:text
+  30:@:char <- copy *20:text
 ]
 def foo [
-  20:num <- copy 1234
+  40:num <- copy 1234
   {
     break
     reply 5678
   }
 ]
 # no product should have been tracked
-+mem: storing 0 in location 10
++mem: storing 0 in location 30
 
 :(scenario "run_interactive_ignores_products_in_previous_instructions")
 def main [
-  1:text <- new [
+  10:text <- new [
     add 1, 1  # generates a product
     foo]  # no products
-  2:text <- run-sandboxed 1:text
-  10:@:char <- copy *2:text
+  20:text <- run-sandboxed 10:text
+  30:@:char <- copy *20:text
 ]
 def foo [
-  20:num <- copy 1234
+  40:num <- copy 1234
   {
     break
     reply 5678
   }
 ]
 # no product should have been tracked
-+mem: storing 0 in location 10
++mem: storing 0 in location 30
 
 :(scenario "run_interactive_remembers_products_before_final_label")
 def main [
-  1:text <- new [
+  10:text <- new [
     add 1, 1  # generates a product
     +foo]  # no products
-  2:text <- run-sandboxed 1:text
-  10:@:char <- copy *2:text
+  20:text <- run-sandboxed 10:text
+  30:@:char <- copy *20:text
 ]
 def foo [
-  20:num <- copy 1234
+  40:num <- copy 1234
   {
     break
     reply 5678
   }
 ]
 # product tracked
-+mem: storing 50 in location 11
++mem: storing 50 in location 31
 
 :(scenario "run_interactive_returns_text")
 def main [
@@ -399,38 +416,42 @@ def main [
     y:text <- new [b]
     z:text <- append x:text, y:text
   ]
-  2:text <- run-sandboxed 1:text
-  10:@:char <- copy *2:text
+  10:text <- run-sandboxed 1:text
+#?   $print 10:text 10/newline
+  20:@:char <- copy *10:text
 ]
 # output contains "ab"
-+mem: storing 97 in location 11
-+mem: storing 98 in location 12
+#? ?
++mem: storing 97 in location 21
++mem: storing 98 in location 22
 
 :(scenario "run_interactive_returns_errors")
 def main [
   # run a command that generates an error
-  1:text <- new [x:num <- copy 34
+  10:text <- new [x:num <- copy 34
 get x:num, foo:offset]
-  2:text, 3:text <- run-sandboxed 1:text
-  10:@:char <- copy *3:text
+  20:text, 30:text <- run-sandboxed 10:text
+  40:@:char <- copy *30:text
 ]
 # error should be "unknown element foo in container number"
-+mem: storing 117 in location 11
-+mem: storing 110 in location 12
-+mem: storing 107 in location 13
-+mem: storing 110 in location 14
++mem: storing 117 in location 41
++mem: storing 110 in location 42
++mem: storing 107 in location 43
++mem: storing 110 in location 44
 # ...
 
 :(scenario run_interactive_with_comment)
 def main [
   # 2 instructions, with a comment after the first
-  1:&:@:num <- new [a:num <- copy 0  # abc
+  10:text <- new [a:num <- copy 0  # abc
 b:num <- copy 0
 ]
-  2:text, 3:text <- run-sandboxed 1:text
+  20:text, 30:text <- run-sandboxed 10:text
 ]
 # no errors
-+mem: storing 0 in location 3
+# skip alloc id
++mem: storing 0 in location 30
++mem: storing 0 in location 31
 
 :(after "Running One Instruction")
 if (Track_most_recent_products && SIZE(Current_routine->calls) == Call_depth_to_track_most_recent_products_at
@@ -441,6 +462,7 @@ if (Track_most_recent_products && SIZE(Current_routine->calls) == Call_depth_to_
 :(before "End Running One Instruction")
 if (Track_most_recent_products && SIZE(Current_routine->calls) == Call_depth_to_track_most_recent_products_at) {
   Most_recent_products = track_most_recent_products(current_instruction(), products);
+//?   cerr << "most recent products: " << Most_recent_products << '\n';
 }
 :(code)
 string track_most_recent_products(const instruction& instruction, const vector<vector<double> >& products) {
@@ -458,8 +480,8 @@ string track_most_recent_products(const instruction& instruction, const vector<v
     //    => abc
     if (i < SIZE(instruction.products)) {
       if (is_mu_text(instruction.products.at(i))) {
-        if (!scalar(products.at(i))) continue;  // error handled elsewhere
-        out << read_mu_text(products.at(i).at(0)) << '\n';
+        if (SIZE(products.at(i)) != 2) continue;  // weak silent check for address
+        out << read_mu_text(products.at(i).at(/*skip alloc id*/1)) << '\n';
         continue;
       }
     }
@@ -562,6 +584,7 @@ case RELOAD: {
   Sandbox_mode = false;
   Current_routine = save_current_routine;
   products.resize(1);
+  products.at(0).push_back(/*alloc id*/0);
   products.at(0).push_back(trace_error_contents());
   run_code_end();  // wait until we're done with the trace contents
   break;

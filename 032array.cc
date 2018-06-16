@@ -11,7 +11,7 @@ def main [
   # create an array occupying locations 1 (for the size) and 2-4 (for the elements)
   1:array:num:3 <- create-array
 ]
-+run: creating array of size 4
++run: creating array from 4 locations
 
 :(before "End Primitive Recipe Declarations")
 CREATE_ARRAY,
@@ -60,7 +60,7 @@ case CREATE_ARRAY: {
   trace("mem") << "storing " << array_length << " in location " << base_address << end();
   put(Memory, base_address, array_length);  // in array elements
   int size = size_of(product);  // in locations
-  trace(9998, "run") << "creating array of size " << size << end();
+  trace(9998, "run") << "creating array from " << size << " locations" << end();
   // initialize array
   for (int i = 1;  i <= size_of(product);  ++i)
     put(Memory, base_address+i, 0);
@@ -208,19 +208,23 @@ def main [
   2:num <- copy 14
   3:num <- copy 15
   4:num <- copy 16
-  5:num <- index 1:array:num:3, 0/index  # the index must be a non-negative whole number
+  10:num <- index 1:array:num:3, 0/index  # the index must be a non-negative whole number
 ]
-+mem: storing 14 in location 5
++mem: storing 14 in location 10
 
 :(scenario index_compound_element)
 def main [
   {1: (array (address number) 3)} <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  5:address:num <- index {1: (array (address number) 3)}, 0
+  # skip alloc id
+  3:num <- copy 14
+  # skip alloc id
+  5:num <- copy 15
+  # skip alloc id
+  7:num <- copy 16
+  10:address:num <- index {1: (array (address number) 3)}, 0
 ]
-+mem: storing 14 in location 5
+# skip alloc id
++mem: storing 14 in location 11
 
 :(scenario index_direct_offset)
 def main [
@@ -228,10 +232,10 @@ def main [
   2:num <- copy 14
   3:num <- copy 15
   4:num <- copy 16
-  5:num <- copy 0
-  6:num <- index 1:array:num, 5:num
+  10:num <- copy 0
+  20:num <- index 1:array:num, 10:num
 ]
-+mem: storing 14 in location 6
++mem: storing 14 in location 20
 
 :(before "End Primitive Recipe Declarations")
 INDEX,
@@ -346,38 +350,38 @@ def main [
   2:num <- copy 14
   3:num <- copy 15
   4:num <- copy 16
-  5:num <- index 1:array:num:3, 1.5  # non-whole number
+  10:num <- index 1:array:num:3, 1.5  # non-whole number
 ]
 # fraction is truncated away
-+mem: storing 15 in location 5
++mem: storing 15 in location 10
 
 :(scenario index_out_of_bounds)
 % Hide_errors = true;
 def main [
-  1:array:num:3 <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  5:num <- copy 14
-  6:num <- copy 15
-  7:num <- copy 16
-  index 1:array:num:3, 4  # less than size of array in locations, but larger than its length in elements
+  2:array:point:3 <- create-array
+  3:num <- copy 14
+  4:num <- copy 15
+  5:num <- copy 16
+  6:num <- copy 17
+  7:num <- copy 18
+  8:num <- copy 19
+  index 1:array:point:3/skip-alloc-id, 4  # less than size of array in locations, but larger than its length in elements
 ]
-+error: main: invalid index 4 in 'index 1:array:num:3, 4'
++error: main: invalid index 4 in 'index 1:array:point:3/skip-alloc-id, 4'
 
 :(scenario index_out_of_bounds_2)
 % Hide_errors = true;
 def main [
-  1:array:point:3 <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  5:num <- copy 14
-  6:num <- copy 15
-  7:num <- copy 16
-  index 1:array:point, -1
+  2:array:point:3 <- create-array
+  3:num <- copy 14
+  4:num <- copy 15
+  5:num <- copy 16
+  6:num <- copy 14
+  7:num <- copy 15
+  8:num <- copy 16
+  index 1:array:point/skip-alloc-id, -1
 ]
-+error: main: invalid index -1 in 'index 1:array:point, -1'
++error: main: invalid index -1 in 'index 1:array:point/skip-alloc-id, -1'
 
 :(scenario index_product_type_mismatch)
 % Hide_errors = true;

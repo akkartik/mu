@@ -280,7 +280,11 @@ scenario editor-handles-empty-event-queue [
   assume-screen 10/width, 5/height
   e:&:editor <- new-editor [abc], 0/left, 10/right
   editor-render screen, e
+#?   x:num <- get *screen, num-rows:offset
+#?   $print [a: ] x 10/newline
   assume-console []
+#?   x:num <- get *screen, num-rows:offset
+#?   $print [z: ] x 10/newline
   run [
     editor-event-loop screen, console, e
   ]

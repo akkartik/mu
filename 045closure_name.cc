@@ -9,9 +9,9 @@
 :(scenario closure)
 def main [
   default-space:space <- new location:type, 30
-  1:space/names:new-counter <- new-counter
-  2:num/raw <- increment-counter 1:space/names:new-counter
-  3:num/raw <- increment-counter 1:space/names:new-counter
+  2:space/names:new-counter <- new-counter
+  10:num/raw <- increment-counter 2:space/names:new-counter
+  11:num/raw <- increment-counter 2:space/names:new-counter
 ]
 def new-counter [
   default-space:space <- new location:type, 30
@@ -27,7 +27,7 @@ def increment-counter [
   return y:num/space:1
 ]
 +name: lexically surrounding space for recipe increment-counter comes from new-counter
-+mem: storing 5 in location 3
++mem: storing 5 in location 11
 
 //: To make this work, compute the recipe that provides names for the
 //: surrounding space of each recipe.

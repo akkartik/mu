@@ -87,6 +87,12 @@ void run_current_routine() {
       // Primitive Recipe Implementations
       case COPY: {
         copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
+        for (int i = 0;  i < SIZE(current_instruction().products);  ++i) {
+          if (is_mu_scalar(current_instruction().products.at(i)) && is_mu_address(current_instruction().ingredients.at(i)))
+            products.at(i).erase(products.at(i).begin());  // ignore alloc id
+          if (is_mu_address(current_instruction().products.at(i)) && is_mu_scalar(current_instruction().ingredients.at(i)))
+            products.at(i).insert(products.at(i).begin(), /*alloc id*/0);
+        }
         break;
       }
       // End Primitive Recipe Implementations
@@ -196,7 +202,7 @@ if (argc > 1) {
 }
 transform_all();
 //? cerr << to_original_string(get(Type_ordinal, "editor")) << '\n';
-//? cerr << to_original_string(get(Recipe, get(Recipe_ordinal, "event-loop"))) << '\n';
+//? cerr << to_original_string(get(Recipe, get(Recipe_ordinal, "handle-keyboard-event"))) << '\n';
 //? DUMP("");
 //? exit(0);
 if (trace_contains_errors()) {
@@ -341,8 +347,9 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data) {
 }
 
 :(code)
-int size_of(const reagent& r) {
+int size_of(reagent/*copy*/ r) {
   if (!r.type) return 0;
+  // Begin size_of(reagent r) Special-cases
   // End size_of(reagent r) Special-cases
   return size_of(r.type);
 }
@@ -351,6 +358,7 @@ int size_of(const type_tree* type) {
   if (type->atom) {
     if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
     if (type->value == 0) return 1;
+//?     if (type->value == Address_type_ordinal) return 2;  // address and alloc id
     // End size_of(type) Atom Special-cases
   }
   else {
@@ -358,7 +366,7 @@ int size_of(const type_tree* type) {
       raise << "invalid type " << to_string(type) << '\n' << end();
       return 0;
     }
-    if (type->left->value == Address_type_ordinal) return 1;
+    if (type->left->value == Address_type_ordinal) return 2;  // address and alloc id
     // End size_of(type) Non-atom Special-cases
   }
   // End size_of(type) Special-cases

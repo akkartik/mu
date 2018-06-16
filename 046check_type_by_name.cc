@@ -87,27 +87,27 @@ void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {
 
 :(scenario transform_fills_in_missing_types)
 def main [
-  x:num <- copy 1
+  x:num <- copy 10
   y:num <- add x, 1
 ]
-# x is in location 1, y in location 2
-+mem: storing 2 in location 2
+# x is in location 2, y in location 3
++mem: storing 11 in location 3
 
 :(scenario transform_fills_in_missing_types_in_product)
 def main [
-  x:num <- copy 1
-  x <- copy 2
+  x:num <- copy 10
+  x <- copy 11
 ]
-# x is in location 1
-+mem: storing 2 in location 1
+# x is in location 2
++mem: storing 11 in location 2
 
 :(scenario transform_fills_in_missing_types_in_product_and_ingredient)
 def main [
-  x:num <- copy 1
+  x:num <- copy 10
   x <- add x, 1
 ]
 # x is in location 1
-+mem: storing 2 in location 1
++mem: storing 11 in location 2
 
 :(scenario transform_fills_in_missing_label_type)
 def main [

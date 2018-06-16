@@ -158,18 +158,16 @@ for gradually constructing long strings in a piecemeal fashion.
 space at run-time as pointers or <em>addresses</em>. All Mu instructions can
 dereference or <a href='html/035lookup.cc.html'><em>lookup</em></a> addresses
 of values in addition to operating on regular values. These addresses are
-manually managed like C. However, all allocations are transparently
-reference-counted or <a href='html/036refcount.cc.html'><em>refcounted</em></a>,
-with every copy of a pointer updating refcounts appropriately. When the
-refcount of an allocation drops to zero it is transparently <a href='html/037abandon.cc.html'>reclaimed</a>
-and made available to future allocations. By construction it is impossible to
-reclaim memory prematurely, while some other part of a program is still
-pointing to it. This eliminates a whole class of undefined behavior and
-security vulnerabilities that plague C. Compared to Rust, Mu pays some
-additional runtime cost in exchange for C-like flexibility (you can copy
-addresses around all you like, and write from any copy of an address) and
-simpler implementation (no static analysis). Mu by convention abbreviates type
-<tt>address</tt> to <tt>&amp;</tt>.
+manually managed like C, and can be reclaimed using the <a href='html/037abandon.cc.html'><tt>abandon</tt></a>
+instruction. To ensure that stale addresses aren't used after being
+abandoned/reused, each allocation gets a unique <em>alloc id</em> that is also
+stored in the address returned. The lookup operation ensures that the alloc id
+of an address matches that of its payload. This eliminates a whole class of
+undefined behavior and security vulnerabilities that plague C. Compared to
+Rust, Mu pays some additional runtime cost in exchange for C-like flexibility
+(you can copy addresses around all you like, and write from any copy of an
+address) and simpler implementation (no static analysis). Mu by convention
+abbreviates type <tt>address</tt> to <tt>&amp;</tt>.
 
 <p/>Support for higher-order recipes that can pass <a href='html/072recipe.cc.html'>recipes</a>
 around like any other value.

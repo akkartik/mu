@@ -7,14 +7,16 @@ get_or_insert(Type, point);  // initialize
 get(Type, point).kind = CONTAINER;
 get(Type, point).name = "point";
 get(Type, point).elements.push_back(reagent("x:number"));
+get(Type, point).elements.back().set_value(0);
 get(Type, point).elements.push_back(reagent("y:number"));
+get(Type, point).elements.back().set_value(1);
 
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
 
 //: Tests in this layer often explicitly set up memory before reading it as a
-//: container. Don't do this in general. I'm tagging such cases with /unsafe;
-//: they'll be exceptions to later checks.
+//: container. Don't do this in general. I'm tagging exceptions with /unsafe to
+//: skip later checks.
 :(scenario copy_multiple_locations)
 def main [
   1:num <- copy 34
@@ -40,7 +42,9 @@ get_or_insert(Type, point_number);  // initialize
 get(Type, point_number).kind = CONTAINER;
 get(Type, point_number).name = "point-number";
 get(Type, point_number).elements.push_back(reagent("xy:point"));
+get(Type, point_number).elements.back().set_value(0);
 get(Type, point_number).elements.push_back(reagent("z:number"));
+get(Type, point_number).elements.back().set_value(1);
 
 :(scenario copy_handles_nested_container_elements)
 def main [
@@ -127,6 +131,10 @@ def main [
 //: 'get' takes a 'base' container and an 'offset' into it and returns the
 //: appropriate element of the container value.
 
+//: The offset is different from the distance (in memory locations) an element
+//: is at from the start. This is because elements can occupy multiple memory
+//: locations in the container.
+
 :(scenario get)
 def main [
   12:num <- copy 34
@@ -195,9 +203,7 @@ case GET: {
   // Update GET base_type in Run
   int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type->value).elements)) break;  // copied from Check above
-  int src = base_address;
-  for (int i = 0; i < offset; ++i)
-    src += size_of(element_type(base.type, i));
+  int src = element_location(base_address, offset, base.type);
   trace(9998, "run") << "address to copy is " << src << end();
   //: use base.type rather than base_type because later layers will introduce compound types
   reagent/*copy*/ element = element_type(base.type, offset);
@@ -221,6 +227,12 @@ const reagent element_type(const type_tree* type, int offset_value) {
   reagent/*copy*/ element = info.elements.at(offset_value);
   // End element_type Special-cases
   return element;
+}
+int element_location(int base_address, int offset, const type_tree* type) {
+  int result = base_address;
+  for (int i = 0; i < offset; ++i)
+    result += size_of(element_type(type, i));
+  return result;
 }
 
 :(scenario get_handles_nested_container_elements)
@@ -352,14 +364,17 @@ case PUT: {
   // Update PUT base_type in Run
   int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type->value).elements)) break;  // copied from Check above
-  int address = base_address;
-  for (int i = 0; i < offset; ++i)
-    address += size_of(element_type(base.type, i));
+  int address = element_location(base_address, offset, base.type);
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire container
   // Write Memory in PUT in Run
   write_products = false;
+  if (is_mu_address(element_type(base.type, offset)) && is_literal(current_instruction().ingredients.at(2)) && current_instruction().ingredients.at(2).name == "0") {
+    trace("mem") << "storing 0 in location " << address << end();
+    put(Memory, address, /*alloc id*/0);
+    ++address;
+  }
   for (int i = 0;  i < SIZE(ingredients.at(2));  ++i) {
     trace("mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
     put(Memory, address+i, ingredients.at(2).at(i));
@@ -376,6 +391,23 @@ def main [
   3:point <- put 1:point, x:offset, 36
 ]
 +error: main: product of 'put' must be first ingredient '1:point', but got '3:point'
+
+:(scenario put_null_address)
+container foo [
+  x:num
+  y:&:num
+  z:num
+]
+def main [
+  1:num <- copy 34
+  2:num <- copy 0  # alloc id
+  3:num <- copy 1000  # pretend address
+  4:num <- copy 36
+  put 1:foo, y:offset, 0
+]
++run: put {1: "foo"}, {y: "offset"}, {0: "literal"}
++mem: storing 0 in location 2
++mem: storing 0 in location 3
 
 //:: Allow containers to be defined in Mu code.
 
@@ -490,6 +522,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       break;
     }
     info.elements.push_back(reagent(element));
+    info.elements.back().set_value(SIZE(info.elements)-1);
     expand_type_abbreviations(info.elements.back().type);  // todo: use abbreviation before declaration
     replace_unknown_types_with_unique_ordinals(info.elements.back().type, info);
     trace(9993, "parse") << "  element: " << to_string(info.elements.back()) << end();

@@ -3,14 +3,14 @@
 :(scenario new_reclaim)
 def main [
   1:address:num <- new number:type
-  2:num <- copy 1:address:num  # because 1 will get reset during abandon below
+  3:num <- copy 1:address:num  # because 1 will get reset during abandon below
   abandon 1:address:num
-  3:address:num <- new number:type  # must be same size as abandoned memory to reuse
-  4:num <- copy 3:address:num
-  5:bool <- equal 2:num, 4:num
+  4:address:num <- new number:type  # must be same size as abandoned memory to reuse
+  6:num <- copy 4:address:num
+  7:bool <- equal 3:num, 6:num
 ]
 # both allocations should have returned the same address
-+mem: storing 1 in location 5
++mem: storing 1 in location 7
 
 //: When abandoning addresses we'll save them to a 'free list', segregated by size.
 
@@ -39,7 +39,7 @@ case ABANDON: {
   for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
     reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     canonize(ingredient);
-    abandon(get_or_insert(Memory, ingredient.value), payload_size(ingredient));
+    abandon(get_or_insert(Memory, ingredient.value+/*skip alloc id*/1), payload_size(ingredient));
   }
   break;
 }
@@ -50,7 +50,7 @@ void abandon(int address, int payload_size) {
   for (int curr = address;  curr < address+payload_size;  ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
-  trace("abandon") << "saving " << address << " in free-list of size " << payload_size << end();
+  trace("mem") << "saving " << address << " in free-list of size " << payload_size << end();
   put(Memory, address, get_or_insert(Current_routine->free_list, payload_size));
   put(Current_routine->free_list, payload_size, address);
 }
@@ -58,7 +58,7 @@ void abandon(int address, int payload_size) {
 int payload_size(reagent/*copy*/ x) {
   x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
   lookup_memory_core(x, /*check_for_null*/false);
-  return size_of(x);
+  return size_of(x) + /*alloc id*/1;
 }
 
 :(after "Allocate Special-cases")
@@ -80,23 +80,23 @@ if (get_or_insert(Current_routine->free_list, size)) {
 :(scenario new_differing_size_no_reclaim)
 def main [
   1:address:num <- new number:type
-  2:num <- copy 1:address:num
+  3:num <- copy 1:address:num
   abandon 1:address:num
-  3:address:array:num <- new number:type, 2  # different size
-  4:num <- copy 3:address:array:num
-  5:bool <- equal 2:num, 4:num
+  4:address:array:num <- new number:type, 2  # different size
+  6:num <- copy 4:address:array:num
+  7:bool <- equal 3:num, 6:num
 ]
 # no reuse
-+mem: storing 0 in location 5
++mem: storing 0 in location 7
 
 :(scenario new_reclaim_array)
 def main [
   1:address:array:num <- new number:type, 2
-  2:num <- copy 1:address:array:num
+  3:num <- copy 1:address:array:num
   abandon 1:address:array:num
-  3:address:array:num <- new number:type, 2  # same size
-  4:num <- copy 3:address:array:num
-  5:bool <- equal 2:num, 4:num
+  4:address:array:num <- new number:type, 2  # same size
+  6:num <- copy 4:address:array:num
+  7:bool <- equal 3:num, 6:num
 ]
 # both calls to new returned identical addresses
-+mem: storing 1 in location 5
++mem: storing 1 in location 7

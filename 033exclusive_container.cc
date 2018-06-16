@@ -12,12 +12,14 @@ get_or_insert(Type, tmp);  // initialize
 get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
 get(Type, tmp).name = "number-or-point";
 get(Type, tmp).elements.push_back(reagent("i:number"));
+get(Type, tmp).elements.back().set_value(0);
 get(Type, tmp).elements.push_back(reagent("p:point"));
+get(Type, tmp).elements.back().set_value(1);
 }
 
-//: Tests in this layer often explicitly set up memory before reading it as a
-//: container. Don't do this in general. I'm tagging such cases with /unsafe;
-//: they'll be exceptions to later checks.
+//: Tests in this layer often explicitly set up memory before reading it as an
+//: array. Don't do this in general. I'm tagging exceptions with /raw to keep
+//: checks in future layers from flagging them.
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
 def main [
