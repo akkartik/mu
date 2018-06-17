@@ -201,7 +201,7 @@ def update-recipes env:&:environment, resources:&:resources, screen:&:screen -> 
   in:text <- editor-contents recipes
   resources <- dump resources, [lesson/recipes.mu], in
   reload in
-  errors-found? <- copy 0/false
+  errors-found? <- copy false
 ]
 
 # replaced in a later layer

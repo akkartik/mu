@@ -5,15 +5,15 @@ def equal a:text, b:text -> result:bool [
   load-inputs
   an:num, bn:num <- deaddress a, b
   address-equal?:boolean <- equal an, bn
-  return-if address-equal?, 1/true
-  return-unless a, 0/false
-  return-unless b, 0/false
+  return-if address-equal?, true
+  return-unless a, false
+  return-unless b, false
   a-len:num <- length *a
   b-len:num <- length *b
   # compare lengths
   trace 99, [text-equal], [comparing lengths]
   length-equal?:bool <- equal a-len, b-len
-  return-unless length-equal?, 0/false
+  return-unless length-equal?, false
   # compare each corresponding character
   trace 99, [text-equal], [comparing characters]
   i:num <- copy 0
@@ -23,11 +23,11 @@ def equal a:text, b:text -> result:bool [
     a2:char <- index *a, i
     b2:char <- index *b, i
     chars-match?:bool <- equal a2, b2
-    return-unless chars-match?, 0/false
+    return-unless chars-match?, false
     i <- add i, 1
     loop
   }
-  return 1/true
+  return true
 ]
 
 scenario text-equal-reflexive [
@@ -358,7 +358,7 @@ def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
 def blank? x:&:@:_elem -> result:bool [
   local-scope
   load-inputs
-  return-unless x, 1/true
+  return-unless x, true
   len:num <- length *x
   result <- equal len, 0
 ]
@@ -997,7 +997,7 @@ def match-at text:text, pattern:text, idx:num -> result:bool [
   x:num <- length *text
   x <- subtract x, pattern-len
   enough-room?:bool <- lesser-or-equal idx, x
-  return-unless enough-room?, 0/not-found
+  return-unless enough-room?, false/not-found
   # check each character of pattern
   pattern-idx:num <- copy 0
   {
@@ -1006,12 +1006,12 @@ def match-at text:text, pattern:text, idx:num -> result:bool [
     c:char <- index *text, idx
     exp:char <- index *pattern, pattern-idx
     match?:bool <- equal c, exp
-    return-unless match?, 0/not-found
+    return-unless match?, false/not-found
     idx <- add idx, 1
     pattern-idx <- add pattern-idx, 1
     loop
   }
-  return 1/found
+  return true/found
 ]
 
 scenario match-at-checks-pattern-at-index [

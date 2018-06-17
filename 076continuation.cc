@@ -152,7 +152,7 @@ case CALL_WITH_CONTINUATION_MARK: {
 
 :(scenario next_ingredient_inside_continuation)
 recipe main [
-  call-with-continuation-mark 233/mark, f, 1/true
+  call-with-continuation-mark 233/mark, f, true
 ]
 recipe f [
   10:bool <- next-input
@@ -162,7 +162,7 @@ recipe f [
 :(scenario delimited_continuation_out_of_recipe_variable)
 recipe main [
   x:recipe <- copy f
-  call-with-continuation-mark 233/mark, x, 1/true
+  call-with-continuation-mark 233/mark, x, true
 ]
 recipe f [
   10:bool <- next-input

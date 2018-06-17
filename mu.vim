@@ -54,6 +54,7 @@ syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
 syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
 syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
 syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
+syntax match muLiteral % true\(\/[^ ]*\)\?\| false\(\/[^ ]*\)\?%  " literals will never be the first word in an instruction
 highlight link muLiteral Constant
 
 " sources of action at a distance

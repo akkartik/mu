@@ -362,7 +362,7 @@ def add2 x:num, y:num [
 def foo -> x:num [
   local-scope
   x:num <- copy 0
-  z:bool <- copy 0/false
+  z:bool <- copy false
   return-if z, z
 ]
 +error: foo: replied with the wrong type at 'return-if z, z'
@@ -580,7 +580,7 @@ def add2 x:num, y:num -> z:num [
   local-scope
   load-ingredients
   z <- add x, y  # no type for z
-  return-if 0/false, 34
+  return-if false, 34
 ]
 +mem: storing 8 in location 1
 

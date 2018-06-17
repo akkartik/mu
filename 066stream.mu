@@ -24,7 +24,7 @@ def read in:&:stream:_elem -> result:_elem, empty?:bool, in:&:stream:_elem [
   local-scope
   load-inputs
   assert in, [cannot read; stream has no data]
-  empty? <- copy 0/false
+  empty? <- copy false
   idx:num <- get *in, index:offset
   s:&:@:_elem <- get *in, data:offset
   len:num <- length *s
@@ -32,7 +32,7 @@ def read in:&:stream:_elem -> result:_elem, empty?:bool, in:&:stream:_elem [
   {
     break-unless at-end?
     empty-result:&:_elem <- new _elem:type
-    return *empty-result, 1/true
+    return *empty-result, true
   }
   result <- index *s, idx
   idx <- add idx, 1
@@ -43,7 +43,7 @@ def peek in:&:stream:_elem -> result:_elem, empty?:bool [
   local-scope
   load-inputs
   assert in, [cannot peek; stream has no data]
-  empty?:bool <- copy 0/false
+  empty?:bool <- copy false
   idx:num <- get *in, index:offset
   s:&:@:_elem <- get *in, data:offset
   len:num <- length *s
@@ -51,7 +51,7 @@ def peek in:&:stream:_elem -> result:_elem, empty?:bool [
   {
     break-unless at-end?
     empty-result:&:_elem <- new _elem:type
-    return *empty-result, 1/true
+    return *empty-result, true
   }
   result <- index *s, idx
 ]

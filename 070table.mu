@@ -76,7 +76,7 @@ def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table
   occupied?:bool <- get x, occupied?:offset
   not-occupied?:bool <- not occupied?:bool
   assert not-occupied?, [can't handle collisions yet]
-  new-row:table-row:_key:_value <- merge 1/true, key, value
+  new-row:table-row:_key:_value <- merge true, key, value
   *table-data <- put-index *table-data, hash-key, new-row
 ]
 

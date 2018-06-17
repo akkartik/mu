@@ -192,17 +192,12 @@ string best_variant(const instruction& inst, const recipe& caller_recipe) {
   candidates = strictly_matching_variants(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
-  // Static Dispatch Phase 2
-//?   cerr << inst.name << " phase 2\n";
-  candidates = strictly_matching_variants_except_literal_against_address_or_boolean(inst, variants);
-  if (!candidates.empty()) return best_variant(inst, candidates).name;
-
 //?   cerr << inst.name << " phase 3\n";
-  // Static Dispatch Phase 3
+  // Static Dispatch Phase 2
   //: (shape-shifting recipes in a later layer)
-  // End Static Dispatch Phase 3
+  // End Static Dispatch Phase 2
 
-  // Static Dispatch Phase 4
+  // Static Dispatch Phase 3
 //?   cerr << inst.name << " phase 4\n";
   candidates = matching_variants(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
@@ -270,46 +265,7 @@ bool all_header_reagents_strictly_match(const instruction& inst, const recipe& v
   return true;
 }
 
-// phase 2
-vector<recipe_ordinal> strictly_matching_variants_except_literal_against_address_or_boolean(const instruction& inst, const vector<recipe_ordinal>& variants) {
-  vector<recipe_ordinal> result;
-  for (int i = 0;  i < SIZE(variants);  ++i) {
-    if (variants.at(i) == -1) continue;
-    trace(9992, "transform") << "checking variant (strict except literal-against-boolean) " << i << ": " << header_label(variants.at(i)) << end();
-    if (all_header_reagents_strictly_match_except_literal_against_address_or_boolean(inst, get(Recipe, variants.at(i))))
-      result.push_back(variants.at(i));
-  }
-  return result;
-}
-
-bool all_header_reagents_strictly_match_except_literal_against_address_or_boolean(const instruction& inst, const recipe& variant) {
-  for (int i = 0;  i < min(SIZE(inst.ingredients), SIZE(variant.ingredients));  ++i) {
-    if (!types_strictly_match_except_literal_against_address_or_boolean(variant.ingredients.at(i), inst.ingredients.at(i))) {
-      trace(9993, "transform") << "match failed: ingredient " << i << end();
-      return false;
-    }
-  }
-  for (int i = 0;  i < min(SIZE(variant.products), SIZE(inst.products));  ++i) {
-    if (is_dummy(inst.products.at(i))) continue;
-    if (!types_strictly_match_except_literal_against_address_or_boolean(variant.products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "match failed: product " << i << end();
-      return false;
-    }
-  }
-  return true;
-}
-
-bool types_strictly_match_except_literal_against_address_or_boolean(const reagent& to, const reagent& from) {
-  if (is_literal(from) && is_mu_boolean(to))
-    return from.name == "0" || from.name == "1";
-  // Match Literal Zero Against Address {
-  if (is_literal(from) && is_mu_address(to))
-    return from.name == "0";
-  // }
-  return types_strictly_match(to, from);
-}
-
-// phase 4
+// phase 3
 vector<recipe_ordinal> matching_variants(const instruction& inst, const vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0;  i < SIZE(variants);  ++i) {
@@ -422,15 +378,15 @@ def main [
   1:num <- copy 34
   2:num <- copy 34
   3:bool <- equal 1:num, 2:num
-  4:bool <- copy 0/false
-  5:bool <- copy 0/false
+  4:bool <- copy false
+  5:bool <- copy false
   6:bool <- equal 4:bool, 5:bool
 ]
 # temporarily hardcode number equality to always fail
 def equal x:num, y:num -> z:bool [
   local-scope
   load-ingredients
-  z <- copy 0/false
+  z <- copy false
 ]
 # comparing numbers used overload
 +mem: storing 0 in location 3
@@ -524,36 +480,14 @@ def foo x:num -> y:num [
 +error: main: ingredient 0 has the wrong type at '1:num/raw <- foo x'
 -mem: storing 34 in location 1
 
-:(scenario static_dispatch_dispatches_literal_to_boolean_before_character)
+:(scenario static_dispatch_dispatches_literal_to_character)
 def main [
-  1:num/raw <- foo 0  # valid literal for boolean
+  1:num/raw <- foo 97
 ]
 def foo x:char -> y:num [
   local-scope
   load-ingredients
   return 34
-]
-def foo x:bool -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-# boolean variant is preferred
-+mem: storing 35 in location 1
-
-:(scenario static_dispatch_dispatches_literal_to_character_when_out_of_boolean_range)
-def main [
-  1:num/raw <- foo 97  # not a valid literal for boolean
-]
-def foo x:char -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo x:bool -> y:num [
-  local-scope
-  load-ingredients
-  return 35
 ]
 # character variant is preferred
 +mem: storing 34 in location 1

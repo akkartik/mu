@@ -39,7 +39,7 @@ def new-fake-screen w:num, h:num -> result:&:screen [
   assert non-zero-height?, [screen can't have zero height]
   bufsize:num <- multiply w, h
   data:&:@:screen-cell <- new screen-cell:type, bufsize
-  *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data, 0/pending-scroll?, 0/top-idx
+  *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data, false/pending-scroll?, 0/top-idx
   result <- clear-screen result
 ]
 
@@ -75,7 +75,7 @@ def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
   load-inputs
 #?   stash [fake-screen-is-empty?]
-  return-unless screen, 1/true  # do nothing for real screens
+  return-unless screen, true  # do nothing for real screens
   buf:&:@:screen-cell <- get *screen, data:offset
   i:num <- copy 0
   len:num <- length *buf
@@ -87,9 +87,9 @@ def fake-screen-is-empty? screen:&:screen -> result:bool [
     i <- add i, 1
     loop-unless curr-contents
     # not 0
-    return 0/false
+    return false
   }
-  return 1/true
+  return true
 ]
 
 def print screen:&:screen, c:char -> screen:&:screen [
@@ -150,7 +150,7 @@ def print screen:&:screen, c:char -> screen:&:screen [
     break-unless pending-scroll?
 #?     stash [scroll]
     scroll-fake-screen screen
-    *screen <- put *screen, pending-scroll?:offset, 0/false
+    *screen <- put *screen, pending-scroll?:offset, false
   }
 #?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
   # special-case: newline
@@ -196,7 +196,7 @@ def print screen:&:screen, c:char -> screen:&:screen [
     break-unless past-bottom?
     # queue up a scroll
 #?     stash [pending scroll]
-    *screen <- put *screen, pending-scroll?:offset, 1/true
+    *screen <- put *screen, pending-scroll?:offset, true
     row <- subtract row, 1  # update cursor as if scroll already happened
   }
   *screen <- put *screen, cursor-row:offset, row
@@ -455,7 +455,7 @@ scenario print-character-at-bottom-right [
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
     12:num/raw <- get *fake-screen, top-idx:offset
-    13:num/raw <- get *fake-screen, pending-scroll?:offset
+    13:bool/raw <- get *fake-screen, pending-scroll?:offset
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     20:@:screen-cell/raw <- copy *cell
   ]
@@ -607,7 +607,7 @@ def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen 
     scroll?:bool <- greater-or-equal new-column, width
     break-if scroll?
 #?     stash [resetting pending-scroll?]
-    *screen <- put *screen, pending-scroll?:offset, 0/false
+    *screen <- put *screen, pending-scroll?:offset, false
   }
 ]
 
@@ -884,8 +884,14 @@ def print screen:&:screen, n:bool -> screen:&:screen [
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  n2:num <- copy n
-  screen <- print screen, n2, color, bg-color
+  {
+    break-if n
+    screen <- print screen, [false], color, bg-color
+  }
+  {
+    break-unless n
+    screen <- print screen, [true], color, bg-color
+  }
 ]
 
 def print screen:&:screen, n:&:_elem -> screen:&:screen [

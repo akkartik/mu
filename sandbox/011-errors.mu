@@ -15,10 +15,10 @@ def! update-recipes env:&:environment, resources:&:resources, screen:&:screen ->
   {
     break-unless recipe-errors
     update-status screen, [errors found     ], 1/red
-    errors-found? <- copy 1/true
+    errors-found? <- copy true
     return
   }
-  errors-found? <- copy 0/false
+  errors-found? <- copy false
 ]
 
 before <end-render-components> [
@@ -47,7 +47,7 @@ before <end-run-sandboxes> [
     error-index:num <- get *env, error-index:offset
     sandboxes-completed-successfully?:bool <- equal error-index, -1
     break-if sandboxes-completed-successfully?
-    errors-found? <- copy 1/true
+    errors-found? <- copy true
   }
 ]
 

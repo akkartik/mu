@@ -66,11 +66,11 @@ def conflicting-file? curr:square, queens:&:list:square -> result:bool [
     q:square <- first queens
     qfile:num <- get q, file:offset
     file-match?:bool <- equal curr-file, qfile
-    return-if file-match?, 1/conflict-found
+    return-if file-match?, true/conflict-found
     queens <- rest queens
     loop
   }
-  return 0/no-conflict-found
+  return false/no-conflict-found
 ]
 
 def conflicting-diagonal? curr:square, queens:&:list:square -> result:bool [
@@ -88,11 +88,11 @@ def conflicting-diagonal? curr:square, queens:&:list:square -> result:bool [
     rank-delta <- abs rank-delta
     file-delta <- abs file-delta
     diagonal-match?:bool <- equal rank-delta, file-delta
-    return-if diagonal-match?, 1/conflict-found
+    return-if diagonal-match?, true/conflict-found
     queens <- rest queens
     loop
   }
-  return 0/no-conflict-found
+  return false/no-conflict-found
 ]
 
 def main [

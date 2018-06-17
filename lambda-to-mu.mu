@@ -56,14 +56,14 @@ def new-pair a:&:cell, b:&:cell -> result:&:cell [
 def is-atom? x:&:cell -> result:bool [
   local-scope
   load-inputs
-  return-unless x, 0/false
+  return-unless x, false
   _, result <- maybe-convert *x, atom:variant
 ]
 
 def is-pair? x:&:cell -> result:bool [
   local-scope
   load-inputs
-  return-unless x, 0/false
+  return-unless x, false
   _, result <- maybe-convert *x, pair:variant
 ]
 
@@ -97,7 +97,7 @@ def atom-match? x:&:cell, pat:text -> result:bool [
   local-scope
   load-inputs
   s:text, is-atom?:bool <- maybe-convert *x, atom:variant
-  return-unless is-atom?, 0/false
+  return-unless is-atom?, false
   result <- equal pat, s
 ]
 

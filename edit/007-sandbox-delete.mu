@@ -85,7 +85,7 @@ def should-attempt-delete? click-row:num, click-column:num, env:&:environment ->
   load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
-  return-unless click-sandbox-area?, 0/false
+  return-unless click-sandbox-area?, false
   # narrower, is the click in the columns spanning the 'copy' button?
   first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
@@ -100,8 +100,8 @@ def try-delete-sandbox click-row:num, env:&:environment -> clicked-on-delete-but
   load-inputs
   # identify the sandbox to delete, if the click was actually on the 'delete' button
   sandbox:&:sandbox <- find-sandbox env, click-row
-  return-unless sandbox, 0/false
-  clicked-on-delete-button? <- copy 1/true
+  return-unless sandbox, false
+  clicked-on-delete-button? <- copy true
   env <- delete-sandbox env, sandbox
 ]
 

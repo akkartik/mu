@@ -31,7 +31,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
   # todo: test this
-  render-all-on-no-more-events?:bool <- copy 0/false
+  render-all-on-no-more-events?:bool <- copy false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -86,7 +86,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       {
         break-if more-events?
         break-unless render-all-on-no-more-events?
-        render-all-on-no-more-events? <- copy 0/false
+        render-all-on-no-more-events? <- copy false
         screen <- render-all screen, env, render
       }
       screen <- update-cursor screen, current-sandbox, env

@@ -46,7 +46,7 @@ if (Current_routine->calls.front().running_step_index == 0
 :(before "End Matching Types For Literal(to)")
 if (contains_type_ingredient_name(to)) return false;
 
-:(after "Static Dispatch Phase 3")
+:(after "Static Dispatch Phase 2")
 candidates = strictly_matching_shape_shifting_variants(inst, variants);
 if (!candidates.empty()) {
   recipe_ordinal exemplar = best_shape_shifting_variant(inst, candidates);
@@ -67,10 +67,6 @@ if (contains_key(Recipe, inst.operation) && !is_primitive(inst.operation)
   raise << maybe(caller.name) << "instruction '" << inst.name << "' has no valid specialization\n" << end();
   return;
 }
-
-:(replace{} "Match Literal Zero Against Address")
-if (is_literal(from) && is_mu_address(to))
-  return from.name == "0" && !contains_type_ingredient_name(to);
 
 :(code)
 // phase 3 of static dispatch
@@ -1111,7 +1107,7 @@ def foo a:_elem [
 ]
 # tangle some code that refers to the type ingredient
 after <label1> [
-  b:bool <- copy 0  # type abbreviation
+  b:bool <- copy false  # type abbreviation
 ]
 # trigger specialization
 def main [

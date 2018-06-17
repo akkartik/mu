@@ -591,15 +591,15 @@ def match x:&:duplex-list:_elem, y:&:@:_elem -> result:bool [
     done?:bool <- greater-or-equal i, max
     break-if done?
     expected:_elem <- index *y, i
-    return-unless x, 0/no-match
+    return-unless x, false/no-match
     curr:_elem <- first x
     curr-matches?:bool <- equal curr, expected
-    return-unless curr-matches?, 0/no-match
+    return-unless curr-matches?, false/no-match
     x <- next x
     i <- add i, 1
     loop
   }
-  return 1/successful-match
+  return true/successful-match
 ]
 
 scenario duplex-list-match [

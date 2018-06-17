@@ -21,7 +21,7 @@ container resource [
 def start-reading resources:&:resources, filename:text -> contents:&:source:char, error?:bool [
   local-scope
   load-inputs
-  error? <- copy 0/false
+  error? <- copy false
   {
     break-unless resources
     # fake file system
@@ -30,7 +30,7 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
   }
   # real file system
   file:num <- $open-file-for-reading filename
-  return-unless file, 0/contents, 1/error?
+  return-unless file, 0/contents, true/error
   contents:&:source:char, sink:&:sink:char <- new-channel 30
   start-running receive-from-file file, sink
 ]
@@ -53,7 +53,7 @@ def slurp resources:&:resources, filename:text -> contents:text, error?:bool [
 def start-reading-from-fake-resource resources:&:resources, resource:text -> contents:&:source:char, error?:bool [
   local-scope
   load-inputs
-  error? <- copy 0/no-error
+  error? <- copy false
   i:num <- copy 0
   data:&:@:resource <- get *resources, data:offset
   len:num <- length *data
@@ -70,7 +70,7 @@ def start-reading-from-fake-resource resources:&:resources, resource:text -> con
     start-running receive-from-text curr-contents, sink
     return
   }
-  return 0/not-found, 1/error
+  return 0/not-found, true/error-found
 ]
 
 def receive-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
@@ -105,7 +105,7 @@ def receive-from-text contents:text, sink:&:sink:char -> sink:&:sink:char [
 def start-writing resources:&:resources, filename:text -> sink:&:sink:char, routine-id:num, error?:bool [
   local-scope
   load-inputs
-  error? <- copy 0/false
+  error? <- copy false
   source:&:source:char, sink:&:sink:char <- new-channel 30
   {
     break-unless resources
@@ -115,7 +115,7 @@ def start-writing resources:&:resources, filename:text -> sink:&:sink:char, rout
   }
   # real file system
   file:num <- $open-file-for-writing filename
-  return-unless file, 0/sink, 0/routine-id, 1/error?
+  return-unless file, 0/sink, 0/routine-id, true/error
   {
     break-if file
     msg:text <- append [no such file: ] filename
@@ -128,7 +128,7 @@ def dump resources:&:resources, filename:text, contents:text -> resources:&:reso
   local-scope
   load-inputs
   # todo: really create an empty file
-  return-unless contents, resources, 0/no-error
+  return-unless contents, resources, false/no-error
   sink-file:&:sink:char, write-routine:num, error?:bool <- start-writing resources, filename
   return-if error?
   i:num <- copy 0

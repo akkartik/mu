@@ -154,9 +154,9 @@ def main [
 :(scenario jump_fails_without_target_2)
 % Hide_errors = true;
 def main [
-  jump-if 1/true
+  jump-if true
 ]
-+error: main: 'jump-if 1/true' expects 2 ingredients but got 1
++error: main: 'jump-if true' expects 2 ingredients but got 1
 
 :(scenario recipe_fails_on_duplicate_jump_target)
 % Hide_errors = true;

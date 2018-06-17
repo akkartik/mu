@@ -188,7 +188,7 @@ def update-recipes env:&:environment, resources:&:resources, screen:&:screen -> 
   load-inputs
   in:text <- slurp resources, [lesson/recipes.mu]
   reload in
-  errors-found? <- copy 0/false
+  errors-found? <- copy false
 ]
 
 # replaced in a later layer

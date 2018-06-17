@@ -43,5 +43,5 @@ def create-yielder l:&:list:num -> n:num, done?:bool [
   # return. Calling functions should stop calling its continuation after this
   # point.
   return-continuation-until-mark 100/mark, -1, done?
-  assert 0/false, [called too many times, ran out of continuations to return]
+  assert false, [called too many times, ran out of continuations to return]
 ]

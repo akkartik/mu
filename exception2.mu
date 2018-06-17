@@ -13,8 +13,8 @@ exclusive-container error-or:_elem [
 
 def main [
   local-scope
-  foo 0/no-exception
-  foo 1/raise-exception
+  foo false/no-exception
+  foo true/raise-exception
 ]
 
 # example showing exception handling

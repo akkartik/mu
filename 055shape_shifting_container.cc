@@ -55,7 +55,7 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:foo:num:bool <- merge 34, 1/true
+  1:foo:num:bool <- merge 34, true
 ]
 $error: 0
 

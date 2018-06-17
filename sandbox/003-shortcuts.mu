@@ -113,7 +113,7 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, ba
   data:&:duplex-list:char <- get *editor, data:offset
   # if at start of text (before-cursor at § sentinel), return
   prev:&:duplex-list:char <- prev before-cursor
-  return-unless prev, 0/no-more-render, 0/nothing-deleted
+  return-unless prev, false/no-more-render, 0/nothing-deleted
   trace 10, [app], [delete-before-cursor]
   original-row:num <- get *editor, cursor-row:offset
   move-cursor-coordinates-left editor
@@ -126,7 +126,7 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, ba
   cursor-column:num <- get *editor, cursor-column:offset
   # did we just backspace over a newline?
   same-row?:bool <- equal cursor-row, original-row
-  return-unless same-row?, 1/go-render
+  return-unless same-row?, true/go-render
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   curr:&:duplex-list:char <- next before-cursor
@@ -135,7 +135,7 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, ba
   {
     # hit right margin? give up and let caller render
     at-right?:bool <- greater-or-equal curr-column, right
-    return-if at-right?, 1/go-render
+    return-if at-right?, true/go-render
     break-unless curr
     # newline? done.
     currc:char <- get *curr, value:offset
@@ -149,7 +149,7 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, ba
   # we're guaranteed not to be at the right margin
   space:char <- copy 32/space
   screen <- print screen, space
-  go-render? <- copy 0/false
+  go-render? <- copy false
 ]
 
 def move-cursor-coordinates-left editor:&:editor -> editor:&:editor [
@@ -373,11 +373,11 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> go-render?:bool, delete
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   data:&:duplex-list:char <- get *editor, data:offset
   deleted-cell:&:duplex-list:char <- next before-cursor
-  return-unless deleted-cell, 0/don't-render
+  return-unless deleted-cell, false/don't-render
   currc:char <- get *deleted-cell, value:offset
   data <- remove deleted-cell, data
   deleted-newline?:bool <- equal currc, 10/newline
-  return-if deleted-newline?, 1/go-render
+  return-if deleted-newline?, true/go-render
   # wasn't a newline? render rest of line
   curr:&:duplex-list:char <- next before-cursor  # refresh after remove above
   cursor-row:num <- get *editor, cursor-row:offset
@@ -388,7 +388,7 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> go-render?:bool, delete
   {
     # hit right margin? give up and let caller render
     at-right?:bool <- greater-or-equal curr-column, screen-width
-    return-if at-right?, 1/go-render
+    return-if at-right?, true/go-render
     break-unless curr
     currc:char <- get *curr, value:offset
     at-newline?:bool <- equal currc, 10/newline
@@ -401,7 +401,7 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> go-render?:bool, delete
   # we're guaranteed not to be at the right margin
   space:char <- copy 32/space
   screen <- print screen, space
-  go-render? <- copy 0/false
+  go-render? <- copy false
 ]
 
 # right arrow
@@ -465,10 +465,10 @@ def move-cursor-coordinates-right editor:&:editor, screen-height:num -> go-rende
     cursor-column <- copy left
     *editor <- put *editor, cursor-column:offset, cursor-column
     below-screen?:bool <- greater-or-equal cursor-row, screen-height  # must be equal
-    return-unless below-screen?, 0/don't-render
+    return-unless below-screen?, false/don't-render
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
-    return 1/go-render
+    return true/go-render
   }
   # if the line wraps, move cursor to start of next row
   {
@@ -487,15 +487,15 @@ def move-cursor-coordinates-right editor:&:editor, screen-height:num -> go-rende
     cursor-column <- copy left
     *editor <- put *editor, cursor-column:offset, cursor-column
     below-screen?:bool <- greater-or-equal cursor-row, screen-height  # must be equal
-    return-unless below-screen?, 0/no-more-render
+    return-unless below-screen?, false/no-more-render
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
-    return 1/go-render
+    return true/go-render
   }
   # otherwise move cursor one character right
   cursor-column <- add cursor-column, 1
   *editor <- put *editor, cursor-column:offset, cursor-column
-  go-render? <- copy 0/false
+  go-render? <- copy false
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow [
@@ -717,7 +717,7 @@ after <handle-special-key> [
     trace 10, [app], [left arrow]
     # if not at start of text (before-cursor at § sentinel)
     prev:&:duplex-list:char <- prev before-cursor
-    return-unless prev, 0/don't-render
+    return-unless prev, false/don't-render
     <begin-move-cursor>
     move-cursor-coordinates-left editor
     before-cursor <- copy prev
@@ -1511,7 +1511,7 @@ after <handle-special-character> [
     move-to-start-of-screen-line editor
     undo-coalesce-tag:num <- copy 0/never
     <end-move-cursor>
-    return 0/don't-render
+    return false/don't-render
   }
 ]
 
@@ -1523,7 +1523,7 @@ after <handle-special-key> [
     move-to-start-of-screen-line editor
     undo-coalesce-tag:num <- copy 0/never
     <end-move-cursor>
-    return 0/don't-render
+    return false/don't-render
   }
 ]
 
@@ -1736,7 +1736,7 @@ after <handle-special-character> [
     move-to-end-of-line editor
     undo-coalesce-tag:num <- copy 0/never
     <end-move-cursor>
-    return 0/don't-render
+    return false/don't-render
   }
 ]
 
@@ -1748,7 +1748,7 @@ after <handle-special-key> [
     move-to-end-of-line editor
     undo-coalesce-tag:num <- copy 0/never
     <end-move-cursor>
-    return 0/don't-render
+    return false/don't-render
   }
 ]
 
@@ -1947,7 +1947,7 @@ def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor, deleted-cells:&:
   {
     # if we have a wrapped line, give up and render the whole screen
     wrap?:bool <- greater-or-equal i, right
-    return-if wrap?, 1/go-render
+    return-if wrap?, true/go-render
     curr <- next curr
     break-unless curr
     c:char <- get *curr, value:offset
@@ -1963,11 +1963,11 @@ def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor, deleted-cells:&:
   left:num <- get *editor, left:offset
   end:num <- subtract right, left
   wrap?:bool <- greater-or-equal old-row-len, end
-  return-if wrap?, 1/go-render
+  return-if wrap?, true/go-render
   curr-line:text <- buffer-to-array buf
   curr-row:num <- get *editor, cursor-row:offset
   render-code screen, curr-line, curr-column, right, curr-row
-  return 0/dont-render
+  return false/dont-render
 ]
 
 def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor:&:editor [
@@ -2332,7 +2332,7 @@ def minimal-render-for-ctrl-k screen:&:screen, editor:&:editor, deleted-cells:&:
   local-scope
   load-inputs
   # if we deleted nothing, there's nothing to render
-  return-unless deleted-cells, 0/dont-render
+  return-unless deleted-cells, false/dont-render
   # if the line used to wrap before, give up and render the whole screen
   curr-column:num <- get *editor, cursor-column:offset
   num-deleted-cells:num <- length deleted-cells
@@ -2341,9 +2341,9 @@ def minimal-render-for-ctrl-k screen:&:screen, editor:&:editor, deleted-cells:&:
   right:num <- get *editor, right:offset
   end:num <- subtract right, left
   wrap?:bool <- greater-or-equal old-row-len, end
-  return-if wrap?, 1/go-render
+  return-if wrap?, true/go-render
   clear-line-until screen, right
-  return 0/dont-render
+  return false/dont-render
 ]
 
 def delete-to-end-of-line editor:&:editor -> result:&:duplex-list:char, editor:&:editor [
@@ -2613,7 +2613,7 @@ def render-line-from-start screen:&:screen, editor:&:editor, right-margin:num ->
   curr:&:duplex-list:char <- copy line-start
   {
     render-all?:bool <- greater-or-equal i, end
-    return-if render-all?, 1/go-render
+    return-if render-all?, true/go-render
     break-unless curr
     c:char <- get *curr, value:offset
     newline?:bool <- equal c, 10/newline
@@ -2625,7 +2625,7 @@ def render-line-from-start screen:&:screen, editor:&:editor, right-margin:num ->
     loop
   }
   clear-line-until screen, right
-  return 0/dont-render
+  return false/dont-render
 ]
 
 def before-start-of-screen-line editor:&:editor -> result:&:duplex-list:char [

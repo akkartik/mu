@@ -125,7 +125,7 @@ def should-attempt-edit? click-row:num, click-column:num, env:&:environment -> r
   load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
-  return-unless click-sandbox-area?, 0/false
+  return-unless click-sandbox-area?, false
   # narrower, is the click in the columns spanning the 'edit' button?
   first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
@@ -133,7 +133,7 @@ def should-attempt-edit? click-row:num, click-column:num, env:&:environment -> r
   sandbox-right-margin:num <- get *first-sandbox, right:offset
   edit-button-left:num, edit-button-right:num, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
   edit-button-vertical-area?:bool <- within-range? click-column, edit-button-left, edit-button-right
-  return-unless edit-button-vertical-area?, 0/false
+  return-unless edit-button-vertical-area?, false
   # finally, is sandbox editor empty?
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   result <- empty-editor? current-sandbox
@@ -144,8 +144,8 @@ def try-edit-sandbox click-row:num, env:&:environment -> clicked-on-edit-button?
   load-inputs
   # identify the sandbox to edit, if the click was actually on the 'edit' button
   sandbox:&:sandbox <- find-sandbox env, click-row
-  return-unless sandbox, 0/false
-  clicked-on-edit-button? <- copy 1/true
+  return-unless sandbox, false
+  clicked-on-edit-button? <- copy true
   # 'edit' button = 'copy' button + 'delete' button
   text:text <- get *sandbox, data:offset
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -154,7 +154,7 @@ def try-edit-sandbox click-row:num, env:&:environment -> clicked-on-edit-button?
   # reset scroll
   *env <- put *env, render-from:offset, -1
   # position cursor in sandbox editor
-  *env <- put *env, sandbox-in-focus?:offset, 1/true
+  *env <- put *env, sandbox-in-focus?:offset, true
 ]
 
 scenario sandbox-with-print-can-be-edited [

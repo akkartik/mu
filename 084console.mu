@@ -44,16 +44,16 @@ def read-event console:&:console -> result:event, found?:bool, quit?:bool, conso
       done?:bool <- greater-or-equal current-event-index, max
       break-unless done?
       dummy:&:event <- new event:type
-      return *dummy, 1/found, 1/quit
+      return *dummy, true/found, true/quit
     }
     result <- index *buf, current-event-index
     current-event-index <- add current-event-index, 1
     *console <- put *console, current-event-index:offset, current-event-index
-    return result, 1/found, 0/quit
+    return result, true/found, false/quit
   }
   switch  # real event source is infrequent; avoid polling it too much
   result:event, found?:bool <- check-for-interaction
-  return result, found?, 0/quit
+  return result, found?, false/quit
 ]
 
 # variant of read-event for just keyboard events. Discards everything that
@@ -66,8 +66,8 @@ def read-key console:&:console -> result:char, found?:bool, quit?:bool, console:
   return-if quit?, 0, found?, quit?
   return-unless found?, 0, found?, quit?
   c:char, converted?:bool <- maybe-convert x, text:variant
-  return-unless converted?, 0, 0/found, 0/quit
-  return c, 1/found, 0/quit
+  return-unless converted?, 0, false/found, false/quit
+  return c, true/found, false/quit
 ]
 
 def send-keys-to-channel console:&:console, chan:&:sink:char, screen:&:screen -> console:&:console, chan:&:sink:char, screen:&:screen [
@@ -99,6 +99,6 @@ def wait-for-event console:&:console -> console:&:console [
 def has-more-events? console:&:console -> result:bool [
   local-scope
   load-inputs
-  return-if console, 0/false  # fake events are processed as soon as they arrive
+  return-if console, false  # fake events are processed as soon as they arrive
   result <- interactions-left?
 ]

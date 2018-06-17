@@ -38,7 +38,7 @@ def same-fringe a:&:tree:_elem, b:&:tree:_elem -> result:bool [
     break-if a-done?
     break-if b-done?
     match?:bool <- equal x, y
-    return-unless match?, 0/false
+    return-unless match?, false
     loop
   }
   result <- and a-done?, b-done?
@@ -51,8 +51,8 @@ def process t:&:tree:_elem [
   return-continuation-until-mark 100/mark  # initial
   traverse t
   zero-val:&:_elem <- new _elem:type
-  return-continuation-until-mark 100/mark, *zero-val, 1/done  # final
-  assert 0/false, [continuation called past done]
+  return-continuation-until-mark 100/mark, *zero-val, true/done  # final
+  assert false, [continuation called past done]
 ]
 
 # core traversal
@@ -68,7 +68,7 @@ def traverse t:&:tree:_elem [
   return-if r
   # leaf
   v:_elem <- get *t, val:offset
-  return-continuation-until-mark 100/mark, v, 0/not-done
+  return-continuation-until-mark 100/mark, v, false/not-done
 ]
 
 # details

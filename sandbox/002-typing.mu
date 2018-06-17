@@ -50,23 +50,23 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
 def move-cursor editor:&:editor, screen:&:screen, t:touch-event -> in-focus?:bool, editor:&:editor [
   local-scope
   load-inputs
-  return-unless editor, 0/false
+  return-unless editor, false
   click-row:num <- get t, row:offset
-  return-unless click-row, 0/false  # ignore clicks on 'menu'
+  return-unless click-row, false  # ignore clicks on 'menu'
   click-column:num <- get t, column:offset
   left:num <- get *editor, left:offset
   too-far-left?:bool <- lesser-than click-column, left
-  return-if too-far-left?, 0/false
+  return-if too-far-left?, false
   right:num <- get *editor, right:offset
   too-far-right?:bool <- greater-than click-column, right
-  return-if too-far-right?, 0/false
+  return-if too-far-right?, false
   # position cursor
   <begin-move-cursor>
   editor <- snap-cursor editor, screen, click-row, click-column
   undo-coalesce-tag:num <- copy 0/never
   <end-move-cursor>
   # gain focus
-  return 1/true
+  return true
 ]
 
 # Variant of 'render' that only moves the cursor (coordinates and
@@ -166,7 +166,7 @@ def snap-cursor editor:&:editor, screen:&:screen, target-row:num, target-column:
 def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> go-render?:bool, screen:&:screen, editor:&:editor [
   local-scope
   load-inputs
-  return-unless editor, 0/don't-render
+  return-unless editor, false/don't-render
   screen-width:num <- screen-width screen
   screen-height:num <- screen-height screen
   left:num <- get *editor, left:offset
@@ -185,7 +185,7 @@ def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> go-render
     <handle-special-character>
     # ignore any other special characters
     regular-character?:bool <- greater-or-equal c, 32/space
-    return-unless regular-character?, 0/don't-render
+    return-unless regular-character?, false/don't-render
     # otherwise type it in
     <begin-insert-character>
     go-render? <- insert-at-cursor editor, c, screen
@@ -197,7 +197,7 @@ def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> go-render
   assert is-keycode?, [event was of unknown type; neither keyboard nor mouse]
   # handlers for each special key will go here
   <handle-special-key>
-  return 1/go-render
+  return true/go-render
 ]
 
 def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool, editor:&:editor, screen:&:screen [
@@ -232,7 +232,7 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool
     break-if overflow?
     move-cursor screen, save-row, save-column
     print screen, c
-    return 0/don't-render
+    return false/don't-render
   }
   {
     # not at right margin? print the character and rest of line
@@ -245,7 +245,7 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool
     {
       # hit right margin? give up and let caller render
       at-right?:bool <- greater-than curr-column, right
-      return-if at-right?, 1/go-render
+      return-if at-right?, true/go-render
       break-unless curr
       # newline? done.
       currc:char <- get *curr, value:offset
@@ -256,9 +256,9 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool
       curr <- next curr
       loop
     }
-    return 0/don't-render
+    return false/don't-render
   }
-  return 1/go-render
+  return true/go-render
 ]
 
 # helper for tests
@@ -708,7 +708,7 @@ after <insert-character-special-case> [
       at-end-of-line? <- equal next-character, 10/newline
     }
     # break unless ((eol? and at-wrap?) or (~eol? and just-before-wrap?))
-    move-cursor-to-next-line?:bool <- copy 0/false
+    move-cursor-to-next-line?:bool <- copy false
     {
       break-if at-end-of-line?
       move-cursor-to-next-line? <- copy just-before-wrap?
@@ -735,7 +735,7 @@ after <insert-character-special-case> [
       break-unless below-screen?
       <scroll-down>
     }
-    return 1/go-render
+    return true/go-render
   }
 ]
 
@@ -829,7 +829,7 @@ container editor [
 ]
 
 after <editor-initialization> [
-  *result <- put *result, indent?:offset, 1/true
+  *result <- put *result, indent?:offset, true
 ]
 
 scenario editor-moves-cursor-down-after-inserting-newline [
@@ -859,7 +859,7 @@ after <handle-special-character> [
     <begin-insert-enter>
     insert-new-line-and-indent editor, screen
     <end-insert-enter>
-    return 1/go-render
+    return true/go-render
   }
 ]
 
@@ -885,7 +885,7 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
   {
     below-screen?:bool <- greater-or-equal cursor-row, screen-height  # must be equal, never greater
     break-unless below-screen?
-    <scroll-down>
+    <scroll-down2>
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
   }
@@ -915,16 +915,16 @@ def at-start-of-wrapped-line? editor:&:editor -> result:bool [
   left:num <- get *editor, left:offset
   cursor-column:num <- get *editor, cursor-column:offset
   cursor-at-left?:bool <- equal cursor-column, left
-  return-unless cursor-at-left?, 0/false
+  return-unless cursor-at-left?, false
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   before-before-cursor:&:duplex-list:char <- prev before-cursor
-  return-unless before-before-cursor, 0/false  # cursor is at start of editor
+  return-unless before-before-cursor, false  # cursor is at start of editor
   char-before-cursor:char <- get *before-cursor, value:offset
   cursor-after-newline?:bool <- equal char-before-cursor, 10/newline
-  return-if cursor-after-newline?, 0/false
+  return-if cursor-after-newline?, false
   # if cursor is at left margin and not at start, but previous character is not a newline,
   # then we're at start of a wrapped line
-  return 1/true
+  return true
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1095,8 +1095,8 @@ after <handle-special-key> [
   {
     paste-start?:bool <- equal k, 65507/paste-start
     break-unless paste-start?
-    *editor <- put *editor, indent?:offset, 0/false
-    return 1/go-render
+    *editor <- put *editor, indent?:offset, false
+    return true/go-render
   }
 ]
 
@@ -1104,8 +1104,8 @@ after <handle-special-key> [
   {
     paste-end?:bool <- equal k, 65506/paste-end
     break-unless paste-end?
-    *editor <- put *editor, indent?:offset, 1/true
-    return 1/go-render
+    *editor <- put *editor, indent?:offset, true
+    return true/go-render
   }
 ]
 

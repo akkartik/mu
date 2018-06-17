@@ -31,7 +31,7 @@ def create-yielder l:&:list:num -> n:num, done?:bool [
   load-inputs
   return-continuation-until-mark 100/mark
   done? <- equal l, 0/nil
-  return-if done?, 0/false
+  return-if done?, false
   n <- first l
   l <- rest l
 ]

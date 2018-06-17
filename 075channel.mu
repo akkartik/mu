@@ -106,7 +106,7 @@ def read in:&:source:_elem -> result:_elem, eof?:bool, in:&:source:_elem [
   local-scope
   load-inputs
   assert in, [read on null channel]
-  eof? <- copy 0/false  # default result
+  eof? <- copy false  # default result
   chan:&:channel:_elem <- get *in, chan:offset
   # block until lock is acquired AND queue has data
   lock:location <- get-location *chan, lock:offset
@@ -327,13 +327,13 @@ def close x:&:source:_elem -> x:&:source:_elem [
   local-scope
   load-inputs
   chan:&:channel:_elem <- get *x, chan:offset
-  *chan <- put *chan, closed?:offset, 1/true
+  *chan <- put *chan, closed?:offset, true
 ]
 def close x:&:sink:_elem -> x:&:sink:_elem [
   local-scope
   load-inputs
   chan:&:channel:_elem <- get *x, chan:offset
-  *chan <- put *chan, closed?:offset, 1/true
+  *chan <- put *chan, closed?:offset, true
 ]
 
 # once a channel is closed from one side, no further operations are expected from that side
@@ -352,7 +352,7 @@ after <channel-read-empty> [
     break-unless closed?
     empty-result:&:_elem <- new _elem:type
     current-routine-is-unblocked
-    return *empty-result, 1/true
+    return *empty-result, true
   }
 ]
 
@@ -401,7 +401,7 @@ def buffer-lines in:&:source:char, buffered-out:&:sink:char -> buffered-out:&:si
   local-scope
   load-inputs
   # repeat forever
-  eof?:bool <- copy 0/false
+  eof?:bool <- copy false
   {
     line:&:buffer:char <- new-buffer 30
     # read characters from 'in' until newline, copy into line

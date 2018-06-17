@@ -259,7 +259,7 @@ def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:bool,
   return-if error?, 0/dummy
   *result <- put *result, from-rank:offset, from-rank
   error? <- expect-from-channel stdin, 45/dash, screen
-  return-if error?, 0/dummy, 0/quit
+  return-if error?, 0/dummy, false/quit
   to-file:num, quit?, error? <- read-file stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
@@ -269,7 +269,7 @@ def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:bool,
   return-if error?, 0/dummy
   *result <- put *result, to-rank:offset, to-rank
   error? <- expect-from-channel stdin, 10/newline, screen
-  return-if error?, 0/dummy, 0/quit
+  return-if error?, 0/dummy, false/quit
 ]
 
 # valid values for file: 0-7
@@ -277,18 +277,18 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:bool, error
   local-scope
   load-inputs
   c:char, eof?:bool, stdin <- read stdin
-  return-if eof?, 0/dummy, 1/quit, 0/error
+  return-if eof?, 0/dummy, true/quit, false/no-error
   q-pressed?:bool <- equal c, 81/Q
-  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  return-if q-pressed?, 0/dummy, true/quit, false/no-error
   q-pressed? <- equal c, 113/q
-  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  return-if q-pressed?, 0/dummy, true/quit, false/no-error
   empty-fake-keyboard?:bool <- equal c, 0/eof
-  return-if empty-fake-keyboard?, 0/dummy, 1/quit, 0/error
+  return-if empty-fake-keyboard?, 0/dummy, true/quit, false/no-error
   {
     newline?:bool <- equal c, 10/newline
     break-unless newline?
     print screen, [that's not enough]
-    return 0/dummy, 0/quit, 1/error
+    return 0/dummy, false/don't-quit, true/error
   }
   file:num <- subtract c, 97/a
   # 'a' <= file <= 'h'
@@ -298,16 +298,16 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:bool, error
     print screen, [file too low: ]
     print screen, c
     cursor-to-next-line screen
-    return 0/dummy, 0/quit, 1/error
+    return 0/dummy, false/don't-quit, true/error
   }
   {
     below-max:bool <- lesser-than file, 8
     break-if below-max
     print screen, [file too high: ]
     print screen, c
-    return 0/dummy, 0/quit, 1/error
+    return 0/dummy, false/don't-quit, true/error
   }
-  return file, 0/quit, 0/error
+  return file, false/don't-quit, false/no-error
 ]
 
 # valid values for rank: 0-7
@@ -315,18 +315,18 @@ def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:bool, erro
   local-scope
   load-inputs
   c:char, eof?:bool, stdin <- read stdin
-  return-if eof?, 0/dummy, 1/quit, 0/error
+  return-if eof?, 0/dummy, true/quit, false/no-error
   q-pressed?:bool <- equal c, 81/Q
-  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  return-if q-pressed?, 0/dummy, true/quit, false/no-error
   q-pressed? <- equal c, 113/q
-  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  return-if q-pressed?, 0/dummy, true/quit, false/no-error
   empty-fake-keyboard?:bool <- equal c, 0/eof
-  return-if empty-fake-keyboard?, 0/dummy, 1/quit, 0/error
+  return-if empty-fake-keyboard?, 0/dummy, true/quit, false/no-error
   {
     newline?:bool <- equal c, 10  # newline
     break-unless newline?
     print screen, [that's not enough]
-    return 0/dummy, 0/quit, 1/error
+    return 0/dummy, false/don't-quite, true/error
   }
   rank:num <- subtract c, 49/'1'
   # assert'1' <= rank <= '8'
@@ -335,16 +335,16 @@ def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:bool, erro
     break-if above-min
     print screen, [rank too low: ]
     print screen, c
-    return 0/dummy, 0/quit, 1/error
+    return 0/dummy, false/don't-quite, true/error
   }
   {
     below-max:bool <- lesser-or-equal rank, 7
     break-if below-max
     print screen, [rank too high: ]
     print screen, c
-    return 0/dummy, 0/quit, 1/error
+    return 0/dummy, false/don't-quite, true/error
   }
-  return rank, 0/quit, 0/error
+  return rank, false/don't-quite, false/no-error
 ]
 
 # read a character from the given channel and check that it's what we expect
@@ -353,7 +353,7 @@ def expect-from-channel stdin:&:source:char, expected:char, screen:&:screen -> r
   local-scope
   load-inputs
   c:char, eof?:bool, stdin <- read stdin
-  return-if eof? 1/true
+  return-if eof? true
   {
     match?:bool <- equal c, expected
     break-if match?

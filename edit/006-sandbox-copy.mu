@@ -142,7 +142,7 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> r
   load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
-  return-unless click-sandbox-area?, 0/false
+  return-unless click-sandbox-area?, false
   # narrower, is the click in the columns spanning the 'copy' button?
   first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
@@ -150,7 +150,7 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> r
   sandbox-right-margin:num <- get *first-sandbox, right:offset
   _, _, copy-button-left:num, copy-button-right:num <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
   copy-button-vertical-area?:bool <- within-range? click-column, copy-button-left, copy-button-right
-  return-unless copy-button-vertical-area?, 0/false
+  return-unless copy-button-vertical-area?, false
   # finally, is sandbox editor empty?
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   result <- empty-editor? current-sandbox
@@ -161,15 +161,15 @@ def try-copy-sandbox click-row:num, env:&:environment -> clicked-on-copy-button?
   load-inputs
   # identify the sandbox to copy, if the click was actually on the 'copy' button
   sandbox:&:sandbox <- find-sandbox env, click-row
-  return-unless sandbox, 0/false
-  clicked-on-copy-button? <- copy 1/true
+  return-unless sandbox, false
+  clicked-on-copy-button? <- copy true
   text:text <- get *sandbox, data:offset
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   current-sandbox <- insert-text current-sandbox, text
   # reset scroll
   *env <- put *env, render-from:offset, -1
   # position cursor in sandbox editor
-  *env <- put *env, sandbox-in-focus?:offset, 1/true
+  *env <- put *env, sandbox-in-focus?:offset, true
 ]
 
 def find-sandbox env:&:environment, click-row:num -> result:&:sandbox [
@@ -193,9 +193,9 @@ def click-on-sandbox-area? click-row:num, click-column:num, env:&:environment ->
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-left-margin:num <- get *current-sandbox, left:offset
   on-sandbox-side?:bool <- greater-or-equal click-column, sandbox-left-margin
-  return-unless on-sandbox-side?, 0/false
+  return-unless on-sandbox-side?, false
   first-sandbox:&:sandbox <- get *env, sandbox:offset
-  return-unless first-sandbox, 0/false
+  return-unless first-sandbox, false
   first-sandbox-begins:num <- get *first-sandbox, starting-row-on-screen:offset
   result <- greater-or-equal click-row, first-sandbox-begins
 ]
@@ -349,7 +349,7 @@ after <global-touch> [
     break-unless copy?
     modified?:bool <- prepend-sandbox-into-recipe-side click-row, env
     break-unless modified?
-    *env <- put *env, sandbox-in-focus?:offset, 0/false
+    *env <- put *env, sandbox-in-focus?:offset, false
     screen <- render-recipes screen, env, render
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     loop +next-event
@@ -362,7 +362,7 @@ def should-copy-to-recipe? click-row:num, click-column:num, env:&:environment ->
   load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
-  return-unless click-sandbox-area?, 0/false
+  return-unless click-sandbox-area?, false
   # narrower, is the click in the columns spanning the 'copy' button?
   first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
@@ -376,7 +376,7 @@ def prepend-sandbox-into-recipe-side click-row:num, env:&:environment -> clicked
   local-scope
   load-inputs
   sandbox:&:sandbox <- find-sandbox env, click-row
-  return-unless sandbox, 0/false
+  return-unless sandbox, false
   recipe-editor:&:editor <- get *env, recipes:offset
   recipe-data:&:duplex-list:char <- get *recipe-editor, data:offset
   # make the newly inserted code easy to delineate
@@ -391,5 +391,5 @@ def prepend-sandbox-into-recipe-side click-row:num, env:&:environment -> clicked
   *recipe-editor <- put *recipe-editor, before-cursor:offset, recipe-data
   *recipe-editor <- put *recipe-editor, cursor-row:offset, 1
   *recipe-editor <- put *recipe-editor, cursor-column:offset, 0
-  return 1/true
+  return true
 ]

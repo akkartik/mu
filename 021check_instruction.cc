@@ -86,27 +86,10 @@ def main [
 ]
 $error: 0
 
-:(scenario write_boolean_to_number_allowed)
-def main [
-  1:bool <- copy 1/true
-  2:num <- copy 1:bool
-]
-+mem: storing 1 in location 2
-$error: 0
-
-:(scenario write_number_to_boolean_disallowed)
-% Hide_errors = true;
-def main [
-  1:num <- copy 34
-  2:bool <- copy 1:num
-]
-+error: main: can't copy '1:num' to '2:bool'; types don't match
-
 :(code)
 // types_match with some leniency
 bool types_coercible(const reagent& to, const reagent& from) {
   if (types_match(to, from)) return true;
-  if (is_mu_boolean(from) && is_real_mu_number(to)) return true;
   if (is_real_mu_number(from) && is_mu_character(to)) return true;
   // End types_coercible Special-cases
   return false;
@@ -122,7 +105,7 @@ bool types_match(const reagent& to, const reagent& from) {
     // allow writing 0 to any address
     if (is_mu_address(to)) return from.name == "0";
     if (!to.type) return false;
-    if (is_mu_boolean(to)) return from.name == "0" || from.name == "1";
+    // End Literal types_match Special-cases
     return size_of(to) == 1;  // literals are always scalars
   }
   return types_strictly_match(to, from);

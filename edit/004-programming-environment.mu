@@ -32,7 +32,7 @@ def new-programming-environment resources:&:resources, screen:&:screen, test-san
   current-sandbox:&:editor <- new-editor test-sandbox-editor-contents, sandbox-left, width/right
   *result <- put *result, recipes:offset, recipes
   *result <- put *result, current-sandbox:offset, current-sandbox
-  *result <- put *result, sandbox-in-focus?:offset, 0/false
+  *result <- put *result, sandbox-in-focus?:offset, false
   <programming-environment-initialization>
 ]
 
@@ -45,8 +45,8 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
   # todo: test this
-  render-recipes-on-no-more-events?:bool <- copy 0/false
-  render-sandboxes-on-no-more-events?:bool <- copy 0/false
+  render-recipes-on-no-more-events?:bool <- copy false
+  render-sandboxes-on-no-more-events?:bool <- copy false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -113,12 +113,12 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         break-if more-events?
         {
           break-unless render-recipes-on-no-more-events?
-          render-recipes-on-no-more-events? <- copy 0/false
+          render-recipes-on-no-more-events? <- copy false
           screen <- render-recipes screen, env, render
         }
         {
           break-unless render-sandboxes-on-no-more-events?
-          render-sandboxes-on-no-more-events? <- copy 0/false
+          render-sandboxes-on-no-more-events? <- copy false
           screen <- render-sandbox-side screen, env, render
         }
       }
