@@ -30,7 +30,7 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
   }
   # real file system
   file:num <- $open-file-for-reading filename
-  return-unless file, 0/contents, true/error
+  return-unless file, null/no-contents, true/error
   contents:&:source:char, sink:&:sink:char <- new-channel 30
   start-running receive-from-file file, sink
 ]
@@ -39,7 +39,7 @@ def slurp resources:&:resources, filename:text -> contents:text, error?:bool [
   local-scope
   load-inputs
   source:&:source:char, error?:bool <- start-reading resources, filename
-  return-if error?, 0/contents
+  return-if error?, null/no-contents
   buf:&:buffer:char <- new-buffer 30/capacity
   {
     c:char, done?:bool, source <- read source
@@ -70,7 +70,7 @@ def start-reading-from-fake-resource resources:&:resources, resource:text -> con
     start-running receive-from-text curr-contents, sink
     return
   }
-  return 0/not-found, true/error-found
+  return null/no-such-resource, true/error-found
 ]
 
 def receive-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
@@ -115,7 +115,7 @@ def start-writing resources:&:resources, filename:text -> sink:&:sink:char, rout
   }
   # real file system
   file:num <- $open-file-for-writing filename
-  return-unless file, 0/sink, 0/routine-id, true/error
+  return-unless file, null/sink, 0/routine-id, true/error
   {
     break-if file
     msg:text <- append [no such file: ] filename
@@ -175,7 +175,7 @@ def transmit-to-fake-resource resources:&:resources, filename:text, source:&:sou
   contents:text <- buffer-to-array buf
   new-resource:resource <- merge filename, contents
   # write to resources
-  curr-filename:text <- copy 0
+  curr-filename:text <- copy null
   data:&:@:resource <- get *resources, data:offset
   # replace file contents if it already exists
   i:num <- copy 0

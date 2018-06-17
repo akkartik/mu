@@ -253,7 +253,7 @@ scenario run-updates-errors-for-shape-shifting-recipes [
       |recipe foo x:_elem -> z:_elem [|
       |  local-scope|
       |  load-ingredients|
-      |  y:&:num <- copy 0|
+      |  y:&:num <- copy null|
       |  z <- add x, y|
       |]|
     ]
@@ -308,7 +308,7 @@ scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
     ]
   ]
   # call code that uses other variants of it, but not it itself
-  test-sandbox:text <- new [x:&:list:num <- copy 0
+  test-sandbox:text <- new [x:&:list:num <- copy null
 to-text x]
   env:&:environment <- new-programming-environment resources, screen, test-sandbox
   render-all screen, env, render

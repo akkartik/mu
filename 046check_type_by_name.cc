@@ -153,7 +153,7 @@ def foo [  # dummy
 ]
 def main [
   local-scope
-  0:space/names:foo <- copy 0  # specify surrounding space
+  0:space/names:foo <- copy null  # specify surrounding space
   x:bool <- copy true
   x:num/space:1 <- copy 34
   x/space:1 <- copy 35

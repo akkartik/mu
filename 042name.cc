@@ -245,7 +245,7 @@ else {
 
 :(scenario transform_names_transforms_container_elements)
 def main [
-  p:&:point <- copy 0
+  p:&:point <- copy null
   a:num <- get *p:&:point, y:offset
   b:num <- get *p:&:point, x:offset
 ]

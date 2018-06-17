@@ -4,16 +4,16 @@
 def main [
   local-scope
   open-console  # take control of screen, keyboard and mouse
-  clear-screen 0/screen  # non-scrolling app
+  clear-screen null/screen  # non-scrolling app
 
   # The chessboard function takes keyboard and screen objects as inputs.
   #
   # In Mu it is good form (though not required) to explicitly state what
   # hardware a function needs.
   #
-  # Here the console and screen are both 0, which usually indicates real
+  # Here the console and screen are both null, which usually indicates real
   # hardware rather than a fake for testing as you'll see below.
-  chessboard 0/screen, 0/console
+  chessboard null/screen, null/console
 
   close-console  # clean up screen, keyboard and mouse
 ]
@@ -249,27 +249,27 @@ def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:bool,
   local-scope
   load-inputs
   from-file:num, quit?:bool, error?:bool <- read-file stdin, screen
-  return-if quit?, 0/dummy
-  return-if error?, 0/dummy
+  return-if quit?, null/dummy
+  return-if error?, null/dummy
   # construct the move object
   result:&:move <- new move:type
   *result <- put *result, from-file:offset, from-file
   from-rank:num, quit?, error? <- read-rank stdin, screen
-  return-if quit?, 0/dummy
-  return-if error?, 0/dummy
+  return-if quit?, null/dummy
+  return-if error?, null/dummy
   *result <- put *result, from-rank:offset, from-rank
   error? <- expect-from-channel stdin, 45/dash, screen
-  return-if error?, 0/dummy, false/quit
+  return-if error?, null/dummy, false/quit
   to-file:num, quit?, error? <- read-file stdin, screen
-  return-if quit?, 0/dummy
-  return-if error?, 0/dummy
+  return-if quit?, null/dummy
+  return-if error?, null/dummy
   *result <- put *result, to-file:offset, to-file
   to-rank:num, quit?, error? <- read-rank stdin, screen
-  return-if quit?, 0/dummy
-  return-if error?, 0/dummy
+  return-if quit?, null/dummy
+  return-if error?, null/dummy
   *result <- put *result, to-rank:offset, to-rank
   error? <- expect-from-channel stdin, 10/newline, screen
-  return-if error?, 0/dummy, false/quit
+  return-if error?, null/dummy, false/quit
 ]
 
 # valid values for file: 0-7

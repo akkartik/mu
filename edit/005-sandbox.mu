@@ -10,11 +10,11 @@
 def! main [
   local-scope
   open-console
-  clear-screen 0/screen  # non-scrolling app
-  env:&:environment <- new-programming-environment 0/filesystem, 0/screen
-  env <- restore-sandboxes env, 0/filesystem
-  render-all 0/screen, env, render
-  event-loop 0/screen, 0/console, env, 0/filesystem
+  clear-screen null/screen  # non-scrolling app
+  env:&:environment <- new-programming-environment null/filesystem, null/screen
+  env <- restore-sandboxes env, null/filesystem
+  render-all null/screen, env, render
+  event-loop null/screen, null/console, env, null/filesystem
 ]
 
 container environment [
@@ -170,7 +170,7 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
     # needs to be before running them, in case we die when running
     save-sandboxes env, resources
     # clear sandbox editor
-    init:&:duplex-list:char <- push 167/§, 0/tail
+    init:&:duplex-list:char <- push 167/§, null
     *current-sandbox <- put *current-sandbox, data:offset, init
     *current-sandbox <- put *current-sandbox, top-of-screen:offset, init
   }
@@ -475,8 +475,8 @@ def restore-sandboxes env:&:environment, resources:&:resources -> env:&:environm
   load-inputs
   # read all scenarios, pushing them to end of a list of scenarios
   idx:num <- copy 0
-  curr:&:sandbox <- copy 0
-  prev:&:sandbox <- copy 0
+  curr:&:sandbox <- copy null
+  prev:&:sandbox <- copy null
   {
     filename:text <- append [lesson/], idx
     contents:text <- slurp resources, filename
@@ -686,7 +686,7 @@ def editor-contents editor:&:editor -> result:text [
   # skip § sentinel
   assert curr, [editor without data is illegal; must have at least a sentinel]
   curr <- next curr
-  return-unless curr, 0
+  return-unless curr, null
   {
     break-unless curr
     c:char <- get *curr, value:offset
@@ -939,15 +939,15 @@ after <global-keypress> [
 ]
 
 # sandbox belonging to 'env' whose next-sandbox is 'in'
-# return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox
+# return null if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox
 def previous-sandbox env:&:environment, in:&:sandbox -> out:&:sandbox [
   local-scope
   load-inputs
   curr:&:sandbox <- get *env, sandbox:offset
-  return-unless curr, 0/nil
+  return-unless curr, null
   next:&:sandbox <- get *curr, next-sandbox:offset
   {
-    return-unless next, 0/nil
+    return-unless next, null
     found?:bool <- equal next, in
     break-if found?
     curr <- copy next

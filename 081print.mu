@@ -909,6 +909,6 @@ def print screen:&:screen, n:&:_elem -> screen:&:screen [
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  n2:num <- copy n
+  n2:num <- deaddress n
   screen <- print screen, n2, color, bg-color
 ]

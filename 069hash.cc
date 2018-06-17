@@ -183,7 +183,7 @@ def main [
 
 :(scenario hash_of_zero_address)
 def main [
-  1:&:num <- copy 0
+  1:&:num <- copy null
   2:num <- hash 1:&:num
 ]
 +mem: storing 0 in location 2

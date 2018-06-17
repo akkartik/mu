@@ -7,14 +7,14 @@ scenario example-server-test [
   # that way repeatedly running the test will give ports time to timeout and
   # close before reusing them
   make-random-nondeterministic
-  port:num <- random-in-range 0/real-random-numbers, 8000, 8100
+  port:num <- random-in-range null/real-random-numbers, 8000, 8100
   run [
     socket:num <- $open-server-socket port
     assert socket, [ 
 F - example-server-test: $open-server-socket failed]
     handler-routine:number <- start-running serve-one-request socket, example-handler
   ]
-  source:&:source:char <- start-reading-from-network 0/real-resources, [localhost/], port
+  source:&:source:char <- start-reading-from-network null/real-resources, [localhost/], port
   response:text <- drain source
   10:@:char/raw <- copy *response
   memory-should-contain [

@@ -3,10 +3,10 @@
 def! main [
   local-scope
   open-console
-  clear-screen 0/screen  # non-scrolling app
-  env:&:environment <- new-programming-environment 0/filesystem, 0/screen
-  render-all 0/screen, env, render
-  event-loop 0/screen, 0/console, env, 0/filesystem
+  clear-screen null/screen  # non-scrolling app
+  env:&:environment <- new-programming-environment null/filesystem, null/screen
+  render-all null/screen, env, render
+  event-loop null/screen, null/console, env, null/filesystem
 ]
 
 container environment [

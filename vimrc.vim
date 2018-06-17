@@ -31,7 +31,8 @@ function! HighlightTangledFile()
   syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
   syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
   syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
-  syntax keyword muLiteral true false null
+  syntax match muLiteral % true\(\/[^ ]*\)\?\| false\(\/[^ ]*\)\?%  " literals will never be the first word in an instruction
+  syntax match muLiteral % null\(\/[^ ]*\)\?%
   highlight link muLiteral Constant
   syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
   " common keywords

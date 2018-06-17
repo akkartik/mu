@@ -439,33 +439,6 @@ container foo [
 ]
 $error: 0
 
-:(scenario static_dispatch_prefers_literals_to_be_numbers_rather_than_addresses)
-def main [
-  1:num <- foo 0
-]
-def foo x:&:num -> y:num [
-  return 34
-]
-def foo x:num -> y:num [
-  return 35
-]
-+mem: storing 35 in location 1
-
-:(scenario static_dispatch_prefers_literals_to_be_numbers_rather_than_addresses_2)
-def main [
-  1:num <- foo 0 0
-]
-# Both variants need to bind 0 to address in first ingredient.
-# We still want to prefer the variant with a number rather than address for
-# _subsequent_ ingredients.
-def foo x:&:num y:&:num -> z:num [  # put the bad match before the good one
-  return 34
-]
-def foo x:&:num y:num -> z:num [
-  return 35
-]
-+mem: storing 35 in location 1
-
 :(scenario static_dispatch_on_non_literal_character_ignores_variant_with_numbers)
 % Hide_errors = true;
 def main [

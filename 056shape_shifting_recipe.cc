@@ -178,7 +178,7 @@ bool concrete_type_names_strictly_match(const type_tree* to, const type_tree* fr
   if (to->atom && is_type_ingredient_name(to->name)) return true;  // type ingredient matches anything
   if (!to->atom && to->right == NULL && to->left != NULL && to->left->atom && is_type_ingredient_name(to->left->name)) return true;
   if (from->atom && is_mu_address(to))
-    return from->name == "literal" && rhs_reagent.name == "0";
+    return from->name == "literal-address" && rhs_reagent.name == "null";
   if (!from->atom && !to->atom)
     return concrete_type_names_strictly_match(to->left, from->left, rhs_reagent)
         && concrete_type_names_strictly_match(to->right, from->right, rhs_reagent);
@@ -330,7 +330,7 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
     const reagent& exemplar_reagent = exemplar.ingredients.at(i);
     reagent/*copy*/ ingredient = inst.ingredients.at(i);
     canonize_type(ingredient);
-    if (is_mu_address(exemplar_reagent) && ingredient.name == "0") continue;  // assume it matches
+    if (is_mu_address(exemplar_reagent) && ingredient.name == "null") continue;  // assume it matches
     accumulate_type_ingredients(exemplar_reagent, ingredient, mappings, exemplar, inst, caller_recipe, error);
   }
   limit = min(SIZE(inst.products), SIZE(exemplar.products));
@@ -662,7 +662,7 @@ def main [
 def bar x:_t -> result:&:_t [
   local-scope
   load-ingredients
-  result <- copy 0
+  result <- copy null
 ]
 $error: 0
 
@@ -782,7 +782,7 @@ def foo x:_elem -> y:_elem [
 def main [
   local-scope
   # permit '0' to map to address to shape-shifting type-ingredient
-  1:&:char/raw <- foo 0
+  1:&:char/raw <- foo null
 ]
 def foo x:&:_elem -> y:&:_elem [
   local-scope
@@ -953,7 +953,7 @@ def foo x:&:_elem -> y:num [
 # version with headers padded with lots of unrelated concrete types
 def main [
   1:num <- copy 23
-  2:&:@:num <- copy 0
+  2:&:@:num <- copy null
   3:num <- foo 2:&:@:num, 1:num
 ]
 # variant with concrete type
@@ -1023,7 +1023,7 @@ def foo x:&:_elem -> y:num [
 
 :(scenario specialize_literal_as_address)
 def main [
-  1:num <- foo 0
+  1:num <- foo null
 ]
 # variant with concrete address type
 def foo x:&:num -> y:num [

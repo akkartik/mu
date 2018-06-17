@@ -225,7 +225,7 @@ def find-click-in-sandbox-code env:&:environment, click-row:num -> sandbox:&:san
   click-on-sandbox-code?:bool <- and click-above-response?, click-below-menu?
   {
     break-if click-on-sandbox-code?
-    return 0/no-click-in-sandbox-output
+    return null/no-click-in-sandbox-output
   }
   return sandbox
 ]

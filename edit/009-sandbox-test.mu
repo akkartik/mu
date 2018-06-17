@@ -171,9 +171,9 @@ def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:s
   }
   # return sandbox if click is in its output region
   response-starting-row:num <- get *sandbox, response-starting-row-on-screen:offset
-  return-unless response-starting-row, 0/no-click-in-sandbox-output, 0/sandbox-index
+  return-unless response-starting-row, null/no-click-in-sandbox-output, 0/sandbox-index
   click-in-response?:bool <- greater-or-equal click-row, response-starting-row
-  return-unless click-in-response?, 0/no-click-in-sandbox-output, 0/sandbox-index
+  return-unless click-in-response?, null/no-click-in-sandbox-output, 0/sandbox-index
   return sandbox, sandbox-index
 ]
 
@@ -184,7 +184,7 @@ def toggle-expected-response sandbox:&:sandbox -> sandbox:&:sandbox [
   {
     # if expected-response is set, reset
     break-unless expected-response
-    *sandbox <- put *sandbox, expected-response:offset, 0
+    *sandbox <- put *sandbox, expected-response:offset, null
   }
   {
     # if not, set expected response to the current response

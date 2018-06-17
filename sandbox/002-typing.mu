@@ -6,10 +6,10 @@ def! main text:text [
   local-scope
   load-inputs
   open-console
-  clear-screen 0/screen  # non-scrolling app
+  clear-screen null/screen  # non-scrolling app
   editor:&:editor <- new-editor text, 5/left, 45/right
-  editor-render 0/screen, editor
-  editor-event-loop 0/screen, 0/console, editor
+  editor-render null/screen, editor
+  editor-event-loop null/screen, null/console, editor
   close-console
 ]
 
@@ -223,7 +223,7 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool
   next:&:duplex-list:char <- next before-cursor
   {
     # at end of all text? no need to scroll? just print the character and leave
-    at-end?:bool <- equal next, 0/null
+    at-end?:bool <- equal next, null
     break-unless at-end?
     bottom:num <- subtract screen-height, 1
     at-bottom?:bool <- equal save-row, bottom
@@ -701,7 +701,7 @@ after <insert-character-special-case> [
     just-before-wrap?:bool <- greater-or-equal cursor-column, before-wrap-column
     next:&:duplex-list:char <- next before-cursor
     # at end of line? next == 0 || next.value == 10/newline
-    at-end-of-line?:bool <- equal next, 0
+    at-end-of-line?:bool <- equal next, null
     {
       break-if at-end-of-line?
       next-character:char <- get *next, value:offset

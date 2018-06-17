@@ -3,7 +3,7 @@
 def main [
   local-scope
   $print [aaa] 10/newline
-  google:&:source:char <- start-reading-from-network 0/real-resources, [google.com/]
+  google:&:source:char <- start-reading-from-network null/real-resources, [google.com/]
   $print [bbb] 10/newline
   n:num <- copy 0
   buf:&:buffer:char <- new-buffer 30
@@ -21,9 +21,9 @@ def main [
   }
   result:text <- buffer-to-array buf
   open-console
-  clear-screen 0/screen  # non-scrolling app
+  clear-screen null/screen  # non-scrolling app
   len:num <- length *result
-  print 0/real-screen, result
+  print null/real-screen, result
   wait-for-some-interaction
   close-console
 ]

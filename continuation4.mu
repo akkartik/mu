@@ -15,7 +15,7 @@
 
 def main [
   local-scope
-  l:&:list:num <- copy 0
+  l:&:list:num <- copy null
   l <- push 3, l
   l <- push 2, l
   l <- push 1, l
@@ -32,7 +32,7 @@ def create-yielder l:&:list:num -> n:num, done?:bool [
   local-scope
   load-inputs
   {
-    done? <- equal l, 0
+    done? <- equal l, null
     break-if done?
     n <- first l
     l <- rest l

@@ -113,7 +113,7 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, ba
   data:&:duplex-list:char <- get *editor, data:offset
   # if at start of text (before-cursor at § sentinel), return
   prev:&:duplex-list:char <- prev before-cursor
-  return-unless prev, false/no-more-render, 0/nothing-deleted
+  return-unless prev, false/no-more-render, null/nothing-deleted
   trace 10, [app], [delete-before-cursor]
   original-row:num <- get *editor, cursor-row:offset
   scroll?:bool <- move-cursor-coordinates-left editor
@@ -2616,7 +2616,7 @@ def delete-to-end-of-line editor:&:editor -> result:&:duplex-list:char, editor:&
   start:&:duplex-list:char <- get *editor, before-cursor:offset
   end:&:duplex-list:char <- next start
   {
-    at-end-of-text?:bool <- equal end, 0/null
+    at-end-of-text?:bool <- equal end, null
     break-if at-end-of-text?
     curr:char <- get *end, value:offset
     at-end-of-line?:bool <- equal curr, 10/newline

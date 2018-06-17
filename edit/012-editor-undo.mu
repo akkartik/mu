@@ -206,7 +206,7 @@ def add-operation editor:&:editor, op:&:operation -> editor:&:editor [
   undo <- push op undo
   *editor <- put *editor, undo:offset, undo
   redo:&:list:&:operation <- get *editor, redo:offset
-  redo <- copy 0
+  redo <- copy null
   *editor <- put *editor, redo:offset, redo
 ]
 

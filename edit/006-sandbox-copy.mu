@@ -184,7 +184,7 @@ def find-sandbox env:&:environment, click-row:num -> result:&:sandbox [
     curr-sandbox <- get *curr-sandbox, next-sandbox:offset
     loop
   }
-  return 0/not-found
+  return null/not-found
 ]
 
 def click-on-sandbox-area? click-row:num, click-column:num, env:&:environment -> result:bool [

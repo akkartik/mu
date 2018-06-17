@@ -86,10 +86,10 @@ scenario text-equal-with-empty [
 scenario text-equal-with-null [
   local-scope
   x:text <- new [abcd]
-  y:text <- copy 0
+  y:text <- copy null
   run [
-    10:bool/raw <- equal x, 0
-    11:bool/raw <- equal 0, x
+    10:bool/raw <- equal x, null
+    11:bool/raw <- equal null, x
     12:bool/raw <- equal x, y
     13:bool/raw <- equal y, x
     14:bool/raw <- equal y, y
@@ -339,7 +339,7 @@ def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
   local-scope
   load-inputs
   # propagate null buffer
-  return-unless in, 0
+  return-unless in, null
   len:num <- get *in, length:offset
   s:&:@:_elem <- get *in, data:offset
   # we can't just return s because it is usually the wrong length
@@ -406,7 +406,7 @@ scenario text-append-1 [
 
 scenario text-append-null [
   local-scope
-  x:text <- copy 0
+  x:text <- copy null
   y:text <- new [ world!]
   run [
     z:text <- append x, y
@@ -420,7 +420,7 @@ scenario text-append-null [
 scenario text-append-null-2 [
   local-scope
   x:text <- new [hello,]
-  y:text <- copy 0
+  y:text <- copy null
   run [
     z:text <- append x, y
     10:@:char/raw <- copy *z

@@ -4,26 +4,26 @@
 # screens.
 def main [
   open-console
-  clear-screen 0/screen  # non-scrolling app
+  clear-screen null/screen  # non-scrolling app
   10:char <- copy 97/a
-  print 0/screen, 10:char/a, 1/red, 2/green
-  1:num/raw, 2:num/raw <- cursor-position 0/screen
-  wait-for-event 0/console
-  clear-screen 0/screen
-  move-cursor 0/screen, 0/row, 4/column
+  print null/screen, 10:char/a, 1/red, 2/green
+  1:num/raw, 2:num/raw <- cursor-position null/screen
+  wait-for-event null/console
+  clear-screen null/screen
+  move-cursor null/screen, 0/row, 4/column
   10:char <- copy 98/b
-  print 0/screen, 10:char
-  wait-for-event 0/console
-  move-cursor 0/screen, 0/row, 0/column
-  clear-line 0/screen
-  wait-for-event 0/console
-  cursor-down 0/screen
-  wait-for-event 0/console
-  cursor-right 0/screen
-  wait-for-event 0/console
-  cursor-left 0/screen
-  wait-for-event 0/console
-  cursor-up 0/screen
-  wait-for-event 0/console
+  print null/screen, 10:char
+  wait-for-event null/console
+  move-cursor null/screen, 0/row, 0/column
+  clear-line null/screen
+  wait-for-event null/console
+  cursor-down null/screen
+  wait-for-event null/console
+  cursor-right null/screen
+  wait-for-event null/console
+  cursor-left null/screen
+  wait-for-event null/console
+  cursor-up null/screen
+  wait-for-event null/console
   close-console
 ]

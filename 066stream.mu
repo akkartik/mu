@@ -7,7 +7,7 @@ container stream:_elem [
 def new-stream s:&:@:_elem -> result:&:stream:_elem [
   local-scope
   load-inputs
-  return-unless s, 0/null
+  return-unless s, null
   result <- new {(stream _elem): type}
   *result <- put *result, index:offset, 0
   *result <- put *result, data:offset, s

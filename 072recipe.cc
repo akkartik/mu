@@ -389,7 +389,7 @@ if (is_mu_recipe(to)) {
 :(scenario call_variable_compound_ingredient)
 def main [
   {1: (recipe (address number) -> number)} <- copy f
-  2:&:num <- copy 0
+  2:&:num <- copy null
   3:num <- call {1: (recipe (address number) -> number)}, 2:&:num
 ]
 def f x:&:num -> y:num [

@@ -110,7 +110,7 @@ def foo x:&:num [
   local-scope
   load-ingredients
   # modify the address, not the payload
-  x <- copy 0
+  x <- copy null
 ]
 $error: 0
 
@@ -207,7 +207,7 @@ def main [
 def foo a:&:foo [
   local-scope
   load-ingredients
-  b:foo <- merge 0
+  b:foo <- merge null
   # modify b, completely unrelated to immutable ingredient a
   x:&:@:num <- get b, x:offset
   *x <- put-index *x, 0, 34
@@ -596,7 +596,7 @@ container test-list [
 def foo x:&:test-list/contained-in:result -> result:&:test-list [
   local-scope
   load-ingredients
-  result <- copy 0
+  result <- copy null
 ]
 $error: 0
 

@@ -31,7 +31,7 @@ canonize(x);
 :(scenario store_to_0_fails)
 % Hide_errors = true;
 def main [
-  1:address:num <- copy 0
+  1:address:num <- copy null
   1:address:num/lookup <- copy 34
 ]
 -mem: storing 34 in location 0
@@ -41,7 +41,7 @@ def main [
 :(scenario lookup_0_fails)
 % Hide_errors = true;
 def main [
-  1:address:num <- copy 0
+  1:address:num <- copy null
   2:num <- copy 1:address:num/lookup
 ]
 +error: main: tried to lookup 0 in '2:num <- copy 1:address:num/lookup'
@@ -49,14 +49,14 @@ def main [
 :(scenario lookup_0_dumps_callstack)
 % Hide_errors = true;
 def main [
-  foo 0
+  foo null
 ]
 def foo [
   1:address:num <- next-input
   2:num <- copy 1:address:num/lookup
 ]
 +error: foo: tried to lookup 0 in '2:num <- copy 1:address:num/lookup'
-+error:   called from main: foo 0
++error:   called from main: foo null
 
 :(code)
 void canonize(reagent& x) {

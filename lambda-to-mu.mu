@@ -22,7 +22,7 @@ result <- add a t1]
 def lambda-to-mu in:text -> out:text [
   local-scope
   load-inputs
-  out <- copy 0
+  out <- copy null
   cells:&:cell <- parse in
   out <- to-mu cells
 ]
@@ -84,7 +84,7 @@ scenario pair-is-not-atom [
   # construct (a . nil)
   s:text <- new [a]
   x:&:cell <- new-atom s
-  y:&:cell <- new-pair x, 0/nil
+  y:&:cell <- new-pair x, null
   10:bool/raw <- is-atom? y
   11:bool/raw <- is-pair? y
   memory-should-contain [
@@ -114,7 +114,7 @@ def first x:&:cell -> result:&:cell [
   local-scope
   load-inputs
   pair:pair, pair?:bool <- maybe-convert *x, pair:variant
-  return-unless pair?, 0/nil
+  return-unless pair?, null
   result <- get pair, first:offset
 ]
 
@@ -122,7 +122,7 @@ def rest x:&:cell -> result:&:cell [
   local-scope
   load-inputs
   pair:pair, pair?:bool <- maybe-convert *x, pair:variant
-  return-unless pair?, 0/nil
+  return-unless pair?, null
   result <- get pair, rest:offset
 ]
 
@@ -161,7 +161,7 @@ scenario cell-operations-on-pair [
   # construct (a . nil)
   s:text <- new [a]
   x:&:cell <- new-atom s
-  y:&:cell <- new-pair x, 0/nil
+  y:&:cell <- new-pair x, null
   x2:&:cell <- first y
   10:bool/raw <- equal x, x2
   11:&:cell/raw <- rest y
@@ -187,7 +187,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
   # skip whitespace
   in <- skip-whitespace in
   c:char, eof?:bool <- peek in
-  return-if eof?, 0/nil
+  return-if eof?, null
   pair?:bool <- equal c, 40/open-paren
   {
     break-if pair?
@@ -223,7 +223,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
       close-paren?:bool <- equal c, 41/close-paren
       break-if close-paren?
       first:&:cell, in <- parse in
-      *out <- merge 1/pair, first, 0/nil
+      *out <- merge 1/pair, first, null
     }
     # read in any remaining elements
     curr:&:cell <- copy out
@@ -245,7 +245,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
       is-dot?:bool <- atom-match? next, [.]
       {
         break-if is-dot?
-        next-curr:&:cell <- new-pair next, 0/nil
+        next-curr:&:cell <- new-pair next, null
         curr <- set-rest curr, next-curr
         curr <- rest curr
       }
@@ -276,7 +276,7 @@ def skip-whitespace in:&:stream:char -> in:&:stream:char [
   load-inputs
   {
     done?:bool <- end-of-stream? in
-    return-if done?, 0/null
+    return-if done?, null
     c:char <- peek in
     space?:bool <- space? c
     break-unless space?
@@ -586,5 +586,5 @@ def to-mu in:&:cell, buf:&:buffer:char -> buf:&:buffer:char, result-name:text [
   # null cell? no change.
   # pair with all atoms? gensym a new variable
   # pair containing other pairs? recurse
-  result-name <- copy 0
+  result-name <- copy null
 ]

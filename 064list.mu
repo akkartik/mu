@@ -30,7 +30,7 @@ def rest in:&:list:_elem -> result:&:list:_elem/contained-in:in [
 scenario list-handling [
   run [
     local-scope
-    x:&:list:num <- push 3, 0
+    x:&:list:num <- push 3, null
     x <- push 4, x
     x <- push 5, x
     10:num/raw <- first x
@@ -73,7 +73,7 @@ def insert x:_elem, in:&:list:_elem -> in:&:list:_elem [
 
 scenario inserting-into-list [
   local-scope
-  list:&:list:num <- push 3, 0
+  list:&:list:num <- push 3, null
   list <- push 4, list
   list <- push 5, list
   run [
@@ -99,7 +99,7 @@ scenario inserting-into-list [
 
 scenario inserting-at-end-of-list [
   local-scope
-  list:&:list:num <- push 3, 0
+  list:&:list:num <- push 3, null
   list <- push 4, list
   list <- push 5, list
   run [
@@ -126,7 +126,7 @@ scenario inserting-at-end-of-list [
 
 scenario inserting-after-start-of-list [
   local-scope
-  list:&:list:num <- push 3, 0
+  list:&:list:num <- push 3, null
   list <- push 4, list
   list <- push 5, list
   run [
@@ -160,7 +160,7 @@ def remove x:&:list:_elem/contained-in:in, in:&:list:_elem -> in:&:list:_elem [
   return-unless x
   next-node:&:list:_elem <- rest x
   # clear next pointer of 'x'
-  *x <- put *x, next:offset, 0
+  *x <- put *x, next:offset, null
   # if 'x' is at the head of 'in', return the new head
   at-head?:bool <- equal x, in
   return-if at-head?, next-node
@@ -180,13 +180,13 @@ def remove x:&:list:_elem/contained-in:in, in:&:list:_elem -> in:&:list:_elem [
 
 scenario removing-from-list [
   local-scope
-  list:&:list:num <- push 3, 0
+  list:&:list:num <- push 3, null
   list <- push 4, list
   list <- push 5, list
   run [
     list2:&:list:num <- rest list  # second element
     list <- remove list2, list
-    10:bool/raw <- equal list2, 0
+    10:bool/raw <- equal list2, null
     # check structure like before
     list2 <- copy list
     11:num/raw <- first list2
@@ -204,7 +204,7 @@ scenario removing-from-list [
 
 scenario removing-from-start-of-list [
   local-scope
-  list:&:list:num <- push 3, 0
+  list:&:list:num <- push 3, null
   list <- push 4, list
   list <- push 5, list
   run [
@@ -225,7 +225,7 @@ scenario removing-from-start-of-list [
 
 scenario removing-from-end-of-list [
   local-scope
-  list:&:list:num <- push 3, 0
+  list:&:list:num <- push 3, null
   list <- push 4, list
   list <- push 5, list
   run [
@@ -233,7 +233,7 @@ scenario removing-from-end-of-list [
     list2:&:list:num <- rest list
     list2 <- rest list2
     list <- remove list2, list
-    10:bool/raw <- equal list2, 0
+    10:bool/raw <- equal list2, null
     # check structure like before
     list2 <- copy list
     11:num/raw <- first list2
@@ -251,7 +251,7 @@ scenario removing-from-end-of-list [
 
 scenario removing-from-singleton-list [
   local-scope
-  list:&:list:num <- push 3, 0
+  list:&:list:num <- push 3, null
   run [
     list <- remove list, list
     1:num/raw <- deaddress list
@@ -275,7 +275,7 @@ def reverse list:&:list:_elem temp:&:list:_elem/contained-in:result -> result:&:
 
 scenario reverse-list [
   local-scope
-  list:&:list:num <- push 1, 0
+  list:&:list:num <- push 1, null
   list <- push 2, list
   list <- push 3, list
   run [
@@ -291,7 +291,7 @@ scenario reverse-list [
 
 scenario stash-list [
   local-scope
-  list:&:list:num <- push 1, 0
+  list:&:list:num <- push 1, null
   list <- push 2, list
   list <- push 3, list
   run [
@@ -356,7 +356,7 @@ def to-buffer in:&:list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
 
 scenario stash-empty-list [
   local-scope
-  x:&:list:num <- copy 0
+  x:&:list:num <- copy null
   run [
     stash x
   ]

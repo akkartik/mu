@@ -6,10 +6,10 @@ def main text:text [
   local-scope
   load-inputs
   open-console
-  clear-screen 0/screen  # non-scrolling app
+  clear-screen null/screen  # non-scrolling app
   e:&:editor <- new-editor text, 0/left, 5/right
-  render 0/screen, e
-  wait-for-event 0/console
+  render null/screen, e
+  wait-for-event null/console
   close-console
 ]
 
@@ -61,7 +61,7 @@ def new-editor s:text, left:num, right:num -> result:&:editor [
   *result <- put *result, cursor-row:offset, 1/top
   *result <- put *result, cursor-column:offset, left
   # initialize empty contents
-  init:&:duplex-list:char <- push 167/§, 0/tail
+  init:&:duplex-list:char <- push 167/§, null
   *result <- put *result, data:offset, init
   *result <- put *result, top-of-screen:offset, init
   *result <- put *result, before-cursor:offset, init
@@ -80,7 +80,7 @@ scenario editor-initializes-without-data [
   local-scope
   assume-screen 5/width, 3/height
   run [
-    e:&:editor <- new-editor 0/data, 2/left, 5/right
+    e:&:editor <- new-editor null/data, 2/left, 5/right
     2:editor/raw <- copy *e
   ]
   memory-should-contain [
