@@ -103,16 +103,10 @@ bool types_match(const reagent& to, const reagent& from) {
     if (is_mu_array(to)) return false;
     // End Matching Types For Literal(to)
     if (!to.type) return false;
-    if (is_mu_address(to)) return types_match_literal_to_address(from);
-    // End Literal types_match Special-cases
+    if (is_mu_address(to)) return from.name == "null";
     return size_of(to) == 1;  // literals are always scalars
   }
   return types_strictly_match(to, from);
-}
-
-bool types_match_literal_to_address(const reagent& from) {
-  // End Literal->Address types_match(from) Special-cases
-  return false;
 }
 
 //: copy arguments for later layers

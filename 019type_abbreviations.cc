@@ -90,6 +90,13 @@ type foo = bar
 type foo = baz
 +error: 'type' conflict: 'foo' defined as both 'bar' and 'baz'
 
+:(scenario type_abbreviation_for_compound)
+type foo = address:number
+def main [
+  1:foo <- copy null
+]
++transform: product type after expanding abbreviations: ("address" "number")
+
 //: cleaning up type abbreviations between tests and before exiting
 
 :(before "End save_snapshots")
@@ -121,6 +128,13 @@ put(Type_abbreviations, "@", new_type_tree("array"));
 put(Type_abbreviations, "num", new_type_tree("number"));
 put(Type_abbreviations, "bool", new_type_tree("boolean"));
 put(Type_abbreviations, "char", new_type_tree("character"));
+
+:(scenario use_type_abbreviations_when_declaring_type_abbreviations)
+type foo = &:num
+def main [
+  1:foo <- copy null
+]
++transform: product type after expanding abbreviations: ("address" "number")
 
 //:: Expand type aliases before running.
 //: We'll do this in a transform so that we don't need to define abbreviations
