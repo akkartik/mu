@@ -3,10 +3,10 @@
 :(scenario new_reclaim)
 def main [
   1:address:num <- new number:type
-  2:num <- copy 1:address:num  # because 1 will get reset during abandon below
+  2:num <- deaddress 1:address:num  # because 1 will get reset during abandon below
   abandon 1:address:num
   3:address:num <- new number:type  # must be same size as abandoned memory to reuse
-  4:num <- copy 3:address:num
+  4:num <- deaddress 3:address:num
   5:bool <- equal 2:num, 4:num
 ]
 # both allocations should have returned the same address
@@ -80,10 +80,10 @@ if (get_or_insert(Current_routine->free_list, size)) {
 :(scenario new_differing_size_no_reclaim)
 def main [
   1:address:num <- new number:type
-  2:num <- copy 1:address:num
+  2:num <- deaddress 1:address:num
   abandon 1:address:num
   3:address:array:num <- new number:type, 2  # different size
-  4:num <- copy 3:address:array:num
+  4:num <- deaddress 3:address:array:num
   5:bool <- equal 2:num, 4:num
 ]
 # no reuse
@@ -92,10 +92,10 @@ def main [
 :(scenario new_reclaim_array)
 def main [
   1:address:array:num <- new number:type, 2
-  2:num <- copy 1:address:array:num
+  2:num <- deaddress 1:address:array:num
   abandon 1:address:array:num
   3:address:array:num <- new number:type, 2  # same size
-  4:num <- copy 3:address:array:num
+  4:num <- deaddress 3:address:array:num
   5:bool <- equal 2:num, 4:num
 ]
 # both calls to new returned identical addresses

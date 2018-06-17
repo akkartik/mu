@@ -3,7 +3,7 @@
 def equal a:text, b:text -> result:bool [
   local-scope
   load-inputs
-  an:num, bn:num <- copy a, b
+  an:num, bn:num <- deaddress a, b
   address-equal?:boolean <- equal an, bn
   return-if address-equal?, 1/true
   return-unless a, 0/false

@@ -254,7 +254,7 @@ scenario removing-from-singleton-list [
   list:&:list:num <- push 3, 0
   run [
     list <- remove list, list
-    1:num/raw <- copy list
+    1:num/raw <- deaddress list
   ]
   memory-should-contain [
     1 <- 0  # back to an empty list
@@ -332,7 +332,7 @@ def to-buffer in:&:list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
   buf <- append buf, val
   # now prepare next
   next:&:list:_elem <- rest in
-  nextn:num <- copy next
+  nextn:num <- deaddress next
   return-unless next
   buf <- append buf, [ -> ]
   # and recurse

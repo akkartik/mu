@@ -457,3 +457,39 @@ def main [
 +mem: storing 1 in location 6
 +mem: storing 34 in location 7
 +mem: storing 35 in location 8
+
+//: a little helper: convert address to number
+
+:(before "End Primitive Recipe Declarations")
+DEADDRESS,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "deaddress", DEADDRESS);
+:(before "End Primitive Recipe Checks")
+case DEADDRESS: {
+  // primary goal of these checks is to forbid address arithmetic
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
+    if (!is_mu_address(inst.ingredients.at(i))) {
+      raise << maybe(get(Recipe, r).name) << "'deaddress' requires address ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
+      goto finish_checking_instruction;
+    }
+  }
+  if (SIZE(inst.products) > SIZE(inst.ingredients)) {
+    raise << maybe(get(Recipe, r).name) << "too many products in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  for (int i = 0;  i < SIZE(inst.products);  ++i) {
+    if (!is_real_mu_number(inst.products.at(i))) {
+      raise << maybe(get(Recipe, r).name) << "'deaddress' requires number products, but got '" << inst.products.at(i).original_string << "'\n" << end();
+      goto finish_checking_instruction;
+    }
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case DEADDRESS: {
+  products.resize(SIZE(ingredients));
+  for (int i = 0;  i < SIZE(ingredients);  ++i) {
+    products.at(i).push_back(ingredients.at(i).at(0));
+  }
+  break;
+}

@@ -338,7 +338,7 @@ scenario removing-from-singleton-duplex-list [
   list:&:duplex-list:num <- push 3, 0
   run [
     list <- remove list, list
-    1:num/raw <- copy list
+    1:num/raw <- deaddress list
   ]
   memory-should-contain [
     1 <- 0  # back to an empty list
@@ -690,7 +690,7 @@ def to-buffer in:&:duplex-list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
   buf <- append buf, val
   # now prepare next
   next:&:duplex-list:_elem <- next in
-  nextn:num <- copy next
+  nextn:num <- deaddress next
   return-unless next
   buf <- append buf, [ <-> ]
   # and recurse

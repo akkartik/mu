@@ -71,14 +71,6 @@ def main [
 ]
 +error: main: can't copy '34' to '1:address:num'; types don't match
 
-:(scenario write_address_to_number_allowed)
-def main [
-  1:address:num <- copy 12/unsafe
-  2:num <- copy 1:address:num
-]
-+mem: storing 12 in location 2
-$error: 0
-
 :(scenario write_address_to_character_disallowed)
 % Hide_errors = true;
 def main [
@@ -114,7 +106,6 @@ def main [
 // types_match with some leniency
 bool types_coercible(const reagent& to, const reagent& from) {
   if (types_match(to, from)) return true;
-  if (is_mu_address(from) && is_real_mu_number(to)) return true;
   if (is_mu_boolean(from) && is_real_mu_number(to)) return true;
   if (is_real_mu_number(from) && is_mu_character(to)) return true;
   // End types_coercible Special-cases

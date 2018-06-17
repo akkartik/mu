@@ -395,7 +395,7 @@ def main [
 def f x:&:num -> y:num [
   local-scope
   load-ingredients
-  y <- copy x
+  y <- deaddress x
 ]
 $error: 0
 
