@@ -25,29 +25,29 @@
 # call 'new' two times with identical types without modifying the results; you
 # should get back different results
 def main [
-  1:address:num/raw <- new number:type
-  2:address:num/raw <- new number:type
-  3:bool/raw <- equal 1:address:num/raw, 2:address:num/raw
+  1:&:num/raw <- new num:type
+  2:&:num/raw <- new num:type
+  3:bool/raw <- equal 1:&:num/raw, 2:&:num/raw
 ]
 +mem: storing 0 in location 3
 
 :(scenario new_array)
 # call 'new' with a second ingredient to allocate an array of some type rather than a single copy
 def main [
-  1:address:array:num/raw <- new number:type, 5
-  2:address:num/raw <- new number:type
-  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
+  1:&:@:num/raw <- new num:type, 5
+  2:&:num/raw <- new num:type
+  3:num/raw <- subtract 2:&:num/raw, 1:&:@:num/raw
 ]
-+run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
++run: {1: ("address" "array" "number"), "raw": ()} <- new {num: "type"}, {5: "literal"}
 +mem: array length is 5
 # don't forget the extra location for array length
 +mem: storing 6 in location 3
 
 :(scenario dilated_reagent_with_new)
 def main [
-  1:address:address:num <- new {(address number): type}
+  1:&:&:num <- new {(& num): type}
 ]
-+new: size of '(address number)' is 1
++new: size of '(& num)' is 1
 
 //: 'new' takes a weird 'type' as its first ingredient; don't error on it
 :(before "End Mu Types Initialization")
@@ -135,19 +135,19 @@ def main [
 :(scenario new_discerns_singleton_list_from_atom_container)
 % Hide_errors = true;
 def main [
-  1:address:num/raw <- new {(num): type}  # should be '{num: type}'
+  1:&:num/raw <- new {(num): type}  # should be '{num: type}'
 ]
-+error: main: product of 'new' has incorrect type: '1:address:num/raw <- new {(num): type}'
++error: main: product of 'new' has incorrect type: '1:&:num/raw <- new {(num): type}'
 
 :(scenario new_with_type_abbreviation)
 def main [
-  1:address:num/raw <- new num:type
+  1:&:num/raw <- new num:type
 ]
 $error: 0
 
 :(scenario new_with_type_abbreviation_inside_compound)
 def main [
-  {1: (address address number), raw: ()} <- new {(& num): type}
+  {1: (& & num), raw: ()} <- new {(& num): type}
 ]
 $error: 0
 
@@ -283,35 +283,35 @@ void ensure_space(int size) {
 % Memory_allocated_until = 10;
 % put(Memory, Memory_allocated_until, 1);
 def main [
-  1:address:num <- new number:type
+  1:&:num <- new num:type
 ]
 +mem: storing 0 in location 10
 
 :(scenario new_size)
 def main [
-  11:address:num/raw <- new number:type
-  12:address:num/raw <- new number:type
-  13:num/raw <- subtract 12:address:num/raw, 11:address:num/raw
+  11:&:num/raw <- new num:type
+  12:&:num/raw <- new num:type
+  13:num/raw <- subtract 12:&:num/raw, 11:&:num/raw
 ]
 # size of number
 +mem: storing 1 in location 13
 
 :(scenario new_array_size)
 def main [
-  1:address:array:num/raw <- new number:type, 5
-  2:address:num/raw <- new number:type
-  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
+  1:&:@:num/raw <- new num:type, 5
+  2:&:num/raw <- new num:type
+  3:num/raw <- subtract 2:&:num/raw, 1:&:@:num/raw
 ]
 # 5 locations for array contents + array length
 +mem: storing 6 in location 3
 
 :(scenario new_empty_array)
 def main [
-  1:address:array:num/raw <- new number:type, 0
-  2:address:num/raw <- new number:type
-  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
+  1:&:@:num/raw <- new num:type, 0
+  2:&:num/raw <- new num:type
+  3:num/raw <- subtract 2:&:num/raw, 1:&:@:num/raw
 ]
-+run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {0: "literal"}
++run: {1: ("address" "array" "number"), "raw": ()} <- new {num: "type"}, {0: "literal"}
 +mem: array length is 0
 # one location for array length
 +mem: storing 1 in location 3
@@ -320,8 +320,8 @@ def main [
 :(scenario new_overflow)
 % Initial_memory_per_routine = 2;  // barely enough room for point allocation below
 def main [
-  1:address:num/raw <- new number:type
-  2:address:point/raw <- new point:type  # not enough room in initial page
+  1:&:num/raw <- new num:type
+  2:&:point/raw <- new point:type  # not enough room in initial page
 ]
 +new: routine allocated memory from 1000 to 1002
 +new: routine allocated memory from 1002 to 1004
@@ -329,6 +329,6 @@ def main [
 :(scenario new_without_ingredient)
 % Hide_errors = true;
 def main [
-  1:address:number <- new  # missing ingredient
+  1:&:num <- new  # missing ingredient
 ]
-+error: main: 'new' requires one or two ingredients, but got '1:address:number <- new'
++error: main: 'new' requires one or two ingredients, but got '1:&:num <- new'

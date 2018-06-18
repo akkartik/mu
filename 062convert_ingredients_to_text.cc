@@ -157,7 +157,7 @@ curr->name_before_rewrite = curr->name;
 def main [
   local-scope
   n:num <- copy 11
-  c:character <- copy 111/o
+  c:char <- copy 111/o
   a:text <- append [abc], 10, n, c
   expected:text <- new [abc1011o]
   10:bool/raw <- equal a, expected

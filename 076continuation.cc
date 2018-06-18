@@ -70,24 +70,24 @@ if (r.type->atom && r.type->name == "continuation") {
 :(scenario delimited_continuation)
 recipe main [
   1:continuation <- call-with-continuation-mark 233/mark, f, 77  # 77 is an argument to f
-  2:number <- copy 5
+  2:num <- copy 5
   {
-    2:number <- call 1:continuation, 2:number  # jump to 'return-continuation-until-mark' below
-    3:boolean <- greater-or-equal 2:number, 8
-    break-if 3:boolean
+    2:num <- call 1:continuation, 2:num  # jump to 'return-continuation-until-mark' below
+    3:bool <- greater-or-equal 2:num, 8
+    break-if 3:bool
     loop
   }
 ]
 recipe f [
-  11:number <- next-ingredient
-  12:number <- g 11:number
-  return 12:number
+  11:num <- next-ingredient
+  12:num <- g 11:num
+  return 12:num
 ]
 recipe g [
-  21:number <- next-ingredient
-  22:number <- return-continuation-until-mark 233/mark
-  23:number <- add 22:number, 1
-  return 23:number
+  21:num <- next-ingredient
+  22:num <- return-continuation-until-mark 233/mark
+  23:num <- add 22:num, 1
+  return 23:num
 ]
 # first call of 'g' executes the part before return-continuation-until-mark
 +mem: storing 77 in location 21

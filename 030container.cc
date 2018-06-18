@@ -258,7 +258,7 @@ def main [
   12:num <- copy 34
   13:num <- copy 35
   14:num <- copy 36
-  15:address:num <- get 12:point-number/raw, 1:offset
+  15:&:num <- get 12:point-number/raw, 1:offset
 ]
 +error: main: 'get 12:point-number/raw, 1:offset' should write to number but '15' has type (address number)
 

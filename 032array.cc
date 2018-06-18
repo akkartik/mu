@@ -218,7 +218,7 @@ def main [
   2:num <- copy 14
   3:num <- copy 15
   4:num <- copy 16
-  5:address:num <- index {1: (array (address number) 3)}, 0
+  5:&:num <- index {1: (array (address number) 3)}, 0
 ]
 +mem: storing 14 in location 5
 
@@ -330,7 +330,7 @@ void test_array_length_compound() {
   put(Memory, 2, 14);
   put(Memory, 3, 15);
   put(Memory, 4, 16);
-  reagent x("1:array:address:num");  // 3 types, but not a static array
+  reagent x("1:array:&:num");  // 3 types, but not a static array
   populate_value(x);
   CHECK_EQ(array_length(x), 3);
 }

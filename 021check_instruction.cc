@@ -67,17 +67,17 @@ def main [
 :(scenario write_scalar_to_address_disallowed)
 % Hide_errors = true;
 def main [
-  1:address:num <- copy 34
+  1:&:num <- copy 34
 ]
-+error: main: can't copy '34' to '1:address:num'; types don't match
++error: main: can't copy '34' to '1:&:num'; types don't match
 
 :(scenario write_address_to_character_disallowed)
 % Hide_errors = true;
 def main [
-  1:address:num <- copy 12/unsafe
-  2:char <- copy 1:address:num
+  1:&:num <- copy 12/unsafe
+  2:char <- copy 1:&:num
 ]
-+error: main: can't copy '1:address:num' to '2:char'; types don't match
++error: main: can't copy '1:&:num' to '2:char'; types don't match
 
 :(scenario write_number_to_character_allowed)
 def main [

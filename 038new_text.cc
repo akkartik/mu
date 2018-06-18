@@ -2,7 +2,7 @@
 
 //: A Mu text is an address to an array of characters.
 :(before "End Mu Types Initialization")
-put(Type_abbreviations, "text", new_type_tree("address:array:character"));
+put(Type_abbreviations, "text", new_type_tree("&:@:character"));
 
 :(scenario new_string)
 def main [
@@ -118,7 +118,7 @@ if (!canonize_type(x)) return false;
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 2;
 def main [
-  1:address:num/raw <- new number:type
+  1:&:num/raw <- new number:type
   2:text/raw <- new [a]  # not enough room in initial page, if you take the array length into account
 ]
 +new: routine allocated memory from 1000 to 1002

@@ -64,9 +64,9 @@ def main [
 :(scenario add_checks_return_type)
 % Hide_errors = true;
 def main [
-  1:address:num <- add 2, 2
+  1:&:num <- add 2, 2
 ]
-+error: main: 'add' should yield a number, but got '1:address:num'
++error: main: 'add' should yield a number, but got '1:&:num'
 
 :(before "End Primitive Recipe Declarations")
 SUBTRACT,

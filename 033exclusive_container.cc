@@ -225,14 +225,14 @@ else if (command == "exclusive-container") {
 
 :(scenario exclusive_container_contains_array)
 exclusive-container foo [
-  x:array:num:3
+  x:@:num:3
 ]
 $error: 0
 
 :(scenario exclusive_container_disallows_dynamic_array_element)
 % Hide_errors = true;
 exclusive-container foo [
-  x:array:num
+  x:@:num
 ]
 +error: container 'foo' cannot determine size of element 'x'
 
