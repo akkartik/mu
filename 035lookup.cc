@@ -89,6 +89,7 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
   double address = x.value + /*skip alloc id in address*/1;
   double new_value = get_or_insert(Memory, address);
   trace("mem") << "location " << address << " contains " << no_scientific(new_value) << end();
+  // check for null
   if (check_for_null && new_value == 0) {
     if (Current_routine) {
       raise << maybe(current_recipe_name()) << "tried to lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -98,6 +99,14 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
       raise << "tried to lookup 0\n" << end();
     }
   }
+  // validate alloc-id
+  double alloc_id_in_address = get_or_insert(Memory, x.value);
+  double alloc_id_in_payload = get_or_insert(Memory, new_value);
+  if (alloc_id_in_address != alloc_id_in_payload) {
+      raise << maybe(current_recipe_name()) << "address is already abandoned in '" << to_original_string(current_instruction()) << "'\n" << end();
+      dump_callstack();
+  }
+  // all well; complete the lookup
   x.set_value(new_value+/*skip alloc id in payload*/1);
   drop_from_type(x, "address");
   drop_one_lookup(x);
