@@ -102,6 +102,7 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
   // validate alloc-id
   double alloc_id_in_address = get_or_insert(Memory, x.value);
   double alloc_id_in_payload = get_or_insert(Memory, new_value);
+//?   cerr << x.value << ": " << alloc_id_in_address << " vs " << new_value << ": " << alloc_id_in_payload << '\n';
   if (alloc_id_in_address != alloc_id_in_payload) {
       raise << maybe(current_recipe_name()) << "address is already abandoned in '" << to_original_string(current_instruction()) << "'\n" << end();
       dump_callstack();

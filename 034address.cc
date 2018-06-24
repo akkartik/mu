@@ -255,19 +255,24 @@ put(Recipe_ordinal, "allocate", ALLOCATE);
 case ALLOCATE: {
   // compute the space we need
   int size = ingredients.at(0).at(0);
+  int alloc_id = Next_alloc_id;
+  Next_alloc_id++;
   if (SIZE(ingredients) > 1) {
     // array allocation
     trace("mem") << "array length is " << ingredients.at(1).at(0) << end();
     size = /*space for length*/1 + size*ingredients.at(1).at(0);
   }
   int result = allocate(size);
+  // initialize alloc-id in payload
+  trace("mem") << "storing alloc-id " << alloc_id << " in location " << result << end();
+  put(Memory, result, alloc_id);
   if (SIZE(current_instruction().ingredients) > 1) {
     // initialize array length
     trace("mem") << "storing array length " << ingredients.at(1).at(0) << " in location " << result+/*skip alloc id*/1 << end();
     put(Memory, result+/*skip alloc id*/1, ingredients.at(1).at(0));
   }
   products.resize(1);
-  products.at(0).push_back(/*alloc id*/0);
+  products.at(0).push_back(alloc_id);
   products.at(0).push_back(result);
   break;
 }
@@ -331,6 +336,23 @@ def main [
   1:&:num <- new num:type
 ]
 +mem: storing 0 in location 10
++mem: storing 0 in location 11
++mem: storing 10 in location 2
+
+:(scenario new_initializes_alloc_id)
+% Memory_allocated_until = 10;
+% put(Memory, Memory_allocated_until, 1);
+% Next_alloc_id = 23;
+def main [
+  1:&:num <- new num:type
+]
+# initialize memory
++mem: storing 0 in location 10
++mem: storing 0 in location 11
+# alloc-id in payload
++mem: storing alloc-id 23 in location 10
+# alloc-id in address
++mem: storing 23 in location 1
 
 :(scenario new_size)
 def main [

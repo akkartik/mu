@@ -14,6 +14,18 @@ def main [
 
 //: When abandoning addresses we'll save them to a 'free list', segregated by size.
 
+//: Before, suppose variable V contains address A which points to payload P:
+//:   location V contains an alloc-id N
+//:   location V+1 contains A
+//:   location A contains alloc-id N
+//:   location A+1 onwards contains P
+//: Additionally, suppose the head of the free list is initially F.
+//: After abandoning:
+//:   location V contains invalid alloc-id -1
+//:   location V+1 contains 0
+//:   location A contains invalid alloc-id N
+//:   location A+1 contains the previous head of free-list F
+
 :(before "End routine Fields")
 map<int, int> free_list;
 
@@ -40,18 +52,23 @@ case ABANDON: {
     reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     canonize(ingredient);
     abandon(get_or_insert(Memory, ingredient.value+/*skip alloc id*/1), payload_size(ingredient));
+//?     cerr << "clear after abandon: " << ingredient.value << '\n';
+    put(Memory, /*alloc id*/ingredient.value, /*invalid*/-1);
+    put(Memory, /*address*/ingredient.value+1, 0);
   }
   break;
 }
 
 :(code)
 void abandon(int address, int payload_size) {
-  // clear memory
-  for (int curr = address;  curr < address+payload_size;  ++curr)
+  put(Memory, address, /*invalid alloc-id*/-1);
+//?   cerr << "abandon: " << address << '\n';
+  // clear rest of payload
+  for (int curr = address+1;  curr < address+payload_size;  ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
   trace("abandon") << "saving " << address << " in free-list of size " << payload_size << end();
-  put(Memory, address, get_or_insert(Current_routine->free_list, payload_size));
+  put(Memory, address+/*skip invalid alloc-id*/1, get_or_insert(Current_routine->free_list, payload_size));
   put(Current_routine->free_list, payload_size, address);
 }
 
@@ -66,8 +83,11 @@ if (get_or_insert(Current_routine->free_list, size)) {
   trace("abandon") << "picking up space from free-list of size " << size << end();
   int result = get_or_insert(Current_routine->free_list, size);
   trace("mem") << "new alloc from free list: " << result << end();
-  put(Current_routine->free_list, size, get_or_insert(Memory, result));
+  put(Current_routine->free_list, size, get_or_insert(Memory, result+/*skip alloc id*/1));
+  // clear 'deleted' tag
   put(Memory, result, 0);
+  // clear next pointer
+  put(Memory, result+/*skip alloc id*/1, 0);
   for (int curr = result;  curr < result+size;  ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
       raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
@@ -100,3 +120,13 @@ def main [
 ]
 # both calls to new returned identical addresses
 +mem: storing 1 in location 50
+
+:(scenario lookup_of_abandoned_address_raises_error)
+% Hide_errors = true;
+def main [
+  1:&:num <- new num:type
+  3:&:num <- copy 1:&:num
+  abandon 1:&:num
+  5:num/raw <- copy *3:&:num
+]
++error: main: address is already abandoned in '5:num/raw <- copy *3:&:num'
