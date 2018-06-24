@@ -87,10 +87,6 @@ void run_current_routine() {
       // Primitive Recipe Implementations
       case COPY: {
         copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
-        for (int i = 0;  i < SIZE(current_instruction().products);  ++i) {
-          if (is_mu_scalar(current_instruction().products.at(i)) && is_mu_address(current_instruction().ingredients.at(i)))
-            products.at(i).erase(products.at(i).begin());  // ignore alloc id
-        }
         break;
       }
       // End Primitive Recipe Implementations
