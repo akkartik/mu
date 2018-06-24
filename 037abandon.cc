@@ -2,15 +2,15 @@
 
 :(scenario new_reclaim)
 def main [
-  1:&:num <- new number:type
-  2:num <- deaddress 1:&:num  # because 1 will get reset during abandon below
-  abandon 1:&:num
-  3:&:num <- new number:type  # must be same size as abandoned memory to reuse
-  4:num <- deaddress 3:&:num
-  5:bool <- equal 2:num, 4:num
+  10:&:num <- new number:type
+  20:num <- deaddress 10:&:num
+  abandon 10:&:num
+  30:&:num <- new number:type  # must be same size as abandoned memory to reuse
+  40:num <- deaddress 30:&:num
+  50:bool <- equal 20:num, 40:num
 ]
 # both allocations should have returned the same address
-+mem: storing 1 in location 5
++mem: storing 1 in location 50
 
 //: When abandoning addresses we'll save them to a 'free list', segregated by size.
 
@@ -39,7 +39,7 @@ case ABANDON: {
   for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
     reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     canonize(ingredient);
-    abandon(get_or_insert(Memory, ingredient.value), payload_size(ingredient));
+    abandon(get_or_insert(Memory, ingredient.value+/*skip alloc id*/1), payload_size(ingredient));
   }
   break;
 }
@@ -58,7 +58,7 @@ void abandon(int address, int payload_size) {
 int payload_size(reagent/*copy*/ x) {
   x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
   lookup_memory_core(x, /*check_for_null*/false);
-  return size_of(x);
+  return size_of(x)+/*alloc id*/1;
 }
 
 :(after "Allocate Special-cases")
@@ -91,12 +91,12 @@ def main [
 
 :(scenario new_reclaim_array)
 def main [
-  1:&:@:num <- new number:type, 2
-  2:num <- deaddress 1:&:@:num
-  abandon 1:&:@:num
-  3:&:@:num <- new number:type, 2  # same size
-  4:num <- deaddress 3:&:@:num
-  5:bool <- equal 2:num, 4:num
+  10:&:@:num <- new number:type, 2
+  20:num <- deaddress 10:&:@:num
+  abandon 10:&:@:num
+  30:&:@:num <- new number:type, 2  # same size
+  40:num <- deaddress 30:&:@:num
+  50:bool <- equal 20:num, 40:num
 ]
 # both calls to new returned identical addresses
-+mem: storing 1 in location 5
++mem: storing 1 in location 50

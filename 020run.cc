@@ -87,6 +87,10 @@ void run_current_routine() {
       // Primitive Recipe Implementations
       case COPY: {
         copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
+        for (int i = 0;  i < SIZE(current_instruction().products);  ++i) {
+          if (is_mu_scalar(current_instruction().products.at(i)) && is_mu_address(current_instruction().ingredients.at(i)))
+            products.at(i).erase(products.at(i).begin());  // ignore alloc id
+        }
         break;
       }
       // End Primitive Recipe Implementations
@@ -123,6 +127,33 @@ bool should_continue_running(const routine* current_routine) {
 bool should_copy_ingredients() {
   // End should_copy_ingredients Special-cases
   return true;
+}
+
+bool is_mu_scalar(reagent/*copy*/ r) {
+  return is_mu_scalar(r.type);
+}
+bool is_mu_scalar(const type_tree* type) {
+  if (!type) return false;
+  if (is_mu_address(type)) return false;
+  if (!type->atom) return false;
+  if (is_literal(type))
+    return type->name != "literal-string";
+  return size_of(type) == 1;
+}
+
+bool is_mu_address(reagent/*copy*/ r) {
+  // End Preprocess is_mu_address(reagent r)
+  return is_mu_address(r.type);
+}
+bool is_mu_address(const type_tree* type) {
+  if (!type) return false;
+  if (is_literal(type)) return false;
+  if (type->atom) return false;
+  if (!type->left->atom) {
+    raise << "invalid type " << to_string(type) << '\n' << end();
+    return false;
+  }
+  return type->left->value == Address_type_ordinal;
 }
 
 //: Some helpers.
@@ -299,6 +330,7 @@ bool ends_with(const string& s, const string& pat) {
 vector<double> read_memory(reagent/*copy*/ x) {
   // Begin Preprocess read_memory(x)
   vector<double> result;
+  if (x.name == "null") result.push_back(/*alloc id*/0);
   if (is_literal(x)) {
     result.push_back(x.value);
     return result;
@@ -358,7 +390,7 @@ int size_of(const type_tree* type) {
       raise << "invalid type " << to_string(type) << '\n' << end();
       return 0;
     }
-    if (type->left->value == Address_type_ordinal) return 1;
+    if (type->left->value == Address_type_ordinal) return 2;  // address and alloc id
     // End size_of(type) Non-atom Special-cases
   }
   // End size_of(type) Special-cases
@@ -420,6 +452,11 @@ def main [
   _ <- copy 0
 ]
 +run: _ <- copy {0: "literal"}
+
+:(scenario run_null)
+def main [
+  1:&:num <- copy null
+]
 
 :(scenario write_to_0_disallowed)
 % Hide_errors = true;

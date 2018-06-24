@@ -88,14 +88,15 @@ $error: 0
 
 :(code)
 // types_match with some leniency
-bool types_coercible(const reagent& to, const reagent& from) {
-  if (types_match(to, from)) return true;
+bool types_coercible(reagent/*copy*/ to, reagent/*copy*/ from) {
+  // Begin types_coercible(reagent to, reagent from)
+  if (types_match_sub(to, from)) return true;
   if (is_real_mu_number(from) && is_mu_character(to)) return true;
   // End types_coercible Special-cases
   return false;
 }
 
-bool types_match(const reagent& to, const reagent& from) {
+bool types_match_sub(const reagent& to, const reagent& from) {
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
   if (is_unsafe(from)) return true;
@@ -103,15 +104,20 @@ bool types_match(const reagent& to, const reagent& from) {
     if (is_mu_array(to)) return false;
     // End Matching Types For Literal(to)
     if (!to.type) return false;
+    // allow writing null to any address
     if (is_mu_address(to)) return from.name == "null";
     return size_of(to) == 1;  // literals are always scalars
   }
-  return types_strictly_match(to, from);
+  return types_strictly_match_sub(to, from);
+}
+// variant for others to call
+bool types_match(reagent/*copy*/ to, reagent/*copy*/ from) {
+  // Begin types_match(reagent to, reagent from)
+  return types_match_sub(to, from);
 }
 
 //: copy arguments for later layers
-bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
-  // End Preprocess types_strictly_match(reagent to, reagent from)
+bool types_strictly_match_sub(const reagent& to, const reagent& from) {
   if (to.type == NULL) return false;  // error
   if (is_literal(from) && to.type->value == Number_type_ordinal) return true;
   // to sidestep type-checking, use /unsafe in the source.
@@ -121,6 +127,11 @@ bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
   if (is_dummy(to)) return true;
   if (!to.type) return !from.type;
   return types_strictly_match(to.type, from.type);
+}
+// variant for others to call
+bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
+  // Begin types_strictly_match(reagent to, reagent from)
+  return types_strictly_match_sub(to, from);
 }
 
 bool types_strictly_match(const type_tree* to, const type_tree* from) {
@@ -185,21 +196,6 @@ bool is_mu_array(const type_tree* type) {
   return type->left->value == Array_type_ordinal;
 }
 
-bool is_mu_address(reagent/*copy*/ r) {
-  // End Preprocess is_mu_address(reagent r)
-  return is_mu_address(r.type);
-}
-bool is_mu_address(const type_tree* type) {
-  if (!type) return false;
-  if (is_literal(type)) return false;
-  if (type->atom) return false;
-  if (!type->left->atom) {
-    raise << "invalid type " << to_string(type) << '\n' << end();
-    return false;
-  }
-  return type->left->value == Address_type_ordinal;
-}
-
 bool is_mu_boolean(reagent/*copy*/ r) {
   // End Preprocess is_mu_boolean(reagent r)
   if (!r.type) return false;
@@ -233,16 +229,4 @@ bool is_mu_character(const type_tree* type) {
   if (!type->atom) return false;
   if (is_literal(type)) return false;
   return type->value == Character_type_ordinal;
-}
-
-bool is_mu_scalar(reagent/*copy*/ r) {
-  return is_mu_scalar(r.type);
-}
-bool is_mu_scalar(const type_tree* type) {
-  if (!type) return false;
-  if (is_mu_address(type)) return true;
-  if (!type->atom) return false;
-  if (is_literal(type))
-    return type->name != "literal-string";
-  return size_of(type) == 1;
 }

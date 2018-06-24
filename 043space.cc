@@ -7,44 +7,65 @@
 //:
 //: Warning: messing with 'default-space' can corrupt memory. Don't share
 //: default-space between recipes. Later we'll see how to chain spaces safely.
+//:
+//: Tests in this layer can write to a location as part of one type, and read
+//: it as part of another. This is unsafe and insecure, and we'll stop doing
+//: this once we switch to variable names.
 
 //: Under the hood, a space is an array of locations in memory.
 :(before "End Mu Types Initialization")
 put(Type_abbreviations, "space", new_type_tree("address:array:location"));
 
 :(scenario set_default_space)
-# if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
-# then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
-  # pretend address:array:location; in practice we'll use 'new'
-  10:num <- copy 5  # length
-  default-space:space <- copy 10/unsafe
-  1:num <- copy 23
+  # prepare default-space address
+  10:num/alloc-id, 11:num <- copy 0, 1000
+  # prepare default-space payload
+  1000:num <- copy 0  # alloc id of payload
+  1001:num <- copy 5  # length
+  # actual start of this recipe
+  default-space:space <- copy 10:&:@:location
+  # if default-space is 1000, then:
+  #   1000: alloc id
+  #   1001: array size
+  #   1002: location 0 (space for the chaining slot; described later; often unused)
+  #   1003: location 1 (space for the chaining slot; described later; often unused)
+  #   1004: local 2 (assuming it is a scalar)
+  2:num <- copy 93
 ]
-+mem: storing 23 in location 12
++mem: storing 93 in location 1004
 
 :(scenario lookup_sidesteps_default_space)
 def main [
-  # pretend pointer from outside
-  2000:num <- copy 34
-  # pretend address:array:location; in practice we'll use 'new'
-  1000:num <- copy 5  # length
+  # prepare default-space address
+  10:num/alloc-id, 11:num <- copy 0, 1000
+  # prepare default-space payload
+  1000:num <- copy 0  # alloc id of payload
+  1001:num <- copy 5  # length
+  # prepare payload outside the local scope
+  2000:num/alloc-id, 2001:num <- copy 0, 34
   # actual start of this recipe
-  default-space:space <- copy 1000/unsafe
-  1:&:num <- copy 2000/unsafe  # even local variables always contain raw addresses
-  8:num/raw <- copy *1:&:num
+  default-space:space <- copy 10:&:@:location
+  # a local address
+  2:num, 3:num <- copy 0, 2000
+  20:num/raw <- copy *2:&:num
 ]
-+mem: storing 34 in location 8
++mem: storing 2000 in location 1005
++mem: storing 34 in location 20
 
 //: precondition: disable name conversion for 'default-space'
 
+:(scenarios transform)
 :(scenario convert_names_passes_default_space)
 % Hide_errors = true;
 def main [
-  default-space:num, x:num <- copy 0, 1
+  default-space:num <- copy 0
+  x:num <- copy 1
 ]
-+name: assign x 1
++name: assign x 2
 -name: assign default-space 1
+-name: assign default-space 2
+:(scenarios run)
 
 :(before "End is_disqualified Special-cases")
 if (x.name == "default-space")
@@ -74,7 +95,7 @@ void absolutize(reagent& x) {
 
 //: hook replaced in a later layer
 int space_base(const reagent& x) {
-  return current_call().default_space ? current_call().default_space : 0;
+  return current_call().default_space ? (current_call().default_space + /*skip alloc id*/1) : 0;
 }
 
 int address(int offset, int base) {
@@ -95,9 +116,11 @@ int address(int offset, int base) {
 
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
-  if (!scalar(data) || !is_mu_space(x))
+  if (!is_mu_space(x))
     raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but is " << to_string(x.type) << '\n' << end();
-  current_call().default_space = data.at(0);
+  if (SIZE(data) != 2)
+    raise << maybe(current_recipe_name()) << "'default-space' getting data from non-address\n" << end();
+  current_call().default_space = data.at(/*skip alloc id*/1);
   return;
 }
 :(code)
@@ -112,14 +135,21 @@ bool is_mu_space(reagent/*copy*/ x) {
 
 :(scenario get_default_space)
 def main [
-  default-space:space <- copy 10/unsafe
-  1:space/raw <- copy default-space:space
+  # prepare default-space address
+  10:num/alloc-id, 11:num <- copy 0, 1000
+  # prepare default-space payload
+  1000:num <- copy 0  # alloc id of payload
+  1001:num <- copy 5  # length
+  # actual start of this recipe
+  default-space:space <- copy 10:space
+  2:space/raw <- copy default-space:space
 ]
-+mem: storing 10 in location 1
++mem: storing 1000 in location 3
 
 :(after "Begin Preprocess read_memory(x)")
 if (x.name == "default-space") {
   vector<double> result;
+  result.push_back(/*alloc id*/0);
   result.push_back(current_call().default_space);
   return result;
 }
@@ -128,17 +158,20 @@ if (x.name == "default-space") {
 
 :(scenario lookup_sidesteps_default_space_in_get)
 def main [
-  # pretend pointer to container from outside
-  2000:num <- copy 34
-  2001:num <- copy 35
-  # pretend address:array:location; in practice we'll use 'new'
-  1000:num <- copy 5  # length
+  # prepare default-space address
+  10:num/alloc-id, 11:num <- copy 0, 1000
+  # prepare default-space payload
+  1000:num <- copy 0  # alloc id of payload
+  1001:num <- copy 5  # length
+  # prepare payload outside the local scope
+  2000:num/alloc-id, 2001:num/x, 2002:num/y <- copy 0, 34, 35
   # actual start of this recipe
-  default-space:space <- copy 1000/unsafe
-  1:&:point <- copy 2000/unsafe
-  9:num/raw <- get *1:&:point, 1:offset
+  default-space:space <- copy 10:space
+  # a local address
+  2:num, 3:num <- copy 0, 2000
+  3000:num/raw <- get *2:&:point, 1:offset
 ]
-+mem: storing 35 in location 9
++mem: storing 35 in location 3000
 
 :(before "Read element" following "case GET:")
 element.properties.push_back(pair<string, string_tree*>("raw", NULL));
@@ -147,18 +180,21 @@ element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 :(scenario lookup_sidesteps_default_space_in_index)
 def main [
-  # pretend pointer to array from outside
-  2000:num <- copy 2  # length
-  2001:num <- copy 34
-  2002:num <- copy 35
-  # pretend address:array:location; in practice we'll use 'new'
-  1000:num <- copy 5  # length
+  # prepare default-space address
+  10:num/alloc-id, 11:num <- copy 0, 1000
+  # prepare default-space payload
+  1000:num <- copy 0  # alloc id of payload
+  1001:num <- copy 5  # length
+  # prepare an array address
+  20:num/alloc-id, 21:num <- copy 0, 2000
+  # prepare an array payload
+  2000:num/alloc-id, 2001:num/length, 2002:num/index:0, 2003:num/index:1 <- copy 0, 2, 34, 35
   # actual start of this recipe
-  default-space:space <- copy 1000/unsafe
-  1:&:@:num <- copy 2000/unsafe
-  9:num/raw <- index *1:&:@:num, 1
+  default-space:space <- copy 10:&:@:location
+  1:&:@:num <- copy 20:&:@:num/raw
+  3000:num/raw <- index *1:&:@:num, 1
 ]
-+mem: storing 35 in location 9
++mem: storing 35 in location 3000
 
 :(before "Read element" following "case INDEX:")
 element.properties.push_back(pair<string, string_tree*>("raw", NULL));
@@ -172,8 +208,8 @@ def main [
   x:num <- copy 0
   y:num <- copy 3
 ]
-# allocate space for x and y, as well as the chaining slot at 0
-+mem: array length is 3
+# allocate space for x and y, as well as the chaining slot at indices 0 and 1
++mem: array length is 4
 
 :(before "End is_disqualified Special-cases")
 if (x.name == "number-of-locals")

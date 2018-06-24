@@ -3,7 +3,7 @@
 :(scenario shape_shifting_recipe)
 def main [
   10:point <- merge 14, 15
-  11:point <- foo 10:point
+  12:point <- foo 10:point
 ]
 # non-matching variant
 def foo a:num -> result:num [
@@ -17,8 +17,8 @@ def foo a:_t -> result:_t [
   load-ingredients
   result <- copy a
 ]
-+mem: storing 14 in location 11
-+mem: storing 15 in location 12
++mem: storing 14 in location 12
++mem: storing 15 in location 13
 
 //: Before anything else, disable transforms for shape-shifting recipes and
 //: make sure we never try to actually run a shape-shifting recipe. We should
@@ -538,7 +538,7 @@ void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
 :(scenario shape_shifting_recipe_2)
 def main [
   10:point <- merge 14, 15
-  11:point <- foo 10:point
+  12:point <- foo 10:point
 ]
 # non-matching shape-shifting variant
 def foo a:_t, b:_t -> result:num [
@@ -552,13 +552,13 @@ def foo a:_t -> result:_t [
   load-ingredients
   result <- copy a
 ]
-+mem: storing 14 in location 11
-+mem: storing 15 in location 12
++mem: storing 14 in location 12
++mem: storing 15 in location 13
 
 :(scenario shape_shifting_recipe_nonroot)
 def main [
   10:foo:point <- merge 14, 15, 16
-  20:point/raw <- bar 10:foo:point
+  20:point <- bar 10:foo:point
 ]
 # shape-shifting recipe with type ingredient following some other type
 def bar a:foo:_t -> result:_t [
@@ -592,7 +592,7 @@ def foo x:c:_bar:_baz [
 :(scenario shape_shifting_recipe_type_deduction_ignores_offsets)
 def main [
   10:foo:point <- merge 14, 15, 16
-  20:point/raw <- bar 10:foo:point
+  20:point <- bar 10:foo:point
 ]
 def bar a:foo:_t -> result:_t [
   local-scope
@@ -699,14 +699,14 @@ def main [
   1:&:point <- new point:type
   *1:&:point <- put *1:&:point, y:offset, 34
   3:&:point <- bar 1:&:point  # specialize _t to address:point
-  4:point <- copy *3:&:point
+  5:point <- copy *3:&:point
 ]
 def bar a:_t -> result:_t [
   local-scope
   load-ingredients
   result <- copy a
 ]
-+mem: storing 34 in location 5
++mem: storing 34 in location 6
 
 //: specializing a type ingredient with a compound type -- while *inside* another compound type
 :(scenario shape_shifting_recipe_supports_compound_types_2)
@@ -935,7 +935,7 @@ def foo x:_elem -> y:num [
 :(scenario specialize_most_similar_variant)
 def main [
   1:&:num <- new number:type
-  2:num <- foo 1:&:num
+  10:num <- foo 1:&:num
 ]
 def foo x:_elem -> y:num [
   local-scope
@@ -947,14 +947,14 @@ def foo x:&:_elem -> y:num [
   load-ingredients
   return 35
 ]
-+mem: storing 35 in location 2
++mem: storing 35 in location 10
 
 :(scenario specialize_most_similar_variant_2)
 # version with headers padded with lots of unrelated concrete types
 def main [
   1:num <- copy 23
   2:&:@:num <- copy null
-  3:num <- foo 2:&:@:num, 1:num
+  4:num <- foo 2:&:@:num, 1:num
 ]
 # variant with concrete type
 def foo dummy:&:@:num, x:num -> y:num, dummy:&:@:num [
@@ -969,7 +969,7 @@ def foo dummy:&:@:num, x:_elem -> y:num, dummy:&:@:num [
   return 35
 ]
 # prefer the concrete variant
-+mem: storing 34 in location 3
++mem: storing 34 in location 4
 
 :(scenario specialize_most_similar_variant_3)
 def main [
@@ -977,13 +977,13 @@ def main [
   foo 1:text
 ]
 def foo x:text [
-  2:num <- copy 34
+  10:num <- copy 34
 ]
 def foo x:&:_elem [
-  2:num <- copy 35
+  10:num <- copy 35
 ]
 # make sure the more precise version was used
-+mem: storing 34 in location 2
++mem: storing 34 in location 10
 
 :(scenario specialize_literal_as_number)
 def main [

@@ -26,10 +26,16 @@ case AND: {
 case AND: {
   bool result = true;
   for (int i = 0;  i < SIZE(ingredients);  ++i)
-    result = result && ingredients.at(i).at(0);
+    result = result && scalar_ingredient(ingredients, i);
   products.resize(1);
   products.at(0).push_back(result);
   break;
+}
+:(code)
+double scalar_ingredient(const vector<vector<double> >& ingredients, int i) {
+  if (is_mu_address(current_instruction().ingredients.at(i)))
+    return ingredients.at(i).at(/*skip alloc id*/1);
+  return ingredients.at(i).at(0);
 }
 
 :(scenario and)
@@ -84,7 +90,7 @@ case OR: {
 case OR: {
   bool result = false;
   for (int i = 0;  i < SIZE(ingredients);  ++i)
-    result = result || ingredients.at(i).at(0);
+    result = result || scalar_ingredient(ingredients, i);
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -127,8 +133,8 @@ case NOT: {
     break;
   }
   for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
-    if (!is_mu_scalar(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'not' requires boolean ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
+    if (!is_mu_scalar(inst.ingredients.at(i)) && !is_mu_address(inst.ingredients.at(i))) {
+      raise << maybe(get(Recipe, r).name) << "'not' requires ingredients that can be interpreted as boolean, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -145,7 +151,7 @@ case NOT: {
 case NOT: {
   products.resize(SIZE(ingredients));
   for (int i = 0;  i < SIZE(ingredients);  ++i) {
-    products.at(i).push_back(!ingredients.at(i).at(0));
+    products.at(i).push_back(!scalar_ingredient(ingredients, i));
   }
   break;
 }

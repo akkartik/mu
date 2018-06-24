@@ -40,7 +40,7 @@ case _OPEN_CLIENT_SOCKET: {
 }
 :(before "End Primitive Recipe Implementations")
 case _OPEN_CLIENT_SOCKET: {
-  string host = read_mu_text(ingredients.at(0).at(0));
+  string host = read_mu_text(ingredients.at(0).at(/*skip alloc id*/1));
   int port = ingredients.at(1).at(0);
   socket_t* client = client_socket(host, port);
   products.resize(1);

@@ -32,6 +32,10 @@ case EQUAL: {
   vector<double>& exemplar = ingredients.at(0);
   bool result = true;
   for (int i = /*skip exemplar*/1;  i < SIZE(ingredients);  ++i) {
+    if (SIZE(ingredients.at(i)) != SIZE(exemplar)) {
+      result = false;
+      break;
+    }
     if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {
       result = false;
       break;
@@ -103,6 +107,10 @@ case NOT_EQUAL: {
 case NOT_EQUAL: {
   vector<double>& exemplar = ingredients.at(0);
   products.resize(1);
+  if (SIZE(ingredients.at(1)) != SIZE(exemplar)) {
+    products.at(0).push_back(true);
+    break;
+  }
   bool equal_ingredients = equal(ingredients.at(1).begin(), ingredients.at(1).end(), exemplar.begin());
   products.at(0).push_back(!equal_ingredients);
   break;

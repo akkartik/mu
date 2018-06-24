@@ -19,6 +19,7 @@ Transform.push_back(rewrite_literal_string_to_text);  // idempotent
 set<string> recipes_taking_literal_strings;
 :(code)
 void initialize_transform_rewrite_literal_string_to_text() {
+  recipes_taking_literal_strings.insert("assert");
   recipes_taking_literal_strings.insert("$print");
   recipes_taking_literal_strings.insert("$dump-trace");
   recipes_taking_literal_strings.insert("$system");

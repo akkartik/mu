@@ -79,7 +79,6 @@ case SUBTRACT: {
     break;
   }
   for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
-    if (is_raw(inst.ingredients.at(i))) continue;  // permit address offset computations in tests
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'subtract' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -103,10 +102,6 @@ case SUBTRACT: {
   products.resize(1);
   products.at(0).push_back(result);
   break;
-}
-:(code)
-bool is_raw(const reagent& r) {
-  return has_property(r, "raw");
 }
 
 :(scenario subtract_literal)

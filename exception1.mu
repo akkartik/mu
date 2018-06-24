@@ -57,5 +57,5 @@ def f [
     return-continuation-until-mark 999/exception-tag, [error will robinson!], 0/unused
   }
   # normal return: 3 results including 0 continuation placeholder at start
-  return 0/continuation-placeholder, 0/no-error, 34/regular-result
+  return 0/continuation-placeholder, null/no-error, 34/regular-result
 ]

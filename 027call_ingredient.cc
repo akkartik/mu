@@ -124,6 +124,8 @@ case REWIND_INGREDIENTS: {
   break;
 }
 
+//: another primitive: 'ingredient' for random access
+
 :(scenario ingredient)
 def main [
   f 1, 2

@@ -336,9 +336,9 @@ channels.
 
 Routines are expected to communicate purely by message passing, though nothing
 stops them from sharing memory since all routines share a common address
-space. However, idiomatic Mu will make it hard to accidentally read or clobber
-random memory locations. Bounds checking is baked deeply into the semantics,
-and pointers can never be invalidated.
+space. However, idiomatic Mu will make it hard to accidentally read or
+clobber random memory locations. Bounds checking is baked deeply into
+the semantics, and using pointers after freeing them immediately fails.
 
 ---
 

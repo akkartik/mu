@@ -67,7 +67,7 @@ container foo:_a:_b [
 def main [
   1:text <- new [abc]
   # compound types for type ingredients
-  {2: (foo number (address array character))} <- merge 34/x, 1:text/y
+  {3: (foo number (address array character))} <- merge 34/x, 1:text/y
 ]
 $error: 0
 
@@ -82,7 +82,7 @@ container bar:_a:_b [
 ]
 def main [
   1:text <- new [abc]
-  2:bar:num:@:char <- merge 34/x, 1:text/y
+  3:bar:num:@:char <- merge 34/x, 1:text/y
 ]
 $error: 0
 
@@ -247,9 +247,9 @@ container foo:_t [
 ]
 def main [
   1:foo:point <- merge 14, 15, 16
-  2:num <- get 1:foo:point, y:offset
+  4:num <- get 1:foo:point, y:offset
 ]
-+mem: storing 16 in location 2
++mem: storing 16 in location 4
 
 :(scenario get_on_shape_shifting_container_2)
 container foo:_t [
@@ -258,10 +258,10 @@ container foo:_t [
 ]
 def main [
   1:foo:point <- merge 14, 15, 16
-  2:point <- get 1:foo:point, x:offset
+  4:point <- get 1:foo:point, x:offset
 ]
-+mem: storing 14 in location 2
-+mem: storing 15 in location 3
++mem: storing 14 in location 4
++mem: storing 15 in location 5
 
 :(scenario get_on_shape_shifting_container_3)
 container foo:_t [
@@ -269,10 +269,12 @@ container foo:_t [
   y:num
 ]
 def main [
-  1:foo:&:point <- merge 34/unsafe, 48
-  3:&:point <- get 1:foo:&:point, x:offset
+  1:num/alloc-id, 2:num <- copy 0, 34
+  3:foo:&:point <- merge 1:&:point, 48
+  6:&:point <- get 1:foo:&:point, x:offset
 ]
-+mem: storing 34 in location 3
++mem: storing 0 in location 6
++mem: storing 34 in location 7
 
 :(scenario get_on_shape_shifting_container_inside_container)
 container foo:_t [
@@ -285,9 +287,9 @@ container bar [
 ]
 def main [
   1:bar <- merge 14, 15, 16, 17
-  2:num <- get 1:bar, 1:offset
+  5:num <- get 1:bar, 1:offset
 ]
-+mem: storing 17 in location 2
++mem: storing 17 in location 5
 
 :(scenario get_on_complex_shape_shifting_container)
 container foo:_a:_b [
@@ -296,11 +298,11 @@ container foo:_a:_b [
 ]
 def main [
   1:text <- new [abc]
-  {2: (foo number (address array character))} <- merge 34/x, 1:text/y
-  3:text <- get {2: (foo number (address array character))}, y:offset
-  4:bool <- equal 1:text, 3:text
+  {3: (foo number (address array character))} <- merge 34/x, 1:text/y
+  6:text <- get {3: (foo number (address array character))}, y:offset
+  8:bool <- equal 1:text, 6:text
 ]
-+mem: storing 1 in location 4
++mem: storing 1 in location 8
 
 :(before "End element_type Special-cases")
 replace_type_ingredients(element, type, info, " while computing element type of container");
@@ -346,8 +348,8 @@ exclusive-container foo:_a [
 ]
 def main [
   1:text <- new [abc]
-  2:foo:point <- merge 0/variant, 34/xx, 35/xy
-  10:point, 20:bool <- maybe-convert 2:foo:point, 0/variant
+  3:foo:point <- merge 0/variant, 34/xx, 35/xy
+  10:point, 20:bool <- maybe-convert 3:foo:point, 0/variant
 ]
 +mem: storing 1 in location 20
 +mem: storing 35 in location 11
@@ -565,8 +567,8 @@ container foo:_t [
   y:num
 ]
 def main [
-  10:foo:point <- merge 14, 15, 16
-  1:num <- get 10:foo, 1:offset
+  1:foo:point <- merge 14, 15, 16
+  10:num <- get 1:foo, 1:offset
 ]
 # todo: improve error message
 +error: illegal type "foo" seems to be missing a type ingredient or three while computing element type of container
@@ -586,7 +588,7 @@ def main [
 % Hide_errors = true;
 def foo [
   local-scope
-  x:adress:array:number <- copy 0  # typo
+  x:adress:array:number <- copy null  # typo
 ]
 # shouldn't crash
 

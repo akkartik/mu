@@ -6,8 +6,8 @@
 def main [
   x:num <- copy 0
 ]
-+name: assign x 1
-+mem: storing 0 in location 1
++name: assign x 2
++mem: storing 0 in location 2
 
 :(scenarios transform)
 :(scenario transform_names_fails_on_use_before_define)
@@ -42,7 +42,7 @@ void transform_names(const recipe_ordinal r) {
   map<string, int>& names = Name[r];
   // store the indices 'used' so far in the map
   int& curr_idx = names[""];
-  ++curr_idx;  // avoid using index 0, benign skip in some other cases
+  curr_idx = 2;  // reserve indices 0 and 1 for the chaining slot in a later layer
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     // End transform_names(inst) Special-cases
@@ -135,12 +135,20 @@ bool is_compound_type_starting_with(const type_tree* type, const string& expecte
   return type->left->value == get(Type_ordinal, expected_name);
 }
 
-int find_element_name(const type_ordinal t, const string& name, const string& recipe_name) {
+int find_element_offset(const type_ordinal t, const string& name, const string& recipe_name) {
   const type_info& container = get(Type, t);
   for (int i = 0;  i < SIZE(container.elements);  ++i)
     if (container.elements.at(i).name == name) return i;
   raise << maybe(recipe_name) << "unknown element '" << name << "' in container '" << get(Type, t).name << "'\n" << end();
   return -1;
+}
+int find_element_location(int base_address, const string& name, const type_tree* type, const string& recipe_name) {
+  int offset = find_element_offset(get_base_type(type)->value, name, recipe_name);
+  if (offset == -1) return offset;
+  int result = base_address;
+  for (int i = 0; i < offset; ++i)
+    result += size_of(element_type(type, i));
+  return result;
 }
 
 bool is_numeric_location(const reagent& x) {
@@ -165,31 +173,35 @@ bool is_special_name(const string& s) {
   return false;
 }
 
+bool is_raw(const reagent& r) {
+  return has_property(r, "raw");
+}
+
 :(scenario transform_names_supports_containers)
 def main [
   x:point <- merge 34, 35
   y:num <- copy 3
 ]
-+name: assign x 1
++name: assign x 2
 # skip location 2 because x occupies two locations
-+name: assign y 3
++name: assign y 4
 
 :(scenario transform_names_supports_static_arrays)
 def main [
   x:@:num:3 <- create-array
   y:num <- copy 3
 ]
-+name: assign x 1
++name: assign x 2
 # skip locations 2, 3, 4 because x occupies four locations
-+name: assign y 5
++name: assign y 6
 
 :(scenario transform_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 def main [
   _, x:num <- copy 0, 1
 ]
-+name: assign x 1
--name: assign _ 1
++name: assign x 2
+-name: assign _ 2
 
 //: an escape hatch to suppress name conversion that we'll use later
 :(scenarios run)
@@ -198,7 +210,7 @@ def main [
 def main [
   x:num/raw <- copy 0
 ]
--name: assign x 1
+-name: assign x 2
 +error: can't write to location 0 in 'x:num/raw <- copy 0'
 
 :(scenarios transform)
@@ -266,7 +278,7 @@ if (inst.name == "get" || inst.name == "get-location" || inst.name == "put") {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
-      inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
+      inst.ingredients.at(1).set_value(find_element_offset(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "element " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
     }
   }
@@ -279,15 +291,13 @@ def main [
 ]
 +error: main: missing type for 'a' in 'get a, x:offset'
 
-//: this test is actually illegal so can't call run
-:(scenarios transform)
 :(scenario transform_names_handles_containers)
 def main [
-  a:point <- copy 0/unsafe
-  b:num <- copy 0/unsafe
+  a:point <- merge 0, 0
+  b:num <- copy 0
 ]
-+name: assign a 1
-+name: assign b 3
++name: assign a 2
++name: assign b 4
 
 //:: Support variant names for exclusive containers in 'maybe-convert'.
 
@@ -316,7 +326,7 @@ if (inst.name == "maybe-convert") {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
-      inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
+      inst.ingredients.at(1).set_value(find_element_offset(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "variant " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
     }
   }

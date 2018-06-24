@@ -72,7 +72,7 @@ case JUMP_IF: {
     raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' should get exactly two ingredients\n" << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
+  if (!is_mu_address(inst.ingredients.at(0)) && !is_mu_scalar(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' requires a boolean for its first ingredient, but '" << inst.ingredients.at(0).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(0).type) << "'\n" << end();
     break;
   }
@@ -90,7 +90,7 @@ case JUMP_IF: {
 :(before "End Primitive Recipe Implementations")
 case JUMP_IF: {
   assert(current_instruction().ingredients.at(1).initialized);
-  if (!ingredients.at(0).at(0)) {
+  if (!scalar_ingredient(ingredients, 0)) {
     trace(9998, "run") << "jump-if fell through" << end();
     break;
   }
@@ -109,7 +109,7 @@ def main [
 ]
 +run: jump-if {999: "literal"}, {1: "offset"}
 +run: jumping to instruction 2
--run: {1: "number"} <- copy {1: "literal"}
+-run: {123: "number"} <- copy {1: "literal"}
 -mem: storing 1 in location 123
 
 :(scenario jump_if_fallthrough)
@@ -122,6 +122,17 @@ def main [
 +run: {123: "number"} <- copy {1: "literal"}
 +mem: storing 1 in location 123
 
+:(scenario jump_if_on_address)
+def main [
+  10:num/alloc-id, 11:num <- copy 0, 999
+  jump-if 10:&:number, 1:offset
+  123:num <- copy 1
+]
++run: jump-if {10: ("address" "number")}, {1: "offset"}
++run: jumping to instruction 3
+-run: {123: "number"} <- copy {1: "literal"}
+-mem: storing 1 in location 123
+
 :(before "End Primitive Recipe Declarations")
 JUMP_UNLESS,
 :(before "End Primitive Recipe Numbers")
@@ -132,7 +143,7 @@ case JUMP_UNLESS: {
     raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' should get exactly two ingredients\n" << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
+  if (!is_mu_address(inst.ingredients.at(0)) && !is_mu_scalar(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' requires a boolean for its first ingredient, but '" << inst.ingredients.at(0).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(0).type) << "'\n" << end();
     break;
   }
@@ -150,7 +161,7 @@ case JUMP_UNLESS: {
 :(before "End Primitive Recipe Implementations")
 case JUMP_UNLESS: {
   assert(current_instruction().ingredients.at(1).initialized);
-  if (ingredients.at(0).at(0)) {
+  if (scalar_ingredient(ingredients, 0)) {
     trace(9998, "run") << "jump-unless fell through" << end();
     break;
   }

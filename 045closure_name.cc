@@ -9,14 +9,14 @@
 :(scenario closure)
 def main [
   default-space:space <- new location:type, 30
-  1:space/names:new-counter <- new-counter
-  2:num/raw <- increment-counter 1:space/names:new-counter
-  3:num/raw <- increment-counter 1:space/names:new-counter
+  2:space/names:new-counter <- new-counter
+  10:num/raw <- increment-counter 2:space/names:new-counter
+  11:num/raw <- increment-counter 2:space/names:new-counter
 ]
 def new-counter [
   default-space:space <- new location:type, 30
   x:num <- copy 23
-  y:num <- copy 3  # variable that will be incremented
+  y:num <- copy 13  # variable that will be incremented
   return default-space:space
 ]
 def increment-counter [
@@ -27,7 +27,7 @@ def increment-counter [
   return y:num/space:1
 ]
 +name: lexically surrounding space for recipe increment-counter comes from new-counter
-+mem: storing 5 in location 3
++mem: storing 15 in location 11
 
 //: To make this work, compute the recipe that provides names for the
 //: surrounding space of each recipe.
@@ -165,6 +165,6 @@ def use-scope [
 ]
 def main [
   1:space/raw <- new-scope
-  2:num/raw <- use-scope 1:space/raw
+  3:num/raw <- use-scope 1:space/raw
 ]
-+mem: storing 34 in location 2
++mem: storing 34 in location 3
