@@ -87,6 +87,7 @@ void check_type(set<reagent, name_lt>& known_types, const reagent& x, const reci
   }
   if (!types_strictly_match(known_types.find(x)->type, x.type)) {
     raise << maybe(caller.name) << "'" << x.name << "' used with multiple types\n" << end();
+    raise << "  " << to_string(known_types.find(x)->type) << " vs " << to_string(x.type) << '\n' << end();
     return;
   }
   if (is_mu_array(x)) {
