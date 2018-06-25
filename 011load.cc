@@ -65,7 +65,9 @@ int slurp_recipe(istream& in) {
     raise << "empty result.name\n" << end();
   trace(9991, "parse") << "--- defining " << result.name << end();
   if (!contains_key(Recipe_ordinal, result.name))
-    put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
+    put(Recipe_ordinal, result.name, Next_recipe_ordinal);
+  result.ordinal = get(Recipe_ordinal, result.name);
+  ++Next_recipe_ordinal;
   if (Recipe.find(get(Recipe_ordinal, result.name)) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
     if (should_check_for_redefine(result.name))

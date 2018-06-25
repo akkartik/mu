@@ -350,7 +350,7 @@ void check_immutable_ingredients(const recipe_ordinal r) {
     const reagent& current_ingredient = caller.ingredients.at(i);
     if (is_present_in_products(caller, current_ingredient.name)) continue;  // not expected to be immutable
     // End Immutable Ingredients Special-cases
-    set<reagent> immutable_vars;
+    set<reagent, name_and_space_lt> immutable_vars;
     immutable_vars.insert(current_ingredient);
     for (int i = 0;  i < SIZE(caller.steps);  ++i) {
       const instruction& inst = caller.steps.at(i);
@@ -361,7 +361,7 @@ void check_immutable_ingredients(const recipe_ordinal r) {
   }
 }
 
-void update_aliases(const instruction& inst, set<reagent>& current_ingredient_and_aliases) {
+void update_aliases(const instruction& inst, set<reagent, name_and_space_lt>& current_ingredient_and_aliases) {
   set<int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (!contains_key(Recipe, inst.operation)) {
     // primitive recipe
@@ -393,7 +393,7 @@ void update_aliases(const instruction& inst, set<reagent>& current_ingredient_an
 }
 
 set<int> scan_contained_in_product_indices(const instruction& inst, set<int>& ingredient_indices) {
-  set<reagent> selected_ingredients;
+  set<reagent, name_and_space_lt> selected_ingredients;
   const recipe& callee = get(Recipe, inst.operation);
   for (set<int>::iterator p = ingredient_indices.begin();  p != ingredient_indices.end();  ++p) {
     if (*p >= SIZE(callee.ingredients)) continue;  // optional immutable ingredient
@@ -435,6 +435,20 @@ bool is_mu_exclusive_container(const type_tree* type) {
   return info.kind == EXCLUSIVE_CONTAINER;
 }
 
+:(before "End Types")
+// reagent comparison -- only in the context of a single recipe
+struct name_and_space_lt {
+  bool operator()(const reagent& a, const reagent& b) const;
+};
+:(code)
+bool name_and_space_lt::operator()(const reagent& a, const reagent& b) const {
+  int aspace = 0, bspace = 0;
+  if (has_property(a, "space")) aspace = to_integer(property(a, "space")->value);
+  if (has_property(b, "space")) bspace = to_integer(property(b, "space")->value);
+  if (aspace != bspace) return aspace < bspace;
+  return a.name < b.name;
+}
+
 :(scenarios transform)
 :(scenario immutability_infects_contained_in_variables)
 % Hide_errors = true;
@@ -461,7 +475,7 @@ def test-next x:&:test-list -> y:&:test-list/contained-in:x [
 +error: foo: cannot modify 'p2' in instruction '*p2 <- put *p2, value:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product
 
 :(code)
-void check_immutable_ingredient_in_instruction(const instruction& inst, const set<reagent>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
+void check_immutable_ingredient_in_instruction(const instruction& inst, const set<reagent, name_and_space_lt>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
   // first check if the instruction is directly modifying something it shouldn't
   for (int i = 0;  i < SIZE(inst.products);  ++i) {
     if (has_property(inst.products.at(i), "lookup")
@@ -527,7 +541,7 @@ bool is_present_in_products(const recipe& callee, const string& ingredient_name)
   return false;
 }
 
-set<int> ingredient_indices(const instruction& inst, const set<reagent>& ingredient_names) {
+set<int> ingredient_indices(const instruction& inst, const set<reagent, name_and_space_lt>& ingredient_names) {
   set<int> result;
   for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (is_literal(inst.ingredients.at(i))) continue;

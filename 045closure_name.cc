@@ -33,9 +33,11 @@ def increment-counter [
 //: surrounding space of each recipe.
 
 :(before "End Globals")
-map<recipe_ordinal, recipe_ordinal> Surrounding_space;
+map<recipe_ordinal, recipe_ordinal> Surrounding_space;  // internal to transform; no need to snapshot
+:(before "End Reset")
+Surrounding_space.clear();
 
-:(before "Transform.push_back(transform_names)")
+:(before "Begin Type Modifying Transforms")
 Transform.push_back(collect_surrounding_spaces);  // idempotent
 
 :(code)

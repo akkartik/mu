@@ -17,6 +17,7 @@ typedef int recipe_ordinal;
 // Recipes are lists of instructions. To perform or 'run' a recipe, the
 // computer runs its instructions.
 struct recipe {
+  recipe_ordinal ordinal;
   string name;
   vector<instruction> steps;
   // End recipe Fields
@@ -261,6 +262,7 @@ void restore_non_recipe_snapshots() {
 
 :(code)
 recipe::recipe() {
+  ordinal = -1;
   // End recipe Constructor
 }
 
