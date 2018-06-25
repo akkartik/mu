@@ -168,3 +168,16 @@ def main [
   3:num/raw <- use-scope 1:space/raw
 ]
 +mem: storing 34 in location 3
+
+:(scenario recursive_transform_names)
+def foo [
+  local-scope
+  x:num <- copy 0
+  return default-space/names:foo
+]
+def main [
+  local-scope
+  0:space/names:foo <- foo
+  x:num/space:1 <- copy 34
+]
+$error: 0

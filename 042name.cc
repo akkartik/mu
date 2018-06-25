@@ -40,9 +40,12 @@ void transform_names(const recipe_ordinal r) {
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, int>& names = Name[r];
-  // store the indices 'used' so far in the map
+  // record the indices 'used' so far in the map
   int& curr_idx = names[""];
-  curr_idx = 2;  // reserve indices 0 and 1 for the chaining slot in a later layer
+  // reserve indices 0 and 1 for the chaining slot in a later layer.
+  // transform_names may get called multiple times in later layers, so
+  // curr_idx may already be set.
+  if (curr_idx < 2) curr_idx = 2;
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     // End transform_names(inst) Special-cases
