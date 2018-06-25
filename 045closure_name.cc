@@ -175,7 +175,7 @@ def main [
 def foo [
   local-scope
   x:num <- copy 0
-  return default-space/names:foo
+  return default-space:space/names:foo
 ]
 def main [
   local-scope
