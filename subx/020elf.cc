@@ -8,6 +8,7 @@ if (is_equal(argv[1], "run")) {
   load_elf(argv[2]);
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
+  raise << "executed past end of the world: " << EIP << " vs " << End_of_program << '\n' << end();
 }
 
 :(code)
