@@ -2,10 +2,13 @@
 
 :(before "End Main")
 assert(argc > 1);
-reset();
-load_elf(argv[1]);
-while (EIP < End_of_program)
-  run_one_instruction();
+if (is_equal(argv[1], "run")) {
+  assert(argc > 2);
+  reset();
+  load_elf(argv[2]);
+  while (EIP < End_of_program)
+    run_one_instruction();
+}
 
 :(code)
 void load_elf(const string& filename) {

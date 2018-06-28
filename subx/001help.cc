@@ -8,7 +8,9 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
   cerr << "Usage:\n"
        << "  subx test\n"
        << "  subx --help\n"
-       << "  subx <elf file>\n"
+       << "  subx run <elf file>\n"
+       << "Planned:\n"
+       << "  subx compile <ascii file> <elf file>\n"
        ;
   return 0;
 }
