@@ -6,7 +6,10 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
   //: this is the functionality later layers will provide
   // currently no automated tests for commandline arg parsing
   cerr << "Usage:\n"
-       << "  subx test\n";
+       << "  subx test\n"
+       << "  subx --help\n"
+       << "  subx <elf file>\n"
+       ;
   return 0;
 }
 
