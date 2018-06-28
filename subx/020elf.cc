@@ -39,11 +39,11 @@ void load_elf_contents(uint8_t* elf_contents, size_t length) {
   uint32_t p_vaddr = u32_in(&elf_contents[e_phoff + 8]);
   uint32_t p_memsz = u32_in(&elf_contents[e_phoff + 20]);
 
-  Mem.resize(p_memsz);  // TODO: not sure if this should be + p_vaddr
+  Mem.resize(p_vaddr + p_memsz);
   if (length > p_memsz - p_vaddr) length = p_memsz - p_vaddr;
   for (size_t i = 0;  i < length;  ++i)
     Mem.at(p_vaddr + i) = elf_contents[i];
-  End_of_program = p_memsz;
+  End_of_program = p_vaddr + p_memsz;
 
   // TODO: need to set up real stack somewhere
 
