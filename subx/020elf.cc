@@ -24,7 +24,7 @@ void load_elf(const string& filename) {
   free(elf_contents);
 }
 
-void load_elf_contents(uint8_t* elf_contents, size_t length) {
+void load_elf_contents(uint8_t* elf_contents, size_t size) {
   uint8_t magic[5] = {0};
   memcpy(magic, elf_contents, 4);
   if (0 != memcmp(magic, "\177ELF", 4))
@@ -40,8 +40,8 @@ void load_elf_contents(uint8_t* elf_contents, size_t length) {
   uint32_t p_memsz = u32_in(&elf_contents[e_phoff + 20]);
 
   Mem.resize(p_vaddr + p_memsz);
-  if (length > p_memsz - p_vaddr) length = p_memsz - p_vaddr;
-  for (size_t i = 0;  i < length;  ++i)
+  if (size > p_memsz - p_vaddr) size = p_memsz - p_vaddr;
+  for (size_t i = 0;  i < size;  ++i)
     Mem.at(p_vaddr + i) = elf_contents[i];
   End_of_program = p_vaddr + p_memsz;
 
