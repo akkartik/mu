@@ -35,9 +35,12 @@ phdr:                                                 ; Elf32_Phdr
 phdrsize  equ  $ - phdr
 
 _start:
-  mov     bl, 42
-  xor     eax, eax
-  inc     eax
-  int     0x80
+  mov ebx, 42
+  xor eax, eax
+  ; add eax, 0x00000001
+    db 0x81  ; op
+    db 0xc0  ; modr/m
+    dd 0x00000001  ; imm32 operand
+  int 0x80
 
 filesize      equ     $ - $$
