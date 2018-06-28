@@ -6,7 +6,7 @@ if (is_equal(argv[1], "run")) {
   assert(argc > 2);
   reset();
   load_elf(argv[2]);
-  while (EIP < End_of_program)
+  while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
 }
 
