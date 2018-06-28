@@ -8,19 +8,19 @@ if (is_equal(argv[1], "run")) {
   load_elf(argv[2]);
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
-  raise << "executed past end of the world: " << EIP << " vs " << End_of_program << '\n' << end();
+  info << "executed past end of the world: " << EIP << " vs " << End_of_program << '\n';
 }
 
 :(code)
 void load_elf(const string& filename) {
   int fd = open(filename.c_str(), O_RDONLY);
-  if (fd < 0) die("%s: open", filename.c_str());
+  if (fd < 0) raise << filename.c_str() << ": open" << perr() << '\n' << die();
   off_t size = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
   uint8_t* elf_contents = static_cast<uint8_t*>(malloc(size));
-  if (elf_contents == NULL) die("malloc(%d)", size);
+  if (elf_contents == NULL) raise << "malloc(" << size << ')' << perr() << '\n' << die();
   ssize_t read_size = read(fd, elf_contents, size);
-  if (size != read_size) die("read → %d (!= %d)", size, read_size);
+  if (size != read_size) raise << "read → " << size << " (!= " << read_size << ')' << perr() << '\n' << die();
   load_elf_contents(elf_contents, size);
   free(elf_contents);
 }
@@ -29,25 +29,25 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
   uint8_t magic[5] = {0};
   memcpy(magic, elf_contents, 4);
   if (memcmp(magic, "\177ELF", 4) != 0)
-    die("Invalid ELF file starting with \"%s\"", magic);
+    raise << "Invalid ELF file; starts with \"" << magic << '"' << die();
   if (elf_contents[4] != 1)
-    die("Only 32-bit ELF files (4-byte words; virtual addresses up to 4GB) supported.\n");
+    raise << "Only 32-bit ELF files (4-byte words; virtual addresses up to 4GB) supported.\n" << die();
   if (elf_contents[5] != 1)
-    die("Only little-endian ELF files supported.\n");
+    raise << "Only little-endian ELF files supported.\n" << die();
   // unused: remaining 10 bytes of e_ident
   uint32_t e_machine_type = u32_in(&elf_contents[16]);
   if (e_machine_type != 0x00030002)
-    die("ELF type/machine 0x%x isn't i386 executable", e_machine_type);
+    raise << "ELF type/machine 0x" << HEXWORD << e_machine_type << " isn't i386 executable\n" << die();
   // unused: e_version. We only support version 1, and later versions will be backwards compatible.
   uint32_t e_entry = u32_in(&elf_contents[24]);
   uint32_t e_phoff = u32_in(&elf_contents[28]);
   // unused: e_shoff
   // unused: e_flags
   uint32_t e_ehsize = u16_in(&elf_contents[40]);
-  if (e_ehsize < 52) die("Invalid binary; ELF header too small\n");
+  if (e_ehsize < 52) raise << "Invalid binary; ELF header too small\n" << die();
   uint32_t e_phentsize = u16_in(&elf_contents[42]);
   uint32_t e_phnum = u16_in(&elf_contents[44]);
-  cerr << e_phnum << " entries in the program header, each " << e_phentsize << " bytes long\n";
+  info << e_phnum << " entries in the program header, each " << e_phentsize << " bytes long\n";
   // unused: e_shentsize
   // unused: e_shnum
   // unused: e_shstrndx
@@ -63,25 +63,25 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
 
 void load_program_header(uint8_t* elf_contents, size_t size, uint32_t offset, uint32_t e_ehsize) {
   uint32_t p_type = u32_in(&elf_contents[offset]);
-  cerr << "program header at offset " << offset << ": type " << p_type << '\n';
+  info << "program header at offset " << offset << ": type " << p_type << '\n';
   if (p_type != 1) {
-    cerr << "ignoring segment at offset " << offset << " of non PT_LOAD type " << p_type << " (see http://refspecs.linuxbase.org/elf/elf.pdf)\n";
+    info << "ignoring segment at offset " << offset << " of non PT_LOAD type " << p_type << " (see http://refspecs.linuxbase.org/elf/elf.pdf)\n";
     return;
   }
   uint32_t p_offset = u32_in(&elf_contents[offset + 4]);
   uint32_t p_vaddr = u32_in(&elf_contents[offset + 8]);
-  if (e_ehsize > p_vaddr) die("Invalid binary; program header overlaps ELF header\n");
+  if (e_ehsize > p_vaddr) raise << "Invalid binary; program header overlaps ELF header\n" << die();
   // unused: p_paddr
   uint32_t p_filesz = u32_in(&elf_contents[offset + 16]);
   uint32_t p_memsz = u32_in(&elf_contents[offset + 20]);
   if (p_filesz != p_memsz)
-    die("Can't handle segments where p_filesz != p_memsz (see http://refspecs.linuxbase.org/elf/elf.pdf)\n");
+    raise << "Can't handle segments where p_filesz != p_memsz (see http://refspecs.linuxbase.org/elf/elf.pdf)\n" << die();
 
   if (p_offset + p_filesz > size)
-    die("Invalid binary; segment at offset %d is too large: wants to end at %d but the file ends at %d\n", offset, p_offset+p_filesz, size);
+    raise << "Invalid binary; segment at offset " << offset << " is too large: wants to end at " << p_offset+p_filesz << " but the file ends at " << size << '\n' << die();
   Mem.resize(p_vaddr + p_memsz);
   if (size > p_memsz) size = p_memsz;
-  cerr << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ")\n";
+  info << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ")\n";
   for (size_t i = 0;  i < p_filesz;  ++i)
     Mem.at(p_vaddr + i) = elf_contents[p_offset + i];
   if (End_of_program < p_vaddr+p_memsz)
@@ -96,16 +96,21 @@ inline uint16_t u16_in(uint8_t* p) {
   return p[0] | p[1] << 8;
 }
 
-void die(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  vfprintf(stderr, format, args);
+:(before "End Types")
+struct perr {};
+:(code)
+ostream& operator<<(ostream& os, unused perr) {
   if (errno)
-    perror("‌");
-  else
-    fprintf(stderr, "\n");
-  va_end(args);
-  abort();
+    os << ": " << std::strerror(errno);
+  return os;
+}
+
+:(before "End Types")
+struct die {};
+:(code)
+ostream& operator<<(unused ostream& os, unused die) {
+  if (Trace_stream) Trace_stream->newline();
+  exit(1);
 }
 
 :(before "End Includes")
@@ -115,3 +120,6 @@ void die(const char* format, ...) {
 #include <unistd.h>
 #include <stdarg.h>
 #include <errno.h>
+
+#define info cerr
+// #define info dbg
