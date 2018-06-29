@@ -101,7 +101,7 @@ struct perr {};
 :(code)
 ostream& operator<<(ostream& os, unused perr) {
   if (errno)
-    os << ": " << std::strerror(errno);
+    os << ": " << strerror(errno);
   return os;
 }
 
