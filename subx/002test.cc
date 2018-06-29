@@ -54,7 +54,7 @@ if (Run_tests) {
   time_t t;  time(&t);
   cerr << "C tests: " << ctime(&t);
   for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
-//?     cerr << "running .build/test_list line " << (i+1) << '\n';
+//?     cerr << "running " << Test_names[i] << '\n';
     run_test(i);
     if (Passed) cerr << '.';
     else ++num_failures;
@@ -80,6 +80,24 @@ void run_test(size_t i) {
   // End Test Setup
   (*Tests[i])();
   // End Test Teardown
+}
+
+//: Convenience: run a single test
+:(before "Globals")
+// Names for each element of the 'Tests' global, respectively.
+const string Test_names[] = {
+  #include "test_name_list"  // auto-generated; see 'build*' scripts
+};
+:(after "Test Runs")
+string maybe_single_test_to_run = argv[argc-1];
+if (!starts_with(maybe_single_test_to_run, "test_"))
+  maybe_single_test_to_run.insert(0, "test_");
+for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
+  if (Test_names[i] == maybe_single_test_to_run) {
+    run_test(i);
+    if (Passed) cerr << ".\n";
+    return 0;
+  }
 }
 
 :(before "End Includes")
