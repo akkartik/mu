@@ -152,8 +152,10 @@ void run_one_instruction() {
 }
 
 void load_program(const string& text_bytes) {
-  uint32_t addr = 1;
   istringstream in(text_bytes);
+  load_program(in, 1);
+}
+void load_program(istream& in, uint32_t addr) {
   in >> std::noskipws;
   while (has_data(in)) {
     char c1 = next_hex_byte(in);
