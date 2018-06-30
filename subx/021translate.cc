@@ -73,13 +73,14 @@ void dump_elf_header(ostream& out) {
   uint32_t p_type = 0x1;
   emit(p_type);
   // p_offset
-  emit(dummy32);
+  uint32_t p_offset = 0;
+  emit(p_offset);
   // p_vaddr
   emit(START);
   // p_paddr
   emit(START);
   // p_filesz
-  uint32_t size = (End_of_program-1) + /*size of ehdr*/52 + /*size of phdr*/32;
+  uint32_t size = (End_of_program-/*we're not using location 0*/1) + /*size of ehdr*/52 + /*size of phdr*/32;
   emit(size);
   // p_memsz
   emit(size);
