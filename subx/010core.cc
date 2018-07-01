@@ -172,6 +172,7 @@ void load_program(istream& in, uint32_t addr) {
     Mem.at(addr) = to_byte(c1, c2);
     trace(99, "load") << addr << " -> " << HEXBYTE << NUM(Mem.at(addr)) << end();
     addr++;
+    if (addr >= Mem.size()) Mem.resize(Mem.size()*2);
   }
   End_of_program = addr;
 }
