@@ -100,6 +100,7 @@ End_of_program = 0;
 // of its bytes, and run it
 void run(string text_bytes) {
   // Begin run() For Scenarios
+  cerr << text_bytes << '\n';
   load_program(text_bytes, 1);  // tests always assume a starting address of 1
   EIP = 1;  // preserve null pointer
   while (EIP < End_of_program)
