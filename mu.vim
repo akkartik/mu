@@ -28,7 +28,7 @@ syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientC
 syntax match muComment /;.*$/ | highlight link muComment Comment
 syntax match muSalientComment /;;.*$/ | highlight link muSalientComment SalientComment
 set comments+=n:#
-syntax match CommentedCode "#? .*"
+syntax match muCommentedCode "#? .*" | highlight link muCommentedCode CommentedCode
 let b:cmt_head = "#? "
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
