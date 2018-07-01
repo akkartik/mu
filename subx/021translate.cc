@@ -1,18 +1,45 @@
+//: Beginnings of a nicer way to build SubX programs.
+//: We're going to question every notion, including "Assembly language" and
+//: "compiler".
+//: Motto: Abstract nothing, check everything.
+//:
+//: Workflow: read 'source' file as a single string. Run a series of
+//: transforms on it, each converting to a new string. The final string should
+//: be just machine code and comments, suitable to pass to load_program().
+
+:(before "End Types")
+typedef void (*transform_fn)(const string& input, string& output);
+:(before "End Globals")
+vector<transform_fn> Transform;
+
 :(before "End Includes")
 const int START = 0x08048000;
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {
   assert(argc > 3);
-  ifstream in(argv[2]);
-  Mem.resize(1024);
-  load_program(in, 1);  // since we're not going to run it right now, we can load it anywhere
-  dump_elf(argv[3]);
+  string program;
+  slurp(argv[2], program);
+  perform_all_transforms(program);
+  dump_elf(program, argv[3]);
 }
 
 :(code)
+void perform_all_transforms(string& program) {
+  string& in = program;
+  string out;
+  for (int t = 0;  t < SIZE(Transform);  ++t, in.swap(out), out.clear())
+    (*Transform.at(t))(in, out);
+}
+
 // write out the current Memory contents from address 1 to End_of_program to a
 // bare-bones ELF file with a single section/segment and a hard-coded origin address.
-void dump_elf(const char* filename) {
+void dump_elf(const string& program, const char* filename) {
+  Mem.resize(1024);
+  // load program into memory, filtering out comments
+  load_program(program, 1);  // Not where 'program' should be loaded for running.
+                             // But we're not going to run it right now, so we
+                             // can load it anywhere.
+  // dump contents of memory into ELF binary
   ofstream out(filename, ios::binary);
   dump_elf_header(out);
   for (size_t i = 1;  i < End_of_program;  ++i) {
@@ -91,6 +118,18 @@ void dump_elf_header(ostream& out) {
   uint32_t p_align = 0x1000;
   emit(p_align);
 #undef O
+}
+
+void slurp(const char* filename, string& out) {
+  ifstream fin(filename);
+  fin >> std::noskipws;
+  ostringstream fout;
+  char c = '\0';
+  while(has_data(fin)) {
+    fin >> c;
+    fout << c;
+  }
+  fout.str().swap(out);
 }
 
 :(before "End Includes")

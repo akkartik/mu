@@ -99,7 +99,7 @@ End_of_program = 0;
 // helper for tests: load a program into memory from a textual representation
 // of its bytes, and run it
 void run(const string& text_bytes) {
-  load_program(text_bytes);
+  load_program(text_bytes, 1);  // tests always assume a starting address of 1
   EIP = 1;  // preserve null pointer
   while (EIP < End_of_program)
     run_one_instruction();
@@ -151,9 +151,9 @@ void run_one_instruction() {
   }
 }
 
-void load_program(const string& text_bytes) {
+void load_program(const string& text_bytes, uint32_t addr) {
   istringstream in(text_bytes);
-  load_program(in, 1);
+  load_program(in, addr);
 }
 void load_program(istream& in, uint32_t addr) {
   in >> std::noskipws;
