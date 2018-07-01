@@ -41,7 +41,7 @@ void dump_elf_header(ostream& out) {
   // e_version
   O(0x01); O(0x00); O(0x00); O(0x00);
   // e_entry
-  int e_entry = START + /*size of ehdr*/52 + /*size of phdr*/32;
+  int e_entry = START;
   emit(e_entry);
   // e_phoff -- immediately after ELF header
   int e_phoff = 52;
@@ -73,14 +73,14 @@ void dump_elf_header(ostream& out) {
   uint32_t p_type = 0x1;
   emit(p_type);
   // p_offset
-  uint32_t p_offset = 0;
+  uint32_t p_offset = /*size of ehdr*/52 + /*size of phdr*/32;
   emit(p_offset);
   // p_vaddr
   emit(START);
   // p_paddr
   emit(START);
   // p_filesz
-  uint32_t size = (End_of_program-/*we're not using location 0*/1) + /*size of ehdr*/52 + /*size of phdr*/32;
+  uint32_t size = End_of_program - /*we're not using location 0*/1;
   emit(size);
   // p_memsz
   emit(size);
