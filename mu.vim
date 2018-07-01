@@ -23,15 +23,15 @@ setlocal iskeyword=@,48-57,?,!,_,$,-
 setlocal formatoptions-=t  " Mu programs have long lines
 setlocal formatoptions+=c  " but comments should still wrap
 
-syntax match muComment /#.*$/ | highlight link muComment Comment
-syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
-syntax match muComment /;.*$/ | highlight link muComment Comment
-syntax match muSalientComment /;;.*$/ | highlight link muSalientComment SalientComment
+syntax match muComment /#.*$/  | highlight link muComment Comment
+syntax match muSalientComment /##.*$/  | highlight link muSalientComment SalientComment
+syntax match muComment /;.*$/  | highlight link muComment Comment
+syntax match muSalientComment /;;.*$/  | highlight link muSalientComment SalientComment
 set comments+=n:#
-syntax match muCommentedCode "#? .*" | highlight link muCommentedCode CommentedCode
+syntax match muCommentedCode "#? .*"  | highlight link muCommentedCode CommentedCode
 let b:cmt_head = "#? "
 
-syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
+syntax match muDelimiter "[{}]"  | highlight link muDelimiter Delimiter
 
 " Mu strings are inside [ ... ] and can span multiple lines
 " don't match '[' at end of line, that's usually code
@@ -62,7 +62,7 @@ highlight link muLiteral Constant
 syntax match muAssign "<-"
 syntax match muAssign "\<raw\>"
 highlight link muAssign SpecialChar
-syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
+syntax match muGlobal %[^ ]\+:global/\?[^ ,]*%  | highlight link muGlobal SpecialChar
 
 " common keywords
 " use regular expressions for common words that may come after '/'
@@ -89,8 +89,8 @@ syntax match muRecipe "^recipe\>\|^def\>\|^before\>\|^after\>\| -> "
 syntax keyword muRecipe recipe! def! function fn
 highlight muRecipe ctermfg=208
 
-syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
-syntax keyword muPendingScenario pending-scenario | highlight link muPendingScenario SpecialChar
+syntax match muScenario "^scenario\>"  | highlight muScenario ctermfg=34
+syntax keyword muPendingScenario pending-scenario  | highlight link muPendingScenario SpecialChar
 syntax match muData "^type\>\|^container\>"
 syntax keyword muData exclusive-container
 highlight muData ctermfg=226
