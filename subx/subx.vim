@@ -17,6 +17,7 @@ setlocal formatoptions+=c  " but comments should still wrap
 
 syntax match subxComment /#.*$/  | highlight link subxComment Comment
 syntax match subxSalientComment /##.*$/  | highlight link subxSalientComment SalientComment
+set comments-=:#
 set comments+=n:#
 syntax match subxCommentedCode "#? .*"  | highlight link subxCommentedCode CommentedCode
 let b:cmt_head = "#? "
