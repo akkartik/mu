@@ -132,5 +132,8 @@ void slurp(const char* filename, string& out) {
   fout.str().swap(out);
 }
 
+:(after "Begin run() For Scenarios")
+perform_all_transforms(text_bytes);
+
 :(before "End Includes")
 using std::ios;

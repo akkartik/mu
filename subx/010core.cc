@@ -98,7 +98,8 @@ End_of_program = 0;
 :(code)
 // helper for tests: load a program into memory from a textual representation
 // of its bytes, and run it
-void run(const string& text_bytes) {
+void run(string text_bytes) {
+  // Begin run() For Scenarios
   load_program(text_bytes, 1);  // tests always assume a starting address of 1
   EIP = 1;  // preserve null pointer
   while (EIP < End_of_program)
