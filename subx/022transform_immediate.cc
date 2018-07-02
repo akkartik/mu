@@ -1,3 +1,7 @@
+//: Having to manually translate numbers into hex and enter them in
+//: little-endian order is tedious and error-prone. Let's automate the
+//: translation.
+
 :(scenario translate_immediate_constants)
 # opcode        ModR/M                    SIB                   displacement    immediate
 # instruction   mod, reg, Reg/Mem bits    scale, index, base
