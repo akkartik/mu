@@ -5,6 +5,7 @@ assert(argc > 1);
 if (is_equal(argv[1], "run")) {
   assert(argc > 2);
   reset();
+  cerr << std::hex;
   load_elf(argv[2]);
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
