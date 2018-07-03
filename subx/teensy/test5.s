@@ -36,11 +36,7 @@ phdrsize  equ  $ - phdr
 
 _start:
   mov ebx, 42
-  xor eax, eax
-  ; add eax, 0x00000001
-    db 0x81  ; op
-    db 0xc0  ; modr/m
-    dd 0x00000001  ; imm32 operand
+  mov eax, 1
   int 0x80
 
 filesize      equ     $ - $$
