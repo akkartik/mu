@@ -54,7 +54,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
   // unused: e_shstrndx
 
   for (size_t i = 0;  i < e_phnum;  ++i)
-    load_program_header(elf_contents, size, e_phoff + i*e_phentsize, e_ehsize);
+    load_segment_from_program_header(elf_contents, size, e_phoff + i*e_phentsize, e_ehsize);
 
   // TODO: need to set up real stack somewhere
 
@@ -62,7 +62,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
   EIP = e_entry;
 }
 
-void load_program_header(uint8_t* elf_contents, size_t size, uint32_t offset, uint32_t e_ehsize) {
+void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32_t offset, uint32_t e_ehsize) {
   uint32_t p_type = u32_in(&elf_contents[offset]);
   info << "program header at offset " << offset << ": type " << p_type << '\n';
   if (p_type != 1) {
@@ -80,7 +80,8 @@ void load_program_header(uint8_t* elf_contents, size_t size, uint32_t offset, ui
 
   if (p_offset + p_filesz > size)
     raise << "Invalid binary; segment at offset " << offset << " is too large: wants to end at " << p_offset+p_filesz << " but the file ends at " << size << '\n' << die();
-  Mem.resize(p_vaddr + p_memsz);
+  if (Mem.size() < p_vaddr + p_memsz)
+    Mem.resize(p_vaddr + p_memsz);
   if (size > p_memsz) size = p_memsz;
   info << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ")\n";
   for (size_t i = 0;  i < p_filesz;  ++i)

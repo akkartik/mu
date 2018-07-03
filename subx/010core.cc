@@ -111,6 +111,7 @@ void run(string text_bytes) {
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   trace(2, "run") << "inst: 0x" << HEXWORD << EIP << end();
+//?   cerr << "inst: 0x" << EIP << '\n';
   switch (op = next()) {
   case 0xf4:  // hlt
     EIP = End_of_program;

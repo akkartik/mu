@@ -112,7 +112,7 @@ void dump_elf_header(ostream& out) {
   // p_memsz
   emit(size);
   // p_flags
-  uint32_t p_flags = 0x5;
+  uint32_t p_flags = 0x5;  // r-x
   emit(p_flags);
   // p_align
   uint32_t p_align = 0x1000;
