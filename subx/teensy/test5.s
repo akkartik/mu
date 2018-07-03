@@ -11,7 +11,7 @@ ehdr:                                                 ; Elf32_Ehdr
               dw      2                               ;   e_type
               dw      3                               ;   e_machine
               dd      1                               ;   e_version
-              dd      $$                              ;   e_entry
+              dd      _start                          ;   e_entry
               dd      phdr - $$                       ;   e_phoff
               dd      0                               ;   e_shoff
               dd      0                               ;   e_flags
@@ -25,11 +25,11 @@ ehdrsize  equ  $ - ehdr
 
 phdr:                                                 ; Elf32_Phdr
               dd      1                               ;   p_type
-              dd      _start - $$                     ;   p_offset
+              dd      0                               ;   p_offset
               dd      $$                              ;   p_vaddr
               dd      $$                              ;   p_paddr
-              dd      codesize                        ;   p_filesz
-              dd      codesize                        ;   p_memsz
+              dd      filesize                        ;   p_filesz
+              dd      filesize                        ;   p_memsz
               dd      5                               ;   p_flags
               dd      0x1000                          ;   p_align
 phdrsize  equ  $ - phdr
@@ -43,4 +43,4 @@ _start:
     dd 0x00000001  ; imm32 operand
   int 0x80
 
-codesize      equ     $ - _start
+filesize      equ     $ - $$
