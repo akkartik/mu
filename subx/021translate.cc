@@ -2,101 +2,15 @@
 //: We're going to question every notion, including "Assembly language" and
 //: "compiler".
 //: Motto: Abstract nothing, check everything.
-
-//: Workflow: read 'source' file into memory. Run a series of transforms on
-//: it, each of which modifies some parts of it and leaves untouched what it
-//: doesn't understand. Write the final state to an ELF binary.
-:(before "End Main")
-if (is_equal(argv[1], "translate")) {
-  assert(argc > 3);
-  program p;
-  parse(argv[2], p);
-  transform(p);
-  dump_elf(p, argv[3]);
-}
-
-//: The data structure we'll use to manage state between transforms, and the
-//: file format that will reify it.
-:(before "End Types")
-struct program {
-  vector<recipe> recipes;
-  vector<global> globals;
-  program() { clear(); }
-  void clear() { recipes.clear();  globals.clear(); }
-};
-//: recipes start with a line of the format:
-//:   -- <recipe_name> : <words> <of> <metadata>
-struct recipe {
-  string name;
-  vector<string> metadata;
-  vector<instruction> instructions;
-};
-//: instructions are lines of the format:
-//:   <word1> <word2> <word3> ... : <metadata_word1> <metadata_word2> ...
-struct instruction {
-  vector<string> words;
-  vector<string> metadata;
-};
-//: comment characters are '#'; everything after them is discarded
-//: everything after ':' is metadata until a comment or end-of-line
-
-struct global {
-  //: todo: how to represent global variables?
-  //: idea: can only contain scalars, usually for tracking state of different
-  //: memory allocators.
-};
-
-//:: parse
-
-:(code)
-void parse(const char* filename, program& out) {
-  ifstream fin(filename);
-  while (has_data(fin)) {
-    string line_data;
-    getline(fin, line_data);
-    istringstream line(line_data);
-    while (has_data(line)) {
-      string word;
-      line >> word;
-      if (word == "--") {
-        program.recipes.
-    }
-  }
-}
-
-string next_word(istream& in) {
-  skip_whitespace_and_comments(in);
-  string result;
-  in >> result;
-  return result;
-}
-
-void skip_whitespace_and_comments(istream& in) {
-  while (true) {
-    char c = in.peek();
-    if (isspace(c)) { in.get();  continue; }
-    else if (c == '#') skip_comment(in);
-    else return;
-  }
-}
-
-void skip_comment(istream& in) {
-  assert(in.peek() == '#');
-  char c = '\0';
-  do {
-    in >> c;
-  } while (c != '\n');
-}
-
-
-//:: transform
+//:
+//: Workflow: read 'source' file as a single string. Run a series of
+//: transforms on it, each converting to a new string. The final string should
+//: be just machine code and comments, suitable to pass to load_program().
 
 :(before "End Types")
 typedef void (*transform_fn)(const string& input, string& output);
 :(before "End Globals")
 vector<transform_fn> Transform;
-
-//:: dump_elf
 
 :(before "End Includes")
 const int START = 0x08048000;
