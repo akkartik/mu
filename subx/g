@@ -3,12 +3,17 @@
 
 if [ $# -eq 0 ]
 then
-  echo "g <git command> <args> <suffix>"
+  echo "g <git command> <args> <target>"
   exit 1
 fi
 
 arg=( $* )
-suffix=$arg[${#arg[@]}]
+target=$arg[${#arg[@]}]
 unset "arg[${#arg[@]}]"
 
-git ${arg[@]} ./teensy/test$suffix*.[cs]
+if [[ $target == 'test'* ]]
+then
+  git ${arg[@]} ./teensy/$target*.[cs]
+else
+  git ${arg[@]} ./$target*.subx
+fi

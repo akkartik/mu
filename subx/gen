@@ -1,43 +1,49 @@
 #!/usr/bin/env zsh
 # Build a specific example.
 
-if [ $1 -eq 1 ]
+if [[ $1 == 'ex'* ]]
+then
+  CFLAGS=-g subx translate $1.subx `echo $1 |sed 's/\..*//'`
+  exit $?
+fi
+
+if [ $1 = test1 ]
 then
   gcc -Wall -s teensy/test1.c -o teensy/test1
   exit $?
 fi
 
-if [ $1 -eq 2 ]
+if [ $1 = test2 ]
 then
   nasm -f elf teensy/test2.s  &&  gcc -Wall -s teensy/test2.o -o teensy/test2
   exit $?
 fi
 
-if [ $1 -eq 3 ]
+if [ $1 = test3 ]
 then
   nasm -f elf teensy/test3.s  &&  gcc -Wall -s -nostartfiles teensy/test3.o -o teensy/test3
   exit $?
 fi
 
-if [ $1 -eq 4 ]
+if [ $1 = test4 ]
 then
   nasm -f elf teensy/test4.s  &&  gcc -Wall -s -nostdlib teensy/test4.o -o teensy/test4
   exit $?
 fi
 
-if [ $1 -eq 5 ]
+if [ $1 = test5 ]
 then
   nasm -f bin teensy/test5.s -o teensy/test5  &&  chmod +x teensy/test5
   exit $?
 fi
 
-if [ $1 -eq 6 ]
+if [ $1 = test6 ]
 then
   nasm -f elf teensy/test6-global.s  &&  gcc -Wall -s teensy/test6-global.o -o teensy/test6
   exit $?
 fi
 
-if [ $1 -eq 7 ]
+if [ $1 = test7 ]
 then
   nasm -f bin teensy/test7-global.s -o teensy/test7  &&  chmod +x teensy/test7
   exit $?
