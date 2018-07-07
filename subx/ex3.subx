@@ -1,0 +1,23 @@
+## add the first 10 numbers
+
+# opcode        ModR/M                    SIB                   displacement    immediate
+# instruction   mod, reg, Reg/Mem bits    scale, index, base
+# 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
+  # result: EBX
+# 0: e_entry = 0x08048054
+  bb                                                                            0/imm32       # copy 0 to EBX
+  # counter: ECX
+  b9                                                                            1/imm32       # copy 1 to ECX
+
+# 10: loop: 0x0804805e
+  81            f9                                                              10/imm32      # compare ECX, 10/imm
+  7f                                                            0a                            # jump-if-greater exit (+10)
+  01            cb                                                                            # add ECX to EBX
+  81            c1                                                              1/imm32       # add 1 to ECX
+  eb                                                            ee                            # jump loop (-18; -00010010; 11101110)
+
+# 28: exit: 0x08048070
+  b8                                                                            1/imm32       # copy 1 to EAX
+  cd                                                                            128/imm8      # int 80h
+
+# vim:ft=subx:nowrap
