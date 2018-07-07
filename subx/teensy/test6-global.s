@@ -9,5 +9,5 @@ foo: dd 42
 SECTION .text
 GLOBAL main
 main:
-  mov eax, foo
+  mov eax, [foo]
   ret
