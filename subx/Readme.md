@@ -2,7 +2,7 @@
 
 Bytecode interpreter for a subset of the 32-bit x86 ISA.
 
-* Only instructions that operate on the 32-bit E*X registers. (No
+* Only instructions that operate on the 32-bit E\*X registers. (No
   floating-point yet.)
 * Only instructions that assume a flat address space; no instructions that use
   segment registers.
