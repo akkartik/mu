@@ -25,11 +25,14 @@ ehdrsize  equ  $ - ehdr
 
 phdr:                                                 ; Elf32_Phdr
               dd      1                               ;   p_type
-              dd      0                               ;   p_offset
-              dd      $$                              ;   p_vaddr
-              dd      $$                              ;   p_paddr
-              dd      filesize                        ;   p_filesz
-              dd      filesize                        ;   p_memsz
+              # don't copy ehdr or phdr into the first segment.
+              dd      0x54                            ;   p_offset
+              # but you can't save on bytes for them, because p_align.
+              # messing with the ORG won't help you here.
+              dd      0x08048054                      ;   p_vaddr
+              dd      0x08048054                      ;   p_paddr
+              dd      codesize                        ;   p_filesz
+              dd      codesize                        ;   p_memsz
               dd      5                               ;   p_flags
               dd      0x1000                          ;   p_align
 phdrsize  equ  $ - phdr
@@ -39,4 +42,4 @@ _start:
   mov eax, 1
   int 0x80
 
-filesize      equ     $ - $$
+codesize      equ     $ - _start
