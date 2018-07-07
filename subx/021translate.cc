@@ -103,10 +103,9 @@ void dump_elf_header(ostream& out) {
   uint32_t p_offset = /*size of ehdr*/52 + /*size of phdr*/32;
   emit(p_offset);
   // p_vaddr
-  uint32_t addr = START+p_offset;
-  emit(addr);
+  emit(e_entry);
   // p_paddr
-  emit(addr);
+  emit(e_entry);
   // p_filesz
   uint32_t size = End_of_program - /*we're not using location 0*/1;
   emit(size);
