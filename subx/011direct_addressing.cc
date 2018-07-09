@@ -42,7 +42,7 @@ int32_t* effective_address(uint8_t modrm) {
   //: other mods are indirect, and they'll set addr appropriately
   assert(addr > 0);
   assert(addr + sizeof(int32_t) <= Mem.size());
-  return reinterpret_cast<int32_t*>(&Mem.at(addr));  // rely on the host itself being in little-endian order
+  return mem_addr_i32(addr);
 }
 
 //:: subtract
@@ -284,14 +284,14 @@ void push(uint32_t val) {
   Reg[ESP].u -= 4;
   trace(2, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
   trace(2, "run") << "pushing value 0x" << HEXWORD << val << end();
-  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = val;
+  write_mem_u32(Reg[ESP].u, val);
 }
 
 //:: pop
 
 :(scenario pop_r32)
 % Reg[ESP].u = 0x60;
-% SET_WORD_IN_MEM(0x60, 0x0000000a);
+% write_mem_i32(0x60, 0x0000000a);
 # op  ModR/M  SIB   displacement  immediate
   5b                                          # pop stack to EBX
 +run: pop into EBX
@@ -314,7 +314,7 @@ case 0x5f: {  // pop stack into r32
 }
 :(code)
 uint32_t pop() {
-  uint32_t result = *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u));
+  uint32_t result = read_mem_u32(Reg[ESP].u);
   trace(2, "run") << "popping value 0x" << HEXWORD << result << end();
   Reg[ESP].u += 4;
   trace(2, "run") << "incrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();

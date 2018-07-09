@@ -14,11 +14,10 @@ case 0xcd: {  // int imm8 (software interrupt)
 void process_int80() {
   switch (Reg[EAX].u) {
   case 1:
-    cerr << "result: " << NUM(Mem.at(0x08048000)) << '\n';
     exit(Reg[EBX].u);
     break;
   case 3:
-    read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/&Mem.at(Reg[ECX].u), /*size*/Reg[EDX].u);
+    read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     break;
   }
 }

@@ -34,7 +34,7 @@ case 0x81: {  // combine imm32 with r/m32
 
 :(scenario add_imm32_to_mem_at_r32)
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 1);
+% write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   81  03                          0a 0b 0c 0d  # add 0x0d0c0b0a to *EBX
 # ModR/M in binary: 00 (indirect mode) 000 (add imm32) 011 (dest EBX)
@@ -64,7 +64,7 @@ case 0x2d: {  // subtract imm32 from EAX
 
 :(scenario subtract_imm32_from_mem_at_r32)
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 10);
+% write_mem_i32(0x60, 10);
 # op  ModR/M  SIB   displacement  immediate
   81  2b                          01 00 00 00  # subtract 1 from *EBX
 # ModR/M in binary: 00 (indirect mode) 101 (subtract imm32) 011 (dest EBX)
@@ -113,7 +113,7 @@ case 0x25: {  // and imm32 with EAX
 
 :(scenario and_imm32_with_mem_at_r32)
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 0x000000ff);
+% write_mem_i32(0x60, 0x000000ff);
 # op  ModR/M  SIB   displacement  immediate
   81  23                          0a 0b 0c 0d  # and 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 100 (and imm32) 011 (dest EBX)
@@ -162,7 +162,7 @@ case 0x0d: {  // or imm32 with EAX
 
 :(scenario or_imm32_with_mem_at_r32)
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 0xd0c0b0a0);
+% write_mem_i32(0x60, 0xd0c0b0a0);
 # op  ModR/M  SIB   displacement  immediate
   81  0b                          0a 0b 0c 0d  # or 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 001 (or imm32) 011 (dest EBX)
@@ -209,7 +209,7 @@ case 0x35: {  // xor imm32 with EAX
 
 :(scenario xor_imm32_with_mem_at_r32)
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 0xd0c0b0a0);
+% write_mem_i32(0x60, 0xd0c0b0a0);
 # op  ModR/M  SIB   displacement  immediate
   81  33                          0a 0b 0c 0d  # xor 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 110 (xor imm32) 011 (dest EBX)
@@ -315,7 +315,7 @@ case 7: {
 
 :(scenario compare_imm32_with_mem_at_r32_greater)
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 0x0d0c0b0a);
+% write_mem_i32(0x60, 0x0d0c0b0a);
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          07 0b 0c 0d  # compare 0x0d0c0b07 with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
@@ -325,7 +325,7 @@ case 7: {
 
 :(scenario compare_imm32_with_mem_at_r32_lesser)
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 0x0d0c0b07);
+% write_mem_i32(0x60, 0x0d0c0b07);
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
@@ -336,7 +336,7 @@ case 7: {
 :(scenario compare_imm32_with_mem_at_r32_equal)
 % Reg[3].i = 0x0d0c0b0a;
 % Reg[3].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 0x0d0c0b0a);
+% write_mem_i32(0x60, 0x0d0c0b0a);
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
@@ -402,8 +402,8 @@ case 0x68: {
   int32_t val = imm32();
   trace(2, "run") << "push imm32 0x" << HEXWORD << val << end();
   Reg[ESP].u -= 4;
-  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = val;
+  write_mem_i32(Reg[ESP].u, val);
   trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
-  trace(2, "run") << "contents at ESP: 0x" << HEXWORD << *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) << end();
+  trace(2, "run") << "contents at ESP: 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << end();
   break;
 }

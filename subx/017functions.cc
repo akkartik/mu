@@ -47,7 +47,7 @@ case 2: {  // call function pointer at r/m32
 :(scenario call_mem_at_r32)
 % Reg[ESP].u = 0x64;
 % Reg[EBX].u = 0x10;
-% SET_WORD_IN_MEM(0x10, 0x000000a0);
+% write_mem_i32(0x10, 0x000000a0);
 # op  ModR/M  SIB   displacement  immediate
   ff  13                                       # call function offset at *EBX
   # next EIP is 3
@@ -61,7 +61,7 @@ case 2: {  // call function pointer at r/m32
 
 :(scenario ret)
 % Reg[ESP].u = 0x60;
-% SET_WORD_IN_MEM(0x60, 0x00000010);
+% write_mem_i32(0x60, 0x00000010);
 # op  ModR/M  SIB   displacement  immediate
   c3
 +run: return

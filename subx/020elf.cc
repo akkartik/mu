@@ -85,7 +85,7 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
   if (size > p_memsz) size = p_memsz;
   info << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ")\n";
   for (size_t i = 0;  i < p_filesz;  ++i)
-    Mem.at(p_vaddr + i) = elf_contents[p_offset + i];
+    write_mem_u8(p_vaddr+i, elf_contents[p_offset+i]);
   if (End_of_program < p_vaddr+p_memsz)
     End_of_program = p_vaddr+p_memsz;
 }

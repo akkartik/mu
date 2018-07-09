@@ -3,7 +3,7 @@
 :(scenario add_r32_to_mem_at_r32_with_sib)
 % Reg[3].i = 0x10;
 % Reg[0].i = 0x60;
-% SET_WORD_IN_MEM(0x60, 1);
+% write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      20                             # add EBX to *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
@@ -48,7 +48,7 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 % Reg[3].i = 0x10;  // source
 % Reg[0].i = 0x5e;  // dest base
 % Reg[1].i = 0x2;  // dest index
-% SET_WORD_IN_MEM(0x60, 1);
+% write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      08                             # add EBX to *(EAX+ECX)
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
@@ -60,7 +60,7 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 
 :(scenario add_r32_to_mem_at_displacement_using_sib)
 % Reg[3].i = 0x10;  // source
-% SET_WORD_IN_MEM(0x60, 1);
+% write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      25    60 00 00 00              # add EBX to *0x60
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
@@ -76,7 +76,7 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 % Reg[3].i = 0x10;  // source
 % Reg[0].i = 0x59;  // dest base
 % Reg[1].i = 0x5;  // dest index
-% SET_WORD_IN_MEM(0x60, 1);
+% write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  5c      08    02                       # add EBX to *(EAX+ECX+2)
 # ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 100 (dest in SIB)
@@ -98,7 +98,7 @@ case 4:  // exception: mod 0b01 rm 0b100 => incoming SIB (scale-index-base) byte
 % Reg[3].i = 0x10;  // source
 % Reg[0].i = 0x59;  // dest base
 % Reg[1].i = 0x5;  // dest index
-% SET_WORD_IN_MEM(0x60, 1);
+% write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  9c      08    02 00 00 00              # add EBX to *(EAX+ECX+2)
 # ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 100 (dest in SIB)

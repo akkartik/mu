@@ -43,7 +43,7 @@ void dump_elf(const string& program, const char* filename) {
   ofstream out(filename, ios::binary);
   dump_elf_header(out);
   for (size_t i = 1;  i < End_of_program;  ++i) {
-    char c = Mem.at(i);
+    char c = read_mem_u8(i);
     out.write(&c, sizeof(c));
   }
   out.close();

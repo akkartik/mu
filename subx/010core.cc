@@ -70,10 +70,47 @@ uint32_t End_of_program = 0;
 Mem.clear();
 Mem.resize(1024);
 End_of_program = 0;
-:(before "End Includes")
-// depends on Mem being laid out contiguously (so you can't use a map, etc.)
-// and on the host also being little-endian
-#define SET_WORD_IN_MEM(addr, val)  *reinterpret_cast<int32_t*>(&Mem.at(addr)) = val;
+:(code)
+// These helpers depend on Mem being laid out contiguously (so you can't use a
+// map, etc.) and on the host also being little-endian.
+inline uint8_t read_mem_u8(uint32_t addr) {
+  return Mem.at(addr);
+}
+inline int8_t read_mem_i8(uint32_t addr) {
+  return static_cast<int8_t>(Mem.at(addr));
+}
+inline uint32_t read_mem_u32(uint32_t addr) {
+  return *reinterpret_cast<uint32_t*>(&Mem.at(addr));
+}
+inline int32_t read_mem_i32(uint32_t addr) {
+  return *reinterpret_cast<int32_t*>(&Mem.at(addr));
+}
+
+inline uint8_t* mem_addr_u8(uint32_t addr) {
+  return &Mem.at(addr);
+}
+inline int8_t* mem_addr_i8(uint32_t addr) {
+  return reinterpret_cast<int8_t*>(&Mem.at(addr));
+}
+inline uint32_t* mem_addr_u32(uint32_t addr) {
+  return reinterpret_cast<uint32_t*>(&Mem.at(addr));
+}
+inline int32_t* mem_addr_i32(uint32_t addr) {
+  return reinterpret_cast<int32_t*>(&Mem.at(addr));
+}
+
+inline void write_mem_u8(uint32_t addr, uint8_t val) {
+  Mem.at(addr) = val;
+}
+inline void write_mem_i8(uint32_t addr, int8_t val) {
+  Mem.at(addr) = static_cast<uint8_t>(val);
+}
+inline void write_mem_u32(uint32_t addr, uint32_t val) {
+  *reinterpret_cast<uint32_t*>(&Mem.at(addr)) = val;
+}
+inline void write_mem_i32(uint32_t addr, int32_t val) {
+  *reinterpret_cast<int32_t*>(&Mem.at(addr)) = val;
+}
 
 //:: core interpreter loop
 
@@ -172,8 +209,8 @@ void load_program(istream& in, uint32_t addr) {
       raise << "input program truncated mid-byte\n" << end();
       return;
     }
-    Mem.at(addr) = to_byte(c1, c2);
-    trace(99, "load") << addr << " -> " << HEXBYTE << NUM(Mem.at(addr)) << end();
+    write_mem_u8(addr, to_byte(c1, c2));
+    trace(99, "load") << addr << " -> " << HEXBYTE << NUM(read_mem_u8(addr)) << end();
     addr++;
     if (addr >= Mem.size()) Mem.resize(Mem.size()*2);
   }
@@ -218,7 +255,7 @@ uint8_t to_hex_num(char c) {
 }
 
 inline uint8_t next() {
-  return Mem.at(EIP++);
+  return read_mem_u8(EIP++);
 }
 
 // read a 32-bit immediate in little-endian order from the instruction stream
