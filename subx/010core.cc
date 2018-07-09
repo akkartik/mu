@@ -65,51 +65,53 @@ SF = ZF = OF = false;
 
 :(before "End Globals")
 vector<uint8_t> Mem;
+uint32_t Mem_offset = 0;
 uint32_t End_of_program = 0;
 :(before "End Reset")
 Mem.clear();
 Mem.resize(1024);
+Mem_offset = 0;
 End_of_program = 0;
 :(code)
 // These helpers depend on Mem being laid out contiguously (so you can't use a
 // map, etc.) and on the host also being little-endian.
 inline uint8_t read_mem_u8(uint32_t addr) {
-  return Mem.at(addr);
+  return Mem.at(addr-Mem_offset);
 }
 inline int8_t read_mem_i8(uint32_t addr) {
-  return static_cast<int8_t>(Mem.at(addr));
+  return static_cast<int8_t>(Mem.at(addr-Mem_offset));
 }
 inline uint32_t read_mem_u32(uint32_t addr) {
-  return *reinterpret_cast<uint32_t*>(&Mem.at(addr));
+  return *reinterpret_cast<uint32_t*>(&Mem.at(addr-Mem_offset));
 }
 inline int32_t read_mem_i32(uint32_t addr) {
-  return *reinterpret_cast<int32_t*>(&Mem.at(addr));
+  return *reinterpret_cast<int32_t*>(&Mem.at(addr-Mem_offset));
 }
 
 inline uint8_t* mem_addr_u8(uint32_t addr) {
-  return &Mem.at(addr);
+  return &Mem.at(addr-Mem_offset);
 }
 inline int8_t* mem_addr_i8(uint32_t addr) {
-  return reinterpret_cast<int8_t*>(&Mem.at(addr));
+  return reinterpret_cast<int8_t*>(&Mem.at(addr-Mem_offset));
 }
 inline uint32_t* mem_addr_u32(uint32_t addr) {
-  return reinterpret_cast<uint32_t*>(&Mem.at(addr));
+  return reinterpret_cast<uint32_t*>(&Mem.at(addr-Mem_offset));
 }
 inline int32_t* mem_addr_i32(uint32_t addr) {
-  return reinterpret_cast<int32_t*>(&Mem.at(addr));
+  return reinterpret_cast<int32_t*>(&Mem.at(addr-Mem_offset));
 }
 
 inline void write_mem_u8(uint32_t addr, uint8_t val) {
-  Mem.at(addr) = val;
+  Mem.at(addr-Mem_offset) = val;
 }
 inline void write_mem_i8(uint32_t addr, int8_t val) {
-  Mem.at(addr) = static_cast<uint8_t>(val);
+  Mem.at(addr-Mem_offset) = static_cast<uint8_t>(val);
 }
 inline void write_mem_u32(uint32_t addr, uint32_t val) {
-  *reinterpret_cast<uint32_t*>(&Mem.at(addr)) = val;
+  *reinterpret_cast<uint32_t*>(&Mem.at(addr-Mem_offset)) = val;
 }
 inline void write_mem_i32(uint32_t addr, int32_t val) {
-  *reinterpret_cast<int32_t*>(&Mem.at(addr)) = val;
+  *reinterpret_cast<int32_t*>(&Mem.at(addr-Mem_offset)) = val;
 }
 
 //:: core interpreter loop
