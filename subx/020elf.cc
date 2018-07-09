@@ -6,6 +6,7 @@ if (is_equal(argv[1], "run")) {
   assert(argc > 2);
   reset();
   cerr << std::hex;
+  initialize_mem();
   load_elf(argv[2]);
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
@@ -88,6 +89,15 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
     write_mem_u8(p_vaddr+i, elf_contents[p_offset+i]);
   if (End_of_program < p_vaddr+p_memsz)
     End_of_program = p_vaddr+p_memsz;
+}
+
+void initialize_mem() {
+  // Very primitive/fixed/insecure ELF segments for now.
+  //   code: 0x08048000 -> 0x08048fff
+  //   data: 0x08049000 -> 0x08049fff
+  //   heap: 0x0804a000 -> 0x0804afff
+  //   stack: 0x0804bfff -> 0x0804b000 (downward)
+  Mem.resize(0x0804c000 - 0x08048000);
 }
 
 inline uint32_t u32_in(uint8_t* p) {

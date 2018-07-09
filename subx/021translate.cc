@@ -34,7 +34,7 @@ void perform_all_transforms(string& program) {
 // write out the current Memory contents from address 1 to End_of_program to a
 // bare-bones ELF file with a single section/segment and a hard-coded origin address.
 void dump_elf(const string& program, const char* filename) {
-  Mem.resize(1024);
+  initialize_mem();
   // load program into memory, filtering out comments
   load_program(program, 1);  // Not where 'program' should be loaded for running.
                              // But we're not going to run it right now, so we
