@@ -40,8 +40,6 @@ int32_t* effective_address(uint8_t modrm) {
     exit(1);
   }
   //: other mods are indirect, and they'll set addr appropriately
-  assert(addr > 0);
-  assert(addr + sizeof(int32_t) <= Mem.size());
   return mem_addr_i32(addr);
 }
 

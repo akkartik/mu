@@ -214,7 +214,6 @@ void load_program(istream& in, uint32_t addr) {
     write_mem_u8(addr, to_byte(c1, c2));
     trace(99, "load") << addr << " -> " << HEXBYTE << NUM(read_mem_u8(addr)) << end();
     addr++;
-    if (addr >= Mem.size()) Mem.resize(Mem.size()*2);
   }
   End_of_program = addr;
 }
