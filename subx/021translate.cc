@@ -12,9 +12,6 @@ typedef void (*transform_fn)(const string& input, string& output);
 :(before "End Globals")
 vector<transform_fn> Transform;
 
-:(before "End Includes")
-const int CODE_START = 0x08048000;
-const int CODE_SIZE = 0x1000;
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {
   assert(argc > 3);
@@ -109,7 +106,7 @@ void dump_elf_header(ostream& out) {
   emit(e_entry);
   // p_filesz
   uint32_t size = End_of_program - /*we're not using location 0*/1;
-  assert(size < CODE_SIZE);
+  assert(size < SEGMENT_SIZE);
   emit(size);
   // p_memsz
   emit(size);

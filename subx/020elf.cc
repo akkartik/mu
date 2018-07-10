@@ -92,13 +92,19 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
     End_of_program = p_vaddr+p_memsz;
 }
 
+:(before "End Includes")
+// Very primitive/fixed/insecure ELF segments for now.
+//   code: 0x08048000 -> 0x08048fff
+//   data: 0x08049000 -> 0x08049fff
+//   heap: 0x0804a000 -> 0x0804afff
+//   stack: 0x0804bfff -> 0x0804b000 (downward)
+const int CODE_START = 0x08048000;
+const int SEGMENT_SIZE = 0x1000;
+const int DATA_START = 0x08049000;
+const int AFTER_STACK = 0x0804c000;
+:(code)
 void initialize_mem() {
-  // Very primitive/fixed/insecure ELF segments for now.
-  //   code: 0x08048000 -> 0x08048fff
-  //   data: 0x08049000 -> 0x08049fff
-  //   heap: 0x0804a000 -> 0x0804afff
-  //   stack: 0x0804bfff -> 0x0804b000 (downward)
-  Mem.resize(0x0804c000 - 0x08048000);
+  Mem.resize(AFTER_STACK - CODE_START);
 }
 
 inline uint32_t u32_in(uint8_t* p) {
