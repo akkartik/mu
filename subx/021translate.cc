@@ -13,7 +13,8 @@ typedef void (*transform_fn)(const string& input, string& output);
 vector<transform_fn> Transform;
 
 :(before "End Includes")
-const int START = 0x08048000;
+const int CODE_START = 0x08048000;
+const int CODE_SIZE = 0x1000;
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {
   assert(argc > 3);
@@ -68,7 +69,7 @@ void dump_elf_header(ostream& out) {
   // e_version
   O(0x01); O(0x00); O(0x00); O(0x00);
   // e_entry
-  int e_entry = START + /*size of ehdr*/52 + /*size of phdr*/32;
+  int e_entry = CODE_START + /*size of ehdr*/52 + /*size of phdr*/32;
   emit(e_entry);
   // e_phoff -- immediately after ELF header
   int e_phoff = 52;
@@ -108,6 +109,7 @@ void dump_elf_header(ostream& out) {
   emit(e_entry);
   // p_filesz
   uint32_t size = End_of_program - /*we're not using location 0*/1;
+  assert(size < CODE_SIZE);
   emit(size);
   // p_memsz
   emit(size);
