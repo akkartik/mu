@@ -17,7 +17,7 @@ void process_int80() {
     exit(Reg[EBX].u);
     break;
   case 3:
-    read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
+    Reg[EAX].i = read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     break;
   }
 }
