@@ -140,7 +140,7 @@ inline void write_mem_i32(uint32_t addr, int32_t val) {
 void run(string text_bytes) {
   // Begin run() For Scenarios
 //?   cerr << text_bytes << '\n';
-  load_program(text_bytes, 1);  // tests always assume a starting address of 1
+  load_program(text_bytes);
   EIP = 1;  // preserve null pointer
   while (EIP < End_of_program)
     run_one_instruction();
@@ -193,11 +193,13 @@ void run_one_instruction() {
   }
 }
 
-void load_program(const string& text_bytes, uint32_t addr) {
+void load_program(const string& text_bytes) {
   istringstream in(text_bytes);
-  load_program(in, addr);
+  load_program(in);
 }
-void load_program(istream& in, uint32_t addr) {
+void load_program(istream& in) {
+  uint32_t addr = 1;  // preserve null pointer
+  int segment_index = 0;
   while (has_data(in)) {
     string line_data;
     getline(in, line_data);
@@ -207,6 +209,18 @@ void load_program(istream& in, uint32_t addr) {
       string word;
       line >> word;
       if (word.empty()) continue;
+      if (word == "==") {
+        // assume the first segment contains code
+        if (segment_index == 1) End_of_program = addr;
+        ++segment_index;
+        // new segment
+        line >> std::hex >> addr;
+        break;  // skip rest of line
+      }
+      if (word[0] == ':') {
+        // metadata
+        break;
+      }
       if (word[0] == '#') {
         // comment
         break;
@@ -225,7 +239,8 @@ void load_program(istream& in, uint32_t addr) {
       addr++;
     }
   }
-  End_of_program = addr;
+  // convenience: allow zero segment headers; code then starts at address 1
+  if (segment_index == 0) End_of_program = addr;
 }
 
 inline uint8_t next() {

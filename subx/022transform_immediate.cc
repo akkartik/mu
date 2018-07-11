@@ -32,6 +32,17 @@ void transform_immediate(const string& input, string& output) {
       string word;
       line >> word;
       if (word.empty()) continue;
+      if (word == "==") {
+        // new segment
+        uint32_t addr = 0;
+        line >> std::hex >> addr;
+        out << "== " << HEXWORD << addr;
+        break;  // skip rest of line
+      }
+      if (word[0] == ':') {
+        // skip line metadata
+        break;
+      }
       if (word[0] == '#') {
         // skip comment
         break;

@@ -1,12 +1,15 @@
 //: operating on memory at the address provided by some register
+//: we'll now start providing data in a separate segment
 
 :(scenario add_r32_to_mem_at_r32)
 % Reg[3].i = 0x10;
 % Reg[0].i = 0x60;
-% write_mem_i32(0x60, 1);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   01  18                                     # add EBX to *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
+== 0x60  # data segment
+01 00 00 00  # 1
 +run: add EBX to r/m32
 +run: effective address is 0x60 (EAX)
 +run: storing 0x00000011

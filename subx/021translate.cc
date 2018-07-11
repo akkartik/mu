@@ -34,9 +34,9 @@ void perform_all_transforms(string& program) {
 void dump_elf(const string& program, const char* filename) {
   initialize_mem();
   // load program into memory, filtering out comments
-  load_program(program, 1);  // Not where 'program' should be loaded for running.
-                             // But we're not going to run it right now, so we
-                             // can load it anywhere.
+  load_program(program);  // Not where 'program' should be loaded for running.
+                          // But we're not going to run it right now, so we
+                          // can load it anywhere.
   // dump contents of memory into ELF binary
   ofstream out(filename, ios::binary);
   dump_elf_header(out);
