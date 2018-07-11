@@ -23,17 +23,29 @@ Transform.push_back(transform_immediate);
 :(code)
 void transform_immediate(const string& input, string& output) {
   istringstream in(input);
-  in >> std::noskipws;
   ostringstream out;
   while (has_data(in)) {
-    string word = next_word(in);
-    if (word.find("/imm") == string::npos)
-      out << word << ' ';
-    else {
-      string output = transform_immediate(word);
-      trace("translate") << "converting '" << word << "' to '" << output << "'" << end();
-      out << output << ' ';
+    string line_data;
+    getline(in, line_data);
+    istringstream line(line_data);
+    while (has_data(line)) {
+      string word;
+      line >> word;
+      if (word.empty()) continue;
+      if (word[0] == '#') {
+        // skip comment
+        break;
+      }
+      if (word.find("/imm") == string::npos) {
+        out << word << ' ';
+      }
+      else {
+        string output = transform_immediate(word);
+        trace("translate") << "converting '" << word << "' to '" << output << "'" << end();
+        out << output << ' ';
+      }
     }
+    out << '\n';
   }
   out.str().swap(output);
 }

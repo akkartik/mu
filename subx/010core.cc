@@ -198,61 +198,34 @@ void load_program(const string& text_bytes, uint32_t addr) {
   load_program(in, addr);
 }
 void load_program(istream& in, uint32_t addr) {
-  in >> std::noskipws;
   while (has_data(in)) {
-    char c1 = next_hex_byte(in);
-    if (c1 == '\0') break;
-    if (!has_data(in)) {
-      raise << "input program truncated mid-byte\n" << end();
-      return;
+    string line_data;
+    getline(in, line_data);
+//?     cerr << "line: " << SIZE(line_data) << ": " << line_data << '\n';
+    istringstream line(line_data);
+    while (has_data(line)) {
+      string word;
+      line >> word;
+      if (word.empty()) continue;
+      if (word[0] == '#') {
+        // comment
+        break;
+      }
+      // otherwise it's a hex byte
+      uint32_t next_byte = 0;
+      istringstream ss(word);
+      ss >> std::hex >> next_byte;
+      if (next_byte > 0xff) {
+        raise << "invalid hex byte " << word << '\n' << end();
+        return;
+      }
+      write_mem_u8(addr, static_cast<uint8_t>(next_byte));
+      trace(99, "load") << addr << " -> " << HEXBYTE << NUM(read_mem_u8(addr)) << end();
+//?       cerr << addr << " -> " << HEXBYTE << NUM(read_mem_u8(addr)) << '\n';
+      addr++;
     }
-    char c2 = next_hex_byte(in);
-    if (c2 == '\0') {
-      raise << "input program truncated mid-byte\n" << end();
-      return;
-    }
-    write_mem_u8(addr, to_byte(c1, c2));
-    trace(99, "load") << addr << " -> " << HEXBYTE << NUM(read_mem_u8(addr)) << end();
-    addr++;
   }
   End_of_program = addr;
-}
-
-char next_hex_byte(istream& in) {
-  while (has_data(in)) {
-    char c = '\0';
-    in >> c;
-    if (c == ' ' || c == '\n') continue;
-    while (c == '#') {
-      while (has_data(in)) {
-        in >> c;
-        if (c == '\n') {
-          in >> c;
-          break;
-        }
-      }
-    }
-    if (c == '\0') return c;
-    if (c >= '0' && c <= '9') return c;
-    if (c >= 'a' && c <= 'f') return c;
-    if (c >= 'A' && c <= 'F') return tolower(c);
-    // disallow any non-hex characters, including a '0x' prefix
-    if (!isspace(c)) {
-      raise << "invalid non-hex character " << NUM(c) << "\n" << end();
-      break;
-    }
-  }
-  return '\0';
-}
-
-uint8_t to_byte(char hex_byte1, char hex_byte2) {
-  return to_hex_num(hex_byte1)*16 + to_hex_num(hex_byte2);
-}
-uint8_t to_hex_num(char c) {
-  if (c >= '0' && c <= '9') return c - '0';
-  if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-  assert(false);
-  return 0;
 }
 
 inline uint8_t next() {
