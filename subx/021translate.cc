@@ -117,6 +117,7 @@ void dump_elf_header(ostream& out) {
   uint32_t p_align = 0x1000;
   emit(p_align);
 #undef O
+#undef emit
 }
 
 void slurp(const char* filename, string& out) {
