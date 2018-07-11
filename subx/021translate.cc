@@ -3,9 +3,9 @@
 //: "compiler".
 //: Motto: Abstract nothing, check everything.
 //:
-//: Workflow: read 'source' file as a single string. Run a series of
-//: transforms on it, each converting to a new string. The final string should
-//: be just machine code and comments, suitable to pass to load_program().
+//: Workflow: read 'source' file. Run a series of transforms on it, each
+//: passing through what it doesn't understand. The final program should be
+//: just machine code, suitable to write to an ELF binary.
 
 :(before "End Types")
 typedef void (*transform_fn)(const string& input, string& output);

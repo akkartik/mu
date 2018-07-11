@@ -193,6 +193,8 @@ void run_one_instruction() {
   }
 }
 
+// Load regions of memory (called 'segments') with given hex values based on
+// '-- ' section headers.
 void load_program(const string& text_bytes) {
   istringstream in(text_bytes);
   load_program(in);
