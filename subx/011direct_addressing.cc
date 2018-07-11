@@ -1,8 +1,8 @@
 //: operating directly on a register
 
 :(scenario add_r32_to_r32)
-% Reg[0].i = 0x10;
-% Reg[3].i = 1;
+% Reg[EAX].i = 0x10;
+% Reg[EBX].i = 1;
 # op  ModR/M  SIB   displacement  immediate
   01  d8                                      # add EBX to EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -46,8 +46,8 @@ int32_t* effective_address(uint8_t modrm) {
 //:: subtract
 
 :(scenario subtract_r32_from_r32)
-% Reg[0].i = 10;
-% Reg[3].i = 1;
+% Reg[EAX].i = 10;
+% Reg[EBX].i = 1;
 # op  ModR/M  SIB   displacement  immediate
   29  d8                                      # subtract EBX from EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -68,8 +68,8 @@ case 0x29: {  // subtract r32 from r/m32
 //:: and
 
 :(scenario and_r32_with_r32)
-% Reg[0].i = 0x0a0b0c0d;
-% Reg[3].i = 0x000000ff;
+% Reg[EAX].i = 0x0a0b0c0d;
+% Reg[EBX].i = 0x000000ff;
 # op  ModR/M  SIB   displacement  immediate
   21  d8                                      # and EBX with destination EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -90,8 +90,8 @@ case 0x21: {  // and r32 with r/m32
 //:: or
 
 :(scenario or_r32_with_r32)
-% Reg[0].i = 0x0a0b0c0d;
-% Reg[3].i = 0xa0b0c0d0;
+% Reg[EAX].i = 0x0a0b0c0d;
+% Reg[EBX].i = 0xa0b0c0d0;
 # op  ModR/M  SIB   displacement  immediate
   09  d8                                      # or EBX with destination EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -112,8 +112,8 @@ case 0x09: {  // or r32 with r/m32
 //:: xor
 
 :(scenario xor_r32_with_r32)
-% Reg[0].i = 0x0a0b0c0d;
-% Reg[3].i = 0xaabbc0d0;
+% Reg[EAX].i = 0x0a0b0c0d;
+% Reg[EBX].i = 0xaabbc0d0;
 # op  ModR/M  SIB   displacement  immediate
   31  d8                                      # xor EBX with destination EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -134,7 +134,7 @@ case 0x31: {  // xor r32 with r/m32
 //:: not
 
 :(scenario not_r32)
-% Reg[3].i = 0x0f0f00ff;
+% Reg[EBX].i = 0x0f0f00ff;
 # op  ModR/M  SIB   displacement  immediate
   f7  c3                                      # not EBX
 # ModR/M in binary: 11 (direct mode) 000 (unused) 011 (dest EBX)
@@ -158,8 +158,8 @@ case 0xf7: {  // xor r32 with r/m32
 //:: compare (cmp)
 
 :(scenario compare_r32_with_r32_greater)
-% Reg[0].i = 0x0a0b0c0d;
-% Reg[3].i = 0x0a0b0c07;
+% Reg[EAX].i = 0x0a0b0c0d;
+% Reg[EBX].i = 0x0a0b0c07;
 # op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -184,8 +184,8 @@ case 0x39: {  // set SF if r/m32 < r32
 }
 
 :(scenario compare_r32_with_r32_lesser)
-% Reg[0].i = 0x0a0b0c07;
-% Reg[3].i = 0x0a0b0c0d;
+% Reg[EAX].i = 0x0a0b0c07;
+% Reg[EBX].i = 0x0a0b0c0d;
 # op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -194,8 +194,8 @@ case 0x39: {  // set SF if r/m32 < r32
 +run: SF=1; ZF=0; OF=0
 
 :(scenario compare_r32_with_r32_equal)
-% Reg[0].i = 0x0a0b0c0d;
-% Reg[3].i = 0x0a0b0c0d;
+% Reg[EAX].i = 0x0a0b0c0d;
+% Reg[EBX].i = 0x0a0b0c0d;
 # op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -206,7 +206,7 @@ case 0x39: {  // set SF if r/m32 < r32
 //:: copy (mov)
 
 :(scenario copy_r32_to_r32)
-% Reg[3].i = 0xaf;
+% Reg[EBX].i = 0xaf;
 # op  ModR/M  SIB   displacement  immediate
   89  d8                                      # copy EBX to EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -228,8 +228,8 @@ case 0x89: {  // copy r32 to r/m32
 //:: xchg
 
 :(scenario xchg_r32_with_r32)
-% Reg[3].i = 0xaf;
-% Reg[0].i = 0x2e;
+% Reg[EBX].i = 0xaf;
+% Reg[EAX].i = 0x2e;
 # op  ModR/M  SIB   displacement  immediate
   87  d8                                      # exchange EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)

@@ -1,8 +1,8 @@
 //: operating on memory at the address provided by some register plus optional scale and offset
 
 :(scenario add_r32_to_mem_at_r32_with_sib)
-% Reg[3].i = 0x10;
-% Reg[0].i = 0x60;
+% Reg[EBX].i = 0x10;
+% Reg[EAX].i = 0x60;
 % write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      20                             # add EBX to *EAX
@@ -45,9 +45,9 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 }
 
 :(scenario add_r32_to_mem_at_base_r32_index_r32)
-% Reg[3].i = 0x10;  // source
-% Reg[0].i = 0x5e;  // dest base
-% Reg[1].i = 0x2;  // dest index
+% Reg[EBX].i = 0x10;  // source
+% Reg[EAX].i = 0x5e;  // dest base
+% Reg[ECX].i = 0x2;  // dest index
 % write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      08                             # add EBX to *(EAX+ECX)
@@ -59,7 +59,7 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 +run: storing 0x00000011
 
 :(scenario add_r32_to_mem_at_displacement_using_sib)
-% Reg[3].i = 0x10;  // source
+% Reg[EBX].i = 0x10;  // source
 % write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      25    60 00 00 00              # add EBX to *0x60
@@ -73,9 +73,9 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 //:
 
 :(scenario add_r32_to_mem_at_base_r32_index_r32_plus_disp8)
-% Reg[3].i = 0x10;  // source
-% Reg[0].i = 0x59;  // dest base
-% Reg[1].i = 0x5;  // dest index
+% Reg[EBX].i = 0x10;  // source
+% Reg[EAX].i = 0x59;  // dest base
+% Reg[ECX].i = 0x5;  // dest index
 % write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  5c      08    02                       # add EBX to *(EAX+ECX+2)
@@ -95,9 +95,9 @@ case 4:  // exception: mod 0b01 rm 0b100 => incoming SIB (scale-index-base) byte
 //:
 
 :(scenario add_r32_to_mem_at_base_r32_index_r32_plus_disp32)
-% Reg[3].i = 0x10;  // source
-% Reg[0].i = 0x59;  // dest base
-% Reg[1].i = 0x5;  // dest index
+% Reg[EBX].i = 0x10;  // source
+% Reg[EAX].i = 0x59;  // dest base
+% Reg[ECX].i = 0x5;  // dest index
 % write_mem_i32(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  9c      08    02 00 00 00              # add EBX to *(EAX+ECX+2)
