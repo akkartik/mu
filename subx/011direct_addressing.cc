@@ -290,8 +290,11 @@ void push(uint32_t val) {
 :(scenario pop_r32)
 % Reg[ESP].u = 0x60;
 % write_mem_i32(0x60, 0x0000000a);
+== 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   5b                                          # pop stack to EBX
+== 0x60  # data segment
+0a 00 00 00  # 0x0a
 +run: pop into EBX
 +run: popping value 0x0000000a
 +run: incrementing ESP to 0x00000064

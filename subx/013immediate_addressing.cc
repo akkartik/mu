@@ -34,10 +34,12 @@ case 0x81: {  // combine imm32 with r/m32
 
 :(scenario add_imm32_to_mem_at_r32)
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 1);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  03                          0a 0b 0c 0d  # add 0x0d0c0b0a to *EBX
 # ModR/M in binary: 00 (indirect mode) 000 (add imm32) 011 (dest EBX)
+== 0x60  # data segment
+01 00 00 00  # 1
 +run: combine imm32 0x0d0c0b0a with r/m32
 +run: effective address is 0x60 (EBX)
 +run: subop add
@@ -64,10 +66,12 @@ case 0x2d: {  // subtract imm32 from EAX
 
 :(scenario subtract_imm32_from_mem_at_r32)
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 10);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  2b                          01 00 00 00  # subtract 1 from *EBX
 # ModR/M in binary: 00 (indirect mode) 101 (subtract imm32) 011 (dest EBX)
+== 0x60  # data segment
+0a 00 00 00  # 10
 +run: combine imm32 0x00000001 with r/m32
 +run: effective address is 0x60 (EBX)
 +run: subop subtract
@@ -113,10 +117,12 @@ case 0x25: {  // and imm32 with EAX
 
 :(scenario and_imm32_with_mem_at_r32)
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 0x000000ff);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  23                          0a 0b 0c 0d  # and 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 100 (and imm32) 011 (dest EBX)
+== 0x60  # data segment
+ff 00 00 00  # 0xff
 +run: combine imm32 0x0d0c0b0a with r/m32
 +run: effective address is 0x60 (EBX)
 +run: subop and
@@ -162,10 +168,12 @@ case 0x0d: {  // or imm32 with EAX
 
 :(scenario or_imm32_with_mem_at_r32)
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 0xd0c0b0a0);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  0b                          0a 0b 0c 0d  # or 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 001 (or imm32) 011 (dest EBX)
+== 0x60  # data segment
+a0 b0 c0 d0  # 0xd0c0b0a0
 +run: combine imm32 0x0d0c0b0a with r/m32
 +run: effective address is 0x60 (EBX)
 +run: subop or
@@ -209,10 +217,12 @@ case 0x35: {  // xor imm32 with EAX
 
 :(scenario xor_imm32_with_mem_at_r32)
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 0xd0c0b0a0);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  33                          0a 0b 0c 0d  # xor 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 110 (xor imm32) 011 (dest EBX)
+== 0x60  # data segment
+a0 b0 c0 d0  # 0xd0c0b0a0
 +run: combine imm32 0x0d0c0b0a with r/m32
 +run: effective address is 0x60 (EBX)
 +run: subop xor
@@ -315,20 +325,24 @@ case 7: {
 
 :(scenario compare_imm32_with_mem_at_r32_greater)
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 0x0d0c0b0a);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          07 0b 0c 0d  # compare 0x0d0c0b07 with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+== 0x60  # data segment
+0a 0b 0c 0d  # 0x0d0c0b0a
 +run: combine imm32 0x0d0c0b07 with r/m32
 +run: effective address is 0x60 (EBX)
 +run: SF=0; ZF=0; OF=0
 
 :(scenario compare_imm32_with_mem_at_r32_lesser)
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 0x0d0c0b07);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+== 0x60  # data segment
+07 0b 0c 0d  # 0x0d0c0b07
 +run: combine imm32 0x0d0c0b0a with r/m32
 +run: effective address is 0x60 (EBX)
 +run: SF=1; ZF=0; OF=0
@@ -336,10 +350,12 @@ case 7: {
 :(scenario compare_imm32_with_mem_at_r32_equal)
 % Reg[EBX].i = 0x0d0c0b0a;
 % Reg[EBX].i = 0x60;
-% write_mem_i32(0x60, 0x0d0c0b0a);
+== 0x01  # code segment
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+== 0x60  # data segment
+0a 0b 0c 0d  # 0x0d0c0b0a
 +run: combine imm32 0x0d0c0b0a with r/m32
 +run: effective address is 0x60 (EBX)
 +run: SF=0; ZF=1; OF=0

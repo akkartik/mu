@@ -3,11 +3,13 @@
 :(scenario add_r32_to_mem_at_r32_with_sib)
 % Reg[EBX].i = 0x10;
 % Reg[EAX].i = 0x60;
-% write_mem_i32(0x60, 1);
+== 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   01  1c      20                             # add EBX to *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
 # SIB in binary: 00 (scale 1) 100 (no index) 000 (base EAX)
+== 0x60  # data segment
+01 00 00 00  # 1
 +run: add EBX to r/m32
 +run: effective address is initially 0x60 (EAX)
 +run: effective address is 0x60
@@ -48,11 +50,13 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 % Reg[EBX].i = 0x10;  // source
 % Reg[EAX].i = 0x5e;  // dest base
 % Reg[ECX].i = 0x2;  // dest index
-% write_mem_i32(0x60, 1);
+== 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   01  1c      08                             # add EBX to *(EAX+ECX)
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
 # SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
+== 0x60  # data segment
+01 00 00 00  # 1
 +run: add EBX to r/m32
 +run: effective address is initially 0x5e (EAX)
 +run: effective address is 0x60 (after adding ECX*1)
@@ -60,11 +64,13 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 
 :(scenario add_r32_to_mem_at_displacement_using_sib)
 % Reg[EBX].i = 0x10;  // source
-% write_mem_i32(0x60, 1);
+== 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   01  1c      25    60 00 00 00              # add EBX to *0x60
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
 # SIB in binary: 00 (scale 1) 100 (no index) 101 (not EBP but disp32)
+== 0x60  # data segment
+01 00 00 00  # 1
 +run: add EBX to r/m32
 +run: effective address is initially 0x60 (disp32)
 +run: effective address is 0x60
@@ -76,11 +82,13 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 % Reg[EBX].i = 0x10;  // source
 % Reg[EAX].i = 0x59;  // dest base
 % Reg[ECX].i = 0x5;  // dest index
-% write_mem_i32(0x60, 1);
+== 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   01  5c      08    02                       # add EBX to *(EAX+ECX+2)
 # ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 100 (dest in SIB)
 # SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
+== 0x60  # data segment
+01 00 00 00  # 1
 +run: add EBX to r/m32
 +run: effective address is initially 0x59 (EAX)
 +run: effective address is 0x5e (after adding ECX*1)
@@ -98,11 +106,13 @@ case 4:  // exception: mod 0b01 rm 0b100 => incoming SIB (scale-index-base) byte
 % Reg[EBX].i = 0x10;  // source
 % Reg[EAX].i = 0x59;  // dest base
 % Reg[ECX].i = 0x5;  // dest index
-% write_mem_i32(0x60, 1);
+== 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   01  9c      08    02 00 00 00              # add EBX to *(EAX+ECX+2)
 # ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 100 (dest in SIB)
 # SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
+== 0x60  # data segment
+01 00 00 00  # 1
 +run: add EBX to r/m32
 +run: effective address is initially 0x59 (EAX)
 +run: effective address is 0x5e (after adding ECX*1)
