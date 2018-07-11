@@ -20,10 +20,10 @@ union reg {
 };
 :(before "End Globals")
 reg Reg[NUM_INT_REGISTERS] = { {0} };
-uint32_t EIP = 0;
+uint32_t EIP = 1;  // preserve null pointer
 :(before "End Reset")
 bzero(Reg, sizeof(Reg));
-EIP = 0;
+EIP = 1;  // preserve null pointer
 
 //:: simulated flag registers; just a subset that we care about
 
