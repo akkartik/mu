@@ -114,7 +114,7 @@ void dump_elf_header(ostream& out) {
   uint32_t p_flags = 0x5;  // r-x
   emit(p_flags);
   // p_align
-  uint32_t p_align = 0x1000;
+  uint32_t p_align = 0x4;  // p_offset must be congruent to p_paddr/p_vaddr modulo p_align
   emit(p_align);
 #undef O
 #undef emit
