@@ -112,7 +112,7 @@
 
 int main(int argc, char* argv[]) {
   atexit(reset);
-  // run on a 32-bit system
+  // we require a 32-bit little-endian system
   assert(sizeof(int) == 4);
   assert(sizeof(float) == 4);
   assert_little_endian();
@@ -144,7 +144,7 @@ void assert_little_endian() {
   const int x = 1;
   const char* y = reinterpret_cast<const char*>(&x);
   if (*y != 1) {
-    cerr << "the SubX VM only runs on little-endian processors. Do you have Intel (or AMD or Atom) inside?\n";
+    cerr << "SubX requires a little-endian processor. Do you have Intel (or AMD or Atom) inside?\n";
     exit(1);
   }
 }
