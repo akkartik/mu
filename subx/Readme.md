@@ -49,6 +49,21 @@ Running `subx` will transparently compile it as necessary.
   translate`. Useful for debugging, and also enables more thorough testing of
   `translate`.
 
+Putting them together, build and run one of the example programs:
+
+<img alt='ex1.1.subx' src='html/ex1.png'>
+
+```
+$ ./subx translate ex1.1.subx ex1
+$ ./subx run ex1
+```
+
+If you're running on Linux, `ex1` will also be runnable directly:
+```
+$ chmod +x ex1
+$ ./ex1
+```
+
 I'm not building general infrastructure here for all of the x86 ISA and ELF
 format. SubX is about programming with a small, regular subset of 32-bit x86:
 
