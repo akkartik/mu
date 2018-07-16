@@ -101,12 +101,20 @@ void dump_elf_header(ostream& out, const program& p) {
     // p_flags
     uint32_t p_flags = (i == 0) ? /*r-x*/0x5 : /*rw-*/0x6;  // convention: only first segment is code
     emit(p_flags);
+
     // p_align
-    // "The value of the p_align field of each program header in a shared
-    // object file must be a multiple of the system page size." -- http://refspecs.linuxfoundation.org/ELF/zSeries/lzsabi0_zSeries/c2083.html
+    // "As the system creates or augments a process image, it logically copies
+    // a file's segment to a virtual memory segment.  When—and if— the system
+    // physically reads the file depends on the program's execution behavior,
+    // system load, and so on.  A process does not require a physical page
+    // unless it references the logical page during execution, and processes
+    // commonly leave many pages unreferenced. Therefore delaying physical
+    // reads frequently obviates them, improving system performance. To obtain
+    // this efficiency in practice, executable and shared object files must
+    // have segment images whose file offsets and virtual addresses are
+    // congruent, modulo the page size." -- http://refspecs.linuxbase.org/elf/elf.pdf (page 95)
     uint32_t p_align = 0x1000;
     emit(p_align);
-
     if (p_offset % p_align != p.segments.at(i).start % p_align) {
       raise << "segment starting at 0x" << HEXWORD << p.segments.at(i).start << " is improperly aligned; alignment for p_offset " << p_offset << " should be " << (p_offset % p_align) << " but is " << (p.segments.at(i).start % p_align) << '\n' << end();
       return;
