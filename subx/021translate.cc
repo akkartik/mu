@@ -101,7 +101,9 @@ void dump_elf_header(ostream& out, const program& p) {
     uint32_t p_flags = (i == 0) ? /*r-x*/0x5 : /*rw-*/0x6;  // convention: only first segment is code
     emit(p_flags);
     // p_align
-    uint32_t p_align = 0x1000;  // smaller alignments may not be respected by the kernel
+    // "The value of the p_align field of each program header in a shared
+    // object file must be a multiple of the system page size." -- http://refspecs.linuxfoundation.org/ELF/zSeries/lzsabi0_zSeries/c2083.html
+    uint32_t p_align = 0x1000;
     emit(p_align);
 
     // prepare for next segment
