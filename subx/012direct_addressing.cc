@@ -3,6 +3,7 @@
 :(scenario add_r32_to_r32)
 % Reg[EAX].i = 0x10;
 % Reg[EBX].i = 1;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   01  d8                                      # add EBX to EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -43,11 +44,26 @@ int32_t* effective_address(uint8_t modrm) {
   return mem_addr_i32(addr);
 }
 
+string rname(uint8_t r) {
+  switch (r) {
+  case 0: return "EAX";
+  case 1: return "ECX";
+  case 2: return "EDX";
+  case 3: return "EBX";
+  case 4: return "ESP";
+  case 5: return "EBP";
+  case 6: return "ESI";
+  case 7: return "EDI";
+  default: raise << "invalid register " << r << '\n' << end();  return "";
+  }
+}
+
 //:: subtract
 
 :(scenario subtract_r32_from_r32)
 % Reg[EAX].i = 10;
 % Reg[EBX].i = 1;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   29  d8                                      # subtract EBX from EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -70,6 +86,7 @@ case 0x29: {  // subtract r32 from r/m32
 :(scenario and_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
 % Reg[EBX].i = 0x000000ff;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   21  d8                                      # and EBX with destination EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -92,6 +109,7 @@ case 0x21: {  // and r32 with r/m32
 :(scenario or_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
 % Reg[EBX].i = 0xa0b0c0d0;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   09  d8                                      # or EBX with destination EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -114,6 +132,7 @@ case 0x09: {  // or r32 with r/m32
 :(scenario xor_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
 % Reg[EBX].i = 0xaabbc0d0;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   31  d8                                      # xor EBX with destination EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -135,6 +154,7 @@ case 0x31: {  // xor r32 with r/m32
 
 :(scenario not_r32)
 % Reg[EBX].i = 0x0f0f00ff;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   f7  c3                                      # not EBX
 # ModR/M in binary: 11 (direct mode) 000 (unused) 011 (dest EBX)
@@ -160,6 +180,7 @@ case 0xf7: {  // xor r32 with r/m32
 :(scenario compare_r32_with_r32_greater)
 % Reg[EAX].i = 0x0a0b0c0d;
 % Reg[EBX].i = 0x0a0b0c07;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -186,6 +207,7 @@ case 0x39: {  // set SF if r/m32 < r32
 :(scenario compare_r32_with_r32_lesser)
 % Reg[EAX].i = 0x0a0b0c07;
 % Reg[EBX].i = 0x0a0b0c0d;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -196,6 +218,7 @@ case 0x39: {  // set SF if r/m32 < r32
 :(scenario compare_r32_with_r32_equal)
 % Reg[EAX].i = 0x0a0b0c0d;
 % Reg[EBX].i = 0x0a0b0c0d;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -207,6 +230,7 @@ case 0x39: {  // set SF if r/m32 < r32
 
 :(scenario copy_r32_to_r32)
 % Reg[EBX].i = 0xaf;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   89  d8                                      # copy EBX to EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -230,6 +254,7 @@ case 0x89: {  // copy r32 to r/m32
 :(scenario xchg_r32_with_r32)
 % Reg[EBX].i = 0xaf;
 % Reg[EAX].i = 0x2e;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   87  d8                                      # exchange EBX with EAX
 # ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -257,6 +282,7 @@ case 0x87: {  // exchange r32 with r/m32
 :(scenario push_r32)
 % Reg[ESP].u = 0x64;
 % Reg[EBX].i = 0x0000000a;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   53                                          # push EBX to stack
 +run: push EBX

@@ -2,6 +2,7 @@
 
 :(scenario call_imm32)
 % Reg[ESP].u = 0x64;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   e8                              a0 00 00 00  # call function offset at 0x000000a0
   # next EIP is 6
@@ -25,6 +26,7 @@ case 0xe8: {  // call imm32 relative to next EIP
 :(scenario call_r32)
 % Reg[ESP].u = 0x64;
 % Reg[EBX].u = 0x000000a0;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   ff  d3                                       # call function offset at EBX
   # next EIP is 3

@@ -2,6 +2,7 @@
 
 :(scenario add_imm32_to_r32)
 % Reg[EBX].i = 1;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  c3                          0a 0b 0c 0d  # add 0x0d0c0b0a to EBX
 # ModR/M in binary: 11 (direct mode) 000 (add imm32) 011 (dest EBX)
@@ -49,6 +50,7 @@ case 0x81: {  // combine imm32 with r/m32
 
 :(scenario subtract_imm32_from_eax)
 % Reg[EAX].i = 0x0d0c0baa;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   2d                              0a 0b 0c 0d  # subtract 0x0d0c0b0a from EAX
 +run: subtract imm32 0x0d0c0b0a from EAX
@@ -88,6 +90,7 @@ case 5: {
 
 :(scenario subtract_imm32_from_r32)
 % Reg[EBX].i = 10;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  eb                          01 00 00 00  # subtract 1 from EBX
 # ModR/M in binary: 11 (direct mode) 101 (subtract imm32) 011 (dest EBX)
@@ -100,6 +103,7 @@ case 5: {
 
 :(scenario and_imm32_with_eax)
 % Reg[EAX].i = 0xff;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   25                              0a 0b 0c 0d  # and 0x0d0c0b0a with EAX
 +run: and imm32 0x0d0c0b0a with EAX
@@ -139,6 +143,7 @@ case 4: {
 
 :(scenario and_imm32_with_r32)
 % Reg[EBX].i = 0xff;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  e3                          0a 0b 0c 0d  # and 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 100 (and imm32) 011 (dest EBX)
@@ -151,6 +156,7 @@ case 4: {
 
 :(scenario or_imm32_with_eax)
 % Reg[EAX].i = 0xd0c0b0a0;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   0d                              0a 0b 0c 0d  # or 0x0d0c0b0a with EAX
 +run: or imm32 0x0d0c0b0a with EAX
@@ -188,6 +194,7 @@ case 1: {
 
 :(scenario or_imm32_with_r32)
 % Reg[EBX].i = 0xd0c0b0a0;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  cb                          0a 0b 0c 0d  # or 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 001 (or imm32) 011 (dest EBX)
@@ -200,6 +207,7 @@ case 1: {
 
 :(scenario xor_imm32_with_eax)
 % Reg[EAX].i = 0xddccb0a0;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   35                              0a 0b 0c 0d  # xor 0x0d0c0b0a with EAX
 +run: xor imm32 0x0d0c0b0a with EAX
@@ -237,6 +245,7 @@ case 6: {
 
 :(scenario xor_imm32_with_r32)
 % Reg[EBX].i = 0xd0c0b0a0;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  f3                          0a 0b 0c 0d  # xor 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 110 (xor imm32) 011 (dest EBX)
@@ -249,6 +258,7 @@ case 6: {
 
 :(scenario compare_imm32_with_eax_greater)
 % Reg[EAX].i = 0x0d0c0b0a;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   3d                              07 0b 0c 0d  # compare 0x0d0c0b07 with EAX
 +run: compare EAX and imm32 0x0d0c0b07
@@ -270,6 +280,7 @@ case 0x3d: {  // subtract imm32 from EAX
 
 :(scenario compare_imm32_with_eax_lesser)
 % Reg[EAX].i = 0x0d0c0b07;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   3d                              0a 0b 0c 0d  # compare 0x0d0c0b0a with EAX
 +run: compare EAX and imm32 0x0d0c0b0a
@@ -277,6 +288,7 @@ case 0x3d: {  // subtract imm32 from EAX
 
 :(scenario compare_imm32_with_eax_equal)
 % Reg[EAX].i = 0x0d0c0b0a;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   3d                              0a 0b 0c 0d  # compare 0x0d0c0b0a with EAX
 +run: compare EAX and imm32 0x0d0c0b0a
@@ -286,6 +298,7 @@ case 0x3d: {  // subtract imm32 from EAX
 
 :(scenario compare_imm32_with_r32_greater)
 % Reg[EBX].i = 0x0d0c0b0a;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          07 0b 0c 0d  # compare 0x0d0c0b07 with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
@@ -307,6 +320,7 @@ case 7: {
 
 :(scenario compare_imm32_with_r32_lesser)
 % Reg[EBX].i = 0x0d0c0b07;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
@@ -316,6 +330,7 @@ case 7: {
 
 :(scenario compare_imm32_with_r32_equal)
 % Reg[EBX].i = 0x0d0c0b0a;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
@@ -363,6 +378,7 @@ case 7: {
 //:: copy (mov)
 
 :(scenario copy_imm32_to_r32)
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   bb                              0a 0b 0c 0d  # copy 0x0d0c0b0a to EBX
 +run: copy imm32 0x0d0c0b0a to EBX
@@ -387,6 +403,7 @@ case 0xbf: {  // copy imm32 to r32
 
 :(scenario copy_imm32_to_mem_at_r32)
 % Reg[EBX].i = 0x60;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   c7  03                          0a 0b 0c 0d  # copy 0x0d0c0b0a to *EBX
 # ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
@@ -407,6 +424,7 @@ case 0xc7: {  // copy imm32 to r32
 
 :(scenario push_imm32)
 % Reg[ESP].u = 0x14;
+== 0x1
 # op  ModR/M  SIB   displacement  immediate
   68                              af 00 00 00  # push *EAX to stack
 +run: push imm32 0x000000af

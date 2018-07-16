@@ -1,4 +1,5 @@
-// https://github.com/kragen/stoneknifeforth/blob/702d2ebe1b/386.c
+// Helper for debugging and testing.
+// Based on https://github.com/kragen/stoneknifeforth/blob/702d2ebe1b/386.c
 
 :(before "End Main")
 assert(argc > 1);

@@ -1,6 +1,8 @@
-//:: simulated x86 registers; just a subset
-//:    assume segment registers are hard-coded to 0
-//:    no floating-point, MMX, etc. yet
+//: Core data structures for simulating the SubX VM (subset of an x86 processor)
+
+//:: registers
+//: assume segment registers are hard-coded to 0
+//: no floating-point, MMX, etc. yet
 
 :(before "End Types")
 enum {
@@ -25,9 +27,8 @@ uint32_t EIP = 1;  // preserve null pointer
 bzero(Reg, sizeof(Reg));
 EIP = 1;  // preserve null pointer
 
-//:: simulated flag registers; just a subset that we care about
-
 :(before "End Globals")
+// the subset of x86 flag registers we care about
 bool SF = false;  // sign flag
 bool ZF = false;  // zero flag
 bool OF = false;  // overflow flag
@@ -116,36 +117,7 @@ inline void write_mem_i32(uint32_t addr, int32_t val) {
 
 //:: core interpreter loop
 
-:(scenario add_imm32_to_eax)
-# In scenarios, programs are a series of hex bytes, each (variable-length)
-# instruction on one line.
-#
-# x86 instructions consist of the following parts (see cheatsheet.pdf):
-#   opcode        ModR/M                    SIB                   displacement    immediate
-#   instruction   mod, reg, Reg/Mem bits    scale, index, base
-#   1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-    05                                                                            0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
-# All hex bytes must be exactly 2 characters each. No '0x' prefixes.
-+load: 1 -> 05
-+load: 2 -> 0a
-+load: 3 -> 0b
-+load: 4 -> 0c
-+load: 5 -> 0d
-+run: add imm32 0x0d0c0b0a to reg EAX
-+run: storing 0x0d0c0b0a
-
 :(code)
-// helper for tests: load a program into memory from a textual representation
-// of its bytes, and run it
-void run(string text_bytes) {
-  // Begin run() For Scenarios
-//?   cerr << text_bytes << '\n';
-  load_program(text_bytes);
-  EIP = 1;  // preserve null pointer
-  while (EIP < End_of_program)
-    run_one_instruction();
-}
-
 // skeleton of how x86 instructions are decoded
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
@@ -155,13 +127,6 @@ void run_one_instruction() {
   case 0xf4:  // hlt
     EIP = End_of_program;
     break;
-  // our first opcode
-  case 0x05: {  // add imm32 to EAX
-    int32_t arg2 = imm32();
-    trace(2, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
-    BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
-    break;
-  }
   // End Single-Byte Opcodes
   case 0x0f:
     switch(op2 = next()) {
@@ -193,83 +158,8 @@ void run_one_instruction() {
   }
 }
 
-// Load regions of memory (called 'segments') with given hex values based on
-// '-- ' section headers.
-void load_program(const string& text_bytes) {
-  istringstream in(text_bytes);
-  load_program(in);
-}
-void load_program(istream& in) {
-  uint32_t addr = 1;  // preserve null pointer
-  int segment_index = 0;
-  while (has_data(in)) {
-    string line_data;
-    getline(in, line_data);
-//?     cerr << "line: " << SIZE(line_data) << ": " << line_data << '\n';
-    istringstream line(line_data);
-    while (has_data(line)) {
-      string word;
-      line >> word;
-      if (word.empty()) continue;
-      if (word == "==") {
-        // assume the first segment contains code
-        if (segment_index == 1) End_of_program = addr;
-        ++segment_index;
-        // new segment
-        line >> std::hex >> addr;
-        break;  // skip rest of line
-      }
-      if (word[0] == ':') {
-        // metadata
-        break;
-      }
-      if (word[0] == '#') {
-        // comment
-        break;
-      }
-      // otherwise it's a hex byte
-      uint32_t next_byte = 0;
-      istringstream ss(word);
-      ss >> std::hex >> next_byte;
-      if (next_byte > 0xff) {
-        raise << "invalid hex byte " << word << '\n' << end();
-        return;
-      }
-      write_mem_u8(addr, static_cast<uint8_t>(next_byte));
-      trace(99, "load") << addr << " -> " << HEXBYTE << NUM(read_mem_u8(addr)) << end();
-//?       cerr << addr << " -> " << HEXBYTE << NUM(read_mem_u8(addr)) << '\n';
-      addr++;
-    }
-  }
-  // convenience: allow zero segment headers; code then starts at address 1
-  if (segment_index == 0) End_of_program = addr;
-}
-
 inline uint8_t next() {
   return read_mem_u8(EIP++);
-}
-
-// read a 32-bit immediate in little-endian order from the instruction stream
-int32_t imm32() {
-  int32_t result = next();
-  result |= (next()<<8);
-  result |= (next()<<16);
-  result |= (next()<<24);
-  return result;
-}
-
-string rname(uint8_t r) {
-  switch (r) {
-  case 0: return "EAX";
-  case 1: return "ECX";
-  case 2: return "EDX";
-  case 3: return "EBX";
-  case 4: return "ESP";
-  case 5: return "EBP";
-  case 6: return "ESI";
-  case 7: return "EDI";
-  default: raise << "invalid register " << r << '\n' << end();  return "";
-  }
 }
 
 :(before "End Includes")
