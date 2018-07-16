@@ -12,6 +12,10 @@ if (is_equal(argv[1], "translate")) {
   assert(argc > 3);
   program p;
   ifstream fin(argv[2]);
+  if (!fin) {
+    cerr << "could not open " << argv[2] << '\n';
+    return 1;
+  }
   parse(fin, p);
   if (trace_contains_errors()) return 1;
   transform(p);
