@@ -1,15 +1,15 @@
 ## read a character from stdin
 
-== 0x08048054  # code segment, after leaving room for ELF header
+== 0x08048074  # code segment, after leaving room for ELF header and segment headers
 # opcode        ModR/M                    SIB                   displacement    immediate
 # instruction   mod, reg, Reg/Mem bits    scale, index, base
 # 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-# 0: e_entry = 0x08048054
-  ## read(1, x, 1)
-  # fd = 1
-  bb                                                                            1/imm32       # copy 1 to EBX
+
+  ## read(stdin, x, 1)
+  # fd = 0 (stdin)
+  bb                                                                            0/imm32       # copy 0 to EBX
   # set location to write to
-  b9                                                                            00 90 04 08   # copy 0x08040000 to ECX
+  b9                                                                            a7 90 04 08   # copy 0x080490a7 to ECX
   # size = 1 character
   ba                                                                            1/imm32       # copy 1 to EDX
   # syscall = read
@@ -17,8 +17,23 @@
   # call
   cd                                                                            128/imm8      # int 80h
 
+  ## write(stdout, x, 1)
+  # fd = 1 (stdout)
+  bb                                                                            1/imm32       # copy 1 to EBX
+  # set location to write to
+  b9                                                                            a7 90 04 08   # copy 0x080490a7 to ECX
+  # size = 1 character
+  ba                                                                            1/imm32       # copy 1 to EDX
+  # syscall = write
+  b8                                                                            4/imm32       # copy 3 to EAX
+  # call
+  cd                                                                            128/imm8      # int 80h
+
   ## exit(EBX)
   b8                                                                            1/imm32       # copy 1 to EAX
   cd                                                                            128/imm8      # int 80h
+
+== 0x080490a7
+00 00 00 00  # space for read() to write to
 
 # vim:ft=subx:nowrap

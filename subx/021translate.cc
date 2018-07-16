@@ -88,9 +88,9 @@ void dump_elf_header(ostream& out, const program& p) {
     // p_offset
     emit(p_offset);
     // p_vaddr
-    emit(e_entry);
+    emit(p.segments.at(i).start);
     // p_paddr
-    emit(e_entry);
+    emit(p.segments.at(i).start);
     // p_filesz
     uint32_t size = size_of(p.segments.at(i));
     assert(size < SEGMENT_SIZE);
@@ -101,7 +101,7 @@ void dump_elf_header(ostream& out, const program& p) {
     uint32_t p_flags = (i == 0) ? /*r-x*/0x5 : /*rw-*/0x6;  // convention: only first segment is code
     emit(p_flags);
     // p_align
-    uint32_t p_align = 0x4;
+    uint32_t p_align = 0x1000;  // smaller alignments may not be respected by the kernel
     emit(p_align);
 
     // prepare for next segment
