@@ -21,6 +21,7 @@ if (is_equal(argv[1], "translate")) {
   transform(p);
   if (trace_contains_errors()) return 1;
   dump_elf(p, argv[3]);
+  if (trace_contains_errors()) unlink(argv[3]);
 }
 
 :(code)
@@ -105,6 +106,11 @@ void dump_elf_header(ostream& out, const program& p) {
     // object file must be a multiple of the system page size." -- http://refspecs.linuxfoundation.org/ELF/zSeries/lzsabi0_zSeries/c2083.html
     uint32_t p_align = 0x1000;
     emit(p_align);
+
+    if (p_offset % p_align != p.segments.at(i).start % p_align) {
+      raise << "segment starting at 0x" << HEXWORD << p.segments.at(i).start << " is improperly aligned; alignment for p_offset " << p_offset << " should be " << (p_offset % p_align) << " but is " << (p.segments.at(i).start % p_align) << '\n' << end();
+      return;
+    }
 
     // prepare for next segment
     p_offset += size;
