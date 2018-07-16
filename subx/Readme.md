@@ -10,10 +10,8 @@ and libc.)
 1. It seems wrong-headed that our computers look polished but are plagued by
    foundational problems of security and reliability. I'd like to learn to
    walk before I try to run, use the computer only to check my program for
-   errors and not hide low-level details. That may simplify the hard problems.
-   It adds to the burden of the programmer, but computers have been failing to
-   relieve the programmer entirely. Our abstractions so far leak at
-   inopportune times.
+   errors rather than to hide low-level details. This approach adds to the
+   burden of the programmer, but may make the hard problems more tractable.
 
 2. The software in our computers has grown incomprehensible. Nobody
    understands it all, not even experts. Even simple programs written by a
