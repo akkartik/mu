@@ -75,6 +75,7 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
   uint32_t p_offset = u32_in(&elf_contents[offset + 4]);
   uint32_t p_vaddr = u32_in(&elf_contents[offset + 8]);
   if (e_ehsize > p_vaddr) raise << "Invalid binary; program header overlaps ELF header\n" << die();
+  if ((p_vaddr & 0xfffff000) != 0x08048000) raise << "Currently only supporting binaries starting in the default page 0x08048000, but code segment starts at 0x" << HEXWORD << p_vaddr << '\n' << die();
   // unused: p_paddr
   uint32_t p_filesz = u32_in(&elf_contents[offset + 16]);
   uint32_t p_memsz = u32_in(&elf_contents[offset + 20]);
