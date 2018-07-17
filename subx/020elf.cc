@@ -4,6 +4,7 @@
 :(before "End Main")
 assert(argc > 1);
 if (is_equal(argv[1], "run")) {
+  START_TRACING_UNTIL_END_OF_SCOPE;
   assert(argc > 2);
   reset();
   cerr << std::hex;
@@ -59,9 +60,9 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
   for (size_t i = 0;  i < e_phnum;  ++i)
     load_segment_from_program_header(elf_contents, size, e_phoff + i*e_phentsize, e_ehsize);
 
-  // TODO: need to set up real stack somewhere
-
-  Reg[ESP].u = Reg[EBP].u = End_of_program;
+  // initialize code and stack
+  Reg[ESP].u = AFTER_STACK;
+  Reg[EBP].u = 0;
   EIP = e_entry;
 }
 

@@ -1,5 +1,6 @@
 :(before "End Single-Byte Opcodes")
 case 0xcd: {  // int imm8 (software interrupt)
+  trace(2, "run") << "syscall" << end();
   uint8_t code = next();
   if (code != 0x80) {
     raise << "Unimplemented interrupt code " << HEXBYTE << code << '\n' << end();
@@ -17,6 +18,7 @@ void process_int80() {
     exit(/*exit code*/Reg[EBX].u);
     break;
   case 3:
+    DUMP("");
     Reg[EAX].i = read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     break;
   case 4:

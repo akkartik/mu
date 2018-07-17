@@ -133,6 +133,7 @@ void run_one_instruction() {
     // End Two-Byte Opcodes Starting With 0f
     default:
       cerr << "unrecognized second opcode after 0f: " << HEXBYTE << NUM(op2) << '\n';
+      DUMP("");
       exit(1);
     }
     break;
@@ -144,16 +145,19 @@ void run_one_instruction() {
       // End Three-Byte Opcodes Starting With f3 0f
       default:
         cerr << "unrecognized third opcode after f3 0f: " << HEXBYTE << NUM(op3) << '\n';
+        DUMP("");
         exit(1);
       }
       break;
     default:
       cerr << "unrecognized second opcode after f3: " << HEXBYTE << NUM(op2) << '\n';
+      DUMP("");
       exit(1);
     }
     break;
   default:
     cerr << "unrecognized opcode: " << HEXBYTE << NUM(op) << '\n';
+    DUMP("");
     exit(1);
   }
 }
