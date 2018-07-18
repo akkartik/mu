@@ -12,6 +12,8 @@ and libc.)
    walk before I try to run, use the computer only to check my program for
    errors rather than to hide low-level details. This approach adds to the
    burden of the programmer, but may make the hard problems more tractable.
+   We can always add HLLs back once the foundations are redone, but it seems
+   valuable to not require a HLL to build the foundations.
 
 2. The software in our computers has grown incomprehensible. Nobody
    understands it all, not even experts. Even simple programs written by a
