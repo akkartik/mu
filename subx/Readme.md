@@ -12,16 +12,18 @@ and libc.)
    walk before I try to run. The plan: start out using the computer only to
    check my program for errors rather than to hide low-level details. Force
    myself to think about security by living with raw machine code for a while.
-   Reintroduce high level languages only after confidence is regained in the
-   foundations. Delegate only when I can verify with confidence.
+   Reintroduce high level languages (HLLs) only after confidence is regained
+   in the foundations. Delegate only when I can verify with confidence.
 
 2. The software in our computers has grown incomprehensible. Nobody
    understands it all, not even experts. Even simple programs written by a
    single author require lots of time for others to comprehend. Compilers are
    a prime example, growing so complex that programmers have to choose to
-   either program them or use them. I'd like to explore how much of a HLL I
-   can build without an optimizing compiler, and see if the result is more
-   comprehensible by others. ([More details.](http://akkartik.name/about))
+   either program them or use them. I think they may also contribute to the
+   incomprehensibility of the stack above them. I'd like to explore how much
+   of a HLL I can build without a monolithic optimizing compiler, and see if
+   deconstructing the work of the compiler can make the stack as a whole more
+   comprehensible to others.
 
 3. I want to learn about the internals of the infrastructure we all rely on in
    our lives.
