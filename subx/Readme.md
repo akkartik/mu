@@ -9,11 +9,11 @@ and libc.)
 
 1. It seems wrong-headed that our computers look polished but are plagued by
    foundational problems of security and reliability. I'd like to learn to
-   walk before I try to run, use the computer only to check my program for
-   errors rather than to hide low-level details. This approach adds to the
-   burden of the programmer, but may make the hard problems more tractable.
-   We can always add HLLs back once the foundations are redone, but it seems
-   valuable to not require a HLL to build the foundations.
+   walk before I try to run. The plan: start out using the computer only to
+   check my program for errors rather than to hide low-level details. Force
+   myself to think about security by living with raw machine code for a while.
+   Reintroduce high level languages only after confidence is regained in the
+   foundations. Delegate only when I can verify with confidence.
 
 2. The software in our computers has grown incomprehensible. Nobody
    understands it all, not even experts. Even simple programs written by a
