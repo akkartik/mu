@@ -11,7 +11,7 @@
 # opcode        ModR/M                    SIB                   displacement    immediate
 # instruction   mod, reg, Reg/Mem bits    scale, index, base
 # 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                            42/imm32
+  bb                                                                            42/imm32      # copy 42 to EBX
 +translate: converting '42/imm32' to '2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX
 
