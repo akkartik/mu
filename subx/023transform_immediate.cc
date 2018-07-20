@@ -35,25 +35,29 @@ void transform_immediate(program& p) {
 }
 
 void transform_immediate(segment& seg) {
-  for (int i = 0;  i < SIZE(seg.lines);  ++i) {
-    for (int j = 0;  j < SIZE(seg.lines.at(i).words);  ++j) {
-      if (contains_immediate_metadata(seg.lines.at(i).words.at(j)))
-        transform_immediate(seg.lines.at(i).words, j);
-    }
-  }
+  for (int i = 0;  i < SIZE(seg.lines);  ++i)
+    for (int j = 0;  j < SIZE(seg.lines.at(i).words);  ++j)
+      transform_immediate(seg.lines.at(i).words, j);
 }
 
 void transform_immediate(vector<word>& line, int index) {
   assert(index < SIZE(line));
-  if (contains_imm8_metadata(line.at(index)))
-    transform_imm8(line.at(index));
-  else
+  if (contains_metadata(line.at(index), "imm32"))
     transform_imm32(line, index);
+  else if (contains_metadata(line.at(index), "imm8"))
+    transform_imm8(line.at(index));
+}
+
+bool contains_metadata(const word& curr, const string& m) {
+  for (int k = 0;  k < SIZE(curr.metadata);  ++k)
+    if (curr.metadata.at(k) == m)
+      return true;
+  return false;
 }
 
 void transform_imm8(word& w) {
   // convert decimal to hex
-  uint32_t val = parse_decimal(w.data);
+  uint32_t val = parse_int(w.data);
   if (trace_contains_errors()) return;
   if (val > 0xff) {
     raise << "invalid /imm8 word " << w.data << '\n' << end();
@@ -66,7 +70,7 @@ void transform_imm8(word& w) {
 void transform_imm32(vector<word>& line, int index) {
   vector<word>::iterator find(vector<word>&, int);
   vector<word>::iterator x = find(line, index);
-  uint32_t val = parse_decimal(x->data);
+  uint32_t val = parse_int(x->data);
   if (trace_contains_errors()) return;
   string orig = x->original;
   x = line.erase(x);
@@ -105,9 +109,11 @@ string to_string(const vector<word>& in) {
   return out.str();
 }
 
-uint32_t parse_decimal(const string& s) {
+uint32_t parse_int(const string& s) {
   istringstream in(s);
   uint32_t result = 0;
+  if (starts_with(s, "0x"))
+    in >> std::hex;
   in >> result;
   if (!in) {
     raise << "not a number: " << s << '\n' << end();
@@ -122,28 +128,15 @@ string serialize_hex(const int val) {
   return out.str();
 }
 
-void flag_immediate(const segment& s) {
-  for (int i = 0;  i < SIZE(s.lines);  ++i)
-    for (int j = 0;  j < SIZE(s.lines.at(i).words);  ++j)
-      if (contains_immediate_metadata(s.lines.at(i).words.at(j)))
+void flag_immediate(const segment& seg) {
+  for (int i = 0;  i < SIZE(seg.lines);  ++i) {
+    const vector<word>& line = seg.lines.at(i).words;
+    for (int j = 0;  j < SIZE(line);  ++j) {
+      if (contains_metadata(line.at(j), "imm32")
+          || contains_metadata(line.at(j), "imm8"))
         raise << "/imm8 and /imm32 only permitted in code segments, and we currently only allow the very first segment to be code.\n" << end();
-}
-
-bool contains_immediate_metadata(const word& curr) {
-  for (int k = 0;  k < SIZE(curr.metadata);  ++k) {
-      if (curr.metadata.at(k) == "imm8"
-          || curr.metadata.at(k) == "imm32")
-        return true;
+    }
   }
-  return false;
-}
-
-bool contains_imm8_metadata(const word& curr) {
-  for (int k = 0;  k < SIZE(curr.metadata);  ++k) {
-      if (curr.metadata.at(k) == "imm8")
-        return true;
-  }
-  return false;
 }
 
 // helper
@@ -154,3 +147,12 @@ void transform(const string& text_bytes) {
   if (trace_contains_errors()) return;
   transform(p);
 }
+
+:(scenario translate_immediate_constants_hex)
+== 0x1
+# opcode        ModR/M                    SIB                   displacement    immediate
+# instruction   mod, reg, Reg/Mem bits    scale, index, base
+# 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
+  bb                                                                            0x2a/imm32    # copy 42 to EBX
++translate: converting '0x2a/imm32' to '2a 00 00 00'
++run: copy imm32 0x0000002a to EBX
