@@ -27,6 +27,19 @@ uint32_t EIP = 1;  // preserve null pointer
 bzero(Reg, sizeof(Reg));
 EIP = 1;  // preserve null pointer
 
+:(before "End Help Contents")
+cerr << "  registers\n";
+:(before "End Help Texts")
+put(Help, "registers",
+  "SubX currently supports 8 integer registers, numbered from 0 to 7.\n"
+  "There's also a register for the address of the currently executing instruction. It is modified by jumps.\n"
+  "Various instructions modify one or more of 3 flags, as a side-effect:\n"
+  "- the sign flag: usually set if an arithmetic result is negative, or reset if not.\n"
+  "- the zero flag: usually set if a result is zero, or reset if not.\n"
+  "- the overflow flag: usually set if an arithmetic result overflows.\n"
+  "We don't support non-integer (floating-point) registers yet.\n"
+);
+
 :(before "End Globals")
 // the subset of x86 flag registers we care about
 bool SF = false;  // sign flag

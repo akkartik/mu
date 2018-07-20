@@ -13,7 +13,9 @@ and libc.)
    check my program for errors rather than to hide low-level details. Force
    myself to think about security by living with raw machine code for a while.
    Reintroduce high level languages (HLLs) only after confidence is regained
-   in the foundations. Delegate only when I can verify with confidence.
+   in the foundations (and when the foundations are ergonomic enough to
+   support developing a compiler in them). Delegate only when I can verify
+   with confidence.
 
 2. The software in our computers has grown incomprehensible. Nobody
    understands it all, not even experts. Even simple programs written by a
