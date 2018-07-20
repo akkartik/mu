@@ -1,5 +1,20 @@
 //: Loading programs into the VM. 
 
+:(before "End Help Texts")
+put(Help, "syntax",
+  "SubX programs consist of segments, each segment in turn consisting of lines.\n"
+  "Line-endings are significant; each line should contain a single instruction, macro or directive.\n"
+  "Comments start with the '#' character. It should be at the start of a word (start of line, or following a space).\n"
+  "Each segment starts with a header line: a '--' delimiter followed by the starting address for the segment.\n"
+  "The starting address for a segment has some finicky requirements. But just start with a round number, and `subx` will try to guide you to the right answer.\n"
+  "A good default is to try to start the first segment at the default address of 0x08048000, and to start subsequent segments at least 0x1000 (most common page size) bytes after.\n"
+  "If a segment occupies than 0x1000 bytes you'll need to push subsequent segments further down.\n"
+  "Currently only the first segment contains executable code (because it gets annoying to have to change addresses in later segments every time an earlier one changes length; one of those finicky requirements).\n"
+  "Programming in machine code can be annoying, but let's see if we can make it nice enough to be able to write a compiler in it.\n"
+);
+:(before "End Help Contents")
+cerr << "  syntax\n";
+
 :(scenario add_imm32_to_eax)
 # At the lowest level, SubX programs are a series of hex bytes, each
 # (variable-length) instruction on one line.

@@ -5,15 +5,7 @@
 if (argc <= 1 || is_equal(argv[1], "--help")) {
   //: this is the functionality later layers will provide
   // currently no automated tests for commandline arg parsing
-  cerr << "Usage:\n"
-       << "  subx test\n"
-       << "  subx --help\n"
-       << "  subx run <ELF binary>\n"
-       << "  subx translate <input 'source' file> <output ELF binary>\n"
-       << "\n"
-       << "To start learning how to write SubX programs, run:\n"
-       << "  subx help\n"
-       ;
+  cerr << get(Help, "usage");
   return 0;
 }
 
@@ -38,7 +30,7 @@ if (is_equal(argv[1], "help")) {
 :(code)
 void help_contents() {
   cerr << "Available top-level topics:\n";
-  cerr << "  syntax\n";
+  cerr << "  usage\n";
   // End Help Contents
 }
 
@@ -48,16 +40,23 @@ map<string, string> Help;
 init_help();
 :(code)
 void init_help() {
-  put(Help, "syntax",
-    "SubX programs consist of segments, each segment in turn consisting of lines.\n"
-    "Line-endings are significant; each line should contain a single instruction, macro or directive.\n"
-    "Comments start with the '#' character. It should be at the start of a word (start of line, or following a space).\n"
-    "Each segment starts with a header line: a '--' delimiter followed by the starting address for the segment.\n"
-    "The starting address for a segment has some finicky requirements. But just start with a round number, and `subx` will try to guide you to the right answer.\n"
-    "A good default is to try to start the first segment at the default address of 0x08048000, and to start subsequent segments at least 0x1000 (most common page size) bytes after.\n"
-    "If a segment occupies than 0x1000 bytes you'll need to push subsequent segments further down.\n"
-    "Currently only the first segment contains executable code (because it gets annoying to have to change addresses in later segments every time an earlier one changes length; one of those finicky requirements).\n"
-    "Programming in machine code can be annoying, but let's see if we can make it nice enough to be able to write a compiler in it.\n"
+  put(Help, "usage",
+    "Welcome to SubX, a better way to program in machine code.\n"
+    "SubX uses a subset of x86 machine code. SubX programs should run without modification on Linux computers.\n"
+    "It provides a better experience and better error messages than programming directly in machine code, but you have to stick to the instructions it supports.\n"
+    "\n"
+    "== Ways to invoke subx\n"
+    "- Run tests:\n"
+    "    subx test\n"
+    "- See this message:\n"
+    "    subx --help\n"
+    "- Convert a textual SubX program into a standard ELF binary that you can run on your computer:\n"
+    "    subx translate <input 'source' file> <output ELF binary>\n"
+    "- Run a SubX binary using SubX itself (for better error messages):\n"
+    "    subx run <ELF binary>\n"
+    "\n"
+    "To start learning how to write SubX programs, run:\n"
+    "  subx help\n"
   );
   // End Help Texts
 }
