@@ -135,6 +135,13 @@ int main(int argc, char* argv[]) {
 
 //: Without directives or with the :(code) directive, lines get added at the
 //: end.
+//:
+//: Regardless of where functions are defined, we can call them anywhere we
+//: like as long as we format the function header in a specific way: put it
+//: all on a single line without indent, end the line with ') {' and no
+//: trailing whitespace. As long as functions uniformly start this way, our
+//: 'build' script contains a little command to automatically generate
+//: declarations for them.
 :(code)
 void reset() {
   // End Reset

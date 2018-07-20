@@ -10,19 +10,56 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
        << "  subx --help\n"
        << "  subx run <ELF binary>\n"
        << "  subx translate <input 'source' file> <output ELF binary>\n"
+       << "\n"
+       << "To start learning how to write SubX programs, run:\n"
+       << "  subx help\n"
        ;
   return 0;
 }
 
-//:: Helper function used by the above fragment of code (and later layers too,
-//:: who knows?).
-//: The :(code) directive appends function definitions to the end of the
-//: project. Regardless of where functions are defined, we can call them
-//: anywhere we like as long as we format the function header in a specific
-//: way: put it all on a single line without indent, end the line with ') {'
-//: and no trailing whitespace. As long as functions uniformly start this
-//: way, our 'build' script contains a little command to automatically
-//: generate declarations for them.
+if (is_equal(argv[1], "help")) {
+  if (argc == 2) {
+    cerr << "help on what?\n";
+    help_contents();
+    return 0;
+  }
+  else if (contains_key(Help, argv[2])) {
+    cerr << get(Help, argv[2]);
+    return 0;
+  }
+  else {
+    cerr << "No help found for '" << argv[2] << "'\n";
+    help_contents();
+    cerr << "Please check your command for typos.\n";
+    return 1;
+  }
+}
+
+:(code)
+void help_contents() {
+  cerr << "Available top-level topics:\n";
+  cerr << "  syntax\n";
+  // End Help Contents
+}
+
+:(before "End Globals")
+map<string, string> Help;
+:(before "End One-time Setup")
+init_help();
+:(code)
+void init_help() {
+  put(Help, "syntax",
+    "SubX programs consist of segments, each segment in turn consisting of lines.\n"
+    "Line-endings are significant; each line should contain a single instruction, macro or directive.\n"
+    "Comments start with the '#' character. It should be at the start of a word (start of line, or following a space).\n"
+    "Each segment starts with a header line: a '--' delimiter followed by the starting address for the segment.\n"
+    "The starting address for a segment has some finicky requirements. But just start with a round number, and `subx` will try to guide you to the right answer.\n"
+    "Currently only the first segment contains executable code (because it gets annoying to have to change addresses in later segments every time an earlier one changes length).\n"
+    "Programming in machine code can be annoying, but let's see if we can make it nice enough to be able to write a compiler in it.\n"
+  );
+  // End Help Texts
+}
+
 :(code)
 bool is_equal(char* s, const char* lit) {
   return strncmp(s, lit, strlen(lit)) == 0;
