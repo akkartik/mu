@@ -46,8 +46,6 @@ void run(const string& text_bytes) {
   if (trace_contains_errors()) return;
   load(p);
   if (trace_contains_errors()) return;
-  if (p.segments.empty()) return;
-  EIP = p.segments.at(0).start;
   while (EIP < End_of_program)
     run_one_instruction();
 }
@@ -153,6 +151,10 @@ void transform(program& p) {
 //:: load
 
 void load(const program& p) {
+  if (p.segments.empty()) {
+    raise << "no code to run\n" << end();
+    return;
+  }
   for (int i = 0;   i < SIZE(p.segments);  ++i) {
     const segment& seg = p.segments.at(i);
     uint32_t addr = seg.start;
@@ -170,6 +172,7 @@ void load(const program& p) {
     }
     if (i == 0) End_of_program = addr;
   }
+  EIP = p.segments.at(0).start;
 }
 
 uint8_t hex_byte(const string& s) {
