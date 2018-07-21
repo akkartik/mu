@@ -1,6 +1,9 @@
 //:: call
 
-:(scenario call_imm32)
+:(before "End Initialize Op Names(name)")
+put(name, 0xe8, "call disp32");
+
+:(scenario call_disp32)
 % Reg[ESP].u = 0x64;
 == 0x1
 # op  ModR/M  SIB   displacement  immediate
@@ -12,7 +15,7 @@
 +run: jumping to 0x000000a6
 
 :(before "End Single-Byte Opcodes")
-case 0xe8: {  // call imm32 relative to next EIP
+case 0xe8: {  // call disp32 relative to next EIP
   int32_t offset = imm32();
   trace(2, "run") << "call imm32 0x" << HEXWORD << offset << end();
   push(EIP);
@@ -62,6 +65,9 @@ a0 00 00 00  # 0xa0
 +run: jumping to 0x000000a3
 
 //:: ret
+
+:(before "End Initialize Op Names(name)")
+put(name, 0xc3, "return from most recent unfinished call");
 
 :(scenario ret)
 % Reg[ESP].u = 0x60;

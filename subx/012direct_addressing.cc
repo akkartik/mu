@@ -276,7 +276,7 @@ case 0x89: {  // copy r32 to r/m32
 //:: xchg
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x01, "swap the contents of r32 and rm32");
+put(name, 0x87, "swap the contents of r32 and rm32");
 
 :(scenario xchg_r32_with_r32)
 % Reg[EBX].i = 0xaf;
