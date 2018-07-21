@@ -44,7 +44,7 @@ init_help();
 void init_help() {
   put(Help, "usage",
     "Welcome to SubX, a better way to program in machine code.\n"
-    "SubX uses a subset of x86 machine code. SubX programs should run without modification on Linux computers.\n"
+    "SubX uses a subset of the x86 instruction set. SubX programs will run without modification on Linux computers.\n"
     "It provides a better experience and better error messages than programming directly in machine code, but you have to stick to the instructions it supports.\n"
     "\n"
     "== Ways to invoke subx\n"
