@@ -369,8 +369,6 @@ string trim(const string& s) {
 using std::vector;
 #include <list>
 using std::list;
-#include <map>
-using std::map;
 #include <set>
 using std::set;
 #include <algorithm>

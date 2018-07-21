@@ -38,6 +38,9 @@ void help_contents() {
 
 :(before "End Globals")
 map<string, string> Help;
+:(before "End Includes")
+#include <map>
+using std::map;
 :(before "End One-time Setup")
 init_help();
 :(code)
