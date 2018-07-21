@@ -2,6 +2,9 @@
 
 //:: jump
 
+:(before "End Initialize Op Names(name)")
+put(name, 0xe9, "jump disp16 bytes away");
+
 :(scenario jump_rel16)
 == 0x1
 # op  ModR/M  SIB   displacement  immediate

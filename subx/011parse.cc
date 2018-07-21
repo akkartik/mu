@@ -225,3 +225,26 @@ int32_t imm32() {
   result |= (next()<<24);
   return result;
 }
+
+//: start tracking supported opcodes
+:(before "End Globals")
+map</*op*/uint8_t, string> name;
+:(before "End One-time Setup")
+init_op_names();
+:(code)
+void init_op_names() {
+  put(name, 0xf4, "halt");
+  put(name, 0x05, "add imm32 to register R0 (EAX)");
+  // End Initialize Op Names(name)
+}
+
+:(before "End Help Special-cases(key)")
+if (key == "opcodes") {
+  cerr << "Opcodes currently supported by SubX:\n";
+  for (map<uint8_t, string>::iterator p = name.begin();  p != name.end();  ++p)
+    cerr << "  " << HEXBYTE << NUM(p->first) << ": " << p->second << '\n';
+  cerr << "Coming soon: `subx help operands` for details on words like 'r32' and 'disp8'.\n";
+  return 0;
+}
+:(before "End Help Contents")
+cerr << "  opcodes\n";

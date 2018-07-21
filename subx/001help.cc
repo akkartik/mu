@@ -15,12 +15,14 @@ if (is_equal(argv[1], "help")) {
     help_contents();
     return 0;
   }
-  else if (contains_key(Help, argv[2])) {
-    cerr << get(Help, argv[2]);
+  string key(argv[2]);
+  // End Help Special-cases(key)
+  if (contains_key(Help, key)) {
+    cerr << get(Help, key);
     return 0;
   }
   else {
-    cerr << "No help found for '" << argv[2] << "'\n";
+    cerr << "No help found for '" << key << "'\n";
     help_contents();
     cerr << "Please check your command for typos.\n";
     return 1;

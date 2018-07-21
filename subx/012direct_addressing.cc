@@ -1,5 +1,8 @@
 //: operating directly on a register
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x01, "add r32 to rm32");
+
 :(scenario add_r32_to_r32)
 % Reg[EAX].i = 0x10;
 % Reg[EBX].i = 1;
@@ -60,6 +63,9 @@ string rname(uint8_t r) {
 
 //:: subtract
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x29, "subtract r32 from rm32");
+
 :(scenario subtract_r32_from_r32)
 % Reg[EAX].i = 10;
 % Reg[EBX].i = 1;
@@ -82,6 +88,9 @@ case 0x29: {  // subtract r32 from r/m32
 }
 
 //:: and
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x21, "rm32 = bitwise AND of r32 with rm32");
 
 :(scenario and_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
@@ -106,6 +115,9 @@ case 0x21: {  // and r32 with r/m32
 
 //:: or
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x09, "rm32 = bitwise OR of r32 with rm32");
+
 :(scenario or_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
 % Reg[EBX].i = 0xa0b0c0d0;
@@ -129,6 +141,9 @@ case 0x09: {  // or r32 with r/m32
 
 //:: xor
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x31, "rm32 = bitwise XOR of r32 with rm32");
+
 :(scenario xor_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
 % Reg[EBX].i = 0xaabbc0d0;
@@ -151,6 +166,9 @@ case 0x31: {  // xor r32 with r/m32
 }
 
 //:: not
+
+:(before "End Initialize Op Names(name)")
+put(name, 0xf7, "bitwise complement of rm32");
 
 :(scenario not_r32)
 % Reg[EBX].i = 0x0f0f00ff;
@@ -176,6 +194,9 @@ case 0xf7: {  // xor r32 with r/m32
 }
 
 //:: compare (cmp)
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x39, "set SF if rm32 < r32");
 
 :(scenario compare_r32_with_r32_greater)
 % Reg[EAX].i = 0x0a0b0c0d;
@@ -228,6 +249,9 @@ case 0x39: {  // set SF if r/m32 < r32
 
 //:: copy (mov)
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x89, "copy r32 to rm32");
+
 :(scenario copy_r32_to_r32)
 % Reg[EBX].i = 0xaf;
 == 0x1
@@ -250,6 +274,9 @@ case 0x89: {  // copy r32 to r/m32
 }
 
 //:: xchg
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x01, "swap the contents of r32 and rm32");
 
 :(scenario xchg_r32_with_r32)
 % Reg[EBX].i = 0xaf;
@@ -278,6 +305,16 @@ case 0x87: {  // exchange r32 with r/m32
 }
 
 //:: push
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x50, "push R0 (EAX) to stack");
+put(name, 0x51, "push R1 (ECX) to stack");
+put(name, 0x52, "push R2 (EDX) to stack");
+put(name, 0x53, "push R3 (EBX) to stack");
+put(name, 0x54, "push R4 (ESP) to stack");
+put(name, 0x55, "push R5 (EBP) to stack");
+put(name, 0x56, "push R6 (ESI) to stack");
+put(name, 0x57, "push R7 (EDI) to stack");
 
 :(scenario push_r32)
 % Reg[ESP].u = 0x64;
@@ -312,6 +349,16 @@ void push(uint32_t val) {
 }
 
 //:: pop
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x58, "pop top of stack to R0 (EAX)");
+put(name, 0x59, "pop top of stack to R1 (ECX)");
+put(name, 0x5a, "pop top of stack to R2 (EDX)");
+put(name, 0x5b, "pop top of stack to R3 (EBX)");
+put(name, 0x5c, "pop top of stack to R4 (ESP)");
+put(name, 0x5d, "pop top of stack to R5 (EBP)");
+put(name, 0x5e, "pop top of stack to R6 (ESI)");
+put(name, 0x5f, "pop top of stack to R7 (EDI)");
 
 :(scenario pop_r32)
 % Reg[ESP].u = 0x60;

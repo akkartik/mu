@@ -27,6 +27,9 @@ case 0:  // indirect addressing
 
 //:
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x03, "add rm32 to r32");
+
 :(scenario add_mem_at_r32_to_r32)
 % Reg[EAX].i = 0x60;
 % Reg[EBX].i = 0x10;
@@ -66,6 +69,9 @@ case 0x03: {  // add r/m32 to r32
 +run: storing 0x00000009
 
 //:
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x2b, "subtract rm32 from r32");
 
 :(scenario subtract_mem_at_r32_from_r32)
 % Reg[EAX].i = 0x60;
@@ -107,6 +113,9 @@ case 0x2b: {  // subtract r/m32 from r32
 
 //:
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x23, "r32 = bitwise AND of r32 with rm32");
+
 :(scenario and_mem_at_r32_with_r32)
 % Reg[EAX].i = 0x60;
 % Reg[EBX].i = 0x0a0b0c0d;
@@ -147,6 +156,9 @@ case 0x23: {  // and r/m32 with r32
 
 //:
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x0b, "r32 = bitwise OR of r32 with rm32");
+
 :(scenario or_mem_at_r32_with_r32)
 % Reg[EAX].i = 0x60;
 % Reg[EBX].i = 0xa0b0c0d0;
@@ -186,6 +198,9 @@ case 0x0b: {  // or r/m32 with r32
 +run: storing 0x0a0bccdd
 
 //:
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x33, "r32 = bitwise XOR of r32 with rm32");
 
 :(scenario xor_mem_at_r32_with_r32)
 % Reg[EAX].i = 0x60;
@@ -267,6 +282,9 @@ ff 00 0f 0f  # 0x0f0f00ff
 
 //:
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x3b, "set SF if rm32 > r32");
+
 :(scenario compare_r32_with_mem_at_r32_greater)
 % Reg[EAX].i = 0x60;
 % Reg[EBX].i = 0x0a0b0c0d;
@@ -337,6 +355,9 @@ case 0x3b: {  // set SF if r32 < r/m32
 
 //:
 
+:(before "End Initialize Op Names(name)")
+put(name, 0x8b, "copy rm32 to r32");
+
 :(scenario copy_mem_at_r32_to_r32)
 % Reg[EAX].i = 0x60;
 == 0x1  # code segment
@@ -361,6 +382,9 @@ case 0x8b: {  // copy r32 to r/m32
 }
 
 //:: jump
+
+:(before "End Initialize Op Names(name)")
+put(name, 0xff, "jump/push/call rm32 depending on subop");
 
 :(scenario jump_mem_at_r32)
 % Reg[EAX].i = 0x60;
@@ -421,6 +445,9 @@ case 6: {  // push r/m32 to stack
 }
 
 //:: pop
+
+:(before "End Initialize Op Names(name)")
+put(name, 0x8f, "pop top of stack to rm32");
 
 :(scenario pop_mem_at_r32)
 % Reg[EAX].i = 0x60;

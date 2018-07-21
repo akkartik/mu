@@ -31,12 +31,14 @@ EIP = 1;  // preserve null pointer
 cerr << "  registers\n";
 :(before "End Help Texts")
 put(Help, "registers",
-  "SubX currently supports 8 integer registers, numbered from 0 to 7.\n"
+  "SubX currently supports eight 32-bit integer registers: R0 to R7.\n"
+  "R4 contains the top of the stack.\n"
   "There's also a register for the address of the currently executing instruction. It is modified by jumps.\n"
-  "Various instructions modify one or more of 3 flags, as a side-effect:\n"
-  "- the sign flag: usually set if an arithmetic result is negative, or reset if not.\n"
-  "- the zero flag: usually set if a result is zero, or reset if not.\n"
-  "- the overflow flag: usually set if an arithmetic result overflows.\n"
+  "Various instructions modify one or more of three 1-bit 'flag' registers, as a side-effect:\n"
+  "- the sign flag (SF): usually set if an arithmetic result is negative, or reset if not.\n"
+  "- the zero flag (ZF): usually set if a result is zero, or reset if not.\n"
+  "- the overflow flag (OF): usually set if an arithmetic result overflows.\n"
+  "The flag bits are read by conditional jumps.\n"
   "We don't support non-integer (floating-point) registers yet.\n"
 );
 
