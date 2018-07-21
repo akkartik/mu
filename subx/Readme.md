@@ -80,6 +80,11 @@ format. SubX is about programming with a small, regular subset of 32-bit x86:
   on unsigned integers)
 * Only relative jump instructions (with 8-bit or 16-bit offsets).
 
+For more details on programming in this subset, consult the online help:
+```
+$ ./subx help
+```
+
 ## Resources
 
 * [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
