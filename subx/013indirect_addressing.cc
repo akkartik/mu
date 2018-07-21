@@ -384,7 +384,7 @@ case 0x8b: {  // copy r32 to r/m32
 //:: jump
 
 :(before "End Initialize Op Names(name)")
-put(name, 0xff, "jump/push/call rm32 depending on subop");
+put(name, 0xff, "jump/push/call rm32 based on subop");
 
 :(scenario jump_mem_at_r32)
 % Reg[EAX].i = 0x60;
