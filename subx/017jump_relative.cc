@@ -32,6 +32,9 @@ int16_t imm16() {
 
 //:: jump if equal/zero
 
+:(before "End Initialize Op Names(name)")
+put(name_0f, 0x84, "jump disp16 bytes away if ZF is set");
+
 :(scenario je_rel16_success)
 % ZF = true;
 == 0x1
@@ -68,6 +71,9 @@ case 0x84: {  // jump rel16 if ZF
 
 //:: jump if not equal/not zero
 
+:(before "End Initialize Op Names(name)")
+put(name_0f, 0x85, "jump disp16 bytes away if ZF is not set");
+
 :(scenario jne_rel16_success)
 % ZF = false;
 == 0x1
@@ -103,6 +109,9 @@ case 0x85: {  // jump rel16 unless ZF
 -run: jump 5
 
 //:: jump if greater
+
+:(before "End Initialize Op Names(name)")
+put(name_0f, 0x8f, "jump disp16 bytes away if greater (ZF is unset, SF == OF)");
 
 :(scenario jg_rel16_success)
 % ZF = false;
@@ -144,6 +153,9 @@ case 0x8f: {  // jump rel16 if !SF and !ZF
 
 //:: jump if greater or equal
 
+:(before "End Initialize Op Names(name)")
+put(name_0f, 0x8d, "jump disp16 bytes away if greater or equal (SF == OF)");
+
 :(scenario jge_rel16_success)
 % SF = false;
 % OF = false;
@@ -181,6 +193,9 @@ case 0x8d: {  // jump rel16 if !SF
 -run: jump 5
 
 //:: jump if lesser
+
+:(before "End Initialize Op Names(name)")
+put(name_0f, 0x8c, "jump disp16 bytes away if lesser (SF != OF)");
 
 :(scenario jl_rel16_success)
 % ZF = false;
@@ -221,6 +236,9 @@ case 0x8c: {  // jump rel16 if SF and !ZF
 -run: jump 5
 
 //:: jump if lesser or equal
+
+:(before "End Initialize Op Names(name)")
+put(name_0f, 0x8e, "jump disp16 bytes away if lesser or equal (ZF is set or SF != OF)");
 
 :(scenario jle_rel16_equal)
 % ZF = true;
