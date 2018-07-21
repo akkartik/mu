@@ -235,7 +235,7 @@ init_op_names();
 :(code)
 void init_op_names() {
   put(name, 0xf4, "halt");
-  put(name, 0x05, "add imm32 to register R0 (EAX)");
+  put(name, 0x05, "add imm32 to R0 (EAX)");
   // End Initialize Op Names(name)
 }
 
