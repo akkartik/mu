@@ -206,7 +206,7 @@ if (key == "opcodes") {
     cerr << "  f3 " << HEXBYTE << NUM(p->first) << ": " << p->second << '\n';
   for (map<uint8_t, string>::iterator p = name_f3_0f.begin();  p != name_f3_0f.end();  ++p)
     cerr << "  f3 0f " << HEXBYTE << NUM(p->first) << ": " << p->second << '\n';
-  cerr << "Coming soon: `subx help operands` for details on words like 'r32' and 'disp8'.\n";
+  cerr << "Run `subx help instructions` for details on words like 'r32' and 'disp8'.\n";
   return 0;
 }
 :(before "End Help Contents")
