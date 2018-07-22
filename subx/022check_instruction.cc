@@ -11,6 +11,324 @@ put(Help, "instructions",
 :(before "End Help Contents")
 cerr << "  instructions\n";
 
+:(scenario check_missing_imm8_operand)
+% Hide_errors = true;
+== 0x1
+# opcode        ModR/M                    SIB                   displacement    immediate
+# instruction   mod, reg, Reg/Mem bits    scale, index, base
+# 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
+  cd                                                                                          # int ??
++error: 'cd' (software interrupt): missing imm8 operand
+
+:(before "End One-time Setup")
+Transform.push_back(check_operands);
+
+:(code)
+void check_operands(/*const*/ program& p) {
+  if (p.segments.empty()) return;
+  const segment& seg = p.segments.at(0);
+  for (int i = 0;  i < SIZE(seg.lines);  ++i) {
+    check_operands(seg.lines.at(i));
+    if (trace_contains_errors()) return;  // stop at the first mal-formed instruction
+  }
+}
+
+void check_operands(const line& inst) {
+  uint8_t op = hex_byte(inst.words.at(0).data);
+  if (trace_contains_errors()) return;
+  if (op == 0x0f) {
+    check_operands_0f(inst);
+    return;
+  }
+  if (op == 0xf3) {
+    check_operands_f3(inst);
+    return;
+  }
+  if (!contains_key(name, op)) {
+    raise << "unknown opcode '" << std::hex << op << "'\n" << end();
+    return;
+  }
+  check_operands(op, inst);
+}
+
+//: To check the operands for an opcode, we'll track the permitted operands
+//: for each supported opcode in a bitvector. That way we can often compute the
+//: bitvector for each instruction's operands and compare it with the expected.
+
+:(before "End Types")
+enum operand_type {
+  // start from the least significant bit
+  MODRM,  // more complex, may also involve disp8 or disp32
+  SUBOP,
+  DISP8,
+  DISP16,
+  DISP32,
+  IMM8,
+  IMM32,
+  NUM_OPERAND_TYPES
+};
+:(before "End Globals")
+vector<string> Operand_type_name;
+map<string, operand_type> Operand_type;
+:(before "End One-time Setup")
+init_op_types();
+:(code)
+void init_op_types() {
+  assert(NUM_OPERAND_TYPES <= /*bits in a uint8_t*/8);
+  Operand_type_name.resize(NUM_OPERAND_TYPES);
+  #define DEF(type) Operand_type_name.at(type) = tolower(#type), put(Operand_type, tolower(#type), type);
+  DEF(MODRM);
+  DEF(SUBOP);
+  DEF(DISP8);
+  DEF(DISP16);
+  DEF(DISP32);
+  DEF(IMM8);
+  DEF(IMM32);
+  #undef DEF
+}
+
+:(before "End Globals")
+map</*op*/uint8_t, /*bitvector*/uint8_t> Permitted_operands;
+const uint8_t INVALID_OPERANDS = 0xff;  // no instruction uses all the operands
+:(before "End One-time Setup")
+init_permitted_operands();
+:(code)
+void init_permitted_operands() {
+  //// Class A: just op, no operands
+  // halt
+  put(Permitted_operands, 0xf4, 0x00);
+  // push
+  put(Permitted_operands, 0x50, 0x00);
+  put(Permitted_operands, 0x51, 0x00);
+  put(Permitted_operands, 0x52, 0x00);
+  put(Permitted_operands, 0x53, 0x00);
+  put(Permitted_operands, 0x54, 0x00);
+  put(Permitted_operands, 0x55, 0x00);
+  put(Permitted_operands, 0x56, 0x00);
+  put(Permitted_operands, 0x57, 0x00);
+  // pop
+  put(Permitted_operands, 0x58, 0x00);
+  put(Permitted_operands, 0x59, 0x00);
+  put(Permitted_operands, 0x5a, 0x00);
+  put(Permitted_operands, 0x5b, 0x00);
+  put(Permitted_operands, 0x5c, 0x00);
+  put(Permitted_operands, 0x5d, 0x00);
+  put(Permitted_operands, 0x5e, 0x00);
+  put(Permitted_operands, 0x5f, 0x00);
+  // return
+  put(Permitted_operands, 0xc3, 0x00);
+
+  //// Class B: just op and disp8
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  0     0     0      |0       1     0     0
+
+  // jump
+  put(Permitted_operands, 0xeb, 0x04);
+  put(Permitted_operands, 0x74, 0x04);
+  put(Permitted_operands, 0x75, 0x04);
+  put(Permitted_operands, 0x7c, 0x04);
+  put(Permitted_operands, 0x7d, 0x04);
+  put(Permitted_operands, 0x7e, 0x04);
+  put(Permitted_operands, 0x7f, 0x04);
+
+  //// Class C: just op and disp16
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  0     0     0      |1       0     0     0
+  put(Permitted_operands, 0xe8, 0x08);  // jump
+
+  //// Class D: just op and disp32
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  0     0     1      |0       0     0     0
+  put(Permitted_operands, 0xe9, 0x10);  // call
+
+  //// Class E: just op and imm8
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  0     1     0      |0       0     0     0
+  put(Permitted_operands, 0xcd, 0x20);  // software interrupt
+
+  //// Class F: just op and imm32
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  1     0     0      |0       0     0     0
+  put(Permitted_operands, 0x05, 0x40);  // add
+  put(Permitted_operands, 0x2d, 0x40);  // subtract
+  put(Permitted_operands, 0x25, 0x40);  // and
+  put(Permitted_operands, 0x0d, 0x40);  // or
+  put(Permitted_operands, 0x35, 0x40);  // xor
+  put(Permitted_operands, 0x3d, 0x40);  // compare
+  put(Permitted_operands, 0x68, 0x40);  // push
+  // copy
+  put(Permitted_operands, 0xb8, 0x40);
+  put(Permitted_operands, 0xb9, 0x40);
+  put(Permitted_operands, 0xba, 0x40);
+  put(Permitted_operands, 0xbb, 0x40);
+  put(Permitted_operands, 0xbc, 0x40);
+  put(Permitted_operands, 0xbd, 0x40);
+  put(Permitted_operands, 0xbe, 0x40);
+  put(Permitted_operands, 0xbf, 0x40);
+
+  //// Class M: using ModR/M byte
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  0     0     0      |0       0     0     1
+
+  // add
+  put(Permitted_operands, 0x01, 0x01);
+  put(Permitted_operands, 0x03, 0x01);
+  // subtract
+  put(Permitted_operands, 0x29, 0x01);
+  put(Permitted_operands, 0x2b, 0x01);
+  // and
+  put(Permitted_operands, 0x21, 0x01);
+  put(Permitted_operands, 0x23, 0x01);
+  // or
+  put(Permitted_operands, 0x09, 0x01);
+  put(Permitted_operands, 0x0b, 0x01);
+  // complement
+  put(Permitted_operands, 0xf7, 0x01);
+  // xor
+  put(Permitted_operands, 0x31, 0x01);
+  put(Permitted_operands, 0x33, 0x01);
+  // compare
+  put(Permitted_operands, 0x39, 0x01);
+  put(Permitted_operands, 0x3b, 0x01);
+  // copy
+  put(Permitted_operands, 0x89, 0x01);
+  put(Permitted_operands, 0x8b, 0x01);
+  // swap
+  put(Permitted_operands, 0x87, 0x01);
+  // pop
+  put(Permitted_operands, 0x8f, 0x01);
+
+  //// Class O: op, ModR/M and subop (not r32)
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  0     0     0      |0       0     1     1
+  put(Permitted_operands, 0xff, 0x03);  // jump/push/call
+
+  //// Class N: op, ModR/M and imm32
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  1     0     0      |0       0     0     1
+  put(Permitted_operands, 0xc7, 0x41);  // copy
+
+  //// Class P: op, ModR/M, subop (not r32) and imm32
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  1     0     0      |0       0     1     1
+  put(Permitted_operands, 0x81, 0x43);  // combine
+}
+
+:(before "End Includes")
+#define HAS(bitvector, bit)  ((bitvector) & (1 << (bit)))
+#define SET(bitvector, bit)  ((bitvector) | (1 << (bit)))
+#define CLEAR(bitvector, bit)  ((bitvector) & (~(1 << (bit))))
+
+:(code)
+void check_operands(uint8_t op, const line& inst) {
+  uint8_t expected_bitvector = get(Permitted_operands, op);
+  if (HAS(expected_bitvector, MODRM))
+    check_operands_modrm(inst);
+  compare_bitvector(op, inst, CLEAR(expected_bitvector, MODRM));
+}
+
+void check_operands_modrm(const line& inst) {
+}
+
+void compare_bitvector(uint8_t op, const line& inst, uint8_t expected) {
+  uint8_t bitvector = compute_operand_bitvector(inst);
+  if (trace_contains_errors()) return;  // duplicate operand type
+  if (bitvector == 0 && expected != 0 && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
+  if (bitvector == expected) return;  // all good with this instruction
+  for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
+//?     cerr << "comparing " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
+    if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
+    const string& optype = Operand_type_name.at(i);
+    if ((bitvector & 0x1) > (expected & 0x1))
+      raise << "'" << to_string(inst) << "' (" << get(name, op) << "): unexpected " << optype << " operand\n" << end();
+    else
+      raise << "'" << to_string(inst) << "' (" << get(name, op) << "): missing " << optype << " operand\n" << end();
+    // continue giving all errors for a single instruction
+  }
+  // ignore settings in any unused bits
+}
+
+bool has_operands(const line& inst) {
+  if (SIZE(inst.words) == 1) return false;
+  if (inst.words.at(0).data == "0f" && SIZE(inst.words) == 2) return false;
+  if (inst.words.at(0).data == "f3" && SIZE(inst.words) == 2) return false;
+  if (inst.words.at(0).data == "f3" && inst.words.at(1).data == "0f" && SIZE(inst.words) == 3) return false;
+  return true;
+}
+
+uint32_t compute_operand_bitvector(const line& inst) {
+  uint32_t bitvector = 0;
+  for (int i = /*skip op*/1;  i < SIZE(inst.words);  ++i) {
+    bitvector = bitvector | bitvector_for_operand(inst.words.at(i));
+    if (trace_contains_errors()) return INVALID_OPERANDS;  // duplicate operand type
+  }
+  return bitvector;
+}
+
+// Scan the metadata of 'w' and return the bit corresponding to any operand type.
+// Also raise an error if metadata contains multiple operand types.
+uint32_t bitvector_for_operand(const word& w) {
+  uint32_t bv = 0;
+  bool found = false;
+  for (int i = 0;  i < SIZE(w.metadata);  ++i) {
+    const string& curr = w.metadata.at(i);
+    if (!contains_key(Operand_type, curr)) continue;  // ignore unrecognized metadata
+    if (found) {
+      raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
+      return INVALID_OPERANDS;
+    }
+    bv = (1 << get(Operand_type, curr));
+    found = true;
+  }
+  return bv;
+}
+
+:(scenario conflicting_operand_type)
+% Hide_errors = true;
+== 0x1
+cd 80/imm8/imm32
++error: '80/imm8/imm32' has conflicting operand types; it should have only one
+
+//:: similarly handle multi-byte opcodes
+
+:(code)
+void check_operands_0f(const line& inst) {
+  assert(inst.words.at(0).data == "0f");
+  if (SIZE(inst.words) == 1) {
+    raise << "no 2-byte opcode specified starting with '0f'\n" << end();
+    return;
+  }
+  uint8_t op = hex_byte(inst.words.at(1).data);
+  if (!contains_key(name_0f, op)) {
+    raise << "unknown 2-byte opcode '0f " << std::hex << op << "'\n" << end();
+    return;
+  }
+  check_operands_0f(op, inst);
+}
+
+void check_operands_f3(const line& inst) {
+  raise << "no supported opcodes starting with f3\n" << end();
+}
+
+void check_operands_0f(uint8_t op, const line& inst) {
+}
+
+string to_string(const line& inst) {
+  ostringstream out;
+  for (int i = 0;  i < SIZE(inst.words);  ++i) {
+    if (i > 0) out << ' ';
+    out << inst.words.at(i).original;
+  }
+  return out.str();
+}
+
+string tolower(const char* s) {
+  ostringstream out;
+  for (/*nada*/;  *s;  ++s)
+    out << static_cast<char>(tolower(*s));
+  return out.str();
+}
+
 //:: docs on each operand type
 
 :(before "End Help Texts")
@@ -84,3 +402,6 @@ void init_operand_type_help() {
     "32-bit value for many instructions.\n"
   );
 }
+
+:(before "End Includes")
+#include<cctype>
