@@ -5,6 +5,8 @@
 # Assumes there's only ever one file with any numeric prefix. If you move
 # 003trace.test.cc you might need to do some manual patch-up.
 
+set -e
+
 if [[ $# -eq 0 && `git diff HEAD |wc -l` -gt 0 ]]
 then
   echo "Uncommitted changes"
@@ -24,7 +26,6 @@ index=0
 ls [0-9]* |grep -v "trace.test" |sort -n |
   while read file
   do
-    echo $file >&2
     while [[ $file != `printf "%03d" $index`* ]]
     do
       echo
@@ -51,6 +52,7 @@ cat .layout |
       newfile=`printf "%03d" $index``root $file`
       if [[ $newfile != $file ]]
       then
+        echo git mv $file $newfile
         git mv $file $newfile
       fi
     fi
@@ -58,3 +60,6 @@ cat .layout |
   done
 
 rm .layout
+
+# Scenarios considered:
+#   Don't redo the layout if Vim exits with error.
