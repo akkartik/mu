@@ -225,12 +225,11 @@ void init_permitted_operands() {
 void check_operands(uint8_t op, const line& inst) {
   uint8_t expected_bitvector = get(Permitted_operands, op);
   if (HAS(expected_bitvector, MODRM))
-    check_operands_modrm(inst);
+    check_operands_modrm(inst, op);
   compare_bitvector(op, inst, CLEAR(expected_bitvector, MODRM));
 }
 
-void check_operands_modrm(const line& inst) {
-}
+//: Many instructions can be checked just by comparing bitvectors.
 
 void compare_bitvector(uint8_t op, const line& inst, uint8_t expected) {
   uint8_t bitvector = compute_operand_bitvector(inst);
@@ -251,17 +250,27 @@ void compare_bitvector(uint8_t op, const line& inst, uint8_t expected) {
 }
 
 bool has_operands(const line& inst) {
-  if (SIZE(inst.words) == 1) return false;
-  if (inst.words.at(0).data == "0f" && SIZE(inst.words) == 2) return false;
-  if (inst.words.at(0).data == "f3" && SIZE(inst.words) == 2) return false;
-  if (inst.words.at(0).data == "f3" && inst.words.at(1).data == "0f" && SIZE(inst.words) == 3) return false;
-  return true;
+  return SIZE(inst.words) > first_operand(inst);
+}
+
+int first_operand(const line& inst) {
+  if (inst.words.at(0).data == "0f") return 2;
+  if (inst.words.at(0).data == "f3") {
+    if (inst.words.at(1).data == "0f")
+      return 3;
+    else
+      return 2;
+  }
+  return 1;
 }
 
 bool all_hex_bytes(const line& inst) {
-  for (int i = 0;  i < SIZE(inst.words);  ++i)
+  for (int i = 0;  i < SIZE(inst.words);  ++i) {
+    if (SIZE(inst.words.at(i).data) != 2)
+      return false;
     if (inst.words.at(i).data.find_first_not_of("0123456789abcdefABCDEF") != string::npos)
       return false;
+  }
   return true;
 }
 
@@ -295,8 +304,135 @@ uint32_t bitvector_for_operand(const word& w) {
 :(scenario conflicting_operand_type)
 % Hide_errors = true;
 == 0x1
-cd 80/imm8/imm32
+cd/software-interrupt 80/imm8/imm32
 +error: '80/imm8/imm32' has conflicting operand types; it should have only one
+
+//: Instructions computing effective addresses have more complex rules, so
+//: we'll hard-code a common set of instruction-decoding rules.
+
+:(scenario check_missing_mod_operand)
+% Hide_errors = true;
+== 0x1
+81 0/add/subop       3/rm32/ebx 1/imm32
++error: '81 0/add/subop 3/rm32/ebx 1/imm32' (combine rm32 with imm32 based on subop): missing mod operand
+
+:(before "End Globals")
+set<string> Instruction_operands;
+:(before "End One-time Setup")
+Instruction_operands.insert("subop");
+Instruction_operands.insert("mod");
+Instruction_operands.insert("rm32");
+Instruction_operands.insert("base");
+Instruction_operands.insert("index");
+Instruction_operands.insert("scale");
+Instruction_operands.insert("r32");
+Instruction_operands.insert("disp8");
+Instruction_operands.insert("disp16");
+Instruction_operands.insert("disp32");
+Instruction_operands.insert("imm8");
+Instruction_operands.insert("imm32");
+
+:(code)
+void check_operands_modrm(const line& inst, uint8_t op) {
+  if (all_hex_bytes(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
+  check_metadata_present(inst, "mod", op);
+  check_metadata_present(inst, "rm32", op);
+  // no check for r32; some instructions don't use it; just assume it's 0 if missing
+  if (op == 0x81 || op == 0x8f || op == 0xff) {  // keep sync'd with 'help subop'
+    check_metadata_present(inst, "subop", op);
+    if (has_metadata(inst, "r32", op))
+      raise << "'" << to_string(inst) << "' (" << get(name, op) << "): unexpected r32 operand (should be replaced by subop)\n" << end();
+  }
+  if (trace_contains_errors()) return;
+  if (metadata(inst, "rm32").data != "4") return;
+  // SIB byte checks
+  check_metadata_present(inst, "base", op);
+  check_metadata_present(inst, "index", op);  // otherwise why go to SIB?
+  // no check for scale; 0 (2**0 = 1) by default
+}
+
+void check_metadata_present(const line& inst, const string& type, uint8_t op) {
+  if (!has_metadata(inst, type, op))
+    raise << "'" << to_string(inst) << "' (" << get(name, op) << "): missing " << type << " operand\n" << end();
+}
+
+bool has_metadata(const line& inst, const string& m, uint8_t op) {
+  bool result = false;
+  for (int i = 0;  i < SIZE(inst.words);  ++i) {
+    if (!has_metadata(inst.words.at(i), m)) continue;
+    if (result) {
+      raise << "'" << to_string(inst) << "' has conflicting " << m << " operands\n" << end();
+      return false;
+    }
+    result = true;
+  }
+  return result;
+}
+
+bool has_metadata(const word& w, const string& m) {
+  bool result = false;
+  bool metadata_found = false;
+  for (int i = 0;  i < SIZE(w.metadata);  ++i) {
+    const string& curr = w.metadata.at(i);
+    if (!contains_key(Instruction_operands, curr)) continue;  // ignore unrecognized metadata
+    if (metadata_found) {
+      raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
+      return false;
+    }
+    metadata_found = true;
+    result = (curr == m);
+  }
+  return result;
+}
+
+word metadata(const line& inst, const string& m) {
+  for (int i = 0;  i < SIZE(inst.words);  ++i)
+    if (has_metadata(inst.words.at(i), m))
+      return inst.words.at(i);
+  assert(false);
+}
+
+:(scenario conflicting_operands_in_modrm_instruction)
+% Hide_errors = true;
+== 0x1
+01/add 0/mod 3/mod
++error: '01/add 0/mod 3/mod' has conflicting mod operands
+
+:(scenario conflicting_operand_type_modrm)
+% Hide_errors = true;
+== 0x1
+01/add 0/mod 3/rm32/r32
++error: '3/rm32/r32' has conflicting operand types; it should have only one
+
+:(scenario check_missing_rm32_operand)
+% Hide_errors = true;
+== 0x1
+81 0/add/subop 0/mod            1/imm32
++error: '81 0/add/subop 0/mod 1/imm32' (combine rm32 with imm32 based on subop): missing rm32 operand
+
+:(scenario check_missing_subop_operand)
+% Hide_errors = true;
+== 0x1
+81             0/mod 3/rm32/ebx 1/imm32
++error: '81 0/mod 3/rm32/ebx 1/imm32' (combine rm32 with imm32 based on subop): missing subop operand
+
+:(scenario check_missing_base_operand)
+% Hide_errors = true;
+== 0x1
+81 0/add/subop 0/mod/indirect 4/rm32/use-sib 1/imm32
++error: '81 0/add/subop 0/mod/indirect 4/rm32/use-sib 1/imm32' (combine rm32 with imm32 based on subop): missing base operand
+
+:(scenario check_missing_index_operand)
+% Hide_errors = true;
+== 0x1
+81 0/add/subop 0/mod/indirect 4/rm32/use-sib 0/base 1/imm32
++error: '81 0/add/subop 0/mod/indirect 4/rm32/use-sib 0/base 1/imm32' (combine rm32 with imm32 based on subop): missing index operand
+
+:(scenario check_missing_base_operand_2)
+% Hide_errors = true;
+== 0x1
+81 0/add/subop 0/mod/indirect 4/rm32/use-sib 2/index 3/scale 1/imm32
++error: '81 0/add/subop 0/mod/indirect 4/rm32/use-sib 2/index 3/scale 1/imm32' (combine rm32 with imm32 based on subop): missing base operand
 
 //:: similarly handle multi-byte opcodes
 
