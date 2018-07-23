@@ -109,19 +109,6 @@ string to_string(const vector<word>& in) {
   return out.str();
 }
 
-uint32_t parse_int(const string& s) {
-  istringstream in(s);
-  uint32_t result = 0;
-  if (starts_with(s, "0x"))
-    in >> std::hex;
-  in >> result;
-  if (!in) {
-    raise << "not a number: " << s << '\n' << end();
-    return 0;
-  }
-  return result;
-}
-
 string serialize_hex(const int val) {
   ostringstream out;
   out << std::hex << val;

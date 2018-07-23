@@ -11,6 +11,8 @@ put(Help, "instructions",
 :(before "End Help Contents")
 cerr << "  instructions\n";
 
+//:: Check for 'syntax errors'; missing or unexpected operands.
+
 :(scenario check_missing_imm8_operand)
 % Hide_errors = true;
 == 0x1
