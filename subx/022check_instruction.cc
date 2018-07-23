@@ -233,7 +233,7 @@ void check_operands_modrm(const line& inst) {
 void compare_bitvector(uint8_t op, const line& inst, uint8_t expected) {
   uint8_t bitvector = compute_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
-  if (bitvector == 0 && expected != 0 && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
+  if (bitvector == 0 && expected != 0 && has_operands(inst) && all_hex_bytes(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
   if (bitvector == expected) return;  // all good with this instruction
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
 //?     cerr << "comparing " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
@@ -253,6 +253,13 @@ bool has_operands(const line& inst) {
   if (inst.words.at(0).data == "0f" && SIZE(inst.words) == 2) return false;
   if (inst.words.at(0).data == "f3" && SIZE(inst.words) == 2) return false;
   if (inst.words.at(0).data == "f3" && inst.words.at(1).data == "0f" && SIZE(inst.words) == 3) return false;
+  return true;
+}
+
+bool all_hex_bytes(const line& inst) {
+  for (int i = 0;  i < SIZE(inst.words);  ++i)
+    if (inst.words.at(i).data.find_first_not_of("0123456789abcdefABCDEF") != string::npos)
+      return false;
   return true;
 }
 
