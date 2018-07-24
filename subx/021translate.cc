@@ -1,11 +1,23 @@
-//: Beginnings of a nicer way to build SubX programs.
-//: We're going to question every notion, including "Assembly language" and
-//: "compiler".
-//: Motto: Abstract nothing, check everything.
+//: The bedrock level 1 of abstraction is now done, and we're going to start
+//: building levels above it that make programming in x86 machine code a
+//: little more ergonomic.
 //:
-//: Workflow: read 'source' file. Run a series of transforms on it, each
-//: passing through what it doesn't understand. The final program should be
-//: just machine code, suitable to write to an ELF binary.
+//: Higher levels will be in later layers. Since we can stop at any layer, we
+//: can execute levels from bedrock up to any level.
+//:
+//: All levels will be "pass through by default". Whatever they don't
+//: understand they will silently pass through to lower levels.
+//:
+//: Since raw hex bytes of machine code are always possible to inject, SubX is
+//: not a language, and we aren't building a compiler. This is something
+//: deliberately leakier. Levels are more for improving auditing, checks and
+//: error messages rather than for hiding low-level details.
+
+//: Translator workflow: read 'source' file. Run a series of transforms on it,
+//: each passing through what it doesn't understand. The final program should
+//: be just machine code, suitable to write to an ELF binary.
+//:
+//: Higher levels usually transform code on the basis of metadata.
 
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {

@@ -1,4 +1,8 @@
 //: Core data structures for simulating the SubX VM (subset of an x86 processor)
+//:
+//: At the lowest level ("level 1") of abstraction, SubX executes x86
+//: instructions provided in the form of an array of bytes, loaded into memory
+//: starting at a specific address.
 
 //:: registers
 //: assume segment registers are hard-coded to 0
@@ -32,7 +36,7 @@ cerr << "  registers\n";
 :(before "End Help Texts")
 put(Help, "registers",
   "SubX currently supports eight 32-bit integer registers: R0 to R7.\n"
-  "R4 contains the top of the stack.\n"
+  "R4 (ESP) contains the top of the stack.\n"
   "There's also a register for the address of the currently executing instruction. It is modified by jumps.\n"
   "Various instructions modify one or more of three 1-bit 'flag' registers, as a side-effect:\n"
   "- the sign flag (SF): usually set if an arithmetic result is negative, or reset if not.\n"

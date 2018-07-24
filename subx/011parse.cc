@@ -10,6 +10,9 @@ put(Help, "syntax",
   "A good rule of thumb is to try to start the first segment at the default address of 0x08048000, and to start each subsequent segment at least 0x1000 (most common page size) bytes after the last.\n"
   "If a segment occupies than 0x1000 bytes you'll need to push subsequent segments further down.\n"
   "Currently only the first segment contains executable code (because it gets annoying to have to change addresses in later segments every time an earlier one changes length; one of those finicky requirements).\n"
+  "\n"
+  "Lines consist of a series of words. Words can contain arbitrary metadata after a '/', but they can never contain whitespace. Metadata has no effect at runtime, but can be handy when rewriting macros.\n"
+  "\n"
   "Check out some examples in this directory (ex*.subx)\n"
   "Programming in machine code can be annoying, but let's see if we can make it nice enough to be able to write a compiler in it.\n"
 );

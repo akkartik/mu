@@ -1,9 +1,44 @@
-//: Catch instructions with the wrong size or type (metadata) of operands.
+//: Beginning of "level 2": tagging bytes with metadata around what field of
+//: an x86 instruction they're for.
+//:
+//: The x86 instruction set is variable-length, and how a byte is interpreted
+//: affects later instruction boundaries. A lot of the pain in programming machine code
+//: stems from computer and programmer going out of sync on what a byte
+//: means. The miscommunication is usually not immediately caught, and
+//: metastasizes at runtime into kilobytes of misinterpreted instructions.
+//: Tagging bytes with what the programmer expects them to be interpreted as
+//: helps the computer catch miscommunication immediately.
+//:
+//: This is one way SubX is going to be different from a 'language': we
+//: typically think of languages as less verbose than machine code. Here we're
+//: making machine code *more* verbose.
+//:
+//: ---
+//:
+//: While we're here, we'll also improve a couple of other things:
+//:
+//: a) Machine code often packs logically separate operands into bitfields of
+//: a single byte. We'll start writing out each operand separately, and the
+//: translator will construct the right bytes out of operands.
+//:
+//: SubX now gets still more verbose. What used to be a single byte, say 'c3',
+//: can now expand to '3/mod 0/subop 3/rm32'.
+//:
+//: b) Since each operand is tagged, we can loosen ordering restrictions and
+//: allow writing out the operands in any order, like keyword arguments.
+//:
+//: c) Operand values can be expressed in either decimal or hex (when prefixed
+//: with '0x'. Raw 2-character hex bytes without the '0x' are only valid when
+//: tagged without any operand metadata. (This may be a bad idea.)
+//:
+//: Coda: the actual opcodes (1-3 bytes) will continue to be at the start of
+//: each line, in hex, and untagged. The x86 instruction set is a mess, and
+//: instructions don't admit good names.
 
 :(before "End Help Texts")
 put(Help, "instructions",
   "Each x86 instruction consists of an instruction or opcode and some number of operands.\n"
-  "Each operand has a type. An instruction won't have more than one of any type.\n"
+  "Each operand has a type. An instruction won't have more than one operand of any type.\n"
   "Each instruction has some set of allowed operand types. It'll reject others.\n"
   "The complete list of operand types: mod, subop, r32 (register), rm32 (register or memory), scale, index, base, disp8, disp16, disp32, imm8, imm32.\n"
   "Each of these has its own help page. Try reading 'subx help mod' next.\n"
