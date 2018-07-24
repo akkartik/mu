@@ -47,7 +47,7 @@ void check_operands(const line& inst) {
     return;
   }
   if (!contains_key(name, op)) {
-    raise << "unknown opcode '" << std::hex << op << "'\n" << end();
+    raise << "unknown opcode '" << HEXBYTE << NUM(op) << "'\n" << end();
     return;
   }
   check_operands(op, inst);
@@ -445,7 +445,7 @@ void check_operands_0f(const line& inst) {
   }
   uint8_t op = hex_byte(inst.words.at(1).data);
   if (!contains_key(name_0f, op)) {
-    raise << "unknown 2-byte opcode '0f " << std::hex << op << "'\n" << end();
+    raise << "unknown 2-byte opcode '0f " << HEXBYTE << NUM(op) << "'\n" << end();
     return;
   }
   check_operands_0f(op, inst);
