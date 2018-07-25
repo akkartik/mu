@@ -102,7 +102,6 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
 //   stack: 0x0804bfff -> 0x0804b000 (downward)
 const int CODE_START = 0x08048000;
 const int SEGMENT_SIZE = 0x1000;
-const int DATA_START = 0x08049000;
 const int AFTER_STACK = 0x0804c000;
 :(code)
 void initialize_mem() {

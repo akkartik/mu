@@ -68,11 +68,11 @@ uint32_t parse_int(const string& s) {
 }
 
 void check_metadata_present(const line& inst, const string& type, uint8_t op) {
-  if (!has_metadata(inst, type, op))
+  if (!has_metadata(inst, type))
     raise << "'" << to_string(inst) << "' (" << get(name, op) << "): missing " << type << " operand\n" << end();
 }
 
-bool has_metadata(const line& inst, const string& m, uint8_t op) {
+bool has_metadata(const line& inst, const string& m) {
   bool result = false;
   for (int i = 0;  i < SIZE(inst.words);  ++i) {
     if (!has_metadata(inst.words.at(i), m)) continue;
