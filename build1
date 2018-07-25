@@ -37,9 +37,11 @@ cd tangle
   ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  > test_file_list
   # list of tests to run
   grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  > test_list
+  grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  > test_name_list
   # }
   # Now that we have all the _lists, compile 'tangle'
   $CXX $CFLAGS boot.cc -o tangle
+  ./tangle test
 cd ..
 
 cd termbox

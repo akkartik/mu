@@ -1,7 +1,12 @@
 typedef void (*test_fn)(void);
 
 const test_fn Tests[] = {
-  #include "test_list"  // auto-generated; see makefile
+  #include "test_list"  // auto-generated; see 'build*' scripts
+};
+
+// Names for each element of the 'Tests' global, respectively.
+const string Test_names[] = {
+  #include "test_name_list"  // auto-generated; see 'build*' scripts
 };
 
 bool Passed = true;

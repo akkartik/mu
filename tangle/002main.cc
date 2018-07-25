@@ -22,6 +22,7 @@ string flag_value(const string& flag, int argc, const char* argv[]) {
 
 int run_tests() {
   for (unsigned long i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
+//?     cerr << "running " << Test_names[i] << '\n';
     START_TRACING_UNTIL_END_OF_SCOPE;
     setup();
     (*Tests[i])();

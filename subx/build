@@ -86,7 +86,9 @@ older_than ../tangle/tangle ../tangle/*.cc && {
     ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  |update file_list
     ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  |update test_file_list
     grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update test_list
+    grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
     $CXX $CFLAGS boot.cc -o tangle
+    ./tangle test
   noisy_cd ../subx  # no effect; just to show us returning to the parent directory
 }
 

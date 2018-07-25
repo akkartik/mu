@@ -125,9 +125,11 @@ older_than tangle/tangle tangle/*.cc && {
     ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  |update test_file_list
     # list of tests to run
     grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update test_list
+    grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
     # }
     # Now that we have all the _lists, compile 'tangle'
     $CXX $CFLAGS boot.cc -o tangle
+    ./tangle test
   noisy_cd ..  # no effect; just to show us returning to the parent directory
 }
 
