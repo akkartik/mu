@@ -311,8 +311,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
     }
     if (lines.empty()) break;
     result.push_back(input_lines(lines));
-    if (!lines.empty() && !front(lines).contents.empty() && front(lines).contents.at(0) == '+')
-      result.push_back(expected_in_trace(lines));
+    emit_expected_in_trace(lines, result);
     while (!lines.empty() && !front(lines).contents.empty() && front(lines).contents.at(0) == '-') {
       result.push_back(expected_not_in_trace(front(lines)));
       lines.pop_front();
@@ -355,17 +354,27 @@ Line input_lines(list<Line>& hunk) {
   return result;
 }
 
-Line expected_in_trace(list<Line>& hunk) {
-  Line result;
-  result.line_number = hunk.front().line_number;
-  result.filename = hunk.front().filename;
-  while (!hunk.empty() && !front(hunk).contents.empty() && front(hunk).contents.at(0) == '+') {
-    hunk.front().contents.erase(0, 1);
-    result.contents += hunk.front().contents+"";
-    hunk.pop_front();
+// pull lines starting with '+' out of 'hunk', and append translated lines to 'out'
+void emit_expected_in_trace(list<Line>& hunk, list<Line>& out) {
+  if (hunk.empty()) return;
+  if (front(hunk).contents.empty()) return;
+  if (front(hunk).contents.at(0) != '+') return;
+  Line curr_out;
+  curr_out.line_number = front(hunk).line_number;
+  curr_out.filename = front(hunk).filename;
+  curr_out.contents = "  CHECK_TRACE_CONTENTS(";
+  out.push_back(curr_out);
+  for (/*nada*/;  !hunk.empty() && front(hunk).contents.at(0) == '+';  hunk.pop_front()) {
+    Line curr_out;
+    curr_out.line_number = front(hunk).line_number;
+    curr_out.filename = front(hunk).filename;
+    curr_out.contents = "      \""+escape(front(hunk).contents.substr(1))+"\"";
+    out.push_back(curr_out);
   }
-  result.contents = "  CHECK_TRACE_CONTENTS(\""+escape(result.contents)+"\");";
-  return result;
+  curr_out.line_number = out.back().line_number;
+  curr_out.filename = out.back().filename;
+  curr_out.contents = "  );";
+  out.push_back(curr_out);
 }
 
 Line expected_not_in_trace(const Line& line) {
