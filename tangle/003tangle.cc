@@ -296,11 +296,14 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 //     one or more lines of escaped setup in C/C++ ('%')
 //   followed by one or more lines of input,
 //   followed optionally by (in order):
-//     one or more lines expected in trace in order ('+')
-//     one or more lines trace shouldn't include ('-')
+//     one or more lines expected in trace in order ('+') and one or more lines trace shouldn't include ('-')
 //     one or more lines expressing counts of specific layers emitted in trace ('$')
 //     a directive to print the trace just for debugging ('?')
 // Remember to update is_input below if you add to this format.
+//
+// Allowing interleaving of '+' and '-' lines is a kludgy way to indicate that
+// two sets of trace lines can occur in any order. We should come up with a
+// better way to specify order-independence.
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
   result.push_back(Line("void test_"+name+"() {", front(lines).filename, front(lines).line_number-1));  // use line number of directive
 //?   result.push_back("cerr << \""+name+"\\n\";");  // debug: uncomment this to print scenario names as you run them
@@ -343,6 +346,7 @@ bool is_input(const string& line) {
 
 void emit_input_lines(list<Line>& hunk, list<Line>& out) {
   assert(!hunk.empty());
+  if (!is_input(front(hunk).contents)) return;
   Line curr_out;
   curr_out.line_number = hunk.front().line_number;
   curr_out.filename = hunk.front().filename;

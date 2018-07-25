@@ -660,6 +660,29 @@ void test_tangle_can_handle_mu_comments_in_scenario() {
   CHECK(lines.empty());
 }
 
+void test_tangle_can_interleave_present_and_absent_lines_to_kludgily_avoid_specifying_order() {
+  istringstream in(":(scenario does_bar)\n"
+                   "abc def\n"
+                   "+layer1: pqr\n"
+                   "-absent\n"
+                   "+layer2: xyz");
+  list<Line> lines;
+  tangle(in, lines);
+  CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  run(");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "      \"abc def\\n\"");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  );");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "      \"layer1: pqr\"");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  );");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"absent\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "      \"layer2: xyz\"");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  );");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
+  CHECK(lines.empty());
+}
+
 //// helpers
 
 void test_trim() {
