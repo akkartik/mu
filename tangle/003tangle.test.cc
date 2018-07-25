@@ -6,7 +6,10 @@ void test_tangle() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "adbc");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "d"
+                                 "b"
+                                 "c");
 }
 
 void test_tangle_with_linenumber() {
@@ -17,7 +20,13 @@ void test_tangle_with_linenumber() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "#line 1a#line 5d#line 2bc");
+  CHECK_TRACE_CONTENTS("tangle", "#line 1"
+                                 "a"
+                                 "#line 5"
+                                 "d"
+                                 "#line 2"
+                                 "b"
+                                 "c");
   // no other #line directives
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "#line 3");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "#line 4");
@@ -31,7 +40,11 @@ void test_tangle_linenumbers_with_filename() {
                    "d\n");
   list<Line> dummy;
   tangle(in, "foo", dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a#line 5 \"foo\"dbc");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "#line 5 \"foo\""
+                                 "d"
+                                 "b"
+                                 "c");
 }
 
 void test_tangle_line_numbers_with_multiple_filenames() {
@@ -44,7 +57,12 @@ void test_tangle_line_numbers_with_multiple_filenames() {
   istringstream in2(":(before b)\n"
                     "d\n");
   tangle(in2, "bar", dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a#line 2 \"bar\"d#line 2 \"foo\"bc");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "#line 2 \"bar\""
+                                 "d"
+                                 "#line 2 \"foo\""
+                                 "b"
+                                 "c");
 }
 
 void test_tangle_linenumbers_with_multiple_directives() {
@@ -59,7 +77,15 @@ void test_tangle_linenumbers_with_multiple_directives() {
                     ":(before c)\n"
                     "e");
   tangle(in2, "bar", dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a#line 2 \"bar\"d#line 2 \"foo\"b#line 4 \"bar\"e#line 3 \"foo\"c");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "#line 2 \"bar\""
+                                 "d"
+                                 "#line 2 \"foo\""
+                                 "b"
+                                 "#line 4 \"bar\""
+                                 "e"
+                                 "#line 3 \"foo\""
+                                 "c");
 }
 
 void test_tangle_with_multiple_filenames_after() {
@@ -72,7 +98,12 @@ void test_tangle_with_multiple_filenames_after() {
   istringstream in2(":(after b)\n"
                     "d\n");
   tangle(in2, "bar", dummy);
-  CHECK_TRACE_CONTENTS("tangle", "ab#line 2 \"bar\"d#line 3 \"foo\"c");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "b"
+                                 "#line 2 \"bar\""
+                                 "d"
+                                 "#line 3 \"foo\""
+                                 "c");
 }
 
 void test_tangle_skip_tanglecomments() {
@@ -84,7 +115,12 @@ void test_tangle_skip_tanglecomments() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "abcd");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "b"
+                                 "c"
+                                 ""
+                                 ""
+                                 "d");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
 }
 
@@ -99,7 +135,14 @@ void test_tangle_with_tanglecomments_and_directive() {
                    "e\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a#line 6d#line 3bc#line 8e");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "#line 6"
+                                 "d"
+                                 "#line 3"
+                                 "b"
+                                 "c"
+                                 "#line 8"
+                                 "e");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
 }
 
@@ -115,7 +158,14 @@ void test_tangle_with_tanglecomments_inside_directive() {
                    "e\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a#line 7d#line 3bc#line 9e");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "#line 7"
+                                 "d"
+                                 "#line 3"
+                                 "b"
+                                 "c"
+                                 "#line 9"
+                                 "e");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
 }
 
@@ -126,7 +176,9 @@ void test_tangle_with_multiword_directives() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a bdc");
+  CHECK_TRACE_CONTENTS("tangle", "a b"
+                                 "d"
+                                 "c");
 }
 
 void test_tangle_with_quoted_multiword_directives() {
@@ -136,7 +188,9 @@ void test_tangle_with_quoted_multiword_directives() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a \"b\"dc");
+  CHECK_TRACE_CONTENTS("tangle", "a \"b\""
+                                 "d"
+                                 "c");
 }
 
 void test_tangle2() {
@@ -147,7 +201,10 @@ void test_tangle2() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "abdc");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "b"
+                                 "d"
+                                 "c");
 }
 
 void test_tangle_at_end() {
@@ -158,7 +215,10 @@ void test_tangle_at_end() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "abcd");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "b"
+                                 "c"
+                                 "d");
 }
 
 void test_tangle_indents_hunks_correctly() {
@@ -169,7 +229,10 @@ void test_tangle_indents_hunks_correctly() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "a  b  dc");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "  b"
+                                 "  d"
+                                 "c");
 }
 
 void test_tangle_warns_on_missing_target() {
@@ -211,7 +274,9 @@ void test_tangle_replace() {
                    "d\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "adc");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "d"
+                                 "c");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "b");
 }
 
@@ -225,7 +290,9 @@ void test_tangle_replace_range_of_lines() {
                    "e\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "ade");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "d"
+                                 "e");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "b {");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "c");
 }
@@ -241,7 +308,10 @@ void test_tangle_replace_tracks_old_lines() {
                    "e\n");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "adce");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "d"
+                                 "c"
+                                 "e");
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "b {");
 }
 
@@ -255,7 +325,12 @@ void test_tangle_nested_patterns() {
                    "e");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "acbced");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "c"
+                                 "b"
+                                 "c"
+                                 "e"
+                                 "d");
 }
 
 void test_tangle_nested_patterns2() {
@@ -268,7 +343,12 @@ void test_tangle_nested_patterns2() {
                    "e");
   list<Line> dummy;
   tangle(in, dummy);
-  CHECK_TRACE_CONTENTS("tangle", "acbced");
+  CHECK_TRACE_CONTENTS("tangle", "a"
+                                 "c"
+                                 "b"
+                                 "c"
+                                 "e"
+                                 "d");
 }
 
 // todo: include line numbers in tangle errors
