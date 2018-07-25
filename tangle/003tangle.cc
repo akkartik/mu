@@ -310,7 +310,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
       lines.pop_front();
     }
     if (lines.empty()) break;
-    result.push_back(input_lines(lines));
+    emit_input_lines(lines, result);
     emit_expected_in_trace(lines, result);
     while (!lines.empty() && !front(lines).contents.empty() && front(lines).contents.at(0) == '-') {
       result.push_back(expected_not_in_trace(front(lines)));
@@ -341,17 +341,24 @@ bool is_input(const string& line) {
   return line != "===" && line.find_first_of("+-$?%") != 0;
 }
 
-Line input_lines(list<Line>& hunk) {
+void emit_input_lines(list<Line>& hunk, list<Line>& out) {
   assert(!hunk.empty());
-  Line result;
-  result.line_number = hunk.front().line_number;
-  result.filename = hunk.front().filename;
-  while (!hunk.empty() && is_input(hunk.front().contents)) {
-    result.contents += hunk.front().contents+"";  // temporary delimiter; replace with escaped newline after escaping other backslashes
-    hunk.pop_front();
+  Line curr_out;
+  curr_out.line_number = hunk.front().line_number;
+  curr_out.filename = hunk.front().filename;
+  curr_out.contents = "  "+Toplevel+"(";
+  out.push_back(curr_out);
+  for (/*nada*/;  !hunk.empty() && is_input(front(hunk).contents);  hunk.pop_front()) {
+    Line curr_out;
+    curr_out.line_number = front(hunk).line_number;
+    curr_out.filename = front(hunk).filename;
+    curr_out.contents = "      \""+escape(front(hunk).contents+'')+"\"";
+    out.push_back(curr_out);
   }
-  result.contents = "  "+Toplevel+"(\""+escape(result.contents)+"\");";
-  return result;
+  curr_out.line_number = out.back().line_number;
+  curr_out.filename = out.back().filename;
+  curr_out.contents = "  );";
+  out.push_back(curr_out);
 }
 
 // pull lines starting with '+' out of 'hunk', and append translated lines to 'out'
