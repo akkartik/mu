@@ -68,8 +68,17 @@ $ chmod +x ex1
 $ ./ex1
 ```
 
-I'm not building general infrastructure here for all of the x86 ISA and ELF
-format. SubX is about programming with a small, regular subset of 32-bit x86:
+There are a few such example programs here. At any commit an example's binary
+should be identical bit for bit with the output of translating the .subx file.
+The binary should also be natively runnable on a 32-bit Linux system. If
+either of these invariants is broken it's a bug on my part. The binary should
+also be runnable on a 64-bit Linux system. I can't guarantee it, but I'd
+appreciate hearing if it doesn't run.
+
+However, there are a few more binaries in the teensy/ directory. They are not
+guaranteed to be runnable by subx. I'm not building general infrastructure
+here for all of the x86 ISA and ELF format. SubX is about programming with a
+small, regular subset of 32-bit x86:
 
 * Only instructions that operate on the 32-bit E\*X registers. (No
   floating-point yet.)
@@ -79,6 +88,9 @@ format. SubX is about programming with a small, regular subset of 32-bit x86:
   always operate on signed integers (while bitwise operations always operate
   on unsigned integers)
 * Only relative jump instructions (with 8-bit or 16-bit offsets).
+
+The ELF binaries generated are statically linked and missing a lot of features
+as well. But they will run.
 
 For more details on programming in this subset, consult the online help:
 ```
