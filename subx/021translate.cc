@@ -33,21 +33,21 @@ if (is_equal(argv[1], "translate")) {
   if (trace_contains_errors()) return 1;
   transform(p);
   if (trace_contains_errors()) return 1;
-  dump_elf(p, argv[3]);
+  save_elf(p, argv[3]);
   if (trace_contains_errors()) unlink(argv[3]);
 }
 
 :(code)
 // write out a program to a bare-bones ELF file
-void dump_elf(const program& p, const char* filename) {
+void save_elf(const program& p, const char* filename) {
   ofstream out(filename, ios::binary);
-  dump_elf_header(out, p);
+  write_elf_header(out, p);
   for (size_t i = 0;  i < p.segments.size();  ++i)
-    dump_segment(p.segments.at(i), out);
+    write_segment(p.segments.at(i), out);
   out.close();
 }
 
-void dump_elf_header(ostream& out, const program& p) {
+void write_elf_header(ostream& out, const program& p) {
   char c = '\0';
 #define O(X)  c = (X); out.write(&c, sizeof(c))
 // host is required to be little-endian
@@ -140,7 +140,7 @@ void dump_elf_header(ostream& out, const program& p) {
 #undef emit
 }
 
-void dump_segment(const segment& s, ostream& out) {
+void write_segment(const segment& s, ostream& out) {
   for (int i = 0;  i < SIZE(s.lines);  ++i) {
     const vector<word>& w = s.lines.at(i).words;
     for (int j = 0;  j < SIZE(w);  ++j) {
