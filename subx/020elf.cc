@@ -13,7 +13,7 @@ if (is_equal(argv[1], "run")) {
   load_elf(argv[2]);
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
-  info << "executed past end of the world: " << EIP << " vs " << End_of_program << '\n';
+  dbg << "executed past end of the world: " << EIP << " vs " << End_of_program << end();
 }
 
 :(code)
@@ -52,7 +52,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
   if (e_ehsize < 52) raise << "Invalid binary; ELF header too small\n" << die();
   uint32_t e_phentsize = u16_in(&elf_contents[42]);
   uint32_t e_phnum = u16_in(&elf_contents[44]);
-  info << e_phnum << " entries in the program header, each " << e_phentsize << " bytes long\n";
+  dbg << e_phnum << " entries in the program header, each " << e_phentsize << " bytes long" << end();
   // unused: e_shentsize
   // unused: e_shnum
   // unused: e_shstrndx
@@ -68,9 +68,9 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
 
 void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32_t offset, uint32_t e_ehsize) {
   uint32_t p_type = u32_in(&elf_contents[offset]);
-  info << "program header at offset " << offset << ": type " << p_type << '\n';
+  dbg << "program header at offset " << offset << ": type " << p_type << end();
   if (p_type != 1) {
-    info << "ignoring segment at offset " << offset << " of non PT_LOAD type " << p_type << " (see http://refspecs.linuxbase.org/elf/elf.pdf)\n";
+    dbg << "ignoring segment at offset " << offset << " of non PT_LOAD type " << p_type << " (see http://refspecs.linuxbase.org/elf/elf.pdf)" << end();
     return;
   }
   uint32_t p_offset = u32_in(&elf_contents[offset + 4]);
@@ -87,7 +87,7 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
   if (Mem.size() < p_vaddr + p_memsz)
     Mem.resize(p_vaddr + p_memsz);
   if (size > p_memsz) size = p_memsz;
-  info << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ")\n";
+  dbg << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ')' << end();
   for (size_t i = 0;  i < p_filesz;  ++i)
     write_mem_u8(p_vaddr+i, elf_contents[p_offset+i]);
   if (End_of_program < p_vaddr+p_memsz)
@@ -139,6 +139,3 @@ ostream& operator<<(ostream& /*unused*/, die /*unused*/) {
 #include <fcntl.h>
 #include <stdarg.h>
 #include <errno.h>
-
-#define info cerr
-// #define info dbg
