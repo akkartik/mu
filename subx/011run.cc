@@ -1,4 +1,7 @@
-//: Loading programs into the VM. 
+//: Running SubX programs on the VM.
+
+//: (Not to be confused with the 'run' subcommand for running ELF binaries on
+//: the VM. That comes later.)
 
 :(before "End Help Texts")
 put(Help, "syntax",
