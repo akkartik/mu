@@ -197,8 +197,6 @@ if (Test_only_app && Num_core_mu_scenarios < SIZE(Scenarios)) {
 :(after "Test Runs")
 for (int i = 0;  i < SIZE(Scenarios);  ++i) {
   if (Scenarios.at(i).name == argv[argc-1]) {
-    if (Save_trace)
-      Trace_stream = new trace_stream;
     run_mu_scenario(Scenarios.at(i));
     if (Passed) cerr << ".\n";
     return 0;

@@ -77,9 +77,9 @@ struct trace_line {
 };
 
 :(before "End Globals")
-bool Hide_errors = false;
-bool Dump_trace = false;
-string Dump_label = "";
+bool Hide_errors = false;  // if set, don't print even error trace lines to screen
+bool Dump_trace = false;  // if set, print trace lines to screen
+string Dump_label = "";  // if set, print trace lines matching a single label to screen
 :(before "End Reset")
 Hide_errors = false;
 Dump_trace = false;
@@ -140,7 +140,7 @@ struct trace_stream {
   }
 
   void save() {
-    cerr << "saving trace to last_run\n";
+    cerr << "saving trace to 'last_run'\n";
     ofstream fout("last_run");
     fout << readable_contents("");
     fout.close();
@@ -231,7 +231,7 @@ ostream& operator<<(ostream& os, end /*unused*/) {
 }
 
 :(before "End Globals")
-bool Save_trace = false;
+bool Save_trace = false;  // if set, write out trace to disk
 
 // Trace_stream is a resource, lease_tracer uses RAII to manage it.
 :(before "End Types")
@@ -242,7 +242,6 @@ struct lease_tracer {
 :(code)
 lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
 lease_tracer::~lease_tracer() {
-  if (!Trace_stream) return;  // in case tests close Trace_stream
   if (Save_trace) Trace_stream->save();
   delete Trace_stream, Trace_stream = NULL;
 }
