@@ -6,9 +6,9 @@
 #   Hello, world!
 
 == 0x08048074  # code segment, after leaving room for ELF header and segment headers
-# instruction                     effective address                                         operand     displacement    immediate
+# instruction                     effective address                                           operand     displacement    immediate
 # op          subop               mod             rm32          base      index     scale     r32
-# 1-3 bytes                                                                                               0/1/2/4 bytes   0/1/2/4 bytes
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
   ## write(stdout, x, 1)
   # fd = 1 (stdout)
@@ -19,13 +19,13 @@
   ba                                                                                                                      0x08049093/imm32  # copy to EDX
   8b                              0/mod/indirect  2/rm32/edx                                  2/r32/edx                                     # copy *EDX to EDX
   # syscall = write
-  b8                                                                                                                      4/imm32       # copy 4 to EAX
+  b8                                                                                                                      4/imm32           # copy 4 to EAX
   # call
-  cd                                                                                                                      0x80/imm8     # int 80h
+  cd                                                                                                                      0x80/imm8         # int 80h
 
   ## exit(EBX)
-  b8                                                                                                                      1/imm32       # copy 1 to EAX
-  cd                                                                                                                      0x80/imm8     # int 80h
+  b8                                                                                                                      1/imm32           # copy 1 to EAX
+  cd                                                                                                                      0x80/imm8         # int 80h
 
 == 0x08049093
 # size of string
