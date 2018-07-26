@@ -2,8 +2,8 @@
 
 A suite of tools for directly programming in (32-bit x86) machine code without
 a compiler. The generated ELF binaries require just a Unix-like kernel to run.
-(It isn't self-hosted yet, so generating the binaries requires a C compiler
-and libc.)
+(It isn't self-hosted yet, so generating the binaries requires a C++ compiler
+and runtime.)
 
 ## Why in the world?
 
