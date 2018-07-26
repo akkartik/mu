@@ -21,6 +21,7 @@
 
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {
+  START_TRACING_UNTIL_END_OF_SCOPE;
   assert(argc > 3);
   program p;
   ifstream fin(argv[2]);
