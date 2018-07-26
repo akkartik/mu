@@ -91,7 +91,7 @@ void run_current_routine() {
       }
       // End Primitive Recipe Implementations
       default: {
-        cout << "not a primitive op: " << current_instruction().operation << '\n';
+        raise << "not a primitive op: " << current_instruction().operation << '\n' << end();
       }
     }
     //: used by a later layer

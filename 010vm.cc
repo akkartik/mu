@@ -592,7 +592,7 @@ void skip_whitespace_but_not_newline(istream& in) {
 
 void dump_memory() {
   for (map<int, double>::iterator p = Memory.begin();  p != Memory.end();  ++p) {
-    cout << p->first << ": " << no_scientific(p->second) << '\n';
+    cerr << p->first << ": " << no_scientific(p->second) << '\n';
   }
 }
 
