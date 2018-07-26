@@ -37,26 +37,25 @@ void check_operand_bounds(/*const*/ program& p) {
 }
 
 void check_operand_bounds(const word& w) {
-  for (map<string, uint32_t>::iterator p = Operand_bound.begin();  p != Operand_bound.end();  ++p)
-    if (has_metadata(w, p->first))
-      if (parse_int(w.data) >= p->second)
-        raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
-}
-
-int first_operand(const line& inst) {
-  if (inst.words.at(0).data == "0f") return 2;
-  if (inst.words.at(0).data == "f3") {
-    if (inst.words.at(1).data == "0f")
-      return 3;
-    else
-      return 2;
+  for (map<string, uint32_t>::iterator p = Operand_bound.begin();  p != Operand_bound.end();  ++p) {
+    if (has_metadata(w, p->first)) {
+      int32_t x = parse_int(w.data);
+      if (x >= 0) {
+        if (static_cast<uint32_t>(x) >= p->second)
+          raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
+      }
+      else {
+        // hacky? assuming bound is a power of 2
+        if (x < -1*static_cast<int32_t>(p->second/2))
+          raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
+      }
+    }
   }
-  return 1;
 }
 
-uint32_t parse_int(const string& s) {
+int32_t parse_int(const string& s) {
   istringstream in(s);
-  uint32_t result = 0;
+  int32_t result = 0;
   if (starts_with(s, "0x"))
     in >> std::hex;
   in >> result;
@@ -65,54 +64,4 @@ uint32_t parse_int(const string& s) {
     return 0;
   }
   return result;
-}
-
-void check_metadata_present(const line& inst, const string& type, uint8_t op) {
-  if (!has_metadata(inst, type))
-    raise << "'" << to_string(inst) << "' (" << get(name, op) << "): missing " << type << " operand\n" << end();
-}
-
-bool has_metadata(const line& inst, const string& m) {
-  bool result = false;
-  for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    if (!has_metadata(inst.words.at(i), m)) continue;
-    if (result) {
-      raise << "'" << to_string(inst) << "' has conflicting " << m << " operands\n" << end();
-      return false;
-    }
-    result = true;
-  }
-  return result;
-}
-
-bool has_metadata(const word& w, const string& m) {
-  bool result = false;
-  bool metadata_found = false;
-  for (int i = 0;  i < SIZE(w.metadata);  ++i) {
-    const string& curr = w.metadata.at(i);
-    if (!contains_key(Operand_bound, curr)) continue;  // ignore unrecognized metadata
-    if (metadata_found) {
-      raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
-      return false;
-    }
-    metadata_found = true;
-    result = (curr == m);
-  }
-  return result;
-}
-
-word metadata(const line& inst, const string& m) {
-  for (int i = 0;  i < SIZE(inst.words);  ++i)
-    if (has_metadata(inst.words.at(i), m))
-      return inst.words.at(i);
-  assert(false);
-}
-
-string to_string(const line& inst) {
-  ostringstream out;
-  for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    if (i > 0) out << ' ';
-    out << inst.words.at(i).original;
-  }
-  return out.str();
 }
