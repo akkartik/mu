@@ -218,7 +218,8 @@ setup_recipes();
 assert(MAX_PRIMITIVE_RECIPES < 200);  // level 0 is primitives; until 199
 Next_recipe_ordinal = 200;
 put(Recipe_ordinal, "main", Next_recipe_ordinal++);
-// End Load Recipes
+// Load Mu Prelude
+// End Mu Prelude
 :(before "End Commandline Parsing")
 assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow into test space
 :(before "End Reset")

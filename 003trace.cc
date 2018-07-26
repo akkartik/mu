@@ -85,6 +85,28 @@ Hide_errors = false;
 Dump_trace = false;
 Dump_label = "";
 
+//: Support for tracing an entire run.
+//: Traces can have a lot of overhead, so only turn them on when asked.
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--trace")) {
+  Save_trace = true;
+}
+:(before "End Commandline Parsing")
+if (Save_trace) {
+  cerr << "initializing trace\n";
+  Trace_stream = new trace_stream;
+}
+:(code)
+void cleanup_main() {
+  if (!Trace_stream) return;
+  if (Save_trace)
+    Trace_stream->save();
+  delete Trace_stream;
+  Trace_stream = NULL;
+}
+:(before "End One-time Setup")
+atexit(cleanup_main);
+
 :(before "End Types")
 // Pre-define some global constants that trace_stream needs to know about.
 // Since they're in the Types section, they'll be included in any cleaved
@@ -118,6 +140,7 @@ struct trace_stream {
   }
 
   void save() {
+    cerr << "saving trace to last_run\n";
     ofstream fout("last_run");
     fout << readable_contents("");
     fout.close();

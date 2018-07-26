@@ -192,11 +192,7 @@ const vector<instruction>& routine::steps() const {
 
 //:: Startup flow
 
-//: Step 1: load all .mu files with numeric prefixes (in order)
-:(before "End Load Recipes")
-// Load Mu Prelude
-//? Save_trace = true;
-//? START_TRACING_UNTIL_END_OF_SCOPE;
+:(before "End Mu Prelude")
 load_file_or_directory("core.mu");
 //? DUMP("");
 //? exit(0);
@@ -204,8 +200,6 @@ load_file_or_directory("core.mu");
 //: Step 2: load any .mu files provided at the commandline
 :(before "End Commandline Parsing")
 // Check For .mu Files
-//? START_TRACING_UNTIL_END_OF_SCOPE
-//? Dump_trace = true;
 if (argc > 1) {
   // skip argv[0]
   ++argv;
@@ -226,9 +220,11 @@ transform_all();
 //? cerr << to_original_string(get(Recipe, get(Recipe_ordinal, "event-loop"))) << '\n';
 //? DUMP("");
 //? exit(0);
-if (trace_contains_errors()) {
-  if (Start_tracing && Trace_stream) Trace_stream->save();
-  return 1;
+if (trace_contains_errors()) return 1;
+if (Trace_stream && Run_tests) {
+  // We'll want a trace per test. Clear the trace.
+  delete Trace_stream;
+  Trace_stream = NULL;
 }
 save_snapshots();
 
@@ -238,40 +234,15 @@ save_snapshots();
 if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, get(Recipe_ordinal, "main"))) {
   // Running Main
   reset();
-  if (Start_tracing && Trace_stream == NULL) {
-    Trace_stream = new trace_stream;
-    Save_trace = true;
-  }
   trace(2, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
-  if (Start_tracing && Trace_stream) Trace_stream->save();
 }
 :(code)
 void run_main(int argc, char* argv[]) {
   recipe_ordinal r = get(Recipe_ordinal, "main");
   if (r) run(r);
 }
-
-//: By default we don't maintain the trace while running main because its
-//: overheads can grow rapidly. However, it's useful when debugging.
-:(before "End Globals")
-bool Start_tracing = false;
-:(before "End Commandline Options(*arg)")
-else if (is_equal(*arg, "--trace")) {
-  Start_tracing = true;
-}
-
-:(code)
-void cleanup_main() {
-  if (!Trace_stream) return;
-  if (Save_trace)
-    Trace_stream->save();
-  delete Trace_stream;
-  Trace_stream = NULL;
-}
-:(before "End One-time Setup")
-atexit(cleanup_main);
 
 :(code)
 void load_file_or_directory(string filename) {
@@ -422,7 +393,7 @@ void run(const string& form) {
   transform_all();
   if (tmp.empty()) return;
   if (trace_contains_errors()) {
-    if (Start_tracing && Trace_stream) Trace_stream->save();
+    if (Save_trace && Trace_stream) Trace_stream->save();
     return;
   }
   // if a test defines main, it probably wants to start there regardless of

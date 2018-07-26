@@ -215,7 +215,7 @@ void unstash_snapshots() {
   Scenario_names_snapshot = Scenario_names_snapshot_stash;  Scenario_names_snapshot_stash.clear();
 }
 
-:(before "End Load Recipes")
+:(before "End Mu Prelude")
 load(string(
 "recipe interactive [\n") +  // just a dummy version to initialize the Recipe_ordinal and so on
 "]\n" +
