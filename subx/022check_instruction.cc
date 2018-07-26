@@ -37,10 +37,14 @@
 
 :(before "End Help Texts")
 put(Help, "instructions",
-  "Each x86 instruction consists of an instruction or opcode and some number of operands.\n"
-  "Each operand has a type. An instruction won't have more than one operand of any type.\n"
+  "Each x86 instruction consists of an instruction or opcode and some number\n"
+  "of operands.\n"
+  "Each operand has a type. An instruction won't have more than one operand of\n"
+  "any type.\n"
   "Each instruction has some set of allowed operand types. It'll reject others.\n"
-  "The complete list of operand types: mod, subop, r32 (register), rm32 (register or memory), scale, index, base, disp8, disp16, disp32, imm8, imm32.\n"
+  "The complete list of operand types: mod, subop, r32 (register), rm32\n"
+  "(register or memory), scale, index, base, disp8, disp16, disp32, imm8,\n"
+  "imm32.\n"
   "Each of these has its own help page. Try reading 'subx help mod' next.\n"
 );
 :(before "End Help Contents")
