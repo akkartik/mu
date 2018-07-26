@@ -157,7 +157,7 @@ void initialize_signal_handlers() {
   sigaction(SIGABRT, &action, NULL);  // assert() failure or integer overflow on linux (with -ftrapv)
   sigaction(SIGILL,  &action, NULL);  // integer overflow on OS X (with -ftrapv)
 }
-void dump_and_exit(int sig, vestigial siginfo_t*, vestigial void*) {
+void dump_and_exit(int sig, siginfo_t* /*unused*/, void* /*unused*/) {
   switch (sig) {
     case SIGABRT:
       #ifndef __APPLE__
@@ -255,8 +255,6 @@ using std::cerr;
 #include <string.h>
 #include <string>
 using std::string;
-
-#define vestigial  __attribute__((unused))
 
 #include <algorithm>
 using std::min;

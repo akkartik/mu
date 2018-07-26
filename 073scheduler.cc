@@ -311,7 +311,7 @@ def f2 [
 +error: f2: divide by zero in '3:num <- divide-with-remainder 4, 0'
 -error: f2: divide by zero in '4:num <- divide-with-remainder 4, 0'
 
-:(after "operator<<(ostream& os, vestigial end)")
+:(after "operator<<(ostream& os, end /*unused*/)")
   if (Trace_stream && Trace_stream->curr_label == "error" && Current_routine) {
     Current_routine->state = COMPLETED;
   }

@@ -119,7 +119,7 @@ inline uint16_t u16_in(uint8_t* p) {
 :(before "End Types")
 struct perr {};
 :(code)
-ostream& operator<<(ostream& os, vestigial perr) {
+ostream& operator<<(ostream& os, perr /*unused*/) {
   if (errno)
     os << ": " << strerror(errno);
   return os;
@@ -128,7 +128,7 @@ ostream& operator<<(ostream& os, vestigial perr) {
 :(before "End Types")
 struct die {};
 :(code)
-ostream& operator<<(vestigial ostream&, vestigial die) {
+ostream& operator<<(ostream& /*unused*/, die /*unused*/) {
   if (Trace_stream) Trace_stream->newline();
   exit(1);
 }
