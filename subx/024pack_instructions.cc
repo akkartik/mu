@@ -80,14 +80,22 @@ void add_modrm_byte(const line& in, line& out) {
   bool emit = false;
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_metadata(curr, "mod"))
-      mod = hex_byte(curr.data), emit = true;
-    else if (has_metadata(curr, "rm32"))
-      rm32 = hex_byte(curr.data), emit = true;
-    else if (has_metadata(curr, "r32"))
-      reg_subop = hex_byte(curr.data), emit = true;
-    else if (has_metadata(curr, "subop"))
-      reg_subop = hex_byte(curr.data), emit = true;
+    if (has_metadata(curr, "mod")) {
+      mod = hex_byte(curr.data);
+      emit = true;
+    }
+    else if (has_metadata(curr, "rm32")) {
+      rm32 = hex_byte(curr.data);
+      emit = true;
+    }
+    else if (has_metadata(curr, "r32")) {
+      reg_subop = hex_byte(curr.data);
+      emit = true;
+    }
+    else if (has_metadata(curr, "subop")) {
+      reg_subop = hex_byte(curr.data);
+      emit = true;
+    }
   }
   if (emit)
     out.words.push_back(hex_byte_text((mod << 6) | (reg_subop << 3) | rm32));
@@ -98,12 +106,18 @@ void add_sib_byte(const line& in, line& out) {
   bool emit = false;
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_metadata(curr, "scale"))
-      scale = hex_byte(curr.data), emit = true;
-    else if (has_metadata(curr, "index"))
-      index = hex_byte(curr.data), emit = true;
-    else if (has_metadata(curr, "base"))
-      base = hex_byte(curr.data), emit = true;
+    if (has_metadata(curr, "scale")) {
+      scale = hex_byte(curr.data);
+      emit = true;
+    }
+    else if (has_metadata(curr, "index")) {
+      index = hex_byte(curr.data);
+      emit = true;
+    }
+    else if (has_metadata(curr, "base")) {
+      base = hex_byte(curr.data);
+      emit = true;
+    }
   }
   if (emit)
     out.words.push_back(hex_byte_text((scale << 6) | (index << 3) | base));
