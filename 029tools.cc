@@ -179,7 +179,7 @@ case _SAVE_TRACE: {
 }
 :(before "End Primitive Recipe Implementations")
 case _SAVE_TRACE: {
-  if (Save_trace) Trace_stream->dump();
+  if (Save_trace) Trace_stream->save();
   break;
 }
 

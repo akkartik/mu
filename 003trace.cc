@@ -117,7 +117,7 @@ struct trace_stream {
     return *curr_stream;
   }
 
-  void dump() {
+  void save() {
     ofstream fout("last_run");
     fout << readable_contents("");
     fout.close();
@@ -220,7 +220,7 @@ struct lease_tracer {
 lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
 lease_tracer::~lease_tracer() {
   if (!Trace_stream) return;  // in case tests close Trace_stream
-  if (Save_trace) Trace_stream->dump();
+  if (Save_trace) Trace_stream->save();
   delete Trace_stream, Trace_stream = NULL;
 }
 :(before "End Includes")

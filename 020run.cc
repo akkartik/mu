@@ -227,7 +227,7 @@ transform_all();
 //? DUMP("");
 //? exit(0);
 if (trace_contains_errors()) {
-  if (Start_tracing && Trace_stream) Trace_stream->dump();
+  if (Start_tracing && Trace_stream) Trace_stream->save();
   return 1;
 }
 save_snapshots();
@@ -245,7 +245,7 @@ if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, g
   trace(2, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
-  if (Start_tracing && Trace_stream) Trace_stream->dump();
+  if (Start_tracing && Trace_stream) Trace_stream->save();
 }
 :(code)
 void run_main(int argc, char* argv[]) {
@@ -266,7 +266,7 @@ else if (is_equal(*arg, "--trace")) {
 void cleanup_main() {
   if (!Trace_stream) return;
   if (Save_trace)
-    Trace_stream->dump();
+    Trace_stream->save();
   delete Trace_stream;
   Trace_stream = NULL;
 }
@@ -422,7 +422,7 @@ void run(const string& form) {
   transform_all();
   if (tmp.empty()) return;
   if (trace_contains_errors()) {
-    if (Start_tracing && Trace_stream) Trace_stream->dump();
+    if (Start_tracing && Trace_stream) Trace_stream->save();
     return;
   }
   // if a test defines main, it probably wants to start there regardless of
