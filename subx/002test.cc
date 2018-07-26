@@ -13,7 +13,7 @@ typedef void (*test_fn)(void);
 :(before "Globals")
 // move a global ahead into types that we can't generate an extern declaration for
 const test_fn Tests[] = {
-  #include "test_list"  // auto-generated; see 'build' script
+  #include "test_list"  // auto-generated; see 'build*' scripts
 };
 
 :(before "End Globals")
@@ -69,6 +69,13 @@ if (Run_tests) {
   }
   return 0;
 }
+
+:(after "End Main")
+//: Raise other unrecognized sub-commands as errors.
+//: We couldn't do this until now because we want `./subx test` to always
+//: succeed, no matter how many layers are included in the build.
+cerr << "nothing to do\n";
+return 1;
 
 :(code)
 void run_test(size_t i) {

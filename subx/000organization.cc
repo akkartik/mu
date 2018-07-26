@@ -122,7 +122,9 @@ int main(int argc, char* argv[]) {
   // Commandline Parsing
   // End Commandline Parsing
 
-  return 0;  // End Main
+  // End Main
+
+  return 0;
 }
 
 // Unit Tests

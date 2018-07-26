@@ -14,6 +14,7 @@ if (is_equal(argv[1], "run")) {
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
   dbg << "executed past end of the world: " << EIP << " vs " << End_of_program << end();
+  return 0;
 }
 
 :(code)
