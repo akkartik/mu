@@ -3,7 +3,7 @@
 :(scenario operand_metadata_outside_code_segment)
 % Hide_errors = true;
 == 0x1  # code segment
-cd 128/imm8
+cd 0x80/imm8
 == 0x1000  # data segment
 cd 12/imm8
 +error: 12/imm8: metadata imm8 is only allowed in the (first) code segment

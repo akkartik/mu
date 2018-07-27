@@ -56,9 +56,7 @@ void check_operand_bounds(const word& w) {
 int32_t parse_int(const string& s) {
   istringstream in(s);
   int32_t result = 0;
-  if (starts_with(s, "0x"))
-    in >> std::hex;
-  in >> result;
+  in >> std::hex >> result;
   if (!in) {
     raise << "not a number: " << s << '\n' << end();
     return 0;

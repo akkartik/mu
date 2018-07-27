@@ -6,8 +6,8 @@
 # instruction                     effective address                                           operand     displacement    immediate
 # op          subop               mod             rm32          base      index     scale     r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                                      42/imm32          # copy 42 to EBX
-+translate: packing instruction 'bb 42/imm32'
+  bb                                                                                                                      0x2a/imm32        # copy 42 to EBX
++translate: packing instruction 'bb 0x2a/imm32'
 +translate: instruction after packing: 'bb 2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX
 
