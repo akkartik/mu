@@ -893,6 +893,8 @@ void test_trim_floating_point() {
 }
 
 :(before "End Includes")
+#include <map>
+using std::map;
 #include <utility>
 using std::pair;
 #include <math.h>
