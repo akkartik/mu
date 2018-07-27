@@ -89,5 +89,7 @@ void replace_labels_with_addresses(const segment& code, map<string, uint32_t> ad
 loop:
 loop2:
             05                                                                                                                      0x0d0c0b0a/imm32  # add to EAX
+loop3:
 +label: label 'loop' is at address 1
 +label: label 'loop2' is at address 1
++label: label 'loop3' is at address 6
