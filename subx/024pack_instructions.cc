@@ -3,10 +3,10 @@
 
 :(scenario pack_immediate_constants)
 == 0x1
-# instruction             effective address                                         operand displacement    immediate
-# op          subop       mod           rm32          base      index     scale     r32
-# 1-3 bytes                                                                                 0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                        42/imm32      # copy 42 to EBX
+# instruction                     effective address                                           operand     displacement    immediate
+# op          subop               mod             rm32          base      index     scale     r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+  bb                                                                                                                      42/imm32          # copy 42 to EBX
 +translate: packing instruction 'bb 42/imm32'
 +translate: instruction after packing: 'bb 2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX
@@ -28,10 +28,10 @@
 
 :(scenario pack_modrm_imm32)
 == 0x1
-# instruction             effective address                                         operand displacement    immediate
-# op          subop       mod           rm32          base      index     scale     r32
-# 1-3 bytes                                                                                 0/1/2/4 bytes   0/1/2/4 bytes
-  81          0/add/subop 3/mod/direct  3/ebx/rm32                                                          1/imm32       # add 1 to EBX
+# instruction                     effective address                                           operand     displacement    immediate
+# op          subop               mod             rm32          base      index     scale     r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+  81          0/add/subop         3/mod/direct    3/ebx/rm32                                                              1/imm32           # add 1 to EBX
 +translate: packing instruction '81 0/add/subop 3/mod/direct 3/ebx/rm32 1/imm32'
 +translate: instruction after packing: '81 c3 01 00 00 00'
 
@@ -180,10 +180,10 @@ void transform(const string& text_bytes) {
 
 :(scenario pack_immediate_constants_hex)
 == 0x1
-# instruction             effective address                                         operand displacement    immediate
-# op          subop       mod           rm32          base      index     scale     r32
-# 1-3 bytes                                                                                 0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                        0x2a/imm32    # copy 42 to EBX
+# instruction                     effective address                                           operand     displacement    immediate
+# op          subop               mod             rm32          base      index     scale     r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+  bb                                                                                                                      0x2a/imm32        # copy 42 to EBX
 +translate: packing instruction 'bb 0x2a/imm32'
 +translate: instruction after packing: 'bb 2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX

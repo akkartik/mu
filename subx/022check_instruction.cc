@@ -55,10 +55,10 @@ cerr << "  instructions\n";
 :(scenario check_missing_imm8_operand)
 % Hide_errors = true;
 == 0x1
-# opcode        ModR/M                    SIB                   displacement    immediate
-# instruction   mod, reg, Reg/Mem bits    scale, index, base
-# 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-  cd                                                                                          # int ??
+# instruction                     effective address                                           operand     displacement    immediate
+# op          subop               mod             rm32          base      index     scale     r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+  cd                                                                                                                                        # int ??
 +error: 'cd' (software interrupt): missing imm8 operand
 
 :(before "End One-time Setup")
@@ -525,10 +525,10 @@ void check_operands_f3(const line& /*unused*/) {
 :(scenario check_missing_disp16_operand)
 % Hide_errors = true;
 == 0x1
-# opcode        ModR/M                    SIB                   displacement    immediate
-# instruction   mod, reg, Reg/Mem bits    scale, index, base
-# 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-  0f 84                                                                                       # jmp if ZF to ??
+# instruction                     effective address                                           operand     displacement    immediate
+# op          subop               mod             rm32          base      index     scale     r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+  0f 84                                                                                                                                     # jmp if ZF to ??
 +error: '0f 84' (jump disp16 bytes away if ZF is set): missing disp16 operand
 
 :(before "End Globals")
