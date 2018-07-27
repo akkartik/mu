@@ -1,6 +1,5 @@
 //: Labels are defined by ending names with a ':'. This layer will compute
-//: addresses for labels, and compute the offset to in jump instructions using
-//: them.
+//: addresses for labels, and compute the offset for instructions using them.
 
 :(scenarios transform)
 :(scenario map_label)
@@ -13,10 +12,10 @@ loop:
 +label: label 'loop' is at address 1
 
 :(before "End One-time Setup")
-Transform.push_back(replace_labels_with_addresses);
+Transform.push_back(replace_labels);
 
 :(code)
-void replace_labels_with_addresses(program& p) {
+void replace_labels(program& p) {
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
   map<string, uint32_t> address;
@@ -90,6 +89,7 @@ loop:
 loop2:
             05                                                                                                                      0x0d0c0b0a/imm32  # add to EAX
 loop3:
+            f
 +label: label 'loop' is at address 1
 +label: label 'loop2' is at address 1
 +label: label 'loop3' is at address 6
