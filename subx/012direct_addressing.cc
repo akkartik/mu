@@ -18,7 +18,7 @@ put(name, "01", "add r32 to rm32");
 case 0x01: {  // add r32 to r/m32
   uint8_t modrm = next();
   uint8_t arg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "add " << rname(arg2) << " to r/m32" << end();
+  trace(90, "run") << "add " << rname(arg2) << " to r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(+, *arg1, Reg[arg2].i);
   break;
@@ -36,7 +36,7 @@ int32_t* effective_address(uint8_t modrm) {
   switch (mod) {
   case 3:
     // mod 3 is just register direct addressing
-    trace(2, "run") << "r/m32 is " << rname(rm) << end();
+    trace(90, "run") << "r/m32 is " << rname(rm) << end();
     return &Reg[rm].i;
   // End Mod Special-cases(addr)
   default:
@@ -81,7 +81,7 @@ put(name, "29", "subtract r32 from rm32");
 case 0x29: {  // subtract r32 from r/m32
   uint8_t modrm = next();
   uint8_t arg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "subtract " << rname(arg2) << " from r/m32" << end();
+  trace(90, "run") << "subtract " << rname(arg2) << " from r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(-, *arg1, Reg[arg2].i);
   break;
@@ -107,7 +107,7 @@ put(name, "21", "rm32 = bitwise AND of r32 with rm32");
 case 0x21: {  // and r32 with r/m32
   uint8_t modrm = next();
   uint8_t arg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "and " << rname(arg2) << " with r/m32" << end();
+  trace(90, "run") << "and " << rname(arg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_BITWISE_OP(&, *arg1, Reg[arg2].u);
   break;
@@ -133,7 +133,7 @@ put(name, "09", "rm32 = bitwise OR of r32 with rm32");
 case 0x09: {  // or r32 with r/m32
   uint8_t modrm = next();
   uint8_t arg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "or " << rname(arg2) << " with r/m32" << end();
+  trace(90, "run") << "or " << rname(arg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_BITWISE_OP(|, *arg1, Reg[arg2].u);
   break;
@@ -159,7 +159,7 @@ put(name, "31", "rm32 = bitwise XOR of r32 with rm32");
 case 0x31: {  // xor r32 with r/m32
   uint8_t modrm = next();
   uint8_t arg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "xor " << rname(arg2) << " with r/m32" << end();
+  trace(90, "run") << "xor " << rname(arg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_BITWISE_OP(^, *arg1, Reg[arg2].u);
   break;
@@ -183,10 +183,10 @@ put(name, "f7", "bitwise complement of rm32");
 :(before "End Single-Byte Opcodes")
 case 0xf7: {  // xor r32 with r/m32
   uint8_t modrm = next();
-  trace(2, "run") << "'not' of r/m32" << end();
+  trace(90, "run") << "'not' of r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   *arg1 = ~(*arg1);
-  trace(2, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   SF = (*arg1 >> 31);
   ZF = (*arg1 == 0);
   OF = false;
@@ -213,7 +213,7 @@ put(name, "39", "set SF if rm32 < r32");
 case 0x39: {  // set SF if r/m32 < r32
   uint8_t modrm = next();
   uint8_t reg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "compare " << rname(reg2) << " with r/m32" << end();
+  trace(90, "run") << "compare " << rname(reg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   int32_t arg2 = Reg[reg2].i;
   int32_t tmp1 = *arg1 - arg2;
@@ -221,7 +221,7 @@ case 0x39: {  // set SF if r/m32 < r32
   ZF = (tmp1 == 0);
   int64_t tmp2 = *arg1 - arg2;
   OF = (tmp1 != tmp2);
-  trace(2, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  trace(90, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
   break;
 }
 
@@ -266,10 +266,10 @@ put(name, "89", "copy r32 to rm32");
 case 0x89: {  // copy r32 to r/m32
   uint8_t modrm = next();
   uint8_t reg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "copy " << rname(reg2) << " to r/m32" << end();
+  trace(90, "run") << "copy " << rname(reg2) << " to r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   *arg1 = Reg[reg2].i;
-  trace(2, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   break;
 }
 
@@ -294,13 +294,13 @@ put(name, "87", "swap the contents of r32 and rm32");
 case 0x87: {  // exchange r32 with r/m32
   uint8_t modrm = next();
   uint8_t reg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "exchange " << rname(reg2) << " with r/m32" << end();
+  trace(90, "run") << "exchange " << rname(reg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   int32_t tmp = *arg1;
   *arg1 = Reg[reg2].i;
   Reg[reg2].i = tmp;
-  trace(2, "run") << "storing 0x" << HEXWORD << *arg1 << " in r/m32" << end();
-  trace(2, "run") << "storing 0x" << HEXWORD << Reg[reg2].i << " in " << rname(reg2) << end();
+  trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << " in r/m32" << end();
+  trace(90, "run") << "storing 0x" << HEXWORD << Reg[reg2].i << " in " << rname(reg2) << end();
   break;
 }
 
@@ -336,15 +336,15 @@ case 0x55:
 case 0x56:
 case 0x57: {  // push r32 to stack
   uint8_t reg = op & 0x7;
-  trace(2, "run") << "push " << rname(reg) << end();
+  trace(90, "run") << "push " << rname(reg) << end();
   push(Reg[reg].u);
   break;
 }
 :(code)
 void push(uint32_t val) {
   Reg[ESP].u -= 4;
-  trace(2, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
-  trace(2, "run") << "pushing value 0x" << HEXWORD << val << end();
+  trace(90, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(90, "run") << "pushing value 0x" << HEXWORD << val << end();
   write_mem_u32(Reg[ESP].u, val);
 }
 
@@ -382,15 +382,15 @@ case 0x5d:
 case 0x5e:
 case 0x5f: {  // pop stack into r32
   uint8_t reg = op & 0x7;
-  trace(2, "run") << "pop into " << rname(reg) << end();
+  trace(90, "run") << "pop into " << rname(reg) << end();
   Reg[reg].u = pop();
   break;
 }
 :(code)
 uint32_t pop() {
   uint32_t result = read_mem_u32(Reg[ESP].u);
-  trace(2, "run") << "popping value 0x" << HEXWORD << result << end();
+  trace(90, "run") << "popping value 0x" << HEXWORD << result << end();
   Reg[ESP].u += 4;
-  trace(2, "run") << "incrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(90, "run") << "incrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
   return result;
 }

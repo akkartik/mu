@@ -18,7 +18,7 @@
 case 0:  // indirect addressing
   switch (rm) {
   default:  // address in register
-    trace(2, "run") << "effective address is 0x" << std::hex << Reg[rm].u << " (" << rname(rm) << ")" << end();
+    trace(90, "run") << "effective address is 0x" << std::hex << Reg[rm].u << " (" << rname(rm) << ")" << end();
     addr = Reg[rm].u;
     break;
   // End Mod 0 Special-cases(addr)
@@ -47,7 +47,7 @@ put(name, "03", "add rm32 to r32");
 case 0x03: {  // add r/m32 to r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "add r/m32 to " << rname(arg1) << end();
+  trace(90, "run") << "add r/m32 to " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(+, Reg[arg1].i, *arg2);
   break;
@@ -90,7 +90,7 @@ put(name, "2b", "subtract rm32 from r32");
 case 0x2b: {  // subtract r/m32 from r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "subtract r/m32 from " << rname(arg1) << end();
+  trace(90, "run") << "subtract r/m32 from " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(-, Reg[arg1].i, *arg2);
   break;
@@ -133,7 +133,7 @@ ff 00 00 00  # 0xff
 case 0x23: {  // and r/m32 with r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "and r/m32 with " << rname(arg1) << end();
+  trace(90, "run") << "and r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(&, Reg[arg1].u, *arg2);
   break;
@@ -176,7 +176,7 @@ put(name, "0b", "r32 = bitwise OR of r32 with rm32");
 case 0x0b: {  // or r/m32 with r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "or r/m32 with " << rname(arg1) << end();
+  trace(90, "run") << "or r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
@@ -219,7 +219,7 @@ put(name, "33", "r32 = bitwise XOR of r32 with rm32");
 case 0x33: {  // xor r/m32 with r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "xor r/m32 with " << rname(arg1) << end();
+  trace(90, "run") << "xor r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
@@ -302,7 +302,7 @@ put(name, "3b", "set SF if rm32 > r32");
 case 0x3b: {  // set SF if r32 < r/m32
   uint8_t modrm = next();
   uint8_t reg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "compare r/m32 with " << rname(reg1) << end();
+  trace(90, "run") << "compare r/m32 with " << rname(reg1) << end();
   int32_t arg1 = Reg[reg1].i;
   int32_t* arg2 = effective_address(modrm);
   int32_t tmp1 = arg1 - *arg2;
@@ -310,7 +310,7 @@ case 0x3b: {  // set SF if r32 < r/m32
   ZF = (tmp1 == 0);
   int64_t tmp2 = arg1 - *arg2;
   OF = (tmp1 != tmp2);
-  trace(2, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  trace(90, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
   break;
 }
 
@@ -374,10 +374,10 @@ af 00 00 00  # 0xaf
 case 0x8b: {  // copy r32 to r/m32
   uint8_t modrm = next();
   uint8_t reg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "copy r/m32 to " << rname(reg1) << end();
+  trace(90, "run") << "copy r/m32 to " << rname(reg1) << end();
   int32_t* arg2 = effective_address(modrm);
   Reg[reg1].i = *arg2;
-  trace(2, "run") << "storing 0x" << HEXWORD << *arg2 << end();
+  trace(90, "run") << "storing 0x" << HEXWORD << *arg2 << end();
   break;
 }
 
@@ -409,10 +409,10 @@ case 0xff: {
   uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
     case 4: {  // jump to r/m32
-      trace(2, "run") << "jump to r/m32" << end();
+      trace(90, "run") << "jump to r/m32" << end();
       int32_t* arg2 = effective_address(modrm);
       EIP = *arg2;
-      trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+      trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
       break;
     }
     // End Op ff Subops
@@ -438,7 +438,7 @@ af 00 00 00  # 0xaf
 
 :(before "End Op ff Subops")
 case 6: {  // push r/m32 to stack
-  trace(2, "run") << "push r/m32" << end();
+  trace(90, "run") << "push r/m32" << end();
   const int32_t* val = effective_address(modrm);
   push(*val);
   break;
@@ -469,7 +469,7 @@ case 0x8f: {  // pop stack into r/m32
   uint8_t subop = (modrm>>3)&0x7;
   switch (subop) {
     case 0: {
-      trace(2, "run") << "pop into r/m32" << end();
+      trace(90, "run") << "pop into r/m32" << end();
       int32_t* dest = effective_address(modrm);
       *dest = pop();
       break;
@@ -495,7 +495,7 @@ case 0x8f: {  // pop stack into r/m32
 :(before "End Mod 0 Special-cases(addr)")
 case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
   addr = imm32();
-  trace(2, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
+  trace(90, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
   break;
 
 //:
@@ -519,13 +519,13 @@ case 1:  // indirect + disp8 addressing
   switch (rm) {
   default:
     addr = Reg[rm].u;
-    trace(2, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
+    trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
     break;
   // End Mod 1 Special-cases(addr)
   }
   if (addr > 0) {
     addr += static_cast<int8_t>(next());
-    trace(2, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp8)" << end();
+    trace(90, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp8)" << end();
   }
   break;
 
@@ -564,13 +564,13 @@ case 2:  // indirect + disp32 addressing
   switch (rm) {
   default:
     addr = Reg[rm].u;
-    trace(2, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
+    trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
     break;
   // End Mod 2 Special-cases(addr)
   }
   if (addr > 0) {
     addr += imm32();
-    trace(2, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp32)" << end();
+    trace(90, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp32)" << end();
   }
   break;
 

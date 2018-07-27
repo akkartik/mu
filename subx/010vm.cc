@@ -70,7 +70,7 @@ SF = ZF = OF = false;
   /* arg1 and arg2 must be signed */ \
   int64_t tmp = arg1 op arg2; \
   arg1 = arg1 op arg2; \
-  trace(2, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
+  trace(90, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
   SF = (arg1 < 0); \
   ZF = (arg1 == 0); \
   OF = (arg1 != tmp); \
@@ -81,7 +81,7 @@ SF = ZF = OF = false;
 #define BINARY_BITWISE_OP(op, arg1, arg2) { \
   /* arg1 and arg2 must be unsigned */ \
   arg1 = arg1 op arg2; \
-  trace(2, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
+  trace(90, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
   SF = (arg1 >> 31); \
   ZF = (arg1 == 0); \
   OF = false; \
@@ -146,7 +146,7 @@ inline void write_mem_i32(uint32_t addr, int32_t val) {
 // skeleton of how x86 instructions are decoded
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
-  trace(2, "run") << "inst: 0x" << HEXWORD << EIP << end();
+  trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
 //?   cerr << "inst: 0x" << EIP << '\n';
   switch (op = next()) {
   case 0xf4:  // hlt

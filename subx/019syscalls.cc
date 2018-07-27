@@ -3,7 +3,7 @@ put(name, "cd", "software interrupt");
 
 :(before "End Single-Byte Opcodes")
 case 0xcd: {  // int imm8 (software interrupt)
-  trace(2, "run") << "syscall" << end();
+  trace(90, "run") << "syscall" << end();
   uint8_t code = next();
   if (code != 0x80) {
     raise << "Unimplemented interrupt code " << HEXBYTE << code << '\n' << end();

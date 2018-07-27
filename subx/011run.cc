@@ -237,7 +237,7 @@ put(name, "05", "add imm32 to R0 (EAX)");
 :(before "End Single-Byte Opcodes")
 case 0x05: {  // add imm32 to EAX
   int32_t arg2 = imm32();
-  trace(2, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
+  trace(90, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
   BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
   break;
 }

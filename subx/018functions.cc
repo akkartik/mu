@@ -17,10 +17,10 @@ put(name, "e8", "call disp32");
 :(before "End Single-Byte Opcodes")
 case 0xe8: {  // call disp32 relative to next EIP
   int32_t offset = imm32();
-  trace(2, "run") << "call imm32 0x" << HEXWORD << offset << end();
+  trace(90, "run") << "call imm32 0x" << HEXWORD << offset << end();
   push(EIP);
   EIP += offset;
-  trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   break;
 }
 
@@ -41,11 +41,11 @@ case 0xe8: {  // call disp32 relative to next EIP
 
 :(before "End Op ff Subops")
 case 2: {  // call function pointer at r/m32
-  trace(2, "run") << "call to r/m32" << end();
+  trace(90, "run") << "call to r/m32" << end();
   int32_t* offset = effective_address(modrm);
   push(EIP);
   EIP += *offset;
-  trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   break;
 }
 
@@ -82,8 +82,8 @@ put(name, "c3", "return from most recent unfinished call");
 
 :(before "End Single-Byte Opcodes")
 case 0xc3: {  // return from a call
-  trace(2, "run") << "return" << end();
+  trace(90, "run") << "return" << end();
   EIP = pop();
-  trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   break;
 }
