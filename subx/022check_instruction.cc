@@ -253,6 +253,8 @@ void init_permitted_operands() {
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  1     0     0      |0       0     1     1
   put(Permitted_operands, 0x81, 0x43);  // combine
+
+  // End Init Permitted Operands
 }
 
 :(before "End Includes")
@@ -505,7 +507,7 @@ $error: 0
 void check_operands_0f(const line& inst) {
   assert(inst.words.at(0).data == "0f");
   if (SIZE(inst.words) == 1) {
-    raise << "no 2-byte opcode specified starting with '0f'\n" << end();
+    raise << "opcode '0f' requires a second opcode\n" << end();
     return;
   }
   uint8_t op = hex_byte(inst.words.at(1).data);
@@ -520,7 +522,52 @@ void check_operands_f3(const line& /*unused*/) {
   raise << "no supported opcodes starting with f3\n" << end();
 }
 
-void check_operands_0f(uint8_t /*op*/, const line& /*inst*/) {
+:(scenario check_missing_disp16_operand)
+% Hide_errors = true;
+== 0x1
+# opcode        ModR/M                    SIB                   displacement    immediate
+# instruction   mod, reg, Reg/Mem bits    scale, index, base
+# 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
+  0f 84                                                                                       # jmp if ZF to ??
++error: '0f 84' (jump disp16 bytes away if ZF is set): missing disp16 operand
+
+:(before "End Globals")
+map</*op*/uint8_t, /*bitvector*/uint8_t> Permitted_operands_0f;
+:(before "End Init Permitted Operands")
+//// Class C: just op and disp16
+//  imm32 imm8  disp32 |disp16  disp8 subop modrm
+//  0     0     0      |1       0     0     0
+put(Permitted_operands_0f, 0x84, 0x08);
+put(Permitted_operands_0f, 0x85, 0x08);
+put(Permitted_operands_0f, 0x8c, 0x08);
+put(Permitted_operands_0f, 0x8d, 0x08);
+put(Permitted_operands_0f, 0x8e, 0x08);
+put(Permitted_operands_0f, 0x8f, 0x08);
+
+:(code)
+void check_operands_0f(uint8_t op, const line& inst) {
+  uint8_t expected_bitvector = get(Permitted_operands_0f, op);
+  if (HAS(expected_bitvector, MODRM))
+    check_operands_modrm(inst, op);
+  compare_bitvector_0f(op, inst, CLEAR(expected_bitvector, MODRM));
+}
+
+void compare_bitvector_0f(uint8_t op, const line& inst, uint8_t expected) {
+  if (all_raw_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
+  uint8_t bitvector = compute_operand_bitvector(inst);
+  if (trace_contains_errors()) return;  // duplicate operand type
+  if (bitvector == expected) return;  // all good with this instruction
+  for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
+//?     cerr << "comparing " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
+    if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
+    const string& optype = Operand_type_name.at(i);
+    if ((bitvector & 0x1) > (expected & 0x1))
+      raise << "'" << to_string(inst) << "' (" << get(name_0f, op) << "): unexpected " << optype << " operand\n" << end();
+    else
+      raise << "'" << to_string(inst) << "' (" << get(name_0f, op) << "): missing " << optype << " operand\n" << end();
+    // continue giving all errors for a single instruction
+  }
+  // ignore settings in any unused bits
 }
 
 string to_string(const line& inst) {
