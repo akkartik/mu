@@ -231,7 +231,7 @@ uint8_t hex_byte(const string& s) {
 //:: run
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x05, "add imm32 to R0 (EAX)");
+put(name, "05", "add imm32 to R0 (EAX)");
 
 //: our first opcode
 :(before "End Single-Byte Opcodes")

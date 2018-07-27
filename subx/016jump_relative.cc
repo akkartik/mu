@@ -3,7 +3,7 @@
 //:: jump
 
 :(before "End Initialize Op Names(name)")
-put(name, 0xeb, "jump disp8 bytes away");
+put(name, "eb", "jump disp8 bytes away");
 
 :(scenario jump_rel8)
 == 0x1
@@ -27,7 +27,7 @@ case 0xeb: {  // jump rel8
 //:: jump if equal/zero
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x74, "jump disp8 bytes away if ZF is set");
+put(name, "74", "jump disp8 bytes away if ZF is set");
 
 :(scenario je_rel8_success)
 % ZF = true;
@@ -66,7 +66,7 @@ case 0x74: {  // jump rel8 if ZF
 //:: jump if not equal/not zero
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x75, "jump disp8 bytes away if ZF is not set");
+put(name, "75", "jump disp8 bytes away if ZF is not set");
 
 :(scenario jne_rel8_success)
 % ZF = false;
@@ -105,7 +105,7 @@ case 0x75: {  // jump rel8 unless ZF
 //:: jump if greater
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x7f, "jump disp8 bytes away if greater (ZF is unset, SF == OF)");
+put(name, "7f", "jump disp8 bytes away if greater (ZF is unset, SF == OF)");
 
 :(scenario jg_rel8_success)
 % ZF = false;
@@ -148,7 +148,7 @@ case 0x7f: {  // jump rel8 if !SF and !ZF
 //:: jump if greater or equal
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x7d, "jump disp8 bytes away if greater or equal (SF == OF)");
+put(name, "7d", "jump disp8 bytes away if greater or equal (SF == OF)");
 
 :(scenario jge_rel8_success)
 % SF = false;
@@ -189,7 +189,7 @@ case 0x7d: {  // jump rel8 if !SF
 //:: jump if lesser
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x7c, "jump disp8 bytes away if lesser (SF != OF)");
+put(name, "7c", "jump disp8 bytes away if lesser (SF != OF)");
 
 :(scenario jl_rel8_success)
 % ZF = false;
@@ -232,7 +232,7 @@ case 0x7c: {  // jump rel8 if SF and !ZF
 //:: jump if lesser or equal
 
 :(before "End Initialize Op Names(name)")
-put(name, 0x7e, "jump disp8 bytes away if lesser or equal (ZF is set or SF != OF)");
+put(name, "7e", "jump disp8 bytes away if lesser or equal (ZF is set or SF != OF)");
 
 :(scenario jle_rel8_equal)
 % ZF = true;

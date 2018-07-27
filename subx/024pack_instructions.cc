@@ -50,7 +50,7 @@ void pack_instructions(program& p) {
   segment& code = p.segments.at(0);
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
-    if (all_raw_hex_bytes(inst)) continue;
+    if (all_hex_bytes(inst)) continue;
     trace(99, "translate") << "packing instruction '" << to_string(/*with metadata*/inst) << "'" << end();
     pack_instruction(inst);
     trace(99, "translate") << "instruction after packing: '" << to_string(/*without metadata*/inst.words) << "'" << end();

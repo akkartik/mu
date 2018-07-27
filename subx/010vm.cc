@@ -193,29 +193,29 @@ inline uint8_t next() {
 
 //: start tracking supported opcodes
 :(before "End Globals")
-map</*op*/uint8_t, string> name;
-map</*op*/uint8_t, string> name_0f;
-map</*op*/uint8_t, string> name_f3;
-map</*op*/uint8_t, string> name_f3_0f;
+map</*op*/string, string> name;
+map</*op*/string, string> name_0f;
+map</*op*/string, string> name_f3;
+map</*op*/string, string> name_f3_0f;
 :(before "End One-time Setup")
 init_op_names();
 :(code)
 void init_op_names() {
-  put(name, 0xf4, "halt");
+  put(name, "f4", "halt");
   // End Initialize Op Names(name)
 }
 
 :(before "End Help Special-cases(key)")
 if (key == "opcodes") {
   cerr << "Opcodes currently supported by SubX:\n";
-  for (map<uint8_t, string>::iterator p = name.begin();  p != name.end();  ++p)
-    cerr << "  " << HEXBYTE << NUM(p->first) << ": " << p->second << '\n';
-  for (map<uint8_t, string>::iterator p = name_0f.begin();  p != name_0f.end();  ++p)
-    cerr << "  0f " << HEXBYTE << NUM(p->first) << ": " << p->second << '\n';
-  for (map<uint8_t, string>::iterator p = name_f3.begin();  p != name_f3.end();  ++p)
-    cerr << "  f3 " << HEXBYTE << NUM(p->first) << ": " << p->second << '\n';
-  for (map<uint8_t, string>::iterator p = name_f3_0f.begin();  p != name_f3_0f.end();  ++p)
-    cerr << "  f3 0f " << HEXBYTE << NUM(p->first) << ": " << p->second << '\n';
+  for (map<string, string>::iterator p = name.begin();  p != name.end();  ++p)
+    cerr << "  " << p->first << ": " << p->second << '\n';
+  for (map<string, string>::iterator p = name_0f.begin();  p != name_0f.end();  ++p)
+    cerr << "  0f " << p->first << ": " << p->second << '\n';
+  for (map<string, string>::iterator p = name_f3.begin();  p != name_f3.end();  ++p)
+    cerr << "  f3 " << p->first << ": " << p->second << '\n';
+  for (map<string, string>::iterator p = name_f3_0f.begin();  p != name_f3_0f.end();  ++p)
+    cerr << "  f3 0f " << p->first << ": " << p->second << '\n';
   cerr << "Run `subx help instructions` for details on words like 'r32' and 'disp8'.\n";
   return 0;
 }
