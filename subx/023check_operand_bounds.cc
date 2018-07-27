@@ -39,19 +39,27 @@ void check_operand_bounds(/*const*/ program& p) {
 
 void check_operand_bounds(const word& w) {
   for (map<string, uint32_t>::iterator p = Operand_bound.begin();  p != Operand_bound.end();  ++p) {
-    if (has_metadata(w, p->first)) {
-      int32_t x = parse_int(w.data);
-      if (x >= 0) {
-        if (static_cast<uint32_t>(x) >= p->second)
-          raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
-      }
-      else {
-        // hacky? assuming bound is a power of 2
-        if (x < -1*static_cast<int32_t>(p->second/2))
-          raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
-      }
+    if (!has_metadata(w, p->first)) continue;
+    if (!is_hex_int(w.data)) continue;  // later transforms are on their own to do their own bounds checking
+    int32_t x = parse_int(w.data);
+    if (x >= 0) {
+      if (static_cast<uint32_t>(x) >= p->second)
+        raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
+    }
+    else {
+      // hacky? assuming bound is a power of 2
+      if (x < -1*static_cast<int32_t>(p->second/2))
+        raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
     }
   }
+}
+
+bool is_hex_int(const string& s) {
+  if (s.empty()) return false;
+  size_t pos = 0;
+  if (s.at(0) == '-' || s.at(0) == '+') pos++;
+  if (s.substr(pos, pos+2) == "0x") pos += 2;
+  return s.find_first_not_of("0123456789abcdefABCDEF", pos) == string::npos;
 }
 
 int32_t parse_int(const string& s) {

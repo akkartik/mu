@@ -129,6 +129,8 @@ void add_disp_bytes(const line& in, line& out) {
     const word& curr = in.words.at(i);
     if (has_metadata(curr, "disp8"))
       emit_hex_bytes(out, curr, 1);
+    if (has_metadata(curr, "disp16"))
+      emit_hex_bytes(out, curr, 2);
     else if (has_metadata(curr, "disp32"))
       emit_hex_bytes(out, curr, 4);
   }
@@ -150,19 +152,15 @@ void emit_hex_bytes(line& out, const word& w, int num) {
     out.words.push_back(w);
     return;
   }
-  uint32_t val = static_cast<uint32_t>(parse_int(w.data));
+  emit_hex_bytes(out, static_cast<uint32_t>(parse_int(w.data)), num);
+}
+
+void emit_hex_bytes(line& out, uint32_t val, int num) {
+  assert(num <= 4);
   for (int i = 0;  i < num;  ++i) {
     out.words.push_back(hex_byte_text(val & 0xff));
     val = val >> 8;
   }
-}
-
-bool is_hex_int(const string& s) {
-  if (s.empty()) return false;
-  size_t pos = 0;
-  if (s.at(0) == '-' || s.at(0) == '+') pos++;
-  if (s.substr(pos, pos+2) == "0x") pos += 2;
-  return s.find_first_not_of("0123456789abcdefABCDEF", pos) == string::npos;
 }
 
 word hex_byte_text(uint8_t val) {
@@ -170,6 +168,7 @@ word hex_byte_text(uint8_t val) {
   out << HEXBYTE << NUM(val);
   word result;
   result.data = out.str();
+  result.original = out.str()+"/auto";
   return result;
 }
 
