@@ -50,15 +50,12 @@ void compute_addresses_for_labels(const segment& code, map<string, uint32_t> add
       else {
         if (contains_any_operand_metadata(curr))
           raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
-        if (j == 0) {
-          string label = curr.data.substr(0, SIZE(curr.data)-1);
-          put(address, label, current_byte);
-          trace(99, "label") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
-          // no modifying current_byte; label definitions won't be in the final binary
-        }
-        else {
+        if (j > 0)
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
-        }
+        string label = curr.data.substr(0, SIZE(curr.data)-1);
+        put(address, label, current_byte);
+        trace(99, "label") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
+        // no modifying current_byte; label definitions won't be in the final binary
       }
     }
   }
