@@ -145,11 +145,23 @@ void add_imm_bytes(const line& in, line& out) {
 
 void emit_hex_bytes(line& out, const word& w, int num) {
   assert(num <= 4);
+  if (!is_hex_int(w.data)) {
+    out.words.push_back(w);
+    return;
+  }
   uint32_t val = static_cast<uint32_t>(parse_int(w.data));
   for (int i = 0;  i < num;  ++i) {
     out.words.push_back(hex_byte_text(val & 0xff));
     val = val >> 8;
   }
+}
+
+bool is_hex_int(const string& s) {
+  if (s.empty()) return false;
+  size_t pos = 0;
+  if (s.at(0) == '-' || s.at(0) == '+') pos++;
+  if (s.substr(pos, pos+2) == "0x") pos += 2;
+  return s.find_first_not_of("0123456789abcdefABCDEF", pos) == string::npos;
 }
 
 word hex_byte_text(uint8_t val) {
@@ -187,3 +199,16 @@ void transform(const string& text_bytes) {
 +translate: packing instruction 'bb 0x2a/imm32'
 +translate: instruction after packing: 'bb 2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX
+
+:(scenarios transform)
+:(scenario pack_silently_ignores_non_hex)
+== 0x1
+# instruction                     effective address                                           operand     displacement    immediate
+# op          subop               mod             rm32          base      index     scale     r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+  bb                                                                                                                      foo/imm32         # copy foo to EBX
++translate: packing instruction 'bb foo/imm32'
+# no change (we're just not printing metadata to the trace)
++translate: instruction after packing: 'bb foo'
+$error: 0
+:(scenarios run)

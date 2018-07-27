@@ -57,7 +57,7 @@ int32_t parse_int(const string& s) {
   istringstream in(s);
   int32_t result = 0;
   in >> std::hex >> result;
-  if (!in) {
+  if (!in || !in.eof()) {
     raise << "not a number: " << s << '\n' << end();
     return 0;
   }
