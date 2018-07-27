@@ -226,12 +226,18 @@ int feenableexcept(unsigned int excepts) {
 // from http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map
 template<typename T> typename T::mapped_type& get(T& map, typename T::key_type const& key) {
   typename T::iterator iter(map.find(key));
-  assert(iter != map.end());
+  if (iter == map.end()) {
+    cerr << "get couldn't find key '" << key << "'\n";
+    assert(iter != map.end());
+  }
   return iter->second;
 }
 template<typename T> typename T::mapped_type const& get(const T& map, typename T::key_type const& key) {
   typename T::const_iterator iter(map.find(key));
-  assert(iter != map.end());
+  if (iter == map.end()) {
+    cerr << "get couldn't find key '" << key << "'\n";
+    assert(iter != map.end());
+  }
   return iter->second;
 }
 template<typename T> typename T::mapped_type const& put(T& map, typename T::key_type const& key, typename T::mapped_type const& value) {
