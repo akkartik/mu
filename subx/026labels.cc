@@ -9,13 +9,14 @@
           # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 loop:
             05                                                                                                                      0x0d0c0b0a/imm32  # add to EAX
-+translate: label 'loop' is at address 1
++transform: label 'loop' is at address 1
 
 :(before "End One-time Setup")
-Transform.push_back(replace_labels);
+Transform.push_back(rewrite_labels);
 
 :(code)
-void replace_labels(program& p) {
+void rewrite_labels(program& p) {
+  trace(99, "transform") << "-- rewrite labels" << end();
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
   map<string, uint32_t> address;
@@ -53,7 +54,7 @@ void compute_addresses_for_labels(const segment& code, map<string, uint32_t> add
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
         string label = curr.data.substr(0, SIZE(curr.data)-1);
         put(address, label, current_byte);
-        trace(99, "translate") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
+        trace(99, "transform") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
         // no modifying current_byte; label definitions won't be in the final binary
       }
     }
@@ -90,6 +91,6 @@ loop2:
             05                                                                                                                      0x0d0c0b0a/imm32  # add to EAX
 loop3:
             f
-+translate: label 'loop' is at address 1
-+translate: label 'loop2' is at address 1
-+translate: label 'loop3' is at address 6
++transform: label 'loop' is at address 1
++transform: label 'loop2' is at address 1
++transform: label 'loop3' is at address 6

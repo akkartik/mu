@@ -121,6 +121,7 @@ struct word {
 :(code)
 void parse(istream& fin, program& out) {
   vector<line> l;
+  trace(99, "parse") << "begin" << end();
   while (has_data(fin)) {
     string line_data;
     getline(fin, line_data);
@@ -172,6 +173,7 @@ void parse(istream& fin, program& out) {
     trace(99, "parse") << "flushing to segment" << end();
     out.segments.back().lines.swap(l);
   }
+  trace(99, "parse") << "done" << end();
 }
 
 //:: transform
@@ -182,13 +184,16 @@ typedef void (*transform_fn)(program&);
 vector<transform_fn> Transform;
 
 void transform(program& p) {
+  trace(99, "transform") << "begin" << end();
   for (int t = 0;  t < SIZE(Transform);  ++t)
     (*Transform.at(t))(p);
+  trace(99, "transform") << "done" << end();
 }
 
 //:: load
 
 void load(const program& p) {
+  trace(99, "load") << "begin" << end();
   if (p.segments.empty()) {
     raise << "no code to run\n" << end();
     return;
@@ -211,6 +216,7 @@ void load(const program& p) {
     if (i == 0) End_of_program = addr;
   }
   EIP = p.segments.at(0).start;
+  trace(99, "load") << "done" << end();
 }
 
 uint8_t hex_byte(const string& s) {

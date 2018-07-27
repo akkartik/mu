@@ -7,23 +7,23 @@
 # op          subop               mod             rm32          base      index     scale     r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   bb                                                                                                                      0x2a/imm32        # copy 42 to EBX
-+translate: packing instruction 'bb 0x2a/imm32'
-+translate: instruction after packing: 'bb 2a 00 00 00'
++transform: packing instruction 'bb 0x2a/imm32'
++transform: instruction after packing: 'bb 2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX
 
 :(scenario pack_disp8)
 == 0x1
 74 2/disp8  # jump 2 bytes away if ZF is set
-+translate: packing instruction '74 2/disp8'
-+translate: instruction after packing: '74 02'
++transform: packing instruction '74 2/disp8'
++transform: instruction after packing: '74 02'
 
 :(scenarios transform)
 :(scenario pack_disp8_negative)
 == 0x1
 # running this will cause an infinite loop
 74 -1/disp8  # jump 1 byte before if ZF is set
-+translate: packing instruction '74 -1/disp8'
-+translate: instruction after packing: '74 ff'
++transform: packing instruction '74 -1/disp8'
++transform: instruction after packing: '74 ff'
 :(scenarios run)
 
 :(scenario pack_modrm_imm32)
@@ -32,32 +32,33 @@
 # op          subop               mod             rm32          base      index     scale     r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   81          0/add/subop         3/mod/direct    3/ebx/rm32                                                              1/imm32           # add 1 to EBX
-+translate: packing instruction '81 0/add/subop 3/mod/direct 3/ebx/rm32 1/imm32'
-+translate: instruction after packing: '81 c3 01 00 00 00'
++transform: packing instruction '81 0/add/subop 3/mod/direct 3/ebx/rm32 1/imm32'
++transform: instruction after packing: '81 c3 01 00 00 00'
 
 :(scenario pack_imm32_large)
 == 0x1
 b9 0x080490a7/imm32  # copy to ECX
-+translate: packing instruction 'b9 0x080490a7/imm32'
-+translate: instruction after packing: 'b9 a7 90 04 08'
++transform: packing instruction 'b9 0x080490a7/imm32'
++transform: instruction after packing: 'b9 a7 90 04 08'
 
 :(before "End One-time Setup")
-Transform.push_back(pack_instructions);
+Transform.push_back(pack_operands);
 
 :(code)
-void pack_instructions(program& p) {
+void pack_operands(program& p) {
+  trace(99, "transform") << "-- pack operands" << end();
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
     if (all_hex_bytes(inst)) continue;
-    trace(99, "translate") << "packing instruction '" << to_string(/*with metadata*/inst) << "'" << end();
-    pack_instruction(inst);
-    trace(99, "translate") << "instruction after packing: '" << to_string(/*without metadata*/inst.words) << "'" << end();
+    trace(99, "transform") << "packing instruction '" << to_string(/*with metadata*/inst) << "'" << end();
+    pack_operands(inst);
+    trace(99, "transform") << "instruction after packing: '" << to_string(/*without metadata*/inst.words) << "'" << end();
   }
 }
 
-void pack_instruction(line& inst) {
+void pack_operands(line& inst) {
   line new_inst;
   add_opcodes(inst, new_inst);
   add_modrm_byte(inst, new_inst);
@@ -196,8 +197,8 @@ void transform(const string& text_bytes) {
 # op          subop               mod             rm32          base      index     scale     r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   bb                                                                                                                      0x2a/imm32        # copy 42 to EBX
-+translate: packing instruction 'bb 0x2a/imm32'
-+translate: instruction after packing: 'bb 2a 00 00 00'
++transform: packing instruction 'bb 0x2a/imm32'
++transform: instruction after packing: 'bb 2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX
 
 :(scenarios transform)
@@ -207,8 +208,8 @@ void transform(const string& text_bytes) {
 # op          subop               mod             rm32          base      index     scale     r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   bb                                                                                                                      foo/imm32         # copy foo to EBX
-+translate: packing instruction 'bb foo/imm32'
++transform: packing instruction 'bb foo/imm32'
 # no change (we're just not printing metadata to the trace)
-+translate: instruction after packing: 'bb foo'
++transform: instruction after packing: 'bb foo'
 $error: 0
 :(scenarios run)

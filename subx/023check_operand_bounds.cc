@@ -26,6 +26,7 @@ put(Operand_bound, "imm8", 1<<8);
 Transform.push_back(check_operand_bounds);
 :(code)
 void check_operand_bounds(/*const*/ program& p) {
+  trace(99, "transform") << "-- check operand bounds" << end();
   if (p.segments.empty()) return;
   const segment& code = p.segments.at(0);
   for (int i = 0;  i < SIZE(code.lines);  ++i) {

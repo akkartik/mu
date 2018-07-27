@@ -66,6 +66,7 @@ Transform.push_back(check_operands);
 
 :(code)
 void check_operands(/*const*/ program& p) {
+  trace(99, "transform") << "-- check operands" << end();
   if (p.segments.empty()) return;
   const segment& code = p.segments.at(0);
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
