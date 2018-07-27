@@ -266,6 +266,7 @@ void init_permitted_operands() {
 
 :(code)
 void check_operands(const line& inst, const word& op) {
+  if (!is_hex_byte(op)) return;
   uint8_t expected_bitvector = get(Permitted_operands, op.data);
   if (HAS(expected_bitvector, MODRM))
     check_operands_modrm(inst, op);
