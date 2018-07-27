@@ -67,9 +67,9 @@ Transform.push_back(check_operands);
 :(code)
 void check_operands(/*const*/ program& p) {
   if (p.segments.empty()) return;
-  const segment& seg = p.segments.at(0);
-  for (int i = 0;  i < SIZE(seg.lines);  ++i) {
-    check_operands(seg.lines.at(i));
+  const segment& code = p.segments.at(0);
+  for (int i = 0;  i < SIZE(code.lines);  ++i) {
+    check_operands(code.lines.at(i));
     if (trace_contains_errors()) return;  // stop at the first mal-formed instruction
   }
 }

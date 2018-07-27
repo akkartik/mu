@@ -27,9 +27,9 @@ Transform.push_back(check_operand_bounds);
 :(code)
 void check_operand_bounds(/*const*/ program& p) {
   if (p.segments.empty()) return;
-  const segment& seg = p.segments.at(0);
-  for (int i = 0;  i < SIZE(seg.lines);  ++i) {
-    const line& inst = seg.lines.at(i);
+  const segment& code = p.segments.at(0);
+  for (int i = 0;  i < SIZE(code.lines);  ++i) {
+    const line& inst = code.lines.at(i);
     for (int j = first_operand(inst);  j < SIZE(inst.words);  ++j)
       check_operand_bounds(inst.words.at(j));
     if (trace_contains_errors()) return;  // stop at the first mal-formed instruction

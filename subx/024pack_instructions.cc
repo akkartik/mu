@@ -47,9 +47,9 @@ Transform.push_back(pack_instructions);
 :(code)
 void pack_instructions(program& p) {
   if (p.segments.empty()) return;
-  segment& seg = p.segments.at(0);
-  for (int i = 0;  i < SIZE(seg.lines);  ++i) {
-    line& inst = seg.lines.at(i);
+  segment& code = p.segments.at(0);
+  for (int i = 0;  i < SIZE(code.lines);  ++i) {
+    line& inst = code.lines.at(i);
     if (all_raw_hex_bytes(inst)) continue;
     trace(99, "translate") << "packing instruction '" << to_string(/*with metadata*/inst) << "'" << end();
     pack_instruction(inst);
