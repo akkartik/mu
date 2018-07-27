@@ -9,6 +9,19 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
   return 0;
 }
 
+//: Support for option parsing.
+//: Options always begin with '--' and are always the first arguments. An
+//: option will never follow a non-option.
+char** arg = &argv[1];
+while (argc > 1 && starts_with(*arg, "--")) {
+  if (false)
+    ;  // no-op branch just so any further additions can consistently always start with 'else'
+  // End Commandline Options(*arg)
+  else
+    cerr << "skipping unknown option " << *arg << '\n';
+  --argc;  ++argv;  ++arg;
+}
+
 if (is_equal(argv[1], "help")) {
   if (argc == 2) {
     cerr << "help on what?\n";
@@ -63,6 +76,8 @@ void init_help() {
     "    subx translate <input 'source' file> <output ELF binary>\n"
     "- Run a SubX binary using SubX itself (for better error messages):\n"
     "    subx run <ELF binary>\n"
+    "Add '--trace' to any of these commands to also emit a trace, for debugging purposes.\n"
+    "However, options starting with '--' must always come before any other arguments.\n"
     "\n"
     "To start learning how to write SubX programs, run:\n"
     "  subx help\n"

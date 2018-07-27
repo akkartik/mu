@@ -77,13 +77,35 @@ struct trace_line {
 };
 
 :(before "End Globals")
-bool Hide_errors = false;
-bool Dump_trace = false;
-string Dump_label = "";
+bool Hide_errors = false;  // if set, don't print even error trace lines to screen
+bool Dump_trace = false;  // if set, print trace lines to screen
+string Dump_label = "";  // if set, print trace lines matching a single label to screen
 :(before "End Reset")
 Hide_errors = false;
 Dump_trace = false;
 Dump_label = "";
+
+//: Support for tracing an entire run.
+//: Traces can have a lot of overhead, so only turn them on when asked.
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--trace")) {
+  Save_trace = true;
+}
+:(before "End Commandline Parsing")
+if (Save_trace) {
+  cerr << "initializing trace\n";
+  Trace_stream = new trace_stream;
+}
+:(code)
+void cleanup_main() {
+  if (!Trace_stream) return;
+  if (Save_trace)
+    Trace_stream->save();
+  delete Trace_stream;
+  Trace_stream = NULL;
+}
+:(before "End One-time Setup")
+atexit(cleanup_main);
 
 :(before "End Types")
 // Pre-define some global constants that trace_stream needs to know about.
@@ -114,6 +136,13 @@ struct trace_stream {
     curr_label = label;
     curr_depth = depth;
     return *curr_stream;
+  }
+
+  void save() {
+    cerr << "saving trace to 'last_run'\n";
+    ofstream fout("last_run");
+    fout << readable_contents("");
+    fout.close();
   }
 
   // be sure to call this before messing with curr_stream or curr_label
@@ -189,7 +218,7 @@ ostream& operator<<(ostream& os, end /*unused*/) {
 }
 
 :(before "End Globals")
-bool Save_trace = false;
+bool Save_trace = false;  // if set, write out trace to disk
 
 // Trace_stream is a resource, lease_tracer uses RAII to manage it.
 :(before "End Types")
@@ -200,12 +229,7 @@ struct lease_tracer {
 :(code)
 lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
 lease_tracer::~lease_tracer() {
-  if (!Trace_stream) return;  // in case tests close Trace_stream
-  if (Save_trace) {
-    ofstream fout("last_trace");
-    fout << Trace_stream->readable_contents("");
-    fout.close();
-  }
+  if (Save_trace) Trace_stream->save();
   delete Trace_stream, Trace_stream = NULL;
 }
 :(before "End Includes")
@@ -371,7 +395,6 @@ using std::vector;
 using std::list;
 #include <set>
 using std::set;
-#include <algorithm>
 
 #include <sstream>
 using std::istringstream;
