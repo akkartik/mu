@@ -76,7 +76,7 @@ also be runnable on a 64-bit Linux system. I can't guarantee it, but I'd
 appreciate hearing if it doesn't run.
 
 However, there are a few more binaries in the teensy/ directory. They are not
-guaranteed to be runnable by subx. I'm not building general infrastructure
+guaranteed to be runnable by `subx`. I'm not building general infrastructure
 here for all of the x86 ISA and ELF format. SubX is about programming with a
 small, regular subset of 32-bit x86:
 
@@ -89,8 +89,8 @@ small, regular subset of 32-bit x86:
   on unsigned integers)
 * Only relative jump instructions (with 8-bit or 16-bit offsets).
 
-The ELF binaries generated are statically linked and missing a lot of features
-as well. But they will run.
+The ELF binaries generated are statically linked and missing a lot of advanced
+ELF features as well. But they will run.
 
 For more details on programming in this subset, consult the online help:
 ```
