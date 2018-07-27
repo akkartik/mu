@@ -49,7 +49,7 @@ void compute_addresses_for_labels(const segment& code, map<string, uint32_t> add
       }
       else {
         if (contains_any_operand_metadata(curr))
-          raise << "'" << to_string(inst) << "': mixing label definition with ':' in operand\n" << end();
+          raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
         if (j == 0) {
           string label = curr.data.substr(0, SIZE(curr.data)-1);
           put(address, label, current_byte);
