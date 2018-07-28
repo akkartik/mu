@@ -1,9 +1,61 @@
 ## What is this? 
 
-A suite of tools for directly programming in (32-bit x86) machine code without
-a compiler. The generated ELF binaries require just a Unix-like kernel to run.
-(It isn't self-hosted yet, so generating the binaries requires a C++ compiler
-and runtime.)
+SubX is a thin layer of syntactic sugar over (32-bit x86) machine code. The
+SubX translator (it's too simple to be called a compiler, or even an
+assembler) generates ELF binaries that require just a Unix-like kernel to run.
+(The translator isn't self-hosted yet; generating the binaries does require a
+C++ compiler and runtime.)
+
+## Thin layer of abstraction over machine code, isn't that just an assembler?
+
+Assemblers try to hide the precise instructions emitted from the programmer.
+Consider these instructions in Assembly language:
+
+```
+add EBX, ECX
+copy EBX, 0
+copy ECX, 1
+```
+
+Here are the same instructions in SubX, just a list of numbers (opcodes and
+operands) with metadata 'comments' after a `/`:
+
+```
+01/add 3/mod/direct 3/rm32/ebx 1/r32/ecx
+bb/copy 0/imm32
+b9/copy 1/imm32
+```
+
+Notice that a single instruction, say 'copy', maps to multiple opcodes.
+That's just the tip of the iceberg of complexity that Assembly Languages deal
+with.
+
+SubX doesn't shield the programmer from these details. Words always contain
+the actual bits or bytes for machine code. But they also can contain metadata
+after slashes, and SubX will run cross-checks and give good error messages
+when there's a discrepancy between code and metadata.
+
+## But why not use an assembler?
+
+The long-term goal is to make programming in machine language ergonomic enough
+that I (or someone else) can build a compiler for a high-level language in it.
+That is, building a compiler without needing a compiler, anywhere among its
+prerequisites.
+
+Assemblers today are complex enough that they're built in a high-level
+language, and need a compiler to build. They also tend to be designed to fit
+into a larger toolchain, to be a back-end for a compiler. Their output is in
+turn often passed to other tools like a linker. The formats that all these
+tools use to talk to each other have grown increasingly complex in the face of
+decades of evolution, usage and backwards-compatibility constraints. All these
+considerations add to the burden of the Assembler developer. Building the
+assembler in a high-level language helps face up to them.
+
+Assemblers _do_ often accept a far simpler language, just a file format
+really, variously called 'flat' or 'binary', which gives the programmer
+complete control over the precise bytes in an executable. SubX is basically
+trying to be a more ergonomic flat assembler that will one day be bootstrapped
+from machine code.
 
 ## Why in the world?
 
