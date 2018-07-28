@@ -15,17 +15,17 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
+.muData { color: #ffff00; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Special { color: #c00000; }
 .Delimiter { color: #800080; }
 .SalientComment { color: #00ffff; }
 .Constant { color: #00a0a0; }
 .LineNr { color: #444444; }
+.muControl { color: #c0a020; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
-.muControl { color: #c0a020; }
-.muData { color: #ffff00; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -72,11 +72,11 @@ if ('onhashchange' in window) {
 <span id="L10" class="LineNr">  10 </span><span class="muRecipe">def!</span> main [
 <span id="L11" class="LineNr">  11 </span>  <span class="Constant">local-scope</span>
 <span id="L12" class="LineNr">  12 </span>  open-console
-<span id="L13" class="LineNr">  13 </span>  <a href='../081print.mu.html#L46'>clear-screen</a> <span class="Constant">0/screen</span>  <span class="Comment"># non-scrolling app</span>
-<span id="L14" class="LineNr">  14 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <span class="Constant">0/filesystem</span>, <span class="Constant">0/screen</span>
-<span id="L15" class="LineNr">  15 </span>  env <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L473'>restore-sandboxes</a> env, <span class="Constant">0/filesystem</span>
-<span id="L16" class="LineNr">  16 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <span class="Constant">0/screen</span>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L17" class="LineNr">  17 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, env, <span class="Constant">0/filesystem</span>
+<span id="L13" class="LineNr">  13 </span>  <a href='../081print.mu.html#L46'>clear-screen</a><span class="Constant"> null/screen</span>  <span class="Comment"># non-scrolling app</span>
+<span id="L14" class="LineNr">  14 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a><span class="Constant"> null/filesystem, null/screen</span>
+<span id="L15" class="LineNr">  15 </span>  env <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L473'>restore-sandboxes</a> env,<span class="Constant"> null/filesystem</span>
+<span id="L16" class="LineNr">  16 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a><span class="Constant"> null/screen,</span> env, <a href='001-editor.mu.html#L109'>render</a>
+<span id="L17" class="LineNr">  17 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a><span class="Constant"> null/screen, null/console,</span> env,<span class="Constant"> null/filesystem</span>
 <span id="L18" class="LineNr">  18 </span>]
 <span id="L19" class="LineNr">  19 </span>
 <span id="L20" class="LineNr">  20 </span><span class="muData">container</span> environment [
@@ -109,7 +109,7 @@ if ('onhashchange' in window) {
 <span id="L47" class="LineNr">  47 </span>  ]
 <span id="L48" class="LineNr">  48 </span>  <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
 <span id="L49" class="LineNr">  49 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[divide-with-remainder 11, 3]</span>
-<span id="L50" class="LineNr">  50 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L50" class="LineNr">  50 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L51" class="LineNr">  51 </span>  <span class="Comment"># run the code in the editors</span>
 <span id="L52" class="LineNr">  52 </span>  assume-console [
 <span id="L53" class="LineNr">  53 </span>    press F4
@@ -195,7 +195,7 @@ if ('onhashchange' in window) {
 <span id="L133" class="LineNr"> 133 </span>    error?:bool <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L146'>run-sandboxes</a> env, <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>
 <span id="L134" class="LineNr"> 134 </span>    <span class="Comment"># we could just render-all, but we do some work to minimize the number of prints to screen</span>
 <span id="L135" class="LineNr"> 135 </span><span class="Constant">    <a href='005-sandbox.mu.html#L135'>&lt;end-run-sandboxes-on-F4&gt;</a></span>
-<span id="L136" class="LineNr"> 136 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L136" class="LineNr"> 136 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L137" class="LineNr"> 137 </span>    <span class="Delimiter">{</span>
 <span id="L138" class="LineNr"> 138 </span>      <span class="muControl">break-if</span> error?
 <span id="L139" class="LineNr"> 139 </span>      <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L217'>update-status</a> <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[                 ]</span>, <span class="Constant">245/grey</span>
@@ -232,7 +232,7 @@ if ('onhashchange' in window) {
 <span id="L170" class="LineNr"> 170 </span>    <span class="Comment"># needs to be before running them, in case we die when running</span>
 <span id="L171" class="LineNr"> 171 </span>    <a href='005-sandbox.mu.html#L224'>save-sandboxes</a> env, <a href='../088file.mu.html#L11'>resources</a>
 <span id="L172" class="LineNr"> 172 </span>    <span class="Comment"># clear sandbox editor</span>
-<span id="L173" class="LineNr"> 173 </span>    init:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> push <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
+<span id="L173" class="LineNr"> 173 </span>    init:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> push <span class="Constant">167/§</span>,<span class="Constant"> null</span>
 <span id="L174" class="LineNr"> 174 </span>    *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">data:offset</span>, init
 <span id="L175" class="LineNr"> 175 </span>    *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">top-of-screen:offset</span>, init
 <span id="L176" class="LineNr"> 176 </span>  <span class="Delimiter">}</span>
@@ -263,7 +263,7 @@ if ('onhashchange' in window) {
 <span id="L201" class="LineNr"> 201 </span>  in:text <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L681'>editor-contents</a> recipes
 <span id="L202" class="LineNr"> 202 </span>  <a href='../088file.mu.html#L11'>resources</a> <span class="Special">&lt;-</span> <a href='../088file.mu.html#L127'>dump</a> <a href='../088file.mu.html#L11'>resources</a>, <span class="Constant">[lesson/recipes.mu]</span>, in
 <span id="L203" class="LineNr"> 203 </span>  reload in
-<span id="L204" class="LineNr"> 204 </span>  errors-found? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L204" class="LineNr"> 204 </span>  errors-found? <span class="Special">&lt;-</span> copy<span class="Constant"> false</span>
 <span id="L205" class="LineNr"> 205 </span>]
 <span id="L206" class="LineNr"> 206 </span>
 <span id="L207" class="LineNr"> 207 </span><span class="Comment"># replaced in a later layer</span>
@@ -330,7 +330,7 @@ if ('onhashchange' in window) {
 <span id="L268" class="LineNr"> 268 </span>  <a href='002-typing.mu.html#L1114'>draw-horizontal</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, right
 <span id="L269" class="LineNr"> 269 </span>  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
 <span id="L270" class="LineNr"> 270 </span>  row, <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L276'>render-sandboxes</a> <a href='../081print.mu.html#L16'>screen</a>, sandbox, left, right, row, render-from
-<span id="L271" class="LineNr"> 271 </span>  <a href='001-editor.mu.html#L224'>clear-rest-of-screen</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, right
+<span id="L271" class="LineNr"> 271 </span>  <a href='001-editor.mu.html#L226'>clear-rest-of-screen</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, right
 <span id="L272" class="LineNr"> 272 </span>  <span class="Comment">#</span>
 <span id="L273" class="LineNr"> 273 </span>  <a href='../081print.mu.html#L515'>assert-no-scroll</a> <a href='../081print.mu.html#L16'>screen</a>, old-top-idx
 <span id="L274" class="LineNr"> 274 </span>]
@@ -420,7 +420,7 @@ if ('onhashchange' in window) {
 <span id="L358" class="LineNr"> 358 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
 <span id="L359" class="LineNr"> 359 </span>  env <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L473'>restore-sandboxes</a> env, <a href='../088file.mu.html#L11'>resources</a>
 <span id="L360" class="LineNr"> 360 </span>  run [
-<span id="L361" class="LineNr"> 361 </span>    <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L361" class="LineNr"> 361 </span>    <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L362" class="LineNr"> 362 </span>  ]
 <span id="L363" class="LineNr"> 363 </span>  screen-should-contain [
 <span id="L364" class="LineNr"> 364 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -537,8 +537,8 @@ if ('onhashchange' in window) {
 <span id="L475" class="LineNr"> 475 </span>  <span class="Constant">load-inputs</span>
 <span id="L476" class="LineNr"> 476 </span>  <span class="Comment"># read all scenarios, pushing them to end of a list of scenarios</span>
 <span id="L477" class="LineNr"> 477 </span>  idx:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<span id="L478" class="LineNr"> 478 </span>  curr:&amp;:sandbox <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<span id="L479" class="LineNr"> 479 </span>  <a href='../065duplex_list.mu.html#L32'>prev</a>:&amp;:sandbox <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L478" class="LineNr"> 478 </span>  curr:&amp;:sandbox <span class="Special">&lt;-</span> copy<span class="Constant"> null</span>
+<span id="L479" class="LineNr"> 479 </span>  <a href='../065duplex_list.mu.html#L38'>prev</a>:&amp;:sandbox <span class="Special">&lt;-</span> copy<span class="Constant"> null</span>
 <span id="L480" class="LineNr"> 480 </span>  <span class="Delimiter">{</span>
 <span id="L481" class="LineNr"> 481 </span>    filename:text <span class="Special">&lt;-</span> append <span class="Constant">[lesson/]</span>, idx
 <span id="L482" class="LineNr"> 482 </span>    contents:text <span class="Special">&lt;-</span> <a href='../088file.mu.html#L38'>slurp</a> <a href='../088file.mu.html#L11'>resources</a>, filename
@@ -557,7 +557,7 @@ if ('onhashchange' in window) {
 <span id="L495" class="LineNr"> 495 </span>      *prev <span class="Special">&lt;-</span> put *prev, <span class="Constant">next-sandbox:offset</span>, curr
 <span id="L496" class="LineNr"> 496 </span>    <span class="Delimiter">}</span>
 <span id="L497" class="LineNr"> 497 </span>    idx <span class="Special">&lt;-</span> add idx,<span class="Constant"> 1</span>
-<span id="L498" class="LineNr"> 498 </span>    <a href='../065duplex_list.mu.html#L32'>prev</a> <span class="Special">&lt;-</span> copy curr
+<span id="L498" class="LineNr"> 498 </span>    <a href='../065duplex_list.mu.html#L38'>prev</a> <span class="Special">&lt;-</span> copy curr
 <span id="L499" class="LineNr"> 499 </span>   <span class="muControl"> loop</span>
 <span id="L500" class="LineNr"> 500 </span>  <span class="Delimiter">}</span>
 <span id="L501" class="LineNr"> 501 </span>  <span class="Comment"># update sandbox count</span>
@@ -648,7 +648,7 @@ if ('onhashchange' in window) {
 <span id="L586" class="LineNr"> 586 </span>  ]
 <span id="L587" class="LineNr"> 587 </span>  <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
 <span id="L588" class="LineNr"> 588 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[foo]</span>  <span class="Comment"># contents of sandbox editor</span>
-<span id="L589" class="LineNr"> 589 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L589" class="LineNr"> 589 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L590" class="LineNr"> 590 </span>  $clear-trace
 <span id="L591" class="LineNr"> 591 </span>  <span class="Comment"># run the code in the editors</span>
 <span id="L592" class="LineNr"> 592 </span>  assume-console [
@@ -673,7 +673,7 @@ if ('onhashchange' in window) {
 <span id="L611" class="LineNr"> 611 </span>  ]
 <span id="L612" class="LineNr"> 612 </span>  <span class="Comment"># no need to update editor</span>
 <span id="L613" class="LineNr"> 613 </span>  trace-should-not-contain [
-<span id="L614" class="LineNr"> 614 </span>    app: <a href='001-editor.mu.html#L107'>render</a> recipes
+<span id="L614" class="LineNr"> 614 </span>    app: <a href='001-editor.mu.html#L109'>render</a> recipes
 <span id="L615" class="LineNr"> 615 </span>  ]
 <span id="L616" class="LineNr"> 616 </span>  <span class="Comment"># make a change (incrementing one of the args to 'add'), then rerun</span>
 <span id="L617" class="LineNr"> 617 </span>  $clear-trace
@@ -714,7 +714,7 @@ if ('onhashchange' in window) {
 <span id="L652" class="LineNr"> 652 </span>  ]
 <span id="L653" class="LineNr"> 653 </span>  <span class="Comment"># sandbox editor contains an instruction</span>
 <span id="L654" class="LineNr"> 654 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[print <a href='../081print.mu.html#L16'>screen</a>, 4]</span>  <span class="Comment"># contents of sandbox editor</span>
-<span id="L655" class="LineNr"> 655 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L655" class="LineNr"> 655 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L656" class="LineNr"> 656 </span>  <span class="Comment"># run the code in the editor</span>
 <span id="L657" class="LineNr"> 657 </span>  assume-console [
 <span id="L658" class="LineNr"> 658 </span>    press F4
@@ -747,13 +747,13 @@ if ('onhashchange' in window) {
 <span id="L685" class="LineNr"> 685 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
 <span id="L686" class="LineNr"> 686 </span>  <span class="Comment"># skip § sentinel</span>
 <span id="L687" class="LineNr"> 687 </span>  assert curr, <span class="Constant">[editor without data is illegal; must have at least a sentinel]</span>
-<span id="L688" class="LineNr"> 688 </span>  curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
-<span id="L689" class="LineNr"> 689 </span>  <span class="muControl">return-unless</span> curr,<span class="Constant"> 0</span>
+<span id="L688" class="LineNr"> 688 </span>  curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L31'>next</a> curr
+<span id="L689" class="LineNr"> 689 </span>  <span class="muControl">return-unless</span> curr,<span class="Constant"> null</span>
 <span id="L690" class="LineNr"> 690 </span>  <span class="Delimiter">{</span>
 <span id="L691" class="LineNr"> 691 </span>    <span class="muControl">break-unless</span> curr
 <span id="L692" class="LineNr"> 692 </span>    c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
 <span id="L693" class="LineNr"> 693 </span>    buf <span class="Special">&lt;-</span> append buf, c
-<span id="L694" class="LineNr"> 694 </span>    curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
+<span id="L694" class="LineNr"> 694 </span>    curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L31'>next</a> curr
 <span id="L695" class="LineNr"> 695 </span>   <span class="muControl"> loop</span>
 <span id="L696" class="LineNr"> 696 </span>  <span class="Delimiter">}</span>
 <span id="L697" class="LineNr"> 697 </span>  result <span class="Special">&lt;-</span> <a href='../061text.mu.html#L338'>buffer-to-array</a> buf
@@ -786,7 +786,7 @@ if ('onhashchange' in window) {
 <span id="L724" class="LineNr"> 724 </span>  assume-resources [
 <span id="L725" class="LineNr"> 725 </span>  ]
 <span id="L726" class="LineNr"> 726 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L727" class="LineNr"> 727 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L727" class="LineNr"> 727 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L728" class="LineNr"> 728 </span>  assume-console [
 <span id="L729" class="LineNr"> 729 </span>    press enter
 <span id="L730" class="LineNr"> 730 </span>    press down-arrow
@@ -809,7 +809,7 @@ if ('onhashchange' in window) {
 <span id="L747" class="LineNr"> 747 </span>  assume-resources [
 <span id="L748" class="LineNr"> 748 </span>  ]
 <span id="L749" class="LineNr"> 749 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L750" class="LineNr"> 750 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L750" class="LineNr"> 750 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L751" class="LineNr"> 751 </span>  assume-console [
 <span id="L752" class="LineNr"> 752 </span>    press enter
 <span id="L753" class="LineNr"> 753 </span>    press up-arrow
@@ -835,14 +835,14 @@ if ('onhashchange' in window) {
 <span id="L773" class="LineNr"> 773 </span>  assume-resources [
 <span id="L774" class="LineNr"> 774 </span>  ]
 <span id="L775" class="LineNr"> 775 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L776" class="LineNr"> 776 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L776" class="LineNr"> 776 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L777" class="LineNr"> 777 </span>  assume-console [
 <span id="L778" class="LineNr"> 778 </span>    <span class="Comment"># add a line</span>
 <span id="L779" class="LineNr"> 779 </span>    press enter
 <span id="L780" class="LineNr"> 780 </span>    <span class="Comment"># cursor back to top line</span>
 <span id="L781" class="LineNr"> 781 </span>    press up-arrow
 <span id="L782" class="LineNr"> 782 </span>    <span class="Comment"># try to scroll</span>
-<span id="L783" class="LineNr"> 783 </span>    press <a href='003-shortcuts.mu.html#L3597'>page-down</a>  <span class="Comment"># or ctrl-f</span>
+<span id="L783" class="LineNr"> 783 </span>    press <a href='003-shortcuts.mu.html#L3610'>page-down</a>  <span class="Comment"># or ctrl-f</span>
 <span id="L784" class="LineNr"> 784 </span>  ]
 <span id="L785" class="LineNr"> 785 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
 <span id="L786" class="LineNr"> 786 </span>  <span class="Comment"># no scroll, and cursor remains at top line</span>
@@ -863,7 +863,7 @@ if ('onhashchange' in window) {
 <span id="L801" class="LineNr"> 801 </span>  ]
 <span id="L802" class="LineNr"> 802 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[ab</span>
 <span id="L803" class="LineNr"> 803 </span><span class="Constant">cd]</span>
-<span id="L804" class="LineNr"> 804 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L804" class="LineNr"> 804 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L805" class="LineNr"> 805 </span>  assume-console [
 <span id="L806" class="LineNr"> 806 </span>    <span class="Comment"># add a line</span>
 <span id="L807" class="LineNr"> 807 </span>    press enter
@@ -895,7 +895,7 @@ if ('onhashchange' in window) {
 <span id="L833" class="LineNr"> 833 </span>  assume-resources [
 <span id="L834" class="LineNr"> 834 </span>  ]
 <span id="L835" class="LineNr"> 835 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[add 2, 2]</span>
-<span id="L836" class="LineNr"> 836 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L836" class="LineNr"> 836 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L837" class="LineNr"> 837 </span>  assume-console [
 <span id="L838" class="LineNr"> 838 </span>    <span class="Comment"># create a sandbox</span>
 <span id="L839" class="LineNr"> 839 </span>    press F4
@@ -911,7 +911,7 @@ if ('onhashchange' in window) {
 <span id="L849" class="LineNr"> 849 </span>  <span class="Comment"># switch to sandbox window and hit 'page-down'</span>
 <span id="L850" class="LineNr"> 850 </span>  assume-console [
 <span id="L851" class="LineNr"> 851 </span>    press ctrl-n
-<span id="L852" class="LineNr"> 852 </span>    press <a href='003-shortcuts.mu.html#L3597'>page-down</a>
+<span id="L852" class="LineNr"> 852 </span>    press <a href='003-shortcuts.mu.html#L3610'>page-down</a>
 <span id="L853" class="LineNr"> 853 </span>  ]
 <span id="L854" class="LineNr"> 854 </span>  run [
 <span id="L855" class="LineNr"> 855 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -929,7 +929,7 @@ if ('onhashchange' in window) {
 <span id="L867" class="LineNr"> 867 </span>  ]
 <span id="L868" class="LineNr"> 868 </span>  <span class="Comment"># hit 'page-up'</span>
 <span id="L869" class="LineNr"> 869 </span>  assume-console [
-<span id="L870" class="LineNr"> 870 </span>    press <a href='003-shortcuts.mu.html#L3820'>page-up</a>
+<span id="L870" class="LineNr"> 870 </span>    press <a href='003-shortcuts.mu.html#L3833'>page-up</a>
 <span id="L871" class="LineNr"> 871 </span>  ]
 <span id="L872" class="LineNr"> 872 </span>  run [
 <span id="L873" class="LineNr"> 873 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -964,7 +964,7 @@ if ('onhashchange' in window) {
 <span id="L902" class="LineNr"> 902 </span>      render-from <span class="Special">&lt;-</span> add render-from,<span class="Constant"> 1</span>
 <span id="L903" class="LineNr"> 903 </span>      *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>, render-from
 <span id="L904" class="LineNr"> 904 </span>    <span class="Delimiter">}</span>
-<span id="L905" class="LineNr"> 905 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L905" class="LineNr"> 905 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L906" class="LineNr"> 906 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L468'>update-cursor</a> <a href='../081print.mu.html#L16'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
 <span id="L907" class="LineNr"> 907 </span>   <span class="muControl"> loop</span> <span class="Constant">+next-event</span>
 <span id="L908" class="LineNr"> 908 </span>  <span class="Delimiter">}</span>
@@ -994,26 +994,26 @@ if ('onhashchange' in window) {
 <span id="L932" class="LineNr"> 932 </span>    <span class="muControl">break-if</span> at-beginning?
 <span id="L933" class="LineNr"> 933 </span>    render-from <span class="Special">&lt;-</span> subtract render-from,<span class="Constant"> 1</span>
 <span id="L934" class="LineNr"> 934 </span>    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>, render-from
-<span id="L935" class="LineNr"> 935 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L935" class="LineNr"> 935 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L936" class="LineNr"> 936 </span>    <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L468'>update-cursor</a> <a href='../081print.mu.html#L16'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
 <span id="L937" class="LineNr"> 937 </span>   <span class="muControl"> loop</span> <span class="Constant">+next-event</span>
 <span id="L938" class="LineNr"> 938 </span>  <span class="Delimiter">}</span>
 <span id="L939" class="LineNr"> 939 </span>]
 <span id="L940" class="LineNr"> 940 </span>
 <span id="L941" class="LineNr"> 941 </span><span class="Comment"># sandbox belonging to 'env' whose next-sandbox is 'in'</span>
-<span id="L942" class="LineNr"> 942 </span><span class="Comment"># return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox</span>
+<span id="L942" class="LineNr"> 942 </span><span class="Comment"># return null if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox</span>
 <span id="L943" class="LineNr"> 943 </span><span class="muRecipe">def</span> <a href='005-sandbox.mu.html#L943'>previous-sandbox</a> env:&amp;:environment, in:&amp;:sandbox<span class="muRecipe"> -&gt; </span>out:&amp;:sandbox [
 <span id="L944" class="LineNr"> 944 </span>  <span class="Constant">local-scope</span>
 <span id="L945" class="LineNr"> 945 </span>  <span class="Constant">load-inputs</span>
 <span id="L946" class="LineNr"> 946 </span>  curr:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
-<span id="L947" class="LineNr"> 947 </span>  <span class="muControl">return-unless</span> curr, <span class="Constant">0/nil</span>
-<span id="L948" class="LineNr"> 948 </span>  <a href='../065duplex_list.mu.html#L25'>next</a>:&amp;:sandbox <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
+<span id="L947" class="LineNr"> 947 </span>  <span class="muControl">return-unless</span> curr,<span class="Constant"> null</span>
+<span id="L948" class="LineNr"> 948 </span>  <a href='../065duplex_list.mu.html#L31'>next</a>:&amp;:sandbox <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
 <span id="L949" class="LineNr"> 949 </span>  <span class="Delimiter">{</span>
-<span id="L950" class="LineNr"> 950 </span>    <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L25'>next</a>, <span class="Constant">0/nil</span>
-<span id="L951" class="LineNr"> 951 </span>    found?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L25'>next</a>, in
+<span id="L950" class="LineNr"> 950 </span>    <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L31'>next</a>,<span class="Constant"> null</span>
+<span id="L951" class="LineNr"> 951 </span>    found?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L31'>next</a>, in
 <span id="L952" class="LineNr"> 952 </span>    <span class="muControl">break-if</span> found?
-<span id="L953" class="LineNr"> 953 </span>    curr <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L25'>next</a>
-<span id="L954" class="LineNr"> 954 </span>    <a href='../065duplex_list.mu.html#L25'>next</a> <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
+<span id="L953" class="LineNr"> 953 </span>    curr <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L31'>next</a>
+<span id="L954" class="LineNr"> 954 </span>    <a href='../065duplex_list.mu.html#L31'>next</a> <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
 <span id="L955" class="LineNr"> 955 </span>   <span class="muControl"> loop</span>
 <span id="L956" class="LineNr"> 956 </span>  <span class="Delimiter">}</span>
 <span id="L957" class="LineNr"> 957 </span> <span class="muControl"> return</span> curr
@@ -1027,7 +1027,7 @@ if ('onhashchange' in window) {
 <span id="L965" class="LineNr"> 965 </span>  assume-resources [
 <span id="L966" class="LineNr"> 966 </span>  ]
 <span id="L967" class="LineNr"> 967 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L968" class="LineNr"> 968 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L968" class="LineNr"> 968 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L969" class="LineNr"> 969 </span>  <span class="Comment"># create 2 sandboxes</span>
 <span id="L970" class="LineNr"> 970 </span>  assume-console [
 <span id="L971" class="LineNr"> 971 </span>    press ctrl-n
@@ -1053,7 +1053,7 @@ if ('onhashchange' in window) {
 <span id="L991" class="LineNr"> 991 </span>  ]
 <span id="L992" class="LineNr"> 992 </span>  <span class="Comment"># hit 'page-down'</span>
 <span id="L993" class="LineNr"> 993 </span>  assume-console [
-<span id="L994" class="LineNr"> 994 </span>    press <a href='003-shortcuts.mu.html#L3597'>page-down</a>
+<span id="L994" class="LineNr"> 994 </span>    press <a href='003-shortcuts.mu.html#L3610'>page-down</a>
 <span id="L995" class="LineNr"> 995 </span>  ]
 <span id="L996" class="LineNr"> 996 </span>  run [
 <span id="L997" class="LineNr"> 997 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1075,7 +1075,7 @@ if ('onhashchange' in window) {
 <span id="L1013" class="LineNr">1013 </span>  ]
 <span id="L1014" class="LineNr">1014 </span>  <span class="Comment"># hit 'page-down' again</span>
 <span id="L1015" class="LineNr">1015 </span>  assume-console [
-<span id="L1016" class="LineNr">1016 </span>    press <a href='003-shortcuts.mu.html#L3597'>page-down</a>
+<span id="L1016" class="LineNr">1016 </span>    press <a href='003-shortcuts.mu.html#L3610'>page-down</a>
 <span id="L1017" class="LineNr">1017 </span>  ]
 <span id="L1018" class="LineNr">1018 </span>  run [
 <span id="L1019" class="LineNr">1019 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1092,7 +1092,7 @@ if ('onhashchange' in window) {
 <span id="L1030" class="LineNr">1030 </span>  ]
 <span id="L1031" class="LineNr">1031 </span>  <span class="Comment"># hit 'page-down' again</span>
 <span id="L1032" class="LineNr">1032 </span>  assume-console [
-<span id="L1033" class="LineNr">1033 </span>    press <a href='003-shortcuts.mu.html#L3597'>page-down</a>
+<span id="L1033" class="LineNr">1033 </span>    press <a href='003-shortcuts.mu.html#L3610'>page-down</a>
 <span id="L1034" class="LineNr">1034 </span>  ]
 <span id="L1035" class="LineNr">1035 </span>  run [
 <span id="L1036" class="LineNr">1036 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1109,7 +1109,7 @@ if ('onhashchange' in window) {
 <span id="L1047" class="LineNr">1047 </span>  ]
 <span id="L1048" class="LineNr">1048 </span>  <span class="Comment"># hit 'page-up'</span>
 <span id="L1049" class="LineNr">1049 </span>  assume-console [
-<span id="L1050" class="LineNr">1050 </span>    press <a href='003-shortcuts.mu.html#L3820'>page-up</a>
+<span id="L1050" class="LineNr">1050 </span>    press <a href='003-shortcuts.mu.html#L3833'>page-up</a>
 <span id="L1051" class="LineNr">1051 </span>  ]
 <span id="L1052" class="LineNr">1052 </span>  run [
 <span id="L1053" class="LineNr">1053 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1128,7 +1128,7 @@ if ('onhashchange' in window) {
 <span id="L1066" class="LineNr">1066 </span>  ]
 <span id="L1067" class="LineNr">1067 </span>  <span class="Comment"># hit 'page-up' again</span>
 <span id="L1068" class="LineNr">1068 </span>  assume-console [
-<span id="L1069" class="LineNr">1069 </span>    press <a href='003-shortcuts.mu.html#L3820'>page-up</a>
+<span id="L1069" class="LineNr">1069 </span>    press <a href='003-shortcuts.mu.html#L3833'>page-up</a>
 <span id="L1070" class="LineNr">1070 </span>  ]
 <span id="L1071" class="LineNr">1071 </span>  run [
 <span id="L1072" class="LineNr">1072 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1150,7 +1150,7 @@ if ('onhashchange' in window) {
 <span id="L1088" class="LineNr">1088 </span>  ]
 <span id="L1089" class="LineNr">1089 </span>  <span class="Comment"># hit 'page-up' again</span>
 <span id="L1090" class="LineNr">1090 </span>  assume-console [
-<span id="L1091" class="LineNr">1091 </span>    press <a href='003-shortcuts.mu.html#L3820'>page-up</a>
+<span id="L1091" class="LineNr">1091 </span>    press <a href='003-shortcuts.mu.html#L3833'>page-up</a>
 <span id="L1092" class="LineNr">1092 </span>  ]
 <span id="L1093" class="LineNr">1093 </span>  run [
 <span id="L1094" class="LineNr">1094 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1180,7 +1180,7 @@ if ('onhashchange' in window) {
 <span id="L1118" class="LineNr">1118 </span>  assume-resources [
 <span id="L1119" class="LineNr">1119 </span>  ]
 <span id="L1120" class="LineNr">1120 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L1121" class="LineNr">1121 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L1121" class="LineNr">1121 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L1122" class="LineNr">1122 </span>  <span class="Comment"># create a sandbox</span>
 <span id="L1123" class="LineNr">1123 </span>  assume-console [
 <span id="L1124" class="LineNr">1124 </span>    press ctrl-n
@@ -1200,7 +1200,7 @@ if ('onhashchange' in window) {
 <span id="L1138" class="LineNr">1138 </span>  ]
 <span id="L1139" class="LineNr">1139 </span>  <span class="Comment"># hit 'page-down' and 'page-up' a couple of times. sandbox index should be stable</span>
 <span id="L1140" class="LineNr">1140 </span>  assume-console [
-<span id="L1141" class="LineNr">1141 </span>    press <a href='003-shortcuts.mu.html#L3597'>page-down</a>
+<span id="L1141" class="LineNr">1141 </span>    press <a href='003-shortcuts.mu.html#L3610'>page-down</a>
 <span id="L1142" class="LineNr">1142 </span>  ]
 <span id="L1143" class="LineNr">1143 </span>  run [
 <span id="L1144" class="LineNr">1144 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1218,7 +1218,7 @@ if ('onhashchange' in window) {
 <span id="L1156" class="LineNr">1156 </span>  ]
 <span id="L1157" class="LineNr">1157 </span>  <span class="Comment"># hit 'page-up' again</span>
 <span id="L1158" class="LineNr">1158 </span>  assume-console [
-<span id="L1159" class="LineNr">1159 </span>    press <a href='003-shortcuts.mu.html#L3820'>page-up</a>
+<span id="L1159" class="LineNr">1159 </span>    press <a href='003-shortcuts.mu.html#L3833'>page-up</a>
 <span id="L1160" class="LineNr">1160 </span>  ]
 <span id="L1161" class="LineNr">1161 </span>  run [
 <span id="L1162" class="LineNr">1162 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
@@ -1236,7 +1236,7 @@ if ('onhashchange' in window) {
 <span id="L1174" class="LineNr">1174 </span>  ]
 <span id="L1175" class="LineNr">1175 </span>  <span class="Comment"># hit 'page-down'</span>
 <span id="L1176" class="LineNr">1176 </span>  assume-console [
-<span id="L1177" class="LineNr">1177 </span>    press <a href='003-shortcuts.mu.html#L3597'>page-down</a>
+<span id="L1177" class="LineNr">1177 </span>    press <a href='003-shortcuts.mu.html#L3610'>page-down</a>
 <span id="L1178" class="LineNr">1178 </span>  ]
 <span id="L1179" class="LineNr">1179 </span>  run [
 <span id="L1180" class="LineNr">1180 </span>    <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>

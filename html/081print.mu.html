@@ -15,17 +15,17 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
+.muData { color: #ffff00; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Special { color: #c00000; }
 .Delimiter { color: #800080; }
+.muControl { color: #c0a020; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
 .Constant { color: #00a0a0; }
 .LineNr { color: #444444; }
 .CommentedCode { color: #6c6c6c; }
-.muControl { color: #c0a020; }
-.muData { color: #ffff00; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -101,7 +101,7 @@ if ('onhashchange' in window) {
 <span id="L39" class="LineNr"> 39 </span>  assert non-zero-height?, <span class="Constant">[screen can't have zero height]</span>
 <span id="L40" class="LineNr"> 40 </span>  bufsize:num <span class="Special">&lt;-</span> multiply w, h
 <span id="L41" class="LineNr"> 41 </span>  data:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> new <span class="Constant"><a href='081print.mu.html#L27'>screen-cell</a>:type</span>, bufsize
-<span id="L42" class="LineNr"> 42 </span>  *result <span class="Special">&lt;-</span> merge h/num-rows, w/num-columns, <span class="Constant">0/cursor-row</span>, <span class="Constant">0/cursor-column</span>, data, <span class="Constant">0/pending-scroll?</span>, <span class="Constant">0/top-idx</span>
+<span id="L42" class="LineNr"> 42 </span>  *result <span class="Special">&lt;-</span> merge h/num-rows, w/num-columns, <span class="Constant">0/cursor-row</span>, <span class="Constant">0/cursor-column</span>, data,<span class="Constant"> false/pending-scroll?,</span> <span class="Constant">0/top-idx</span>
 <span id="L43" class="LineNr"> 43 </span>  result <span class="Special">&lt;-</span> <a href='081print.mu.html#L46'>clear-screen</a> result
 <span id="L44" class="LineNr"> 44 </span>]
 <span id="L45" class="LineNr"> 45 </span>
@@ -137,7 +137,7 @@ if ('onhashchange' in window) {
 <span id="L75" class="LineNr"> 75 </span>  <span class="Constant">local-scope</span>
 <span id="L76" class="LineNr"> 76 </span>  <span class="Constant">load-inputs</span>
 <span id="L77" class="LineNr"> 77 </span><span class="CommentedCode">#?   stash [fake-screen-is-empty?]</span>
-<span id="L78" class="LineNr"> 78 </span>  <span class="muControl">return-unless</span> <a href='081print.mu.html#L16'>screen</a>, <span class="Constant">1/true</span>  <span class="Comment"># do nothing for real screens</span>
+<span id="L78" class="LineNr"> 78 </span>  <span class="muControl">return-unless</span> <a href='081print.mu.html#L16'>screen</a>,<span class="Constant"> true</span>  <span class="Comment"># do nothing for real screens</span>
 <span id="L79" class="LineNr"> 79 </span>  buf:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *screen, <span class="Constant">data:offset</span>
 <span id="L80" class="LineNr"> 80 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
 <span id="L81" class="LineNr"> 81 </span>  len:num <span class="Special">&lt;-</span> length *buf
@@ -149,9 +149,9 @@ if ('onhashchange' in window) {
 <span id="L87" class="LineNr"> 87 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
 <span id="L88" class="LineNr"> 88 </span>    <span class="muControl">loop-unless</span> curr-contents
 <span id="L89" class="LineNr"> 89 </span>    <span class="Comment"># not 0</span>
-<span id="L90" class="LineNr"> 90 </span>   <span class="muControl"> return</span> <span class="Constant">0/false</span>
+<span id="L90" class="LineNr"> 90 </span>   <span class="muControl"> return</span><span class="Constant"> false</span>
 <span id="L91" class="LineNr"> 91 </span>  <span class="Delimiter">}</span>
-<span id="L92" class="LineNr"> 92 </span> <span class="muControl"> return</span> <span class="Constant">1/true</span>
+<span id="L92" class="LineNr"> 92 </span> <span class="muControl"> return</span><span class="Constant"> true</span>
 <span id="L93" class="LineNr"> 93 </span>]
 <span id="L94" class="LineNr"> 94 </span>
 <span id="L95" class="LineNr"> 95 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, c:char<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
@@ -212,7 +212,7 @@ if ('onhashchange' in window) {
 <span id="L150" class="LineNr">150 </span>    <span class="muControl">break-unless</span> pending-scroll?
 <span id="L151" class="LineNr">151 </span><span class="CommentedCode">#?     stash [scroll]</span>
 <span id="L152" class="LineNr">152 </span>    <a href='081print.mu.html#L225'>scroll-fake-screen</a> <a href='081print.mu.html#L16'>screen</a>
-<span id="L153" class="LineNr">153 </span>    *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">pending-scroll?:offset</span>, <span class="Constant">0/false</span>
+<span id="L153" class="LineNr">153 </span>    *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">pending-scroll?:offset</span>,<span class="Constant"> false</span>
 <span id="L154" class="LineNr">154 </span>  <span class="Delimiter">}</span>
 <span id="L155" class="LineNr">155 </span><span class="CommentedCode">#?     $print [print-character (], row, [, ], column, [): ], c, 10/newline</span>
 <span id="L156" class="LineNr">156 </span>  <span class="Comment"># special-case: newline</span>
@@ -258,7 +258,7 @@ if ('onhashchange' in window) {
 <span id="L196" class="LineNr">196 </span>    <span class="muControl">break-unless</span> past-bottom?
 <span id="L197" class="LineNr">197 </span>    <span class="Comment"># queue up a scroll</span>
 <span id="L198" class="LineNr">198 </span><span class="CommentedCode">#?     stash [pending scroll]</span>
-<span id="L199" class="LineNr">199 </span>    *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">pending-scroll?:offset</span>, <span class="Constant">1/true</span>
+<span id="L199" class="LineNr">199 </span>    *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">pending-scroll?:offset</span>,<span class="Constant"> true</span>
 <span id="L200" class="LineNr">200 </span>    row <span class="Special">&lt;-</span> subtract row,<span class="Constant"> 1</span>  <span class="Comment"># update cursor as if scroll already happened</span>
 <span id="L201" class="LineNr">201 </span>  <span class="Delimiter">}</span>
 <span id="L202" class="LineNr">202 </span>  *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">cursor-row:offset</span>, row
@@ -517,7 +517,7 @@ if ('onhashchange' in window) {
 <span id="L455" class="LineNr">455 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-row:offset</span>
 <span id="L456" class="LineNr">456 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">cursor-column:offset</span>
 <span id="L457" class="LineNr">457 </span>    12:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">top-idx:offset</span>
-<span id="L458" class="LineNr">458 </span>    13:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">pending-scroll?:offset</span>
+<span id="L458" class="LineNr">458 </span>    13:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">pending-scroll?:offset</span>
 <span id="L459" class="LineNr">459 </span>    cell:&amp;:@:<a href='081print.mu.html#L27'>screen-cell</a> <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
 <span id="L460" class="LineNr">460 </span>    20:@:<a href='081print.mu.html#L27'>screen-cell</a>/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
 <span id="L461" class="LineNr">461 </span>  ]
@@ -669,7 +669,7 @@ if ('onhashchange' in window) {
 <span id="L607" class="LineNr">607 </span>    scroll?:bool <span class="Special">&lt;-</span> greater-or-equal new-column, width
 <span id="L608" class="LineNr">608 </span>    <span class="muControl">break-if</span> scroll?
 <span id="L609" class="LineNr">609 </span><span class="CommentedCode">#?     stash [resetting pending-scroll?]</span>
-<span id="L610" class="LineNr">610 </span>    *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">pending-scroll?:offset</span>, <span class="Constant">0/false</span>
+<span id="L610" class="LineNr">610 </span>    *screen <span class="Special">&lt;-</span> put *screen, <span class="Constant">pending-scroll?:offset</span>,<span class="Constant"> false</span>
 <span id="L611" class="LineNr">611 </span>  <span class="Delimiter">}</span>
 <span id="L612" class="LineNr">612 </span>]
 <span id="L613" class="LineNr">613 </span>
@@ -946,28 +946,34 @@ if ('onhashchange' in window) {
 <span id="L884" class="LineNr">884 </span>    <span class="muControl">break-if</span> bg-color-found?
 <span id="L885" class="LineNr">885 </span>    bg-color <span class="Special">&lt;-</span> copy <span class="Constant">0/black</span>
 <span id="L886" class="LineNr">886 </span>  <span class="Delimiter">}</span>
-<span id="L887" class="LineNr">887 </span>  n2:num <span class="Special">&lt;-</span> copy n
-<span id="L888" class="LineNr">888 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, n2, color, bg-color
-<span id="L889" class="LineNr">889 </span>]
-<span id="L890" class="LineNr">890 </span>
-<span id="L891" class="LineNr">891 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, n:&amp;:_elem<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
-<span id="L892" class="LineNr">892 </span>  <span class="Constant">local-scope</span>
-<span id="L893" class="LineNr">893 </span>  <span class="Constant">load-inputs</span>
-<span id="L894" class="LineNr">894 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
-<span id="L895" class="LineNr">895 </span>  <span class="Delimiter">{</span>
-<span id="L896" class="LineNr">896 </span>    <span class="Comment"># default color to white</span>
-<span id="L897" class="LineNr">897 </span>    <span class="muControl">break-if</span> color-found?
-<span id="L898" class="LineNr">898 </span>    color <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
-<span id="L899" class="LineNr">899 </span>  <span class="Delimiter">}</span>
-<span id="L900" class="LineNr">900 </span>  bg-color:num, bg-color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
+<span id="L887" class="LineNr">887 </span>  <span class="Delimiter">{</span>
+<span id="L888" class="LineNr">888 </span>    <span class="muControl">break-if</span> n
+<span id="L889" class="LineNr">889 </span>    <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, <span class="Constant">[false]</span>, color, bg-color
+<span id="L890" class="LineNr">890 </span>  <span class="Delimiter">}</span>
+<span id="L891" class="LineNr">891 </span>  <span class="Delimiter">{</span>
+<span id="L892" class="LineNr">892 </span>    <span class="muControl">break-unless</span> n
+<span id="L893" class="LineNr">893 </span>    <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, <span class="Constant">[true]</span>, color, bg-color
+<span id="L894" class="LineNr">894 </span>  <span class="Delimiter">}</span>
+<span id="L895" class="LineNr">895 </span>]
+<span id="L896" class="LineNr">896 </span>
+<span id="L897" class="LineNr">897 </span><span class="muRecipe">def</span> print <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, n:&amp;:_elem<span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
+<span id="L898" class="LineNr">898 </span>  <span class="Constant">local-scope</span>
+<span id="L899" class="LineNr">899 </span>  <span class="Constant">load-inputs</span>
+<span id="L900" class="LineNr">900 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
 <span id="L901" class="LineNr">901 </span>  <span class="Delimiter">{</span>
-<span id="L902" class="LineNr">902 </span>    <span class="Comment"># default bg-color to black</span>
-<span id="L903" class="LineNr">903 </span>    <span class="muControl">break-if</span> bg-color-found?
-<span id="L904" class="LineNr">904 </span>    bg-color <span class="Special">&lt;-</span> copy <span class="Constant">0/black</span>
+<span id="L902" class="LineNr">902 </span>    <span class="Comment"># default color to white</span>
+<span id="L903" class="LineNr">903 </span>    <span class="muControl">break-if</span> color-found?
+<span id="L904" class="LineNr">904 </span>    color <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
 <span id="L905" class="LineNr">905 </span>  <span class="Delimiter">}</span>
-<span id="L906" class="LineNr">906 </span>  n2:num <span class="Special">&lt;-</span> copy n
-<span id="L907" class="LineNr">907 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, n2, color, bg-color
-<span id="L908" class="LineNr">908 </span>]
+<span id="L906" class="LineNr">906 </span>  bg-color:num, bg-color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
+<span id="L907" class="LineNr">907 </span>  <span class="Delimiter">{</span>
+<span id="L908" class="LineNr">908 </span>    <span class="Comment"># default bg-color to black</span>
+<span id="L909" class="LineNr">909 </span>    <span class="muControl">break-if</span> bg-color-found?
+<span id="L910" class="LineNr">910 </span>    bg-color <span class="Special">&lt;-</span> copy <span class="Constant">0/black</span>
+<span id="L911" class="LineNr">911 </span>  <span class="Delimiter">}</span>
+<span id="L912" class="LineNr">912 </span>  n2:num <span class="Special">&lt;-</span> deaddress n
+<span id="L913" class="LineNr">913 </span>  <a href='081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='081print.mu.html#L16'>screen</a>, n2, color, bg-color
+<span id="L914" class="LineNr">914 </span>]
 </pre>
 </body>
 </html>

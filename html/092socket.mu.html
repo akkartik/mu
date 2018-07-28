@@ -16,15 +16,15 @@ a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
 .muControl { color: #c0a020; }
-.muScenario { color: #00af00; }
+.muRecipe { color: #ff8700; }
 .Special { color: #c00000; }
 .Delimiter { color: #800080; }
+.muData { color: #ffff00; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
 .Constant { color: #00a0a0; }
 .LineNr { color: #444444; }
-.muRecipe { color: #ff8700; }
-.muData { color: #ffff00; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -68,14 +68,14 @@ if ('onhashchange' in window) {
 <span id="L7" class="LineNr">  7 </span>  <span class="Comment"># that way repeatedly running the test will give ports time to timeout and</span>
 <span id="L8" class="LineNr">  8 </span>  <span class="Comment"># close before reusing them</span>
 <span id="L9" class="LineNr">  9 </span>  make-random-nondeterministic
-<span id="L10" class="LineNr"> 10 </span>  port:num <span class="Special">&lt;-</span> <a href='068random.mu.html#L58'>random-in-range</a> <span class="Constant">0/real-random-numbers</span>,<span class="Constant"> 8000</span>,<span class="Constant"> 8100</span>
+<span id="L10" class="LineNr"> 10 </span>  port:num <span class="Special">&lt;-</span> <a href='068random.mu.html#L58'>random-in-range</a><span class="Constant"> null/real-random-numbers, 8000</span>,<span class="Constant"> 8100</span>
 <span id="L11" class="LineNr"> 11 </span>  run [
 <span id="L12" class="LineNr"> 12 </span>    socket:num <span class="Special">&lt;-</span> $open-server-socket port
 <span id="L13" class="LineNr"> 13 </span>    assert socket, <span class="Constant">[ </span>
 <span id="L14" class="LineNr"> 14 </span><span class="Constant">F - example-server-test: $open-server-socket failed]</span>
 <span id="L15" class="LineNr"> 15 </span>    handler-routine:number <span class="Special">&lt;-</span> <span class="muControl">start-running</span> <a href='092socket.mu.html#L55'>serve-one-request</a> socket, <a href='092socket.mu.html#L26'>example-handler</a>
 <span id="L16" class="LineNr"> 16 </span>  ]
-<span id="L17" class="LineNr"> 17 </span>  <a href='075channel.mu.html#L36'>source</a>:&amp;:<a href='075channel.mu.html#L36'>source</a>:char <span class="Special">&lt;-</span> <a href='092socket.mu.html#L69'>start-reading-from-network</a> <span class="Constant">0/real-resources</span>, <span class="Constant">[localhost/]</span>, port
+<span id="L17" class="LineNr"> 17 </span>  <a href='075channel.mu.html#L36'>source</a>:&amp;:<a href='075channel.mu.html#L36'>source</a>:char <span class="Special">&lt;-</span> <a href='092socket.mu.html#L69'>start-reading-from-network</a><span class="Constant"> null/real-resources,</span> <span class="Constant">[localhost/]</span>, port
 <span id="L18" class="LineNr"> 18 </span>  response:text <span class="Special">&lt;-</span> <a href='075channel.mu.html#L499'>drain</a> <a href='075channel.mu.html#L36'>source</a>
 <span id="L19" class="LineNr"> 19 </span>  10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *response
 <span id="L20" class="LineNr"> 20 </span>  memory-should-contain [

@@ -15,17 +15,17 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
+.muData { color: #ffff00; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Special { color: #c00000; }
 .Delimiter { color: #800080; }
 .SalientComment { color: #00ffff; }
 .Constant { color: #00a0a0; }
 .LineNr { color: #444444; }
+.muControl { color: #c0a020; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
-.muControl { color: #c0a020; }
-.muData { color: #ffff00; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -68,10 +68,10 @@ if ('onhashchange' in window) {
 <span id="L6" class="LineNr">  6 </span><span class="muRecipe">def!</span> main [
 <span id="L7" class="LineNr">  7 </span>  <span class="Constant">local-scope</span>
 <span id="L8" class="LineNr">  8 </span>  open-console
-<span id="L9" class="LineNr">  9 </span>  <a href='../081print.mu.html#L46'>clear-screen</a> <span class="Constant">0/screen</span>  <span class="Comment"># non-scrolling app</span>
-<span id="L10" class="LineNr"> 10 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <span class="Constant">0/filesystem</span>, <span class="Constant">0/screen</span>
-<span id="L11" class="LineNr"> 11 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <span class="Constant">0/screen</span>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L12" class="LineNr"> 12 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, env, <span class="Constant">0/filesystem</span>
+<span id="L9" class="LineNr">  9 </span>  <a href='../081print.mu.html#L46'>clear-screen</a><span class="Constant"> null/screen</span>  <span class="Comment"># non-scrolling app</span>
+<span id="L10" class="LineNr"> 10 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a><span class="Constant"> null/filesystem, null/screen</span>
+<span id="L11" class="LineNr"> 11 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a><span class="Constant"> null/screen,</span> env, <a href='001-editor.mu.html#L109'>render</a>
+<span id="L12" class="LineNr"> 12 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a><span class="Constant"> null/screen, null/console,</span> env,<span class="Constant"> null/filesystem</span>
 <span id="L13" class="LineNr"> 13 </span>]
 <span id="L14" class="LineNr"> 14 </span>
 <span id="L15" class="LineNr"> 15 </span><span class="muData">container</span> environment [
@@ -94,7 +94,7 @@ if ('onhashchange' in window) {
 <span id="L32" class="LineNr"> 32 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> test-sandbox-editor-contents, sandbox-left, width/right
 <span id="L33" class="LineNr"> 33 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">recipes:offset</span>, recipes
 <span id="L34" class="LineNr"> 34 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">current-sandbox:offset</span>, current-sandbox
-<span id="L35" class="LineNr"> 35 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">0/false</span>
+<span id="L35" class="LineNr"> 35 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">sandbox-in-focus?:offset</span>,<span class="Constant"> false</span>
 <span id="L36" class="LineNr"> 36 </span><span class="Constant">  <a href='004-programming-environment.mu.html#L36'>&lt;programming-environment-initialization&gt;</a></span>
 <span id="L37" class="LineNr"> 37 </span>]
 <span id="L38" class="LineNr"> 38 </span>
@@ -107,8 +107,8 @@ if ('onhashchange' in window) {
 <span id="L45" class="LineNr"> 45 </span>  <span class="Comment"># if we fall behind we'll stop updating the screen, but then we have to</span>
 <span id="L46" class="LineNr"> 46 </span>  <span class="Comment"># render the entire screen when we catch up.</span>
 <span id="L47" class="LineNr"> 47 </span>  <span class="Comment"># todo: test this</span>
-<span id="L48" class="LineNr"> 48 </span>  render-recipes-on-no-more-events?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<span id="L49" class="LineNr"> 49 </span>  render-sandboxes-on-no-more-events?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L48" class="LineNr"> 48 </span>  render-recipes-on-no-more-events?:bool <span class="Special">&lt;-</span> copy<span class="Constant"> false</span>
+<span id="L49" class="LineNr"> 49 </span>  render-sandboxes-on-no-more-events?:bool <span class="Special">&lt;-</span> copy<span class="Constant"> false</span>
 <span id="L50" class="LineNr"> 50 </span>  <span class="Delimiter">{</span>
 <span id="L51" class="LineNr"> 51 </span>    <span class="Comment"># looping over each (keyboard or touch) event as it occurs</span>
 <span id="L52" class="LineNr"> 52 </span><span class="Constant">    +next-event</span>
@@ -175,13 +175,13 @@ if ('onhashchange' in window) {
 <span id="L113" class="LineNr">113 </span>        <span class="muControl">break-if</span> more-events?
 <span id="L114" class="LineNr">114 </span>        <span class="Delimiter">{</span>
 <span id="L115" class="LineNr">115 </span>          <span class="muControl">break-unless</span> render-recipes-on-no-more-events?
-<span id="L116" class="LineNr">116 </span>          render-recipes-on-no-more-events? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<span id="L117" class="LineNr">117 </span>          <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L431'>render-recipes</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L116" class="LineNr">116 </span>          render-recipes-on-no-more-events? <span class="Special">&lt;-</span> copy<span class="Constant"> false</span>
+<span id="L117" class="LineNr">117 </span>          <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L431'>render-recipes</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L118" class="LineNr">118 </span>        <span class="Delimiter">}</span>
 <span id="L119" class="LineNr">119 </span>        <span class="Delimiter">{</span>
 <span id="L120" class="LineNr">120 </span>          <span class="muControl">break-unless</span> render-sandboxes-on-no-more-events?
-<span id="L121" class="LineNr">121 </span>          render-sandboxes-on-no-more-events? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<span id="L122" class="LineNr">122 </span>          <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L121" class="LineNr">121 </span>          render-sandboxes-on-no-more-events? <span class="Special">&lt;-</span> copy<span class="Constant"> false</span>
+<span id="L122" class="LineNr">122 </span>          <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L123" class="LineNr">123 </span>        <span class="Delimiter">}</span>
 <span id="L124" class="LineNr">124 </span>      <span class="Delimiter">}</span>
 <span id="L125" class="LineNr">125 </span>      <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L468'>update-cursor</a> <a href='../081print.mu.html#L16'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
@@ -225,8 +225,8 @@ if ('onhashchange' in window) {
 <span id="L163" class="LineNr">163 </span>  <a href='../081print.mu.html#L782'>screen-height</a>:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L782'>screen-height</a> <a href='../081print.mu.html#L16'>screen</a>
 <span id="L164" class="LineNr">164 </span>  right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
 <span id="L165" class="LineNr">165 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
-<span id="L166" class="LineNr">166 </span>  <a href='../065duplex_list.mu.html#L32'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
-<span id="L167" class="LineNr">167 </span>  curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
+<span id="L166" class="LineNr">166 </span>  <a href='../065duplex_list.mu.html#L38'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
+<span id="L167" class="LineNr">167 </span>  curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L31'>next</a> curr
 <span id="L168" class="LineNr">168 </span>  color:num <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
 <span id="L169" class="LineNr">169 </span>  row:num <span class="Special">&lt;-</span> copy <span class="Constant">1/top</span>
 <span id="L170" class="LineNr">170 </span>  column:num <span class="Special">&lt;-</span> copy left
@@ -248,7 +248,7 @@ if ('onhashchange' in window) {
 <span id="L186" class="LineNr">186 </span>    <span class="Comment"># editor.cursor-row and editor.cursor-column based on</span>
 <span id="L187" class="LineNr">187 </span>    <span class="Comment"># old-before-cursor</span>
 <span id="L188" class="LineNr">188 </span>    <span class="Delimiter">{</span>
-<span id="L189" class="LineNr">189 </span>      at-cursor?:bool <span class="Special">&lt;-</span> equal old-before-cursor, <a href='../065duplex_list.mu.html#L32'>prev</a>
+<span id="L189" class="LineNr">189 </span>      at-cursor?:bool <span class="Special">&lt;-</span> equal old-before-cursor, <a href='../065duplex_list.mu.html#L38'>prev</a>
 <span id="L190" class="LineNr">190 </span>      <span class="muControl">break-unless</span> at-cursor?
 <span id="L191" class="LineNr">191 </span>      *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, row
 <span id="L192" class="LineNr">192 </span>      *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, column
@@ -266,8 +266,8 @@ if ('onhashchange' in window) {
 <span id="L204" class="LineNr">204 </span>      row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
 <span id="L205" class="LineNr">205 </span>      column <span class="Special">&lt;-</span> copy left
 <span id="L206" class="LineNr">206 </span>      <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L16'>screen</a>, row, column
-<span id="L207" class="LineNr">207 </span>      curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
-<span id="L208" class="LineNr">208 </span>      <a href='../065duplex_list.mu.html#L32'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> <a href='../065duplex_list.mu.html#L32'>prev</a>
+<span id="L207" class="LineNr">207 </span>      curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L31'>next</a> curr
+<span id="L208" class="LineNr">208 </span>      <a href='../065duplex_list.mu.html#L38'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L31'>next</a> <a href='../065duplex_list.mu.html#L38'>prev</a>
 <span id="L209" class="LineNr">209 </span>     <span class="muControl"> loop</span> <span class="Constant">+next-character</span>
 <span id="L210" class="LineNr">210 </span>    <span class="Delimiter">}</span>
 <span id="L211" class="LineNr">211 </span>    <span class="Delimiter">{</span>
@@ -285,8 +285,8 @@ if ('onhashchange' in window) {
 <span id="L223" class="LineNr">223 </span>     <span class="muControl"> loop</span> <span class="Constant">+next-character</span>
 <span id="L224" class="LineNr">224 </span>    <span class="Delimiter">}</span>
 <span id="L225" class="LineNr">225 </span>    print <a href='../081print.mu.html#L16'>screen</a>, c, color
-<span id="L226" class="LineNr">226 </span>    curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
-<span id="L227" class="LineNr">227 </span>    <a href='../065duplex_list.mu.html#L32'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> <a href='../065duplex_list.mu.html#L32'>prev</a>
+<span id="L226" class="LineNr">226 </span>    curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L31'>next</a> curr
+<span id="L227" class="LineNr">227 </span>    <a href='../065duplex_list.mu.html#L38'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L31'>next</a> <a href='../065duplex_list.mu.html#L38'>prev</a>
 <span id="L228" class="LineNr">228 </span>    column <span class="Special">&lt;-</span> add column,<span class="Constant"> 1</span>
 <span id="L229" class="LineNr">229 </span>   <span class="muControl"> loop</span>
 <span id="L230" class="LineNr">230 </span>  <span class="Delimiter">}</span>
@@ -337,7 +337,7 @@ if ('onhashchange' in window) {
 <span id="L275" class="LineNr">275 </span>    ]
 <span id="L276" class="LineNr">276 </span>  ]
 <span id="L277" class="LineNr">277 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[def]</span>  <span class="Comment"># contents of sandbox</span>
-<span id="L278" class="LineNr">278 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L278" class="LineNr">278 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L279" class="LineNr">279 </span>  <span class="Comment"># type one letter in each of them</span>
 <span id="L280" class="LineNr">280 </span>  assume-console [
 <span id="L281" class="LineNr">281 </span>    left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
@@ -387,7 +387,7 @@ if ('onhashchange' in window) {
 <span id="L325" class="LineNr">325 </span>    ]
 <span id="L326" class="LineNr">326 </span>  ]
 <span id="L327" class="LineNr">327 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[def]</span>
-<span id="L328" class="LineNr">328 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L328" class="LineNr">328 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L329" class="LineNr">329 </span>  <span class="Comment"># initialize programming environment and highlight cursor</span>
 <span id="L330" class="LineNr">330 </span>  assume-console <span class="Constant">[]</span>
 <span id="L331" class="LineNr">331 </span>  run [
@@ -432,7 +432,7 @@ if ('onhashchange' in window) {
 <span id="L370" class="LineNr">370 </span>  test-sandbox-editor-contents:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span id="L371" class="LineNr">371 </span><span class="Constant">def]</span>
 <span id="L372" class="LineNr">372 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, test-sandbox-editor-contents
-<span id="L373" class="LineNr">373 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L373" class="LineNr">373 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L109'>render</a>
 <span id="L374" class="LineNr">374 </span>  screen-should-contain [
 <span id="L375" class="LineNr">375 </span>   <span class="Constant"> .           run (F4)           .</span>
 <span id="L376" class="LineNr">376 </span>   <span class="Constant"> .               ╎abc           .</span>
@@ -504,7 +504,7 @@ if ('onhashchange' in window) {
 <span id="L442" class="LineNr">442 </span>  <span class="Comment"># draw dotted line after recipes</span>
 <span id="L443" class="LineNr">443 </span>  <a href='002-typing.mu.html#L1114'>draw-horizontal</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, right, <span class="Constant">9480/horizontal-dotted</span>
 <span id="L444" class="LineNr">444 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L445" class="LineNr">445 </span>  <a href='001-editor.mu.html#L209'>clear-screen-from</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, left, right
+<span id="L445" class="LineNr">445 </span>  <a href='001-editor.mu.html#L211'>clear-screen-from</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, left, right
 <span id="L446" class="LineNr">446 </span>  <span class="Comment">#</span>
 <span id="L447" class="LineNr">447 </span>  <a href='../081print.mu.html#L515'>assert-no-scroll</a> <a href='../081print.mu.html#L16'>screen</a>, old-top-idx
 <span id="L448" class="LineNr">448 </span>]
@@ -522,7 +522,7 @@ if ('onhashchange' in window) {
 <span id="L460" class="LineNr">460 </span>  <span class="Comment"># draw solid line after code (you'll see why in later layers)</span>
 <span id="L461" class="LineNr">461 </span>  <a href='002-typing.mu.html#L1114'>draw-horizontal</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, right
 <span id="L462" class="LineNr">462 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L463" class="LineNr">463 </span>  <a href='001-editor.mu.html#L209'>clear-screen-from</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, left, right
+<span id="L463" class="LineNr">463 </span>  <a href='001-editor.mu.html#L211'>clear-screen-from</a> <a href='../081print.mu.html#L16'>screen</a>, row, left, left, right
 <span id="L464" class="LineNr">464 </span>  <span class="Comment">#</span>
 <span id="L465" class="LineNr">465 </span>  <a href='../081print.mu.html#L515'>assert-no-scroll</a> <a href='../081print.mu.html#L16'>screen</a>, old-top-idx
 <span id="L466" class="LineNr">466 </span>]

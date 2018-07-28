@@ -15,18 +15,18 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
+.muData { color: #ffff00; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Special { color: #c00000; }
-.Delimiter { color: #800080; }
 .SalientComment { color: #00ffff; }
+.Delimiter { color: #800080; }
+.muControl { color: #c0a020; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
 .Constant { color: #00a0a0; }
 .LineNr { color: #444444; }
 .CommentedCode { color: #6c6c6c; }
-.muControl { color: #c0a020; }
-.muData { color: #ffff00; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -169,7 +169,7 @@ if ('onhashchange' in window) {
 <span id="L106" class="LineNr">106 </span>  <span class="Constant">local-scope</span>
 <span id="L107" class="LineNr">107 </span>  <span class="Constant">load-inputs</span>
 <span id="L108" class="LineNr">108 </span>  assert in, <span class="Constant">[read on null channel]</span>
-<span id="L109" class="LineNr">109 </span>  eof? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>  <span class="Comment"># default result</span>
+<span id="L109" class="LineNr">109 </span>  eof? <span class="Special">&lt;-</span> copy<span class="Constant"> false</span>  <span class="Comment"># default result</span>
 <span id="L110" class="LineNr">110 </span>  chan:&amp;:channel:_elem <span class="Special">&lt;-</span> get *in, <span class="Constant">chan:offset</span>
 <span id="L111" class="LineNr">111 </span>  <span class="Comment"># block until lock is acquired AND queue has data</span>
 <span id="L112" class="LineNr">112 </span>  lock:location <span class="Special">&lt;-</span> get-location *chan, <span class="Constant">lock:offset</span>
@@ -390,13 +390,13 @@ if ('onhashchange' in window) {
 <span id="L327" class="LineNr">327 </span>  <span class="Constant">local-scope</span>
 <span id="L328" class="LineNr">328 </span>  <span class="Constant">load-inputs</span>
 <span id="L329" class="LineNr">329 </span>  chan:&amp;:channel:_elem <span class="Special">&lt;-</span> get *x, <span class="Constant">chan:offset</span>
-<span id="L330" class="LineNr">330 </span>  *chan <span class="Special">&lt;-</span> put *chan, <span class="Constant">closed?:offset</span>, <span class="Constant">1/true</span>
+<span id="L330" class="LineNr">330 </span>  *chan <span class="Special">&lt;-</span> put *chan, <span class="Constant">closed?:offset</span>,<span class="Constant"> true</span>
 <span id="L331" class="LineNr">331 </span>]
 <span id="L332" class="LineNr">332 </span><span class="muRecipe">def</span> close x:&amp;:<a href='075channel.mu.html#L40'>sink</a>:_elem<span class="muRecipe"> -&gt; </span>x:&amp;:<a href='075channel.mu.html#L40'>sink</a>:_elem [
 <span id="L333" class="LineNr">333 </span>  <span class="Constant">local-scope</span>
 <span id="L334" class="LineNr">334 </span>  <span class="Constant">load-inputs</span>
 <span id="L335" class="LineNr">335 </span>  chan:&amp;:channel:_elem <span class="Special">&lt;-</span> get *x, <span class="Constant">chan:offset</span>
-<span id="L336" class="LineNr">336 </span>  *chan <span class="Special">&lt;-</span> put *chan, <span class="Constant">closed?:offset</span>, <span class="Constant">1/true</span>
+<span id="L336" class="LineNr">336 </span>  *chan <span class="Special">&lt;-</span> put *chan, <span class="Constant">closed?:offset</span>,<span class="Constant"> true</span>
 <span id="L337" class="LineNr">337 </span>]
 <span id="L338" class="LineNr">338 </span>
 <span id="L339" class="LineNr">339 </span><span class="Comment"># once a channel is closed from one side, no further operations are expected from that side</span>
@@ -415,7 +415,7 @@ if ('onhashchange' in window) {
 <span id="L352" class="LineNr">352 </span>    <span class="muControl">break-unless</span> closed?
 <span id="L353" class="LineNr">353 </span>    empty-result:&amp;:_elem <span class="Special">&lt;-</span> new <span class="Constant">_elem:type</span>
 <span id="L354" class="LineNr">354 </span>    current-routine-is-unblocked
-<span id="L355" class="LineNr">355 </span>   <span class="muControl"> return</span> *empty-result, <span class="Constant">1/true</span>
+<span id="L355" class="LineNr">355 </span>   <span class="muControl"> return</span> *empty-result,<span class="Constant"> true</span>
 <span id="L356" class="LineNr">356 </span>  <span class="Delimiter">}</span>
 <span id="L357" class="LineNr">357 </span>]
 <span id="L358" class="LineNr">358 </span>
@@ -464,7 +464,7 @@ if ('onhashchange' in window) {
 <span id="L401" class="LineNr">401 </span>  <span class="Constant">local-scope</span>
 <span id="L402" class="LineNr">402 </span>  <span class="Constant">load-inputs</span>
 <span id="L403" class="LineNr">403 </span>  <span class="Comment"># repeat forever</span>
-<span id="L404" class="LineNr">404 </span>  eof?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L404" class="LineNr">404 </span>  eof?:bool <span class="Special">&lt;-</span> copy<span class="Constant"> false</span>
 <span id="L405" class="LineNr">405 </span>  <span class="Delimiter">{</span>
 <span id="L406" class="LineNr">406 </span>    line:&amp;:<a href='061text.mu.html#L120'>buffer</a>:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L125'>new-buffer</a><span class="Constant"> 30</span>
 <span id="L407" class="LineNr">407 </span>    <span class="Comment"># read characters from 'in' until newline, copy into line</span>
