@@ -13,14 +13,13 @@
   ## write(stdout, x, 1)
   # fd = 1 (stdout)
   bb/copy                                                                                                                 1/imm32           # copy 1 to EBX
-  # set location to write out
+  # initialize x (location to write result to)
   b9/copy                                                                                                                 0x08049097/imm32  # copy to ECX
-  # set size
+  # initialize size
   ba/copy                                                                                                                 0x08049093/imm32  # copy to EDX
   8b/copy                         0/mod/indirect  2/rm32/edx                                  2/r32/edx                                     # copy *EDX to EDX
-  # syscall = write
+  # write(fd, x, size)
   b8/copy                                                                                                                 4/imm32           # copy 4 to EAX
-  # call
   cd/syscall                                                                                                              0x80/imm8         # int 80h
 
   ## exit(EBX)
