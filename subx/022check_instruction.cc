@@ -558,6 +558,11 @@ put(Permitted_operands_0f, "8d", 0x08);
 put(Permitted_operands_0f, "8e", 0x08);
 put(Permitted_operands_0f, "8f", 0x08);
 
+//// Class M: using ModR/M byte
+//  imm32 imm8  disp32 |disp16  disp8 subop modrm
+//  0     0     0      |0       0     0     1
+put(Permitted_operands_0f, "af", 0x01);
+
 :(code)
 void check_operands_0f(const line& inst, const word& op) {
   uint8_t expected_bitvector = get(Permitted_operands_0f, op.data);

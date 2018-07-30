@@ -87,6 +87,32 @@ case 0x29: {  // subtract r32 from r/m32
   break;
 }
 
+//:: multiply
+
+:(before "End Initialize Op Names(name)")
+put(name_0f, "af", "multiply r32 into rm32");
+
+:(scenario multiply_r32_into_r32)
+% Reg[EAX].i = 4;
+% Reg[EBX].i = 2;
+== 0x1
+# op      ModR/M  SIB   displacement  immediate
+  0f af   d8                                      # subtract EBX into EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
++run: multiply EBX into r/m32
++run: r/m32 is EAX
++run: storing 0x00000008
+
+:(before "End Two-Byte Opcodes Starting With 0f")
+case 0xaf: {  // multiply r32 into r/m32
+  uint8_t modrm = next();
+  uint8_t arg2 = (modrm>>3)&0x7;
+  trace(90, "run") << "multiply " << rname(arg2) << " into r/m32" << end();
+  int32_t* arg1 = effective_address(modrm);
+  BINARY_ARITHMETIC_OP(*, *arg1, Reg[arg2].i);
+  break;
+}
+
 //:: and
 
 :(before "End Initialize Op Names(name)")
