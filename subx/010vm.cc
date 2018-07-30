@@ -148,8 +148,10 @@ void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
 //?   dump_registers();
-//?   cerr << "inst: 0x" << EIP << '\n';
-  switch (op = next()) {
+//?   cerr << "inst: 0x" << EIP << " => ";
+  op = next();
+//?   cerr << HEXBYTE << NUM(op) << '\n';
+  switch (op) {
   case 0xf4:  // hlt
     EIP = End_of_program;
     break;
@@ -195,9 +197,9 @@ inline uint8_t next() {
 void dump_registers() {
   for (int i = 0;  i < NUM_INT_REGISTERS;  ++i) {
     if (i > 0) cerr << "; ";
-    cerr << "  " << i << ": " << HEXWORD << Reg[i].u;
+    cerr << "  " << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
   }
-  cerr << '\n';
+  cerr << " -- SF: " << SF << "; ZF: " << ZF << "; OF: " << OF << '\n';
 }
 
 //: start tracking supported opcodes
