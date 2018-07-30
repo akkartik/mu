@@ -260,12 +260,11 @@ void init_permitted_operands() {
   // End Init Permitted Operands
 }
 
-:(before "End Includes")
+:(code)
 #define HAS(bitvector, bit)  ((bitvector) & (1 << (bit)))
 #define SET(bitvector, bit)  ((bitvector) | (1 << (bit)))
 #define CLEAR(bitvector, bit)  ((bitvector) & (~(1 << (bit))))
 
-:(code)
 void check_operands(const line& inst, const word& op) {
   if (!is_hex_byte(op)) return;
   uint8_t expected_bitvector = get(Permitted_operands, op.data);
@@ -604,6 +603,10 @@ string tolower(const char* s) {
     out << static_cast<char>(tolower(*s));
   return out.str();
 }
+
+#undef HAS
+#undef SET
+#undef CLEAR
 
 //:: docs on each operand type
 
