@@ -499,7 +499,7 @@ word metadata(const line& inst, const string& m) {
 % Reg[EAX].u = 0x1;
 == 0x1
 # just avoid null pointer
-8b/copy 1/mod/lookup+disp8 0/rm32/eax 2/r32/edx 4/disp8  # copy *(EAX+4) to EDX
+8b/copy 1/mod/lookup+disp8 0/rm32/EAX 2/r32/EDX 4/disp8  # copy *(EAX+4) to EDX
 $error: 0
 :(scenarios run)
 
