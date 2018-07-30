@@ -1,5 +1,18 @@
 #!/bin/sh
+# Run tests for just a subset of layers.
+#
+# Usage:
+#   build_and_test_until [file prefix] [test name]
+# Provide the second arg to run just a single test.
 set -e
 
-./clean top-level  # ignore subsidiary tools like tangle and cleave
+# clean previous builds if they were building until a different layer
+touch .until
+PREV_UNTIL=`cat .until`
+if [ "$PREV_UNTIL" != $1 ]
+then
+  ./clean top-level
+  echo $1 > .until
+fi
+
 ./build --until $1  &&  ./subx_bin test $2
