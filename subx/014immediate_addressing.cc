@@ -467,10 +467,9 @@ put(name, "68", "push imm32 to stack");
 
 :(before "End Single-Byte Opcodes")
 case 0x68: {
-  int32_t val = imm32();
+  uint32_t val = static_cast<uint32_t>(imm32());
   trace(90, "run") << "push imm32 0x" << HEXWORD << val << end();
-  Reg[ESP].u -= 4;
-  write_mem_i32(Reg[ESP].u, val);
+  push(val);
   trace(90, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
   trace(90, "run") << "contents at ESP: 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << end();
   break;
