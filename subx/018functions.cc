@@ -18,6 +18,7 @@ put(name, "e8", "call disp32");
 case 0xe8: {  // call disp32 relative to next EIP
   int32_t offset = imm32();
   trace(90, "run") << "call imm32 0x" << HEXWORD << offset << end();
+//?   cerr << "push: EIP: " << EIP << " => " << Reg[ESP].u << '\n';
   push(EIP);
   EIP += offset;
   trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();

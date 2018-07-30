@@ -109,7 +109,7 @@ case 0xaf: {  // multiply r32 into r/m32
   uint8_t arg2 = (modrm>>3)&0x7;
   trace(90, "run") << "multiply " << rname(arg2) << " into r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
-  BINARY_ARITHMETIC_OP(*, *arg1, Reg[arg2].i);
+  BINARY_ARITHMETIC_OP(*, Reg[arg2].i, *arg1);
   break;
 }
 
@@ -363,6 +363,7 @@ case 0x56:
 case 0x57: {  // push r32 to stack
   uint8_t reg = op & 0x7;
   trace(90, "run") << "push " << rname(reg) << end();
+//?   cerr << "push: " << NUM(reg) << ": " << Reg[reg].u << " => " << Reg[ESP].u << '\n';
   push(Reg[reg].u);
   break;
 }
@@ -409,7 +410,9 @@ case 0x5e:
 case 0x5f: {  // pop stack into r32
   uint8_t reg = op & 0x7;
   trace(90, "run") << "pop into " << rname(reg) << end();
+//?   cerr << "pop from " << Reg[ESP].u << '\n';
   Reg[reg].u = pop();
+//?   cerr << "=> " << NUM(reg) << ": " << Reg[reg].u << '\n';
   break;
 }
 :(code)

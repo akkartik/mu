@@ -469,6 +469,7 @@ put(name, "68", "push imm32 to stack");
 case 0x68: {
   uint32_t val = static_cast<uint32_t>(imm32());
   trace(90, "run") << "push imm32 0x" << HEXWORD << val << end();
+//?   cerr << "push: " << val << " => " << Reg[ESP].u << '\n';
   push(val);
   trace(90, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
   trace(90, "run") << "contents at ESP: 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << end();

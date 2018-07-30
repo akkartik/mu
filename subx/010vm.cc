@@ -147,6 +147,7 @@ inline void write_mem_i32(uint32_t addr, int32_t val) {
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
+//?   dump_registers();
 //?   cerr << "inst: 0x" << EIP << '\n';
   switch (op = next()) {
   case 0xf4:  // hlt
@@ -189,6 +190,14 @@ void run_one_instruction() {
 
 inline uint8_t next() {
   return read_mem_u8(EIP++);
+}
+
+void dump_registers() {
+  for (int i = 0;  i < NUM_INT_REGISTERS;  ++i) {
+    if (i > 0) cerr << "; ";
+    cerr << "  " << i << ": " << HEXWORD << Reg[i].u;
+  }
+  cerr << '\n';
 }
 
 //: start tracking supported opcodes
