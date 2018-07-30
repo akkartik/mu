@@ -268,9 +268,13 @@ void init_permitted_operands() {
 void check_operands(const line& inst, const word& op) {
   if (!is_hex_byte(op)) return;
   uint8_t expected_bitvector = get(Permitted_operands, op.data);
-  if (HAS(expected_bitvector, MODRM))
+  if (HAS(expected_bitvector, MODRM)) {
     check_operands_modrm(inst, op);
-  compare_bitvector(inst, CLEAR(expected_bitvector, MODRM), op);
+    compare_bitvector_modrm(inst, expected_bitvector, op);
+  }
+  else {
+    compare_bitvector(inst, expected_bitvector, op);
+  }
 }
 
 //: Many instructions can be checked just by comparing bitvectors.
@@ -421,6 +425,29 @@ void check_operands_modrm(const line& inst, const word& op) {
   // no check for scale; 0 (2**0 = 1) by default
 }
 
+// same as compare_bitvector, with a couple of exceptions for modrm-based instructions
+//   exception 1: ignore modrm bit since we already checked it above
+//   exception 2: modrm instructions can use a displacement on occasion
+void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op) {
+  if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
+  uint8_t bitvector = compute_operand_bitvector(inst);
+  if (trace_contains_errors()) return;  // duplicate operand type
+  expected = CLEAR(expected, MODRM);  // exception 1
+  if (bitvector == expected) return;  // all good with this instruction
+  for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
+//?     cerr << "comparing for modrm " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
+    if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
+    if (i == DISP8 || i == DISP16 || i == DISP32) continue;  // exception 2
+    const string& optype = Operand_type_name.at(i);
+    if ((bitvector & 0x1) > (expected & 0x1))
+      raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
+    else
+      raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": missing " << optype << " operand\n" << end();
+    // continue giving all errors for a single instruction
+  }
+  // ignore settings in any unused bits
+}
+
 void check_metadata_present(const line& inst, const string& type, const word& op) {
   if (!has_metadata(inst, type))
     raise << "'" << to_string(inst) << "' (" << get(name, op.data) << "): missing " << type << " operand\n" << end();
@@ -465,6 +492,25 @@ word metadata(const line& inst, const string& m) {
     if (has_metadata(inst.words.at(i), m))
       return inst.words.at(i);
   assert(false);
+}
+
+:(scenarios transform)
+:(scenario modrm_with_displacement)
+% Reg[EAX].u = 0x1;
+== 0x1
+# just avoid null pointer
+8b/copy 1/mod/lookup+disp8 0/rm32/eax 2/r32/edx 4/disp8  # copy *(EAX+4) to EDX
+$error: 0
+:(scenarios run)
+
+//: helper for scenario
+:(code)
+void transform(const string& text_bytes) {
+  program p;
+  istringstream in(text_bytes);
+  parse(in, p);
+  if (trace_contains_errors()) return;
+  transform(p);
 }
 
 :(scenario conflicting_operands_in_modrm_instruction)

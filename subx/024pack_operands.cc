@@ -181,15 +181,6 @@ string to_string(const vector<word>& in) {
   return out.str();
 }
 
-// helper
-void transform(const string& text_bytes) {
-  program p;
-  istringstream in(text_bytes);
-  parse(in, p);
-  if (trace_contains_errors()) return;
-  transform(p);
-}
-
 :(scenario pack_immediate_constants_hex)
 == 0x1
 # instruction                     effective address                                           operand     displacement    immediate
