@@ -437,7 +437,7 @@ void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op)
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
 //?     cerr << "comparing for modrm " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
     if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
-    if (i == DISP8 || i == DISP16 || i == DISP32) continue;  // exception 2
+    if (i == DISP8 || i == DISP32) continue;  // exception 2
     const string& optype = Operand_type_name.at(i);
     if ((bitvector & 0x1) > (expected & 0x1))
       raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
