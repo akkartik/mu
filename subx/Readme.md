@@ -127,10 +127,10 @@ either of these invariants is broken it's a bug on my part. The binary should
 also be runnable on a 64-bit Linux system. I can't guarantee it, but I'd
 appreciate hearing if it doesn't run.
 
-However, there are a few more binaries in the teensy/ directory. They are not
-guaranteed to be runnable by `subx`. I'm not building general infrastructure
-here for all of the x86 ISA and ELF format. SubX is about programming with a
-small, regular subset of 32-bit x86:
+However, not all 32-bit Linux binaries are guaranteed to be runnable by
+`subx`. I'm not building general infrastructure here for all of the x86 ISA
+and ELF format. SubX is about programming with a small, regular subset of
+32-bit x86:
 
 * Only instructions that operate on the 32-bit E\*X registers. (No
   floating-point yet.)
