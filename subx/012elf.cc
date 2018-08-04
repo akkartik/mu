@@ -140,3 +140,4 @@ ostream& operator<<(ostream& /*unused*/, die /*unused*/) {
 #include <fcntl.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <unistd.h>
