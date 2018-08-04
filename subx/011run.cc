@@ -61,7 +61,9 @@ cerr << "  syntax\n";
 #   opcode        ModR/M                    SIB                   displacement    immediate
 #   instruction   mod, reg, Reg/Mem bits    scale, index, base
 #   1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-    05                                                                            0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
+    05            .                         .                     .               0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
+# (The single periods are just to help the eye track long gaps between
+# columns, and are otherwise ignored.)
 
 # This program, when run, causes the following events in the trace:
 +load: 0x00000001 -> 05
@@ -132,6 +134,8 @@ void parse(istream& fin, program& out) {
       string word_data;
       lin >> word_data;
       if (word_data.empty()) continue;
+      if (word_data[0] == '#') break;  // comment
+      if (word_data == ".") continue;  // comment token
       if (word_data == "==") {
         if (!l.empty()) {
           assert(!out.segments.empty());
@@ -147,10 +151,6 @@ void parse(istream& fin, program& out) {
       }
       if (word_data[0] == ':') {
         // todo: line metadata
-        break;
-      }
-      if (word_data[0] == '#') {
-        // comment
         break;
       }
       w.push_back(word());
