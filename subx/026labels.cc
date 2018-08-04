@@ -4,11 +4,11 @@
 :(scenarios transform)
 :(scenario map_label)
 == 0x1
-          # instruction                     effective address                                           operand     displacement    immediate
-          # op          subop               mod             rm32          base      index     scale     r32
-          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+          # instruction                     effective address                                                   operand     displacement    immediate
+          # op          subop               mod             rm32          base        index         scale       r32
+          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 loop:
-            05                                                                                                                      0x0d0c0b0a/imm32  # add to EAX
+            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
 +transform: label 'loop' is at address 1
 
 :(before "End One-time Setup")
@@ -138,18 +138,18 @@ string data_to_string(const line& inst) {
 
 :(scenario multiple_labels_at)
 == 0x1
-          # instruction                     effective address                                           operand     displacement    immediate
-          # op          subop               mod             rm32          base      index     scale     r32
-          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits    3 bits    2 bits    2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+          # instruction                     effective address                                                   operand     displacement    immediate
+          # op          subop               mod             rm32          base        index         scale       r32
+          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 # address 1
 loop:
 loop2:
 # address 1 (labels take up no space)
-            05                                                                                                                      0x0d0c0b0a/imm32  # add to EAX
+            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
 # address 6
-            eb                                                                                                      loop2/disp8
+            eb                                                                                                              loop2/disp8
 # address 8
-            eb                                                                                                      loop3/disp8
+            eb                                                                                                              loop3/disp8
 # address 10
 loop3:
 +transform: label 'loop' is at address 1
