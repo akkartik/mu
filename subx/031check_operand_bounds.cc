@@ -22,7 +22,7 @@ put(Operand_bound, "disp16", 1<<16);
 put(Operand_bound, "imm8", 1<<8);
 // no bound needed for imm32
 
-:(before "End One-time Setup")
+:(before "End Transforms")
 Transform.push_back(check_operand_bounds);
 :(code)
 void check_operand_bounds(/*const*/ program& p) {

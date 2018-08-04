@@ -16,6 +16,25 @@
 //:
 //: Higher levels usually transform code on the basis of metadata.
 
+:(before "End Main")
+if (is_equal(argv[1], "translate")) {
+  START_TRACING_UNTIL_END_OF_SCOPE;
+  assert(argc > 3);
+  program p;
+  ifstream fin(argv[2]);
+  if (!fin) {
+    cerr << "could not open " << argv[2] << '\n';
+    return 1;
+  }
+  parse(fin, p);
+  if (trace_contains_errors()) return 1;
+  transform(p);
+  if (trace_contains_errors()) return 1;
+  save_elf(p, argv[3]);
+  if (trace_contains_errors()) unlink(argv[3]);
+  return 0;
+}
+
 //: Ordering transforms is a well-known hard problem when building compilers.
 //: In our case we also have the additional notion of layers. The ordering of
 //: layers can have nothing in common with the ordering of transforms when
@@ -77,25 +96,9 @@
 //: goals are basically to always have a working program after any layer, to
 //: have the order of layers make narrative sense, and to order transforms
 //: correctly at runtime.
-
-:(before "End Main")
-if (is_equal(argv[1], "translate")) {
-  START_TRACING_UNTIL_END_OF_SCOPE;
-  assert(argc > 3);
-  program p;
-  ifstream fin(argv[2]);
-  if (!fin) {
-    cerr << "could not open " << argv[2] << '\n';
-    return 1;
-  }
-  parse(fin, p);
-  if (trace_contains_errors()) return 1;
-  transform(p);
-  if (trace_contains_errors()) return 1;
-  save_elf(p, argv[3]);
-  if (trace_contains_errors()) unlink(argv[3]);
-  return 0;
-}
+:(before "End One-time Setup")
+// Begin Transforms
+// End Transforms
 
 :(code)
 // write out a program to a bare-bones ELF file

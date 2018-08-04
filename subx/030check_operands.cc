@@ -58,7 +58,7 @@ cerr << "  instructions\n";
   cd                                                                                                                                                # int ??
 +error: 'cd' (software interrupt): missing imm8 operand
 
-:(before "End One-time Setup")
+:(before "End Transforms")
 Transform.push_back(check_operands);
 
 :(code)

@@ -41,7 +41,7 @@ b9 0x080490a7/imm32  # copy to ECX
 +transform: packing instruction 'b9 0x080490a7/imm32'
 +transform: instruction after packing: 'b9 a7 90 04 08'
 
-:(before "End One-time Setup")
+:(before "End Transforms")
 Transform.push_back(pack_operands);
 
 :(code)
