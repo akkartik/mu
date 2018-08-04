@@ -113,6 +113,7 @@ atexit(cleanup_main);
 // compilation units. So no extern linkage.
 const int Max_depth = 9999;
 const int Error_depth = 0;  // definitely always print errors
+const int Warn_depth = 1;
 
 struct trace_stream {
   vector<trace_line> past_lines;
@@ -192,8 +193,9 @@ int Trace_errors = 0;  // used only when Trace_stream is NULL
 #define dbg trace(0, "a")
 #define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
 
-// Errors are a special layer.
+// Errors and warnings are special layers.
 #define raise  (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+#define warn (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Warn_depth, "warn"))
 // If we aren't yet sure how to deal with some corner case, use assert_for_now
 // to indicate that it isn't an inviolable invariant.
 #define assert_for_now assert
