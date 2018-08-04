@@ -36,19 +36,19 @@ Transform.push_back(transform_braces);  // idempotent
 
 :(code)
 void transform_braces(const recipe_ordinal r) {
-  const int OPEN = 0, CLOSE = 1;
+  const bool OPEN = false, CLOSE = true;
   // use signed integer for step index because we'll be doing arithmetic on it
-  list<pair<int/*OPEN/CLOSE*/, /*step*/int> > braces;
+  list<pair<bool/*OPEN/CLOSE*/, /*step*/int> > braces;
   trace(9991, "transform") << "--- transform braces for recipe " << get(Recipe, r).name << end();
   for (int index = 0;  index < SIZE(get(Recipe, r).steps);  ++index) {
     const instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.label == "{") {
       trace(9993, "transform") << maybe(get(Recipe, r).name) << "push (open, " << index << ")" << end();
-      braces.push_back(pair<int,int>(OPEN, index));
+      braces.push_back(pair<bool,int>(OPEN, index));
     }
     if (inst.label == "}") {
       trace(9993, "transform") << "push (close, " << index << ")" << end();
-      braces.push_back(pair<int,int>(CLOSE, index));
+      braces.push_back(pair<bool,int>(CLOSE, index));
     }
   }
   stack</*step*/int> open_braces;
@@ -132,9 +132,9 @@ void transform_braces(const recipe_ordinal r) {
 
 // returns a signed integer not just so that we can return -1 but also to
 // enable future signed arithmetic
-int matching_brace(int index, const list<pair<int, int> >& braces, recipe_ordinal r) {
+int matching_brace(int index, const list<pair<bool, int> >& braces, recipe_ordinal r) {
   int stacksize = 0;
-  for (list<pair<int, int> >::const_iterator p = braces.begin();  p != braces.end();  ++p) {
+  for (list<pair<bool, int> >::const_iterator p = braces.begin();  p != braces.end();  ++p) {
     if (p->second < index) continue;
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;
