@@ -15,11 +15,12 @@
 //:
 //: ---
 //:
-//: While we're here, we'll also improve a couple of other things:
+//: While we're here, we'll also improve a couple of other things in level 2:
 //:
 //: a) Machine code often packs logically separate operands into bitfields of
-//: a single byte. We'll start writing out each operand separately, and the
-//: translator will construct the right bytes out of operands.
+//: a single byte. In a later layer (pack_operands) we'll start writing out
+//: each operand separately, and the translator will construct the right bytes
+//: out of operands.
 //:
 //: SubX now gets still more verbose. What used to be a single byte, say 'c3',
 //: can now expand to '3/mod 0/subop 3/rm32'.
@@ -27,13 +28,9 @@
 //: b) Since each operand is tagged, we can loosen ordering restrictions and
 //: allow writing out the operands in any order, like keyword arguments.
 //:
-//: c) Operand values can be expressed in either decimal or hex (when prefixed
-//: with '0x'. Raw 2-character hex bytes without the '0x' are only valid when
-//: tagged without any operand metadata. (This may be a bad idea.)
-//:
-//: Coda: the actual opcodes (1-3 bytes) will continue to be at the start of
-//: each line, in hex, and untagged. The x86 instruction set is a mess, and
-//: instructions don't admit good names.
+//: The actual opcodes (first 1-3 bytes of each instruction) will continue to
+//: be at the start of each line. The x86 instruction set is a mess, and
+//: opcodes often don't admit good names.
 
 :(before "End Help Texts")
 put(Help, "instructions",
