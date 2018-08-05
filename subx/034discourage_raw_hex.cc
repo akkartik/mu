@@ -20,7 +20,18 @@ void warn_on_raw_jumps(/*const*/ program& p) {
   }
 }
 
+:(scenarios transform)
 :(scenario warn_on_hex_bytes_without_operands)
 == 0x1
 bb 2a 00 00 00  # copy 0x2a (42) to EBX
 +warn: 'bb 2a 00 00 00': using raw hex is not recommended
+
+:(scenario warn_on_non_operand_metadata)
+== 0x1
+bb 2a 00/foo 00/bar 00  # copy 0x2a (42) to EBX
++warn: 'bb 2a 00/foo 00/bar 00': using raw hex is not recommended
+
+:(scenario no_warn_on_instructions_without_operands)
+== 0x1
+55  # push EBP
+-warn: '55': using raw hex is not recommended
