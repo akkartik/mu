@@ -131,7 +131,7 @@ if ('onhashchange' in window) {
 <span id="L70" class="LineNr"> 70 </span>  <span class="Comment">/*</span><span class="Comment"> arg1 and arg2 must be signed </span><span class="Comment">*/</span> \
 <span id="L71" class="LineNr"> 71 </span>  <span class="Normal">int64_t</span> tmp = arg1 op arg2<span class="Delimiter">;</span> \
 <span id="L72" class="LineNr"> 72 </span>  arg1 = arg1 op arg2<span class="Delimiter">;</span> \
-<span id="L73" class="LineNr"> 73 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010vm.cc.html#L228'>HEXWORD</a> &lt;&lt; arg1 &lt;&lt; <a href='003trace.cc.html#L213'>end</a><span class="Delimiter">();</span> \
+<span id="L73" class="LineNr"> 73 </span>  <a href='003trace.cc.html#L190'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010vm.cc.html#L239'>HEXWORD</a> &lt;&lt; arg1 &lt;&lt; <a href='003trace.cc.html#L215'>end</a><span class="Delimiter">();</span> \
 <span id="L74" class="LineNr"> 74 </span>  SF = <span class="Delimiter">(</span>arg1 &lt; <span class="Constant">0</span><span class="Delimiter">);</span> \
 <span id="L75" class="LineNr"> 75 </span>  ZF = <span class="Delimiter">(</span>arg1 == <span class="Constant">0</span><span class="Delimiter">);</span> \
 <span id="L76" class="LineNr"> 76 </span>  <a href='010vm.cc.html#L59'>OF</a> = <span class="Delimiter">(</span>arg1 != tmp<span class="Delimiter">);</span> \
@@ -142,7 +142,7 @@ if ('onhashchange' in window) {
 <span id="L81" class="LineNr"> 81 </span><span class="Comment">#define BINARY_BITWISE_OP(op, arg1, arg2) { \</span>
 <span id="L82" class="LineNr"> 82 </span>  <span class="Comment">/*</span><span class="Comment"> arg1 and arg2 must be unsigned </span><span class="Comment">*/</span> \
 <span id="L83" class="LineNr"> 83 </span>  arg1 = arg1 op arg2<span class="Delimiter">;</span> \
-<span id="L84" class="LineNr"> 84 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010vm.cc.html#L228'>HEXWORD</a> &lt;&lt; arg1 &lt;&lt; <a href='003trace.cc.html#L213'>end</a><span class="Delimiter">();</span> \
+<span id="L84" class="LineNr"> 84 </span>  <a href='003trace.cc.html#L190'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010vm.cc.html#L239'>HEXWORD</a> &lt;&lt; arg1 &lt;&lt; <a href='003trace.cc.html#L215'>end</a><span class="Delimiter">();</span> \
 <span id="L85" class="LineNr"> 85 </span>  SF = <span class="Delimiter">(</span>arg1 &gt;&gt; <span class="Constant">31</span><span class="Delimiter">);</span> \
 <span id="L86" class="LineNr"> 86 </span>  ZF = <span class="Delimiter">(</span>arg1 == <span class="Constant">0</span><span class="Delimiter">);</span> \
 <span id="L87" class="LineNr"> 87 </span>  <a href='010vm.cc.html#L59'>OF</a> =<span class="Constant"> false</span><span class="Delimiter">;</span> \
@@ -207,89 +207,100 @@ if ('onhashchange' in window) {
 <span id="L146" class="LineNr">146 </span><span class="Comment">// skeleton of how x86 instructions are decoded</span>
 <span id="L147" class="LineNr">147 </span><span class="Normal">void</span> <a href='010vm.cc.html#L147'>run_one_instruction</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
 <span id="L148" class="LineNr">148 </span>  <span class="Normal">uint8_t</span> op=<span class="Constant">0</span><span class="Delimiter">,</span> op2=<span class="Constant">0</span><span class="Delimiter">,</span> op3=<span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L149" class="LineNr">149 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;inst: 0x&quot;</span> &lt;&lt; <a href='010vm.cc.html#L228'>HEXWORD</a> &lt;&lt; <a href='010vm.cc.html#L29'>EIP</a> &lt;&lt; <a href='003trace.cc.html#L213'>end</a><span class="Delimiter">();</span>
-<span id="L150" class="LineNr">150 </span><span class="CommentedCode">//?   cerr &lt;&lt; &quot;inst: 0x&quot; &lt;&lt; EIP &lt;&lt; '\n';</span>
-<span id="L151" class="LineNr">151 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>op = <a href='010vm.cc.html#L190'>next</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L152" class="LineNr">152 </span>  <span class="Normal">case</span> <span class="Constant">0xf4</span>:  <span class="Comment">// hlt</span>
-<span id="L153" class="LineNr">153 </span>    <a href='010vm.cc.html#L29'>EIP</a> = <a href='010vm.cc.html#L95'>End_of_program</a><span class="Delimiter">;</span>
-<span id="L154" class="LineNr">154 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L155" class="LineNr">155 </span>  <span class="Comment">// End Single-Byte Opcodes</span>
-<span id="L156" class="LineNr">156 </span>  <span class="Normal">case</span> <span class="Constant">0x0f</span>:
-<span id="L157" class="LineNr">157 </span>    <span class="Normal">switch</span><span class="Delimiter">(</span>op2 = <a href='010vm.cc.html#L190'>next</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L158" class="LineNr">158 </span>    <span class="Comment">// End Two-Byte Opcodes Starting With 0f</span>
-<span id="L159" class="LineNr">159 </span>    <span class="Normal">default</span>:
-<span id="L160" class="LineNr">160 </span>      cerr &lt;&lt; <span class="Constant">&quot;unrecognized second opcode after 0f: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L227'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L230'>NUM</a><span class="Delimiter">(</span>op2<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L161" class="LineNr">161 </span>      <a href='003trace.cc.html#L193'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span id="L162" class="LineNr">162 </span>      exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L163" class="LineNr">163 </span>    <span class="Delimiter">}</span>
-<span id="L164" class="LineNr">164 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L165" class="LineNr">165 </span>  <span class="Normal">case</span> <span class="Constant">0xf3</span>:
-<span id="L166" class="LineNr">166 </span>    <span class="Normal">switch</span><span class="Delimiter">(</span>op2 = <a href='010vm.cc.html#L190'>next</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L167" class="LineNr">167 </span>    <span class="Comment">// End Two-Byte Opcodes Starting With f3</span>
-<span id="L168" class="LineNr">168 </span>    <span class="Normal">case</span> <span class="Constant">0x0f</span>:
-<span id="L169" class="LineNr">169 </span>      <span class="Normal">switch</span><span class="Delimiter">(</span>op3 = <a href='010vm.cc.html#L190'>next</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L170" class="LineNr">170 </span>      <span class="Comment">// End Three-Byte Opcodes Starting With f3 0f</span>
-<span id="L171" class="LineNr">171 </span>      <span class="Normal">default</span>:
-<span id="L172" class="LineNr">172 </span>        cerr &lt;&lt; <span class="Constant">&quot;unrecognized third opcode after f3 0f: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L227'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L230'>NUM</a><span class="Delimiter">(</span>op3<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L173" class="LineNr">173 </span>        <a href='003trace.cc.html#L193'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span id="L174" class="LineNr">174 </span>        exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L175" class="LineNr">175 </span>      <span class="Delimiter">}</span>
-<span id="L176" class="LineNr">176 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L177" class="LineNr">177 </span>    <span class="Normal">default</span>:
-<span id="L178" class="LineNr">178 </span>      cerr &lt;&lt; <span class="Constant">&quot;unrecognized second opcode after f3: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L227'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L230'>NUM</a><span class="Delimiter">(</span>op2<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L179" class="LineNr">179 </span>      <a href='003trace.cc.html#L193'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span id="L180" class="LineNr">180 </span>      exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L181" class="LineNr">181 </span>    <span class="Delimiter">}</span>
-<span id="L182" class="LineNr">182 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L183" class="LineNr">183 </span>  <span class="Normal">default</span>:
-<span id="L184" class="LineNr">184 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized opcode: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L227'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L230'>NUM</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L185" class="LineNr">185 </span>    <a href='003trace.cc.html#L193'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span id="L186" class="LineNr">186 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L187" class="LineNr">187 </span>  <span class="Delimiter">}</span>
-<span id="L188" class="LineNr">188 </span><span class="Delimiter">}</span>
-<span id="L189" class="LineNr">189 </span>
-<span id="L190" class="LineNr">190 </span><span class="Normal">inline</span> <span class="Normal">uint8_t</span> <a href='010vm.cc.html#L190'>next</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L191" class="LineNr">191 </span>  <span class="Identifier">return</span> <a href='010vm.cc.html#L104'>read_mem_u8</a><span class="Delimiter">(</span>EIP++<span class="Delimiter">);</span>
-<span id="L192" class="LineNr">192 </span><span class="Delimiter">}</span>
-<span id="L193" class="LineNr">193 </span>
-<span id="L194" class="LineNr">194 </span><span class="Comment">//: start tracking supported opcodes</span>
-<span id="L195" class="LineNr">195 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L196" class="LineNr">196 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L196'>name</a><span class="Delimiter">;</span>
-<span id="L197" class="LineNr">197 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L197'>name_0f</a><span class="Delimiter">;</span>
-<span id="L198" class="LineNr">198 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L198'>name_f3</a><span class="Delimiter">;</span>
-<span id="L199" class="LineNr">199 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L199'>name_f3_0f</a><span class="Delimiter">;</span>
-<span id="L200" class="LineNr">200 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
-<span id="L201" class="LineNr">201 </span><a href='010vm.cc.html#L203'>init_op_names</a><span class="Delimiter">();</span>
-<span id="L202" class="LineNr">202 </span><span class="Delimiter">:(code)</span>
-<span id="L203" class="LineNr">203 </span><span class="Normal">void</span> <a href='010vm.cc.html#L203'>init_op_names</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L204" class="LineNr">204 </span>  <a href='001help.cc.html#L243'>put</a><span class="Delimiter">(</span><a href='010vm.cc.html#L196'>name</a><span class="Delimiter">,</span> <span class="Constant">&quot;f4&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;halt&quot;</span><span class="Delimiter">);</span>
-<span id="L205" class="LineNr">205 </span>  <span class="Comment">// End Initialize Op Names(name)</span>
-<span id="L206" class="LineNr">206 </span><span class="Delimiter">}</span>
-<span id="L207" class="LineNr">207 </span>
-<span id="L208" class="LineNr">208 </span><span class="Delimiter">:(before &quot;End <a href='001help.cc.html#L53'>Help</a> Special-cases(key)&quot;)</span>
-<span id="L209" class="LineNr">209 </span><span class="Normal">if</span> <span class="Delimiter">(</span>key == <span class="Constant">&quot;opcodes&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L210" class="LineNr">210 </span>  cerr &lt;&lt; <span class="Constant">&quot;Opcodes currently supported by SubX:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L211" class="LineNr">211 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L196'>name</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L196'>name</a><span class="Delimiter">.</span><a href='003trace.cc.html#L213'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
-<span id="L212" class="LineNr">212 </span>    cerr &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L213" class="LineNr">213 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L197'>name_0f</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L197'>name_0f</a><span class="Delimiter">.</span><a href='003trace.cc.html#L213'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
-<span id="L214" class="LineNr">214 </span>    cerr &lt;&lt; <span class="Constant">&quot;  0f &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L215" class="LineNr">215 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L198'>name_f3</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L198'>name_f3</a><span class="Delimiter">.</span><a href='003trace.cc.html#L213'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
-<span id="L216" class="LineNr">216 </span>    cerr &lt;&lt; <span class="Constant">&quot;  f3 &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L217" class="LineNr">217 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L199'>name_f3_0f</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L199'>name_f3_0f</a><span class="Delimiter">.</span><a href='003trace.cc.html#L213'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
-<span id="L218" class="LineNr">218 </span>    cerr &lt;&lt; <span class="Constant">&quot;  f3 0f &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L219" class="LineNr">219 </span>  cerr &lt;&lt; <span class="Constant">&quot;Run `subx help instructions` for details on <a href='011run.cc.html#L109'>words</a> like 'r32' and 'disp8'.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L220" class="LineNr">220 </span>  <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L221" class="LineNr">221 </span><span class="Delimiter">}</span>
-<span id="L222" class="LineNr">222 </span><span class="Delimiter">:(before &quot;End <a href='001help.cc.html#L53'>Help</a> Contents&quot;)</span>
-<span id="L223" class="LineNr">223 </span>cerr &lt;&lt; <span class="Constant">&quot;  opcodes</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L224" class="LineNr">224 </span>
-<span id="L225" class="LineNr">225 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L226" class="LineNr">226 </span><span class="Comment">#include &lt;iomanip&gt;</span>
-<span id="L227" class="LineNr">227 </span><span class="Comment">#define HEXBYTE  std::hex &lt;&lt; std::setw(2) &lt;&lt; std::setfill('0')</span>
-<span id="L228" class="LineNr">228 </span><span class="Comment">#define HEXWORD  std::hex &lt;&lt; std::setw(8) &lt;&lt; std::setfill('0')</span>
-<span id="L229" class="LineNr">229 </span><span class="Comment">// ugly that iostream doesn't print uint8_t as an integer</span>
-<span id="L230" class="LineNr">230 </span><span class="Comment">#define NUM(X) static_cast&lt;int&gt;(X)</span>
-<span id="L231" class="LineNr">231 </span><span class="Comment">#include &lt;stdint.h&gt;</span>
+<span id="L149" class="LineNr">149 </span>  <a href='003trace.cc.html#L190'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;inst: 0x&quot;</span> &lt;&lt; <a href='010vm.cc.html#L239'>HEXWORD</a> &lt;&lt; <a href='010vm.cc.html#L29'>EIP</a> &lt;&lt; <a href='003trace.cc.html#L215'>end</a><span class="Delimiter">();</span>
+<span id="L150" class="LineNr">150 </span><span class="CommentedCode">//?   dump_registers();</span>
+<span id="L151" class="LineNr">151 </span><span class="CommentedCode">//?   cerr &lt;&lt; &quot;inst: 0x&quot; &lt;&lt; EIP &lt;&lt; &quot; =&gt; &quot;;</span>
+<span id="L152" class="LineNr">152 </span>  op = <a href='010vm.cc.html#L193'>next</a><span class="Delimiter">();</span>
+<span id="L153" class="LineNr">153 </span><span class="CommentedCode">//?   cerr &lt;&lt; HEXBYTE &lt;&lt; NUM(op) &lt;&lt; '\n';</span>
+<span id="L154" class="LineNr">154 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>op<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L155" class="LineNr">155 </span>  <span class="Normal">case</span> <span class="Constant">0xf4</span>:  <span class="Comment">// hlt</span>
+<span id="L156" class="LineNr">156 </span>    <a href='010vm.cc.html#L29'>EIP</a> = <a href='010vm.cc.html#L95'>End_of_program</a><span class="Delimiter">;</span>
+<span id="L157" class="LineNr">157 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L158" class="LineNr">158 </span>  <span class="Comment">// End Single-Byte Opcodes</span>
+<span id="L159" class="LineNr">159 </span>  <span class="Normal">case</span> <span class="Constant">0x0f</span>:
+<span id="L160" class="LineNr">160 </span>    <span class="Normal">switch</span><span class="Delimiter">(</span>op2 = <a href='010vm.cc.html#L193'>next</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span id="L161" class="LineNr">161 </span>    <span class="Comment">// End Two-Byte Opcodes Starting With 0f</span>
+<span id="L162" class="LineNr">162 </span>    <span class="Normal">default</span>:
+<span id="L163" class="LineNr">163 </span>      cerr &lt;&lt; <span class="Constant">&quot;unrecognized second opcode after 0f: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L238'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L241'>NUM</a><span class="Delimiter">(</span>op2<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L164" class="LineNr">164 </span>      <a href='003trace.cc.html#L194'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+<span id="L165" class="LineNr">165 </span>      exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L166" class="LineNr">166 </span>    <span class="Delimiter">}</span>
+<span id="L167" class="LineNr">167 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L168" class="LineNr">168 </span>  <span class="Normal">case</span> <span class="Constant">0xf3</span>:
+<span id="L169" class="LineNr">169 </span>    <span class="Normal">switch</span><span class="Delimiter">(</span>op2 = <a href='010vm.cc.html#L193'>next</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span id="L170" class="LineNr">170 </span>    <span class="Comment">// End Two-Byte Opcodes Starting With f3</span>
+<span id="L171" class="LineNr">171 </span>    <span class="Normal">case</span> <span class="Constant">0x0f</span>:
+<span id="L172" class="LineNr">172 </span>      <span class="Normal">switch</span><span class="Delimiter">(</span>op3 = <a href='010vm.cc.html#L193'>next</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span id="L173" class="LineNr">173 </span>      <span class="Comment">// End Three-Byte Opcodes Starting With f3 0f</span>
+<span id="L174" class="LineNr">174 </span>      <span class="Normal">default</span>:
+<span id="L175" class="LineNr">175 </span>        cerr &lt;&lt; <span class="Constant">&quot;unrecognized third opcode after f3 0f: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L238'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L241'>NUM</a><span class="Delimiter">(</span>op3<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L176" class="LineNr">176 </span>        <a href='003trace.cc.html#L194'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+<span id="L177" class="LineNr">177 </span>        exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L178" class="LineNr">178 </span>      <span class="Delimiter">}</span>
+<span id="L179" class="LineNr">179 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L180" class="LineNr">180 </span>    <span class="Normal">default</span>:
+<span id="L181" class="LineNr">181 </span>      cerr &lt;&lt; <span class="Constant">&quot;unrecognized second opcode after f3: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L238'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L241'>NUM</a><span class="Delimiter">(</span>op2<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L182" class="LineNr">182 </span>      <a href='003trace.cc.html#L194'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+<span id="L183" class="LineNr">183 </span>      exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L184" class="LineNr">184 </span>    <span class="Delimiter">}</span>
+<span id="L185" class="LineNr">185 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L186" class="LineNr">186 </span>  <span class="Normal">default</span>:
+<span id="L187" class="LineNr">187 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized opcode: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L238'>HEXBYTE</a> &lt;&lt; <a href='010vm.cc.html#L241'>NUM</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L188" class="LineNr">188 </span>    <a href='003trace.cc.html#L194'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+<span id="L189" class="LineNr">189 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L190" class="LineNr">190 </span>  <span class="Delimiter">}</span>
+<span id="L191" class="LineNr">191 </span><span class="Delimiter">}</span>
+<span id="L192" class="LineNr">192 </span>
+<span id="L193" class="LineNr">193 </span><span class="Normal">inline</span> <span class="Normal">uint8_t</span> <a href='010vm.cc.html#L193'>next</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L194" class="LineNr">194 </span>  <span class="Identifier">return</span> <a href='010vm.cc.html#L104'>read_mem_u8</a><span class="Delimiter">(</span>EIP++<span class="Delimiter">);</span>
+<span id="L195" class="LineNr">195 </span><span class="Delimiter">}</span>
+<span id="L196" class="LineNr">196 </span>
+<span id="L197" class="LineNr">197 </span><span class="Normal">void</span> <a href='010vm.cc.html#L197'>dump_registers</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L198" class="LineNr">198 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='010vm.cc.html#L21'>NUM_INT_REGISTERS</a><span class="Delimiter">;</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L199" class="LineNr">199 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;; &quot;</span><span class="Delimiter">;</span>
+<span id="L200" class="LineNr">200 </span>    cerr &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; std::hex &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">8</span><span class="Delimiter">)</span> &lt;&lt; std::setfill<span class="Delimiter">(</span><span class="Constant">'_'</span><span class="Delimiter">)</span> &lt;&lt; Reg[i]<span class="Delimiter">.</span>u<span class="Delimiter">;</span>
+<span id="L201" class="LineNr">201 </span>  <span class="Delimiter">}</span>
+<span id="L202" class="LineNr">202 </span>  cerr &lt;&lt; <span class="Constant">&quot; -- SF: &quot;</span> &lt;&lt; SF &lt;&lt; <span class="Constant">&quot;; ZF: &quot;</span> &lt;&lt; ZF &lt;&lt; <span class="Constant">&quot;; <a href='010vm.cc.html#L59'>OF</a>: &quot;</span> &lt;&lt; <a href='010vm.cc.html#L59'>OF</a> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L203" class="LineNr">203 </span><span class="Delimiter">}</span>
+<span id="L204" class="LineNr">204 </span>
+<span id="L205" class="LineNr">205 </span><span class="Comment">//: start tracking supported opcodes</span>
+<span id="L206" class="LineNr">206 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L207" class="LineNr">207 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L207'>name</a><span class="Delimiter">;</span>
+<span id="L208" class="LineNr">208 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L208'>name_0f</a><span class="Delimiter">;</span>
+<span id="L209" class="LineNr">209 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L209'>name_f3</a><span class="Delimiter">;</span>
+<span id="L210" class="LineNr">210 </span>map&lt;<span class="Comment">/*</span><span class="Comment">op</span><span class="Comment">*/</span>string<span class="Delimiter">,</span> string&gt; <a href='010vm.cc.html#L210'>name_f3_0f</a><span class="Delimiter">;</span>
+<span id="L211" class="LineNr">211 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+<span id="L212" class="LineNr">212 </span><a href='010vm.cc.html#L214'>init_op_names</a><span class="Delimiter">();</span>
+<span id="L213" class="LineNr">213 </span><span class="Delimiter">:(code)</span>
+<span id="L214" class="LineNr">214 </span><span class="Normal">void</span> <a href='010vm.cc.html#L214'>init_op_names</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L215" class="LineNr">215 </span>  <a href='001help.cc.html#L243'>put</a><span class="Delimiter">(</span><a href='010vm.cc.html#L207'>name</a><span class="Delimiter">,</span> <span class="Constant">&quot;f4&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;halt&quot;</span><span class="Delimiter">);</span>
+<span id="L216" class="LineNr">216 </span>  <span class="Comment">// End Initialize Op Names(name)</span>
+<span id="L217" class="LineNr">217 </span><span class="Delimiter">}</span>
+<span id="L218" class="LineNr">218 </span>
+<span id="L219" class="LineNr">219 </span><span class="Delimiter">:(before &quot;End <a href='001help.cc.html#L53'>Help</a> Special-cases(key)&quot;)</span>
+<span id="L220" class="LineNr">220 </span><span class="Normal">if</span> <span class="Delimiter">(</span>key == <span class="Constant">&quot;opcodes&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L221" class="LineNr">221 </span>  cerr &lt;&lt; <span class="Constant">&quot;Opcodes currently supported by SubX:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L222" class="LineNr">222 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L207'>name</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L207'>name</a><span class="Delimiter">.</span><a href='003trace.cc.html#L215'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
+<span id="L223" class="LineNr">223 </span>    cerr &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L224" class="LineNr">224 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L208'>name_0f</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L208'>name_0f</a><span class="Delimiter">.</span><a href='003trace.cc.html#L215'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
+<span id="L225" class="LineNr">225 </span>    cerr &lt;&lt; <span class="Constant">&quot;  0f &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L226" class="LineNr">226 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L209'>name_f3</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L209'>name_f3</a><span class="Delimiter">.</span><a href='003trace.cc.html#L215'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
+<span id="L227" class="LineNr">227 </span>    cerr &lt;&lt; <span class="Constant">&quot;  f3 &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L228" class="LineNr">228 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::iterator p = <a href='010vm.cc.html#L210'>name_f3_0f</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='010vm.cc.html#L210'>name_f3_0f</a><span class="Delimiter">.</span><a href='003trace.cc.html#L215'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
+<span id="L229" class="LineNr">229 </span>    cerr &lt;&lt; <span class="Constant">&quot;  f3 0f &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L230" class="LineNr">230 </span>  cerr &lt;&lt; <span class="Constant">&quot;Run `subx help instructions` for details on <a href='011run.cc.html#L111'>words</a> like 'r32' and 'disp8'.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L231" class="LineNr">231 </span>  <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L232" class="LineNr">232 </span><span class="Delimiter">}</span>
+<span id="L233" class="LineNr">233 </span><span class="Delimiter">:(before &quot;End <a href='001help.cc.html#L53'>Help</a> Contents&quot;)</span>
+<span id="L234" class="LineNr">234 </span>cerr &lt;&lt; <span class="Constant">&quot;  opcodes</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L235" class="LineNr">235 </span>
+<span id="L236" class="LineNr">236 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L237" class="LineNr">237 </span><span class="Comment">#include &lt;iomanip&gt;</span>
+<span id="L238" class="LineNr">238 </span><span class="Comment">#define HEXBYTE  std::hex &lt;&lt; std::setw(2) &lt;&lt; std::setfill('0')</span>
+<span id="L239" class="LineNr">239 </span><span class="Comment">#define HEXWORD  std::hex &lt;&lt; std::setw(8) &lt;&lt; std::setfill('0')</span>
+<span id="L240" class="LineNr">240 </span><span class="Comment">// ugly that iostream doesn't print uint8_t as an integer</span>
+<span id="L241" class="LineNr">241 </span><span class="Comment">#define NUM(X) static_cast&lt;int&gt;(X)</span>
+<span id="L242" class="LineNr">242 </span><span class="Comment">#include &lt;stdint.h&gt;</span>
 </pre>
 </body>
 </html>
