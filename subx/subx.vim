@@ -22,4 +22,5 @@ set comments+=n:#
 syntax match subxCommentedCode "#? .*"  | highlight link subxCommentedCode CommentedCode
 let b:cmt_head = "#? "
 
+" comment token
 syntax match subxDelimiter / \. /  | highlight link subxDelimiter Delimiter
