@@ -158,7 +158,7 @@ void trace_stream::newline() {
   string curr_contents = curr_stream->str();
   if (!curr_contents.empty()) {
     past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
-    if ((!Hide_errors && curr_label == "error")
+    if ((!Hide_errors && curr_depth <= Warn_depth)
         || Dump_trace
         || (!Dump_label.empty() && curr_label == Dump_label))
       cerr << curr_label << ": " << curr_contents << '\n';
