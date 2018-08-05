@@ -21,7 +21,6 @@ void warn_on_raw_jumps(/*const*/ program& p) {
 }
 
 :(scenario warn_on_hex_bytes_without_operands)
-% Hide_warnings = true;
 == 0x1
 bb 2a 00 00 00  # copy 0x2a (42) to EBX
 +warn: 'bb 2a 00 00 00': using raw hex is not recommended

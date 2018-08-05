@@ -184,6 +184,9 @@ Hide_errors = false;
 Hide_warnings = false;
 Dump_trace = false;
 Dump_label = "";
+//: Never dump warnings in scenarios
+:(before "End Test Setup")
+Hide_warnings = true;
 
 :(before "End Includes")
 #define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
