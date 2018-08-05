@@ -76,15 +76,6 @@ struct trace_line {
   trace_line(int d, string l, string c) :depth(d), label(l), contents(c) {}
 };
 
-:(before "End Globals")
-bool Hide_errors = false;  // if set, don't print even error trace lines to screen
-bool Dump_trace = false;  // if set, print trace lines to screen
-string Dump_label = "";  // if set, print trace lines matching a single label to screen
-:(before "End Reset")
-Hide_errors = false;
-Dump_trace = false;
-Dump_label = "";
-
 //: Support for tracing an entire run.
 //: Traces can have a lot of overhead, so only turn them on when asked.
 :(before "End Commandline Options(*arg)")
@@ -182,6 +173,15 @@ string trace_stream::readable_contents(string label) {
 :(before "End Globals")
 trace_stream* Trace_stream = NULL;
 int Trace_errors = 0;  // used only when Trace_stream is NULL
+
+:(before "End Globals")
+bool Hide_errors = false;  // if set, don't print even error trace lines to screen
+bool Dump_trace = false;  // if set, print trace lines to screen
+string Dump_label = "";  // if set, print trace lines matching a single label to screen
+:(before "End Reset")
+Hide_errors = false;
+Dump_trace = false;
+Dump_label = "";
 
 :(before "End Includes")
 #define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
