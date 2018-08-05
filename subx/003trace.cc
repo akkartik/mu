@@ -149,7 +149,8 @@ void trace_stream::newline() {
   string curr_contents = curr_stream->str();
   if (!curr_contents.empty()) {
     past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
-    if ((!Hide_errors && curr_depth <= Warn_depth)
+    if ((!Hide_errors && curr_depth == Error_depth)
+        || (!Hide_warnings && !Hide_errors && curr_depth == Warn_depth)
         || Dump_trace
         || (!Dump_label.empty() && curr_label == Dump_label))
       cerr << curr_label << ": " << curr_contents << '\n';
@@ -176,10 +177,12 @@ int Trace_errors = 0;  // used only when Trace_stream is NULL
 
 :(before "End Globals")
 bool Hide_errors = false;  // if set, don't print even error trace lines to screen
+bool Hide_warnings = false;  // if set, don't print warnings to screen
 bool Dump_trace = false;  // if set, print trace lines to screen
 string Dump_label = "";  // if set, print trace lines matching a single label to screen
 :(before "End Reset")
 Hide_errors = false;
+Hide_warnings = false;
 Dump_trace = false;
 Dump_label = "";
 
