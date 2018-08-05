@@ -410,17 +410,3 @@ using std::ostringstream;
 #include <fstream>
 using std::ifstream;
 using std::ofstream;
-
-:(before "End Globals")
-//: In future layers we'll use the depth field as follows:
-//:
-//: Errors will be depth 0.
-//: Mu 'applications' will be able to use depths 1-100 as they like.
-//: Primitive statements will occupy 101-9989
-extern const int Initial_callstack_depth = 101;
-extern const int Max_callstack_depth = 9989;
-//: Finally, details of primitive Mu statements will occupy depth 9990-9999
-//: (more on that later as well)
-//:
-//: This framework should help us hide some details at each level, mixing
-//: static ideas like layers with the dynamic notion of call-stack depth.
