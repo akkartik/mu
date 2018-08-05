@@ -1,56 +1,5 @@
-//: Beginning of "level 2": tagging bytes with metadata around what field of
-//: an x86 instruction they're for.
-//:
-//: The x86 instruction set is variable-length, and how a byte is interpreted
-//: affects later instruction boundaries. A lot of the pain in programming machine code
-//: stems from computer and programmer going out of sync on what a byte
-//: means. The miscommunication is usually not immediately caught, and
-//: metastasizes at runtime into kilobytes of misinterpreted instructions.
-//: Tagging bytes with what the programmer expects them to be interpreted as
-//: helps the computer catch miscommunication immediately.
-//:
-//: This is one way SubX is going to be different from a 'language': we
-//: typically think of languages as less verbose than machine code. Here we're
-//: making machine code *more* verbose.
-//:
-//: ---
-//:
-//: While we're here, we'll also improve a couple of other things in level 2:
-//:
-//: a) Machine code often packs logically separate operands into bitfields of
-//: a single byte. In a later layer (pack_operands) we'll start writing out
-//: each operand separately, and the translator will construct the right bytes
-//: out of operands.
-//:
-//: SubX now gets still more verbose. What used to be a single byte, say 'c3',
-//: can now expand to '3/mod 0/subop 3/rm32'.
-//:
-//: b) Since each operand is tagged, we can loosen ordering restrictions and
-//: allow writing out the operands in any order, like keyword arguments.
-//:
-//: The actual opcodes (first 1-3 bytes of each instruction) will continue to
-//: be at the start of each line. The x86 instruction set is a mess, and
-//: opcodes often don't admit good names.
-:(before "End Transforms")
-// Begin Level-2 Transforms
-// End Level-2 Transforms
-
-:(before "End Help Texts")
-put(Help, "instructions",
-  "Each x86 instruction consists of an instruction or opcode and some number\n"
-  "of operands.\n"
-  "Each operand has a type. An instruction won't have more than one operand of\n"
-  "any type.\n"
-  "Each instruction has some set of allowed operand types. It'll reject others.\n"
-  "The complete list of operand types: mod, subop, r32 (register), rm32\n"
-  "(register or memory), scale, index, base, disp8, disp16, disp32, imm8,\n"
-  "imm32.\n"
-  "Each of these has its own help page. Try reading 'subx help mod' next.\n"
-);
-:(before "End Help Contents")
-cerr << "  instructions\n";
-
-//:: Check for 'syntax errors'; missing or unexpected operands.
+//: Since we're tagging operands with their types, let's start checking these
+//: operand types for each instruction.
 
 :(scenario check_missing_imm8_operand)
 % Hide_errors = true;
@@ -61,14 +10,13 @@ cerr << "  instructions\n";
   cd                                                                                                                                                # int ??
 +error: 'cd' (software interrupt): missing imm8 operand
 
-:(before "End Level-2 Transforms")
-Transform.push_back(check_operands);
+:(after "Pack Operands")
+check_operands(code);
+if (trace_contains_errors()) return;
 
 :(code)
-void check_operands(/*const*/ program& p) {
+void check_operands(const segment& code) {
   trace(99, "transform") << "-- check operands" << end();
-  if (p.segments.empty()) return;
-  const segment& code = p.segments.at(0);
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     check_operands(code.lines.at(i));
     if (trace_contains_errors()) return;  // stop at the first mal-formed instruction
@@ -303,16 +251,6 @@ string maybe_name(const word& op) {
   return " ("+get(name, op.data)+')';
 }
 
-bool is_hex_byte(const word& curr) {
-  if (contains_any_operand_metadata(curr))
-    return false;
-  if (SIZE(curr.data) != 2)
-    return false;
-  if (curr.data.find_first_not_of("0123456789abcdefABCDEF") != string::npos)
-    return false;
-  return true;
-}
-
 uint32_t compute_operand_bitvector(const line& inst) {
   uint32_t bitvector = 0;
   for (int i = /*skip op*/1;  i < SIZE(inst.words);  ++i) {
@@ -335,20 +273,6 @@ int first_operand(const line& inst) {
       return 2;
   }
   return 1;
-}
-
-bool all_hex_bytes(const line& inst) {
-  for (int i = 0;  i < SIZE(inst.words);  ++i)
-    if (!is_hex_byte(inst.words.at(i)))
-      return false;
-  return true;
-}
-
-bool contains_any_operand_metadata(const word& word) {
-  for (int i = 0;  i < SIZE(word.metadata);  ++i)
-    if (Instruction_operands.find(word.metadata.at(i)) != Instruction_operands.end())
-      return true;
-  return false;
 }
 
 // Scan the metadata of 'w' and return the bit corresponding to any operand type.
@@ -383,22 +307,6 @@ cd/software-interrupt 80/imm8/imm32
 == 0x1
 81 0/add/subop       3/rm32/ebx 1/imm32
 +error: '81 0/add/subop 3/rm32/ebx 1/imm32' (combine rm32 with imm32 based on subop): missing mod operand
-
-:(before "End Globals")
-set<string> Instruction_operands;
-:(before "End One-time Setup")
-Instruction_operands.insert("subop");
-Instruction_operands.insert("mod");
-Instruction_operands.insert("rm32");
-Instruction_operands.insert("base");
-Instruction_operands.insert("index");
-Instruction_operands.insert("scale");
-Instruction_operands.insert("r32");
-Instruction_operands.insert("disp8");
-Instruction_operands.insert("disp16");
-Instruction_operands.insert("disp32");
-Instruction_operands.insert("imm8");
-Instruction_operands.insert("imm32");
 
 :(code)
 void check_operands_modrm(const line& inst, const word& op) {
@@ -458,42 +366,6 @@ void check_metadata_absent(const line& inst, const string& type, const word& op,
     raise << "'" << to_string(inst) << "' (" << get(name, op.data) << "): unexpected " << type << " operand (" << msg << ")\n" << end();
 }
 
-bool has_metadata(const line& inst, const string& m) {
-  bool result = false;
-  for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    if (!has_metadata(inst.words.at(i), m)) continue;
-    if (result) {
-      raise << "'" << to_string(inst) << "' has conflicting " << m << " operands\n" << end();
-      return false;
-    }
-    result = true;
-  }
-  return result;
-}
-
-bool has_metadata(const word& w, const string& m) {
-  bool result = false;
-  bool metadata_found = false;
-  for (int i = 0;  i < SIZE(w.metadata);  ++i) {
-    const string& curr = w.metadata.at(i);
-    if (!contains_key(Instruction_operands, curr)) continue;  // ignore unrecognized metadata
-    if (metadata_found) {
-      raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
-      return false;
-    }
-    metadata_found = true;
-    result = (curr == m);
-  }
-  return result;
-}
-
-word metadata(const line& inst, const string& m) {
-  for (int i = 0;  i < SIZE(inst.words);  ++i)
-    if (has_metadata(inst.words.at(i), m))
-      return inst.words.at(i);
-  assert(false);
-}
-
 :(scenarios transform)
 :(scenario modrm_with_displacement)
 % Reg[EAX].u = 0x1;
@@ -502,16 +374,6 @@ word metadata(const line& inst, const string& m) {
 8b/copy 1/mod/lookup+disp8 0/rm32/EAX 2/r32/EDX 4/disp8  # copy *(EAX+4) to EDX
 $error: 0
 :(scenarios run)
-
-//: helper for scenario
-:(code)
-void transform(const string& text_bytes) {
-  program p;
-  istringstream in(text_bytes);
-  parse(in, p);
-  if (trace_contains_errors()) return;
-  transform(p);
-}
 
 :(scenario conflicting_operands_in_modrm_instruction)
 % Hide_errors = true;
@@ -634,15 +496,6 @@ void compare_bitvector_0f(const line& inst, uint8_t expected, const word& op) {
   // ignore settings in any unused bits
 }
 
-string to_string(const line& inst) {
-  ostringstream out;
-  for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    if (i > 0) out << ' ';
-    out << inst.words.at(i).original;
-  }
-  return out.str();
-}
-
 string tolower(const char* s) {
   ostringstream out;
   for (/*nada*/;  *s;  ++s)
@@ -653,84 +506,6 @@ string tolower(const char* s) {
 #undef HAS
 #undef SET
 #undef CLEAR
-
-//:: docs on each operand type
-
-:(before "End Help Texts")
-init_operand_type_help();
-:(code)
-void init_operand_type_help() {
-  put(Help, "mod",
-    "2-bit operand controlling the _addressing mode_ of many instructions,\n"
-    "to determine how to compute the _effective address_ to look up memory at\n"
-    "based on the 'rm32' operand and potentially others.\n"
-    "\n"
-    "If mod = 3, just operate on the contents of the register specified by rm32\n"
-    "            (direct mode).\n"
-    "If mod = 2, effective address is usually* rm32 + disp32\n"
-    "            (indirect mode with displacement).\n"
-    "If mod = 1, effective address is usually* rm32 + disp8\n"
-    "            (indirect mode with displacement).\n"
-    "If mod = 0, effective address is usually* rm32 (indirect mode).\n"
-    "(* - The exception is when rm32 is '4'. Register 4 is the stack pointer (ESP).\n"
-    "     Using it as an address gets more involved. For more details,\n"
-    "     try reading the help pages for 'base', 'index' and 'scale'.)\n"
-    "\n"
-    "For complete details consult the IA-32 software developer's manual, table 2-2,\n"
-    "\"32-bit addressing forms with the ModR/M byte\".\n"
-    "  https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf\n"
-  );
-  put(Help, "subop",
-    "Additional 3-bit operand for determining the instruction when the opcode is 81, 8f or ff.\n"
-    "Can't coexist with operand of type 'r32' in a single instruction, because the two use the same bits.\n"
-  );
-  put(Help, "r32",
-    "3-bit operand specifying a register operand used directly, without any further addressing modes.\n"
-  );
-  put(Help, "rm32",
-    "3-bit operand specifying a register operand whose precise interpretation interacts with 'mod'.\n"
-    "For complete details consult the IA-32 software developer's manual, table 2-2,\n"
-    "\"32-bit addressing forms with the ModR/M byte\".\n"
-    "  https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf\n"
-  );
-  put(Help, "base",
-    "Additional 3-bit operand (when 'rm32' is 4 unless 'mod' is 3) specifying the register containing an address to look up.\n"
-    "This address may be further modified by 'index' and 'scale' operands.\n"
-    "  effective address = base + index*scale + displacement (disp8 or disp32)\n"
-    "For complete details consult the IA-32 software developer's manual, table 2-3,\n"
-    "\"32-bit addressing forms with the SIB byte\".\n"
-    "  https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf\n"
-  );
-  put(Help, "index",
-    "Optional 3-bit operand (when 'rm32' is 4 unless 'mod' is 3) that can be added to the 'base' operand to compute the 'effective address' at which to look up memory.\n"
-    "  effective address = base + index*scale + displacement (disp8 or disp32)\n"
-    "For complete details consult the IA-32 software developer's manual, table 2-3,\n"
-    "\"32-bit addressing forms with the SIB byte\".\n"
-    "  https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf\n"
-  );
-  put(Help, "scale",
-    "Optional 2-bit operand (when 'rm32' is 4 unless 'mod' is 3) that can be multiplied to the 'index' operand before adding the result to the 'base' operand to compute the _effective address_ to operate on.\n"
-    "  effective address = base + index * scale + displacement (disp8 or disp32)\n"
-    "For complete details consult the IA-32 software developer's manual, table 2-3,\n"
-    "\"32-bit addressing forms with the SIB byte\".\n"
-    "  https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf\n"
-  );
-  put(Help, "disp8",
-    "8-bit value to be added in many instructions.\n"
-  );
-  put(Help, "disp16",
-    "16-bit value to be added in many instructions.\n"
-  );
-  put(Help, "disp32",
-    "32-bit value to be added in many instructions.\n"
-  );
-  put(Help, "imm8",
-    "8-bit value for many instructions.\n"
-  );
-  put(Help, "imm32",
-    "32-bit value for many instructions.\n"
-  );
-}
 
 :(before "End Includes")
 #include<cctype>

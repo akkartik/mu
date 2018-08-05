@@ -22,13 +22,12 @@ put(Operand_bound, "disp16", 1<<16);
 put(Operand_bound, "imm8", 1<<8);
 // no bound needed for imm32
 
-:(before "End Level-2 Transforms")
-Transform.push_back(check_operand_bounds);
+:(after "Pack Operands")
+check_operand_bounds(code);
+if (trace_contains_errors()) return;
 :(code)
-void check_operand_bounds(/*const*/ program& p) {
+void check_operand_bounds(const segment& code) {
   trace(99, "transform") << "-- check operand bounds" << end();
-  if (p.segments.empty()) return;
-  const segment& code = p.segments.at(0);
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     const line& inst = code.lines.at(i);
     for (int j = first_operand(inst);  j < SIZE(inst.words);  ++j)
@@ -52,23 +51,4 @@ void check_operand_bounds(const word& w) {
         raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
     }
   }
-}
-
-bool is_hex_int(const string& s) {
-  if (s.empty()) return false;
-  size_t pos = 0;
-  if (s.at(0) == '-' || s.at(0) == '+') pos++;
-  if (s.substr(pos, pos+2) == "0x") pos += 2;
-  return s.find_first_not_of("0123456789abcdefABCDEF", pos) == string::npos;
-}
-
-int32_t parse_int(const string& s) {
-  istringstream in(s);
-  int32_t result = 0;
-  in >> std::hex >> result;
-  if (!in || !in.eof()) {
-    raise << "not a number: " << s << '\n' << end();
-    return 0;
-  }
-  return result;
 }
