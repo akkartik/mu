@@ -8,7 +8,7 @@ cd 0x80/imm8
 cd 12/imm8
 +error: 12/imm8: metadata imm8 is only allowed in the (first) code segment
 
-:(before "End Transforms")
+:(before "End Level-2 Transforms")
 Transform.push_back(ensure_operands_only_in_code_segments);
 :(code)
 void ensure_operands_only_in_code_segments(/*const*/ program& p) {

@@ -11,7 +11,7 @@ loop:
             05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
 +transform: label 'loop' is at address 1
 
-:(before "End Transforms")
+:(before "End Level-2 Transforms")
 Transform.push_back(rewrite_labels);
 
 :(code)

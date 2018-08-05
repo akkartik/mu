@@ -31,6 +31,9 @@
 //: The actual opcodes (first 1-3 bytes of each instruction) will continue to
 //: be at the start of each line. The x86 instruction set is a mess, and
 //: opcodes often don't admit good names.
+:(before "End Transforms")
+// Begin Level-2 Transforms
+// End Level-2 Transforms
 
 :(before "End Help Texts")
 put(Help, "instructions",
@@ -58,7 +61,7 @@ cerr << "  instructions\n";
   cd                                                                                                                                                # int ??
 +error: 'cd' (software interrupt): missing imm8 operand
 
-:(before "End Transforms")
+:(before "End Level-2 Transforms")
 Transform.push_back(check_operands);
 
 :(code)
