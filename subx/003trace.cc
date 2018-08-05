@@ -112,10 +112,9 @@ struct trace_stream {
   ostringstream* curr_stream;
   string curr_label;
   int curr_depth;
-  int callstack_depth;
   int collect_depth;
   ofstream null_stream;  // never opens a file, so writes silently fail
-  trace_stream() :curr_stream(NULL), curr_depth(Max_depth), callstack_depth(0), collect_depth(Max_depth) {}
+  trace_stream() :curr_stream(NULL), curr_depth(Max_depth), collect_depth(Max_depth) {}
   ~trace_stream() { if (curr_stream) delete curr_stream; }
 
   ostream& stream(string label) {
