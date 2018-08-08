@@ -48,11 +48,15 @@ void compute_addresses_for_labels(const segment& code, map<string, int32_t>& add
         ++current_byte;
       }
       else {
+        string label = drop_last(curr.data);
+        if (SIZE(label) <= 2) {
+          raise << "label '" << label << "' is too short; must be more than two characters long\n" << end();
+          return;
+        }
         if (contains_any_operand_metadata(curr))
           raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
         if (j > 0)
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
-        string label = curr.data.substr(0, SIZE(curr.data)-1);
         put(address, label, current_byte);
         trace(99, "transform") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
         // no modifying current_byte; label definitions won't be in the final binary
@@ -130,6 +134,10 @@ string data_to_string(const line& inst) {
   return out.str();
 }
 
+string drop_last(const string& s) {
+  return string(s.begin(), --s.end());
+}
+
 //: Label definitions must be the first word on a line. No jumping inside
 //: instructions.
 //: They should also be the only word on a line.
@@ -159,3 +167,13 @@ loop3:
 +transform: instruction after transform: 'eb f9'
 # second jump is to 0 (fall through)
 +transform: instruction after transform: 'eb 00'
+
+:(scenario label_too_short)
+% Hide_errors = true;
+== 0x1
+          # instruction                     effective address                                                   operand     displacement    immediate
+          # op          subop               mod             rm32          base        index         scale       r32
+          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+xz:
+            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
++error: label 'xz' is too short; must be more than two characters long
