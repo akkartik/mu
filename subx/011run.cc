@@ -206,6 +206,10 @@ void load(const program& p) {
       const line& l = seg.lines.at(j);
       for (int k = 0;  k < SIZE(l.words);  ++k) {
         const word& w = l.words.at(k);
+        if (SIZE(w.data) != 2) {
+          raise << "token '" << w.data << "' is not a hex byte\n" << end();
+          return;
+        }
         uint8_t val = hex_byte(w.data);
         if (trace_contains_errors()) return;
         write_mem_u8(addr, val);
@@ -232,6 +236,23 @@ uint8_t hex_byte(const string& s) {
     return '\0';
   }
   return static_cast<uint8_t>(result);
+}
+
+:(scenarios parse_and_load)
+:(scenario load_error)
+% Hide_errors = true;
+== 0x1
+05 cab
++error: token 'cab' is not a hex byte
+
+//: helper for tests
+:(code)
+void parse_and_load(const string& text_bytes) {
+  program p;
+  istringstream in(text_bytes);
+  parse(in, p);
+  if (trace_contains_errors()) return;  // if any stage raises errors, stop immediately
+  load(p);
 }
 
 //:: run
