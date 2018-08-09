@@ -1,6 +1,20 @@
 //: Labels are defined by ending names with a ':'. This layer will compute
 //: addresses for labels, and compute the offset for instructions using them.
 
+//: We're introducing non-number names for the first time, so it's worth
+//: laying down some ground rules all transforms will follow, so things don't
+//: get too confusing:
+//:   - if it starts with a digit, it's treated as a number. If it can't be
+//:     parsed as hex it will raise an error.
+//:   - if it starts with '-' it's treated as a number.
+//:   - if it starts with '0x' it's treated as a number.
+//:   - if it's two characters long, it can't be a name. Either it's a hex
+//:     byte, or it raises an error.
+//: That's it. Names can start with any non-digit that isn't a dash. They can
+//: be a single character long. 'a' is not a hex number, it's a variable.
+//: Later layers may add more conventions partitioning the space of names. But
+//: the above rules will remain inviolate.
+
 :(scenarios transform)
 :(scenario map_label)
 == 0x1
