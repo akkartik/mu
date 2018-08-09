@@ -206,10 +206,6 @@ void load(const program& p) {
       const line& l = seg.lines.at(j);
       for (int k = 0;  k < SIZE(l.words);  ++k) {
         const word& w = l.words.at(k);
-        if (SIZE(w.data) != 2) {
-          raise << "token '" << w.data << "' is not a hex byte\n" << end();
-          return;
-        }
         uint8_t val = hex_byte(w.data);
         if (trace_contains_errors()) return;
         write_mem_u8(addr, val);
@@ -227,23 +223,40 @@ uint8_t hex_byte(const string& s) {
   istringstream in(s);
   int result = 0;
   in >> std::hex >> result;
-  if (!in) {
-    raise << "invalid hex " << s << '\n' << end();
+  if (!in || !in.eof()) {
+    raise << "token '" << s << "' is not a hex byte\n" << end();
     return '\0';
   }
-  if (result > 0xff) {
-    raise << "invalid hex byte " << std::hex << result << '\n' << end();
+  if (result > 0xff || result < -0x8f) {
+    raise << "token '" << s << "' is not a hex byte\n" << end();
     return '\0';
   }
   return static_cast<uint8_t>(result);
 }
 
 :(scenarios parse_and_load)
-:(scenario load_error)
+:(scenario number_too_large)
 % Hide_errors = true;
 == 0x1
 05 cab
 +error: token 'cab' is not a hex byte
+
+:(scenario invalid_hex)
+% Hide_errors = true;
+== 0x1
+05 cx
++error: token 'cx' is not a hex byte
+
+:(scenario negative_number)
+== 0x1
+05 -12
+$error: 0
+
+:(scenario negative_number_too_small)
+% Hide_errors = true;
+== 0x1
+05 -12345
++error: token '-12345' is not a hex byte
 
 //: helper for tests
 :(code)

@@ -204,6 +204,7 @@ Hide_warnings = true;
 // If we aren't yet sure how to deal with some corner case, use assert_for_now
 // to indicate that it isn't an inviolable invariant.
 #define assert_for_now assert
+#define raise_for_now raise
 
 // Inside tests, fail any tests that displayed (unexpected) errors.
 // Expected errors in tests should always be hidden and silently checked for.
