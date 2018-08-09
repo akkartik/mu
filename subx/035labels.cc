@@ -49,8 +49,14 @@ void compute_addresses_for_labels(const segment& code, map<string, int32_t>& add
       }
       else {
         string label = drop_last(curr.data);
+        // ensure labels look sufficiently different from raw hex
         if (SIZE(label) <= 2) {
           raise << "label '" << label << "' is too short; must be more than two characters long\n" << end();
+          return;
+        }
+        // ensure labels look sufficiently different from hex literals
+        if (label.substr(0, 2) == "0x") {
+          raise << "label '" << label << "' looks like a hex number; use a different name\n" << end();
           return;
         }
         if (contains_any_operand_metadata(curr))
@@ -177,3 +183,13 @@ loop3:
 xz:
             05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
 +error: label 'xz' is too short; must be more than two characters long
+
+:(scenario label_hex)
+% Hide_errors = true;
+== 0x1
+          # instruction                     effective address                                                   operand     displacement    immediate
+          # op          subop               mod             rm32          base        index         scale       r32
+          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+0xab:
+            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
++error: label '0xab' looks like a hex number; use a different name
