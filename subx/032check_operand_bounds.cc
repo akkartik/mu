@@ -3,7 +3,7 @@
 :(scenario check_bitfield_sizes)
 % Hide_errors = true;
 == 0x1
-01/add 4/mod
+01/add 4/mod 3/rm32 1/r32  # add ECX to EBX
 +error: '4/mod' too large to fit in bitfield mod
 
 :(before "End Globals")
@@ -22,7 +22,7 @@ put(Operand_bound, "disp16", 1<<16);
 put(Operand_bound, "imm8", 1<<8);
 // no bound needed for imm32
 
-:(after "Pack Operands")
+:(before "Pack Operands(segment code)")
 check_operand_bounds(code);
 if (trace_contains_errors()) return;
 :(code)

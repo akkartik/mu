@@ -10,7 +10,7 @@
   cd                                                                                                                                                # int ??
 +error: 'cd' (software interrupt): missing imm8 operand
 
-:(after "Pack Operands")
+:(before "Pack Operands(segment code)")
 check_operands(code);
 if (trace_contains_errors()) return;
 

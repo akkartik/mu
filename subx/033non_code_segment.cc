@@ -8,7 +8,7 @@ cd 0x80/imm8
 cd 12/imm8
 +error: 12/imm8: metadata imm8 is only allowed in the (first) code segment
 
-:(after "Pack Operands")
+:(before "Pack Operands(segment code)")
 ensure_operands_only_in_code_segments(p);
 if (trace_contains_errors()) return;
 :(code)
