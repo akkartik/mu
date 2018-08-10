@@ -258,6 +258,11 @@ $error: 0
 05 -12345
 +error: token '-12345' is not a hex byte
 
+:(scenario hex_prefix)
+== 0x1
+0x05 -0x12
+$error: 0
+
 //: helper for tests
 :(code)
 void parse_and_load(const string& text_bytes) {
