@@ -165,6 +165,24 @@ void run_one_instruction() {
       exit(1);
     }
     break;
+  case 0xf2:
+    switch(op2 = next()) {
+    // End Two-Byte Opcodes Starting With f2
+    case 0x0f:
+      switch(op3 = next()) {
+      // End Three-Byte Opcodes Starting With f2 0f
+      default:
+        cerr << "unrecognized third opcode after f2 0f: " << HEXBYTE << NUM(op3) << '\n';
+        DUMP("");
+        exit(1);
+      }
+      break;
+    default:
+      cerr << "unrecognized second opcode after f2: " << HEXBYTE << NUM(op2) << '\n';
+      DUMP("");
+      exit(1);
+    }
+    break;
   case 0xf3:
     switch(op2 = next()) {
     // End Two-Byte Opcodes Starting With f3
