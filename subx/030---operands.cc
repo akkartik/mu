@@ -245,8 +245,10 @@ void add_imm_bytes(const line& in, line& out) {
 
 void emit_hex_bytes(line& out, const word& w, int num) {
   assert(num <= 4);
-  if (!is_hex_int(w.data)) {
+  if (num == 1 || !is_hex_int(w.data)) {
     out.words.push_back(w);
+    if (is_hex_int(w.data))
+      out.words.back().data = hex_byte_to_string(parse_int(w.data));
     return;
   }
   emit_hex_bytes(out, static_cast<uint32_t>(parse_int(w.data)), num);
@@ -261,12 +263,16 @@ void emit_hex_bytes(line& out, uint32_t val, int num) {
 }
 
 word hex_byte_text(uint8_t val) {
+  word result;
+  result.data = hex_byte_to_string(val);
+  result.original = result.data+"/auto";
+  return result;
+}
+
+string hex_byte_to_string(uint8_t val) {
   ostringstream out;
   out << HEXBYTE << NUM(val);
-  word result;
-  result.data = out.str();
-  result.original = out.str()+"/auto";
-  return result;
+  return out.str();
 }
 
 string to_string(const vector<word>& in) {
@@ -276,6 +282,17 @@ string to_string(const vector<word>& in) {
     out << in.at(i).data;
   }
   return out.str();
+}
+
+:(before "End Unit Tests")
+void test_preserve_metadata_when_emitting_single_byte() {
+  word in;
+  in.data = "f0";
+  in.original = "f0/foo";
+  line out;
+  emit_hex_bytes(out, in, 1);
+  CHECK_EQ(out.words.at(0).data, "f0");
+  CHECK_EQ(out.words.at(0).original, "f0/foo");
 }
 
 :(scenario pack_disp8)
