@@ -14,6 +14,15 @@
 //: be a single character long. 'a' is not a hex number, it's a variable.
 //: Later layers may add more conventions partitioning the space of names. But
 //: the above rules will remain inviolate.
+:(code)
+bool is_number(const string& s) {
+  if (s.at(0) == '-') return true;
+  if (isdigit(s.at(0))) return true;
+  return SIZE(s) == 2;
+}
+void test_is_number() {
+  CHECK(!is_number("a"));
+}
 
 :(scenarios transform)
 :(scenario map_label)
@@ -33,6 +42,7 @@ void rewrite_labels(program& p) {
   trace(99, "transform") << "-- rewrite labels" << end();
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
+  // Rewrite Labels(segment code)
   map<string, int32_t> address;  // values are unsigned, but we're going to do subtractions on them so they need to fit in 31 bits
   compute_addresses_for_labels(code, address);
   if (trace_contains_errors()) return;

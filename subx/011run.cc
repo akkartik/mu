@@ -110,6 +110,7 @@ struct segment {
 struct line {
   vector<word> words;
   vector<string> metadata;
+  string original;
 };
 :(before "struct line")
 struct word {
@@ -126,10 +127,11 @@ void parse(istream& fin, program& out) {
   trace(99, "parse") << "begin" << end();
   while (has_data(fin)) {
     string line_data;
+    line curr;
     getline(fin, line_data);
+    curr.original = line_data;
     trace(99, "parse") << "line: " << line_data << end();
     istringstream lin(line_data);
-    vector<word> w;
     while (has_data(lin)) {
       string word_data;
       lin >> word_data;
@@ -153,20 +155,18 @@ void parse(istream& fin, program& out) {
         // todo: line metadata
         break;
       }
-      w.push_back(word());
-      w.back().original = word_data;
+      curr.words.push_back(word());
+      curr.words.back().original = word_data;
       istringstream win(word_data);
-      if (getline(win, w.back().data, '/')) {
+      if (getline(win, curr.words.back().data, '/')) {
         string m;
         while (getline(win, m, '/'))
-          w.back().metadata.push_back(m);
+          curr.words.back().metadata.push_back(m);
       }
-      trace(99, "parse") << "new word: " << w.back().data << end();
+      trace(99, "parse") << "new word: " << curr.words.back().data << end();
     }
-    if (!w.empty()) {
-      l.push_back(line());
-      l.back().words.swap(w);
-    }
+    if (!curr.words.empty())
+      l.push_back(curr);
   }
   if (!l.empty()) {
     assert(!out.segments.empty());
