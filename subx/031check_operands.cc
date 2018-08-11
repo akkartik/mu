@@ -38,9 +38,18 @@ void check_operands(const line& inst) {
 
 word preprocess_op(word/*copy*/ op) {
   op.data = tolower(op.data.c_str());
+  // opcodes can't be negative
   if (starts_with(op.data, "0x"))
     op.data = op.data.substr(2);
+  if (SIZE(op.data) == 1)
+    op.data = string("0")+op.data;
   return op;
+}
+
+void test_preprocess_op() {
+  word w1;  w1.data = "0xf";
+  word w2;  w2.data = "0f";
+  CHECK_EQ(preprocess_op(w1).data, preprocess_op(w2).data);
 }
 
 //: To check the operands for an opcode, we'll track the permitted operands
