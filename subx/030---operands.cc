@@ -386,7 +386,7 @@ bool has_metadata(const word& w, const string& m) {
   bool metadata_found = false;
   for (int i = 0;  i < SIZE(w.metadata);  ++i) {
     const string& curr = w.metadata.at(i);
-    if (!contains_key(Instruction_operands, curr)) continue;  // ignore unrecognized metadata
+    if (Instruction_operands.find(curr) == Instruction_operands.end()) continue;  // ignore unrecognized metadata
     if (metadata_found) {
       raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
       return false;
