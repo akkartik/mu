@@ -165,9 +165,11 @@ void pack_operands(line& inst) {
 
 void add_opcodes(const line& in, line& out) {
   out.words.push_back(in.words.at(0));
-  if (in.words.at(0).data == "0f" || in.words.at(0).data == "f3")
+  if (in.words.at(0).data == "0f" || in.words.at(0).data == "f2" || in.words.at(0).data == "f3")
     out.words.push_back(in.words.at(1));
   if (in.words.at(0).data == "f3" && in.words.at(1).data == "0f")
+    out.words.push_back(in.words.at(2));
+  if (in.words.at(0).data == "f2" && in.words.at(1).data == "0f")
     out.words.push_back(in.words.at(2));
 }
 

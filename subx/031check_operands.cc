@@ -266,7 +266,7 @@ bool has_operands(const line& inst) {
 
 int first_operand(const line& inst) {
   if (inst.words.at(0).data == "0f") return 2;
-  if (inst.words.at(0).data == "f3") {
+  if (inst.words.at(0).data == "f2" || inst.words.at(0).data == "f3") {
     if (inst.words.at(1).data == "0f")
       return 3;
     else
