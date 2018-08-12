@@ -356,6 +356,10 @@ bool trace_doesnt_contain(string label, string line) {
 
 bool trace_doesnt_contain(string expected) {
   vector<string> tmp = split_first(expected, ": ");
+  if (SIZE(tmp) == 1) {
+    raise << expected << ": missing label or contents in trace line\n" << end();
+    assert(false);
+  }
   return trace_doesnt_contain(tmp.at(0), tmp.at(1));
 }
 

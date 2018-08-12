@@ -14,14 +14,31 @@
 //: be a single character long. 'a' is not a hex number, it's a variable.
 //: Later layers may add more conventions partitioning the space of names. But
 //: the above rules will remain inviolate.
-:(code)
 bool is_number(const string& s) {
   if (s.at(0) == '-') return true;
   if (isdigit(s.at(0))) return true;
   return SIZE(s) == 2;
 }
+:(before "End Unit Tests")
 void test_is_number() {
   CHECK(!is_number("a"));
+}
+:(code)
+void check_valid_name(const string& s) {
+  if (s.empty()) {
+    raise << "empty name!\n" << end();
+    return;
+  }
+  if (s.at(0) == '-')
+    raise << "'" << s << "' starts with '-', which can be confused with a negative number; use a different name\n" << end();
+  if (s.substr(0, 2) == "0x") {
+    raise << "'" << s << "' looks like a hex number; use a different name\n" << end();
+    return;
+  }
+  if (isdigit(s.at(0)))
+    raise << "'" << s << "' starts with a digit, and so can be confused with a negative number; use a different name.\n" << end();
+  if (SIZE(s) == 2)
+    raise << "'" << s << "' is two characters long which can look like raw hex bytes at a glance; use a different name\n" << end();
 }
 
 :(scenarios transform)
@@ -74,15 +91,8 @@ void compute_addresses_for_labels(const segment& code, map<string, int32_t>& add
       else {
         string label = drop_last(curr.data);
         // ensure labels look sufficiently different from raw hex
-        if (SIZE(label) <= 2) {
-          raise << "label '" << label << "' is too short; must be more than two characters long\n" << end();
-          return;
-        }
-        // ensure labels look sufficiently different from hex literals
-        if (label.substr(0, 2) == "0x") {
-          raise << "label '" << label << "' looks like a hex number; use a different name\n" << end();
-          return;
-        }
+        check_valid_name(label);
+        if (trace_contains_errors()) return;
         if (contains_any_operand_metadata(curr))
           raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
         if (j > 0)
@@ -206,7 +216,7 @@ loop3:
           # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 xz:
             05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
-+error: label 'xz' is too short; must be more than two characters long
++error: 'xz' is two characters long which can look like raw hex bytes at a glance; use a different name
 
 :(scenario label_hex)
 % Hide_errors = true;
@@ -216,4 +226,14 @@ xz:
           # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 0xab:
             05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
-+error: label '0xab' looks like a hex number; use a different name
++error: '0xab' looks like a hex number; use a different name
+
+:(scenario label_negative_hex)
+% Hide_errors = true;
+== 0x1
+          # instruction                     effective address                                                   operand     displacement    immediate
+          # op          subop               mod             rm32          base        index         scale       r32
+          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+ -a:  # indent to avoid looking like a trace_should_not_contain command
+            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
++error: '-a' starts with '-', which can be confused with a negative number; use a different name
