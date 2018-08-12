@@ -27,7 +27,7 @@ b9/copy 1/imm32
 ```
 
 Notice that a single instruction, say 'copy', maps to multiple opcodes.
-That's just the tip of the iceberg of complexity that Assembly Languages deal
+That's just the tip of the iceberg of complexity that Assembly languages deal
 with.
 
 SubX doesn't shield the programmer from these details. Words always contain
@@ -48,7 +48,7 @@ into a larger toolchain, to be a back-end for a compiler. Their output is in
 turn often passed to other tools like a linker. The formats that all these
 tools use to talk to each other have grown increasingly complex in the face of
 decades of evolution, usage and backwards-compatibility constraints. All these
-considerations add to the burden of the Assembler developer. Building the
+considerations add to the burden of the assembler developer. Building the
 assembler in a high-level language helps face up to them.
 
 Assemblers _do_ often accept a far simpler language, just a file format
