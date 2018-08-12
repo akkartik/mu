@@ -4,19 +4,19 @@
 
 :(scenario warn_on_jump_offset)
 == 0x1
-7e 1/disp8
-+warn: '7e 1/disp8': using raw offsets for jumps is not recommended; use labels instead
+7e/jump-if 1/disp8
++warn: '7e/jump-if 1/disp8': using raw offsets for jumps is not recommended; use labels instead
 
 :(scenarios transform)
 :(scenario warn_on_call_offset)
 == 0x1
-e8 1/disp32
-+warn: 'e8 1/disp32': using raw offsets for calls is not recommended; use labels instead
+e8/call 1/disp32
++warn: 'e8/call 1/disp32': using raw offsets for calls is not recommended; use labels instead
 :(scenarios run)
 
 :(before "Rewrite Labels(segment code)")
 recommend_labels(code);
-
+if (trace_contains_errors()) return;
 :(code)
 void recommend_labels(const segment& code) {
   trace(99, "transform") << "-- check for numeric labels" << end();
