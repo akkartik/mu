@@ -34,3 +34,5 @@ call matchadd("Warn", '\c^\s*e9.*\<\(0x\)\?[0-9a-f]\+/disp8')  " unconditional j
 call matchadd("Warn", '\c^\s*7[45cdef].*\<\(0x\)\?[0-9a-f]\+/disp8')  " conditional jump disp8
 call matchadd("Warn", '\c^\s*eb.*\<\(0x\)\?[0-9a-f]\+/disp16')  " unconditional jump disp16
 call matchadd("Warn", '\c^\s*0f[^\s]*\s*8[45cdef].*\<\(0x\)\?[0-9a-f]\+/disp16')  " conditional jump disp16
+
+let &cpo = s:save_cpo
