@@ -1,0 +1,34 @@
+# test file for Vim highlighting
+
+## unindented lines below should all get Warn highlighting in .subx files
+# indented lines should get no highlighting
+
+# raw displacement in jump/call instructions
+e8 10/disp32
+e8 . 10/disp32
+e8/call . -10/disp32
+e8/call . 0x10/disp32
+e9/jump . 10/disp8
+e9/jump . -10/disp8
+e9/jump . f0/disp8
+7c/jump . 10/disp8
+7c/jump . -10/disp8
+eb/jump . 10/disp16
+eb/jump . -10/disp16
+0f/foo 8e/jump . 10/disp16
+0f/foo 8e/jump . -10/disp16
+
+## unindented lines below should all get Error highlighting in .subx files
+# indented lines should get no highlighting
+
+# mismatch in label type (call to '$' or jump to non-'$')
+e8 $foo/disp32
+e8 . $foo/disp32
+e8/call . $foo/disp32
+e8/call . $foo/disp32
+e9/jump . foo/disp8
+  e9/jump . $foo/disp8
+  e9/jump . . $foo/disp8
+7c/jump . foo/disp8
+eb/jump . foo/disp16
+0f/foo 8e/jump . foo/disp16

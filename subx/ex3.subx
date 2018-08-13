@@ -16,18 +16,18 @@
   # counter: ECX = 1
   b9/copy                                                                                                                         1/imm32           # copy 1 to ECX
 
-loop:
+$loop:
   # while (counter <= 10)
   81          7/subop/compare     3/mod/direct    1/rm32/ecx                                                                      0xa/imm32         # compare ECX, 10/imm
-  7f/jump-if                                                                                                      exit/disp8                        # jump-if-greater exit
+  7f/jump-if                                                                                                      $exit/disp8                       # jump-if-greater $exit
   # result += counter
   01/add                          3/mod/direct    3/rm32/ebx                                          1/r32/ecx                                     # add ECX to EBX
   # ++counter
   81          0/subop/add         3/mod/direct    1/rm32/ecx                                                                      1/imm32           # add 1 to ECX
   # loop
-  eb/jump                                                                                                         loop/disp8                        # jump loop
+  eb/jump                                                                                                         $loop/disp8                       # jump $loop
 
-exit:
+$exit:
   # exit(EBX)
   b8/copy                                                                                                                         1/imm32           # copy 1 to EAX
   cd/syscall                                                                                                                      0x80/imm8         # int 80h
