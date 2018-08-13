@@ -189,7 +189,7 @@ string drop_last(const string& s) {
           # op          subop               mod             rm32          base        index         scale       r32
           # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 # address 1
- $loop:
+loop:
  $loop2:
 # address 1 (labels take up no space)
             05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
@@ -199,7 +199,7 @@ string drop_last(const string& s) {
             eb                                                                                                              $loop3/disp8
 # address 10
  $loop3:
-+transform: label '$loop' is at address 1
++transform: label 'loop' is at address 1
 +transform: label '$loop2' is at address 1
 +transform: label '$loop3' is at address 10
 # first jump is to -7
