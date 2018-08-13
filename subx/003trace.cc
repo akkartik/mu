@@ -126,6 +126,7 @@ struct trace_stream {
     curr_stream = new ostringstream;
     curr_label = label;
     curr_depth = depth;
+    (*curr_stream) << std::hex;
     return *curr_stream;
   }
 

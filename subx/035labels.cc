@@ -197,11 +197,11 @@ loop:
             eb                                                                                                              $loop2/disp8
 # address 8
             eb                                                                                                              $loop3/disp8
-# address 10
+# address 0xa
  $loop3:
 +transform: label 'loop' is at address 1
 +transform: label '$loop2' is at address 1
-+transform: label '$loop3' is at address 10
++transform: label '$loop3' is at address a
 # first jump is to -7
 +transform: instruction after transform: 'eb f9'
 # second jump is to 0 (fall through)
