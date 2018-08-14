@@ -80,18 +80,18 @@ void process_int80() {
 void check_flags(int reg) {
   uint32_t flags = Reg[reg].u;
   if (flags != ((flags & O_RDONLY) | (flags & O_WRONLY))) {
-    raise << HEXWORD << EIP << ": most POSIX flags to the open() syscall are not supported. Just O_RDONLY and O_WRONLY for now. Zero concurrent access support.\n" << end();
+    cerr << HEXWORD << EIP << ": most POSIX flags to the open() syscall are not supported. Just O_RDONLY and O_WRONLY for now. Zero concurrent access support.\n";
     exit(1);
   }
   if ((flags & O_RDONLY) && (flags & O_WRONLY)) {
-    raise << HEXWORD << EIP << ": can't open a file for both reading and writing at once. See http://man7.org/linux/man-pages/man2/open.2.html.\n" << end();
+    cerr << HEXWORD << EIP << ": can't open a file for both reading and writing at once. See http://man7.org/linux/man-pages/man2/open.2.html.\n";
     exit(1);
   }
 }
 
 void check_mode(int reg) {
   if (Reg[reg].u != 0600) {
-    raise << HEXWORD << EIP << ": SubX is oblivious to file permissions; register " << reg << " must be 0.\n" << end();
+    cerr << HEXWORD << EIP << ": SubX is oblivious to file permissions; register " << reg << " must be 0.\n";
     exit(1);
   }
 }
