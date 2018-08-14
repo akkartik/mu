@@ -120,6 +120,9 @@ inline uint8_t* mem_addr_u8(uint32_t addr) {
 inline int8_t* mem_addr_i8(uint32_t addr) {
   return reinterpret_cast<int8_t*>(&Mem.at(addr-Mem_offset));
 }
+inline char* mem_addr_string(uint32_t addr) {
+  return reinterpret_cast<char*>(&Mem.at(addr-Mem_offset));
+}
 inline uint32_t* mem_addr_u32(uint32_t addr) {
   return reinterpret_cast<uint32_t*>(&Mem.at(addr-Mem_offset));
 }
