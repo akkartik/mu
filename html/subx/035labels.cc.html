@@ -62,242 +62,246 @@ if ('onhashchange' in window) {
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: Labels are defined by ending names with a ':'. This layer will compute</span>
 <span id="L2" class="LineNr">  2 </span><span class="Comment">//: addresses for labels, and compute the offset for instructions using them.</span>
-<span id="L3" class="LineNr">  3 </span>
-<span id="L4" class="LineNr">  4 </span><span class="Comment">//: We're introducing non-number names for the first time, so it's worth</span>
-<span id="L5" class="LineNr">  5 </span><span class="Comment">//: laying down some ground rules all transforms will follow, so things don't</span>
-<span id="L6" class="LineNr">  6 </span><span class="Comment">//: get too confusing:</span>
-<span id="L7" class="LineNr">  7 </span><span class="Comment">//:   - if it starts with a digit, it's treated as a number. If it can't be</span>
-<span id="L8" class="LineNr">  8 </span><span class="Comment">//:     parsed as hex it will raise an error.</span>
-<span id="L9" class="LineNr">  9 </span><span class="Comment">//:   - if it starts with '-' it's treated as a number.</span>
-<span id="L10" class="LineNr"> 10 </span><span class="Comment">//:   - if it starts with '0x' it's treated as a number.</span>
-<span id="L11" class="LineNr"> 11 </span><span class="Comment">//:   - if it's two characters long, it can't be a name. Either it's a hex</span>
-<span id="L12" class="LineNr"> 12 </span><span class="Comment">//:     byte, or it raises an error.</span>
-<span id="L13" class="LineNr"> 13 </span><span class="Comment">//: That's it. Names can start with any non-digit that isn't a dash. They can</span>
-<span id="L14" class="LineNr"> 14 </span><span class="Comment">//: be a single character long. 'a' is not a hex number, it's a variable.</span>
-<span id="L15" class="LineNr"> 15 </span><span class="Comment">//: Later layers may add more conventions partitioning the space of names. But</span>
-<span id="L16" class="LineNr"> 16 </span><span class="Comment">//: the above rules will remain inviolate.</span>
-<span id="L17" class="LineNr"> 17 </span><span class="Normal">bool</span> <a href='035labels.cc.html#L17'>is_number</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L18" class="LineNr"> 18 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'-'</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
-<span id="L19" class="LineNr"> 19 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>isdigit<span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
-<span id="L20" class="LineNr"> 20 </span>  <span class="Identifier">return</span> <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>s<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">;</span>
-<span id="L21" class="LineNr"> 21 </span><span class="Delimiter">}</span>
-<span id="L22" class="LineNr"> 22 </span><span class="Delimiter">:(before &quot;End Unit Tests&quot;)</span>
-<span id="L23" class="LineNr"> 23 </span><span class="Normal">void</span> <a href='035labels.cc.html#L23'>test_is_number</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L24" class="LineNr"> 24 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>!is_number<span class="Delimiter">(</span><span class="Constant">&quot;a&quot;</span><span class="Delimiter">));</span>
+<span id="L3" class="LineNr">  3 </span><span class="Comment">//:</span>
+<span id="L4" class="LineNr">  4 </span><span class="Comment">//: We won't check this, but our convention will be that jump targets will</span>
+<span id="L5" class="LineNr">  5 </span><span class="Comment">//: start with a '$', while functions will not. Function names will never be</span>
+<span id="L6" class="LineNr">  6 </span><span class="Comment">//: jumped to, and jump targets will never be called.</span>
+<span id="L7" class="LineNr">  7 </span>
+<span id="L8" class="LineNr">  8 </span><span class="Comment">//: We're introducing non-number names for the first time, so it's worth</span>
+<span id="L9" class="LineNr">  9 </span><span class="Comment">//: laying down some ground rules all transforms will follow, so things don't</span>
+<span id="L10" class="LineNr"> 10 </span><span class="Comment">//: get too confusing:</span>
+<span id="L11" class="LineNr"> 11 </span><span class="Comment">//:   - if it starts with a digit, it's treated as a number. If it can't be</span>
+<span id="L12" class="LineNr"> 12 </span><span class="Comment">//:     parsed as hex it will raise an error.</span>
+<span id="L13" class="LineNr"> 13 </span><span class="Comment">//:   - if it starts with '-' it's treated as a number.</span>
+<span id="L14" class="LineNr"> 14 </span><span class="Comment">//:   - if it starts with '0x' it's treated as a number.</span>
+<span id="L15" class="LineNr"> 15 </span><span class="Comment">//:   - if it's two characters long, it can't be a name. Either it's a hex</span>
+<span id="L16" class="LineNr"> 16 </span><span class="Comment">//:     byte, or it raises an error.</span>
+<span id="L17" class="LineNr"> 17 </span><span class="Comment">//: That's it. Names can start with any non-digit that isn't a dash. They can</span>
+<span id="L18" class="LineNr"> 18 </span><span class="Comment">//: be a single character long. 'a' is not a hex number, it's a variable.</span>
+<span id="L19" class="LineNr"> 19 </span><span class="Comment">//: Later layers may add more conventions partitioning the space of names. But</span>
+<span id="L20" class="LineNr"> 20 </span><span class="Comment">//: the above rules will remain inviolate.</span>
+<span id="L21" class="LineNr"> 21 </span><span class="Normal">bool</span> <a href='035labels.cc.html#L21'>is_number</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L22" class="LineNr"> 22 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'-'</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L23" class="LineNr"> 23 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>isdigit<span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L24" class="LineNr"> 24 </span>  <span class="Identifier">return</span> <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>s<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">;</span>
 <span id="L25" class="LineNr"> 25 </span><span class="Delimiter">}</span>
-<span id="L26" class="LineNr"> 26 </span><span class="Delimiter">:(code)</span>
-<span id="L27" class="LineNr"> 27 </span><span class="Normal">void</span> <a href='035labels.cc.html#L27'>check_valid_name</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L28" class="LineNr"> 28 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L29" class="LineNr"> 29 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;empty name!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L30" class="LineNr"> 30 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L31" class="LineNr"> 31 </span>  <span class="Delimiter">}</span>
-<span id="L32" class="LineNr"> 32 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'-'</span><span class="Delimiter">)</span>
-<span id="L33" class="LineNr"> 33 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' starts with '-', which can be confused with a negative number; use a different <a href='010---vm.cc.html#L228'>name</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L34" class="LineNr"> 34 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">)</span> == <span class="Constant">&quot;0x&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L35" class="LineNr"> 35 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' looks like a hex number; use a different <a href='010---vm.cc.html#L228'>name</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L36" class="LineNr"> 36 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L37" class="LineNr"> 37 </span>  <span class="Delimiter">}</span>
-<span id="L38" class="LineNr"> 38 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>isdigit<span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
-<span id="L39" class="LineNr"> 39 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' starts with a digit, and so can be confused with a negative number; use a different name.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L40" class="LineNr"> 40 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>s<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">)</span>
-<span id="L41" class="LineNr"> 41 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' is two characters long which can look like raw hex bytes at a glance; use a different <a href='010---vm.cc.html#L228'>name</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L42" class="LineNr"> 42 </span><span class="Delimiter">}</span>
-<span id="L43" class="LineNr"> 43 </span>
-<span id="L44" class="LineNr"> 44 </span><span class="Delimiter">:(scenarios transform)</span>
-<span id="L45" class="LineNr"> 45 </span><span class="Delimiter">:(scenario map_label)</span>
-<span id="L46" class="LineNr"> 46 </span>== <span class="Constant">0x1</span>
-<span id="L47" class="LineNr"> 47 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
-<span id="L48" class="LineNr"> 48 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
-<span id="L49" class="LineNr"> 49 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
-<span id="L50" class="LineNr"> 50 </span><span class="Normal">loop</span>:
-<span id="L51" class="LineNr"> 51 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
-<span id="L52" class="LineNr"> 52 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> 'loop' is at address 1</span>
-<span id="L53" class="LineNr"> 53 </span>
-<span id="L54" class="LineNr"> 54 </span><span class="Delimiter">:(before &quot;End Level-2 Transforms&quot;)</span>
-<span id="L55" class="LineNr"> 55 </span><a href='011run.cc.html#L184'>Transform</a><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><a href='035labels.cc.html#L57'>rewrite_labels</a><span class="Delimiter">);</span>
-<span id="L56" class="LineNr"> 56 </span><span class="Delimiter">:(code)</span>
-<span id="L57" class="LineNr"> 57 </span><span class="Normal">void</span> <a href='035labels.cc.html#L57'>rewrite_labels</a><span class="Delimiter">(</span>program&amp; p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L58" class="LineNr"> 58 </span>  <a href='003trace.cc.html#L196'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;-- rewrite labels&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L59" class="LineNr"> 59 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">.</span><a href='011run.cc.html#L97'>segments</a><span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L60" class="LineNr"> 60 </span>  segment&amp; code = p<span class="Delimiter">.</span><a href='011run.cc.html#L97'>segments</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L61" class="LineNr"> 61 </span>  <span class="Comment">// Rewrite Labels(segment code)</span>
-<span id="L62" class="LineNr"> 62 </span>  map&lt;string<span class="Delimiter">,</span> <span class="Normal">int32_t</span>&gt; address<span class="Delimiter">;</span>  <span class="Comment">// values are unsigned, but we're going to do subtractions on them so they need to fit in 31 bits</span>
-<span id="L63" class="LineNr"> 63 </span>  <a href='035labels.cc.html#L70'>compute_addresses_for_labels</a><span class="Delimiter">(</span>code<span class="Delimiter">,</span> address<span class="Delimiter">);</span>
-<span id="L64" class="LineNr"> 64 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L65" class="LineNr"> 65 </span>  <a href='035labels.cc.html#L107'>drop_labels</a><span class="Delimiter">(</span>code<span class="Delimiter">);</span>
-<span id="L66" class="LineNr"> 66 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L67" class="LineNr"> 67 </span>  <a href='035labels.cc.html#L119'>replace_labels_with_addresses</a><span class="Delimiter">(</span>code<span class="Delimiter">,</span> address<span class="Delimiter">);</span>
-<span id="L68" class="LineNr"> 68 </span><span class="Delimiter">}</span>
-<span id="L69" class="LineNr"> 69 </span>
-<span id="L70" class="LineNr"> 70 </span><span class="Normal">void</span> <a href='035labels.cc.html#L70'>compute_addresses_for_labels</a><span class="Delimiter">(</span><span class="Normal">const</span> segment&amp; code<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int32_t</span>&gt;&amp; address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L71" class="LineNr"> 71 </span>  <span class="Normal">int</span> current_byte = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L72" class="LineNr"> 72 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>code<span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L73" class="LineNr"> 73 </span>    <span class="Normal">const</span> line&amp; inst = code<span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L74" class="LineNr"> 74 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L75" class="LineNr"> 75 </span>      <span class="Normal">const</span> word&amp; curr = inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
-<span id="L76" class="LineNr"> 76 </span>      <span class="Comment">// hack: if we have any operand metadata left after previous transforms,</span>
-<span id="L77" class="LineNr"> 77 </span>      <span class="Comment">// deduce its size</span>
-<span id="L78" class="LineNr"> 78 </span>      <span class="Comment">// Maybe we should just move this transform to before instruction</span>
-<span id="L79" class="LineNr"> 79 </span>      <span class="Comment">// packing, and deduce the size of *all* operands. But then we'll also</span>
-<span id="L80" class="LineNr"> 80 </span>      <span class="Comment">// have to deal with bitfields.</span>
-<span id="L81" class="LineNr"> 81 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp32&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm32&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L82" class="LineNr"> 82 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>*curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>
-<span id="L83" class="LineNr"> 83 </span>          <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': don't use ':' when jumping to labels</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L84" class="LineNr"> 84 </span>        current_byte += <span class="Constant">4</span><span class="Delimiter">;</span>
-<span id="L85" class="LineNr"> 85 </span>      <span class="Delimiter">}</span>
-<span id="L86" class="LineNr"> 86 </span>      <span class="Comment">// automatically handle /disp8 and /imm8 here</span>
-<span id="L87" class="LineNr"> 87 </span>      <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>*curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">':'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L88" class="LineNr"> 88 </span>        ++current_byte<span class="Delimiter">;</span>
+<span id="L26" class="LineNr"> 26 </span><span class="Delimiter">:(before &quot;End Unit Tests&quot;)</span>
+<span id="L27" class="LineNr"> 27 </span><span class="Normal">void</span> <a href='035labels.cc.html#L27'>test_is_number</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L28" class="LineNr"> 28 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>!is_number<span class="Delimiter">(</span><span class="Constant">&quot;a&quot;</span><span class="Delimiter">));</span>
+<span id="L29" class="LineNr"> 29 </span><span class="Delimiter">}</span>
+<span id="L30" class="LineNr"> 30 </span><span class="Delimiter">:(code)</span>
+<span id="L31" class="LineNr"> 31 </span><span class="Normal">void</span> <a href='035labels.cc.html#L31'>check_valid_name</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L32" class="LineNr"> 32 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span id="L33" class="LineNr"> 33 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;empty name!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L34" class="LineNr"> 34 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L35" class="LineNr"> 35 </span>  <span class="Delimiter">}</span>
+<span id="L36" class="LineNr"> 36 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'-'</span><span class="Delimiter">)</span>
+<span id="L37" class="LineNr"> 37 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' starts with '-', which can be confused with a negative number; use a different <a href='010---vm.cc.html#L228'>name</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L38" class="LineNr"> 38 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">)</span> == <span class="Constant">&quot;0x&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L39" class="LineNr"> 39 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' looks like a hex number; use a different <a href='010---vm.cc.html#L228'>name</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L40" class="LineNr"> 40 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L41" class="LineNr"> 41 </span>  <span class="Delimiter">}</span>
+<span id="L42" class="LineNr"> 42 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>isdigit<span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
+<span id="L43" class="LineNr"> 43 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' starts with a digit, and so can be confused with a negative number; use a different name.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L44" class="LineNr"> 44 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>s<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">)</span>
+<span id="L45" class="LineNr"> 45 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' is two characters long which can look like raw hex bytes at a glance; use a different <a href='010---vm.cc.html#L228'>name</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L46" class="LineNr"> 46 </span><span class="Delimiter">}</span>
+<span id="L47" class="LineNr"> 47 </span>
+<span id="L48" class="LineNr"> 48 </span><span class="Delimiter">:(scenarios transform)</span>
+<span id="L49" class="LineNr"> 49 </span><span class="Delimiter">:(scenario map_label)</span>
+<span id="L50" class="LineNr"> 50 </span>== <span class="Constant">0x1</span>
+<span id="L51" class="LineNr"> 51 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
+<span id="L52" class="LineNr"> 52 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L53" class="LineNr"> 53 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L54" class="LineNr"> 54 </span><span class="Normal">loop</span>:
+<span id="L55" class="LineNr"> 55 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
+<span id="L56" class="LineNr"> 56 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> 'loop' is at address 1</span>
+<span id="L57" class="LineNr"> 57 </span>
+<span id="L58" class="LineNr"> 58 </span><span class="Delimiter">:(before &quot;End Level-2 Transforms&quot;)</span>
+<span id="L59" class="LineNr"> 59 </span><a href='011run.cc.html#L184'>Transform</a><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><a href='035labels.cc.html#L61'>rewrite_labels</a><span class="Delimiter">);</span>
+<span id="L60" class="LineNr"> 60 </span><span class="Delimiter">:(code)</span>
+<span id="L61" class="LineNr"> 61 </span><span class="Normal">void</span> <a href='035labels.cc.html#L61'>rewrite_labels</a><span class="Delimiter">(</span>program&amp; p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L62" class="LineNr"> 62 </span>  <a href='003trace.cc.html#L196'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;-- rewrite labels&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L63" class="LineNr"> 63 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">.</span><a href='011run.cc.html#L97'>segments</a><span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L64" class="LineNr"> 64 </span>  segment&amp; <a href='031check_operands.cc.html#L14'>code</a> = p<span class="Delimiter">.</span><a href='011run.cc.html#L97'>segments</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L65" class="LineNr"> 65 </span>  <span class="Comment">// Rewrite Labels(segment code)</span>
+<span id="L66" class="LineNr"> 66 </span>  map&lt;string<span class="Delimiter">,</span> <span class="Normal">int32_t</span>&gt; address<span class="Delimiter">;</span>  <span class="Comment">// values are unsigned, but we're going to do subtractions on them so they need to fit in 31 bits</span>
+<span id="L67" class="LineNr"> 67 </span>  <a href='035labels.cc.html#L74'>compute_addresses_for_labels</a><span class="Delimiter">(</span><a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">,</span> address<span class="Delimiter">);</span>
+<span id="L68" class="LineNr"> 68 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L69" class="LineNr"> 69 </span>  <a href='035labels.cc.html#L111'>drop_labels</a><span class="Delimiter">(</span><a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">);</span>
+<span id="L70" class="LineNr"> 70 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L71" class="LineNr"> 71 </span>  <a href='035labels.cc.html#L123'>replace_labels_with_addresses</a><span class="Delimiter">(</span><a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">,</span> address<span class="Delimiter">);</span>
+<span id="L72" class="LineNr"> 72 </span><span class="Delimiter">}</span>
+<span id="L73" class="LineNr"> 73 </span>
+<span id="L74" class="LineNr"> 74 </span><span class="Normal">void</span> <a href='035labels.cc.html#L74'>compute_addresses_for_labels</a><span class="Delimiter">(</span><span class="Normal">const</span> segment&amp; <a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int32_t</span>&gt;&amp; address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L75" class="LineNr"> 75 </span>  <span class="Normal">int</span> current_byte = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L76" class="LineNr"> 76 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span><a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L77" class="LineNr"> 77 </span>    <span class="Normal">const</span> line&amp; inst = <a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L78" class="LineNr"> 78 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L79" class="LineNr"> 79 </span>      <span class="Normal">const</span> word&amp; curr = inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
+<span id="L80" class="LineNr"> 80 </span>      <span class="Comment">// hack: if we have any operand metadata left after previous transforms,</span>
+<span id="L81" class="LineNr"> 81 </span>      <span class="Comment">// deduce its size</span>
+<span id="L82" class="LineNr"> 82 </span>      <span class="Comment">// Maybe we should just move this transform to before instruction</span>
+<span id="L83" class="LineNr"> 83 </span>      <span class="Comment">// packing, and deduce the size of *all* operands. But then we'll also</span>
+<span id="L84" class="LineNr"> 84 </span>      <span class="Comment">// have to deal with bitfields.</span>
+<span id="L85" class="LineNr"> 85 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp32&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm32&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L86" class="LineNr"> 86 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>*curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>
+<span id="L87" class="LineNr"> 87 </span>          <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': don't use ':' when jumping to labels</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L88" class="LineNr"> 88 </span>        current_byte += <span class="Constant">4</span><span class="Delimiter">;</span>
 <span id="L89" class="LineNr"> 89 </span>      <span class="Delimiter">}</span>
-<span id="L90" class="LineNr"> 90 </span>      <span class="Normal">else</span> <span class="Delimiter">{</span>
-<span id="L91" class="LineNr"> 91 </span>        string <a href='003trace.cc.html#L73'>label</a> = <a href='035labels.cc.html#L176'>drop_last</a><span class="Delimiter">(</span>curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">);</span>
-<span id="L92" class="LineNr"> 92 </span>        <span class="Comment">// ensure labels look sufficiently different from raw hex</span>
-<span id="L93" class="LineNr"> 93 </span>        <a href='035labels.cc.html#L27'>check_valid_name</a><span class="Delimiter">(</span><a href='003trace.cc.html#L73'>label</a><span class="Delimiter">);</span>
-<span id="L94" class="LineNr"> 94 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L95" class="LineNr"> 95 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><a href='030---operands.cc.html#L381'>contains_any_operand_metadata</a><span class="Delimiter">(</span>curr<span class="Delimiter">))</span>
-<span id="L96" class="LineNr"> 96 </span>          <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': <a href='003trace.cc.html#L73'>label</a> definition (':') not allowed in operand</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L97" class="LineNr"> 97 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>j &gt; <span class="Constant">0</span><span class="Delimiter">)</span>
-<span id="L98" class="LineNr"> 98 </span>          <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': labels can only be the first <a href='011run.cc.html#L116'>word</a> in a line.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L99" class="LineNr"> 99 </span>        <a href='001help.cc.html#L243'>put</a><span class="Delimiter">(</span>address<span class="Delimiter">,</span> <a href='003trace.cc.html#L73'>label</a><span class="Delimiter">,</span> current_byte<span class="Delimiter">);</span>
-<span id="L100" class="LineNr">100 </span>        <a href='003trace.cc.html#L196'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;label '&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;' is at address &quot;</span> &lt;&lt; <span class="Delimiter">(</span>current_byte+code<span class="Delimiter">.</span><a href='011run.cc.html#L105'>start</a><span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L101" class="LineNr">101 </span>        <span class="Comment">// no modifying current_byte; label definitions won't be in the final binary</span>
-<span id="L102" class="LineNr">102 </span>      <span class="Delimiter">}</span>
-<span id="L103" class="LineNr">103 </span>    <span class="Delimiter">}</span>
-<span id="L104" class="LineNr">104 </span>  <span class="Delimiter">}</span>
-<span id="L105" class="LineNr">105 </span><span class="Delimiter">}</span>
-<span id="L106" class="LineNr">106 </span>
-<span id="L107" class="LineNr">107 </span><span class="Normal">void</span> <a href='035labels.cc.html#L107'>drop_labels</a><span class="Delimiter">(</span>segment&amp; code<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L108" class="LineNr">108 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>code<span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L109" class="LineNr">109 </span>    line&amp; inst = code<span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L110" class="LineNr">110 </span>    vector&lt;word&gt;::iterator new_end = remove_if<span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">(),</span> <a href='035labels.cc.html#L115'>is_label</a><span class="Delimiter">);</span>
-<span id="L111" class="LineNr">111 </span>    inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>erase<span class="Delimiter">(</span>new_end<span class="Delimiter">,</span> inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">());</span>
-<span id="L112" class="LineNr">112 </span>  <span class="Delimiter">}</span>
-<span id="L113" class="LineNr">113 </span><span class="Delimiter">}</span>
-<span id="L114" class="LineNr">114 </span>
-<span id="L115" class="LineNr">115 </span><span class="Normal">bool</span> <a href='035labels.cc.html#L115'>is_label</a><span class="Delimiter">(</span><span class="Normal">const</span> word&amp; w<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L116" class="LineNr">116 </span>  <span class="Identifier">return</span> *w<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">;</span>
+<span id="L90" class="LineNr"> 90 </span>      <span class="Comment">// automatically handle /disp8 and /imm8 here</span>
+<span id="L91" class="LineNr"> 91 </span>      <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>*curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">':'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L92" class="LineNr"> 92 </span>        ++current_byte<span class="Delimiter">;</span>
+<span id="L93" class="LineNr"> 93 </span>      <span class="Delimiter">}</span>
+<span id="L94" class="LineNr"> 94 </span>      <span class="Normal">else</span> <span class="Delimiter">{</span>
+<span id="L95" class="LineNr"> 95 </span>        string <a href='003trace.cc.html#L73'>label</a> = <a href='035labels.cc.html#L180'>drop_last</a><span class="Delimiter">(</span>curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">);</span>
+<span id="L96" class="LineNr"> 96 </span>        <span class="Comment">// ensure labels look sufficiently different from raw hex</span>
+<span id="L97" class="LineNr"> 97 </span>        <a href='035labels.cc.html#L31'>check_valid_name</a><span class="Delimiter">(</span><a href='003trace.cc.html#L73'>label</a><span class="Delimiter">);</span>
+<span id="L98" class="LineNr"> 98 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L99" class="LineNr"> 99 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><a href='030---operands.cc.html#L381'>contains_any_operand_metadata</a><span class="Delimiter">(</span>curr<span class="Delimiter">))</span>
+<span id="L100" class="LineNr">100 </span>          <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': <a href='003trace.cc.html#L73'>label</a> definition (':') not allowed in operand</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L101" class="LineNr">101 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>j &gt; <span class="Constant">0</span><span class="Delimiter">)</span>
+<span id="L102" class="LineNr">102 </span>          <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': labels can only be the first <a href='011run.cc.html#L116'>word</a> in a line.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L103" class="LineNr">103 </span>        <a href='001help.cc.html#L243'>put</a><span class="Delimiter">(</span>address<span class="Delimiter">,</span> <a href='003trace.cc.html#L73'>label</a><span class="Delimiter">,</span> current_byte<span class="Delimiter">);</span>
+<span id="L104" class="LineNr">104 </span>        <a href='003trace.cc.html#L196'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;label '&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;' is at address &quot;</span> &lt;&lt; <span class="Delimiter">(</span>current_byte+code<span class="Delimiter">.</span><a href='011run.cc.html#L105'>start</a><span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L105" class="LineNr">105 </span>        <span class="Comment">// no modifying current_byte; label definitions won't be in the final binary</span>
+<span id="L106" class="LineNr">106 </span>      <span class="Delimiter">}</span>
+<span id="L107" class="LineNr">107 </span>    <span class="Delimiter">}</span>
+<span id="L108" class="LineNr">108 </span>  <span class="Delimiter">}</span>
+<span id="L109" class="LineNr">109 </span><span class="Delimiter">}</span>
+<span id="L110" class="LineNr">110 </span>
+<span id="L111" class="LineNr">111 </span><span class="Normal">void</span> <a href='035labels.cc.html#L111'>drop_labels</a><span class="Delimiter">(</span>segment&amp; <a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L112" class="LineNr">112 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span><a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L113" class="LineNr">113 </span>    line&amp; inst = <a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L114" class="LineNr">114 </span>    vector&lt;word&gt;::iterator new_end = remove_if<span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">(),</span> <a href='035labels.cc.html#L119'>is_label</a><span class="Delimiter">);</span>
+<span id="L115" class="LineNr">115 </span>    inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>erase<span class="Delimiter">(</span>new_end<span class="Delimiter">,</span> inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">());</span>
+<span id="L116" class="LineNr">116 </span>  <span class="Delimiter">}</span>
 <span id="L117" class="LineNr">117 </span><span class="Delimiter">}</span>
 <span id="L118" class="LineNr">118 </span>
-<span id="L119" class="LineNr">119 </span><span class="Normal">void</span> <a href='035labels.cc.html#L119'>replace_labels_with_addresses</a><span class="Delimiter">(</span>segment&amp; code<span class="Delimiter">,</span> <span class="Normal">const</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int32_t</span>&gt;&amp; address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L120" class="LineNr">120 </span>  <span class="Normal">int32_t</span> byte_next_instruction_starts_at = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L121" class="LineNr">121 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>code<span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L122" class="LineNr">122 </span>    line&amp; inst = code<span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L123" class="LineNr">123 </span>    byte_next_instruction_starts_at += <a href='035labels.cc.html#L155'>num_bytes</a><span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-<span id="L124" class="LineNr">124 </span>    <a href='011run.cc.html#L110'>line</a> new_inst<span class="Delimiter">;</span>
-<span id="L125" class="LineNr">125 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L126" class="LineNr">126 </span>      <span class="Normal">const</span> word&amp; curr = inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
-<span id="L127" class="LineNr">127 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L247'>contains_key</a><span class="Delimiter">(</span>address<span class="Delimiter">,</span> curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L128" class="LineNr">128 </span>        <span class="Normal">int32_t</span> offset = <span class="Normal">static_cast</span>&lt;<span class="Normal">int32_t</span>&gt;<span class="Delimiter">(</span>get<span class="Delimiter">(</span>address<span class="Delimiter">,</span> curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">))</span> - byte_next_instruction_starts_at<span class="Delimiter">;</span>
-<span id="L129" class="LineNr">129 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp8&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm8&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L130" class="LineNr">130 </span>          <span class="Normal">if</span> <span class="Delimiter">(</span>offset &gt; <span class="Constant">0xff</span> || offset &lt; -<span class="Constant">0x7f</span><span class="Delimiter">)</span>
-<span id="L131" class="LineNr">131 </span>            <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': <a href='003trace.cc.html#L73'>label</a> too far away for distance &quot;</span> &lt;&lt; std::hex &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; to fit in 8 bits</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L132" class="LineNr">132 </span>          <span class="Normal">else</span>
-<span id="L133" class="LineNr">133 </span>            emit_hex_bytes<span class="Delimiter">(</span>new_inst<span class="Delimiter">,</span> offset<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L134" class="LineNr">134 </span>        <span class="Delimiter">}</span>
-<span id="L135" class="LineNr">135 </span>        <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp16&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L136" class="LineNr">136 </span>          <span class="Normal">if</span> <span class="Delimiter">(</span>offset &gt; <span class="Constant">0xffff</span> || offset &lt; -<span class="Constant">0x7fff</span><span class="Delimiter">)</span>
-<span id="L137" class="LineNr">137 </span>            <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': <a href='003trace.cc.html#L73'>label</a> too far away for distance &quot;</span> &lt;&lt; std::hex &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; to fit in 16 bits</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L138" class="LineNr">138 </span>          <span class="Normal">else</span>
-<span id="L139" class="LineNr">139 </span>            emit_hex_bytes<span class="Delimiter">(</span>new_inst<span class="Delimiter">,</span> offset<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>
-<span id="L140" class="LineNr">140 </span>        <span class="Delimiter">}</span>
-<span id="L141" class="LineNr">141 </span>        <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp32&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm32&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L142" class="LineNr">142 </span>          emit_hex_bytes<span class="Delimiter">(</span>new_inst<span class="Delimiter">,</span> offset<span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">);</span>
-<span id="L143" class="LineNr">143 </span>        <span class="Delimiter">}</span>
-<span id="L144" class="LineNr">144 </span>      <span class="Delimiter">}</span>
-<span id="L145" class="LineNr">145 </span>      <span class="Normal">else</span> <span class="Delimiter">{</span>
-<span id="L146" class="LineNr">146 </span>        new_inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
-<span id="L147" class="LineNr">147 </span>      <span class="Delimiter">}</span>
-<span id="L148" class="LineNr">148 </span>    <span class="Delimiter">}</span>
-<span id="L149" class="LineNr">149 </span>    inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>swap<span class="Delimiter">(</span>new_inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>
-<span id="L150" class="LineNr">150 </span>    <a href='003trace.cc.html#L196'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction after <a href='011run.cc.html#L186'>transform</a>: '&quot;</span> &lt;&lt; data_to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L151" class="LineNr">151 </span>  <span class="Delimiter">}</span>
-<span id="L152" class="LineNr">152 </span><span class="Delimiter">}</span>
-<span id="L153" class="LineNr">153 </span>
-<span id="L154" class="LineNr">154 </span><span class="Comment">// Assumes all bitfields are packed.</span>
-<span id="L155" class="LineNr">155 </span><span class="Normal">uint32_t</span> <a href='035labels.cc.html#L155'>num_bytes</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L156" class="LineNr">156 </span>  <span class="Normal">uint32_t</span> sum = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L157" class="LineNr">157 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L158" class="LineNr">158 </span>    <span class="Normal">const</span> word&amp; curr = inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L159" class="LineNr">159 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp32&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm32&quot;</span><span class="Delimiter">))</span>  <span class="Comment">// only multi-byte operands</span>
-<span id="L160" class="LineNr">160 </span>      sum += <span class="Constant">4</span><span class="Delimiter">;</span>
-<span id="L161" class="LineNr">161 </span>    <span class="Normal">else</span>
-<span id="L162" class="LineNr">162 </span>      sum++<span class="Delimiter">;</span>
-<span id="L163" class="LineNr">163 </span>  <span class="Delimiter">}</span>
-<span id="L164" class="LineNr">164 </span>  <span class="Identifier">return</span> sum<span class="Delimiter">;</span>
-<span id="L165" class="LineNr">165 </span><span class="Delimiter">}</span>
-<span id="L166" class="LineNr">166 </span>
-<span id="L167" class="LineNr">167 </span>string <a href='035labels.cc.html#L167'>data_to_string</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L168" class="LineNr">168 </span>  ostringstream out<span class="Delimiter">;</span>
-<span id="L169" class="LineNr">169 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L170" class="LineNr">170 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
-<span id="L171" class="LineNr">171 </span>    out &lt;&lt; inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">;</span>
-<span id="L172" class="LineNr">172 </span>  <span class="Delimiter">}</span>
-<span id="L173" class="LineNr">173 </span>  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
-<span id="L174" class="LineNr">174 </span><span class="Delimiter">}</span>
-<span id="L175" class="LineNr">175 </span>
-<span id="L176" class="LineNr">176 </span>string <a href='035labels.cc.html#L176'>drop_last</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L177" class="LineNr">177 </span>  <span class="Identifier">return</span> string<span class="Delimiter">(</span>s<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> --s<span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">());</span>
+<span id="L119" class="LineNr">119 </span><span class="Normal">bool</span> <a href='035labels.cc.html#L119'>is_label</a><span class="Delimiter">(</span><span class="Normal">const</span> word&amp; w<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L120" class="LineNr">120 </span>  <span class="Identifier">return</span> *w<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">;</span>
+<span id="L121" class="LineNr">121 </span><span class="Delimiter">}</span>
+<span id="L122" class="LineNr">122 </span>
+<span id="L123" class="LineNr">123 </span><span class="Normal">void</span> <a href='035labels.cc.html#L123'>replace_labels_with_addresses</a><span class="Delimiter">(</span>segment&amp; <a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">,</span> <span class="Normal">const</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int32_t</span>&gt;&amp; address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L124" class="LineNr">124 </span>  <span class="Normal">int32_t</span> byte_next_instruction_starts_at = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L125" class="LineNr">125 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span><a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L126" class="LineNr">126 </span>    line&amp; inst = <a href='031check_operands.cc.html#L14'>code</a><span class="Delimiter">.</span><a href='011run.cc.html#L106'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L127" class="LineNr">127 </span>    byte_next_instruction_starts_at += <a href='035labels.cc.html#L159'>num_bytes</a><span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
+<span id="L128" class="LineNr">128 </span>    <a href='011run.cc.html#L110'>line</a> new_inst<span class="Delimiter">;</span>
+<span id="L129" class="LineNr">129 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L130" class="LineNr">130 </span>      <span class="Normal">const</span> word&amp; curr = inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
+<span id="L131" class="LineNr">131 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L247'>contains_key</a><span class="Delimiter">(</span>address<span class="Delimiter">,</span> curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L132" class="LineNr">132 </span>        <span class="Normal">int32_t</span> offset = <span class="Normal">static_cast</span>&lt;<span class="Normal">int32_t</span>&gt;<span class="Delimiter">(</span>get<span class="Delimiter">(</span>address<span class="Delimiter">,</span> curr<span class="Delimiter">.</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">))</span> - byte_next_instruction_starts_at<span class="Delimiter">;</span>
+<span id="L133" class="LineNr">133 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp8&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm8&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L134" class="LineNr">134 </span>          <span class="Normal">if</span> <span class="Delimiter">(</span>offset &gt; <span class="Constant">0xff</span> || offset &lt; -<span class="Constant">0x7f</span><span class="Delimiter">)</span>
+<span id="L135" class="LineNr">135 </span>            <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': <a href='003trace.cc.html#L73'>label</a> too far away for distance &quot;</span> &lt;&lt; std::hex &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; to fit in 8 bits</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L136" class="LineNr">136 </span>          <span class="Normal">else</span>
+<span id="L137" class="LineNr">137 </span>            emit_hex_bytes<span class="Delimiter">(</span>new_inst<span class="Delimiter">,</span> offset<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L138" class="LineNr">138 </span>        <span class="Delimiter">}</span>
+<span id="L139" class="LineNr">139 </span>        <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp16&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L140" class="LineNr">140 </span>          <span class="Normal">if</span> <span class="Delimiter">(</span>offset &gt; <span class="Constant">0xffff</span> || offset &lt; -<span class="Constant">0x7fff</span><span class="Delimiter">)</span>
+<span id="L141" class="LineNr">141 </span>            <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': <a href='003trace.cc.html#L73'>label</a> too far away for distance &quot;</span> &lt;&lt; std::hex &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; to fit in 16 bits</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L142" class="LineNr">142 </span>          <span class="Normal">else</span>
+<span id="L143" class="LineNr">143 </span>            emit_hex_bytes<span class="Delimiter">(</span>new_inst<span class="Delimiter">,</span> offset<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>
+<span id="L144" class="LineNr">144 </span>        <span class="Delimiter">}</span>
+<span id="L145" class="LineNr">145 </span>        <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp32&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm32&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L146" class="LineNr">146 </span>          emit_hex_bytes<span class="Delimiter">(</span>new_inst<span class="Delimiter">,</span> offset<span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">);</span>
+<span id="L147" class="LineNr">147 </span>        <span class="Delimiter">}</span>
+<span id="L148" class="LineNr">148 </span>      <span class="Delimiter">}</span>
+<span id="L149" class="LineNr">149 </span>      <span class="Normal">else</span> <span class="Delimiter">{</span>
+<span id="L150" class="LineNr">150 </span>        new_inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
+<span id="L151" class="LineNr">151 </span>      <span class="Delimiter">}</span>
+<span id="L152" class="LineNr">152 </span>    <span class="Delimiter">}</span>
+<span id="L153" class="LineNr">153 </span>    inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>swap<span class="Delimiter">(</span>new_inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>
+<span id="L154" class="LineNr">154 </span>    <a href='003trace.cc.html#L196'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction after <a href='011run.cc.html#L186'>transform</a>: '&quot;</span> &lt;&lt; data_to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
+<span id="L155" class="LineNr">155 </span>  <span class="Delimiter">}</span>
+<span id="L156" class="LineNr">156 </span><span class="Delimiter">}</span>
+<span id="L157" class="LineNr">157 </span>
+<span id="L158" class="LineNr">158 </span><span class="Comment">// Assumes all bitfields are packed.</span>
+<span id="L159" class="LineNr">159 </span><span class="Normal">uint32_t</span> <a href='035labels.cc.html#L159'>num_bytes</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L160" class="LineNr">160 </span>  <span class="Normal">uint32_t</span> sum = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L161" class="LineNr">161 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L162" class="LineNr">162 </span>    <span class="Normal">const</span> word&amp; curr = inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L163" class="LineNr">163 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;disp32&quot;</span><span class="Delimiter">)</span> || has_metadata<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;imm32&quot;</span><span class="Delimiter">))</span>  <span class="Comment">// only multi-byte operands</span>
+<span id="L164" class="LineNr">164 </span>      sum += <span class="Constant">4</span><span class="Delimiter">;</span>
+<span id="L165" class="LineNr">165 </span>    <span class="Normal">else</span>
+<span id="L166" class="LineNr">166 </span>      sum++<span class="Delimiter">;</span>
+<span id="L167" class="LineNr">167 </span>  <span class="Delimiter">}</span>
+<span id="L168" class="LineNr">168 </span>  <span class="Identifier">return</span> sum<span class="Delimiter">;</span>
+<span id="L169" class="LineNr">169 </span><span class="Delimiter">}</span>
+<span id="L170" class="LineNr">170 </span>
+<span id="L171" class="LineNr">171 </span>string <a href='035labels.cc.html#L171'>data_to_string</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L172" class="LineNr">172 </span>  ostringstream out<span class="Delimiter">;</span>
+<span id="L173" class="LineNr">173 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L174" class="LineNr">174 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
+<span id="L175" class="LineNr">175 </span>    out &lt;&lt; inst<span class="Delimiter">.</span><a href='011run.cc.html#L111'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span><a href='011run.cc.html#L118'>data</a><span class="Delimiter">;</span>
+<span id="L176" class="LineNr">176 </span>  <span class="Delimiter">}</span>
+<span id="L177" class="LineNr">177 </span>  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span id="L178" class="LineNr">178 </span><span class="Delimiter">}</span>
 <span id="L179" class="LineNr">179 </span>
-<span id="L180" class="LineNr">180 </span><span class="Comment">//: Label definitions must be the first word on a line. No jumping inside</span>
-<span id="L181" class="LineNr">181 </span><span class="Comment">//: instructions.</span>
-<span id="L182" class="LineNr">182 </span><span class="Comment">//: They should also be the only word on a line.</span>
-<span id="L183" class="LineNr">183 </span><span class="Comment">//: However, you can absolutely have multiple labels map to the same address,</span>
-<span id="L184" class="LineNr">184 </span><span class="Comment">//: as long as they're on separate lines.</span>
-<span id="L185" class="LineNr">185 </span>
-<span id="L186" class="LineNr">186 </span><span class="Delimiter">:(scenario multiple_labels_at)</span>
-<span id="L187" class="LineNr">187 </span>== <span class="Constant">0x1</span>
-<span id="L188" class="LineNr">188 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
-<span id="L189" class="LineNr">189 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
-<span id="L190" class="LineNr">190 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
-<span id="L191" class="LineNr">191 </span><span class="Comment"># address 1</span>
-<span id="L192" class="LineNr">192 </span><span class="Normal">loop</span>:
-<span id="L193" class="LineNr">193 </span> $loop2:
-<span id="L194" class="LineNr">194 </span><span class="Comment"># address 1 (labels take up no space)</span>
-<span id="L195" class="LineNr">195 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
-<span id="L196" class="LineNr">196 </span><span class="Comment"># address 6</span>
-<span id="L197" class="LineNr">197 </span>            eb                                                                                                              $loop2/disp8
-<span id="L198" class="LineNr">198 </span><span class="Comment"># address 8</span>
-<span id="L199" class="LineNr">199 </span>            eb                                                                                                              $loop3/disp8
-<span id="L200" class="LineNr">200 </span><span class="Comment"># address 0xa</span>
-<span id="L201" class="LineNr">201 </span> $loop3:
-<span id="L202" class="LineNr">202 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> 'loop' is at address 1</span>
-<span id="L203" class="LineNr">203 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> '$loop2' is at address 1</span>
-<span id="L204" class="LineNr">204 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> '$loop3' is at address a</span>
-<span id="L205" class="LineNr">205 </span><span class="Comment"># first jump is to -7</span>
-<span id="L206" class="LineNr">206 </span><span class="traceContains">+transform: instruction after <a href='011run.cc.html#L186'>transform</a>: 'eb f9'</span>
-<span id="L207" class="LineNr">207 </span><span class="Comment"># second jump is to 0 (fall through)</span>
-<span id="L208" class="LineNr">208 </span><span class="traceContains">+transform: instruction after <a href='011run.cc.html#L186'>transform</a>: 'eb 00'</span>
-<span id="L209" class="LineNr">209 </span>
-<span id="L210" class="LineNr">210 </span><span class="Delimiter">:(scenario label_too_short)</span>
-<span id="L211" class="LineNr">211 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L212" class="LineNr">212 </span>== <span class="Constant">0x1</span>
-<span id="L213" class="LineNr">213 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
-<span id="L214" class="LineNr">214 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
-<span id="L215" class="LineNr">215 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
-<span id="L216" class="LineNr">216 </span><span class="Normal">xz</span>:
-<span id="L217" class="LineNr">217 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
-<span id="L218" class="LineNr">218 </span><span class="traceContains">+error: 'xz' is two characters long which can look like raw hex bytes at a glance; use a different <a href='010---vm.cc.html#L228'>name</a></span>
-<span id="L219" class="LineNr">219 </span>
-<span id="L220" class="LineNr">220 </span><span class="Delimiter">:(scenario label_hex)</span>
-<span id="L221" class="LineNr">221 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L222" class="LineNr">222 </span>== <span class="Constant">0x1</span>
-<span id="L223" class="LineNr">223 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
-<span id="L224" class="LineNr">224 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
-<span id="L225" class="LineNr">225 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
-<span id="L226" class="LineNr">226 </span><span class="Constant">0xab</span>:
-<span id="L227" class="LineNr">227 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
-<span id="L228" class="LineNr">228 </span><span class="traceContains">+error: '0xab' looks like a hex number; use a different <a href='010---vm.cc.html#L228'>name</a></span>
-<span id="L229" class="LineNr">229 </span>
-<span id="L230" class="LineNr">230 </span><span class="Delimiter">:(scenario label_negative_hex)</span>
-<span id="L231" class="LineNr">231 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L232" class="LineNr">232 </span>== <span class="Constant">0x1</span>
-<span id="L233" class="LineNr">233 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
-<span id="L234" class="LineNr">234 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
-<span id="L235" class="LineNr">235 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
-<span id="L236" class="LineNr">236 </span> -a:  <span class="Comment"># indent to avoid looking like a trace_should_not_contain command for this scenario</span>
-<span id="L237" class="LineNr">237 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
-<span id="L238" class="LineNr">238 </span><span class="traceContains">+error: '-a' starts with '-', which can be confused with a negative number; use a different <a href='010---vm.cc.html#L228'>name</a></span>
+<span id="L180" class="LineNr">180 </span>string <a href='035labels.cc.html#L180'>drop_last</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L181" class="LineNr">181 </span>  <span class="Identifier">return</span> string<span class="Delimiter">(</span>s<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> --s<span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">());</span>
+<span id="L182" class="LineNr">182 </span><span class="Delimiter">}</span>
+<span id="L183" class="LineNr">183 </span>
+<span id="L184" class="LineNr">184 </span><span class="Comment">//: Label definitions must be the first word on a line. No jumping inside</span>
+<span id="L185" class="LineNr">185 </span><span class="Comment">//: instructions.</span>
+<span id="L186" class="LineNr">186 </span><span class="Comment">//: They should also be the only word on a line.</span>
+<span id="L187" class="LineNr">187 </span><span class="Comment">//: However, you can absolutely have multiple labels map to the same address,</span>
+<span id="L188" class="LineNr">188 </span><span class="Comment">//: as long as they're on separate lines.</span>
+<span id="L189" class="LineNr">189 </span>
+<span id="L190" class="LineNr">190 </span><span class="Delimiter">:(scenario multiple_labels_at)</span>
+<span id="L191" class="LineNr">191 </span>== <span class="Constant">0x1</span>
+<span id="L192" class="LineNr">192 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
+<span id="L193" class="LineNr">193 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L194" class="LineNr">194 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L195" class="LineNr">195 </span><span class="Comment"># address 1</span>
+<span id="L196" class="LineNr">196 </span><span class="Normal">loop</span>:
+<span id="L197" class="LineNr">197 </span> $loop2:
+<span id="L198" class="LineNr">198 </span><span class="Comment"># address 1 (labels take up no space)</span>
+<span id="L199" class="LineNr">199 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
+<span id="L200" class="LineNr">200 </span><span class="Comment"># address 6</span>
+<span id="L201" class="LineNr">201 </span>            eb                                                                                                              $loop2/disp8
+<span id="L202" class="LineNr">202 </span><span class="Comment"># address 8</span>
+<span id="L203" class="LineNr">203 </span>            eb                                                                                                              $loop3/disp8
+<span id="L204" class="LineNr">204 </span><span class="Comment"># address 0xa</span>
+<span id="L205" class="LineNr">205 </span> $loop3:
+<span id="L206" class="LineNr">206 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> 'loop' is at address 1</span>
+<span id="L207" class="LineNr">207 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> '$loop2' is at address 1</span>
+<span id="L208" class="LineNr">208 </span><span class="traceContains">+transform: <a href='003trace.cc.html#L73'>label</a> '$loop3' is at address a</span>
+<span id="L209" class="LineNr">209 </span><span class="Comment"># first jump is to -7</span>
+<span id="L210" class="LineNr">210 </span><span class="traceContains">+transform: instruction after <a href='011run.cc.html#L186'>transform</a>: 'eb f9'</span>
+<span id="L211" class="LineNr">211 </span><span class="Comment"># second jump is to 0 (fall through)</span>
+<span id="L212" class="LineNr">212 </span><span class="traceContains">+transform: instruction after <a href='011run.cc.html#L186'>transform</a>: 'eb 00'</span>
+<span id="L213" class="LineNr">213 </span>
+<span id="L214" class="LineNr">214 </span><span class="Delimiter">:(scenario label_too_short)</span>
+<span id="L215" class="LineNr">215 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L216" class="LineNr">216 </span>== <span class="Constant">0x1</span>
+<span id="L217" class="LineNr">217 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
+<span id="L218" class="LineNr">218 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L219" class="LineNr">219 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L220" class="LineNr">220 </span><span class="Normal">xz</span>:
+<span id="L221" class="LineNr">221 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
+<span id="L222" class="LineNr">222 </span><span class="traceContains">+error: 'xz' is two characters long which can look like raw hex bytes at a glance; use a different <a href='010---vm.cc.html#L228'>name</a></span>
+<span id="L223" class="LineNr">223 </span>
+<span id="L224" class="LineNr">224 </span><span class="Delimiter">:(scenario label_hex)</span>
+<span id="L225" class="LineNr">225 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L226" class="LineNr">226 </span>== <span class="Constant">0x1</span>
+<span id="L227" class="LineNr">227 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
+<span id="L228" class="LineNr">228 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L229" class="LineNr">229 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L230" class="LineNr">230 </span><span class="Constant">0xab</span>:
+<span id="L231" class="LineNr">231 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
+<span id="L232" class="LineNr">232 </span><span class="traceContains">+error: '0xab' looks like a hex number; use a different <a href='010---vm.cc.html#L228'>name</a></span>
+<span id="L233" class="LineNr">233 </span>
+<span id="L234" class="LineNr">234 </span><span class="Delimiter">:(scenario label_negative_hex)</span>
+<span id="L235" class="LineNr">235 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L236" class="LineNr">236 </span>== <span class="Constant">0x1</span>
+<span id="L237" class="LineNr">237 </span>          <span class="Comment"># instruction                     effective address                                                   operand     displacement    immediate</span>
+<span id="L238" class="LineNr">238 </span>          <span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L239" class="LineNr">239 </span>          <span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L240" class="LineNr">240 </span> -a:  <span class="Comment"># indent to avoid looking like a trace_should_not_contain command for this scenario</span>
+<span id="L241" class="LineNr">241 </span>            <span class="PreProc">0</span><span class="Constant">5</span>                                                                                                                              <span class="Constant">0x0d0c0b0a</span>/imm32  <span class="Comment"># add to EAX</span>
+<span id="L242" class="LineNr">242 </span><span class="traceContains">+error: '-a' starts with '-', which can be confused with a negative number; use a different <a href='010---vm.cc.html#L228'>name</a></span>
 </pre>
 </body>
 </html>
