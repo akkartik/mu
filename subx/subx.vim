@@ -25,21 +25,4 @@ let b:cmt_head = "#? "
 " comment token
 syntax match subxDelimiter / \. /  | highlight link subxDelimiter Delimiter
 
-"" highlight low-level idioms in red as I provide more high-level replacements
-
-" Once we have labels, highlight raw displacement
-highlight Warn ctermbg=brown ctermfg=black
-call matchadd("Warn", '\c^\s*e8.*\<\(0x\)\?[0-9a-f]\+/disp32')  " call
-call matchadd("Warn", '\c^\s*e9.*\<\(0x\)\?[0-9a-f]\+/disp8')  " unconditional jump disp8
-call matchadd("Warn", '\c^\s*7[45cdef].*\<\(0x\)\?[0-9a-f]\+/disp8')  " conditional jump disp8
-call matchadd("Warn", '\c^\s*eb.*\<\(0x\)\?[0-9a-f]\+/disp16')  " unconditional jump disp16
-call matchadd("Warn", '\c^\s*0f[^\s]*\s*8[45cdef].*\<\(0x\)\?[0-9a-f]\+/disp16')  " conditional jump disp16
-
-" Mismatch in label type
-call matchadd("Error", '\c^\s*e8.*\$')  " call
-call matchadd("Error", '\c^\s*e9\(/[^ ]*\)\?\s*\(\.\s*\)\+[^\$\. ]\([ \$0-9a-fA-F-]\+\>\)\@!')  " unconditional jump disp8
-call matchadd("Error", '\c^\s*7[45cdef]\(/[^ ]*\)\?\s*\(\.\s*\)\+[^\$\. ]\([ \$0-9a-fA-F-]\+\>\)\@!')  " conditional jump disp8
-call matchadd("Error", '\c^\s*eb\(/[^ ]*\)\?\s*\(\.\s*\)\+[^\$\. ]\([ \$0-9a-fA-F-]\+\>\)\@!')  " unconditional jump disp16
-call matchadd("Error", '\c^\s*0f[^\s]*\s*8[45cdef]\(/[^ ]*\)\?\s*\(\.\s*\)\+[^\$\. ]\([ \$0-9a-fA-F-]\+\>\)\@!')  " conditional jump disp16
-
 let &cpo = s:save_cpo

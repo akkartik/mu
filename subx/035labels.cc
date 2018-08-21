@@ -1,5 +1,9 @@
 //: Labels are defined by ending names with a ':'. This layer will compute
 //: addresses for labels, and compute the offset for instructions using them.
+//:
+//: We won't check this, but our convention will be that jump targets will
+//: start with a '$', while functions will not. Function names will never be
+//: jumped to, and jump targets will never be called.
 
 //: We're introducing non-number names for the first time, so it's worth
 //: laying down some ground rules all transforms will follow, so things don't
