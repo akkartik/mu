@@ -367,13 +367,6 @@ case 0x57: {  // push r32 to stack
   push(Reg[reg].u);
   break;
 }
-:(code)
-void push(uint32_t val) {
-  Reg[ESP].u -= 4;
-  trace(90, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
-  trace(90, "run") << "pushing value 0x" << HEXWORD << val << end();
-  write_mem_u32(Reg[ESP].u, val);
-}
 
 //:: pop
 

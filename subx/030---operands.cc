@@ -271,6 +271,7 @@ word hex_byte_text(uint8_t val) {
 
 string hex_byte_to_string(uint8_t val) {
   ostringstream out;
+  // uint8_t prints without padding, but int8_t will expand to 32 bits again
   out << HEXBYTE << NUM(val);
   return out.str();
 }

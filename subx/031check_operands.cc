@@ -192,7 +192,9 @@ void init_permitted_operands() {
   put(Permitted_operands, "39", 0x01);
   put(Permitted_operands, "3b", 0x01);
   // copy
+  put(Permitted_operands, "88", 0x01);
   put(Permitted_operands, "89", 0x01);
+  put(Permitted_operands, "8a", 0x01);
   put(Permitted_operands, "8b", 0x01);
   // swap
   put(Permitted_operands, "87", 0x01);

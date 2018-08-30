@@ -10,7 +10,7 @@ if (is_equal(argv[1], "run")) {
   cerr << std::hex;
   initialize_mem();
   Mem_offset = CODE_START;
-  load_elf(argv[2]);
+  load_elf(argv[2], argc, argv);
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
   trace(90, "load") << "executed past end of the world: " << EIP << " vs " << End_of_program << end();
@@ -18,7 +18,7 @@ if (is_equal(argv[1], "run")) {
 }
 
 :(code)
-void load_elf(const string& filename) {
+void load_elf(const string& filename, int argc, char* argv[]) {
   int fd = open(filename.c_str(), O_RDONLY);
   if (fd < 0) raise << filename.c_str() << ": open" << perr() << '\n' << die();
   off_t size = lseek(fd, 0, SEEK_END);
@@ -27,11 +27,11 @@ void load_elf(const string& filename) {
   if (elf_contents == NULL) raise << "malloc(" << size << ')' << perr() << '\n' << die();
   ssize_t read_size = read(fd, elf_contents, size);
   if (size != read_size) raise << "read → " << size << " (!= " << read_size << ')' << perr() << '\n' << die();
-  load_elf_contents(elf_contents, size);
+  load_elf_contents(elf_contents, size, argc, argv);
   free(elf_contents);
 }
 
-void load_elf_contents(uint8_t* elf_contents, size_t size) {
+void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[]) {
   uint8_t magic[5] = {0};
   memcpy(magic, elf_contents, 4);
   if (memcmp(magic, "\177ELF", 4) != 0)
@@ -65,6 +65,36 @@ void load_elf_contents(uint8_t* elf_contents, size_t size) {
   Reg[ESP].u = AFTER_STACK;
   Reg[EBP].u = 0;
   EIP = e_entry;
+
+  // initialize args on stack
+  // no envp for now
+//?   cerr << ARGV_POINTER_SEGMENT << " at " << Reg[ESP].u-4 << '\n';
+  push(ARGV_POINTER_SEGMENT);
+//?   cerr << argc-2 << " at " << Reg[ESP].u-4 << '\n';
+  push(argc-/*skip 'subx_bin' and 'run'*/2);
+  // initialize arg data
+  // we wastefully use 2 whole pages of memory for this
+  uint32_t argv_data = ARGV_DATA_SEGMENT;
+  uint32_t argv_pointers = ARGV_POINTER_SEGMENT;
+  for (int i = /*skip 'subx_bin' and 'run'*/2;  i < argc;  ++i) {
+//?     cerr << "pointer: " << argv_pointers << " => " << argv_data << '\n';
+    write_mem_u32(argv_pointers, argv_data);
+    argv_pointers += sizeof(uint32_t);
+    assert(argv_pointers < ARGV_POINTER_SEGMENT + SEGMENT_SIZE);
+    for (size_t j = 0;  j <= strlen(argv[i]);  ++j) {
+//?       cerr << "  data: " << argv[i][j] << " (" << NUM(argv[i][j]) << ")\n";
+      write_mem_u8(argv_data, argv[i][j]);
+      argv_data += sizeof(char);
+      assert(argv_data < ARGV_DATA_SEGMENT + SEGMENT_SIZE);
+    }
+  }
+}
+
+void push(uint32_t val) {
+  Reg[ESP].u -= 4;
+  trace(90, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(90, "run") << "pushing value 0x" << HEXWORD << val << end();
+  write_mem_u32(Reg[ESP].u, val);
 }
 
 void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32_t offset, uint32_t e_ehsize) {
@@ -104,6 +134,8 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
 const int CODE_START = 0x08048000;
 const int SEGMENT_SIZE = 0x1000;
 const int AFTER_STACK = 0x0804c000;
+const int ARGV_POINTER_SEGMENT = 0x0804d000;
+const int ARGV_DATA_SEGMENT = 0x0804e000;
 :(code)
 void initialize_mem() {
   Mem.resize(AFTER_STACK - CODE_START);

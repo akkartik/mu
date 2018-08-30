@@ -363,7 +363,7 @@ put(name, "8b", "copy rm32 to r32");
 == 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   8b  18                                      # copy *EAX to EBX
-# ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
+# ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
 == 0x60  # data segment
 af 00 00 00  # 0xaf
 +run: copy r/m32 to EBX
@@ -378,6 +378,65 @@ case 0x8b: {  // copy r32 to r/m32
   int32_t* arg2 = effective_address(modrm);
   Reg[reg1].i = *arg2;
   trace(90, "run") << "storing 0x" << HEXWORD << *arg2 << end();
+  break;
+}
+
+//:
+
+:(before "End Initialize Op Names(name)")
+put(name, "88", "copy r8 (lowermost byte of r32) to r8/m8-at-r32");
+
+:(scenario copy_r8_to_mem_at_r32)
+% Reg[EBX].i = 0xafafafaf;
+% Reg[EAX].i = 0x60;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  88  18                                      # copy just the lowermost byte of EBX to the byte at *EAX
+# ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
++run: copy lowermost byte of EBX to r8/m8-at-r32
++run: effective address is 0x60 (EAX)
++run: storing 0xaf
+% CHECK_EQ(0x000000af, read_mem_u32(0x60));
+
+:(before "End Single-Byte Opcodes")
+case 0x88: {  // copy r/m8 to r8
+  uint8_t modrm = next();
+  uint8_t reg2 = (modrm>>3)&0x7;
+  trace(90, "run") << "copy lowermost byte of " << rname(reg2) << " to r8/m8-at-r32" << end();
+  // use unsigned to zero-extend 8-bit value to 32 bits
+  uint8_t* arg1 = reinterpret_cast<uint8_t*>(effective_address(modrm));
+  *arg1 = Reg[reg2].u;
+  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*arg1) << end();
+  break;
+}
+
+//:
+
+:(before "End Initialize Op Names(name)")
+put(name, "8a", "copy r8/m8-at-r32 to r8 (lowermost byte of r32)");
+
+:(scenario copy_mem_at_r32_to_r8)
+% Reg[EBX].i = 0xaf;
+% Reg[EAX].i = 0x60;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  8a  18                                      # copy just the byte at *EAX to lowermost byte of EBX (clearing remaining bytes)
+# ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)
+== 0x60  # data segment
+af ff ff ff  # 0xaf with more data in following bytes
++run: copy r8/m8-at-r32 to lowermost byte of EBX
++run: effective address is 0x60 (EAX)
++run: storing 0xaf
+
+:(before "End Single-Byte Opcodes")
+case 0x8a: {  // copy r/m8 to r8
+  uint8_t modrm = next();
+  uint8_t reg1 = (modrm>>3)&0x7;
+  trace(90, "run") << "copy r8/m8-at-r32 to lowermost byte of " << rname(reg1) << end();
+  // use unsigned to zero-extend 8-bit value to 32 bits
+  uint8_t* arg2 = reinterpret_cast<uint8_t*>(effective_address(modrm));
+  Reg[reg1].u = static_cast<uint32_t>(*arg2);
+  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*arg2) << end();
   break;
 }
 
