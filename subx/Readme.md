@@ -107,25 +107,24 @@ Running `subx` will transparently compile it as necessary.
 
 Putting them together, build and run one of the example programs:
 
-<img alt='ex1.1.subx' src='html/ex1.png'>
+<img alt='examples/ex1.1.subx' src='html/ex1.png'>
 
 ```
-$ ./subx translate ex1.1.subx ex1
-$ ./subx run ex1
+$ ./subx translate examples/ex1.1.subx examples/ex1
+$ ./subx run examples/ex1
 ```
 
 If you're running on Linux, `ex1` will also be runnable directly:
 ```
-$ chmod +x ex1
-$ ./ex1
+$ examples/ex1
 ```
 
-There are a few such example programs here. At any commit an example's binary
-should be identical bit for bit with the output of translating the .subx file.
-The binary should also be natively runnable on a 32-bit Linux system. If
-either of these invariants is broken it's a bug on my part. The binary should
-also be runnable on a 64-bit Linux system. I can't guarantee it, but I'd
-appreciate hearing if it doesn't run.
+There are a few such example programs in the examples/ directory. At any
+commit an example's binary should be identical bit for bit with the output of
+translating the .subx file. The binary should also be natively runnable on a
+32-bit Linux system. If either of these invariants is broken it's a bug on my
+part. The binary should also be runnable on a 64-bit Linux system. I can't
+guarantee it, but I'd appreciate hearing if it doesn't run.
 
 However, not all 32-bit Linux binaries are guaranteed to be runnable by
 `subx`. I'm not building general infrastructure here for all of the x86 ISA
