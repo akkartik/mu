@@ -68,26 +68,18 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
 
   // initialize args on stack
   // no envp for now
-//?   cerr << ARGV_POINTER_SEGMENT << " at " << Reg[ESP].u-4 << '\n';
-  push(ARGV_POINTER_SEGMENT);
-//?   cerr << argc-2 << " at " << Reg[ESP].u-4 << '\n';
-  push(argc-/*skip 'subx_bin' and 'run'*/2);
-  // initialize arg data
-  // we wastefully use 2 whole pages of memory for this
+  // we wastefully use a separate page of memory for argv
   uint32_t argv_data = ARGV_DATA_SEGMENT;
-  uint32_t argv_pointers = ARGV_POINTER_SEGMENT;
-  for (int i = /*skip 'subx_bin' and 'run'*/2;  i < argc;  ++i) {
-//?     cerr << "pointer: " << argv_pointers << " => " << argv_data << '\n';
-    write_mem_u32(argv_pointers, argv_data);
-    argv_pointers += sizeof(uint32_t);
-    assert(argv_pointers < ARGV_POINTER_SEGMENT + SEGMENT_SIZE);
+  for (int i = argc-1;  i >= /*skip 'subx_bin' and 'run'*/2;  --i) {
+    dbg << "push " << argv_data << end();
+    push(argv_data);
     for (size_t j = 0;  j <= strlen(argv[i]);  ++j) {
-//?       cerr << "  data: " << argv[i][j] << " (" << NUM(argv[i][j]) << ")\n";
       write_mem_u8(argv_data, argv[i][j]);
       argv_data += sizeof(char);
       assert(argv_data < ARGV_DATA_SEGMENT + SEGMENT_SIZE);
     }
   }
+  push(argc-/*skip 'subx_bin' and 'run'*/2);
 }
 
 void push(uint32_t val) {
@@ -134,7 +126,6 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
 const int CODE_START = 0x08048000;
 const int SEGMENT_SIZE = 0x1000;
 const int AFTER_STACK = 0x0804c000;
-const int ARGV_POINTER_SEGMENT = 0x0804d000;
 const int ARGV_DATA_SEGMENT = 0x0804e000;
 :(code)
 void initialize_mem() {

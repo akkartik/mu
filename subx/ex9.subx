@@ -2,16 +2,15 @@
 #
 # To run:
 #   $ subx translate ex9.subx ex9
-#   $ subx run ex9 abc d e f g h
+#   $ subx run ex9 abc de fghi
 # Expected result:
 #   $ echo $?
 #   3  # length of 'abc'
 #
 # At the start of a SubX program:
 #   argc: *ESP
-#   argv: *(ESP+4)
-#   argv[0]: *argv ("ex9" in this case)
-#   argv[1]: *(argv+4)
+#   argv[0]: *(ESP+4)
+#   argv[1]: *(ESP+8)
 #   ...
 # Locals start from ESP-4 downwards.
 
@@ -20,10 +19,7 @@
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   # var s = argv[1] (EBX)
-    # var s = argv
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              3/r32/EBX   4/disp8         .                       # copy *(ESP+4) to EBX
-    # s = *(s+4)
-  8b/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           3/r32/EBX   4/disp8         .                       # copy *(EBX+4) to EBX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              3/r32/EBX   8/disp8         .                       # copy *(ESP+8) to EBX
   # call ascii_length(EBX)
     # prepare call
   55/push                         .               .             .           .             .           .           .               .                       # push EBP
