@@ -18,16 +18,6 @@
 //: be a single character long. 'a' is not a hex number, it's a variable.
 //: Later layers may add more conventions partitioning the space of names. But
 //: the above rules will remain inviolate.
-bool is_number(const string& s) {
-  if (s.at(0) == '-') return true;
-  if (isdigit(s.at(0))) return true;
-  return SIZE(s) == 2;
-}
-:(before "End Unit Tests")
-void test_is_number() {
-  CHECK(!is_number("a"));
-}
-:(code)
 void check_valid_name(const string& s) {
   if (s.empty()) {
     raise << "empty name!\n" << end();

@@ -104,7 +104,11 @@ struct program {
 struct segment {
   uint32_t start;
   vector<line> lines;
-  segment() :start(0) {}
+  // End segment Fields
+  segment() {
+    start = 0;
+    // End segment Constructor
+  }
 };
 :(before "struct segment")
 struct line {
@@ -145,7 +149,10 @@ void parse(istream& fin, program& out) {
           out.segments.back().lines.swap(l);
         }
         segment s;
-        lin >> std::hex >> s.start;
+        string segment_title;
+        lin >> segment_title;
+        if (starts_with(segment_title, "0x"))
+          s.start = parse_int(segment_title);
         trace(99, "parse") << "new segment from " << HEXWORD << s.start << end();
         out.segments.push_back(s);
         // todo?
@@ -295,4 +302,36 @@ int32_t imm32() {
   result |= (next()<<16);
   result |= (next()<<24);
   return result;
+}
+
+:(code)
+int32_t parse_int(const string& s) {
+  if (s.empty()) return 0;
+  istringstream in(s);
+  in >> std::hex;
+  if (s.at(0) == '-') {
+    int32_t result = 0;
+    in >> result;
+    if (!in || !in.eof()) {
+      raise << "not a number: " << s << '\n' << end();
+      return 0;
+    }
+    return result;
+  }
+  uint32_t uresult = 0;
+  in >> uresult;
+  if (!in || !in.eof()) {
+    raise << "not a number: " << s << '\n' << end();
+    return 0;
+  }
+  return static_cast<int32_t>(uresult);
+}
+:(before "End Unit Tests")
+void test_parse_int() {
+  CHECK_EQ(0, parse_int("0"));
+  CHECK_EQ(0, parse_int("0x0"));
+  CHECK_EQ(0, parse_int("0x0"));
+  CHECK_EQ(16, parse_int("10"));  // hex always
+  CHECK_EQ(-1, parse_int("-1"));
+  CHECK_EQ(-1, parse_int("0xffffffff"));
 }
