@@ -14,9 +14,9 @@
   # fd = 1 (stdout)
   bb/copy                                                                                                                         1/imm32           # copy 1 to EBX
   # initialize x (location to write result to)
-  b9/copy                                                                                                                         0x08049097/imm32  # copy to ECX
+  b9/copy                                                                                                                         x/imm32           # copy to ECX
   # initialize size
-  ba/copy                                                                                                                         0x08049093/imm32  # copy to EDX
+  ba/copy                                                                                                                         size/imm32        # copy to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX                                          2/r32/EDX                                     # copy *EDX to EDX
   # write(fd, x, size)
   b8/copy                                                                                                                         4/imm32           # copy 4 to EAX
@@ -26,10 +26,10 @@
   b8/copy                                                                                                                         1/imm32           # copy 1 to EAX
   cd/syscall                                                                                                                      0x80/imm8         # int 80h
 
-== 0x08049093  # data segment
-# size of string
-0e 00 00 00
-# string
+== data
+size:  # size of string
+  0e 00 00 00  # 14
+x:  # string to print
   48 65 6c 6c 6f 2c 20 77 6f 72 6c 64 21 0a       00
 # h  e  l  l  o  ,  ␣  w  o  r  l  d  !  newline  null
 

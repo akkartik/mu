@@ -1,5 +1,5 @@
 //: Labels are defined by ending names with a ':'. This layer will compute
-//: addresses for labels, and compute the offset for instructions using them.
+//: displacements for labels, and compute the offset for instructions using them.
 //:
 //: We won't check this, but our convention will be that jump targets will
 //: start with a '$', while functions will not. Function names will never be
@@ -52,16 +52,15 @@ void rewrite_labels(program& p) {
   trace(99, "transform") << "-- rewrite labels" << end();
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
-  // Rewrite Labels(segment code)
-  map<string, int32_t> address;  // values are unsigned, but we're going to do subtractions on them so they need to fit in 31 bits
-  compute_addresses_for_labels(code, address);
+  map<string, int32_t> byte_index;  // values are unsigned, but we're going to do subtractions on them so they need to fit in 31 bits
+  compute_byte_indices_for_labels(code, byte_index);
   if (trace_contains_errors()) return;
   drop_labels(code);
   if (trace_contains_errors()) return;
-  replace_labels_with_addresses(code, address);
+  replace_labels_with_displacements(code, byte_index);
 }
 
-void compute_addresses_for_labels(const segment& code, map<string, int32_t>& address) {
+void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& byte_index) {
   int current_byte = 0;
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     const line& inst = code.lines.at(i);
@@ -90,7 +89,7 @@ void compute_addresses_for_labels(const segment& code, map<string, int32_t>& add
           raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
         if (j > 0)
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
-        put(address, label, current_byte);
+        put(byte_index, label, current_byte);
         trace(99, "transform") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
         // no modifying current_byte; label definitions won't be in the final binary
       }
@@ -110,30 +109,30 @@ bool is_label(const word& w) {
   return *w.data.rbegin() == ':';
 }
 
-void replace_labels_with_addresses(segment& code, const map<string, int32_t>& address) {
-  int32_t byte_next_instruction_starts_at = 0;
+void replace_labels_with_displacements(segment& code, const map<string, int32_t>& byte_index) {
+  int32_t byte_index_next_instruction_starts_at = 0;
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
-    byte_next_instruction_starts_at += num_bytes(inst);
+    byte_index_next_instruction_starts_at += num_bytes(inst);
     line new_inst;
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       const word& curr = inst.words.at(j);
-      if (contains_key(address, curr.data)) {
-        int32_t offset = static_cast<int32_t>(get(address, curr.data)) - byte_next_instruction_starts_at;
+      if (contains_key(byte_index, curr.data)) {
+        int32_t displacement = static_cast<int32_t>(get(byte_index, curr.data)) - byte_index_next_instruction_starts_at;
         if (has_metadata(curr, "disp8") || has_metadata(curr, "imm8")) {
-          if (offset > 0xff || offset < -0x7f)
-            raise << "'" << to_string(inst) << "': label too far away for distance " << std::hex << offset << " to fit in 8 bits\n" << end();
+          if (displacement > 0xff || displacement < -0x7f)
+            raise << "'" << to_string(inst) << "': label too far away for displacement " << std::hex << displacement << " to fit in 8 bits\n" << end();
           else
-            emit_hex_bytes(new_inst, offset, 1);
+            emit_hex_bytes(new_inst, displacement, 1);
         }
         else if (has_metadata(curr, "disp16")) {
-          if (offset > 0xffff || offset < -0x7fff)
-            raise << "'" << to_string(inst) << "': label too far away for distance " << std::hex << offset << " to fit in 16 bits\n" << end();
+          if (displacement > 0xffff || displacement < -0x7fff)
+            raise << "'" << to_string(inst) << "': label too far away for displacement " << std::hex << displacement << " to fit in 16 bits\n" << end();
           else
-            emit_hex_bytes(new_inst, offset, 2);
+            emit_hex_bytes(new_inst, displacement, 2);
         }
         else if (has_metadata(curr, "disp32") || has_metadata(curr, "imm32")) {
-          emit_hex_bytes(new_inst, offset, 4);
+          emit_hex_bytes(new_inst, displacement, 4);
         }
       }
       else {
@@ -143,19 +142,6 @@ void replace_labels_with_addresses(segment& code, const map<string, int32_t>& ad
     inst.words.swap(new_inst.words);
     trace(99, "transform") << "instruction after transform: '" << data_to_string(inst) << "'" << end();
   }
-}
-
-// Assumes all bitfields are packed.
-uint32_t num_bytes(const line& inst) {
-  uint32_t sum = 0;
-  for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    const word& curr = inst.words.at(i);
-    if (has_metadata(curr, "disp32") || has_metadata(curr, "imm32"))  // only multi-byte operands
-      sum += 4;
-    else
-      sum++;
-  }
-  return sum;
 }
 
 string data_to_string(const line& inst) {
