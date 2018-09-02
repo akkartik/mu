@@ -30,28 +30,12 @@ if (is_equal(argv[1], "translate")) {
   if (trace_contains_errors()) return 1;
   transform(p);
   if (trace_contains_errors()) return 1;
-  compute_segment_offsets(p);
   save_elf(p, argv[3]);
   if (trace_contains_errors()) unlink(argv[3]);
   return 0;
 }
 
-:(before "End segment Fields")
-uint32_t offset;
-:(before "End segment Constructor")
-offset = 0;
 :(code)
-void compute_segment_offsets(program& p) {
-  uint32_t p_offset = /*size of ehdr*/0x34 + SIZE(p.segments)*0x20/*size of each phdr*/;
-  uint32_t cumulative_segment_size = 0;
-  for (size_t i = 0;  i < p.segments.size();  ++i) {
-    segment& curr = p.segments.at(i);
-    curr.offset = p_offset + cumulative_segment_size;
-//?     cerr << "offset " << i << ": " << curr.offset << '\n';
-    cumulative_segment_size += num_words(curr);
-  }
-}
-
 // write out a program to a bare-bones ELF file
 void save_elf(const program& p, const char* filename) {
   ofstream out(filename, ios::binary);
@@ -59,12 +43,6 @@ void save_elf(const program& p, const char* filename) {
   for (size_t i = 0;  i < p.segments.size();  ++i)
     write_segment(p.segments.at(i), out);
   out.close();
-}
-
-uint32_t start(const program& p, const int segment_index) {
-  const segment& seg = p.segments.at(segment_index);
-  if (seg.start != 0) return seg.start;  // if start is already initialized, use it
-  return CODE_START + SEGMENT_SIZE*segment_index + seg.offset;
 }
 
 void write_elf_header(ostream& out, const program& p) {
@@ -86,7 +64,7 @@ void write_elf_header(ostream& out, const program& p) {
   // e_version
   O(0x01); O(0x00); O(0x00); O(0x00);
   // e_entry
-  int e_entry = start(p, /*segment*/0);  // convention
+  int e_entry = p.segments.at(0).start;  // convention
   emit(e_entry);
   // e_phoff -- immediately after ELF header
   int e_phoff = 0x34;
@@ -113,23 +91,22 @@ void write_elf_header(ostream& out, const program& p) {
   // e_shstrndx
   emit(dummy16);
 
+  uint32_t p_offset = /*size of ehdr*/0x34 + SIZE(p.segments)*0x20/*size of each phdr*/;
   for (int i = 0;  i < SIZE(p.segments);  ++i) {
-    const segment& curr = p.segments.at(i);
     //// phdr
     // p_type
     uint32_t p_type = 0x1;
     emit(p_type);
     // p_offset
-    uint32_t p_offset = curr.offset;
     emit(p_offset);
     // p_vaddr
-    uint32_t p_start = start(p, i);
+    uint32_t p_start = p.segments.at(i).start;
     emit(p_start);
     // p_paddr
     emit(p_start);
     // p_filesz
-    uint32_t size = num_words(curr);
-    assert(size < SEGMENT_SIZE);
+    uint32_t size = num_words(p.segments.at(i));
+    assert(p_offset + size < SEGMENT_SIZE);
     emit(size);
     // p_memsz
     emit(size);
