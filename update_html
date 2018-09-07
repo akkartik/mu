@@ -75,10 +75,16 @@ done
 ( cd subx
   ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
 )
-for f in subx/*.cc subx/*.subx
+for f in subx/*.cc
 do
   process $f
 done
 
-rm /tmp/tags
+rm -f /tmp/tags
+for f in subx/examples/*.subx subx/apps/*.subx
+do
+  process $f
+done
+
+rm -f /tmp/tags
 ( cd linkify; clean; )
