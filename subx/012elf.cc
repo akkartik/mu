@@ -71,7 +71,6 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
   // we wastefully use a separate page of memory for argv
   uint32_t argv_data = ARGV_DATA_SEGMENT;
   for (int i = argc-1;  i >= /*skip 'subx_bin' and 'run'*/2;  --i) {
-    dbg << "push " << argv_data << end();
     push(argv_data);
     for (size_t j = 0;  j <= strlen(argv[i]);  ++j) {
       write_mem_u8(argv_data, argv[i][j]);

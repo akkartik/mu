@@ -183,8 +183,6 @@ void init_permitted_operands() {
   // or
   put(Permitted_operands, "09", 0x01);
   put(Permitted_operands, "0b", 0x01);
-  // complement
-  put(Permitted_operands, "f7", 0x01);
   // xor
   put(Permitted_operands, "31", 0x01);
   put(Permitted_operands, "33", 0x01);
@@ -204,6 +202,7 @@ void init_permitted_operands() {
   //// Class O: op, ModR/M and subop (not r32)
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  0     0     0      |0       0     1     1
+  put(Permitted_operands, "f7", 0x03);  // test/not/mul/div
   put(Permitted_operands, "ff", 0x03);  // jump/push/call
 
   //// Class N: op, ModR/M and imm32

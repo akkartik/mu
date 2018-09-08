@@ -90,6 +90,47 @@ case 0x29: {  // subtract r32 from r/m32
 //:: multiply
 
 :(before "End Initialize Op Names(name)")
+put(name, "f7", "test/negate/mul/div rm32 (with EAX if necessary) depending on subop");
+
+:(scenario multiply_eax_by_r32)
+% Reg[EAX].i = 4;
+% Reg[ECX].i = 3;
+== 0x1
+# op      ModR/M  SIB   displacement  immediate
+  f7      e1                                      # multiply EAX by ECX
+# ModR/M in binary: 11 (direct mode) 100 (subop mul) 001 (src ECX)
++run: operate on r/m32
++run: r/m32 is ECX
++run: subop: multiply EAX by r/m32
++run: storing 0x0000000c
+
+:(before "End Single-Byte Opcodes")
+case 0xf7: {  // xor r32 with r/m32
+  uint8_t modrm = next();
+  trace(90, "run") << "operate on r/m32" << end();
+  int32_t* arg1 = effective_address(modrm);
+  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  switch (subop) {
+  case 4: {  // mul unsigned EAX by r/m32
+    trace(90, "run") << "subop: multiply EAX by r/m32" << end();
+    uint64_t result = Reg[EAX].u * static_cast<uint32_t>(*arg1);
+    Reg[EAX].u = result & 0xffffffff;
+    Reg[EDX].u = result >> 32;
+    OF = (Reg[EDX].u != 0);
+    trace(90, "run") << "storing 0x" << HEXWORD << Reg[EAX].u << end();
+    break;
+  }
+  // End Op f7 Subops
+  default:
+    cerr << "unrecognized sub-opcode after f7: " << NUM(subop) << '\n';
+    exit(1);
+  }
+  break;
+}
+
+//:
+
+:(before "End Initialize Op Names(name)")
 put(name_0f, "af", "multiply rm32 into r32");
 
 :(scenario multiply_r32_into_r32)
@@ -200,17 +241,16 @@ put(name, "f7", "bitwise complement of rm32");
 % Reg[EBX].i = 0x0f0f00ff;
 == 0x1
 # op  ModR/M  SIB   displacement  immediate
-  f7  c3                                      # not EBX
-# ModR/M in binary: 11 (direct mode) 000 (unused) 011 (dest EBX)
-+run: 'not' of r/m32
+  f7  d3                                      # not EBX
+# ModR/M in binary: 11 (direct mode) 010 (subop not) 011 (dest EBX)
++run: operate on r/m32
 +run: r/m32 is EBX
++run: subop: not
 +run: storing 0xf0f0ff00
 
-:(before "End Single-Byte Opcodes")
-case 0xf7: {  // xor r32 with r/m32
-  uint8_t modrm = next();
-  trace(90, "run") << "'not' of r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
+:(before "End Op f7 Subops")
+case 2: {  // not r/m32
+  trace(90, "run") << "subop: not" << end();
   *arg1 = ~(*arg1);
   trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   SF = (*arg1 >> 31);

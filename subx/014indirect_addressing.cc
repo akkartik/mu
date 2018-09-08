@@ -227,16 +227,17 @@ case 0x33: {  // xor r/m32 with r32
 
 //:: not
 
-:(scenario not_r32_with_mem_at_r32)
+:(scenario not_of_mem_at_r32)
 % Reg[EBX].i = 0x60;
 == 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
-  f7  03                                      # negate *EBX
-# ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
+  f7  13                                      # negate *EBX
+# ModR/M in binary: 00 (indirect mode) 010 (subop not) 011 (dest EBX)
 == 0x60  # data segment
 ff 00 0f 0f  # 0x0f0f00ff
-+run: 'not' of r/m32
++run: operate on r/m32
 +run: effective address is 0x60 (EBX)
++run: subop: not
 +run: storing 0xf0f0ff00
 
 //:: compare (cmp)
