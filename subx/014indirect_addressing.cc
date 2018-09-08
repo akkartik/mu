@@ -554,7 +554,7 @@ case 0x8f: {  // pop stack into r/m32
 
 :(before "End Mod 0 Special-cases(addr)")
 case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
-  addr = imm32();
+  addr = next32();
   trace(90, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
   break;
 
@@ -629,7 +629,7 @@ case 2:  // indirect + disp32 addressing
   // End Mod 2 Special-cases(addr)
   }
   if (addr > 0) {
-    addr += imm32();
+    addr += next32();
     trace(90, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp32)" << end();
   }
   break;

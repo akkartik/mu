@@ -30,7 +30,7 @@ uint32_t effective_address_from_sib(uint8_t mod) {
   }
   else {
     // base == EBP && mod == 0
-    addr = imm32();  // ignore base
+    addr = next32();  // ignore base
     trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (disp32)" << end();
   }
   uint8_t index = (sib>>3)&0x7;

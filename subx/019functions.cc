@@ -16,7 +16,7 @@ put(name, "e8", "call disp32");
 
 :(before "End Single-Byte Opcodes")
 case 0xe8: {  // call disp32 relative to next EIP
-  int32_t offset = imm32();
+  int32_t offset = next32();
   trace(90, "run") << "call imm32 0x" << HEXWORD << offset << end();
 //?   cerr << "push: EIP: " << EIP << " => " << Reg[ESP].u << '\n';
   push(EIP);

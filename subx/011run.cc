@@ -288,15 +288,15 @@ put(name, "05", "add imm32 to R0 (EAX)");
 //: our first opcode
 :(before "End Single-Byte Opcodes")
 case 0x05: {  // add imm32 to EAX
-  int32_t arg2 = imm32();
+  int32_t arg2 = next32();
   trace(90, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
   BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
   break;
 }
 
 :(code)
-// read a 32-bit immediate in little-endian order from the instruction stream
-int32_t imm32() {
+// read a 32-bit int in little-endian order from the instruction stream
+int32_t next32() {
   int32_t result = next();
   result |= (next()<<8);
   result |= (next()<<16);
