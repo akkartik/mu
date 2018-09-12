@@ -72,8 +72,8 @@ void replace_global_variables_with_addresses(program& p, const map<string, uint3
       const word& curr = inst.words.at(j);
       if (contains_key(address, curr.data)) {
         uint32_t value = get(address, curr.data);
-        if (!has_metadata(curr, "imm32"))
-          raise << "'" << to_string(inst) << "': data variables should always be in '/imm32' operands\n" << end();
+        if (!has_metadata(curr, "imm32") && !has_metadata(curr, "disp32"))
+          raise << "'" << to_string(inst) << "': data variables should always be in '/imm32' operands (or, if mod is 00 and rm32 is 101, /disp32)\n" << end();
         emit_hex_bytes(new_inst, value, 4);
       }
       else {
