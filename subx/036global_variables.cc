@@ -73,7 +73,7 @@ void replace_global_variables_with_addresses(program& p, const map<string, uint3
       if (contains_key(address, curr.data)) {
         uint32_t value = get(address, curr.data);
         if (!has_metadata(curr, "imm32") && !has_metadata(curr, "disp32"))
-          raise << "'" << to_string(inst) << "': data variables should always be in '/imm32' operands (or, if mod is 00 and rm32 is 101, /disp32)\n" << end();
+          raise << "'" << to_string(inst) << "': data variables should be '/imm32' or '/disp32' operands\n" << end();
         emit_hex_bytes(new_inst, value, 4);
       }
       else {
@@ -85,27 +85,52 @@ void replace_global_variables_with_addresses(program& p, const map<string, uint3
   }
 }
 
+:(before "Pack Operands(segment code)")
+check_disp32_data_variables(code);
+if (trace_contains_errors()) return;
+:(code)
+void check_disp32_data_variables(const segment& code) {
+  for (int i = 0;  i < SIZE(code.lines);  ++i) {
+    const line& inst = code.lines.at(i);
+    for (int j = 0;  j < SIZE(inst.words);  ++j) {
+      const word& curr = inst.words.at(j);
+      if (!has_metadata(curr, "disp32")) continue;
+      if (has_metadata(inst, "mod") && metadata(inst, "mod").data == "0" && metadata(inst, "rm32").data == "5")
+        continue;
+      else
+        raise << "'" << to_string(inst) << "': data variables can only be in '/disp32' operands if mod == 0 and rm32 == 5\n" << end();
+    }
+  }
+}
+
 :(scenario global_variable_disallowed_in_jump)
-% Mem_offset = CODE_START;
 % Hide_errors = true;
 == code
 eb/jump x/disp8
 == data
 x:
 00 00 00 00
-+error: 'eb/jump x/disp8': data variables should always be in '/imm32' operands
++error: 'eb/jump x/disp8': data variables should be '/imm32' or '/disp32' operands
 # sub-optimal error message; should be
 #? +error: can't jump to data (variable 'x')
 
 :(scenario global_variable_disallowed_in_call)
-% Mem_offset = CODE_START;
 % Hide_errors = true;
 == code
 e8/call x/disp32
 == data
 x:
 00 00 00 00
-+error: 'e8/call x/disp32': data variables should always be in '/imm32' operands
++error: 'e8/call x/disp32': data variables can only be in '/disp32' operands if mod == 0 and rm32 == 5
 # sub-optimal error message; should be
 #? +error: can't call a data variable ('x')
-# also, what about function pointers?
+
+:(scenario disp32_data_with_modrm)
+% Mem_offset = CODE_START;
+% Mem.resize(0x2000);
+== code
+8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX x/disp32
+==
+x:
+00 00 00 00
+$error: 0
