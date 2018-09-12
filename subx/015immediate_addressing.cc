@@ -283,7 +283,7 @@ case 6: {
 //:: compare (cmp)
 
 :(before "End Initialize Op Names(name)")
-put(name, "3d", "subtract imm32 from R0 (EAX)");
+put(name, "3d", "compare imm32 with R0 (EAX)");
 
 :(scenario compare_imm32_with_eax_greater)
 % Reg[EAX].i = 0x0d0c0b0a;
@@ -294,7 +294,7 @@ put(name, "3d", "subtract imm32 from R0 (EAX)");
 +run: SF=0; ZF=0; OF=0
 
 :(before "End Single-Byte Opcodes")
-case 0x3d: {  // subtract imm32 from EAX
+case 0x3d: {  // compare EAX with imm32
   int32_t arg1 = Reg[EAX].i;
   int32_t arg2 = next32();
   trace(90, "run") << "compare EAX and imm32 0x" << HEXWORD << arg2 << end();
