@@ -71,7 +71,7 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
       // Maybe we should just move this transform to before instruction
       // packing, and deduce the size of *all* operands. But then we'll also
       // have to deal with bitfields.
-      if (has_metadata(curr, "disp32") || has_metadata(curr, "imm32")) {
+      if (has_operand_metadata(curr, "disp32") || has_operand_metadata(curr, "imm32")) {
         if (*curr.data.rbegin() == ':')
           raise << "'" << to_string(inst) << "': don't use ':' when jumping to labels\n" << end();
         current_byte += 4;
@@ -119,19 +119,19 @@ void replace_labels_with_displacements(segment& code, const map<string, int32_t>
       const word& curr = inst.words.at(j);
       if (contains_key(byte_index, curr.data)) {
         int32_t displacement = static_cast<int32_t>(get(byte_index, curr.data)) - byte_index_next_instruction_starts_at;
-        if (has_metadata(curr, "disp8") || has_metadata(curr, "imm8")) {
+        if (has_operand_metadata(curr, "disp8") || has_operand_metadata(curr, "imm8")) {
           if (displacement > 0xff || displacement < -0x7f)
             raise << "'" << to_string(inst) << "': label too far away for displacement " << std::hex << displacement << " to fit in 8 bits\n" << end();
           else
             emit_hex_bytes(new_inst, displacement, 1);
         }
-        else if (has_metadata(curr, "disp16")) {
+        else if (has_operand_metadata(curr, "disp16")) {
           if (displacement > 0xffff || displacement < -0x7fff)
             raise << "'" << to_string(inst) << "': label too far away for displacement " << std::hex << displacement << " to fit in 16 bits\n" << end();
           else
             emit_hex_bytes(new_inst, displacement, 2);
         }
-        else if (has_metadata(curr, "disp32") || has_metadata(curr, "imm32")) {
+        else if (has_operand_metadata(curr, "disp32") || has_operand_metadata(curr, "imm32")) {
           emit_hex_bytes(new_inst, displacement, 4);
         }
       }

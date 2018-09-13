@@ -46,7 +46,7 @@ uint32_t num_bytes(const line& inst) {
   uint32_t sum = 0;
   for (int i = 0;  i < SIZE(inst.words);  ++i) {
     const word& curr = inst.words.at(i);
-    if (has_metadata(curr, "disp32") || has_metadata(curr, "imm32"))  // only multi-byte operands
+    if (has_operand_metadata(curr, "disp32") || has_operand_metadata(curr, "imm32"))  // only multi-byte operands
       sum += 4;
     else
       sum++;

@@ -38,7 +38,7 @@ void check_operand_bounds(const segment& code) {
 
 void check_operand_bounds(const word& w) {
   for (map<string, uint32_t>::iterator p = Operand_bound.begin();  p != Operand_bound.end();  ++p) {
-    if (!has_metadata(w, p->first)) continue;
+    if (!has_operand_metadata(w, p->first)) continue;
     if (!is_hex_int(w.data)) continue;  // later transforms are on their own to do their own bounds checking
     int32_t x = parse_int(w.data);
     if (x >= 0) {

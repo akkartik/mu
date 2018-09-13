@@ -70,37 +70,58 @@ void replace_global_variables_with_addresses(program& p, const map<string, uint3
     line new_inst;
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       const word& curr = inst.words.at(j);
-      if (contains_key(address, curr.data)) {
-        uint32_t value = get(address, curr.data);
-        if (!has_metadata(curr, "imm32") && !has_metadata(curr, "disp32"))
-          raise << "'" << to_string(inst) << "': data variables should be '/imm32' or '/disp32' operands\n" << end();
-        emit_hex_bytes(new_inst, value, 4);
-      }
-      else {
+      if (!contains_key(address, curr.data)) {
         new_inst.words.push_back(curr);
+        continue;
       }
+      if (!valid_use_of_global_variable(curr)) {
+        raise << "'" << to_string(inst) << "': can't refer to global variable '" << curr.data << "'\n" << end();
+        return;
+      }
+      emit_hex_bytes(new_inst, get(address, curr.data), 4);
     }
     inst.words.swap(new_inst.words);
     trace(99, "transform") << "instruction after transform: '" << data_to_string(inst) << "'" << end();
   }
 }
 
-:(before "Pack Operands(segment code)")
-check_disp32_data_variables(code);
-if (trace_contains_errors()) return;
+bool valid_use_of_global_variable(const word& curr) {
+  if (has_operand_metadata(curr, "imm32")) return true;
+  // End Valid Uses Of Global Variable(curr)
+  return false;
+}
+
+//:: a more complex sanity check for how we use global variables
+//: requires first saving some data early before we pack operands
+
+:(after "Begin Level-2 Transforms")
+Transform.push_back(correlate_disp32_with_mod);
 :(code)
-void check_disp32_data_variables(const segment& code) {
+void correlate_disp32_with_mod(program& p) {
+  if (p.segments.empty()) return;
+  segment& code = p.segments.at(0);
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
-    const line& inst = code.lines.at(i);
+    line& inst = code.lines.at(i);
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
-      const word& curr = inst.words.at(j);
-      if (!has_metadata(curr, "disp32")) continue;
-      if (has_metadata(inst, "mod") && metadata(inst, "mod").data == "0" && metadata(inst, "rm32").data == "5")
-        continue;
-      else
-        raise << "'" << to_string(inst) << "': data variables can only be in '/disp32' operands if mod == 0 and rm32 == 5\n" << end();
+      word& curr = inst.words.at(j);
+      if (has_operand_metadata(curr, "disp32")
+          && has_operand_metadata(inst, "mod"))
+        curr.metadata.push_back("has_mod");
     }
   }
+}
+
+:(before "End Valid Uses Of Global Variable(curr)")
+if (has_operand_metadata(curr, "disp32"))
+  return has_metadata(curr, "has_mod");
+// todo: more sophisticated check, to ensure we don't use global variable
+// addresses as a real displacement added to other operands.
+
+:(code)
+bool has_metadata(const word& w, const string& m) {
+  for (int i = 0;  i < SIZE(w.metadata);  ++i)
+    if (w.metadata.at(i) == m) return true;
+  return false;
 }
 
 :(scenario global_variable_disallowed_in_jump)
@@ -110,7 +131,7 @@ eb/jump x/disp8
 == data
 x:
 00 00 00 00
-+error: 'eb/jump x/disp8': data variables should be '/imm32' or '/disp32' operands
++error: 'eb/jump x/disp8': can't refer to global variable 'x'
 # sub-optimal error message; should be
 #? +error: can't jump to data (variable 'x')
 
@@ -121,9 +142,9 @@ e8/call x/disp32
 == data
 x:
 00 00 00 00
-+error: 'e8/call x/disp32': data variables can only be in '/disp32' operands if mod == 0 and rm32 == 5
++error: 'e8/call x/disp32': can't refer to global variable 'x'
 # sub-optimal error message; should be
-#? +error: can't call a data variable ('x')
+#? +error: can't call to the data segment ('x')
 
 :(scenario disp32_data_with_modrm)
 % Mem_offset = CODE_START;
@@ -134,3 +155,23 @@ x:
 x:
 00 00 00 00
 $error: 0
+
+:(scenarios transform)
+:(scenario disp32_data_with_call)
+== code
+foo:
+e8/call bar/disp32
+bar:
+$error: 0
+
+:(code)
+string to_full_string(const line& in) {
+  ostringstream out;
+  for (int i = 0;  i < SIZE(in.words);  ++i) {
+    if (i > 0) out << ' ';
+    out << in.words.at(i).data;
+    for (int j = 0;  j < SIZE(in.words.at(i).metadata);  ++j)
+      out << '/' << in.words.at(i).metadata.at(j);
+  }
+  return out.str();
+}

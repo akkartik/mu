@@ -321,24 +321,24 @@ cd/software-interrupt 80/imm8/imm32
 :(code)
 void check_operands_modrm(const line& inst, const word& op) {
   if (all_hex_bytes(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  check_metadata_present(inst, "mod", op);
-  check_metadata_present(inst, "rm32", op);
+  check_operand_metadata_present(inst, "mod", op);
+  check_operand_metadata_present(inst, "rm32", op);
   // no check for r32; some instructions don't use it; just assume it's 0 if missing
   if (op.data == "81" || op.data == "8f" || op.data == "ff") {  // keep sync'd with 'help subop'
-    check_metadata_present(inst, "subop", op);
-    check_metadata_absent(inst, "r32", op, "should be replaced by subop");
+    check_operand_metadata_present(inst, "subop", op);
+    check_operand_metadata_absent(inst, "r32", op, "should be replaced by subop");
   }
   if (trace_contains_errors()) return;
   if (metadata(inst, "rm32").data != "4") return;
   // SIB byte checks
   uint8_t mod = hex_byte(metadata(inst, "mod").data);
   if (mod != /*direct*/3) {
-    check_metadata_present(inst, "base", op);
-    check_metadata_present(inst, "index", op);  // otherwise why go to SIB?
+    check_operand_metadata_present(inst, "base", op);
+    check_operand_metadata_present(inst, "index", op);  // otherwise why go to SIB?
   }
   else {
-    check_metadata_absent(inst, "base", op, "direct mode");
-    check_metadata_absent(inst, "index", op, "direct mode");
+    check_operand_metadata_absent(inst, "base", op, "direct mode");
+    check_operand_metadata_absent(inst, "index", op, "direct mode");
   }
   // no check for scale; 0 (2**0 = 1) by default
 }
@@ -366,13 +366,13 @@ void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op)
   // ignore settings in any unused bits
 }
 
-void check_metadata_present(const line& inst, const string& type, const word& op) {
-  if (!has_metadata(inst, type))
+void check_operand_metadata_present(const line& inst, const string& type, const word& op) {
+  if (!has_operand_metadata(inst, type))
     raise << "'" << to_string(inst) << "' (" << get(name, op.data) << "): missing " << type << " operand\n" << end();
 }
 
-void check_metadata_absent(const line& inst, const string& type, const word& op, const string& msg) {
-  if (has_metadata(inst, type))
+void check_operand_metadata_absent(const line& inst, const string& type, const word& op, const string& msg) {
+  if (has_operand_metadata(inst, type))
     raise << "'" << to_string(inst) << "' (" << get(name, op.data) << "): unexpected " << type << " operand (" << msg << ")\n" << end();
 }
 

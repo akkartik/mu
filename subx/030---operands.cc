@@ -178,19 +178,19 @@ void add_modrm_byte(const line& in, line& out) {
   bool emit = false;
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_metadata(curr, "mod")) {
+    if (has_operand_metadata(curr, "mod")) {
       mod = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_metadata(curr, "rm32")) {
+    else if (has_operand_metadata(curr, "rm32")) {
       rm32 = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_metadata(curr, "r32")) {
+    else if (has_operand_metadata(curr, "r32")) {
       reg_subop = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_metadata(curr, "subop")) {
+    else if (has_operand_metadata(curr, "subop")) {
       reg_subop = hex_byte(curr.data);
       emit = true;
     }
@@ -204,15 +204,15 @@ void add_sib_byte(const line& in, line& out) {
   bool emit = false;
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_metadata(curr, "scale")) {
+    if (has_operand_metadata(curr, "scale")) {
       scale = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_metadata(curr, "index")) {
+    else if (has_operand_metadata(curr, "index")) {
       index = hex_byte(curr.data);
       emit = true;
     }
-    else if (has_metadata(curr, "base")) {
+    else if (has_operand_metadata(curr, "base")) {
       base = hex_byte(curr.data);
       emit = true;
     }
@@ -224,11 +224,11 @@ void add_sib_byte(const line& in, line& out) {
 void add_disp_bytes(const line& in, line& out) {
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_metadata(curr, "disp8"))
+    if (has_operand_metadata(curr, "disp8"))
       emit_hex_bytes(out, curr, 1);
-    if (has_metadata(curr, "disp16"))
+    if (has_operand_metadata(curr, "disp16"))
       emit_hex_bytes(out, curr, 2);
-    else if (has_metadata(curr, "disp32"))
+    else if (has_operand_metadata(curr, "disp32"))
       emit_hex_bytes(out, curr, 4);
   }
 }
@@ -236,9 +236,9 @@ void add_disp_bytes(const line& in, line& out) {
 void add_imm_bytes(const line& in, line& out) {
   for (int i = 0;  i < SIZE(in.words);  ++i) {
     const word& curr = in.words.at(i);
-    if (has_metadata(curr, "imm8"))
+    if (has_operand_metadata(curr, "imm8"))
       emit_hex_bytes(out, curr, 1);
-    else if (has_metadata(curr, "imm32"))
+    else if (has_operand_metadata(curr, "imm32"))
       emit_hex_bytes(out, curr, 4);
   }
 }
@@ -386,10 +386,10 @@ bool contains_any_operand_metadata(const word& word) {
   return false;
 }
 
-bool has_metadata(const line& inst, const string& m) {
+bool has_operand_metadata(const line& inst, const string& m) {
   bool result = false;
   for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    if (!has_metadata(inst.words.at(i), m)) continue;
+    if (!has_operand_metadata(inst.words.at(i), m)) continue;
     if (result) {
       raise << "'" << to_string(inst) << "' has conflicting " << m << " operands\n" << end();
       return false;
@@ -399,7 +399,7 @@ bool has_metadata(const line& inst, const string& m) {
   return result;
 }
 
-bool has_metadata(const word& w, const string& m) {
+bool has_operand_metadata(const word& w, const string& m) {
   bool result = false;
   bool metadata_found = false;
   for (int i = 0;  i < SIZE(w.metadata);  ++i) {
@@ -417,7 +417,7 @@ bool has_metadata(const word& w, const string& m) {
 
 word metadata(const line& inst, const string& m) {
   for (int i = 0;  i < SIZE(inst.words);  ++i)
-    if (has_metadata(inst.words.at(i), m))
+    if (has_operand_metadata(inst.words.at(i), m))
       return inst.words.at(i);
   assert(false);
 }
