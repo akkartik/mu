@@ -284,7 +284,7 @@ ff 00 0f 0f  # 0x0f0f00ff
 //:
 
 :(before "End Initialize Op Names(name)")
-put(name, "3b", "set SF if rm32 > r32");
+put(name, "3b", "compare: set SF if r32 < rm32");
 
 :(scenario compare_r32_with_mem_at_r32_greater)
 % Reg[EAX].i = 0x60;

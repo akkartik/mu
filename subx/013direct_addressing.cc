@@ -262,7 +262,7 @@ case 2: {  // not r/m32
 //:: compare (cmp)
 
 :(before "End Initialize Op Names(name)")
-put(name, "39", "set SF if rm32 < r32");
+put(name, "39", "compare: set SF if rm32 < r32");
 
 :(scenario compare_r32_with_r32_greater)
 % Reg[EAX].i = 0x0a0b0c0d;

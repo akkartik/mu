@@ -283,7 +283,7 @@ case 6: {
 //:: compare (cmp)
 
 :(before "End Initialize Op Names(name)")
-put(name, "3d", "compare imm32 with R0 (EAX)");
+put(name, "3d", "compare: set SF if R0 < imm32");
 
 :(scenario compare_imm32_with_eax_greater)
 % Reg[EAX].i = 0x0d0c0b0a;
