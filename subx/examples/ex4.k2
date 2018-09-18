@@ -1,0 +1,17 @@
+# variables are always references
+#   read their address with their names: x (can't write to their address)
+#   read/write their contents with a lookup: *x
+var x : char
+
+fn main [
+  call read 0/stdin, x, 1/size  # watch out; reading a global may not be possible in all instructions
+                                # but the address is more easily obtained
+  result/EAX <- call write 1/stdout, x, 1/size
+  call exit, result/EAX
+]
+
+fn exit x : int [
+  code/EBX <- copy x
+  code/EAX <- copy 1/exit
+  syscall
+]

@@ -1,0 +1,36 @@
+== Goal
+
+A memory-safe language with a simple translator to x86 that can be feasibly written in x86.
+
+== Definitions of terms
+
+Memory-safe: it should be impossible to:
+  a) create a pointer out of arbitrary data, or
+  b) to access heap memory after it's been freed.
+
+Simple: do all the work in a 2-pass translator:
+  Pass 1: check each instruction's types in isolation.
+  Pass 2: emit code for each instruction in isolation.
+
+== types
+
+int
+char
+(address _)
+(array _ n)
+(ref _)
+
+addresses can't be saved to stack or global,
+      or included in compound types
+      or used across a call (to eliminate possibility of free)
+
+<reg x> : (address T) <- advance <reg/mem> : (array T), <reg offset> : (index T)
+
+arrays require a size
+(ref array _) may not include a size
+
+== open questions
+Is argv an address?
+Global variables are easiest to map to addresses.
+Ideally we'd represent 'indirect' as a '*' and we could just count to make
+sure that an instruction never has more than one '*'.

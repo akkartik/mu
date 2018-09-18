@@ -1,0 +1,41 @@
+fn main argc : int, argv : (array (ref array char)) -> [
+  var tmp : (index char)
+  tmp <- index 1, %size(ref array char)
+  var tmp2 : (address (ref array char))
+  tmp2 <- advance argv, tmp
+  var s/EBX : (ref array char)
+  s/EBX <- copy *tmp2
+  var result/EAX : int
+  result/EAX <- ascii_length s/EBX
+  call exit, result/EAX
+]
+
+# must 
+fn ascii_length s : (ref array char) -> result : int [
+  var result/EBX : int
+  result/EBX <- copy 0
+  {
+    var tmp0/EDI : (offset char)
+    tmp0/EDI <- index result/EBX, %size(char)
+    var tmp/EDX : (address char)
+    tmp/EDX <- advance *s, tmp0/EDI
+      => compare (ESP+4), *(ESP+8)  ; '*' from compiler2
+         jump-unless-equal panic
+         EDX <- add ESP, 8
+         EDX <- copy *EDX
+         EDX <- add EDX, 4
+         EDX <- 8d/lea EDX + result
+    var c/ECX : char
+    c/ECX <- copy *tmp
+    compare c/ECX, 0
+    break-if-equal
+    loop
+  }
+  return result/EBX
+]
+
+fn exit x : int [
+  code/EBX <- copy x
+  code/EAX <- copy 1/exit
+  syscall
+]

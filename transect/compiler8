@@ -1,0 +1,53 @@
+== Goal
+
+A memory-safe language with a simple translator to x86 that can be feasibly written in x86.
+
+== Definitions of terms
+
+Memory-safe: it should be impossible to:
+  a) create a pointer out of arbitrary data, or
+  b) to access heap memory after it's been freed.
+
+Simple: do all the work in a 2-pass translator:
+  Pass 1: check each instruction's types in isolation.
+  Pass 2: emit code for each instruction in isolation.
+
+== types
+
+int
+char
+(address _)
+(array _ n)
+(ref _)
+
+== implications
+
+addresses can't be saved to stack or global,
+      or included in compound types
+      or used across a call (to eliminate possibility of free)
+
+<reg x> : (address T) <- advance <reg/mem> : (array T), <reg offset> : (index T)
+
+arrays require a size
+(ref array _) may not include a size
+
+argv has type (array (ref array char))
+
+variables on stack, heap and global are references. The name points at the
+address. Use '*' to get at the value.
+
+instructions performing lookups write to register, so that we can reuse the register for temporaries
+instructions performing lookups can't read from the register they write to.
+  But most instructions read from the register they write to?! (in-out params)
+
+== open questions
+
+If bounds checks can take multiple instructions, why not perform array
+indexing in a single statement in the language?
+
+But we want addresses as intermediate points to combine instructions with.
+
+Maybe disallow addresses to function calls, but allow addresses to non-heap
+structures to be used spanning function calls and labels.
+
+That's just for ergonomics. Doesn't add new capability.

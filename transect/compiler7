@@ -1,0 +1,46 @@
+== Goal
+
+A memory-safe language with a simple translator to x86 that can be feasibly written in x86.
+
+== Definitions of terms
+
+Memory-safe: it should be impossible to:
+  a) create a pointer out of arbitrary data, or
+  b) to access heap memory after it's been freed.
+
+Simple: do all the work in a 2-pass translator:
+  Pass 1: check each instruction's types in isolation.
+  Pass 2: emit code for each instruction in isolation.
+
+== types
+
+int
+char
+(address _ stack|heap|global)
+(array _ n)  # on stack or global
+(ref _)
+(ref array _)  # by definition always on the heap
+
+addresses to global can be saved and manipulated as usual
+addresses on stack can't be saved to heap
+addresses on heap can't be saved to global (use ref)
+
+addresses to stack or heap can't be included in compound types
+  or used across a call
+  or used across a label
+
+<reg x> : (address T stack|global) <- advance <reg/mem> : (array T), <reg offset> : (index T)
+<reg x> : (address T heap) <- advance *<mem> : (ref array T), <reg offset> : (index T)
+
+arrays require a size
+(ref array _) may not include a size
+
+Arguments of type 'address' are required to be on the stack or global. Can't
+be on the heap.
+
+So we need duplication for address and ref arguments?
+
+Argv has type (array (address (array char) global))
+
+variables on stack, heap and global are references. The name points at the
+address. Use '*' to get at the value.

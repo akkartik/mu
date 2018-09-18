@@ -1,0 +1,254 @@
+=== Goal
+
+A memory-safe language with a simple translator to x86 that can be feasibly
+written without itself needing a translator.
+
+Memory-safe: it should be impossible to:
+  a) create a pointer out of arbitrary data, or
+  b) to access heap memory after it's been freed.
+
+Simple: do all the work in a 2-pass translator:
+  Pass 1: check each instruction's types in isolation.
+  Pass 2: emit code for each instruction in isolation.
+
+=== Overview of the language
+
+A program consists of a series of type, function and global variable declarations.
+(Also constants and tests, but let's focus on these.)
+
+Type declarations basically follow Hindley-Milner with product and (tagged) sum
+types. Types are written in s-expression form. There's a `ref` type that's a
+type-safe fat pointer, with an alloc id that gets incremented after each
+allocation. Memory allocation and reclamation is manual. Dereferencing a ref
+after its underlying memory is reclaimed (pointer alloc id no longer matches
+payload alloc id) is guaranteed to immediately kill the program (like a
+segfault).
+
+  # product type
+  type foo [
+    x : int
+    y : (ref int)
+    z : bar
+  ]
+
+  # sum type
+  choice bar [
+    x : int
+    y : point
+  ]
+
+Functions have a header and a series of instructions in the body:
+
+  fn f a : int -> b : int [
+    ...
+  ]
+
+Instructions have the following format:
+
+  io1, io2, ... <- operation i1, i2, ...
+
+i1, i2 operands on the right hand side are immutable. io1, io2 are in-out
+operands. They're written to, and may also be read.
+
+User-defined functions will be called with the same syntax. They'll translate
+to a sequence of push instructions (one per operand, both in and in-out), a
+call instruction, and a sequence of pop instructions, either to a black hole
+(in operands) or a location (in-out operands). This follows the standard Unix
+calling convention. Each operand needs to be something push/pop can accept.
+
+Primitive operations depend on the underlying processor. We'd like each primitive
+operation supported by the language to map to a single instruction in the ISA.
+Sometimes we have to violate that (see below), but we definitely won't be
+writing to any temporary locations behind the scenes. The language affords
+control over registers, and tracking unused registers gets complex, and
+besides we may have no unused registers at a specific point. Instructions only
+modify their operands.
+
+In most ISAs, instructions operate on at most a word of data at a time. They
+also tend to not have more than 2-3 operands, and not modify more than 2
+locations in memory.
+
+Since the number of reads from memory is limited, we break up complex high-level
+operations using a special type called `address`. Addresses are strictly
+short-term entities. They can't be stored in a compound type, and they can't
+be passed into or returned from a user-defined function. They also can't be
+used after a function call (because it could free the underlying memory) or
+label (because it gets complex to check control flow, and we want to translate
+each instruction simply and in isolation).
+
+=== Compilation to 32-bit x86
+
+Values can be stored:
+  in code (literals)
+  in registers
+  on the stack
+  on the global segment
+
+Variables on the stack are stored at *(ESP+n)
+Global variables are stored at *disp32, where disp32 is statically known
+
+Address variables have to be in a register.
+  - You need them in a register to do a lookup, and
+  - Saving them to even the stack increases the complexity of checks needed on
+    function calls or labels.
+
+Compilation proceeds by pattern matching over an instruction along with
+knowledge about the types of its operands, as well as where they're stored
+(register/stack/global). We now enumerate mappings for various categories of
+instructions, based on the type and location of their operands.
+
+Where types of operands aren't mentioned below, all operands of an instruction
+should have the same (word-length) type.
+
+Lots of special cases because of limitations of the x86 ISA. Beware.
+
+A. x : int <- add y
+
+  Requires y to be scalar. Result will always be an int. No pointer arithmetic.
+
+  reg <- add literal    => 81 0/subop 3/mod                                                                                           ...(0)
+  reg <- add reg        => 01 3/mod                                                                                                   ...(1)
+  reg <- add stack      => 03 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n/disp8 reg/r32                                        ...(2)
+  reg <- add global     => 03 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                       ...(3)
+  stack <- add literal  => 81 0/subop 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n/disp8 literal/imm32                          ...(4)
+  stack <- add reg      => 01 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n/disp8 reg/r32                                        ...(5)
+  stack <- add stack    => disallowed
+  stack <- add global   => disallowed
+  global <- add literal => 81 0/subop 0/mod 5/rm32/include-disp32 global/disp32 literal/imm32                                         ...(6)
+  global <- add reg     => 01 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                       ...(7)
+  global <- add stack   => disallowed
+  global <- add global  => disallowed
+
+Similarly for sub, and, or, xor and even copy. Replace the opcodes above with corresponding ones from this table:
+
+                            add             sub           and           or            xor         copy/mov
+  reg <- op literal         81 0/subop      81 5/subop    81 4/subop    81 1/subop    81 6/subop  c7
+  reg <- op reg             01 or 03        29 or 2b      21 or 23      09 or 0b      31 or 33    89 or 8b
+  reg <- op stack           03              2b            23            0b            33          8b
+  reg <- op global          03              2b            23            0b            33          8b
+  stack <- op literal       81 0/subop      81 5/subop    81 4/subop    81 1/subop    81 6/subop  c7
+  stack <- op reg           01              29            21            09            31          89
+  global <- op literal      81 0/subop      81 5/subop    81 4/subop    81 1/subop    81 6/subop  c7
+  global <- op reg          01              29            21            09            31          89
+
+B. x/reg : int <- mul y
+
+  Requires both y to be scalar.
+  x must be in a register. Multiplies can't write to memory.
+
+  reg <- mul literal    => 69                                                                                                         ...(8)
+  reg <- mul reg        => 0f af 3/mod                                                                                                ...(9)
+  reg <- mul stack      => 0f af 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n/disp8 reg/r32                                     ...(10)
+  reg <- mul global     => 0f af 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                    ...(11)
+
+C. x/EAX/quotient : int, y/EDX/remainder : int <- idiv z     # divide EAX by z; store the result in EAX and EDX
+
+  Requires source x and z to both be scalar.
+  x must be in EAX and y must be in EDX. Divides can't write anywhere else.
+
+  First clear EDX (we don't support ints larger than 32 bits):
+  31/xor 3/mod 2/rm32/EDX 2/r32/EDX
+
+  then:
+  EAX, EDX <- idiv literal  => disallowed
+  EAX, EDX <- idiv reg      => f7 7/subop 3/mod                                                                                       ...(12)
+  EAX, EDX <- idiv stack    => f7 7/subop 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n/disp8                                    ...(13)
+  EAX, EDX <- idiv global   => f7 7/subop 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                           ...(14)
+
+D. x : int <- not
+
+  Requires x to be an int.
+
+  reg <- not                => f7 3/mod                                                                                               ...(15)
+  stack <- not              => f7 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n/disp8                                            ...(16)
+  global <- not             => f7 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                   ...(17)
+
+E. x : (address t) <- get o : T, %f
+
+  (Assumes T.f has type t.)
+
+  o can't be on a register since it's a non-primitive (likely larger than a word)
+  f is a literal
+  x must be in a register (by definition for an address)
+
+  below '*' works on either address or ref types
+
+  For raw stack values we want to read *(ESP+n)
+  For raw global values we want to read *disp32
+  For address stack values we want to read *(ESP+n)+
+    *(ESP+n) contains an address
+    so we want to compute *(ESP+n) + literal
+
+  reg1 <- get reg2, literal       => 8d/lea 1/mod reg2/rm32 literal/disp8 reg1/r32                                                    ...(18)
+  reg <- get stack, literal       => 8d/lea 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n+literal/disp8 reg/r32                  ...(19)
+    (simplifying assumption: stack frames can't be larger than 256 bytes)
+  reg <- get global, literal      => 8d/lea 0/mod 5/rm32/include-disp32 global+literal/disp32, reg/r32                                ...(20)
+
+F. x : (offset T) <- index i : int, %size(T)
+
+  reg1 <- index reg2, literal       => 69/mul 3/mod reg2/rm32 literal/imm32 -> reg1/r32
+                                    or 68/mul 3/mod reg2/rm32 literal/imm8 -> reg1/r32                                                ...(21)
+  reg1 <- index stack, literal      => 69/mul 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n/disp8 literal/imm32 -> reg1/r32      ...(22)
+  reg1 <- index global, literal     => 69/mul 0/mod 5/rm32/include-disp32 global/disp32 literal/imm32 -> reg1/r32                     ...(23)
+
+  optimization: avoid multiply if literal is a power of 2
+    use SIB byte if literal is 2, 4 or 8
+    or left shift
+
+G. x : (address T) <- advance o : (array T), idx : (offset T)
+
+  reg <- advance a/reg, idx/reg   => 8d/lea 0/mod 4/rm32/SIB a/base idx/index 0/scale reg/r32                                         ...(24)
+  reg <- advance stack, literal   => 8d/lea 1/mod 4/rm32/SIB 4/base/ESP 4/index/none 0/scale n+literal/disp8 reg/r32                  ...(25)
+  reg <- advance stack, reg2      => 8d/lea 1/mod 4/rm32/SIB 4/base/ESP reg2/index 0/scale n/disp8 reg/r32                            ...(26)
+  reg <- advance global, literal  => 8d/lea 0/mod 5/rm32/include-disp32 global+literal/disp32, reg/r32                                ...(27)
+
+  also instructions for runtime bounds checking
+
+=== Example
+
+Putting it all together: code generation for `a[i].y = 4` where a is an array
+of 2-d points with x, y coordinates.
+
+If a is allocated on the stack, say of type (array point 6) at (ESP+4):
+
+  offset/EAX : (offset point) <- index i, 8  # (22)
+  tmp/EBX : (address point) <- advance a : (array point 6), offset/EAX  # (26)
+  tmp2/ECX : (address number) <- get tmp/EBX : (address point), 4/y  # (18)
+  *tmp2/ECX <- copy 4  # (5 for copy/mov with 0 disp8)
+
+Many instructions, particularly variants of 'get' and 'advance' -- end up encoding the exact same instructions.
+But the types differ, and the type-checker checks them differently.
+
+=== Advanced checks
+
+Couple of items require inserting mapping to multiple instructions:
+  bounds checking against array length in 'advance'
+  dereferencing 'ref' types (see type list up top)
+
+A. Dereferencing a ref
+
+    tmp/EDX <- advance *s, tmp0/EDI
+      => compare (ESP+4), *(ESP+8)  ; '*' from compiler2
+         jump-unless-equal panic
+         EDX <- add ESP, 8
+         EDX <- copy *EDX
+         EDX <- add EDX, 4
+         EDX <- 8d/lea EDX + result
+
+=== More speculative ideas
+
+Initialize data segment with special extensible syntax for literals. All
+literals except numbers and strings start with %.
+
+  %size(type) => compiler replaces with size of type
+  %point(3, 4) => two words
+
+and so on.
+
+=== Credits
+
+Forth
+C
+Rust
+Lisp
+qhasm

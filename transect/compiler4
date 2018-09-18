@@ -1,0 +1,84 @@
+== Goal
+
+A memory-safe language with a simple translator to x86 that can be feasibly written in x86.
+
+== Definitions of terms
+
+Memory-safe: it should be impossible to:
+  a) create a pointer out of arbitrary data, or
+  b) to access heap memory after it's been freed.
+
+Simple: do all the work in a 2-pass translator:
+  Pass 1: check each instruction's types in isolation.
+  Pass 2: emit code for each instruction in isolation.
+
+== Implications
+
+=> Each instruction matches a pattern and yields a template to emit.
+=> There's a 1-to-1 mapping between instructions in the source language and x86 machine code.
+  Zero runtime.
+=> Programmers have to decide how to use registers.
+=> Translator can't insert any instructions that write to registers. (We don't know if a register is in use.)
+
+== Lessons from Mu
+
+1. For easy bounds checking, never advance pointers to arrays or heap allocations. No pointer arithmetic.
+2. Store the array length with the array.
+3. Store an allocation id with heap allocations. Allocation id goes monotonically up, never gets reused. When it wraps around to zero the program panics.
+4. Heap pointers also carry around allocation id.
+5. When dereferencing a heap pointer, first ensure its alloc id matches the alloc id of the payload. This ensures some other copy of the pointer didn't get freed (and potentially reused)
+
+== Problem 1
+
+How to index into an array?
+
+  The array has a length that needs to be checked.
+  Its elements have a type T.
+  The base will be in memory, either on the stack or the heap.
+  The index may be in the register, stack or heap.
+
+That's too much work to do in a single instruction.
+
+So arrays have to take multiple steps. And we have to guard against the steps
+being misused in unsafe ways.
+
+To index into an array with elements of type T, starting with the size of the
+array in bytes:
+
+  step 1: get the offset the index is at
+    <reg offset> : (index T) <- index <reg/mem idx> : int, <literal> : (size T)
+  step 2: convert the array to address-of-element
+    <reg x> : (address T) <- advance <reg/mem A> : (array T), <reg offset> : (index T)
+    implicitly compares the offset with the size, panic if greater
+    =>
+      compare <reg offset> : (index T), <reg/mem> : (array T)
+      jge panic
+  step 3: use the address to the element
+    ...
+
+(index T) is a special type. You can do only two things with it:
+  - pass it to the advance instruction
+  - convert it to a number (but no converting back)
+
+(address T) is a short-term pointer. You can't store addresses in structs, you
+can't define global variables of that type, and you can't pass the type to the
+memory allocator to save to the heap. You also can't store addresses in the
+stack, because you may encounter a free before you end the function.
+
+Maybe we'll also forbid any sort of copy of address types. Only place you can
+store an (address T) is the register you saved to. To copy you need a handle
+to a heap allocation.
+
+Still not entirely protected against temporal issues. But pretty close.
+
+== Problem 2
+
+How to dereference a heap allocation?
+
+== List of types
+
+int 
+char
+(address _)   X  
+(array _)
+(handle _)

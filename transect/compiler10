@@ -1,0 +1,301 @@
+=== Goal
+
+A memory-safe language with a simple translator to x86 that can be feasibly written without itself needing a translator/compiler.
+
+Memory-safe: it should be impossible to:
+  a) create a pointer out of arbitrary data, or
+  b) to access heap memory after it's been freed.
+
+Simple: do all the work in a 2-pass translator:
+  Pass 1: check each statement's types in isolation.
+  Pass 2: emit code for each statement in isolation.
+
+=== Language summary
+
+Program organization is going to be fairly conventional and in the spirit of C: programs will consist of a series of type, global and function declarations. More details below. Functions will consist of a list of statements, each containing a single operation. Since we try to map directly to x86 instructions, combinations of operations and operands will not be orthogonal. You won't be able to operate at once on two memory locations, for example, since no single x86 instruction can do that.
+
+Statement operands will be tagged with where they lie. This mostly follows C: local variables are on the stack, and variables not on the stack are in the global segment. The one addition is that you can lay out (only word-size) variables on registers. This is kinda like C's `register` keyword, but not quite: if you don't place a variable on a register, you are *guaranteed* it won't be allocated a register. Programmers do register allocation in this language.
+
+The other memorable feature of the language is two kinds of pointers: a 'ref' is a fat pointer manually allocated on the heap, and an 'address' is a far more ephemeral thing described below.
+
+--- Ref
+
+Refs are used to manage heap allocations. They are fat pointers that augment the address of a payload with an allocation id. On x86 a ref requires 8 bytes: 4 for the address, and 4 for the alloc id. Refs can only ever point to the start of a heap allocation. Never within a heap allocation, and *certainly* never to the stack or global segment.
+
+How alloc ids work: Every heap allocation allocates an additional word of space for an alloc id in the payload, and stores a unique alloc id in the payload as well as the pointer returned to the caller. Reclaiming an allocation resets the payload's alloc id. As long as alloc ids are always unique, and as long as refs can never point to within a heap allocation, we can be guaranteed that a stale pointer whose payload has been reclaimed will end up with a mismatch between pointer alloc id and payload alloc id.
+
+  x <- alloc   # x's alloc id and *x's alloc id will be the same, say A
+  y <- copy x  # y also has alloc id A
+  free x       # x's alloc id is now 0, as is *x's alloc id
+  ..*y..       # y's alloc id is A, but *y's alloc id is 0, so we can signal an error
+  z <- alloc   # say z reuses the same address, but now with a new alloc id A'
+  ..*y..       # y's alloc id is A, but *y's alloc id is A', so we can signal an error
+
+--- Address
+
+Since our statements are really simple, many operations may take multiple statements. To stitch a more complex computation like `A[i].f = 34` across multiple statements, we need addresses.
+
+Addresses can be used to manage any memory address. They can point inside objects, on the stack, heap or global segment. Since they are so powerful we greatly restrict their use. Addresses can only be stored in a register, never in memory on the stack or global segment. Since user-defined types will usually not fit on a register, we forbid addresses in any user-defined types. Since an address may point inside a heap allocation that can be freed, and since `free` will be a function call, addresses will not persist across function calls. Analyzing control flow to find intervening function calls can be complex, so addresses will not persist across basic block boundaries.
+
+The key open question with this language: can we find *clear* rules of address use that *don't complicate* programs, and that keep the type system *sound*?
+
+=== Language syntax
+
+The type system basically follows Hindley-Milner with product and (tagged) sum types. In addition we have address and ref types. Type declarations have the following syntax:
+
+  # product type
+  type foo [
+    x : int
+    y : (ref int)
+    z : bar
+  ]
+
+  # sum type
+  choice bar [
+    x : int
+    y : point
+  ]
+
+Functions have a header and a series of statements in the body:
+
+  fn f a : int b : int -> b : int [
+    ...
+  ]
+
+Statements have the following format:
+
+  io1, io2, ... <- operation i1, i2, ...
+
+i1, i2 operands on the right hand side are immutable. io1, io2 are in-out operands. They're written to, and may also be read.
+
+Two example programs:
+
+  i) Factorial:
+
+    fn factorial n : int -> result/EAX : int [
+      result/EAX <- copy 1
+      {
+        compare n, 1
+        break-if <=
+        var tmp/EBX : int
+        tmp/EBX <- copy n
+        tmp/EBX <- subtract 1
+        var tmp2/EAX : int
+        tmp2/EAX <- call factorial, tmp/EBX
+        result/EAX <- multiply tmp2/EAX, n
+      }
+      return result/EAX
+    ]
+
+  ii) Writing to a global variable:
+
+    var x : char
+
+    fn main [
+      call read, 0/stdin, x, 1/size
+      result/EAX <- call write, 1/stdout, x, 1/size
+      call exit, result/EAX
+    ]
+
+One thing to note: variables refer to addresses (not to be confused with the `address` type) just like in Assembly. We'll uniformly use '*' to indicate getting at the value in an address. This will also provide a consistent hint of the addressing mode.
+
+=== Compilation strategy
+
+--- User-defined statements
+
+User-defined functions will be called with the same syntax as primitives. They'll translate to a sequence of push instructions (one per operand, both in and in-out), a call instruction, and a sequence of pop instructions, either to a black hole (in operands) or a location (in-out operands). This follows the standard Unix calling convention:
+
+  push EBP
+  copy ESP to EBP
+  push arg 1
+  push arg 2
+  ...
+  call
+  pop arg n
+  ...
+  pop arg 1
+  copy EBP to ESP
+  pop ESP
+
+Implication: each function argument needs to be something push/pop can accept. It can't be an address, so arrays and structs will either have to be passed by value, necessitating copies, or allocated on the heap. We may end up allocating members of structs in separate heap allocations just so we can pass them piecemeal to helper functions. (Mu has explored this trade-off in the past.)
+
+--- Primitive statements
+
+Operands may be:
+  in code (literals)
+  in registers
+  on the stack
+  on the global segment
+
+Operands are always scalar. Variables on the stack or global segment are immutable references.
+
+  - Variables on the stack are stored at addresses like *(EBP+n)
+  - Global variables are stored at addresses like *disp32, where disp32 is a statically known constant
+
+Since the language will not be orthogonal, compilation proceeds by pattern matching over a statement along with knowledge about the types of its operands, as well as where they're stored (register/stack/global). We now enumerate mappings for various categories of statements, based on the type and location of their operands.
+
+Many statements will end up encoding to the exact same x86 instructions. But the types differ, and they get type-checked differently along the way.
+
+A. x : int <- add y
+
+  Requires y to be scalar (32 bits). Result will always be an int. No pointer arithmetic.
+
+  reg <- add literal    => 81 0/subop 3/mod                                                                                           ...(0)
+  reg <- add reg        => 01 3/mod                                                                                                   ...(1)
+  reg <- add stack      => 03 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8 reg/r32                                        ...(2)
+  reg <- add global     => 03 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                       ...(3)
+  stack <- add literal  => 81 0/subop 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8 literal/imm32                          ...(4)
+  stack <- add reg      => 01 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8 reg/r32                                        ...(5)
+  stack <- add stack    => disallowed
+  stack <- add global   => disallowed
+  global <- add literal => 81 0/subop 0/mod 5/rm32/include-disp32 global/disp32 literal/imm32                                         ...(6)
+  global <- add reg     => 01 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                       ...(7)
+  global <- add stack   => disallowed
+  global <- add global  => disallowed
+
+Similarly for sub, and, or, xor and even copy. Replace the opcodes above with corresponding ones from this table:
+
+                            add             sub           and           or            xor         copy/mov
+  reg <- op literal         81 0/subop      81 5/subop    81 4/subop    81 1/subop    81 6/subop  c7
+  reg <- op reg             01 or 03        29 or 2b      21 or 23      09 or 0b      31 or 33    89 or 8b
+  reg <- op stack           03              2b            23            0b            33          8b
+  reg <- op global          03              2b            23            0b            33          8b
+  stack <- op literal       81 0/subop      81 5/subop    81 4/subop    81 1/subop    81 6/subop  c7
+  stack <- op reg           01              29            21            09            31          89
+  global <- op literal      81 0/subop      81 5/subop    81 4/subop    81 1/subop    81 6/subop  c7
+  global <- op reg          01              29            21            09            31          89
+
+B. x/reg : int <- mul y
+
+  Requires y to be scalar.
+  x must be in a register. Multiplies can't write to memory.
+
+  reg <- mul literal    => 69                                                                                                         ...(8)
+  reg <- mul reg        => 0f af 3/mod                                                                                                ...(9)
+  reg <- mul stack      => 0f af 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8 reg/r32                                     ...(10)
+  reg <- mul global     => 0f af 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                    ...(11)
+
+C. x/EAX/quotient : int, y/EDX/remainder : int <- idiv z     # divide EAX by z; store results in EAX and EDX
+
+  Requires source x and z to both be scalar.
+  x must be in EAX and y must be in EDX. Divides can't write anywhere else.
+
+  First clear EDX (we don't support ints larger than 32 bits):
+  31/xor 3/mod 2/rm32/EDX 2/r32/EDX
+
+  then:
+  EAX, EDX <- idiv literal  => disallowed
+  EAX, EDX <- idiv reg      => f7 7/subop 3/mod                                                                                       ...(12)
+  EAX, EDX <- idiv stack    => f7 7/subop 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8                                    ...(13)
+  EAX, EDX <- idiv global   => f7 7/subop 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                           ...(14)
+
+D. x : int <- not (weird syntax, but we'll ignore that)
+
+  Requires x to be an int.
+
+  reg <- not                => f7 3/mod                                                                                               ...(15)
+  stack <- not              => f7 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8                                            ...(16)
+  global <- not             => f7 0/mod 5/rm32/include-disp32 global/disp32 reg/r32                                                   ...(17)
+
+E. x : (address t) <- get o : T, %f
+
+  (Assumes T.f has type t.)
+
+  o can't be on a register since it's a non-primitive (likely larger than a word)
+  f is a literal
+  x must be in a register (by definition for an address)
+
+  reg1 <- get reg2, literal       => 8d/lea 1/mod reg2/rm32 literal/disp8 reg1/r32                                                    ...(18)
+  reg <- get stack, literal       => 8d/lea 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n+literal/disp8 reg/r32                  ...(19)
+    (simplifying assumption: stack frames can't be larger than 256 bytes)
+  reg <- get global, literal      => 8d/lea 0/mod 5/rm32/include-disp32 global+literal/disp32, reg/r32                                ...(20)
+
+F. x : (offset T) <- index i : int, %size(T)
+
+  This statement is used to translate an array index (denominated in the type of array elements) into an offset (denominated in bytes). It's just a multiply but with a new type for the result so that we can keep the type system sound.
+
+  Since index statements translate to multiplies, 'x' must be a register.
+  The %size(T) argument is statically known, so will always be a literal.
+
+  reg1 <- index reg2, literal       => 69/mul 3/mod reg2/rm32 literal/imm32 -> reg1/r32
+                                    or 68/mul 3/mod reg2/rm32 literal/imm8 -> reg1/r32                                                ...(21)
+  reg1 <- index stack, literal      => 69/mul 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8 literal/imm32 -> reg1/r32      ...(22)
+  reg1 <- index global, literal     => 69/mul 0/mod 5/rm32/include-disp32 global/disp32 literal/imm32 -> reg1/r32                     ...(23)
+
+G. x : (address T) <- advance a : (array T), idx : (offset T)
+
+  reg <- advance a/reg, idx/reg   => 8d/lea 0/mod 4/rm32/SIB a/base idx/index 0/scale reg/r32                                         ...(24)
+  reg <- advance stack, literal   => 8d/lea 1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n+literal/disp8 reg/r32                  ...(25)
+  reg <- advance stack, reg2      => 8d/lea 1/mod 4/rm32/SIB 5/base/EBP reg2/index 0/scale n/disp8 reg/r32                            ...(26)
+  reg <- advance global, literal  => 8d/lea 0/mod 5/rm32/include-disp32 global+literal/disp32, reg/r32                                ...(27)
+
+=== Example
+
+Putting it all together: code generation for `a[i].y = 4` where a is an array of 2-d points with x, y coordinates.
+
+If a is allocated on the stack, say of type (array point 6):
+
+  offset/EAX : (offset point) <- index i, 8  # (22)
+  tmp/EBX : (address point) <- advance a : (array point 6), offset/EAX  # (26)
+  tmp2/ECX : (address number) <- get tmp/EBX : (address point), 4/y  # (18)
+  *tmp2/ECX <- copy 4  # (5 for copy/mov with 0 disp8)
+
+=== More complex statements
+
+A couple of statement types expand to multiple instructions:
+  Function calls. We've already seen these above.
+  Bounds checking against array length in 'advance'
+  Dereferencing 'ref' types (see type list up top). Requires an alloc id check.
+
+G'. Bounds checking the 'advance' statement begins with a few extra instructions. For example:
+
+  x/EAX : (address T) <- advance a : (array T), literal
+
+Suppose array 'a' lies on the stack starting at EBP+4. Its length will be at EBP+4, and the actual contents of the array will start from EBP+8.
+
+ compare *(EBP+4), literal
+ jump-if-greater panic          # rudimentary error handling
+
+Now we're ready to perform the actual 'lea':
+
+  lea EBP+8 + literal, reg      # line 25 above
+
+H. Dereferencing a 'ref' needs to be its own statement, yielding an address. This statement has two valid forms:
+
+  reg : (address T) <- deref stack : (ref T)
+  reg : (address T) <- deref global : (ref T)
+
+Since refs need 8 bytes they can't be in a register. And of course the output is an address so it must be in a register.
+
+Compiling 'deref' will take a few instructions. Consider the following example where 's' is on the stack, say starting at EBP+4:
+
+  EDX : (address T) <- deref s : (ref T)
+
+The alloc id of 's' is at *(EBP+4) and the actual address is at *(EBP+8). The above statement will compile down to the following:
+
+  EDX/s <- copy *(EBP+8)         # the address stored in s
+  EDX/alloc-id <- copy *EDX      # alloc id of payload *s
+  compare EDX, *(EBP+4)          # compare with alloc id of pointer
+  jump-unless-equal panic        # rudimentary error handling
+  # compute *(EBP+8) + 4
+  EDX <- copy *(EBP+8)           # recompute the address in s because we can't save the value anywhere)
+  EDX <- add EDX, 4              # skip alloc id this time
+
+Subtleties:
+  a) if the alloc id of the payload is 0, then the payload is reclaimed
+  b) looking up the payload's alloc id *could* cause a segfault. What to do?
+
+=== More speculative ideas
+
+Initialize data segment with special extensible syntax for literals. All literals except numbers and strings start with %. Global variable declarations would now look like:
+
+  var s : (array character) = "abc"  # exception to the '%' convention
+  var p : point = %point(3, 4)
+
+=== Credits
+
+Forth
+C
+Rust
+Lisp
+qhasm

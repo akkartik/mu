@@ -1,0 +1,21 @@
+fn factorial n : int -> result/EAX : int [
+  result/EAX <- copy 1
+  {
+    compare n, 1
+    break-if <=
+    var tmp/EBX : int
+    tmp/EBX <- copy n
+    tmp/EBX <- subtract 1
+    var tmp2/EAX : int
+    tmp2/EAX <- call factorial, tmp/EBX
+    result/EAX <- multiply tmp2/EAX, n
+  }
+  return result/EAX
+]
+
+data structures:
+
+add entry for "factorial" into the Types table, with value (fn int -> int)
+add entry for "factorial" into the address table, with value next available address
+add entry for "factorial" into the size table, with value size of "0b 0a bb ..."
+increase next available address by size of "factorial"
