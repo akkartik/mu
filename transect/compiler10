@@ -132,6 +132,9 @@ Operands are always scalar. Variables on the stack or global segment are immutab
   - Variables on the stack are stored at addresses like *(EBP+n)
   - Global variables are stored at addresses like *disp32, where disp32 is a statically known constant
 
+  #define local(n)  1/mod 4/rm32/SIB 5/base/EBP 4/index/none 0/scale n/disp8
+  #define disp32(N) 0/mod 5/rm32/include-disp32 N/disp32
+
 Since the language will not be orthogonal, compilation proceeds by pattern matching over a statement along with knowledge about the types of its operands, as well as where they're stored (register/stack/global). We now enumerate mappings for various categories of statements, based on the type and location of their operands.
 
 Many statements will end up encoding to the exact same x86 instructions. But the types differ, and they get type-checked differently along the way.
