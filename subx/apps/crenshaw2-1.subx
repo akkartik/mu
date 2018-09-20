@@ -28,7 +28,8 @@
   b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
   cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
 
-# print error message and exit(1)
+# print error message and exit
+# really maps to the 'Expected' function in Crenshaw
 abort:  # s : (address array byte) -> <void>
   # error(s)
     # push args
@@ -42,9 +43,9 @@ abort:  # s : (address array byte) -> <void>
   b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
   cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
 
-# print out "Error: #{s}\n" to stderr
+# print out "Error: #{s} expected\n" to stderr
 error:  # s : (address array byte) -> <void>
-  # write_stderr(Error)
+  # write_stderr("Error: ")
     # push args
   68/push                         .               .             .           .             .           .           .               Error/imm32
     # call
@@ -58,7 +59,14 @@ error:  # s : (address array byte) -> <void>
   e8/call                         .               .             .           .             .           .           write_stderr/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
-  # write_stderr(Newline)
+  # write_stderr(" expected")
+    # push args
+  68/push                         .               .             .           .             .           .           .               Expected_suffix/imm32
+    # call
+  e8/call                         .               .             .           .             .           .           write_stderr/disp32
+    # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  # write_stderr("\n")
     # push args
   68/push                         .               .             .           .             .           .           .               Newline/imm32
     # call
@@ -95,6 +103,11 @@ Error:  # "Error: " : (array byte)
   07 00 00 00
   # data
   45/E 72/r 72/r 6f/o 72/r 3a/: 20/space
+Expected_suffix:  # " expected" : (array byte)
+  # size
+  09 00 00 00
+  # data
+  20/space 65/e 78/x 70/p 65/e 63/c 74/t 65/e 64/d
 Error_integer:  # "Integer" : (array byte)
   # size
   07 00 00 00
