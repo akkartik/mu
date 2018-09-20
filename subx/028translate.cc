@@ -20,6 +20,7 @@
 if (is_equal(argv[1], "translate")) {
   START_TRACING_UNTIL_END_OF_SCOPE;
   assert(argc > 3);
+  reset();
   program p;
   ifstream fin(argv[2]);
   if (!fin) {
