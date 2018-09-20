@@ -16,11 +16,11 @@
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # main:
-  # error(Error_integer)
+  # abort(Error_integer)
     # push args
-  68/push                         .               .             .           .             .           .           .               Error_integer/imm32  # push 5
+  68/push                         .               .             .           .             .           .           .               Error_integer/imm32
     # call
-  e8/call                         .               .             .           .             .           .           error/disp32
+  e8/call                         .               .             .           .             .           .           abort/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
   # exit(0)
@@ -28,10 +28,50 @@
   b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
   cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
 
+# print error message and exit(1)
+abort:  # s : (address array byte) -> <void>
+  # error(s)
+    # push args
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           .           4/disp8         .                 # push *(ESP+4)
+    # call
+  e8/call                         .               .             .           .             .           .           error/disp32
+    # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  # exit(1)
+  bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EBX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
+  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+
+# print out "Error: #{s}\n" to stderr
 error:  # s : (address array byte) -> <void>
+  # write_stderr(Error)
+    # push args
+  68/push                         .               .             .           .             .           .           .               Error/imm32
+    # call
+  e8/call                         .               .             .           .             .           .           write_stderr/disp32
+    # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  # write_stderr(s)
+    # push args
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           .           4/disp8         .                 # push *(ESP+4)
+    # call
+  e8/call                         .               .             .           .             .           .           write_stderr/disp32
+    # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  # write_stderr(Newline)
+    # push args
+  68/push                         .               .             .           .             .           .           .               Newline/imm32
+    # call
+  e8/call                         .               .             .           .             .           .           write_stderr/disp32
+    # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  # end
+  c3/return
+
+write_stderr:  # s : (address array byte) -> <void>
   # write(2/stderr, (data) s+4, (size) *s)
     # fd = 2 (stderr)
-  bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy 2 to EBX
+  bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy 2 to EBX
     # x = s+4
   8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   4/disp8         .                 # copy *(ESP+4) to ECX
   81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add 4 to ECX
@@ -41,14 +81,22 @@ error:  # s : (address array byte) -> <void>
     # call write()
   b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
   cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
-  # exit(1)
-  bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
-  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+  # end
+  c3/return
 
 == data
+Newline:
+  # size
+  01 00 00 00
+  # data
+  0a/newline
+Error:  # "Error: " : (array byte)
+  # size
+  07 00 00 00
+  # data
+  45/E 72/r 72/r 6f/o 72/r 3a/: 20/space
 Error_integer:  # "Integer" : (array byte)
   # size
-  08 00 00 00
+  07 00 00 00
   # data
-  49 6e 74 65 67 65 72 10
+  49/I 6e/n 74/t 65/e 67/g 65/e 72/r
