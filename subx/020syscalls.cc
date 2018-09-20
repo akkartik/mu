@@ -21,13 +21,15 @@ void process_int80() {
     exit(/*exit code*/Reg[EBX].u);
     break;
   case 3:
-    trace(91, "run") << "read: " << Reg[EBX].u << ' ' << Reg[ECX].u << '/' << mem_addr_string(Reg[ECX].u) << ' ' << Reg[EDX].u << end();
+    trace(91, "run") << "read: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
+    trace(91, "run") << Reg[ECX].u << " => " << mem_addr_string(Reg[ECX].u) << end();
     Reg[EAX].i = read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     trace(91, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 4:
-    trace(91, "run") << "write: " << Reg[EBX].u << ' ' << Reg[ECX].u << '/' << mem_addr_string(Reg[ECX].u) << ' ' << Reg[EDX].u << end();
+    trace(91, "run") << "write: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
+    trace(91, "run") << Reg[ECX].u << " => " << mem_addr_string(Reg[ECX].u) << end();
     Reg[EAX].i = write(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     trace(91, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
@@ -35,7 +37,8 @@ void process_int80() {
   case 5: {
     check_flags(ECX);
     check_mode(EDX);
-    trace(91, "run") << "open: " << Reg[EBX].u << '/' << mem_addr_string(Reg[EBX].u) << ' ' << Reg[ECX].u << end();
+    trace(91, "run") << "open: " << Reg[EBX].u << ' ' << Reg[ECX].u << end();
+    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_string(Reg[EBX].u) << end();
     Reg[EAX].i = open(/*filename*/mem_addr_string(Reg[EBX].u), /*flags*/Reg[ECX].u, /*mode*/0640);
     trace(91, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
@@ -49,19 +52,23 @@ void process_int80() {
     break;
   case 8:
     check_mode(ECX);
-    trace(91, "run") << "creat: " << Reg[EBX].u << '/' << mem_addr_string(Reg[EBX].u) << end();
+    trace(91, "run") << "creat: " << Reg[EBX].u << end();
+    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_string(Reg[EBX].u) << end();
     Reg[EAX].i = creat(/*filename*/mem_addr_string(Reg[EBX].u), /*mode*/0640);
     trace(91, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 10:
-    trace(91, "run") << "unlink: " << Reg[EBX].u << '/' << mem_addr_string(Reg[EBX].u) << end();
+    trace(91, "run") << "unlink: " << Reg[EBX].u << end();
+    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_string(Reg[EBX].u) << end();
     Reg[EAX].i = unlink(/*filename*/mem_addr_string(Reg[EBX].u));
     trace(91, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 38:
-    trace(91, "run") << "rename: " << Reg[EBX].u << '/' << mem_addr_string(Reg[EBX].u) << " -> " << Reg[ECX].u << '/' << mem_addr_string(Reg[ECX].u) << end();
+    trace(91, "run") << "rename: " << Reg[EBX].u << " -> " << Reg[ECX].u << end();
+    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_string(Reg[EBX].u) << end();
+    trace(91, "run") << Reg[ECX].u << " => " << mem_addr_string(Reg[ECX].u) << end();
     Reg[EAX].i = rename(/*old filename*/mem_addr_string(Reg[EBX].u), /*new filename*/mem_addr_string(Reg[ECX].u));
     trace(91, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
