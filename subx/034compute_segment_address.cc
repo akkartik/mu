@@ -27,7 +27,7 @@ void compute_segment_starts(program& p) {
     segment& curr = p.segments.at(i);
     if (curr.start == 0) {
       curr.start = CODE_START + i*SEGMENT_SIZE + p_offset;
-      trace(99, "transform") << "segment " << i << " begins at address " << curr.start << end();
+      trace(99, "transform") << "segment " << i << " begins at address 0x" << HEXWORD << curr.start << end();
     }
     p_offset += size_of(curr);
     assert(p_offset < SEGMENT_SIZE);  // for now we get less and less available space in each successive segment
@@ -48,6 +48,7 @@ uint32_t num_bytes(const line& inst) {
     const word& curr = inst.words.at(i);
     if (has_operand_metadata(curr, "disp32") || has_operand_metadata(curr, "imm32"))  // only multi-byte operands
       sum += 4;
+    // End num_bytes(curr) Special-cases
     else
       sum++;
   }

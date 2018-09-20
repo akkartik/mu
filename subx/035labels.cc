@@ -216,3 +216,20 @@ xz:
  -a:  # indent to avoid looking like a trace_should_not_contain command for this scenario
             05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
 +error: '-a' starts with '-', which can be confused with a negative number; use a different name
+
+//: now that we have labels, we need to adjust segment size computation to
+//: ignore them.
+
+:(scenario segment_size_ignores_labels)
+% Mem_offset = CODE_START;
+== code  # 0x08048074
+05/add 0x0d0c0b0a/imm32  # 5 bytes
+foo:                     # 0 bytes
+== data  # 0x08049079
+bar:
+00
++transform: segment 1 begins at address 0x08049079
+
+:(before "End num_bytes(curr) Special-cases")
+else if (is_label(curr))
+  ;  // don't count it
