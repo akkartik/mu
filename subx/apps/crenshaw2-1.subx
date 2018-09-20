@@ -1,0 +1,55 @@
+## port of https://github.com/akkartik/crenshaw/blob/master/tutor2.1.pas
+# corresponds to the section "single digits" in https://compilers.iecc.com/crenshaw/tutor2.txt
+#
+# To run:
+#   $ subx translate apps/crenshaw2.1.subx crenshaw 2.1
+#   $ echo '3'  |subx run apps/crenshaw2.1  |xxd -
+# Expected output:
+#   TODO
+#
+# Major note: byte strings are not null-terminated. Instead they're prefixed
+# with a 32-bit length.
+
+== code
+# instruction                     effective address                                                   operand     displacement    immediate
+# op          subop               mod             rm32          base        index         scale       r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# main:
+  # error(Error_integer)
+    # prepare call
+  55/push                         .               .             .           .             .           .           .               .                 # push EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # push args
+  68/push                         .               .             .           .             .           .           .               Error_integer/imm32  # push 5
+    # call
+  e8/call                         .               .             .           .             .           .           error/disp32
+  # exit(0)
+  bb/copy                         .               .             .           .             .           .           .               0/imm32           # copy 0 to EBX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
+  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+
+error:  # s : (address array byte) -> <void>
+  # write(2/stderr, (data) s+4, (size) *s)
+    # fd = 2 (stderr)
+  bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy 2 to EBX
+    # x = s+4
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   4/disp8         .                 # copy *(ESP+4) to ECX
+  81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add 4 to ECX
+    # size = *s
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to ECX
+  8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
+    # call write()
+  b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
+  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+  # exit(1)
+  bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EBX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
+  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+
+== data
+Error_integer:  # "Integer" : (array byte)
+  # size
+  08 00 00 00
+  # data
+  49 6e 74 65 67 65 72 10
