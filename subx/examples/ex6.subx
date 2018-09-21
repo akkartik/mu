@@ -10,18 +10,18 @@
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-  ## write(stdout, x, size)
-  # fd = 1 (stdout)
+  # write(stdout, x, size)
+    # fd = 1 (stdout)
   bb/copy                                                                                                                         1/imm32           # copy 1 to EBX
-  # initialize x (location to write result to)
+    # initialize x (location to write result to)
   b9/copy                                                                                                                         x/imm32           # copy to ECX
-  # initialize size
+    # initialize size
   8b/copy                         0/mod/indirect  5/rm32/.disp32                                      2/r32/EDX   size/disp32                       # copy *size to EDX
-  # write(fd, x, size)
+    # write(fd, x, size)
   b8/copy                                                                                                                         4/imm32           # copy 4 to EAX
   cd/syscall                                                                                                                      0x80/imm8         # int 80h
 
-  ## exit(EBX)
+  # exit(EBX)
   b8/copy                                                                                                                         1/imm32           # copy 1 to EAX
   cd/syscall                                                                                                                      0x80/imm8         # int 80h
 
