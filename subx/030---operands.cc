@@ -87,7 +87,9 @@ void init_operand_type_help() {
     "3-bit operand specifying a register operand used directly, without any further addressing modes.\n"
   );
   put(Help, "rm32",
-    "3-bit operand specifying a register operand whose precise interpretation interacts with 'mod'.\n"
+    "32-bit value in register or memory. The precise details of its construction depend on the eponymous 3-bit\n"
+    "'rm32' operand, the 'mod' operand, and also potentially the 'SIB' operands ('scale', 'index' and 'base')\n"
+    "and a displacement ('disp8' or 'disp32').\n"
     "For complete details consult the IA-32 software developer's manual, table 2-2,\n"
     "\"32-bit addressing forms with the ModR/M byte\".\n"
     "  https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf\n"
