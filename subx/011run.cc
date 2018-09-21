@@ -48,7 +48,10 @@ cerr << "  syntax\n";
 # As you can see, comments start with '#' and are ignored.
 
 # Segment headers start with '==', specifying the hex address where they
-# begin. The first segment is always assumed to be code.
+# begin. There's usually one code segment and one data segment. We assume the
+# code segment always comes first. Later when we emit ELF binaries we'll add
+# directives for the operating system to ensure that the code segment can't be
+# written to, and the data segment can't be executed as code.
 == 0x1
 
 # We don't show it here, but all lines can have metadata after a ':'.

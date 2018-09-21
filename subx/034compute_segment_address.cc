@@ -54,3 +54,18 @@ uint32_t num_bytes(const line& inst) {
   }
   return sum;
 }
+
+//: Dependencies:
+//: - We'd like to compute segment addresses before setting up global variables,
+//:   because computing addresses for global variables requires knowing where
+//:   the data segment starts.
+//: - We'd like to finish expanding labels before computing segment addresses,
+//:   because it would make computing the sizes of segments more self-contained
+//:   (num_bytes).
+//:
+//: Decision: compute segment addresses before expanding labels, by being
+//: aware in this layer of certain operand types that will eventually occupy
+//: multiple bytes.
+//:
+//: The layer to expand labels later hooks into num_bytes() to teach this
+//: layer that labels occupy zero space in the binary.

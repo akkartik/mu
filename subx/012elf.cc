@@ -1,5 +1,6 @@
-// Helper for debugging and testing.
-// Based on https://github.com/kragen/stoneknifeforth/blob/702d2ebe1b/386.c
+//: Generating ELF binaries for SubX programs.
+//: This will allow us to run them natively on a Linux kernel.
+//: Based on https://github.com/kragen/stoneknifeforth/blob/702d2ebe1b/386.c
 
 :(before "End Main")
 assert(argc > 1);
