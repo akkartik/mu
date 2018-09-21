@@ -27,7 +27,7 @@
     # push args
   53/push                         .               .             .           .             .           .           .               .                       # push EBX
     # call
-  e8/call                         .               .             .           .             .           .           ascii_length/disp32
+  e8/call  ascii_length/disp32
     # discard args
   5a/pop                          .               .             .           .             .           .           .               .                       # pop into EDX
     # clean up after call
@@ -49,13 +49,13 @@ $al_loop:
   8a/copy                         0/mod/*         2/rm32/EDX    .           .             .           1/r32/ECX   .               .                       # copy byte at *EDX to lower byte of ECX
   # if c == '\0' break
   81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32                 # compare ECX with 0
-  74/jump-if-zero                 .               .             .           .             .           .           .               $al_ret/disp8           # jump if equal
+  74/jump-if-equal  $al_ret/disp8
   # ++s
   81          0/subop/add         3/mod/direct    2/rm32/EDX    .           .             .           .           .               1/imm32                 # add 1 to EDX
   # ++result
   81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               1/imm32                 # add 1 to EAX
   # loop
-  eb/jump                         .               .             .           .             .           .           .               $al_loop/disp8          # jump $al_loop
+  eb/jump  $al_loop/disp8
 $al_ret:
   # return (result in EAX)
   c3/return
