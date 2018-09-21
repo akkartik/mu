@@ -55,5 +55,9 @@ augroup END
 " assumes CWD is subx/
 command! -nargs=1 EE call EditSubx(<f-args>)
 function! EditSubx(arg)
-  exec "silent! vert split " . a:arg . "*.subx"
+  if a:arg =~ "^ex"
+    exec "silent! vert split examples/" . a:arg . "*.subx"
+  else
+    exec "silent! vert split apps/" . a:arg . "*.subx"
+  endif
 endfunction
