@@ -21,7 +21,7 @@
 # main:
   # abort(Error_integer)
     # push args
-  68/push                         .               .             .           .             .           .           .               Error_integer/imm32
+  68/push  Error_integer/imm32
     # call
   e8/call  abort/disp32
     # discard arg
@@ -29,7 +29,7 @@
   # exit(0)
   bb/copy                         .               .             .           .             .           .           .               0/imm32           # copy 0 to EBX
   b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
-  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+  cd/syscall  0x80/imm8
 
 # print error message and exit
 # really maps to the 'Expected' function in Crenshaw
@@ -44,13 +44,13 @@ abort:  # s : (address array byte) -> <void>
   # exit(1)
   bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EBX
   b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy 1 to EAX
-  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+  cd/syscall  0x80/imm8
 
 # print out "Error: #{s} expected\n" to stderr
 error:  # s : (address array byte) -> <void>
   # write_stderr("Error: ")
     # push args
-  68/push                         .               .             .           .             .           .           .               Error/imm32
+  68/push  Error/imm32
     # call
   e8/call  write_stderr/disp32
     # discard arg
@@ -64,14 +64,14 @@ error:  # s : (address array byte) -> <void>
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
   # write_stderr(" expected")
     # push args
-  68/push                         .               .             .           .             .           .           .               Expected_suffix/imm32
+  68/push  Expected_suffix/imm32
     # call
   e8/call  write_stderr/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
   # write_stderr("\n")
     # push args
-  68/push                         .               .             .           .             .           .           .               Newline/imm32
+  68/push  Newline/imm32
     # call
   e8/call  write_stderr/disp32
     # discard arg
@@ -91,7 +91,7 @@ write_stderr:  # s : (address array byte) -> <void>
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # call write()
   b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
-  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+  cd/syscall  0x80/imm8
   # end
   c3/return
 
@@ -107,7 +107,7 @@ write_stdout:  # s : (address array byte) -> <void>
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # call write()
   b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
-  cd/syscall                      .               .             .           .             .           .           .               0x80/imm8         # int 80h
+  cd/syscall  0x80/imm8
   # end
   c3/return
 
