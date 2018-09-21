@@ -183,7 +183,7 @@ string Dump_label = "";  // if set, print trace lines matching a single label to
 :(before "End Reset")
 Hide_errors = false;
 Hide_warnings = false;
-Dump_trace = false;
+Dump_trace = false;  // toggle this to print traces to screen as they are emitted
 Dump_label = "";
 //: Never dump warnings in scenarios
 :(before "End Test Setup")

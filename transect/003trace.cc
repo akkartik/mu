@@ -179,7 +179,7 @@ bool Dump_trace = false;  // if set, print trace lines to screen
 string Dump_label = "";  // if set, print trace lines matching a single label to screen
 :(before "End Reset")
 Hide_errors = false;
-Dump_trace = false;
+Dump_trace = false;  // toggle this to print traces to screen as they are emitted
 Dump_label = "";
 
 :(before "End Includes")
