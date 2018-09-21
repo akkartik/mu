@@ -53,11 +53,23 @@ augroup END
 "   reloading an existing file (shouldn't mess up existing highlighting)
 
 " assumes CWD is subx/
-command! -nargs=1 EE call EditSubx(<f-args>)
-function! EditSubx(arg)
+command! -nargs=1 E call EditSubx("edit", <f-args>)
+if exists("&splitvertical")
+  command! -nargs=1 S call EditSubx("vert split", <f-args>)
+  command! -nargs=1 H call EditSubx("hor split", <f-args>)
+else
+  command! -nargs=1 S call EditSubx("vert split", <f-args>)
+  command! -nargs=1 H call EditSubx("split", <f-args>)
+endif
+
+function! EditSubx(cmd, arg)
+  exec "silent! " . a:cmd . " " . SubxPath(a:arg)
+endfunction
+
+function! SubxPath(arg)
   if a:arg =~ "^ex"
-    exec "silent! vert split examples/" . a:arg . "*.subx"
+    return "examples/" . a:arg . "*.subx"
   else
-    exec "silent! vert split apps/" . a:arg . "*.subx"
+    return "apps/" . a:arg . "*.subx"
   endif
 endfunction
