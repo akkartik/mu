@@ -443,9 +443,6 @@ case 0x8a: {  // copy r/m8 to r8
 
 //:: jump
 
-:(before "End Initialize Op Names(name)")
-put(name, "ff", "jump/push/call rm32 based on subop");
-
 :(scenario jump_mem_at_r32)
 % Reg[EAX].i = 0x60;
 == 0x1  # code segment
@@ -463,20 +460,12 @@ put(name, "ff", "jump/push/call rm32 based on subop");
 +run: inst: 0x00000008
 -run: inst: 0x00000003
 
-:(before "End Single-Byte Opcodes")
-case 0xff: {
-  uint8_t modrm = next();
-  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
-  switch (subop) {
-    case 4: {  // jump to r/m32
-      trace(90, "run") << "jump to r/m32" << end();
-      int32_t* arg2 = effective_address(modrm);
-      EIP = *arg2;
-      trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
-      break;
-    }
-    // End Op ff Subops
-  }
+:(before "End Op ff Subops")
+case 4: {  // jump to r/m32
+  trace(90, "run") << "jump to r/m32" << end();
+  int32_t* arg2 = effective_address(modrm);
+  EIP = *arg2;
+  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   break;
 }
 

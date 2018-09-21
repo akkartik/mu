@@ -370,6 +370,127 @@ case 0x87: {  // exchange r32 with r/m32
   break;
 }
 
+//:: increment
+
+:(before "End Initialize Op Names(name)")
+put(name, "40", "increment R0 (EAX)");
+put(name, "41", "increment R1 (ECX)");
+put(name, "42", "increment R2 (EDX)");
+put(name, "43", "increment R3 (EBX)");
+put(name, "44", "increment R4 (ESP)");
+put(name, "45", "increment R5 (EBP)");
+put(name, "46", "increment R6 (ESI)");
+put(name, "47", "increment R7 (EDI)");
+
+:(scenario increment_r32)
+% Reg[ECX].u = 0x1f;
+== 0x1  # code segment
+# op  ModR/M  SIB   displacement  immediate
+  41                                          # increment ECX
++run: increment ECX
++run: storing value 0x00000020
+
+:(before "End Single-Byte Opcodes")
+case 0x40:
+case 0x41:
+case 0x42:
+case 0x43:
+case 0x44:
+case 0x45:
+case 0x46:
+case 0x47: {  // increment r32
+  uint8_t reg = op & 0x7;
+  trace(90, "run") << "increment " << rname(reg) << end();
+  ++Reg[reg].u;
+  trace(90, "run") << "storing value 0x" << HEXWORD << Reg[reg].u << end();
+  break;
+}
+
+:(before "End Initialize Op Names(name)")
+put(name, "ff", "inc/dec/jump/push/call rm32 based on subop");
+
+:(scenario increment_rm32)
+% Reg[EAX].u = 0x20;
+== 0x1  # code segment
+# op  ModR/M  SIB   displacement  immediate
+  ff  c0                                      # increment EAX
+# ModR/M in binary: 11 (direct mode) 000 (subop inc) 000 (EAX)
++run: increment r/m32
++run: r/m32 is EAX
++run: storing value 0x00000021
+
+:(before "End Single-Byte Opcodes")
+case 0xff: {
+  uint8_t modrm = next();
+  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  switch (subop) {
+    case 0: {  // increment r/m32
+      trace(90, "run") << "increment r/m32" << end();
+      int32_t* arg = effective_address(modrm);
+      ++*arg;
+      trace(90, "run") << "storing value 0x" << HEXWORD << *arg << end();
+      break;
+    }
+    // End Op ff Subops
+  }
+  break;
+}
+
+//:: decrement
+
+:(before "End Initialize Op Names(name)")
+put(name, "48", "decrement R0 (EAX)");
+put(name, "49", "decrement R1 (ECX)");
+put(name, "4a", "decrement R2 (EDX)");
+put(name, "4b", "decrement R3 (EBX)");
+put(name, "4c", "decrement R4 (ESP)");
+put(name, "4d", "decrement R5 (EBP)");
+put(name, "4e", "decrement R6 (ESI)");
+put(name, "4f", "decrement R7 (EDI)");
+
+:(scenario decrement_r32)
+% Reg[ECX].u = 0x1f;
+== 0x1  # code segment
+# op  ModR/M  SIB   displacement  immediate
+  49                                          # decrement ECX
++run: decrement ECX
++run: storing value 0x0000001e
+
+:(before "End Single-Byte Opcodes")
+case 0x48:
+case 0x49:
+case 0x4a:
+case 0x4b:
+case 0x4c:
+case 0x4d:
+case 0x4e:
+case 0x4f: {  // decrement r32
+  uint8_t reg = op & 0x7;
+  trace(90, "run") << "decrement " << rname(reg) << end();
+  --Reg[reg].u;
+  trace(90, "run") << "storing value 0x" << HEXWORD << Reg[reg].u << end();
+  break;
+}
+
+:(scenario decrement_rm32)
+% Reg[EAX].u = 0x20;
+== 0x1  # code segment
+# op  ModR/M  SIB   displacement  immediate
+  ff  c8                                      # decrement EAX
+# ModR/M in binary: 11 (direct mode) 001 (subop inc) 000 (EAX)
++run: decrement r/m32
++run: r/m32 is EAX
++run: storing value 0x0000001f
+
+:(before "End Op ff Subops")
+case 1: {  // decrement r/m32
+  trace(90, "run") << "decrement r/m32" << end();
+  int32_t* arg = effective_address(modrm);
+  --*arg;
+  trace(90, "run") << "storing value 0x" << HEXWORD << *arg << end();
+  break;
+}
+
 //:: push
 
 :(before "End Initialize Op Names(name)")

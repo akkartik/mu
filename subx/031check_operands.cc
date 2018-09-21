@@ -98,6 +98,24 @@ void init_permitted_operands() {
   //// Class A: just op, no operands
   // halt
   put(Permitted_operands, "f4", 0x00);
+  // inc
+  put(Permitted_operands, "40", 0x00);
+  put(Permitted_operands, "41", 0x00);
+  put(Permitted_operands, "42", 0x00);
+  put(Permitted_operands, "43", 0x00);
+  put(Permitted_operands, "44", 0x00);
+  put(Permitted_operands, "45", 0x00);
+  put(Permitted_operands, "46", 0x00);
+  put(Permitted_operands, "47", 0x00);
+  // dec
+  put(Permitted_operands, "48", 0x00);
+  put(Permitted_operands, "49", 0x00);
+  put(Permitted_operands, "4a", 0x00);
+  put(Permitted_operands, "4b", 0x00);
+  put(Permitted_operands, "4c", 0x00);
+  put(Permitted_operands, "4d", 0x00);
+  put(Permitted_operands, "4e", 0x00);
+  put(Permitted_operands, "4f", 0x00);
   // push
   put(Permitted_operands, "50", 0x00);
   put(Permitted_operands, "51", 0x00);
