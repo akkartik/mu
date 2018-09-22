@@ -41,9 +41,9 @@
   # else EAX <- factorial(5)
 $run_main:
     # push arg
-  68/push                         .               .             .           .             .           .           .               5/imm32           # push 5
+  68/push  5/imm32
     # EAX <- call
-  e8/call                         .               .             .           .             .           .           factorial/disp32
+  e8/call  factorial/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
 $main_exit:
@@ -58,15 +58,15 @@ factorial:
   b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
   # if (n <= 1) jump exit
   81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           .           4/disp8         1/imm32           # compare *(ESP+4) with 1
-  7e/jump-if-<=                   .               .             .           .             .           .           $factorial:exit/disp8             # jump if <= to $factorial:exit
+  7e/jump-if-<=  $factorial:exit/disp8
   # EBX: n-1
   8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              3/r32/EBX   4/disp8         .                 # copy *(ESP+4) to EBX
   81          5/subop/subtract    3/mod/direct    3/rm32/EBX    .           .             .           .           .               1/imm32           # subtract 1 from EBX
   # prepare call
-  55/push                         .               .             .           .             .           .           .               .                 # push EBP
+  55/push-EBP
   89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
   # EAX: factorial(n-1)
-  53/push                         .               .             .           .             .           .           .               .                 # push EBX
+  53/push-EBX
   e8/call                         .               .             .           .             .           .           factorial/disp32
   # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
@@ -84,9 +84,9 @@ $factorial:exit:
 test_factorial:
   # factorial(5)
     # push arg
-  68/push                         .               .             .           .             .           .           .               5/imm32           # push 5
+  68/push  5/imm32
     # call
-  e8/call                         .               .             .           .             .           .           factorial/disp32
+  e8/call  factorial/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
   # if EAX == 120
@@ -94,9 +94,9 @@ test_factorial:
   75/jump-if-unequal              .               .             .           .             .           .           $test_factorial:else/disp8
     # print('.')
       # push args
-  68/push                         .               .             .           .             .           .           .               Test_passed/imm32
+  68/push  Test_passed/imm32
       # call
-  e8/call                         .               .             .           .             .           .           write_stderr/disp32
+  e8/call  write_stderr/disp32
       # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
     # return
@@ -105,9 +105,9 @@ test_factorial:
 $test_factorial:else:
     # print('F')
       # push args
-  68/push                         .               .             .           .             .           .           .               Test_failed/imm32
+  68/push  Test_failed/imm32
       # call
-  e8/call                         .               .             .           .             .           .           write_stderr/disp32
+  e8/call  write_stderr/disp32
       # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
   # end
@@ -152,10 +152,10 @@ $argv_fail:
 
 write_stderr:  # s : (address array byte) -> <void>
   # save registers
-  50/push                         .               .             .           .             .           .           .               .                 # push EAX
-  51/push                         .               .             .           .             .           .           .               .                 # push ECX
-  52/push                         .               .             .           .             .           .           .               .                 # push EDX
-  53/push                         .               .             .           .             .           .           .               .                 # push EBX
+  50/push-EAX
+  51/push-ECX
+  52/push-EDX
+  53/push-EBX
   # write(2/stderr, (data) s+4, (size) *s)
     # fd = 2 (stderr)
   bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy 2 to EBX
@@ -169,10 +169,10 @@ write_stderr:  # s : (address array byte) -> <void>
   b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
   cd/syscall  0x80/imm8
   # restore registers
-  5b/pop                          .               .             .           .             .           .           .               .                 # pop EBX
-  5a/pop                          .               .             .           .             .           .           .               .                 # pop EDX
-  59/pop                          .               .             .           .             .           .           .               .                 # pop ECX
-  58/pop                          .               .             .           .             .           .           .               .                 # pop EAX
+  5b/pop-EBX
+  5a/pop-EDX
+  59/pop-ECX
+  58/pop-EAX
   # end
   c3/return
 
