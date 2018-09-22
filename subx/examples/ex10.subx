@@ -26,9 +26,11 @@
     # push args
   50/push                         .               .             .           .             .           .           .               .                 # push EAX
   53/push                         .               .             .           .             .           .           .               .                 # push EBX
+#?   e8/call write_argv_3/disp32
     # call
-  e8/call  argv_equal/disp32
+  e8/call argv_equal/disp32
   # exit(EAX)
+$exit:
   89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
   b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
   cd/syscall  0x80/imm8
@@ -39,11 +41,18 @@ argv_equal:  # (s1, s2) : null-terminated ascii strings -> EAX : boolean
   # initialize s1 (ECX) and s2 (EDX)
   8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(ESP+8) to ECX
   8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
+#?     # i/ESI = 0
+#?   be/copy  0/imm32  # copy 0 to ESI
   # while (true)
 $argv_loop:
     # c1/EAX, c2/EBX = *s1, *s2
+  b8/copy  0/imm32  # clear EAX
   8a/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy byte at *ECX to lower byte of EAX
+  bb/copy  0/imm32  # clear EBX
   8a/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy byte at *EDX to lower byte of EBX
+#?     # if (i == _) exit(EAX)
+#?   81 7/subop  3/mod/direct  6/rm32/ESI  3/imm32  # compare ESI with _
+#?   74/jump-if-equal  $exit/disp8
     # if (c1 == 0) break
   3d/compare                      .               .             .           .             .           .           .               0/imm32           # compare EAX with 0
   74/jump-if-equal  $argv_break/disp8
@@ -53,7 +62,15 @@ $argv_loop:
     # ++s1, ++s2
   41/inc-ECX
   42/inc-EDX
+#?     # ++i
+#?   46/inc-ESI
   # end while
+#?   68/push  X/imm32
+#?   e8/call  write_stderr/disp32
+#?   81 0/subop/add  3/mod/direct  4/rm32/ESP  4/imm32  # add 4 to ESP
+#?   51/push                         .               .             .           .             .           .           .               .                 # push ECX
+#?   e8/call write_argv_3/disp32
+#?   81 0/subop/add  3/mod/direct  4/rm32/ESP  4/imm32  # add 4 to ESP
   eb/jump  $argv_loop/disp8
 $argv_break:
   # if (c2 == 0) return true
@@ -65,3 +82,61 @@ $argv_break:
 $argv_fail:
   b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy 0 to EAX
   c3/return
+
+write_stderr:  # s : (address array byte) -> <void>
+  # save registers
+  50/push                         .               .             .           .             .           .           .               .                 # push EAX
+  51/push                         .               .             .           .             .           .           .               .                 # push ECX
+  52/push                         .               .             .           .             .           .           .               .                 # push EDX
+  53/push                         .               .             .           .             .           .           .               .                 # push EBX
+  # write(2/stderr, (data) s+4, (size) *s)
+    # fd = 2 (stderr)
+  bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy 2 to EBX
+    # x = s+4
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   0x14/disp8      .                 # copy *(ESP+20) to ECX
+  81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add 4 to ECX
+    # size = *s
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           2/r32/EDX   0x14/disp8      .                 # copy *(ESP+20) to EDX
+  8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
+    # call write()
+  b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
+  cd/syscall  0x80/imm8
+  # restore registers
+  5b/pop                          .               .             .           .             .           .           .               .                 # pop EBX
+  5a/pop                          .               .             .           .             .           .           .               .                 # pop EDX
+  59/pop                          .               .             .           .             .           .           .               .                 # pop ECX
+  58/pop                          .               .             .           .             .           .           .               .                 # pop EAX
+  # end
+  c3/return
+
+write_argv_3:  # s : null-terminated ascii string of size exactly 3 -> <void>
+  # save registers
+  50/push                         .               .             .           .             .           .           .               .                 # push EAX
+  51/push                         .               .             .           .             .           .           .               .                 # push ECX
+  52/push                         .               .             .           .             .           .           .               .                 # push EDX
+  53/push                         .               .             .           .             .           .           .               .                 # push EBX
+  # write(2/stderr, (data) s+4, (size) *s)
+    # fd = 2 (stderr)
+  bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy 2 to EBX
+    # x = s
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   0x14/disp8      .                 # copy *(ESP+20) to ECX
+    # size = 3
+  ba/copy                         .               .             .           .             .           .           .               3/imm32           # copy 3 to EDX (hardcoded)
+    # call write()
+  b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
+  cd/syscall  0x80/imm8
+  # restore registers
+  5b/pop                          .               .             .           .             .           .           .               .                 # pop EBX
+  5a/pop                          .               .             .           .             .           .           .               .                 # pop EDX
+  59/pop                          .               .             .           .             .           .           .               .                 # pop ECX
+  58/pop                          .               .             .           .             .           .           .               .                 # pop EAX
+  # end
+  c3/return
+
+== data
+X:
+  02 00 00 00
+  58/X 0a/newline
+Y:
+  02 00 00 00
+  59/Y 0a/newline
