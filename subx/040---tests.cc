@@ -1,14 +1,11 @@
-//: Beginning of level 3: support for automatically aggregating functions into
-//: test suites.
-//:
-//: (As explained in the transform layer, level 3 runs before level 2. We
-//: can't use any of the transforms in previous layers. But we *do* rely on
-//: those concepts being present in the input. Particularly labels.)
+//: Automatically aggregating functions into test suites.
 
+//: We don't rely on any transforms running in previous layers, but this layer
+//: knows about labels and will emit labels for previous layers to transform.
 :(after "Begin Transforms")
-// Begin Level-3 Transforms
+// Begin Level-4 Transforms
 Transform.push_back(create_test_function);
-// End Level-3 Transforms
+// End Level-4 Transforms
 
 :(scenario run_test)
 % Reg[ESP].u = 0x100;
@@ -57,21 +54,6 @@ string to_string(const segment& s) {
     out << '\n';
   }
   return out.str();
-}
-
-string to_string(const word& w) {
-  ostringstream out;
-  out << w.data;
-  for (int i = 0;  i < SIZE(w.metadata);  ++i)
-    out << '/' << w.metadata.at(i);
-  return out.str();
-}
-
-line label(string s) {
-  line result;
-  result.words.push_back(word());
-  result.words.back().data = (s+":");
-  return result;
 }
 
 line call(string s) {

@@ -138,6 +138,7 @@ void parse(istream& fin, program& out) {
     getline(fin, line_data);
     curr.original = line_data;
     trace(99, "parse") << "line: " << line_data << end();
+    // End Line Parsing Special-cases(line_data -> l)
     istringstream lin(line_data);
     while (has_data(lin)) {
       string word_data;
@@ -166,14 +167,8 @@ void parse(istream& fin, program& out) {
         break;
       }
       curr.words.push_back(word());
-      curr.words.back().original = word_data;
-      istringstream win(word_data);
-      if (getline(win, curr.words.back().data, '/')) {
-        string m;
-        while (getline(win, m, '/'))
-          curr.words.back().metadata.push_back(m);
-      }
-      trace(99, "parse") << "new word: " << curr.words.back().data << end();
+      parse_word(word_data, curr.words.back());
+      trace(99, "parse") << "word: " << to_string(curr.words.back());
     }
     if (!curr.words.empty())
       l.push_back(curr);
@@ -184,6 +179,24 @@ void parse(istream& fin, program& out) {
     out.segments.back().lines.swap(l);
   }
   trace(99, "parse") << "done" << end();
+}
+
+void parse_word(const string& data, word& out) {
+  out.original = data;
+  istringstream win(data);
+  if (getline(win, out.data, '/')) {
+    string m;
+    while (getline(win, m, '/'))
+      out.metadata.push_back(m);
+  }
+}
+
+string to_string(const word& w) {
+  ostringstream out;
+  out << w.data;
+  for (int i = 0;  i < SIZE(w.metadata);  ++i)
+    out << " /" << w.metadata.at(i);
+  return out.str();
 }
 
 //:: transform
