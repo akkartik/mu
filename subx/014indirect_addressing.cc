@@ -641,3 +641,26 @@ case 2:  // indirect + disp32 addressing
 +run: effective address is initially 0x61 (EAX)
 +run: effective address is 0x60 (after adding disp32)
 +run: storing 0x00000011
+
+//:: lea
+
+:(before "End Initialize Op Names(name)")
+put(name, "8d", "load effective address of memory in rm32 into r32");
+
+:(scenario lea)
+% Reg[EAX].u = 0x60;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  8d  18
+# ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)
++run: lea into EBX
++run: effective address is 0x60 (EAX)
+
+:(before "End Single-Byte Opcodes")
+case 0x8d: {  // lea m32 to r32
+  uint8_t modrm = next();
+  uint8_t arg1 = (modrm>>3)&0x7;
+  trace(90, "run") << "lea into " << rname(arg1) << end();
+  Reg[arg1].u = effective_address_number(modrm);
+  break;
+}

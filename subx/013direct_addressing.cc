@@ -32,19 +32,31 @@ int32_t* effective_address(uint8_t modrm) {
   uint8_t mod = (modrm>>6);
   // ignore middle 3 'reg opcode' bits
   uint8_t rm = modrm & 0x7;
+  if (mod == 3) {
+    // mod 3 is just register direct addressing
+    trace(90, "run") << "r/m32 is " << rname(rm) << end();
+    return &Reg[rm].i;
+  }
+  return mem_addr_i32(effective_address_number(modrm));
+}
+
+uint32_t effective_address_number(uint8_t modrm) {
+  uint8_t mod = (modrm>>6);
+  // ignore middle 3 'reg opcode' bits
+  uint8_t rm = modrm & 0x7;
   uint32_t addr = 0;
   switch (mod) {
   case 3:
     // mod 3 is just register direct addressing
-    trace(90, "run") << "r/m32 is " << rname(rm) << end();
-    return &Reg[rm].i;
+    raise << "unexpected direct addressing mode\n" << end();
+    return 0;
   // End Mod Special-cases(addr)
   default:
     cerr << "unrecognized mod bits: " << NUM(mod) << '\n';
     exit(1);
   }
   //: other mods are indirect, and they'll set addr appropriately
-  return mem_addr_i32(addr);
+  return addr;
 }
 
 string rname(uint8_t r) {

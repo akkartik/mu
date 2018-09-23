@@ -214,6 +214,8 @@ void init_permitted_operands() {
   put(Permitted_operands, "8b", 0x01);
   // swap
   put(Permitted_operands, "87", 0x01);
+  // lea
+  put(Permitted_operands, "8d", 0x01);
   // pop
   put(Permitted_operands, "8f", 0x01);
 
