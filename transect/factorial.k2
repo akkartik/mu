@@ -1,0 +1,16 @@
+# compute the factorial of 5, and return the result in the exit code
+
+fn factorial n : int -> result/EAX : int [
+  result/EAX <- copy 1
+  {
+    compare n, 1
+    break-if <=
+    var tmp/EBX : int
+    tmp/EBX <- copy n
+    tmp/EBX <- subtract 1
+    var tmp2/EAX : int
+    tmp2/EAX <- call factorial, tmp/EBX
+    result/EAX <- multiply tmp2/EAX, n
+  }
+  return result/EAX
+]

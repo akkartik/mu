@@ -1,0 +1,34 @@
+## read a character from stdin, save it to a global, write it to stdout
+
+# variables are always references
+#   read their address with their names: x (can't write to their address)
+#   read/write their contents with a lookup: *x
+var x : char
+
+fn main [
+  call read 0/stdin, x, 1/size
+  result/EAX <- call write 1/stdout, x, 1/size
+  call exit, result/EAX
+]
+
+fn read fd : int, x : (address array byte), size : int [
+  EBX <- copy fd
+  ECX <- copy x
+  EDX <- copy size
+  EAX <- copy 3/read
+  syscall
+]
+
+fn write fd : int, x : (address array byte), size : int [
+  EBX <- copy fd
+  ECX <- copy x
+  EDX <- copy size
+  EAX <- copy 4/write
+  syscall
+]
+
+fn exit x : int [
+  code/EBX <- copy x
+  code/EAX <- copy 1/exit
+  syscall
+]

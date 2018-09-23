@@ -1,0 +1,30 @@
+# read a character from stdin, save it to a local on the stack, write it to stdout
+
+fn main [
+  var x : char
+  call read 0/stdin, x, 1/size
+  result/EBX <- call write 1/stdout, x, 1/size
+  call exit-EBX
+]
+
+fn read fd : int, x : (address array byte), size : int [
+  EBX <- copy fd
+  ECX <- copy x
+  EDX <- copy size
+  EAX <- copy 3/read
+  syscall
+]
+
+fn write fd : int, x : (address array byte), size : int [
+  EBX <- copy fd
+  ECX <- copy x
+  EDX <- copy size
+  EAX <- copy 4/write
+  syscall
+]
+
+# like exit, but assumes the code is already in EBX
+fn exit-EBX [
+  code/EAX <- copy 1/exit
+  syscall
+]

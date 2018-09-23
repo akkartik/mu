@@ -1,0 +1,23 @@
+## print out a (global variable) string to stdout
+
+var size : int = 14
+var x : (array character) = "hello, world!"
+
+fn main [
+  call write 1/stdout, x, size
+  call exit, 0
+]
+
+fn write fd : int, x : (address array byte), size : int [
+  EBX <- copy fd
+  ECX <- copy x
+  EDX <- copy size
+  EAX <- copy 4/write
+  syscall
+]
+
+fn exit x : int [
+  code/EBX <- copy x
+  code/EAX <- copy 1/exit
+  syscall
+]
