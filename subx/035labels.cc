@@ -89,6 +89,8 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
           raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
         if (j > 0)
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
+        if (Dump_map)
+          cerr << "0x" << HEXWORD << (code.start + current_byte) << ' ' << label << '\n';
         put(byte_index, label, current_byte);
         trace(99, "transform") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
         // no modifying current_byte; label definitions won't be in the final binary
@@ -97,6 +99,14 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
   }
 }
 
+:(before "End Globals")
+bool Dump_map = false;  // currently used only by 'subx translate'
+:(before "End Commandline Options")
+else if (is_equal(*arg, "--map")) {
+  Dump_map = true;
+}
+
+:(code)
 void drop_labels(segment& code) {
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);

@@ -89,9 +89,28 @@ test_factorial:
   e8/call  factorial/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
-  # if EAX == 120
-  3d/compare                      .               .             .           .             .           .           .               0x78/imm32/120    # compare EAX with 120
-  75/jump-if-unequal              .               .             .           .             .           .           $test_factorial:else/disp8
+  # check_ints_equal(EAX, 120, failure message)
+    # push args
+  50/push-EAX
+  68/push  0x78/imm32/expected-120
+  68/push  "F - test_factorial"/imm32
+    # call
+  e8/call  check_ints_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  # end
+  c3/return
+
+## helpers
+
+# print msg to stderr if a != b, otherwise print "."
+check_ints_equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
+  # load args into EAX, EBX and ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   0xc/disp8       .                 # copy *(ESP+12) to EAX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           3/r32/EBX   0x8/disp8       .                 # copy *(ESP+8) to EBX
+  # if EAX == b/EBX
+  39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
+  75/jump-if-unequal  $check_ints_equal:else/disp8
     # print('.')
       # push args
   68/push  "."/imm32
@@ -102,18 +121,18 @@ test_factorial:
     # return
   c3/return
   # else:
-$test_factorial:else:
-    # print('F')
+$check_ints_equal:else:
+  # copy msg into ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   4/disp8         .                 # copy *(ESP+4) to ECX
+    # print(ECX)
       # push args
-  68/push  "F"/imm32
+  51/push-ECX
       # call
   e8/call  write_stderr/disp32
       # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
   # end
   c3/return
-
-## helpers
 
 # compare two null-terminated ascii strings
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
