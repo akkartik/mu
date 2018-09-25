@@ -63,19 +63,11 @@ factorial:
   # EBX: n-1
   8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              3/r32/EBX   4/disp8         .                 # copy *(ESP+4) to EBX
   81          5/subop/subtract    3/mod/direct    3/rm32/EBX    .           .             .           .           .               1/imm32           # subtract 1 from EBX
-  # prepare call
-  55/push-EBP
-  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
   # EAX: factorial(n-1)
   53/push-EBX
   e8/call                         .               .             .           .             .           .           factorial/disp32
   # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
-  # clean up after call
-  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-  5d/pop                          .               .             .           .             .           .           .               .                 # pop to EBP
-  # refresh n
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
   # return n * factorial(n-1)
   f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none                          4/disp8         .                 # multiply *(ESP+4) (n) into EAX (factorial(n-1))
   # TODO: check for overflow
