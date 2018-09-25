@@ -175,6 +175,14 @@ string trace_stream::readable_contents(string label) {
 trace_stream* Trace_stream = NULL;
 int Trace_errors = 0;  // used only when Trace_stream is NULL
 
+//: option to print trace to the screen
+:(before "End Globals")
+bool Flag_dump_trace = false;
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--dump")) {
+  Flag_dump_trace = true;
+}
+
 :(before "End Globals")
 bool Hide_errors = false;  // if set, don't print even error trace lines to screen
 bool Hide_warnings = false;  // if set, don't print warnings to screen
@@ -183,7 +191,7 @@ string Dump_label = "";  // if set, print trace lines matching a single label to
 :(before "End Reset")
 Hide_errors = false;
 Hide_warnings = false;
-Dump_trace = false;  // toggle this to print traces to screen as they are emitted
+Dump_trace = Flag_dump_trace;
 Dump_label = "";
 //: Never dump warnings in scenarios
 :(before "End Test Setup")
