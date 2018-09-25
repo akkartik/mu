@@ -106,9 +106,15 @@ test_factorial:
 
 # print msg to stderr if a != b, otherwise print "."
 check_ints_equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  51/push-ECX
+  53/push-EBX
   # load args into EAX, EBX and ECX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   0x4/disp8       .                 # copy *(ESP+4) to EAX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           3/r32/EBX   0x8/disp8       .                 # copy *(ESP+8) to EBX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   0x8/disp8       .                 # copy *(EBP+8) to EAX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
   # if EAX == b/EBX
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
   75/jump-if-unequal  $check_ints_equal:else/disp8
@@ -120,11 +126,11 @@ check_ints_equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
       # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
     # return
-  c3/return
+  eb/jump  $check_ints_equal:end/disp8
   # else:
 $check_ints_equal:else:
   # copy msg into ECX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   0xc/disp8       .                 # copy *(ESP+12) to ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x10/disp8       .                # copy *(EBP+16) to ECX
     # print(ECX)
       # push args
   51/push-ECX
@@ -139,12 +145,28 @@ $check_ints_equal:else:
   e8/call  write_stderr/disp32
       # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+$check_ints_equal:end:
+  # restore registers
+  5b/pop-to-EBX
+  59/pop-to-ECX
   # end
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
 argv_equal:  # s : null-terminated ascii string, benchmark : length-prefixed ascii string -> EAX : boolean
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  51/push-ECX
+  52/push-EDX
+  53/push-EBX
+  56/push-ESI
+  57/push-EDI
+
   # pseudocode:
   #   initialize n = b.length
   #   initialize s1 = s
@@ -160,12 +182,12 @@ argv_equal:  # s : null-terminated ascii string, benchmark : length-prefixed asc
   #   return *s1 == 0
 # {{{
   # initialize s into EDI
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           7/r32/EDI   4/disp8         .                 # copy *(ESP+4) to EDI
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
   # initialize benchmark length n into EDX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(ESP+8) to EDX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
   # initialize benchmark data into ESI
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           6/r32/ESI   8/disp8         .                 # copy *(ESP+8) to ESI
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
   81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add 4 to ESI
   # initialize loop counter i into ECX
   b9/copy                         .               .             .           .             .           .           .               0/imm32/exit      # copy 1 to ECX
@@ -197,10 +219,21 @@ $argv_break:
   81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX with 0
   75/jump-if-not-equal  $argv_fail/disp8
   b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
-  c3/return
+  eb/jump  $argv_end/disp8
   # return false
 $argv_fail:
   b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy 0 to EAX
+
+$argv_end:
+  # restore registers
+  5f/pop-to-EDI
+  5e/pop-to-ESI
+  5b/pop-to-EBX
+  5a/pop-to-EDX
+  59/pop-to-ECX
+  # end
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 # }}}
 # tests for argv_equal {{{
