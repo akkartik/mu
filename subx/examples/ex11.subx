@@ -44,12 +44,12 @@ argv_equal:  # s : null-terminated ascii string, benchmark : length-prefixed asc
   #   return *s1 == 0
 
   # initialize s into EDI
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           7/r32/EDI   8/disp8         .                 # copy *(ESP+8) to EDI
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           7/r32/EDI   4/disp8         .                 # copy *(ESP+4) to EDI
   # initialize benchmark length n into EDX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(ESP+8) to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
   # initialize benchmark data into ESI
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           6/r32/ESI   4/disp8         .                 # copy *(ESP+4) to ESI
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           6/r32/ESI   8/disp8         .                 # copy *(ESP+8) to ESI
   81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add 4 to ESI
   # initialize loop counter i into ECX
   b9/copy                         .               .             .           .             .           .           .               0/imm32/exit      # copy 1 to ECX
@@ -92,16 +92,17 @@ $argv_fail:
 test_compare_null_argv_with_empty_array:
   # EAX = argv_equal(Null_argv, "")
     # push args
-  68/push  Null_argv/imm32
   68/push  ""/imm32
+  68/push  Null_argv/imm32
     # call
   e8/call  argv_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
-  # call check_ints_equal(EAX, 1)
-  50/push-EAX
-  68/push  1/imm32/true
+  # call check_ints_equal(EAX, 1, msg)
+    # push args
   68/push  "F - test_compare_null_argv_with_empty_array"/imm32
+  68/push  1/imm32/true
+  50/push-EAX
     # call
   e8/call  check_ints_equal/disp32
     # discard args
@@ -111,16 +112,17 @@ test_compare_null_argv_with_empty_array:
 test_compare_null_argv_with_non_empty_array:
   # EAX = argv_equal(Null_argv, "Abc")
     # push args
-  68/push  Null_argv/imm32
   68/push  "Abc"/imm32
+  68/push  Null_argv/imm32
     # call
   e8/call  argv_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
-  # call check_ints_equal(EAX, 0)
-  50/push-EAX
-  68/push  0/imm32/false
+  # call check_ints_equal(EAX, 0, msg)
+    # push args
   68/push  "F - test_compare_null_argv_with_non_empty_array"/imm32
+  68/push  0/imm32/false
+  50/push-EAX
     # call
   e8/call  check_ints_equal/disp32
     # discard args
@@ -130,16 +132,17 @@ test_compare_null_argv_with_non_empty_array:
 test_compare_argv_with_equal_array:
   # EAX = argv_equal(Abc_argv, "Abc")
     # push args
-  68/push  Abc_argv/imm32
   68/push  "Abc"/imm32
+  68/push  Abc_argv/imm32
     # call
   e8/call  argv_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
-  # call check_ints_equal(EAX, 1)
-  50/push-EAX
-  68/push  1/imm32/true
+  # call check_ints_equal(EAX, 1, msg)
+    # push args
   68/push  "F - test_compare_argv_with_equal_array"/imm32
+  68/push  1/imm32/true
+  50/push-EAX
     # call
   e8/call  check_ints_equal/disp32
     # discard args
@@ -149,16 +152,17 @@ test_compare_argv_with_equal_array:
 test_compare_argv_with_inequal_array:
   # EAX = argv_equal(Abc_argv, "Adc")
     # push args
-  68/push  Abc_argv/imm32
   68/push  "Adc"/imm32
+  68/push  Abc_argv/imm32
     # call
   e8/call  argv_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
-  # call check_ints_equal(EAX, 0)
-  50/push-EAX
-  68/push  0/imm32/false
+  # call check_ints_equal(EAX, 0, msg)
+    # push args
   68/push  "F - test_compare_argv_with_equal_array"/imm32
+  68/push  0/imm32/false
+  50/push-EAX
     # call
   e8/call  check_ints_equal/disp32
     # discard args
@@ -168,16 +172,17 @@ test_compare_argv_with_inequal_array:
 test_compare_argv_with_empty_array:
   # EAX = argv_equal(Abc_argv, "")
     # push args
-  68/push  Abc_argv/imm32
   68/push  ""/imm32
+  68/push  Abc_argv/imm32
     # call
   e8/call  argv_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0)
-  50/push-EAX
-  68/push  0/imm32/false
+    # push args
   68/push  "F - test_compare_argv_with_equal_array"/imm32
+  68/push  0/imm32/false
+  50/push-EAX
     # call
   e8/call  check_ints_equal/disp32
     # discard args
@@ -187,16 +192,17 @@ test_compare_argv_with_empty_array:
 test_compare_argv_with_shorter_array:
   # EAX = argv_equal(Abc_argv, "Ab")
     # push args
-  68/push  Abc_argv/imm32
   68/push  "Ab"/imm32
+  68/push  Abc_argv/imm32
     # call
   e8/call  argv_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0)
-  50/push-EAX
-  68/push  0/imm32/false
+    # push args
   68/push  "F - test_compare_argv_with_shorter_array"/imm32
+  68/push  0/imm32/false
+  50/push-EAX
     # call
   e8/call  check_ints_equal/disp32
     # discard args
@@ -206,16 +212,17 @@ test_compare_argv_with_shorter_array:
 test_compare_argv_with_longer_array:
   # EAX = argv_equal(Abc_argv, "Abcd")
     # push args
-  68/push  Abc_argv/imm32
   68/push  "Abcd"/imm32
+  68/push  Abc_argv/imm32
     # call
   e8/call  argv_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0)
-  50/push-EAX
-  68/push  0/imm32/false
+    # push args
   68/push  "F - test_compare_argv_with_longer_array"/imm32
+  68/push  0/imm32/false
+  50/push-EAX
     # call
   e8/call  check_ints_equal/disp32
     # discard args
@@ -227,7 +234,7 @@ test_compare_argv_with_longer_array:
 # print msg to stderr if a != b, otherwise print "."
 check_ints_equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
   # load args into EAX, EBX and ECX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   0xc/disp8       .                 # copy *(ESP+12) to EAX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   0x4/disp8       .                 # copy *(ESP+4) to EAX
   8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           3/r32/EBX   0x8/disp8       .                 # copy *(ESP+8) to EBX
   # if EAX == b/EBX
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
@@ -244,7 +251,7 @@ check_ints_equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
   # else:
 $check_ints_equal:else:
   # copy msg into ECX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   4/disp8         .                 # copy *(ESP+4) to ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   0xc/disp8       .                 # copy *(ESP+12) to ECX
     # print(ECX)
       # push args
   51/push-ECX
@@ -263,6 +270,9 @@ $check_ints_equal:else:
   c3/return
 
 write_stderr:  # s : (address array byte) -> <void>
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
   # save registers
   50/push-EAX
   51/push-ECX
@@ -272,10 +282,10 @@ write_stderr:  # s : (address array byte) -> <void>
     # fd = 2 (stderr)
   bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy 2 to EBX
     # x = s+4
-  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   0x14/disp8      .                 # copy *(ESP+20) to ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
   81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add 4 to ECX
     # size = *s
-  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           2/r32/EDX   0x14/disp8      .                 # copy *(ESP+20) to EDX
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    5/base/EBP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # call write()
   b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
@@ -286,6 +296,8 @@ write_stderr:  # s : (address array byte) -> <void>
   59/pop-ECX
   58/pop-EAX
   # end
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 
 == data

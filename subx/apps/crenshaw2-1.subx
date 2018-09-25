@@ -318,6 +318,9 @@ test_compare_argv_with_longer_array:
 # }}}
 
 write_stderr:  # s : (address array byte) -> <void>
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
   # save registers
   50/push-EAX
   51/push-ECX
@@ -327,10 +330,10 @@ write_stderr:  # s : (address array byte) -> <void>
     # fd = 2 (stderr)
   bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy 2 to EBX
     # x = s+4
-  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   0x14/disp8      .                 # copy *(ESP+20) to ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
   81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add 4 to ECX
     # size = *s
-  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           2/r32/EDX   0x14/disp8      .                 # copy *(ESP+20) to EDX
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    5/base/EBP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # call write()
   b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
@@ -341,9 +344,14 @@ write_stderr:  # s : (address array byte) -> <void>
   59/pop-ECX
   58/pop-EAX
   # end
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 
 write_stdout:  # s : (address array byte) -> <void>
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
   # save registers
   50/push-EAX
   51/push-ECX
@@ -353,10 +361,10 @@ write_stdout:  # s : (address array byte) -> <void>
     # fd = 1 (stdout)
   bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EBX
     # x = s+4
-  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   0x14/disp8      .                 # copy *(ESP+20) to ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(ESP+8) to ECX
   81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add 4 to ECX
     # size = *s
-  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           2/r32/EDX   0x14/disp8      .                 # copy *(ESP+20) to EDX
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    4/base/ESP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(ESP+8) to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # call write()
   b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
@@ -367,6 +375,8 @@ write_stdout:  # s : (address array byte) -> <void>
   59/pop-ECX
   58/pop-EAX
   # end
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 
 == data
