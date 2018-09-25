@@ -55,13 +55,17 @@ $main_exit:
 
 # factorial(n)
 factorial:
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  53/push-EBX
   # initialize EAX to 1 (base case)
   b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
   # if (n <= 1) jump exit
-  81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           .           4/disp8         1/imm32           # compare *(ESP+4) with 1
+  81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         1/imm32           # compare *(EBP+8) with 1
   7e/jump-if-<=  $factorial:exit/disp8
   # EBX: n-1
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              3/r32/EBX   4/disp8         .                 # copy *(ESP+4) to EBX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
   81          5/subop/subtract    3/mod/direct    3/rm32/EBX    .           .             .           .           .               1/imm32           # subtract 1 from EBX
   # EAX: factorial(n-1)
   53/push-EBX
@@ -69,9 +73,13 @@ factorial:
   # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
   # return n * factorial(n-1)
-  f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none                          4/disp8         .                 # multiply *(ESP+4) (n) into EAX (factorial(n-1))
+  f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none                          8/disp8         .                 # multiply *(EBP+8) into EAX
   # TODO: check for overflow
 $factorial:exit:
+  # epilog
+  5b/pop-EBX
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 
 test_factorial:
