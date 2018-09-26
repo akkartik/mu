@@ -50,10 +50,10 @@
 //:   representation by showing how it's transformed to the level below. To
 //:   make such exceptions more obvious checks usually won't be first-class
 //:   transforms; instead code that keeps the program unmodified will run
-//:   within transforms before they mutate the program.
+//:   within transforms before they mutate the program. As an example:
 //:
-//:     Level l transforms programs
-//:     Level l+1 inserts checks to run *before* the transform of level l runs
+//:     Layer l introduces a transform
+//:     Layer l+1 adds precondition checks for the transform
 //:
 //: This may all seem abstract, but will hopefully make sense over time. The
 //: goals are basically to always have a working program after any layer, to
