@@ -139,17 +139,17 @@ if ('onhashchange' in window) {
 <span id="L80" class="LineNr"> 80 </span><span class="Comment">//: Traces can have a lot of overhead, so only turn them on when asked.</span>
 <span id="L81" class="LineNr"> 81 </span><span class="Delimiter">:(before &quot;End Commandline Options(*arg)&quot;)</span>
 <span id="L82" class="LineNr"> 82 </span><span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L89'>is_equal</a><span class="Delimiter">(</span>*arg<span class="Delimiter">,</span> <span class="Constant">&quot;--trace&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L83" class="LineNr"> 83 </span>  <a href='003trace.cc.html#L230'>Save_trace</a> =<span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L83" class="LineNr"> 83 </span>  <a href='003trace.cc.html#L238'>Save_trace</a> =<span class="Constant"> true</span><span class="Delimiter">;</span>
 <span id="L84" class="LineNr"> 84 </span><span class="Delimiter">}</span>
 <span id="L85" class="LineNr"> 85 </span><span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
-<span id="L86" class="LineNr"> 86 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L230'>Save_trace</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L87" class="LineNr"> 87 </span>  cerr &lt;&lt; <span class="Constant">&quot;initializing <a href='003trace.cc.html#L196'>trace</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L86" class="LineNr"> 86 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L238'>Save_trace</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L87" class="LineNr"> 87 </span>  cerr &lt;&lt; <span class="Constant">&quot;initializing <a href='003trace.cc.html#L204'>trace</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
 <span id="L88" class="LineNr"> 88 </span>  <a href='003trace.cc.html#L175'>Trace_stream</a> = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span>
 <span id="L89" class="LineNr"> 89 </span><span class="Delimiter">}</span>
 <span id="L90" class="LineNr"> 90 </span><span class="Delimiter">:(code)</span>
 <span id="L91" class="LineNr"> 91 </span><span class="Normal">void</span> <a href='003trace.cc.html#L91'>cleanup_main</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
 <span id="L92" class="LineNr"> 92 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L93" class="LineNr"> 93 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L230'>Save_trace</a><span class="Delimiter">)</span>
+<span id="L93" class="LineNr"> 93 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L238'>Save_trace</a><span class="Delimiter">)</span>
 <span id="L94" class="LineNr"> 94 </span>    <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L133'>save</a><span class="Delimiter">();</span>
 <span id="L95" class="LineNr"> 95 </span>  <span class="Normal">delete</span> <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">;</span>
 <span id="L96" class="LineNr"> 96 </span>  <a href='003trace.cc.html#L175'>Trace_stream</a> = <span class="Constant">NULL</span><span class="Delimiter">;</span>
@@ -190,7 +190,7 @@ if ('onhashchange' in window) {
 <span id="L131" class="LineNr">131 </span>  <span class="Delimiter">}</span>
 <span id="L132" class="LineNr">132 </span>
 <span id="L133" class="LineNr">133 </span>  <span class="Normal">void</span> <a href='003trace.cc.html#L133'>save</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L134" class="LineNr">134 </span>    cerr &lt;&lt; <span class="Constant">&quot;saving <a href='003trace.cc.html#L196'>trace</a> to 'last_run'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L134" class="LineNr">134 </span>    cerr &lt;&lt; <span class="Constant">&quot;saving <a href='003trace.cc.html#L204'>trace</a> to 'last_run'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
 <span id="L135" class="LineNr">135 </span>    ofstream fout<span class="Delimiter">(</span><span class="Constant">&quot;last_run&quot;</span><span class="Delimiter">);</span>
 <span id="L136" class="LineNr">136 </span>    fout &lt;&lt; <a href='003trace.cc.html#L164'>readable_contents</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
 <span id="L137" class="LineNr">137 </span>    fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
@@ -207,11 +207,11 @@ if ('onhashchange' in window) {
 <span id="L148" class="LineNr">148 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!curr_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L149" class="LineNr">149 </span>  string curr_contents = <a href='003trace.cc.html#L112'>curr_stream</a><span class="Delimiter">-&gt;</span>str<span class="Delimiter">();</span>
 <span id="L150" class="LineNr">150 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!curr_contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L151" class="LineNr">151 </span>    <a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span><a href='003trace.cc.html#L114'>curr_depth</a><span class="Delimiter">,</span> <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span><a href='003trace.cc.html#L113'>curr_label</a><span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
+<span id="L151" class="LineNr">151 </span>    <a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span><a href='003trace.cc.html#L114'>curr_depth</a><span class="Delimiter">,</span> <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span><a href='003trace.cc.html#L113'>curr_label</a><span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
 <span id="L152" class="LineNr">152 </span>    <span class="Normal">if</span> <span class="Delimiter">((</span>!Hide_errors &amp;&amp; <a href='003trace.cc.html#L114'>curr_depth</a> == <a href='003trace.cc.html#L106'>Error_depth</a><span class="Delimiter">)</span>
 <span id="L153" class="LineNr">153 </span>        || <span class="Delimiter">(</span>!Hide_warnings &amp;&amp; !Hide_errors &amp;&amp; <a href='003trace.cc.html#L114'>curr_depth</a> == <a href='003trace.cc.html#L107'>Warn_depth</a><span class="Delimiter">)</span>
-<span id="L154" class="LineNr">154 </span>        || <a href='003trace.cc.html#L181'>Dump_trace</a>
-<span id="L155" class="LineNr">155 </span>        || <span class="Delimiter">(</span>!Dump_label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; <a href='003trace.cc.html#L113'>curr_label</a> == <a href='003trace.cc.html#L182'>Dump_label</a><span class="Delimiter">))</span>
+<span id="L154" class="LineNr">154 </span>        || <a href='003trace.cc.html#L189'>Dump_trace</a>
+<span id="L155" class="LineNr">155 </span>        || <span class="Delimiter">(</span>!Dump_label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; <a href='003trace.cc.html#L113'>curr_label</a> == <a href='003trace.cc.html#L190'>Dump_label</a><span class="Delimiter">))</span>
 <span id="L156" class="LineNr">156 </span>      cerr &lt;&lt; <a href='003trace.cc.html#L113'>curr_label</a> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span id="L157" class="LineNr">157 </span>  <span class="Delimiter">}</span>
 <span id="L158" class="LineNr">158 </span>  <span class="Normal">delete</span> <a href='003trace.cc.html#L112'>curr_stream</a><span class="Delimiter">;</span>
@@ -222,8 +222,8 @@ if ('onhashchange' in window) {
 <span id="L163" class="LineNr">163 </span>
 <span id="L164" class="LineNr">164 </span>string trace_stream::<a href='003trace.cc.html#L164'>readable_contents</a><span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L165" class="LineNr">165 </span>  ostringstream output<span class="Delimiter">;</span>
-<span id="L166" class="LineNr">166 </span>  label = <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>label<span class="Delimiter">);</span>
-<span id="L167" class="LineNr">167 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
+<span id="L166" class="LineNr">166 </span>  label = <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>label<span class="Delimiter">);</span>
+<span id="L167" class="LineNr">167 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
 <span id="L168" class="LineNr">168 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L169" class="LineNr">169 </span>      output &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L72'>depth</a> &lt;&lt; <span class="Constant">' '</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span id="L170" class="LineNr">170 </span>    <span class="Delimiter">}</span>
@@ -234,247 +234,255 @@ if ('onhashchange' in window) {
 <span id="L175" class="LineNr">175 </span>trace_stream* <a href='003trace.cc.html#L175'>Trace_stream</a> = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span id="L176" class="LineNr">176 </span><span class="Normal">int</span> <a href='003trace.cc.html#L176'>Trace_errors</a> = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// used only when Trace_stream is NULL</span>
 <span id="L177" class="LineNr">177 </span>
-<span id="L178" class="LineNr">178 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L179" class="LineNr">179 </span><span class="Normal">bool</span> Hide_errors =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, don't print even error trace lines to screen</span>
-<span id="L180" class="LineNr">180 </span><span class="Normal">bool</span> Hide_warnings =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, don't print warnings to screen</span>
-<span id="L181" class="LineNr">181 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L181'>Dump_trace</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, print trace lines to screen</span>
-<span id="L182" class="LineNr">182 </span>string <a href='003trace.cc.html#L182'>Dump_label</a> = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// if set, print trace lines matching a single label to screen</span>
-<span id="L183" class="LineNr">183 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
-<span id="L184" class="LineNr">184 </span>Hide_errors =<span class="Constant"> false</span><span class="Delimiter">;</span>
-<span id="L185" class="LineNr">185 </span>Hide_warnings =<span class="Constant"> false</span><span class="Delimiter">;</span>
-<span id="L186" class="LineNr">186 </span><a href='003trace.cc.html#L181'>Dump_trace</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// toggle this to print traces to screen as they are emitted</span>
-<span id="L187" class="LineNr">187 </span><a href='003trace.cc.html#L182'>Dump_label</a> = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-<span id="L188" class="LineNr">188 </span><span class="Comment">//: Never dump warnings in scenarios</span>
-<span id="L189" class="LineNr">189 </span><span class="Delimiter">:(before &quot;End Test Setup&quot;)</span>
-<span id="L190" class="LineNr">190 </span>Hide_warnings =<span class="Constant"> true</span><span class="Delimiter">;</span>
-<span id="L191" class="LineNr">191 </span>
-<span id="L192" class="LineNr">192 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L193" class="LineNr">193 </span><span class="Comment">#define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;</span>
-<span id="L194" class="LineNr">194 </span>
-<span id="L195" class="LineNr">195 </span><span class="Comment">// Top-level helper. IMPORTANT: can't nest</span>
-<span id="L196" class="LineNr">196 </span><span class="Comment">#define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream-&gt;stream(__VA_ARGS__)</span>
-<span id="L197" class="LineNr">197 </span>
-<span id="L198" class="LineNr">198 </span><span class="Comment">// Just for debugging; 'git log' should never show any calls to 'dbg'.</span>
-<span id="L199" class="LineNr">199 </span><span class="Comment">#define dbg trace(0, &quot;a&quot;)</span>
-<span id="L200" class="LineNr">200 </span><span class="Comment">#define DUMP(label)  if (Trace_stream) cerr &lt;&lt; Trace_stream-&gt;readable_contents(label);</span>
-<span id="L201" class="LineNr">201 </span>
-<span id="L202" class="LineNr">202 </span><span class="Comment">// Errors and warnings are special layers.</span>
-<span id="L203" class="LineNr">203 </span><span class="Comment">#define raise  (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream-&gt;stream(Error_depth, &quot;error&quot;))</span>
-<span id="L204" class="LineNr">204 </span><span class="Comment">#define warn (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream-&gt;stream(Warn_depth, &quot;warn&quot;))</span>
-<span id="L205" class="LineNr">205 </span><span class="Comment">// If we aren't yet sure how to deal with some corner case, use assert_for_now</span>
-<span id="L206" class="LineNr">206 </span><span class="Comment">// to indicate that it isn't an inviolable invariant.</span>
-<span id="L207" class="LineNr">207 </span><span class="Comment">#define assert_for_now assert</span>
-<span id="L208" class="LineNr">208 </span><span class="Comment">#define raise_for_now raise</span>
+<span id="L178" class="LineNr">178 </span><span class="Comment">//: option to print trace to the screen</span>
+<span id="L179" class="LineNr">179 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L180" class="LineNr">180 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L180'>Flag_dump_trace</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L181" class="LineNr">181 </span><span class="Delimiter">:(before &quot;End Commandline Options(*arg)&quot;)</span>
+<span id="L182" class="LineNr">182 </span><span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L89'>is_equal</a><span class="Delimiter">(</span>*arg<span class="Delimiter">,</span> <span class="Constant">&quot;--dump&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L183" class="LineNr">183 </span>  <a href='003trace.cc.html#L180'>Flag_dump_trace</a> =<span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L184" class="LineNr">184 </span><span class="Delimiter">}</span>
+<span id="L185" class="LineNr">185 </span>
+<span id="L186" class="LineNr">186 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L187" class="LineNr">187 </span><span class="Normal">bool</span> Hide_errors =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, don't print even error trace lines to screen</span>
+<span id="L188" class="LineNr">188 </span><span class="Normal">bool</span> Hide_warnings =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, don't print warnings to screen</span>
+<span id="L189" class="LineNr">189 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L189'>Dump_trace</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, print trace lines to screen</span>
+<span id="L190" class="LineNr">190 </span>string <a href='003trace.cc.html#L190'>Dump_label</a> = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// if set, print trace lines matching a single label to screen</span>
+<span id="L191" class="LineNr">191 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
+<span id="L192" class="LineNr">192 </span>Hide_errors =<span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L193" class="LineNr">193 </span>Hide_warnings =<span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L194" class="LineNr">194 </span><a href='003trace.cc.html#L189'>Dump_trace</a> = <a href='003trace.cc.html#L180'>Flag_dump_trace</a><span class="Delimiter">;</span>
+<span id="L195" class="LineNr">195 </span><a href='003trace.cc.html#L190'>Dump_label</a> = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<span id="L196" class="LineNr">196 </span><span class="Comment">//: Never dump warnings in scenarios</span>
+<span id="L197" class="LineNr">197 </span><span class="Delimiter">:(before &quot;End Test Setup&quot;)</span>
+<span id="L198" class="LineNr">198 </span>Hide_warnings =<span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L199" class="LineNr">199 </span>
+<span id="L200" class="LineNr">200 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L201" class="LineNr">201 </span><span class="Comment">#define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;</span>
+<span id="L202" class="LineNr">202 </span>
+<span id="L203" class="LineNr">203 </span><span class="Comment">// Top-level helper. IMPORTANT: can't nest</span>
+<span id="L204" class="LineNr">204 </span><span class="Comment">#define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream-&gt;stream(__VA_ARGS__)</span>
+<span id="L205" class="LineNr">205 </span>
+<span id="L206" class="LineNr">206 </span><span class="Comment">// Just for debugging; 'git log' should never show any calls to 'dbg'.</span>
+<span id="L207" class="LineNr">207 </span><span class="Comment">#define dbg trace(0, &quot;a&quot;)</span>
+<span id="L208" class="LineNr">208 </span><span class="Comment">#define DUMP(label)  if (Trace_stream) cerr &lt;&lt; Trace_stream-&gt;readable_contents(label);</span>
 <span id="L209" class="LineNr">209 </span>
-<span id="L210" class="LineNr">210 </span><span class="Comment">// Inside tests, fail any tests that displayed (unexpected) errors.</span>
-<span id="L211" class="LineNr">211 </span><span class="Comment">// Expected errors in tests should always be hidden and silently checked for.</span>
-<span id="L212" class="LineNr">212 </span><span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
-<span id="L213" class="LineNr">213 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L21'>Passed</a> &amp;&amp; !Hide_errors &amp;&amp; <a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L214" class="LineNr">214 </span>  <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>
-<span id="L215" class="LineNr">215 </span><span class="Delimiter">}</span>
-<span id="L216" class="LineNr">216 </span><span class="Delimiter">:(code)</span>
-<span id="L217" class="LineNr">217 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L218" class="LineNr">218 </span>  <span class="Identifier">return</span> <a href='003trace.cc.html#L176'>Trace_errors</a> &gt; <span class="Constant">0</span> || trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L219" class="LineNr">219 </span><span class="Delimiter">}</span>
-<span id="L220" class="LineNr">220 </span>
-<span id="L221" class="LineNr">221 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
-<span id="L222" class="LineNr">222 </span><span class="Normal">struct</span> <a href='003trace.cc.html#L222'>end</a> <span class="Delimiter">{};</span>
-<span id="L223" class="LineNr">223 </span><span class="Delimiter">:(code)</span>
-<span id="L224" class="LineNr">224 </span>ostream&amp; <span class="Normal">operator</span>&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<span class="Delimiter">,</span> <a href='003trace.cc.html#L222'>end</a> <span class="Comment">/*</span><span class="Comment">unused</span><span class="Comment">*/</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L225" class="LineNr">225 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">)</span> <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L147'>newline</a><span class="Delimiter">();</span>
-<span id="L226" class="LineNr">226 </span>  <span class="Identifier">return</span> os<span class="Delimiter">;</span>
+<span id="L210" class="LineNr">210 </span><span class="Comment">// Errors and warnings are special layers.</span>
+<span id="L211" class="LineNr">211 </span><span class="Comment">#define raise  (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream-&gt;stream(Error_depth, &quot;error&quot;))</span>
+<span id="L212" class="LineNr">212 </span><span class="Comment">#define warn (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream-&gt;stream(Warn_depth, &quot;warn&quot;))</span>
+<span id="L213" class="LineNr">213 </span><span class="Comment">// If we aren't yet sure how to deal with some corner case, use assert_for_now</span>
+<span id="L214" class="LineNr">214 </span><span class="Comment">// to indicate that it isn't an inviolable invariant.</span>
+<span id="L215" class="LineNr">215 </span><span class="Comment">#define assert_for_now assert</span>
+<span id="L216" class="LineNr">216 </span><span class="Comment">#define raise_for_now raise</span>
+<span id="L217" class="LineNr">217 </span>
+<span id="L218" class="LineNr">218 </span><span class="Comment">// Inside tests, fail any tests that displayed (unexpected) errors.</span>
+<span id="L219" class="LineNr">219 </span><span class="Comment">// Expected errors in tests should always be hidden and silently checked for.</span>
+<span id="L220" class="LineNr">220 </span><span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
+<span id="L221" class="LineNr">221 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L21'>Passed</a> &amp;&amp; !Hide_errors &amp;&amp; <a href='003trace.cc.html#L225'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span id="L222" class="LineNr">222 </span>  <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L223" class="LineNr">223 </span><span class="Delimiter">}</span>
+<span id="L224" class="LineNr">224 </span><span class="Delimiter">:(code)</span>
+<span id="L225" class="LineNr">225 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L225'>trace_contains_errors</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L226" class="LineNr">226 </span>  <span class="Identifier">return</span> <a href='003trace.cc.html#L176'>Trace_errors</a> &gt; <span class="Constant">0</span> || trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L227" class="LineNr">227 </span><span class="Delimiter">}</span>
 <span id="L228" class="LineNr">228 </span>
-<span id="L229" class="LineNr">229 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L230" class="LineNr">230 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L230'>Save_trace</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, write out trace to disk</span>
-<span id="L231" class="LineNr">231 </span>
-<span id="L232" class="LineNr">232 </span><span class="Comment">// Trace_stream is a resource, lease_tracer uses RAII to manage it.</span>
-<span id="L233" class="LineNr">233 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
-<span id="L234" class="LineNr">234 </span><span class="Normal">struct</span> lease_tracer <span class="Delimiter">{</span>
-<span id="L235" class="LineNr">235 </span>  lease_tracer<span class="Delimiter">();</span>
-<span id="L236" class="LineNr">236 </span>  <a href='003trace.cc.html#L240'>~lease_tracer</a><span class="Delimiter">();</span>
-<span id="L237" class="LineNr">237 </span><span class="Delimiter">};</span>
-<span id="L238" class="LineNr">238 </span><span class="Delimiter">:(code)</span>
-<span id="L239" class="LineNr">239 </span>lease_tracer::lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span> <a href='003trace.cc.html#L175'>Trace_stream</a> = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
-<span id="L240" class="LineNr">240 </span>lease_tracer::<a href='003trace.cc.html#L240'>~lease_tracer</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L241" class="LineNr">241 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L230'>Save_trace</a><span class="Delimiter">)</span> <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L133'>save</a><span class="Delimiter">();</span>
-<span id="L242" class="LineNr">242 </span>  <span class="Normal">delete</span> <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">,</span> <a href='003trace.cc.html#L175'>Trace_stream</a> = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-<span id="L243" class="LineNr">243 </span><span class="Delimiter">}</span>
-<span id="L244" class="LineNr">244 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L245" class="LineNr">245 </span><span class="Comment">#define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;</span>
-<span id="L246" class="LineNr">246 </span><span class="Delimiter">:(before &quot;End Test Setup&quot;)</span>
-<span id="L247" class="LineNr">247 </span><a href='003trace.cc.html#L245'>START_TRACING_UNTIL_END_OF_SCOPE</a>
-<span id="L248" class="LineNr">248 </span>
-<span id="L249" class="LineNr">249 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L250" class="LineNr">250 </span><span class="Comment">#define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)</span>
-<span id="L251" class="LineNr">251 </span>
-<span id="L252" class="LineNr">252 </span><span class="Comment">#define CHECK_TRACE_CONTAINS_ERRORS()  CHECK(trace_contains_errors())</span>
-<span id="L253" class="LineNr">253 </span><span class="Comment">#define CHECK_TRACE_DOESNT_CONTAIN_ERRORS() \</span>
-<span id="L254" class="LineNr">254 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L21'>Passed</a> &amp;&amp; <a href='003trace.cc.html#L217'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Delimiter">{</span> \
-<span id="L255" class="LineNr">255 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; __FUNCTION__ &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Constant">__FILE__</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; <span class="Constant">__LINE__</span> &lt;&lt; <span class="Constant">&quot;): unexpected errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span> \
-<span id="L256" class="LineNr">256 </span>    <a href='003trace.cc.html#L200'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">);</span> \
-<span id="L257" class="LineNr">257 </span>    <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span> \
-<span id="L258" class="LineNr">258 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span> \
-<span id="L259" class="LineNr">259 </span>  <span class="Delimiter">}</span>
-<span id="L260" class="LineNr">260 </span>
-<span id="L261" class="LineNr">261 </span><span class="Comment">#define CHECK_TRACE_COUNT(label, count) \</span>
-<span id="L262" class="LineNr">262 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L21'>Passed</a> &amp;&amp; trace_count<span class="Delimiter">(</span>label<span class="Delimiter">)</span> != <span class="Delimiter">(</span>count<span class="Delimiter">))</span> <span class="Delimiter">{</span> \
-<span id="L263" class="LineNr">263 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; __FUNCTION__ &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Constant">__FILE__</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; <span class="Constant">__LINE__</span> &lt;&lt; <span class="Constant">&quot;): trace_count of &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; should be &quot;</span> &lt;&lt; count &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span> \
-<span id="L264" class="LineNr">264 </span>    cerr &lt;&lt; <span class="Constant">&quot;  got &quot;</span> &lt;&lt; trace_count<span class="Delimiter">(</span>label<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>  <span class="Comment">/*</span><span class="Comment"> multiple eval </span><span class="Comment">*/</span> \
-<span id="L265" class="LineNr">265 </span>    <a href='003trace.cc.html#L200'>DUMP</a><span class="Delimiter">(</span>label<span class="Delimiter">);</span> \
-<span id="L266" class="LineNr">266 </span>    <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span> \
-<span id="L267" class="LineNr">267 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">/*</span><span class="Comment"> Currently we stop at the very first failure. </span><span class="Comment">*/</span> \
-<span id="L268" class="LineNr">268 </span>  <span class="Delimiter">}</span>
-<span id="L269" class="LineNr">269 </span>
-<span id="L270" class="LineNr">270 </span><span class="Comment">#define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))</span>
-<span id="L271" class="LineNr">271 </span>
-<span id="L272" class="LineNr">272 </span><span class="Delimiter">:(code)</span>
-<span id="L273" class="LineNr">273 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L273'>check_trace_contents</a><span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string <span class="Normal">FILE</span><span class="Delimiter">,</span> <span class="Normal">int</span> LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L274" class="LineNr">274 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
-<span id="L275" class="LineNr">275 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
-<span id="L276" class="LineNr">276 </span>  vector&lt;string&gt; expected_lines = <a href='003trace.cc.html#L367'>split</a><span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
-<span id="L277" class="LineNr">277 </span>  <span class="Normal">int</span> curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L278" class="LineNr">278 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>curr_expected_line &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
-<span id="L279" class="LineNr">279 </span>    ++curr_expected_line<span class="Delimiter">;</span>
-<span id="L280" class="LineNr">280 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
-<span id="L281" class="LineNr">281 </span>  string label<span class="Delimiter">,</span> <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">;</span>
-<span id="L282" class="LineNr">282 </span>  <a href='003trace.cc.html#L305'>split_label_contents</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
-<span id="L283" class="LineNr">283 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L284" class="LineNr">284 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L285" class="LineNr">285 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L74'>contents</a> != <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L286" class="LineNr">286 </span>    ++curr_expected_line<span class="Delimiter">;</span>
-<span id="L287" class="LineNr">287 </span>    <span class="Normal">while</span> <span class="Delimiter">(</span>curr_expected_line &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
-<span id="L288" class="LineNr">288 </span>      ++curr_expected_line<span class="Delimiter">;</span>
-<span id="L289" class="LineNr">289 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
-<span id="L290" class="LineNr">290 </span>    <a href='003trace.cc.html#L305'>split_label_contents</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
-<span id="L291" class="LineNr">291 </span>  <span class="Delimiter">}</span>
-<span id="L292" class="LineNr">292 </span>
-<span id="L293" class="LineNr">293 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L318'>line_exists_anywhere</a><span class="Delimiter">(</span>label<span class="Delimiter">,</span> <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L294" class="LineNr">294 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): <a href='011run.cc.html#L117'>line</a> [&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; <a href='003trace.cc.html#L74'>contents</a> &lt;&lt; <span class="Constant">&quot;] out of order in <a href='003trace.cc.html#L196'>trace</a>:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L295" class="LineNr">295 </span>    <a href='003trace.cc.html#L200'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span id="L296" class="LineNr">296 </span>  <span class="Delimiter">}</span>
-<span id="L297" class="LineNr">297 </span>  <span class="Normal">else</span> <span class="Delimiter">{</span>
-<span id="L298" class="LineNr">298 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; <a href='003trace.cc.html#L74'>contents</a> &lt;&lt; <span class="Constant">&quot;] in <a href='003trace.cc.html#L196'>trace</a>:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L299" class="LineNr">299 </span>    <a href='003trace.cc.html#L200'>DUMP</a><span class="Delimiter">(</span>label<span class="Delimiter">);</span>
-<span id="L300" class="LineNr">300 </span>  <span class="Delimiter">}</span>
-<span id="L301" class="LineNr">301 </span>  <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>
-<span id="L302" class="LineNr">302 </span>  <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
-<span id="L303" class="LineNr">303 </span><span class="Delimiter">}</span>
-<span id="L304" class="LineNr">304 </span>
-<span id="L305" class="LineNr">305 </span><span class="Normal">void</span> <a href='003trace.cc.html#L305'>split_label_contents</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">,</span> string* label<span class="Delimiter">,</span> string* <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L306" class="LineNr">306 </span>  <span class="Normal">static</span> <span class="Normal">const</span> string delim<span class="Delimiter">(</span><span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
-<span id="L307" class="LineNr">307 </span>  <span class="Normal">size_t</span> pos = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
-<span id="L308" class="LineNr">308 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>pos == string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L309" class="LineNr">309 </span>    *label = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-<span id="L310" class="LineNr">310 </span>    *contents = <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>s<span class="Delimiter">);</span>
-<span id="L311" class="LineNr">311 </span>  <span class="Delimiter">}</span>
-<span id="L312" class="LineNr">312 </span>  <span class="Normal">else</span> <span class="Delimiter">{</span>
-<span id="L313" class="LineNr">313 </span>    *label = <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pos<span class="Delimiter">));</span>
-<span id="L314" class="LineNr">314 </span>    *contents = <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>pos+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">)));</span>
-<span id="L315" class="LineNr">315 </span>  <span class="Delimiter">}</span>
-<span id="L316" class="LineNr">316 </span><span class="Delimiter">}</span>
-<span id="L317" class="LineNr">317 </span>
-<span id="L318" class="LineNr">318 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L318'>line_exists_anywhere</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; label<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L319" class="LineNr">319 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L320" class="LineNr">320 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L321" class="LineNr">321 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L74'>contents</a> == <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
-<span id="L322" class="LineNr">322 </span>  <span class="Delimiter">}</span>
-<span id="L323" class="LineNr">323 </span>  <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L229" class="LineNr">229 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
+<span id="L230" class="LineNr">230 </span><span class="Normal">struct</span> <a href='003trace.cc.html#L230'>end</a> <span class="Delimiter">{};</span>
+<span id="L231" class="LineNr">231 </span><span class="Delimiter">:(code)</span>
+<span id="L232" class="LineNr">232 </span>ostream&amp; <span class="Normal">operator</span>&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<span class="Delimiter">,</span> <a href='003trace.cc.html#L230'>end</a> <span class="Comment">/*</span><span class="Comment">unused</span><span class="Comment">*/</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L233" class="LineNr">233 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">)</span> <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L147'>newline</a><span class="Delimiter">();</span>
+<span id="L234" class="LineNr">234 </span>  <span class="Identifier">return</span> os<span class="Delimiter">;</span>
+<span id="L235" class="LineNr">235 </span><span class="Delimiter">}</span>
+<span id="L236" class="LineNr">236 </span>
+<span id="L237" class="LineNr">237 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L238" class="LineNr">238 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L238'>Save_trace</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>  <span class="Comment">// if set, write out trace to disk</span>
+<span id="L239" class="LineNr">239 </span>
+<span id="L240" class="LineNr">240 </span><span class="Comment">// Trace_stream is a resource, lease_tracer uses RAII to manage it.</span>
+<span id="L241" class="LineNr">241 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
+<span id="L242" class="LineNr">242 </span><span class="Normal">struct</span> lease_tracer <span class="Delimiter">{</span>
+<span id="L243" class="LineNr">243 </span>  lease_tracer<span class="Delimiter">();</span>
+<span id="L244" class="LineNr">244 </span>  <a href='003trace.cc.html#L248'>~lease_tracer</a><span class="Delimiter">();</span>
+<span id="L245" class="LineNr">245 </span><span class="Delimiter">};</span>
+<span id="L246" class="LineNr">246 </span><span class="Delimiter">:(code)</span>
+<span id="L247" class="LineNr">247 </span>lease_tracer::lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span> <a href='003trace.cc.html#L175'>Trace_stream</a> = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
+<span id="L248" class="LineNr">248 </span>lease_tracer::<a href='003trace.cc.html#L248'>~lease_tracer</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L249" class="LineNr">249 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L238'>Save_trace</a><span class="Delimiter">)</span> <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L133'>save</a><span class="Delimiter">();</span>
+<span id="L250" class="LineNr">250 </span>  <span class="Normal">delete</span> <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">,</span> <a href='003trace.cc.html#L175'>Trace_stream</a> = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span id="L251" class="LineNr">251 </span><span class="Delimiter">}</span>
+<span id="L252" class="LineNr">252 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L253" class="LineNr">253 </span><span class="Comment">#define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;</span>
+<span id="L254" class="LineNr">254 </span><span class="Delimiter">:(before &quot;End Test Setup&quot;)</span>
+<span id="L255" class="LineNr">255 </span><a href='003trace.cc.html#L253'>START_TRACING_UNTIL_END_OF_SCOPE</a>
+<span id="L256" class="LineNr">256 </span>
+<span id="L257" class="LineNr">257 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L258" class="LineNr">258 </span><span class="Comment">#define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)</span>
+<span id="L259" class="LineNr">259 </span>
+<span id="L260" class="LineNr">260 </span><span class="Comment">#define CHECK_TRACE_CONTAINS_ERRORS()  CHECK(trace_contains_errors())</span>
+<span id="L261" class="LineNr">261 </span><span class="Comment">#define CHECK_TRACE_DOESNT_CONTAIN_ERRORS() \</span>
+<span id="L262" class="LineNr">262 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L21'>Passed</a> &amp;&amp; <a href='003trace.cc.html#L225'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Delimiter">{</span> \
+<span id="L263" class="LineNr">263 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; __FUNCTION__ &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Constant">__FILE__</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; <span class="Constant">__LINE__</span> &lt;&lt; <span class="Constant">&quot;): unexpected errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span> \
+<span id="L264" class="LineNr">264 </span>    <a href='003trace.cc.html#L208'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">);</span> \
+<span id="L265" class="LineNr">265 </span>    <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span> \
+<span id="L266" class="LineNr">266 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span> \
+<span id="L267" class="LineNr">267 </span>  <span class="Delimiter">}</span>
+<span id="L268" class="LineNr">268 </span>
+<span id="L269" class="LineNr">269 </span><span class="Comment">#define CHECK_TRACE_COUNT(label, count) \</span>
+<span id="L270" class="LineNr">270 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L21'>Passed</a> &amp;&amp; trace_count<span class="Delimiter">(</span>label<span class="Delimiter">)</span> != <span class="Delimiter">(</span>count<span class="Delimiter">))</span> <span class="Delimiter">{</span> \
+<span id="L271" class="LineNr">271 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; __FUNCTION__ &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Constant">__FILE__</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; <span class="Constant">__LINE__</span> &lt;&lt; <span class="Constant">&quot;): trace_count of &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; should be &quot;</span> &lt;&lt; count &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span> \
+<span id="L272" class="LineNr">272 </span>    cerr &lt;&lt; <span class="Constant">&quot;  got &quot;</span> &lt;&lt; trace_count<span class="Delimiter">(</span>label<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>  <span class="Comment">/*</span><span class="Comment"> multiple eval </span><span class="Comment">*/</span> \
+<span id="L273" class="LineNr">273 </span>    <a href='003trace.cc.html#L208'>DUMP</a><span class="Delimiter">(</span>label<span class="Delimiter">);</span> \
+<span id="L274" class="LineNr">274 </span>    <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span> \
+<span id="L275" class="LineNr">275 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">/*</span><span class="Comment"> Currently we stop at the very first failure. </span><span class="Comment">*/</span> \
+<span id="L276" class="LineNr">276 </span>  <span class="Delimiter">}</span>
+<span id="L277" class="LineNr">277 </span>
+<span id="L278" class="LineNr">278 </span><span class="Comment">#define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))</span>
+<span id="L279" class="LineNr">279 </span>
+<span id="L280" class="LineNr">280 </span><span class="Delimiter">:(code)</span>
+<span id="L281" class="LineNr">281 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L281'>check_trace_contents</a><span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string <span class="Normal">FILE</span><span class="Delimiter">,</span> <span class="Normal">int</span> LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L282" class="LineNr">282 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L283" class="LineNr">283 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L284" class="LineNr">284 </span>  vector&lt;string&gt; expected_lines = <a href='003trace.cc.html#L375'>split</a><span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
+<span id="L285" class="LineNr">285 </span>  <span class="Normal">int</span> curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L286" class="LineNr">286 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>curr_expected_line &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
+<span id="L287" class="LineNr">287 </span>    ++curr_expected_line<span class="Delimiter">;</span>
+<span id="L288" class="LineNr">288 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L289" class="LineNr">289 </span>  string label<span class="Delimiter">,</span> <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">;</span>
+<span id="L290" class="LineNr">290 </span>  <a href='003trace.cc.html#L313'>split_label_contents</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+<span id="L291" class="LineNr">291 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L292" class="LineNr">292 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L293" class="LineNr">293 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L74'>contents</a> != <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L294" class="LineNr">294 </span>    ++curr_expected_line<span class="Delimiter">;</span>
+<span id="L295" class="LineNr">295 </span>    <span class="Normal">while</span> <span class="Delimiter">(</span>curr_expected_line &lt; <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
+<span id="L296" class="LineNr">296 </span>      ++curr_expected_line<span class="Delimiter">;</span>
+<span id="L297" class="LineNr">297 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == <a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L298" class="LineNr">298 </span>    <a href='003trace.cc.html#L313'>split_label_contents</a><span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+<span id="L299" class="LineNr">299 </span>  <span class="Delimiter">}</span>
+<span id="L300" class="LineNr">300 </span>
+<span id="L301" class="LineNr">301 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L326'>line_exists_anywhere</a><span class="Delimiter">(</span>label<span class="Delimiter">,</span> <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L302" class="LineNr">302 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): <a href='011run.cc.html#L117'>line</a> [&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; <a href='003trace.cc.html#L74'>contents</a> &lt;&lt; <span class="Constant">&quot;] out of order in <a href='003trace.cc.html#L204'>trace</a>:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L303" class="LineNr">303 </span>    <a href='003trace.cc.html#L208'>DUMP</a><span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+<span id="L304" class="LineNr">304 </span>  <span class="Delimiter">}</span>
+<span id="L305" class="LineNr">305 </span>  <span class="Normal">else</span> <span class="Delimiter">{</span>
+<span id="L306" class="LineNr">306 </span>    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; <a href='003trace.cc.html#L74'>contents</a> &lt;&lt; <span class="Constant">&quot;] in <a href='003trace.cc.html#L204'>trace</a>:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L307" class="LineNr">307 </span>    <a href='003trace.cc.html#L208'>DUMP</a><span class="Delimiter">(</span>label<span class="Delimiter">);</span>
+<span id="L308" class="LineNr">308 </span>  <span class="Delimiter">}</span>
+<span id="L309" class="LineNr">309 </span>  <a href='002test.cc.html#L21'>Passed</a> =<span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L310" class="LineNr">310 </span>  <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L311" class="LineNr">311 </span><span class="Delimiter">}</span>
+<span id="L312" class="LineNr">312 </span>
+<span id="L313" class="LineNr">313 </span><span class="Normal">void</span> <a href='003trace.cc.html#L313'>split_label_contents</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">,</span> string* label<span class="Delimiter">,</span> string* <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L314" class="LineNr">314 </span>  <span class="Normal">static</span> <span class="Normal">const</span> string delim<span class="Delimiter">(</span><span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
+<span id="L315" class="LineNr">315 </span>  <span class="Normal">size_t</span> pos = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
+<span id="L316" class="LineNr">316 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>pos == string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L317" class="LineNr">317 </span>    *label = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<span id="L318" class="LineNr">318 </span>    *contents = <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>s<span class="Delimiter">);</span>
+<span id="L319" class="LineNr">319 </span>  <span class="Delimiter">}</span>
+<span id="L320" class="LineNr">320 </span>  <span class="Normal">else</span> <span class="Delimiter">{</span>
+<span id="L321" class="LineNr">321 </span>    *label = <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pos<span class="Delimiter">));</span>
+<span id="L322" class="LineNr">322 </span>    *contents = <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>pos+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">)));</span>
+<span id="L323" class="LineNr">323 </span>  <span class="Delimiter">}</span>
 <span id="L324" class="LineNr">324 </span><span class="Delimiter">}</span>
 <span id="L325" class="LineNr">325 </span>
-<span id="L326" class="LineNr">326 </span><span class="Normal">int</span> trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L327" class="LineNr">327 </span>  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span id="L328" class="LineNr">328 </span><span class="Delimiter">}</span>
-<span id="L329" class="LineNr">329 </span>
-<span id="L330" class="LineNr">330 </span><span class="Normal">int</span> trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string <a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L331" class="LineNr">331 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L332" class="LineNr">332 </span>  <span class="Normal">long</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L333" class="LineNr">333 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L334" class="LineNr">334 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L335" class="LineNr">335 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='011run.cc.html#L117'>line</a> == <span class="Constant">&quot;&quot;</span> || <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span><a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> == <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span>
-<span id="L336" class="LineNr">336 </span>        ++result<span class="Delimiter">;</span>
-<span id="L337" class="LineNr">337 </span>    <span class="Delimiter">}</span>
-<span id="L338" class="LineNr">338 </span>  <span class="Delimiter">}</span>
-<span id="L339" class="LineNr">339 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span id="L340" class="LineNr">340 </span><span class="Delimiter">}</span>
-<span id="L341" class="LineNr">341 </span>
-<span id="L342" class="LineNr">342 </span><span class="Normal">int</span> <a href='003trace.cc.html#L342'>trace_count_prefix</a><span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string prefix<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L343" class="LineNr">343 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L344" class="LineNr">344 </span>  <span class="Normal">long</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L345" class="LineNr">345 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L346" class="LineNr">346 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L347" class="LineNr">347 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L93'>starts_with</a><span class="Delimiter">(</span><a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">),</span> <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span>prefix<span class="Delimiter">)))</span>
-<span id="L348" class="LineNr">348 </span>        ++result<span class="Delimiter">;</span>
-<span id="L349" class="LineNr">349 </span>    <span class="Delimiter">}</span>
-<span id="L350" class="LineNr">350 </span>  <span class="Delimiter">}</span>
-<span id="L351" class="LineNr">351 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span id="L352" class="LineNr">352 </span><span class="Delimiter">}</span>
-<span id="L353" class="LineNr">353 </span>
-<span id="L354" class="LineNr">354 </span><span class="Normal">bool</span> trace_doesnt_contain<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string <a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L355" class="LineNr">355 </span>  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> <a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L356" class="LineNr">356 </span><span class="Delimiter">}</span>
-<span id="L357" class="LineNr">357 </span>
-<span id="L358" class="LineNr">358 </span><span class="Normal">bool</span> trace_doesnt_contain<span class="Delimiter">(</span>string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L359" class="LineNr">359 </span>  vector&lt;string&gt; tmp = <a href='003trace.cc.html#L382'>split_first</a><span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
-<span id="L360" class="LineNr">360 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>tmp<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L361" class="LineNr">361 </span>    <a href='003trace.cc.html#L203'>raise</a> &lt;&lt; expected &lt;&lt; <span class="Constant">&quot;: missing label or <a href='003trace.cc.html#L74'>contents</a> in <a href='003trace.cc.html#L196'>trace</a> <a href='011run.cc.html#L117'>line</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L362" class="LineNr">362 </span>    assert<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
-<span id="L363" class="LineNr">363 </span>  <span class="Delimiter">}</span>
-<span id="L364" class="LineNr">364 </span>  <span class="Identifier">return</span> trace_doesnt_contain<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
-<span id="L365" class="LineNr">365 </span><span class="Delimiter">}</span>
-<span id="L366" class="LineNr">366 </span>
-<span id="L367" class="LineNr">367 </span>vector&lt;string&gt; <a href='003trace.cc.html#L367'>split</a><span class="Delimiter">(</span>string s<span class="Delimiter">,</span> string delim<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L368" class="LineNr">368 </span>  vector&lt;string&gt; result<span class="Delimiter">;</span>
-<span id="L369" class="LineNr">369 </span>  <span class="Normal">size_t</span> begin=<span class="Constant">0</span><span class="Delimiter">,</span> end=s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
-<span id="L370" class="LineNr">370 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L371" class="LineNr">371 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L222'>end</a> == string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L372" class="LineNr">372 </span>      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> string::npos<span class="Delimiter">));</span>
-<span id="L373" class="LineNr">373 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L374" class="LineNr">374 </span>    <span class="Delimiter">}</span>
-<span id="L375" class="LineNr">375 </span>    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> end-begin<span class="Delimiter">));</span>
-<span id="L376" class="LineNr">376 </span>    begin = end+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
-<span id="L377" class="LineNr">377 </span>    <a href='003trace.cc.html#L222'>end</a> = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">,</span> begin<span class="Delimiter">);</span>
-<span id="L378" class="LineNr">378 </span>  <span class="Delimiter">}</span>
-<span id="L379" class="LineNr">379 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span id="L380" class="LineNr">380 </span><span class="Delimiter">}</span>
-<span id="L381" class="LineNr">381 </span>
-<span id="L382" class="LineNr">382 </span>vector&lt;string&gt; <a href='003trace.cc.html#L382'>split_first</a><span class="Delimiter">(</span>string s<span class="Delimiter">,</span> string delim<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L383" class="LineNr">383 </span>  vector&lt;string&gt; result<span class="Delimiter">;</span>
-<span id="L384" class="LineNr">384 </span>  <span class="Normal">size_t</span> end=s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
-<span id="L385" class="LineNr">385 </span>  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <a href='003trace.cc.html#L222'>end</a><span class="Delimiter">));</span>
-<span id="L386" class="LineNr">386 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L222'>end</a> != string::npos<span class="Delimiter">)</span>
-<span id="L387" class="LineNr">387 </span>    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> end+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">),</span> string::npos<span class="Delimiter">));</span>
-<span id="L388" class="LineNr">388 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span id="L389" class="LineNr">389 </span><span class="Delimiter">}</span>
-<span id="L390" class="LineNr">390 </span>
-<span id="L391" class="LineNr">391 </span>string <a href='003trace.cc.html#L391'>trim</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L392" class="LineNr">392 </span>  string::const_iterator first = s<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
-<span id="L393" class="LineNr">393 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>first != s<span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">()</span> &amp;&amp; isspace<span class="Delimiter">(</span>*first<span class="Delimiter">))</span>
-<span id="L394" class="LineNr">394 </span>    ++first<span class="Delimiter">;</span>
-<span id="L395" class="LineNr">395 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>first == s<span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-<span id="L396" class="LineNr">396 </span>
-<span id="L397" class="LineNr">397 </span>  string::const_iterator last = --s<span class="Delimiter">.</span><a href='003trace.cc.html#L222'>end</a><span class="Delimiter">();</span>
-<span id="L398" class="LineNr">398 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>last != s<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> &amp;&amp; isspace<span class="Delimiter">(</span>*last<span class="Delimiter">))</span>
-<span id="L399" class="LineNr">399 </span>    --last<span class="Delimiter">;</span>
-<span id="L400" class="LineNr">400 </span>  ++last<span class="Delimiter">;</span>
-<span id="L401" class="LineNr">401 </span>  <span class="Identifier">return</span> string<span class="Delimiter">(</span>first<span class="Delimiter">,</span> last<span class="Delimiter">);</span>
-<span id="L402" class="LineNr">402 </span><span class="Delimiter">}</span>
-<span id="L403" class="LineNr">403 </span>
-<span id="L404" class="LineNr">404 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L405" class="LineNr">405 </span><span class="Comment">#include &lt;vector&gt;</span>
-<span id="L406" class="LineNr">406 </span><span class="Normal">using</span> std::vector<span class="Delimiter">;</span>
-<span id="L407" class="LineNr">407 </span><span class="Comment">#include &lt;list&gt;</span>
-<span id="L408" class="LineNr">408 </span><span class="Normal">using</span> std::list<span class="Delimiter">;</span>
-<span id="L409" class="LineNr">409 </span><span class="Comment">#include &lt;set&gt;</span>
-<span id="L410" class="LineNr">410 </span><span class="Normal">using</span> std::set<span class="Delimiter">;</span>
+<span id="L326" class="LineNr">326 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L326'>line_exists_anywhere</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; label<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; <a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L327" class="LineNr">327 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L328" class="LineNr">328 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L329" class="LineNr">329 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L74'>contents</a> == <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
+<span id="L330" class="LineNr">330 </span>  <span class="Delimiter">}</span>
+<span id="L331" class="LineNr">331 </span>  <span class="Identifier">return</span><span class="Constant"> false</span><span class="Delimiter">;</span>
+<span id="L332" class="LineNr">332 </span><span class="Delimiter">}</span>
+<span id="L333" class="LineNr">333 </span>
+<span id="L334" class="LineNr">334 </span><span class="Normal">int</span> trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L335" class="LineNr">335 </span>  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+<span id="L336" class="LineNr">336 </span><span class="Delimiter">}</span>
+<span id="L337" class="LineNr">337 </span>
+<span id="L338" class="LineNr">338 </span><span class="Normal">int</span> trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string <a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L339" class="LineNr">339 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L340" class="LineNr">340 </span>  <span class="Normal">long</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L341" class="LineNr">341 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L342" class="LineNr">342 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L343" class="LineNr">343 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='011run.cc.html#L117'>line</a> == <span class="Constant">&quot;&quot;</span> || <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span><a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> == <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">))</span>
+<span id="L344" class="LineNr">344 </span>        ++result<span class="Delimiter">;</span>
+<span id="L345" class="LineNr">345 </span>    <span class="Delimiter">}</span>
+<span id="L346" class="LineNr">346 </span>  <span class="Delimiter">}</span>
+<span id="L347" class="LineNr">347 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span id="L348" class="LineNr">348 </span><span class="Delimiter">}</span>
+<span id="L349" class="LineNr">349 </span>
+<span id="L350" class="LineNr">350 </span><span class="Normal">int</span> <a href='003trace.cc.html#L350'>trace_count_prefix</a><span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string prefix<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L351" class="LineNr">351 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L352" class="LineNr">352 </span>  <span class="Normal">long</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L353" class="LineNr">353 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <a href='003trace.cc.html#L175'>Trace_stream</a><span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L110'>past_lines</a><span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L354" class="LineNr">354 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L355" class="LineNr">355 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L93'>starts_with</a><span class="Delimiter">(</span><a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span><a href='003trace.cc.html#L74'>contents</a><span class="Delimiter">),</span> <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span>prefix<span class="Delimiter">)))</span>
+<span id="L356" class="LineNr">356 </span>        ++result<span class="Delimiter">;</span>
+<span id="L357" class="LineNr">357 </span>    <span class="Delimiter">}</span>
+<span id="L358" class="LineNr">358 </span>  <span class="Delimiter">}</span>
+<span id="L359" class="LineNr">359 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span id="L360" class="LineNr">360 </span><span class="Delimiter">}</span>
+<span id="L361" class="LineNr">361 </span>
+<span id="L362" class="LineNr">362 </span><span class="Normal">bool</span> trace_doesnt_contain<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string <a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L363" class="LineNr">363 </span>  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> <a href='011run.cc.html#L117'>line</a><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L364" class="LineNr">364 </span><span class="Delimiter">}</span>
+<span id="L365" class="LineNr">365 </span>
+<span id="L366" class="LineNr">366 </span><span class="Normal">bool</span> trace_doesnt_contain<span class="Delimiter">(</span>string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L367" class="LineNr">367 </span>  vector&lt;string&gt; tmp = <a href='003trace.cc.html#L390'>split_first</a><span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
+<span id="L368" class="LineNr">368 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L157'>SIZE</a><span class="Delimiter">(</span>tmp<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L369" class="LineNr">369 </span>    <a href='003trace.cc.html#L211'>raise</a> &lt;&lt; expected &lt;&lt; <span class="Constant">&quot;: missing label or <a href='003trace.cc.html#L74'>contents</a> in <a href='003trace.cc.html#L204'>trace</a> <a href='011run.cc.html#L117'>line</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L230'>end</a><span class="Delimiter">();</span>
+<span id="L370" class="LineNr">370 </span>    assert<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
+<span id="L371" class="LineNr">371 </span>  <span class="Delimiter">}</span>
+<span id="L372" class="LineNr">372 </span>  <span class="Identifier">return</span> trace_doesnt_contain<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
+<span id="L373" class="LineNr">373 </span><span class="Delimiter">}</span>
+<span id="L374" class="LineNr">374 </span>
+<span id="L375" class="LineNr">375 </span>vector&lt;string&gt; <a href='003trace.cc.html#L375'>split</a><span class="Delimiter">(</span>string s<span class="Delimiter">,</span> string delim<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L376" class="LineNr">376 </span>  vector&lt;string&gt; result<span class="Delimiter">;</span>
+<span id="L377" class="LineNr">377 </span>  <span class="Normal">size_t</span> begin=<span class="Constant">0</span><span class="Delimiter">,</span> end=s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
+<span id="L378" class="LineNr">378 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L379" class="LineNr">379 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L230'>end</a> == string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L380" class="LineNr">380 </span>      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> string::npos<span class="Delimiter">));</span>
+<span id="L381" class="LineNr">381 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L382" class="LineNr">382 </span>    <span class="Delimiter">}</span>
+<span id="L383" class="LineNr">383 </span>    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> end-begin<span class="Delimiter">));</span>
+<span id="L384" class="LineNr">384 </span>    begin = end+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
+<span id="L385" class="LineNr">385 </span>    <a href='003trace.cc.html#L230'>end</a> = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">,</span> begin<span class="Delimiter">);</span>
+<span id="L386" class="LineNr">386 </span>  <span class="Delimiter">}</span>
+<span id="L387" class="LineNr">387 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span id="L388" class="LineNr">388 </span><span class="Delimiter">}</span>
+<span id="L389" class="LineNr">389 </span>
+<span id="L390" class="LineNr">390 </span>vector&lt;string&gt; <a href='003trace.cc.html#L390'>split_first</a><span class="Delimiter">(</span>string s<span class="Delimiter">,</span> string delim<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L391" class="LineNr">391 </span>  vector&lt;string&gt; result<span class="Delimiter">;</span>
+<span id="L392" class="LineNr">392 </span>  <span class="Normal">size_t</span> end=s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
+<span id="L393" class="LineNr">393 </span>  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <a href='003trace.cc.html#L230'>end</a><span class="Delimiter">));</span>
+<span id="L394" class="LineNr">394 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L230'>end</a> != string::npos<span class="Delimiter">)</span>
+<span id="L395" class="LineNr">395 </span>    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> end+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">),</span> string::npos<span class="Delimiter">));</span>
+<span id="L396" class="LineNr">396 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span id="L397" class="LineNr">397 </span><span class="Delimiter">}</span>
+<span id="L398" class="LineNr">398 </span>
+<span id="L399" class="LineNr">399 </span>string <a href='003trace.cc.html#L399'>trim</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L400" class="LineNr">400 </span>  string::const_iterator first = s<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
+<span id="L401" class="LineNr">401 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>first != s<span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">()</span> &amp;&amp; isspace<span class="Delimiter">(</span>*first<span class="Delimiter">))</span>
+<span id="L402" class="LineNr">402 </span>    ++first<span class="Delimiter">;</span>
+<span id="L403" class="LineNr">403 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>first == s<span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<span id="L404" class="LineNr">404 </span>
+<span id="L405" class="LineNr">405 </span>  string::const_iterator last = --s<span class="Delimiter">.</span><a href='003trace.cc.html#L230'>end</a><span class="Delimiter">();</span>
+<span id="L406" class="LineNr">406 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>last != s<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> &amp;&amp; isspace<span class="Delimiter">(</span>*last<span class="Delimiter">))</span>
+<span id="L407" class="LineNr">407 </span>    --last<span class="Delimiter">;</span>
+<span id="L408" class="LineNr">408 </span>  ++last<span class="Delimiter">;</span>
+<span id="L409" class="LineNr">409 </span>  <span class="Identifier">return</span> string<span class="Delimiter">(</span>first<span class="Delimiter">,</span> last<span class="Delimiter">);</span>
+<span id="L410" class="LineNr">410 </span><span class="Delimiter">}</span>
 <span id="L411" class="LineNr">411 </span>
-<span id="L412" class="LineNr">412 </span><span class="Comment">#include &lt;sstream&gt;</span>
-<span id="L413" class="LineNr">413 </span><span class="Normal">using</span> std::istringstream<span class="Delimiter">;</span>
-<span id="L414" class="LineNr">414 </span><span class="Normal">using</span> std::ostringstream<span class="Delimiter">;</span>
-<span id="L415" class="LineNr">415 </span>
-<span id="L416" class="LineNr">416 </span><span class="Comment">#include &lt;fstream&gt;</span>
-<span id="L417" class="LineNr">417 </span><span class="Normal">using</span> std::ifstream<span class="Delimiter">;</span>
-<span id="L418" class="LineNr">418 </span><span class="Normal">using</span> std::ofstream<span class="Delimiter">;</span>
+<span id="L412" class="LineNr">412 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L413" class="LineNr">413 </span><span class="Comment">#include &lt;vector&gt;</span>
+<span id="L414" class="LineNr">414 </span><span class="Normal">using</span> std::vector<span class="Delimiter">;</span>
+<span id="L415" class="LineNr">415 </span><span class="Comment">#include &lt;list&gt;</span>
+<span id="L416" class="LineNr">416 </span><span class="Normal">using</span> std::list<span class="Delimiter">;</span>
+<span id="L417" class="LineNr">417 </span><span class="Comment">#include &lt;set&gt;</span>
+<span id="L418" class="LineNr">418 </span><span class="Normal">using</span> std::set<span class="Delimiter">;</span>
+<span id="L419" class="LineNr">419 </span>
+<span id="L420" class="LineNr">420 </span><span class="Comment">#include &lt;sstream&gt;</span>
+<span id="L421" class="LineNr">421 </span><span class="Normal">using</span> std::istringstream<span class="Delimiter">;</span>
+<span id="L422" class="LineNr">422 </span><span class="Normal">using</span> std::ostringstream<span class="Delimiter">;</span>
+<span id="L423" class="LineNr">423 </span>
+<span id="L424" class="LineNr">424 </span><span class="Comment">#include &lt;fstream&gt;</span>
+<span id="L425" class="LineNr">425 </span><span class="Normal">using</span> std::ifstream<span class="Delimiter">;</span>
+<span id="L426" class="LineNr">426 </span><span class="Normal">using</span> std::ofstream<span class="Delimiter">;</span>
 </pre>
 </body>
 </html>
