@@ -105,43 +105,48 @@ inline uint8_t read_mem_u8(uint32_t addr) {
   return Mem.at(addr-Mem_offset);
 }
 inline int8_t read_mem_i8(uint32_t addr) {
-  return static_cast<int8_t>(Mem.at(addr-Mem_offset));
+  return static_cast<int8_t>(read_mem_u8(addr));
 }
 inline uint32_t read_mem_u32(uint32_t addr) {
-  return *reinterpret_cast<uint32_t*>(&Mem.at(addr-Mem_offset));
+  uint32_t* handle = mem_addr_u32(addr);
+  return handle ? *handle : 0;
 }
 inline int32_t read_mem_i32(uint32_t addr) {
-  return *reinterpret_cast<int32_t*>(&Mem.at(addr-Mem_offset));
+  return static_cast<int32_t>(read_mem_u32(addr));
 }
 
 inline uint8_t* mem_addr_u8(uint32_t addr) {
   return &Mem.at(addr-Mem_offset);
 }
 inline int8_t* mem_addr_i8(uint32_t addr) {
-  return reinterpret_cast<int8_t*>(&Mem.at(addr-Mem_offset));
+  return reinterpret_cast<int8_t*>(mem_addr_u8(addr));
 }
 inline uint32_t* mem_addr_u32(uint32_t addr) {
-  return reinterpret_cast<uint32_t*>(&Mem.at(addr-Mem_offset));
+  return reinterpret_cast<uint32_t*>(mem_addr_u8(addr));
 }
 inline int32_t* mem_addr_i32(uint32_t addr) {
-  return reinterpret_cast<int32_t*>(&Mem.at(addr-Mem_offset));
+  return reinterpret_cast<int32_t*>(mem_addr_u8(addr));
 }
 // helper for some syscalls. But read-only.
 inline const char* mem_addr_string(uint32_t addr) {
-  return reinterpret_cast<const char*>(&Mem.at(addr-Mem_offset));
+  return reinterpret_cast<const char*>(mem_addr_u8(addr));
 }
 
 inline void write_mem_u8(uint32_t addr, uint8_t val) {
-  Mem.at(addr-Mem_offset) = val;
+  uint8_t* handle = mem_addr_u8(addr);
+  if (handle != NULL) *handle = val;
 }
 inline void write_mem_i8(uint32_t addr, int8_t val) {
-  Mem.at(addr-Mem_offset) = static_cast<uint8_t>(val);
+  int8_t* handle = mem_addr_i8(addr);
+  if (handle != NULL) *handle = val;
 }
 inline void write_mem_u32(uint32_t addr, uint32_t val) {
-  *reinterpret_cast<uint32_t*>(&Mem.at(addr-Mem_offset)) = val;
+  uint32_t* handle = mem_addr_u32(addr);
+  if (handle != NULL) *handle = val;
 }
 inline void write_mem_i32(uint32_t addr, int32_t val) {
-  *reinterpret_cast<int32_t*>(&Mem.at(addr-Mem_offset)) = val;
+  int32_t* handle = mem_addr_i32(addr);
+  if (handle != NULL) *handle = val;
 }
 
 //:: core interpreter loop
