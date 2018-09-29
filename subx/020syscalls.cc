@@ -75,7 +75,7 @@ void process_int80() {
     break;
   case 45:  // brk: modify size of data segment
     trace(91, "run") << "grow data segment to " << Reg[EBX].u << end();
-    resize_mem(/*new end address*/Reg[EBX].u);
+    grow_data_segment(/*new end address*/Reg[EBX].u);
     break;
   default:
     raise << HEXWORD << EIP << ": unimplemented syscall " << Reg[EAX].u << '\n' << end();
@@ -101,17 +101,4 @@ void check_mode(int reg) {
     cerr << HEXWORD << EIP << ": SubX is oblivious to file permissions; register " << reg << " must be 0.\n";
     exit(1);
   }
-}
-
-void resize_mem(uint32_t new_end_address) {
-  if (new_end_address < Mem_offset) {
-    raise << HEXWORD << EIP << ": can't shrink data segment to before code segment\n" << end();
-    return;
-  }
-  int32_t new_size = new_end_address - Mem_offset;
-  if (new_size < SIZE(Mem)) {
-    raise << HEXWORD << EIP << ": shrinking data segment is not supported.\n" << end();
-    return;
-  }
-  Mem.resize(new_size);  // will throw exception on failure
 }

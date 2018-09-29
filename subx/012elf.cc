@@ -9,8 +9,6 @@ if (is_equal(argv[1], "run")) {
   assert(argc > 2);
   reset();
   cerr << std::hex;
-  initialize_mem();
-  Mem_offset = CODE_START;
   load_elf(argv[2], argc, argv);
   while (EIP < End_of_program)  // weak final-gasp termination check
     run_one_instruction();
@@ -60,9 +58,10 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
   // unused: e_shstrndx
 
   for (size_t i = 0;  i < e_phnum;  ++i)
-    load_segment_from_program_header(elf_contents, size, e_phoff + i*e_phentsize, e_ehsize);
+    load_segment_from_program_header(elf_contents, i, size, e_phoff + i*e_phentsize, e_ehsize);
 
   // initialize code and stack
+  Mem.push_back(vma(STACK_SEGMENT));
   Reg[ESP].u = AFTER_STACK;
   Reg[EBP].u = 0;
   EIP = e_entry;
@@ -70,6 +69,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
   // initialize args on stack
   // no envp for now
   // we wastefully use a separate page of memory for argv
+  Mem.push_back(vma(ARGV_DATA_SEGMENT));
   uint32_t argv_data = ARGV_DATA_SEGMENT;
   for (int i = argc-1;  i >= /*skip 'subx_bin' and 'run'*/2;  --i) {
     push(argv_data);
@@ -89,7 +89,7 @@ void push(uint32_t val) {
   write_mem_u32(Reg[ESP].u, val);
 }
 
-void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32_t offset, uint32_t e_ehsize) {
+void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, size_t size, uint32_t offset, uint32_t e_ehsize) {
   uint32_t p_type = u32_in(&elf_contents[offset]);
   trace(90, "load") << "program header at offset " << offset << ": type " << p_type << end();
   if (p_type != 1) {
@@ -103,35 +103,36 @@ void load_segment_from_program_header(uint8_t* elf_contents, size_t size, uint32
   uint32_t p_filesz = u32_in(&elf_contents[offset + 16]);
   uint32_t p_memsz = u32_in(&elf_contents[offset + 20]);
   if (p_filesz != p_memsz)
-    raise << "Can't handle segments where p_filesz != p_memsz (see http://refspecs.linuxbase.org/elf/elf.pdf)\n" << die();
+    raise << "Can't yet handle segments where p_filesz != p_memsz (see http://refspecs.linuxbase.org/elf/elf.pdf)\n" << die();
 
   if (p_offset + p_filesz > size)
     raise << "Invalid binary; segment at offset " << offset << " is too large: wants to end at " << p_offset+p_filesz << " but the file ends at " << size << '\n' << die();
-  if (Mem.size() < p_vaddr + p_memsz)
-    Mem.resize(p_vaddr + p_memsz);
-  if (size > p_memsz) size = p_memsz;
+  if (p_memsz > INITIAL_SEGMENT_SIZE) {
+    raise << "Code segment too small for SubX; for now please manually increase INITIAL_SEGMENT_SIZE.\n" << end();
+    return;
+  }
   trace(90, "load") << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ')' << end();
+  if (size > p_memsz) size = p_memsz;
+  Mem.push_back(vma(p_vaddr));
   for (size_t i = 0;  i < p_filesz;  ++i)
     write_mem_u8(p_vaddr+i, elf_contents[p_offset+i]);
-  if (End_of_program < p_vaddr+p_memsz)
+  if (segment_index == 0 && End_of_program < p_vaddr+p_memsz)
     End_of_program = p_vaddr+p_memsz;
 }
 
 :(before "End Includes")
 // Very primitive/fixed/insecure ELF segments for now.
 //   code: 0x08048000 -> 0x08048fff
-//   data: 0x08049000 -> 0x08049fff
-//   heap: 0x0804a000 -> 0x0804afff
-//   stack: 0x0804bfff -> 0x0804b000 (downward)
-const int CODE_START = 0x08048000;
+//   data/heap: 0x08050000 -> 0x08050fff
+//   stack: 0x08060fff -> 0x08060000 (downward)
 const int SEGMENT_SIZE = 0x1000;
-const int AFTER_STACK = 0x0804c000;
-const int ARGV_DATA_SEGMENT = 0x0804e000;
+const int CODE_START = 0x08048000;
+const int DATA_SEGMENT = 0x08050000;
+const int HEAP_SEGMENT = DATA_SEGMENT;
+const int STACK_SEGMENT = 0x08060000;
+const int AFTER_STACK = 0x08060ffc;  // forget final word because of the off-by-one with INITIAL_SEGMENT_SIZE;
+const int ARGV_DATA_SEGMENT = 0x08070000;
 :(code)
-void initialize_mem() {
-  Mem.resize(AFTER_STACK - CODE_START);
-}
-
 inline uint32_t u32_in(uint8_t* p) {
   return p[0] | p[1] << 8 | p[2] << 16 | p[3] << 24;
 }

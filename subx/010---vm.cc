@@ -89,26 +89,74 @@ SF = ZF = OF = false;
 
 //:: simulated RAM
 
+:(before "End Types")
+const uint32_t INITIAL_SEGMENT_SIZE = 0x1000 - 1;
+// Subtract one just so we can start the first segment at address 1 without
+// overflowing the first segment. Other segments will learn to adjust.
+
+// Like in real-world Linux, we'll allocate RAM for our programs in slabs
+// called VMAs or Virtual Memory Areas.
+struct vma {
+  uint32_t start;  // inclusive
+  uint32_t end;  // exclusive
+  vector<uint8_t> _data;
+  vma(uint32_t s, uint32_t e) :start(s), end(e) {
+    _data.resize(end-start);
+  }
+  vma(uint32_t s) :start(s), end(s+INITIAL_SEGMENT_SIZE) {
+    _data.resize(end-start);
+  }
+  bool match(uint32_t a) {
+    return a >= start && a < end;
+  }
+  bool match32(uint32_t a) {
+    return a >= start && a+4 <= end;
+  }
+  uint8_t& data(uint32_t a) {
+    assert(match(a));
+    return _data.at(a-start);
+  }
+  void grow_until(uint32_t new_end_address) {
+    if (new_end_address < end) return;
+    end = new_end_address;
+    _data.resize(new_end_address - start);
+  }
+  // End vma Methods
+};
+
 :(before "End Globals")
-vector<uint8_t> Mem;
-uint32_t Mem_offset = 0;
-uint32_t End_of_program = 0;
+// RAM is made of VMAs.
+vector<vma> Mem;
+:(code)
+// The first 3 VMAs are special. When loading ELF binaries in later layers,
+// we'll assume that the first VMA is for code, the second is for data
+// (including the heap), and the third for the stack.
+void grow_code_segment(uint32_t new_end_address) {
+  assert(!Mem.empty());
+  Mem.at(0).grow_until(new_end_address);
+}
+void grow_data_segment(uint32_t new_end_address) {
+  assert(SIZE(Mem) > 1);
+  Mem.at(1).grow_until(new_end_address);
+}
+:(before "End Globals")
+uint32_t End_of_program = 0;  // when the program executes past this address in tests we'll stop the test
+// The stack grows downward. Can't increase its size for now.
 :(before "End Reset")
 Mem.clear();
-Mem.resize(1024);
-Mem_offset = 0;
 End_of_program = 0;
 :(code)
 // These helpers depend on Mem being laid out contiguously (so you can't use a
 // map, etc.) and on the host also being little-endian.
 inline uint8_t read_mem_u8(uint32_t addr) {
-  return Mem.at(addr-Mem_offset);
+  uint8_t* handle = mem_addr_u8(addr);  // error messages get printed here
+  return handle ? *handle : 0;
 }
 inline int8_t read_mem_i8(uint32_t addr) {
   return static_cast<int8_t>(read_mem_u8(addr));
 }
 inline uint32_t read_mem_u32(uint32_t addr) {
-  uint32_t* handle = mem_addr_u32(addr);
+  uint32_t* handle = mem_addr_u32(addr);  // error messages get printed here
   return handle ? *handle : 0;
 }
 inline int32_t read_mem_i32(uint32_t addr) {
@@ -116,16 +164,25 @@ inline int32_t read_mem_i32(uint32_t addr) {
 }
 
 inline uint8_t* mem_addr_u8(uint32_t addr) {
-  return &Mem.at(addr-Mem_offset);
+  for (int i = 0;  i < SIZE(Mem);  ++i)
+    if (Mem.at(i).match(addr))
+      return &Mem.at(i).data(addr);
+  raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
+  return NULL;
 }
 inline int8_t* mem_addr_i8(uint32_t addr) {
   return reinterpret_cast<int8_t*>(mem_addr_u8(addr));
 }
 inline uint32_t* mem_addr_u32(uint32_t addr) {
-  return reinterpret_cast<uint32_t*>(mem_addr_u8(addr));
+  for (int i = 0;  i < SIZE(Mem);  ++i)
+    if (Mem.at(i).match32(addr))
+      return reinterpret_cast<uint32_t*>(&Mem.at(i).data(addr));
+  raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
+  raise << "The entire 4-byte word should be initialized and lie in a single segment.\n" << end();
+  return NULL;
 }
 inline int32_t* mem_addr_i32(uint32_t addr) {
-  return reinterpret_cast<int32_t*>(mem_addr_u8(addr));
+  return reinterpret_cast<int32_t*>(mem_addr_u32(addr));
 }
 // helper for some syscalls. But read-only.
 inline const char* mem_addr_string(uint32_t addr) {
@@ -147,6 +204,13 @@ inline void write_mem_u32(uint32_t addr, uint32_t val) {
 inline void write_mem_i32(uint32_t addr, int32_t val) {
   int32_t* handle = mem_addr_i32(addr);
   if (handle != NULL) *handle = val;
+}
+
+inline bool already_allocated(uint32_t addr) {
+  for (int i = 0;  i < SIZE(Mem);  ++i)
+    if (Mem.at(i).match(addr))
+      return true;
+  return false;
 }
 
 //:: core interpreter loop

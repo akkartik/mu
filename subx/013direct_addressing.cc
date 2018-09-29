@@ -555,7 +555,8 @@ put(name, "5f", "pop top of stack to R7 (EDI)");
 
 :(scenario pop_r32)
 % Reg[ESP].u = 0x60;
-% write_mem_i32(0x60, 0x0000000a);
+% Mem.push_back(vma(0x1));  // manually allocate memory
+% write_mem_i32(0x60, 0x0000000a);  // ..before this write
 == 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   5b                                          # pop stack to EBX

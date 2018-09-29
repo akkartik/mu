@@ -2,9 +2,7 @@
 //: segment.
 //: This gives up a measure of control in placing code and data.
 
-//: segment address computation requires setting Mem_offset in test mode to what it'll be in run mode
 :(scenario segment_name)
-% Mem_offset = CODE_START;
 == code
 05/add 0x0d0c0b0a/imm32  # add 0x0d0c0b0a to EAX
 # code starts at 0x08048000 + p_offset, which is 0x54 for a single-segment binary

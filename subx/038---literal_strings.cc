@@ -4,10 +4,9 @@
 //: always be the second segment).
 
 :(scenario transform_literal_string)
-% Mem_offset = CODE_START;
-% Mem.resize(AFTER_STACK - CODE_START);
 == code
   b8/copy "test"/imm32  # copy to EAX
+== data  # need to manually create this for now
 +transform: -- move literal strings to data segment
 +transform: adding global variable '__subx_global_1' containing "test"
 +transform: instruction after transform: 'b8 __subx_global_1'

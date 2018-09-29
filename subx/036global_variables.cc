@@ -7,8 +7,6 @@
 //: This layer much the same structure as rewriting labels.
 
 :(scenario global_variable)
-% Mem_offset = CODE_START;
-% Mem.resize(0x2000);
 == code
 b9/copy x/imm32  # copy to ECX
 == data
@@ -147,11 +145,9 @@ x:
 #? +error: can't call to the data segment ('x')
 
 :(scenario disp32_data_with_modrm)
-% Mem_offset = CODE_START;
-% Mem.resize(0x2000);
 == code
 8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX x/disp32
-==
+== data
 x:
 00 00 00 00
 $error: 0

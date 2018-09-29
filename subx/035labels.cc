@@ -231,7 +231,6 @@ xz:
 //: ignore them.
 
 :(scenario segment_size_ignores_labels)
-% Mem_offset = CODE_START;
 == code  # 0x08048074
 05/add 0x0d0c0b0a/imm32  # 5 bytes
 foo:                     # 0 bytes

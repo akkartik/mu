@@ -224,6 +224,8 @@ void load(const program& p) {
   for (int i = 0;   i < SIZE(p.segments);  ++i) {
     const segment& seg = p.segments.at(i);
     uint32_t addr = seg.start;
+    if (!already_allocated(addr))
+      Mem.push_back(vma(seg.start));
     trace(99, "load") << "loading segment " << i << " from " << HEXWORD << addr << end();
     for (int j = 0;  j < SIZE(seg.lines);  ++j) {
       const line& l = seg.lines.at(j);
