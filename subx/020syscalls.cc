@@ -105,7 +105,7 @@ void check_mode(int reg) {
 
 void resize_mem(uint32_t new_end_address) {
   if (new_end_address < Mem_offset) {
-    raise << HEXWORD << EIP << ": can't shrink data segment to before code segment\n";
+    raise << HEXWORD << EIP << ": can't shrink data segment to before code segment\n" << end();
     return;
   }
   int32_t new_size = new_end_address - Mem_offset;
