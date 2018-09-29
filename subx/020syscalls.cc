@@ -77,6 +77,12 @@ void process_int80() {
     trace(91, "run") << "grow data segment to " << Reg[EBX].u << end();
     grow_data_segment(/*new end address*/Reg[EBX].u);
     break;
+  case 90:  // mmap: allocate memory outside existing segment allocations
+    trace(91, "run") << "mmap: allocate new segment" << end();
+    // Ignore most arguments for now: address hint, protection flags, sharing flags, fd, offset.
+    // We only support anonymous maps.
+    Reg[EAX].u = new_segment(/*length*/read_mem_u32(Reg[EBX].u+0x4));
+    break;
   default:
     raise << HEXWORD << EIP << ": unimplemented syscall " << Reg[EAX].u << '\n' << end();
   }
@@ -101,4 +107,15 @@ void check_mode(int reg) {
     cerr << HEXWORD << EIP << ": SubX is oblivious to file permissions; register " << reg << " must be 0.\n";
     exit(1);
   }
+}
+
+:(before "End Globals")
+uint32_t Next_segment = 0xb0000000;  // 0xc0000000 and up is reserved for Linux kernel
+const uint32_t SPACE_FOR_SEGMENT = 0x01000000;
+:(code)
+uint32_t new_segment(uint32_t length) {
+  uint32_t result = Next_segment;
+  Mem.push_back(vma(Next_segment, Next_segment+length));
+  Next_segment -= SPACE_FOR_SEGMENT;
+  return result;
 }

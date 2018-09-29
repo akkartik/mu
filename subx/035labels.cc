@@ -42,7 +42,7 @@ b9/copy aaa/imm32  # copy to ECX
 b9/copy xxx/imm32  # copy to ECX
 +transform: packing instruction 'b9/copy xxx/imm32'
 # no change (we're just not printing metadata to the trace)
-+transform: instruction after packing: 'b9 xx'
++transform: instruction after packing: 'b9 xxx'
 
 //: a helper we'll find handy later
 :(code)
