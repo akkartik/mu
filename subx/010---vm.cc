@@ -94,8 +94,8 @@ const uint32_t INITIAL_SEGMENT_SIZE = 0x1000 - 1;
 // Subtract one just so we can start the first segment at address 1 without
 // overflowing the first segment. Other segments will learn to adjust.
 
-// Like in real-world Linux, we'll allocate RAM for our programs in slabs
-// called VMAs or Virtual Memory Areas.
+// Like in real-world Linux, we'll allocate RAM for our programs in disjoint
+// slabs called VMAs or Virtual Memory Areas.
 struct vma {
   uint32_t start;  // inclusive
   uint32_t end;  // exclusive
@@ -126,6 +126,9 @@ struct vma {
 
 :(before "End Globals")
 // RAM is made of VMAs.
+//
+// We currently have zero tests for overlapping VMAs. Particularly after
+// growing segments.
 vector<vma> Mem;
 :(code)
 // The first 3 VMAs are special. When loading ELF binaries in later layers,

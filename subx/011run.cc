@@ -224,6 +224,8 @@ void load(const program& p) {
   for (int i = 0;   i < SIZE(p.segments);  ++i) {
     const segment& seg = p.segments.at(i);
     uint32_t addr = seg.start;
+    // you should probably keep your segments disjoint
+    // but tests sometimes don't
     if (!already_allocated(addr))
       Mem.push_back(vma(seg.start));
     trace(99, "load") << "loading segment " << i << " from " << HEXWORD << addr << end();
