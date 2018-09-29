@@ -247,9 +247,10 @@ void add_imm_bytes(const line& in, line& out) {
 
 void emit_hex_bytes(line& out, const word& w, int num) {
   assert(num <= 4);
-  if (num == 1 || !is_hex_int(w.data)) {
-    out.words.push_back(w);
-    if (is_hex_int(w.data))
+  bool is_number = looks_like_hex_int(w.data);
+  if (num == 1 || !is_number) {
+    out.words.push_back(w);  // preserve existing metadata
+    if (is_number)
       out.words.back().data = hex_byte_to_string(parse_int(w.data));
     return;
   }
@@ -354,12 +355,21 @@ b9 0x080490a7/imm32  # copy to ECX
 # instruction                     effective address                                                   operand     displacement    immediate
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                                              foo/imm32         # copy foo to EBX
+  bb                                                                                                                              foo/imm32         # copy to EBX
 +transform: packing instruction 'bb foo/imm32'
 # no change (we're just not printing metadata to the trace)
 +transform: instruction after packing: 'bb foo'
 $error: 0
 :(scenarios run)
+
+:(scenario pack_flags_bad_hex)
+% Hide_errors = true;
+== 0x1
+# instruction                     effective address                                                   operand     displacement    immediate
+# op          subop               mod             rm32          base        index         scale       r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+  bb                                                                                                                              0xfoo/imm32       # copy to EBX
++error: not a number: 0xfoo
 
 //:: helpers
 
@@ -424,12 +434,12 @@ word metadata(const line& inst, const string& m) {
   assert(false);
 }
 
-bool is_hex_int(const string& s) {
+bool looks_like_hex_int(const string& s) {
   if (s.empty()) return false;
-  size_t pos = 0;
-  if (s.at(0) == '-' || s.at(0) == '+') pos++;
-  if (s.substr(pos, pos+2) == "0x") pos += 2;
-  return s.find_first_not_of("0123456789abcdefABCDEF", pos) == string::npos;
+  if (s.at(0) == '-' || s.at(0) == '+') return true;
+  if (isdigit(s.at(0))) return true;  // includes '0x' prefix
+  // End looks_like_hex_int(s) Detectors
+  return false;
 }
 
 :(code)

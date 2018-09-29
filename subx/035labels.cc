@@ -18,6 +18,34 @@
 //: be a single character long. 'a' is not a hex number, it's a variable.
 //: Later layers may add more conventions partitioning the space of names. But
 //: the above rules will remain inviolate.
+
+:(before "End looks_like_hex_int(s) Detectors")
+if (SIZE(s) == 2) return true;
+
+:(scenarios transform)
+:(scenario pack_immediate_ignores_single_byte_nondigit_operand)
+== 0x1
+b9/copy a/imm32  # copy to ECX
++transform: packing instruction 'b9/copy a/imm32'
+# no change (we're just not printing metadata to the trace)
++transform: instruction after packing: 'b9 a'
+
+:(scenario pack_immediate_ignores_3_hex_digit_operand)
+== 0x1
+b9/copy aaa/imm32  # copy to ECX
++transform: packing instruction 'b9/copy aaa/imm32'
+# no change (we're just not printing metadata to the trace)
++transform: instruction after packing: 'b9 aaa'
+
+:(scenario pack_immediate_ignores_non_hex_operand)
+== 0x1
+b9/copy xxx/imm32  # copy to ECX
++transform: packing instruction 'b9/copy xxx/imm32'
+# no change (we're just not printing metadata to the trace)
++transform: instruction after packing: 'b9 xx'
+
+//: a helper we'll find handy later
+:(code)
 void check_valid_name(const string& s) {
   if (s.empty()) {
     raise << "empty name!\n" << end();
@@ -35,7 +63,8 @@ void check_valid_name(const string& s) {
     raise << "'" << s << "' is two characters long which can look like raw hex bytes at a glance; use a different name\n" << end();
 }
 
-:(scenarios transform)
+//: Now that that's done, let's start using names as labels.
+
 :(scenario map_label)
 == 0x1
           # instruction                     effective address                                                   operand     displacement    immediate

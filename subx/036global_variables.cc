@@ -4,7 +4,7 @@
 //: However, they can only be used in imm32 and not disp32 operands. And they
 //: can't be used with jump and call instructions.
 //:
-//: This layer much the same structure as rewriting labels.
+//: This layer has much the same structure as rewriting labels.
 
 :(scenario global_variable)
 == code
