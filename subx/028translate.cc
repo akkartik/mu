@@ -32,7 +32,10 @@ if (is_equal(argv[1], "translate")) {
   transform(p);
   if (trace_contains_errors()) return 1;
   save_elf(p, argv[3]);
-  if (trace_contains_errors()) unlink(argv[3]);
+  if (trace_contains_errors()) {
+    unlink(argv[3]);
+    return 1;
+  }
   return 0;
 }
 
