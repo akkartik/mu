@@ -1,9 +1,9 @@
 ## Null-terminated vs length-prefixed ascii strings.
 #
 # By default we create strings with a 4-byte length prefix rather than a null suffix.
-# However, commandline arguments come null-prefixed from the Linux kernel.
-# This example shows a helper that can compare a commandline argument with the
-# (length-prefixed) literal string "target".
+# However we still need null-prefixed strings when interacting with the Linux
+# kernel in a few places. This layer implements a function for comparing
+# a null-terminated 'kernel string' with a length-prefixed 'SubX string'.
 #
 # To run (from the subx directory):
 #   $ subx translate examples/ex11.subx -o examples/ex11
@@ -15,6 +15,7 @@
 # would cause tests to not run, rather than to fail as we'd like.)
 
 == code
+
 # instruction                     effective address                                                   operand     displacement    immediate
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
@@ -28,7 +29,7 @@
 
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
-argv_equal:  # s : null-terminated ascii string, benchmark : length-prefixed ascii string -> EAX : boolean
+kernel_string_equal:  # s : null-terminated ascii string, benchmark : length-prefixed ascii string -> EAX : boolean
   # prolog
   55/push-EBP
   89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -63,9 +64,9 @@ argv_equal:  # s : null-terminated ascii string, benchmark : length-prefixed asc
   # initialize loop counter i into ECX
   b9/copy                         .               .             .           .             .           .           .               0/imm32/exit      # copy 1 to ECX
   # while (i/ECX < n/EDX)
-$argv_loop:
+$kernel_string_loop:
   39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-  74/jump-if-equal  $argv_break/disp8
+  74/jump-if-equal  $kernel_string_break/disp8
     # c1/EAX, c2/EBX = *s, *benchmark
   b8/copy  0/imm32  # clear EAX
   8a/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy byte at *EDI to lower byte of EAX
@@ -73,29 +74,29 @@ $argv_loop:
   8a/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/EBX   .               .                 # copy byte at *ESI to lower byte of EBX
     # if (c1 == 0) return false
   3d/compare                      .               .             .           .             .           .           .               0/imm32           # compare EAX with 0
-  74/jump-if-equal  $argv_fail/disp8
+  74/jump-if-equal  $kernel_string_fail/disp8
     # if (c1 != c2) return false
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX with EBX
-  75/jump-if-not-equal  $argv_fail/disp8
+  75/jump-if-not-equal  $kernel_string_fail/disp8
     # ++s1, ++s2, ++i
   41/inc-ECX
   46/inc-ESI
   47/inc-EDI
   # end while
-  eb/jump  $argv_loop/disp8
-$argv_break:
+  eb/jump  $kernel_string_loop/disp8
+$kernel_string_break:
   # if (*s/EDI == 0) return true
   b8/copy  0/imm32  # clear EAX
   8a/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy byte at *EDI to lower byte of EAX
   81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX with 0
-  75/jump-if-not-equal  $argv_fail/disp8
+  75/jump-if-not-equal  $kernel_string_fail/disp8
   b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
-  eb/jump  $argv_end/disp8
+  eb/jump  $kernel_string_end/disp8
   # return false
-$argv_fail:
+$kernel_string_fail:
   b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy 0 to EAX
 
-$argv_end:
+$kernel_string_end:
   # restore registers
   5f/pop-to-EDI
   5e/pop-to-ESI
@@ -109,18 +110,18 @@ $argv_end:
 
 ## tests
 
-test_compare_null_argv_with_empty_array:
-  # EAX = argv_equal(Null_argv, "")
+test_compare_null_kernel_string_with_empty_array:
+  # EAX = kernel_string_equal(Null_kernel_string, "")
     # push args
   68/push  ""/imm32
-  68/push  Null_argv/imm32
+  68/push  Null_kernel_string/imm32
     # call
-  e8/call  argv_equal/disp32
+  e8/call  kernel_string_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 1, msg)
     # push args
-  68/push  "F - test_compare_null_argv_with_empty_array"/imm32
+  68/push  "F - test_compare_null_kernel_string_with_empty_array"/imm32
   68/push  1/imm32/true
   50/push-EAX
     # call
@@ -129,18 +130,18 @@ test_compare_null_argv_with_empty_array:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
   c3/return
 
-test_compare_null_argv_with_non_empty_array:
-  # EAX = argv_equal(Null_argv, "Abc")
+test_compare_null_kernel_string_with_non_empty_array:
+  # EAX = kernel_string_equal(Null_kernel_string, "Abc")
     # push args
   68/push  "Abc"/imm32
-  68/push  Null_argv/imm32
+  68/push  Null_kernel_string/imm32
     # call
-  e8/call  argv_equal/disp32
+  e8/call  kernel_string_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0, msg)
     # push args
-  68/push  "F - test_compare_null_argv_with_non_empty_array"/imm32
+  68/push  "F - test_compare_null_kernel_string_with_non_empty_array"/imm32
   68/push  0/imm32/false
   50/push-EAX
     # call
@@ -149,18 +150,18 @@ test_compare_null_argv_with_non_empty_array:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
   c3/return
 
-test_compare_argv_with_equal_array:
-  # EAX = argv_equal(Abc_argv, "Abc")
+test_compare_kernel_string_with_equal_array:
+  # EAX = kernel_string_equal(Abc_kernel_string, "Abc")
     # push args
   68/push  "Abc"/imm32
-  68/push  Abc_argv/imm32
+  68/push  Abc_kernel_string/imm32
     # call
-  e8/call  argv_equal/disp32
+  e8/call  kernel_string_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 1, msg)
     # push args
-  68/push  "F - test_compare_argv_with_equal_array"/imm32
+  68/push  "F - test_compare_kernel_string_with_equal_array"/imm32
   68/push  1/imm32/true
   50/push-EAX
     # call
@@ -169,18 +170,18 @@ test_compare_argv_with_equal_array:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
   c3/return
 
-test_compare_argv_with_inequal_array:
-  # EAX = argv_equal(Abc_argv, "Adc")
+test_compare_kernel_string_with_inequal_array:
+  # EAX = kernel_string_equal(Abc_kernel_string, "Adc")
     # push args
   68/push  "Adc"/imm32
-  68/push  Abc_argv/imm32
+  68/push  Abc_kernel_string/imm32
     # call
-  e8/call  argv_equal/disp32
+  e8/call  kernel_string_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0, msg)
     # push args
-  68/push  "F - test_compare_argv_with_equal_array"/imm32
+  68/push  "F - test_compare_kernel_string_with_equal_array"/imm32
   68/push  0/imm32/false
   50/push-EAX
     # call
@@ -189,18 +190,18 @@ test_compare_argv_with_inequal_array:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
   c3/return
 
-test_compare_argv_with_empty_array:
-  # EAX = argv_equal(Abc_argv, "")
+test_compare_kernel_string_with_empty_array:
+  # EAX = kernel_string_equal(Abc_kernel_string, "")
     # push args
   68/push  ""/imm32
-  68/push  Abc_argv/imm32
+  68/push  Abc_kernel_string/imm32
     # call
-  e8/call  argv_equal/disp32
+  e8/call  kernel_string_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0)
     # push args
-  68/push  "F - test_compare_argv_with_equal_array"/imm32
+  68/push  "F - test_compare_kernel_string_with_equal_array"/imm32
   68/push  0/imm32/false
   50/push-EAX
     # call
@@ -209,18 +210,18 @@ test_compare_argv_with_empty_array:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
   c3/return
 
-test_compare_argv_with_shorter_array:
-  # EAX = argv_equal(Abc_argv, "Ab")
+test_compare_kernel_string_with_shorter_array:
+  # EAX = kernel_string_equal(Abc_kernel_string, "Ab")
     # push args
   68/push  "Ab"/imm32
-  68/push  Abc_argv/imm32
+  68/push  Abc_kernel_string/imm32
     # call
-  e8/call  argv_equal/disp32
+  e8/call  kernel_string_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0)
     # push args
-  68/push  "F - test_compare_argv_with_shorter_array"/imm32
+  68/push  "F - test_compare_kernel_string_with_shorter_array"/imm32
   68/push  0/imm32/false
   50/push-EAX
     # call
@@ -229,18 +230,18 @@ test_compare_argv_with_shorter_array:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
   c3/return
 
-test_compare_argv_with_longer_array:
-  # EAX = argv_equal(Abc_argv, "Abcd")
+test_compare_kernel_string_with_longer_array:
+  # EAX = kernel_string_equal(Abc_kernel_string, "Abcd")
     # push args
   68/push  "Abcd"/imm32
-  68/push  Abc_argv/imm32
+  68/push  Abc_kernel_string/imm32
     # call
-  e8/call  argv_equal/disp32
+  e8/call  kernel_string_equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
   # call check_ints_equal(EAX, 0)
     # push args
-  68/push  "F - test_compare_argv_with_longer_array"/imm32
+  68/push  "F - test_compare_kernel_string_with_longer_array"/imm32
   68/push  0/imm32/false
   50/push-EAX
     # call
@@ -339,10 +340,10 @@ Newline:
   # data
   0a/newline
 
-# for argv_equal tests
-Null_argv:
+# for kernel_string_equal tests
+Null_kernel_string:
   00/null
-Abc_argv:
+Abc_kernel_string:
   41/A 62/b 63/c 00/null
 
 # vim:ft=subx:nowrap:so=0
