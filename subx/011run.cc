@@ -198,14 +198,6 @@ void parse_word(const string& data, word& out) {
   }
 }
 
-string to_string(const word& w) {
-  ostringstream out;
-  out << w.data;
-  for (int i = 0;  i < SIZE(w.metadata);  ++i)
-    out << " /" << w.metadata.at(i);
-  return out.str();
-}
-
 //:: transform
 
 :(before "End Types")
@@ -331,7 +323,17 @@ int32_t next32() {
   return result;
 }
 
+//:: helpers
+
 :(code)
+string to_string(const word& w) {
+  ostringstream out;
+  out << w.data;
+  for (int i = 0;  i < SIZE(w.metadata);  ++i)
+    out << " /" << w.metadata.at(i);
+  return out.str();
+}
+
 int32_t parse_int(const string& s) {
   if (s.empty()) return 0;
   istringstream in(s);
