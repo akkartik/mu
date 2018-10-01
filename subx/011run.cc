@@ -156,10 +156,7 @@ void parse(istream& fin, program& out) {
           trace(99, "parse") << "new segment from 0x" << HEXWORD << s.start << end();
           out.segments.push_back(s);
         }
-        else {
-          trace(99, "parse") << "new segment " << segment_title << end();
-          out.segments.push_back(segment());
-        }
+        // End Segment Parsing Special-cases(segment_title)
         // todo: segment segment metadata
         break;  // skip rest of line
       }

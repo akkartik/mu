@@ -14,6 +14,16 @@
 +run: add imm32 0x0d0c0b0a to reg EAX
 +run: storing 0x0d0c0b0a
 
+//: update the parser to handle non-numeric segment name
+
+:(before "End Segment Parsing Special-cases(segment_title)")
+if (!starts_with(segment_title, "0x")) {
+  trace(99, "parse") << "new segment " << segment_title << end();
+  out.segments.push_back(segment());
+}
+
+//: compute segment address
+
 :(before "End Level-2 Transforms")
 Transform.push_back(compute_segment_starts);
 
