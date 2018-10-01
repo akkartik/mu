@@ -180,7 +180,10 @@ void parse(istream& fin, program& out) {
 
 void flush(program& p, vector<line>& lines) {
   if (lines.empty()) return;
-  assert(!p.segments.empty());
+  if (p.segments.empty()) {
+    raise << "input does not start with a '==' section header\n" << end();
+    return;
+  }
   trace(99, "parse") << "flushing to segment" << end();
   p.segments.back().lines.swap(lines);
 }
