@@ -554,17 +554,17 @@ put(name, "5e", "pop top of stack to R6 (ESI)");
 put(name, "5f", "pop top of stack to R7 (EDI)");
 
 :(scenario pop_r32)
-% Reg[ESP].u = 0x60;
-% Mem.push_back(vma(0x1));  // manually allocate memory
-% write_mem_i32(0x60, 0x0000000a);  // ..before this write
+% Reg[ESP].u = 0x2000;
+% Mem.push_back(vma(0x2000));  // manually allocate memory
+% write_mem_i32(0x2000, 0x0000000a);  // ..before this write
 == 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   5b                                          # pop stack to EBX
-== 0x60  # data segment
+== 0x2000  # data segment
 0a 00 00 00  # 0x0a
 +run: pop into EBX
 +run: popping value 0x0000000a
-+run: incrementing ESP to 0x00000064
++run: incrementing ESP to 0x00002004
 
 :(before "End Single-Byte Opcodes")
 case 0x58:

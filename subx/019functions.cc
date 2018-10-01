@@ -52,15 +52,15 @@ case 2: {  // call function pointer at r/m32
 
 :(scenario call_mem_at_r32)
 % Reg[ESP].u = 0x64;
-% Reg[EBX].u = 0x10;
+% Reg[EBX].u = 0x2000;
 == 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   ff  13                                       # call function offset at *EBX
   # next EIP is 3
-== 0x10  # data segment
+== 0x2000  # data segment
 a0 00 00 00  # 0xa0
 +run: call to r/m32
-+run: effective address is 0x10 (EBX)
++run: effective address is 0x2000 (EBX)
 +run: decrementing ESP to 0x00000060
 +run: pushing value 0x00000003
 +run: jumping to 0x000000a3
@@ -71,11 +71,11 @@ a0 00 00 00  # 0xa0
 put(name, "c3", "return from most recent unfinished call");
 
 :(scenario ret)
-% Reg[ESP].u = 0x60;
+% Reg[ESP].u = 0x2000;
 == 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
   c3
-== 0x60  # data segment
+== 0x2000  # data segment
 10 00 00 00  # 0x10
 +run: return
 +run: popping value 0x00000010

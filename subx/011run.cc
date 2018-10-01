@@ -217,9 +217,7 @@ void load(const program& p) {
     raise << "no code to run\n" << end();
     return;
   }
-  // You should keep your segments disjoint.
-  // Tests sometimes don't, but it should still be an error to use the
-  // overlapping regions.
+  // Ensure segments are disjoint.
   set<uint32_t> overlap;
   for (int i = 0;   i < SIZE(p.segments);  ++i) {
     const segment& seg = p.segments.at(i);
