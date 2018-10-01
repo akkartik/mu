@@ -153,6 +153,8 @@ void parse(istream& fin, program& out) {
         if (starts_with(segment_title, "0x")) {
           segment s;
           s.start = parse_int(segment_title);
+          sanity_check_program_segment(out, s.start);
+          if (trace_contains_errors()) continue;
           trace(99, "parse") << "new segment from 0x" << HEXWORD << s.start << end();
           out.segments.push_back(s);
         }
@@ -194,6 +196,29 @@ void parse_word(const string& data, word& out) {
       out.metadata.push_back(m);
   }
 }
+
+void sanity_check_program_segment(const program& p, uint32_t addr) {
+  for (int i = 0;  i < SIZE(p.segments);  ++i) {
+    if (p.segments.at(i).start == addr)
+      raise << "can't have multiple segments starting at address 0x" << std::hex << addr << '\n' << end();
+  }
+}
+
+// helper for tests
+void parse(const string& text_bytes) {
+  program p;
+  istringstream in(text_bytes);
+  parse(in, p);
+}
+
+:(scenarios parse)
+:(scenario detect_duplicate_segments)
+% Hide_errors = true;
+== 0xee
+ab
+== 0xee
+cd
++error: can't have multiple segments starting at address 0xee
 
 //:: transform
 
