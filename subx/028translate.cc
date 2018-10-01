@@ -19,30 +19,57 @@
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {
   START_TRACING_UNTIL_END_OF_SCOPE;
-  assert(argc > 3);
   reset();
   program p;
-  ifstream fin(argv[2]);
-  if (!fin) {
-    cerr << "could not open " << argv[2] << '\n';
-    return 1;
+  string output_filename;
+  for (int i = /*skip 'subx translate'*/2;  i < argc;  ++i) {
+    if (is_equal(argv[i], "-o")) {
+      ++i;
+      if (i >= argc) {
+        print_translate_usage();
+        cerr << "'-o' must be followed by a filename to write results to\n";
+        exit(1);
+      }
+      output_filename = argv[i];
+    }
+    else {
+      ifstream fin(argv[i]);
+      if (!fin) {
+        cerr << "could not open " << argv[i] << '\n';
+        return 1;
+      }
+      parse(fin, p);
+      if (trace_contains_errors()) return 1;
+    }
   }
-  parse(fin, p);
-  if (trace_contains_errors()) return 1;
+  if (p.segments.empty()) {
+    print_translate_usage();
+    cerr << "nothing to do; must provide at least one file to read\n";
+    exit(1);
+  }
+  if (output_filename.empty()) {
+    print_translate_usage();
+    cerr << "must provide a filename to write to using '-o'\n";
+    exit(1);
+  }
   transform(p);
   if (trace_contains_errors()) return 1;
-  save_elf(p, argv[3]);
+  save_elf(p, output_filename);
   if (trace_contains_errors()) {
-    unlink(argv[3]);
+    unlink(output_filename.c_str());
     return 1;
   }
   return 0;
 }
 
 :(code)
+void print_translate_usage() {
+  cerr << "Usage: subx translate <input.subx> -o <output_ELF>\n";
+}
+
 // write out a program to a bare-bones ELF file
-void save_elf(const program& p, const char* filename) {
-  ofstream out(filename, ios::binary);
+void save_elf(const program& p, const string& filename) {
+  ofstream out(filename.c_str(), ios::binary);
   write_elf_header(out, p);
   for (size_t i = 0;  i < p.segments.size();  ++i)
     write_segment(p.segments.at(i), out);

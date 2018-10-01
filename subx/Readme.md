@@ -111,7 +111,7 @@ Running `subx` will transparently compile it as necessary.
 
 * `subx test`: runs all automated tests.
 
-* `subx translate <input file> <output ELF binary>`: translates a text file
+* `subx translate <input file> -o <output ELF binary>`: translates a text file
   containing hex bytes and macros into an executable ELF binary.
 
 * `subx run <ELF binary>`: simulates running the ELF binaries emitted by `subx
@@ -123,7 +123,7 @@ Putting them together, build and run one of the example programs:
 <img alt='apps/factorial.subx' src='../html/subx/factorial.png'>
 
 ```
-$ ./subx translate apps/factorial.subx apps/factorial
+$ ./subx translate apps/factorial.subx -o apps/factorial
 $ ./subx run apps/factorial  # returns the factorial of 5
 $ echo $?
 120  
