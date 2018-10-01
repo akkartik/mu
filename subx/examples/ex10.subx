@@ -30,7 +30,7 @@
   # exit(EAX)
 $exit:
   89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
   cd/syscall  0x80/imm8
 
 # compare two null-terminated ascii strings
@@ -47,7 +47,7 @@ $argv_loop:
   bb/copy  0/imm32  # clear EBX
   8a/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy byte at *EDX to lower byte of EBX
     # if (c1 == 0) break
-  3d/compare                      .               .             .           .             .           .           .               0/imm32           # compare EAX with 0
+  3d/compare-EAX  0/imm32
   74/jump-if-equal  $argv_break/disp8
     # if (c1 != c2) return false
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX with EBX
@@ -59,11 +59,11 @@ $argv_loop:
   eb/jump  $argv_loop/disp8
 $argv_break:
   # if (c2 == 0) return true
-  81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0/imm32           # compare EBX with 0
+  81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0/imm32           # compare EBX
   75/jump-if-not-equal  $argv_fail/disp8
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
   c3/return
   # return false
 $argv_fail:
-  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy 0 to EAX
+  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy to EAX
   c3/return

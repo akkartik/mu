@@ -12,24 +12,24 @@
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   # result: EBX = 0
-  bb/copy                                                                                                                         0/imm32           # copy 0 to EBX
+  bb/copy                                                                                                                         0/imm32           # copy to EBX
   # counter: ECX = 1
-  b9/copy                                                                                                                         1/imm32           # copy 1 to ECX
+  b9/copy                                                                                                                         1/imm32           # copy to ECX
 
 $loop:
   # while (counter <= 10)
-  81          7/subop/compare     3/mod/direct    1/rm32/ECX                                                                      0xa/imm32         # compare ECX, 10/imm
+  81          7/subop/compare     3/mod/direct    1/rm32/ECX                                                                      0xa/imm32         # compare ECX
   7f/jump-if-greater  $exit/disp8
   # result += counter
   01/add                          3/mod/direct    3/rm32/EBX                                          1/r32/ECX                                     # add ECX to EBX
   # ++counter
-  81          0/subop/add         3/mod/direct    1/rm32/ECX                                                                      1/imm32           # add 1 to ECX
+  41/inc-ECX
   # loop
   eb/jump  $loop/disp8
 
 $exit:
   # exit(EBX)
-  b8/copy                                                                                                                         1/imm32           # copy 1 to EAX
+  b8/copy                                                                                                                         1/imm32           # copy to EAX
   cd/syscall  0x80/imm8
 
 # vim:ft=subx:nowrap

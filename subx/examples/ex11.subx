@@ -24,7 +24,7 @@
   e8/call  run_tests/disp32  # 'run_tests' is a function created automatically by SubX. It calls all functions that start with 'test_'.
   # exit(EAX)
   89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
   cd/syscall  0x80/imm8
 
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
@@ -60,9 +60,9 @@ kernel_string_equal:  # s : null-terminated ascii string, benchmark : length-pre
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
   # initialize benchmark data into ESI
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
-  81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add 4 to ESI
+  81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
   # initialize loop counter i into ECX
-  b9/copy                         .               .             .           .             .           .           .               0/imm32/exit      # copy 1 to ECX
+  b9/copy                         .               .             .           .             .           .           .               0/imm32/exit      # copy to ECX
   # while (i/ECX < n/EDX)
 $kernel_string_loop:
   39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
@@ -73,7 +73,7 @@ $kernel_string_loop:
   bb/copy  0/imm32  # clear EBX
   8a/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/EBX   .               .                 # copy byte at *ESI to lower byte of EBX
     # if (c1 == 0) return false
-  3d/compare                      .               .             .           .             .           .           .               0/imm32           # compare EAX with 0
+  3d/compare-EAX  0/imm32
   74/jump-if-equal  $kernel_string_fail/disp8
     # if (c1 != c2) return false
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX with EBX
@@ -88,13 +88,13 @@ $kernel_string_break:
   # if (*s/EDI == 0) return true
   b8/copy  0/imm32  # clear EAX
   8a/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy byte at *EDI to lower byte of EAX
-  81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX with 0
+  81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
   75/jump-if-not-equal  $kernel_string_fail/disp8
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy 1 to EAX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
   eb/jump  $kernel_string_end/disp8
   # return false
 $kernel_string_fail:
-  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy 0 to EAX
+  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy to EAX
 
 $kernel_string_end:
   # restore registers
@@ -118,7 +118,7 @@ test_compare_null_kernel_string_with_empty_array:
     # call
   e8/call  kernel_string_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   # call check_ints_equal(EAX, 1, msg)
     # push args
   68/push  "F - test_compare_null_kernel_string_with_empty_array"/imm32
@@ -127,7 +127,7 @@ test_compare_null_kernel_string_with_empty_array:
     # call
   e8/call  check_ints_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   c3/return
 
 test_compare_null_kernel_string_with_non_empty_array:
@@ -138,7 +138,7 @@ test_compare_null_kernel_string_with_non_empty_array:
     # call
   e8/call  kernel_string_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   # call check_ints_equal(EAX, 0, msg)
     # push args
   68/push  "F - test_compare_null_kernel_string_with_non_empty_array"/imm32
@@ -147,7 +147,7 @@ test_compare_null_kernel_string_with_non_empty_array:
     # call
   e8/call  check_ints_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   c3/return
 
 test_compare_kernel_string_with_equal_array:
@@ -158,7 +158,7 @@ test_compare_kernel_string_with_equal_array:
     # call
   e8/call  kernel_string_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   # call check_ints_equal(EAX, 1, msg)
     # push args
   68/push  "F - test_compare_kernel_string_with_equal_array"/imm32
@@ -167,7 +167,7 @@ test_compare_kernel_string_with_equal_array:
     # call
   e8/call  check_ints_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   c3/return
 
 test_compare_kernel_string_with_inequal_array:
@@ -178,7 +178,7 @@ test_compare_kernel_string_with_inequal_array:
     # call
   e8/call  kernel_string_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   # call check_ints_equal(EAX, 0, msg)
     # push args
   68/push  "F - test_compare_kernel_string_with_equal_array"/imm32
@@ -187,7 +187,7 @@ test_compare_kernel_string_with_inequal_array:
     # call
   e8/call  check_ints_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   c3/return
 
 test_compare_kernel_string_with_empty_array:
@@ -198,7 +198,7 @@ test_compare_kernel_string_with_empty_array:
     # call
   e8/call  kernel_string_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   # call check_ints_equal(EAX, 0)
     # push args
   68/push  "F - test_compare_kernel_string_with_equal_array"/imm32
@@ -207,7 +207,7 @@ test_compare_kernel_string_with_empty_array:
     # call
   e8/call  check_ints_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   c3/return
 
 test_compare_kernel_string_with_shorter_array:
@@ -218,7 +218,7 @@ test_compare_kernel_string_with_shorter_array:
     # call
   e8/call  kernel_string_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   # call check_ints_equal(EAX, 0)
     # push args
   68/push  "F - test_compare_kernel_string_with_shorter_array"/imm32
@@ -227,7 +227,7 @@ test_compare_kernel_string_with_shorter_array:
     # call
   e8/call  check_ints_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   c3/return
 
 test_compare_kernel_string_with_longer_array:
@@ -238,7 +238,7 @@ test_compare_kernel_string_with_longer_array:
     # call
   e8/call  kernel_string_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add 8 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   # call check_ints_equal(EAX, 0)
     # push args
   68/push  "F - test_compare_kernel_string_with_longer_array"/imm32
@@ -247,7 +247,7 @@ test_compare_kernel_string_with_longer_array:
     # call
   e8/call  check_ints_equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add 12 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   c3/return
 
 ## helpers
@@ -272,7 +272,7 @@ check_ints_equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
       # call
   e8/call  write_stderr/disp32
       # discard arg
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # return
   eb/jump  $check_ints_equal:end/disp8
   # else:
@@ -285,14 +285,14 @@ $check_ints_equal:else:
       # call
   e8/call  write_stderr/disp32
       # discard arg
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # print newline
       # push args
   68/push  Newline/imm32
       # call
   e8/call  write_stderr/disp32
       # discard arg
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $check_ints_equal:end:
   # restore registers
   5b/pop-to-EBX
@@ -313,15 +313,15 @@ write_stderr:  # s : (address array byte) -> <void>
   53/push-EBX
   # write(2/stderr, (data) s+4, (size) *s)
     # fd = 2 (stderr)
-  bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy 2 to EBX
+  bb/copy                         .               .             .           .             .           .           .               2/imm32           # copy to EBX
     # x = s+4
   8b/copy                         1/mod/*+disp8   4/rm32/SIB    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
-  81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add 4 to ECX
+  81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
     # size = *s
   8b/copy                         1/mod/*+disp8   4/rm32/SIB    5/base/EBP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # call write()
-  b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy 1 to EAX
+  b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy to EAX
   cd/syscall  0x80/imm8
   # restore registers
   5b/pop-to-EBX
