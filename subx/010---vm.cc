@@ -118,17 +118,34 @@ struct vma {
   }
   void grow_until(uint32_t new_end_address) {
     if (new_end_address < end) return;
+    // Ugly: vma knows about the global Memory list of vmas
+    void sanity_check(uint32_t start, uint32_t end);
+    sanity_check(start, new_end_address);
     end = new_end_address;
     _data.resize(new_end_address - start);
   }
   // End vma Methods
 };
+:(code)
+void sanity_check(uint32_t start, uint32_t end) {
+  bool dup_found = false;
+  for (int i = 0;  i < SIZE(Mem);  ++i) {
+    const vma& curr = Mem.at(i);
+    if (curr.start == start) {
+      assert(!dup_found);
+      dup_found = true;
+    }
+    else if (curr.start > start) {
+      assert(curr.start > end);
+    }
+    else if (curr.start < start) {
+      assert(curr.end < start);
+    }
+  }
+}
 
 :(before "End Globals")
 // RAM is made of VMAs.
-//
-// We currently have zero tests for overlapping VMAs. Particularly after
-// growing segments.
 vector<vma> Mem;
 :(code)
 // The first 3 VMAs are special. When loading ELF binaries in later layers,
