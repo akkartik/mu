@@ -1,0 +1,59 @@
+== code
+
+# print msg to stderr if a != b, otherwise print "."
+check_ints_equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  51/push-ECX
+  53/push-EBX
+  # load args into EAX, EBX and ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   0x8/disp8       .                 # copy *(EBP+8) to EAX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+  # if EAX == b/EBX
+  39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
+  75/jump-if-unequal  $check_ints_equal:else/disp8
+    # print('.')
+      # push args
+  68/push  "."/imm32
+      # call
+  e8/call  write_stderr/disp32
+      # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+    # return
+  eb/jump  $check_ints_equal:end/disp8
+  # else:
+$check_ints_equal:else:
+  # copy msg into ECX
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x10/disp8       .                # copy *(EBP+16) to ECX
+    # print(ECX)
+      # push args
+  51/push-ECX
+      # call
+  e8/call  write_stderr/disp32
+      # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+    # print newline
+      # push args
+  68/push  Newline/imm32
+      # call
+  e8/call  write_stderr/disp32
+      # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add 4 to ESP
+$check_ints_equal:end:
+  # restore registers
+  5b/pop-to-EBX
+  59/pop-to-ECX
+  # end
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
+  c3/return
+
+== data
+
+Newline:
+  # size
+  01 00 00 00
+  # data
+  0a/newline

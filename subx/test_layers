@@ -11,10 +11,17 @@ do
 done
 
 ./clean top
-for f in examples/ex*.subx apps/*.subx
+for f in examples/*.subx
 do
   echo $f
   target=`echo $f |sed 's/\..*//'`
   CFLAGS=-g ./subx translate $f -o $target
+  git diff --quiet $target  ||  exit 1
+done
+for f in apps/*.subx
+do
+  echo $f
+  target=`echo $f |sed 's/\..*//'`
+  CFLAGS=-g ./subx translate *.subx $f -o $target
   git diff --quiet $target  ||  exit 1
 done

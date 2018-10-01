@@ -123,7 +123,7 @@ Putting them together, build and run one of the example programs:
 <img alt='apps/factorial.subx' src='../html/subx/factorial.png'>
 
 ```
-$ ./subx translate apps/factorial.subx -o apps/factorial
+$ ./subx translate *.subx apps/factorial.subx -o apps/factorial
 $ ./subx run apps/factorial  # returns the factorial of 5
 $ echo $?
 120  
