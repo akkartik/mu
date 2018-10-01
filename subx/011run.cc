@@ -147,11 +147,7 @@ void parse(istream& fin, program& out) {
       if (word_data[0] == '#') break;  // comment
       if (word_data == ".") continue;  // comment token
       if (word_data == "==") {
-        if (!l.empty()) {
-          assert(!out.segments.empty());
-          trace(99, "parse") << "flushing to segment" << end();
-          out.segments.back().lines.swap(l);
-        }
+        flush(out, l);
         segment s;
         string segment_title;
         lin >> segment_title;
@@ -173,12 +169,15 @@ void parse(istream& fin, program& out) {
     if (!curr.words.empty())
       l.push_back(curr);
   }
-  if (!l.empty()) {
-    assert(!out.segments.empty());
-    trace(99, "parse") << "flushing to segment" << end();
-    out.segments.back().lines.swap(l);
-  }
+  flush(out, l);
   trace(99, "parse") << "done" << end();
+}
+
+void flush(program& p, vector<line>& lines) {
+  if (lines.empty()) return;
+  assert(!p.segments.empty());
+  trace(99, "parse") << "flushing to segment" << end();
+  p.segments.back().lines.swap(lines);
 }
 
 void parse_word(const string& data, word& out) {
