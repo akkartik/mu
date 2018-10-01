@@ -160,7 +160,7 @@ void parse(istream& fin, program& out) {
           trace(99, "parse") << "new segment " << segment_title << end();
           out.segments.push_back(segment());
         }
-        // todo?
+        // todo: segment segment metadata
         break;  // skip rest of line
       }
       if (word_data[0] == ':') {
