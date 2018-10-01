@@ -24,6 +24,7 @@ if (SIZE(s) == 2) return true;
 
 :(scenarios transform)
 :(scenario pack_immediate_ignores_single_byte_nondigit_operand)
+% Hide_errors = true;
 == 0x1
 b9/copy a/imm32  # copy to ECX
 +transform: packing instruction 'b9/copy a/imm32'
@@ -31,6 +32,7 @@ b9/copy a/imm32  # copy to ECX
 +transform: instruction after packing: 'b9 a'
 
 :(scenario pack_immediate_ignores_3_hex_digit_operand)
+% Hide_errors = true;
 == 0x1
 b9/copy aaa/imm32  # copy to ECX
 +transform: packing instruction 'b9/copy aaa/imm32'
@@ -38,6 +40,7 @@ b9/copy aaa/imm32  # copy to ECX
 +transform: instruction after packing: 'b9 aaa'
 
 :(scenario pack_immediate_ignores_non_hex_operand)
+% Hide_errors = true;
 == 0x1
 b9/copy xxx/imm32  # copy to ECX
 +transform: packing instruction 'b9/copy xxx/imm32'

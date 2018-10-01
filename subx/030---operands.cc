@@ -351,6 +351,7 @@ b9 0x080490a7/imm32  # copy to ECX
 
 :(scenarios transform)
 :(scenario pack_silently_ignores_non_hex)
+% Hide_errors = true;
 == 0x1
 # instruction                     effective address                                                   operand     displacement    immediate
 # op          subop               mod             rm32          base        index         scale       r32
@@ -359,7 +360,6 @@ b9 0x080490a7/imm32  # copy to ECX
 +transform: packing instruction 'bb foo/imm32'
 # no change (we're just not printing metadata to the trace)
 +transform: instruction after packing: 'bb foo'
-$error: 0
 :(scenarios run)
 
 :(scenario pack_flags_bad_hex)

@@ -69,6 +69,8 @@ void replace_global_variables_with_addresses(program& p, const map<string, uint3
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       const word& curr = inst.words.at(j);
       if (!contains_key(address, curr.data)) {
+        if (!looks_like_hex_int(curr.data))
+          raise << "missing reference to global '" << curr.data << "'\n" << end();
         new_inst.words.push_back(curr);
         continue;
       }
