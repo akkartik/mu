@@ -64,7 +64,7 @@ if (is_equal(argv[1], "translate")) {
 
 :(code)
 void print_translate_usage() {
-  cerr << "Usage: subx translate <input.subx> -o <output_ELF>\n";
+  cerr << "Usage: subx translate file1 file2 ... -o output\n";
 }
 
 // write out a program to a bare-bones ELF file

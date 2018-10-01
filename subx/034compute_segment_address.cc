@@ -14,13 +14,72 @@
 +run: add imm32 0x0d0c0b0a to reg EAX
 +run: storing 0x0d0c0b0a
 
-//: update the parser to handle non-numeric segment name
+//: Update the parser to handle non-numeric segment name.
+//:
+//: We'll also support repeated segments with non-numeric names.
+//: When we encounter a new reference to an existing segment we'll *prepend*
+//: the new data to existing data for the segment.
+
+:(before "End Globals")
+map</*name*/string, int> Segment_index;
+bool Currently_parsing_named_segment = false;  // global to permit cross-layer communication
+int Currently_parsing_segment_index = -1;  // global to permit cross-layer communication
+:(before "End Reset")
+Segment_index.clear();
+Currently_parsing_named_segment = false;
+Currently_parsing_segment_index = -1;
 
 :(before "End Segment Parsing Special-cases(segment_title)")
 if (!starts_with(segment_title, "0x")) {
-  trace(99, "parse") << "new segment " << segment_title << end();
-  out.segments.push_back(segment());
+  Currently_parsing_named_segment = true;
+  if (!contains_key(Segment_index, segment_title)) {
+    trace(99, "parse") << "new segment '" << segment_title << "'" << end();
+    if (segment_title == "code")
+      put(Segment_index, segment_title, 0);
+    else if (segment_title == "data")
+      put(Segment_index, segment_title, 1);
+    else
+      put(Segment_index, segment_title, max(2, SIZE(out.segments)));
+    out.segments.push_back(segment());
+  }
+  else {
+    trace(99, "parse") << "prepending to segment '" << segment_title << "'" << end();
+  }
+  Currently_parsing_segment_index = get(Segment_index, segment_title);
 }
+
+:(before "End flush(p, lines) Special-cases")
+if (Currently_parsing_named_segment) {
+  if (p.segments.empty() || Currently_parsing_segment_index < 0) {
+    raise << "input does not start with a '==' section header\n" << end();
+    return;
+  }
+  trace(99, "parse") << "flushing to segment" << end();
+  vector<line>& curr_segment_data = p.segments.at(Currently_parsing_segment_index).lines;
+  curr_segment_data.insert(curr_segment_data.begin(), lines.begin(), lines.end());
+  lines.clear();
+  Currently_parsing_named_segment = false;
+  Currently_parsing_segment_index = -1;
+  return;
+}
+
+:(scenario repeated_segment_merges_data)
+== code
+05/add 0x0d0c0b0a/imm32  # add 0x0d0c0b0a to EAX
+== code
+2d/subtract 0xddccbbaa/imm32  # subtract 0xddccbbaa from EAX
++parse: new segment 'code'
++parse: prepending to segment 'code'
++load: 0x08048054 -> 2d
++load: 0x08048055 -> aa
++load: 0x08048056 -> bb
++load: 0x08048057 -> cc
++load: 0x08048058 -> dd
++load: 0x08048059 -> 05
++load: 0x0804805a -> 0a
++load: 0x0804805b -> 0b
++load: 0x0804805c -> 0c
++load: 0x0804805d -> 0d
 
 //: compute segment address
 

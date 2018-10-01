@@ -73,7 +73,7 @@ void init_help() {
     "    subx --help\n"
     "- Convert a textual SubX program into a standard ELF binary that you can\n"
     "  run on your computer:\n"
-    "    subx translate <input 'source' file> -o <output ELF binary>\n"
+    "    subx translate input1.subx intput2.subx ... -o <output ELF binary>\n"
     "- Run a SubX binary using SubX itself (for better error messages):\n"
     "    subx run <ELF binary>\n"
     "Add '--trace' to any of these commands to also emit a trace, for debugging purposes.\n"

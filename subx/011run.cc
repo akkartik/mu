@@ -183,6 +183,7 @@ void flush(program& p, vector<line>& lines) {
     raise << "input does not start with a '==' section header\n" << end();
     return;
   }
+  // End flush(p, lines) Special-cases
   trace(99, "parse") << "flushing to segment" << end();
   p.segments.back().lines.swap(lines);
 }
