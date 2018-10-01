@@ -57,11 +57,14 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
   // unused: e_shnum
   // unused: e_shstrndx
 
+  set<uint32_t> overlap;  // to detect overlapping segments
   for (size_t i = 0;  i < e_phnum;  ++i)
-    load_segment_from_program_header(elf_contents, i, size, e_phoff + i*e_phentsize, e_ehsize);
+    load_segment_from_program_header(elf_contents, i, size, e_phoff + i*e_phentsize, e_ehsize, overlap);
 
   // initialize code and stack
+  assert(overlap.find(STACK_SEGMENT) == overlap.end());
   Mem.push_back(vma(STACK_SEGMENT));
+  assert(overlap.find(AFTER_STACK) == overlap.end());
   Reg[ESP].u = AFTER_STACK;
   Reg[EBP].u = 0;
   EIP = e_entry;
@@ -74,6 +77,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
   for (int i = argc-1;  i >= /*skip 'subx_bin' and 'run'*/2;  --i) {
     push(argv_data);
     for (size_t j = 0;  j <= strlen(argv[i]);  ++j) {
+      assert(overlap.find(argv_data) == overlap.end());  // don't bother comparing ARGV and STACK
       write_mem_u8(argv_data, argv[i][j]);
       argv_data += sizeof(char);
       assert(argv_data < ARGV_DATA_SEGMENT + SEGMENT_SIZE);
@@ -89,7 +93,7 @@ void push(uint32_t val) {
   write_mem_u32(Reg[ESP].u, val);
 }
 
-void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, size_t size, uint32_t offset, uint32_t e_ehsize) {
+void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, size_t size, uint32_t offset, uint32_t e_ehsize, set<uint32_t>& overlap) {
   uint32_t p_type = u32_in(&elf_contents[offset]);
   trace(90, "load") << "program header at offset " << offset << ": type " << p_type << end();
   if (p_type != 1) {
@@ -114,8 +118,11 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
   trace(90, "load") << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ')' << end();
   if (size > p_memsz) size = p_memsz;
   Mem.push_back(vma(p_vaddr));
-  for (size_t i = 0;  i < p_filesz;  ++i)
+  for (size_t i = 0;  i < p_filesz;  ++i) {
+    assert(overlap.find(p_vaddr+i) == overlap.end());
     write_mem_u8(p_vaddr+i, elf_contents[p_offset+i]);
+    overlap.insert(p_vaddr+i);
+  }
   if (segment_index == 0 && End_of_program < p_vaddr+p_memsz)
     End_of_program = p_vaddr+p_memsz;
 }
