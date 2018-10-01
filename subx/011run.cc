@@ -148,13 +148,18 @@ void parse(istream& fin, program& out) {
       if (word_data == ".") continue;  // comment token
       if (word_data == "==") {
         flush(out, l);
-        segment s;
         string segment_title;
         lin >> segment_title;
-        if (starts_with(segment_title, "0x"))
+        if (starts_with(segment_title, "0x")) {
+          segment s;
           s.start = parse_int(segment_title);
-        trace(99, "parse") << "new segment from " << HEXWORD << s.start << end();
-        out.segments.push_back(s);
+          trace(99, "parse") << "new segment from 0x" << HEXWORD << s.start << end();
+          out.segments.push_back(s);
+        }
+        else {
+          trace(99, "parse") << "new segment " << segment_title << end();
+          out.segments.push_back(segment());
+        }
         // todo?
         break;  // skip rest of line
       }
