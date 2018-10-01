@@ -167,22 +167,35 @@ inline int32_t read_mem_i32(uint32_t addr) {
 }
 
 inline uint8_t* mem_addr_u8(uint32_t addr) {
-  for (int i = 0;  i < SIZE(Mem);  ++i)
-    if (Mem.at(i).match(addr))
-      return &Mem.at(i).data(addr);
-  raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
-  return NULL;
+  uint8_t* result = NULL;
+  for (int i = 0;  i < SIZE(Mem);  ++i) {
+    if (Mem.at(i).match(addr)) {
+      if (result)
+        raise << "address 0x" << HEXWORD << addr << " is in two segments\n" << end();
+      result = &Mem.at(i).data(addr);
+    }
+  }
+  if (result == NULL)
+    raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
+  return result;
 }
 inline int8_t* mem_addr_i8(uint32_t addr) {
   return reinterpret_cast<int8_t*>(mem_addr_u8(addr));
 }
 inline uint32_t* mem_addr_u32(uint32_t addr) {
-  for (int i = 0;  i < SIZE(Mem);  ++i)
-    if (Mem.at(i).match32(addr))
-      return reinterpret_cast<uint32_t*>(&Mem.at(i).data(addr));
-  raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
-  raise << "The entire 4-byte word should be initialized and lie in a single segment.\n" << end();
-  return NULL;
+  uint32_t* result = NULL;
+  for (int i = 0;  i < SIZE(Mem);  ++i) {
+    if (Mem.at(i).match32(addr)) {
+      if (result)
+        raise << "address 0x" << HEXWORD << addr << " is in two segments\n" << end();
+      result = reinterpret_cast<uint32_t*>(&Mem.at(i).data(addr));
+    }
+  }
+  if (result == NULL) {
+    raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
+    raise << "The entire 4-byte word should be initialized and lie in a single segment.\n" << end();
+  }
+  return result;
 }
 inline int32_t* mem_addr_i32(uint32_t addr) {
   return reinterpret_cast<int32_t*>(mem_addr_u32(addr));
@@ -210,10 +223,15 @@ inline void write_mem_i32(uint32_t addr, int32_t val) {
 }
 
 inline bool already_allocated(uint32_t addr) {
-  for (int i = 0;  i < SIZE(Mem);  ++i)
-    if (Mem.at(i).match(addr))
-      return true;
-  return false;
+  bool result = false;
+  for (int i = 0;  i < SIZE(Mem);  ++i) {
+    if (Mem.at(i).match(addr)) {
+      if (result)
+        raise << "address 0x" << HEXWORD << addr << " is in two segments\n" << end();
+      result = true;
+    }
+  }
+  return result;
 }
 
 //:: core interpreter loop
