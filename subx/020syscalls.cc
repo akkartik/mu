@@ -82,6 +82,7 @@ void process_int80() {
     // Ignore most arguments for now: address hint, protection flags, sharing flags, fd, offset.
     // We only support anonymous maps.
     Reg[EAX].u = new_segment(/*length*/read_mem_u32(Reg[EBX].u+0x4));
+    trace(91, "run") << "result: " << Reg[EAX].u << end();
     break;
   default:
     raise << HEXWORD << EIP << ": unimplemented syscall " << Reg[EAX].u << '\n' << end();
