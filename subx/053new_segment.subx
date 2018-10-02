@@ -1,0 +1,62 @@
+# Create a new segment (for data) using mmap().
+
+== code
+
+# instruction                     effective address                                                   operand     displacement    immediate
+# op          subop               mod             rm32          base        index         scale       r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# main:  (manual test if this is the last file loaded)
+  # EAX = new_segment(0x1000)
+    # push arg
+  68/push  0x1000/imm32
+    # call
+  e8/call  new_segment/disp32
+    # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32                 # add to ESP
+
+  # store to *EAX
+  c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0x34/imm32              # copy to *EAX
+
+  # exit(EAX)
+  89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                       # copy EAX to EBX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32/exit            # copy to EAX
+  cd/syscall  0x80/imm8
+
+new_segment:  # len : int -> address
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                       # copy ESP to EBP
+  53/push-EBX
+  # copy len to mmap_new_segment.len
+  # TODO: compute mmap_new_segment+4 before runtime
+  8b/copy                         1/mod/*+disp8   4/rm32/SIB    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                       # copy *(EBP+8) to EAX
+  bb/copy                         .               .             .           .             .           .           .               mmap_new_segment/imm32  # copy to EBX
+  89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                       # copy EAX to *(EBX+4)
+  # mmap(mmap_new_segment)
+  bb/copy                         .               .             .           .             .           .           .               mmap_new_segment/imm32  # copy to EBX
+  b8/copy                         .               .             .           .             .           .           .               0x5a/imm32/mmap         # copy to EAX
+  cd/syscall  0x80/imm8
+  # epilog
+  5b/pop-to-EBX
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                       # copy EBP to ESP
+  5d/pop-to-EBP
+  c3/return
+
+== data
+# various constants used here were found in the Linux sources (search for file mman-common.h)
+mmap_new_segment:  # type mmap_arg_struct
+  # addr
+  00 00 00 00  # null
+  # len
+  00 00 00 00  # 0x1000
+  # protection flags
+  03 00 00 00  # PROT_READ | PROT_WRITE
+  # sharing flags
+  22 00 00 00  # MAP_PRIVATE | MAP_ANONYMOUS
+  # fd
+  ff ff ff ff  # -1 since MAP_ANONYMOUS is specified
+  # offset
+  00 00 00 00  # 0 since MAP_ANONYMOUS is specified
+
+# vim:ft=subx:nowrap:tw&
