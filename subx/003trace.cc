@@ -165,9 +165,8 @@ string trace_stream::readable_contents(string label) {
   ostringstream output;
   label = trim(label);
   for (vector<trace_line>::iterator p = past_lines.begin();  p != past_lines.end();  ++p)
-    if (label.empty() || label == p->label) {
+    if (label.empty() || label == p->label)
       output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
-    }
   return output.str();
 }
 
