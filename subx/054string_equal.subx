@@ -1,0 +1,168 @@
+# Comparing 'regular' length-prefixed strings.
+
+== code
+
+# instruction                     effective address                                                   operand     displacement    immediate
+# op          subop               mod             rm32          base        index         scale       r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# main:  (manual test if this is the last file loaded)
+  e8/call  run_tests/disp32  # 'run_tests' is a function created automatically by SubX. It calls all functions that start with 'test_'.
+  # exit(EAX)
+  89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
+  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  cd/syscall  0x80/imm8
+
+string_equal:  # s : string, benchmark : string -> EAX : boolean
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  51/push-ECX
+  52/push-EDX
+  53/push-EBX
+  56/push-ESI
+  # pseudocode:
+  #   if s.length != b.length return false
+  #   for i = 0; i < s.length; ++i
+  #     if s[i] != b[i] return false
+  #   return true
+  # registers:
+  #   i: ECX
+  #   s.length: EDX
+  #   b.length: EBX
+  #   b[i]: EBX
+  #   s[i]: EAX
+  #
+  # var s/EAX : (address array byte)
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+  # var benchmark/EBX : (address array byte)
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+  # if s.length != b.length return false
+    # EDX = s.length
+  8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
+    # compare s.length and b.length
+  39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare *EBX with EDX
+  75/jump-if-not-equal  $string_not_equal/disp8
+$string_lengths_equal:
+  # var i/ECX : int = 0
+  b9/copy                         .               .             .           .             .           .           .               0/imm32           # copy to ECX
+  # EBX = &b[i]
+  43/inc-EBX
+  # EAX = &s[i]
+  40/inc-EAX
+$string_equal_loop:
+  # if i >= s.length return true
+  39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+  7d/jump-if-greater-or-equal  $string_equal/disp8
+  # if b[i] != s[i] return false
+    # ESI = s[i]
+  8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy *EAX to ESI
+    # compare b[i] with ESI
+  39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # compare *EBX with ESI
+  75/jump-if-not-equal  $string_not_equal/disp8
+  # ++i
+  41/inc-ECX
+  40/inc-EAX
+  43/inc-EBX
+  # loop
+  eb/jump  $string_equal_loop/disp8
+$string_equal:
+  # return true
+  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  eb/jump  $string_equal_end/disp8
+$string_not_equal:
+  # return false
+  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy to EAX
+$string_equal_end:
+  # restore registers
+  5e/pop-to-ESI
+  5b/pop-to-EBX
+  5a/pop-to-EDX
+  59/pop-to-ECX
+  # epilog
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
+  c3/return
+
+## tests
+
+test_compare_empty_with_empty_string:
+  # EAX = string_equal("", "")
+    # push args
+  68/push  ""/imm32
+  68/push  ""/imm32
+    # call
+  e8/call  string_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # call check_ints_equal(EAX, 1, msg)
+    # push args
+  68/push  "F - test_compare_empty_with_empty_string"/imm32
+  68/push  1/imm32/true
+  50/push-EAX
+    # call
+  e8/call  check_ints_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  c3/return
+
+test_compare_empty_with_non_empty_string:  # also checks length-mismatch code path
+  # EAX = string_equal("", "Abc")
+    # push args
+  68/push  "Abc"/imm32
+  68/push  ""/imm32
+    # call
+  e8/call  kernel_string_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # call check_ints_equal(EAX, 0, msg)
+    # push args
+  68/push  "F - test_compare_empty_with_non_empty_string"/imm32
+  68/push  0/imm32/false
+  50/push-EAX
+    # call
+  e8/call  check_ints_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  c3/return
+
+test_compare_equal_strings:
+  # EAX = kernel_string_equal("Abc", "Abc")
+    # push args
+  68/push  "Abc"/imm32
+  68/push  "Abc"/imm32
+    # call
+  e8/call  string_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # call check_ints_equal(EAX, 1, msg)
+    # push args
+  68/push  "F - test_compare_equal_strings"/imm32
+  68/push  1/imm32/true
+  50/push-EAX
+    # call
+  e8/call  check_ints_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  c3/return
+
+test_compare_inequal_strings_equal_lengths:
+  # EAX = kernel_string_equal("Abc", "Adc")
+    # push args
+  68/push  "Adc"/imm32
+  68/push  "Abc"/imm32
+    # call
+  e8/call  string_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # call check_ints_equal(EAX, 0, msg)
+    # push args
+  68/push  "F - test_compare_inequal_strings_equal_lengths"/imm32
+  68/push  0/imm32/false
+  50/push-EAX
+    # call
+  e8/call  check_ints_equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  c3/return
