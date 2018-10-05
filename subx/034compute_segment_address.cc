@@ -6,11 +6,11 @@
 == code
 05/add 0x0d0c0b0a/imm32  # add 0x0d0c0b0a to EAX
 # code starts at 0x08048000 + p_offset, which is 0x54 for a single-segment binary
-+load: 0x08048054 -> 05
-+load: 0x08048055 -> 0a
-+load: 0x08048056 -> 0b
-+load: 0x08048057 -> 0c
-+load: 0x08048058 -> 0d
++load: 0x09000054 -> 05
++load: 0x09000055 -> 0a
++load: 0x09000056 -> 0b
++load: 0x09000057 -> 0c
++load: 0x09000058 -> 0d
 +run: add imm32 0x0d0c0b0a to reg EAX
 +run: storing 0x0d0c0b0a
 
@@ -70,16 +70,16 @@ if (Currently_parsing_named_segment) {
 2d/subtract 0xddccbbaa/imm32  # subtract 0xddccbbaa from EAX
 +parse: new segment 'code'
 +parse: prepending to segment 'code'
-+load: 0x08048054 -> 2d
-+load: 0x08048055 -> aa
-+load: 0x08048056 -> bb
-+load: 0x08048057 -> cc
-+load: 0x08048058 -> dd
-+load: 0x08048059 -> 05
-+load: 0x0804805a -> 0a
-+load: 0x0804805b -> 0b
-+load: 0x0804805c -> 0c
-+load: 0x0804805d -> 0d
++load: 0x09000054 -> 2d
++load: 0x09000055 -> aa
++load: 0x09000056 -> bb
++load: 0x09000057 -> cc
++load: 0x09000058 -> dd
++load: 0x09000059 -> 05
++load: 0x0900005a -> 0a
++load: 0x0900005b -> 0b
++load: 0x0900005c -> 0c
++load: 0x0900005d -> 0d
 
 //: compute segment address
 
@@ -93,11 +93,11 @@ void compute_segment_starts(program& p) {
   for (size_t i = 0;  i < p.segments.size();  ++i) {
     segment& curr = p.segments.at(i);
     if (curr.start == 0) {
-      curr.start = CODE_START + i*SEGMENT_SIZE + p_offset;
+      curr.start = CODE_SEGMENT + i*SPACE_FOR_SEGMENT + p_offset;
       trace(99, "transform") << "segment " << i << " begins at address 0x" << HEXWORD << curr.start << end();
     }
     p_offset += size_of(curr);
-    assert(p_offset < SEGMENT_SIZE);  // for now we get less and less available space in each successive segment
+    assert(p_offset < INITIAL_SEGMENT_SIZE);  // for now we get less and less available space in each successive segment
   }
 }
 

@@ -263,13 +263,13 @@ xz:
 //: ignore them.
 
 :(scenario segment_size_ignores_labels)
-== code  # 0x08048074
+== code  # 0x09000074
 05/add 0x0d0c0b0a/imm32  # 5 bytes
 foo:                     # 0 bytes
-== data  # 0x08049079
+== data  # 0x0a000079
 bar:
 00
-+transform: segment 1 begins at address 0x08049079
++transform: segment 1 begins at address 0x0a000079
 
 :(before "End num_bytes(curr) Special-cases")
 else if (is_label(curr))

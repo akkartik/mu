@@ -12,7 +12,7 @@ b9/copy x/imm32  # copy to ECX
 == data
 x:
 00 00 00 00
-+transform: global variable 'x' is at address 0x08049079
++transform: global variable 'x' is at address 0x0a000079
 
 :(before "End Level-2 Transforms")
 Transform.push_back(rewrite_global_variables);
