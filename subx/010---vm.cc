@@ -218,9 +218,16 @@ inline int32_t* mem_addr_i32(uint32_t addr) {
   return reinterpret_cast<int32_t*>(mem_addr_u32(addr));
 }
 // helper for some syscalls. But read-only.
-inline const char* mem_addr_string(uint32_t addr) {
+inline const char* mem_addr_kernel_string(uint32_t addr) {
   return reinterpret_cast<const char*>(mem_addr_u8(addr));
 }
+inline string mem_addr_string(uint32_t addr, uint32_t size) {
+  ostringstream out;
+  for (int i = 0;  i < size;  ++i)
+    out << read_mem_u8(addr+i);
+  return out.str();
+}
+
 
 inline void write_mem_u8(uint32_t addr, uint8_t val) {
   uint8_t* handle = mem_addr_u8(addr);
