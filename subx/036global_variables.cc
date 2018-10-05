@@ -47,6 +47,8 @@ void compute_addresses_for_global_variables(const segment& s, map<string, uint32
         if (trace_contains_errors()) return;
         if (j > 0)
           raise << "'" << to_string(inst) << "': global variable names can only be the first word in a line.\n" << end();
+        if (Dump_map)
+          cerr << "0x" << HEXWORD << current_address << ' ' << variable << '\n';
         put(address, variable, current_address);
         trace(99, "transform") << "global variable '" << variable << "' is at address 0x" << HEXWORD << current_address << end();
         // no modifying current_address; global variable definitions won't be in the final binary

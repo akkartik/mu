@@ -114,33 +114,25 @@ test `uname` = 'Linux'  &&  {
 echo ex11
 CFLAGS=-g ./subx translate examples/ex11.subx  -o examples/ex11
 test `uname -m` = 'i686'  &&  git diff --quiet examples/ex11
-CFLAGS=-g ./subx run examples/ex11 2>ex11.out  ||  true  # exit status for run_tests not yet well-defined
-grep -vq 'F' ex11.out  # no test failures
-test `uname` = 'Linux'  &&  {
-  examples/ex11 2>ex11.out  ||  true  # exit status for run_tests not yet well-defined
-  grep -vq 'F' ex11.out  # no test failures
-}
+CFLAGS=-g ./subx run examples/ex11
+test `uname` = 'Linux'  &&  examples/ex11
 
 echo ex12
 CFLAGS=-g ./subx translate examples/ex12.subx  -o examples/ex12
 test `uname -m` = 'i686'  &&  git diff --quiet examples/ex12
 CFLAGS=-g ./subx run examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
-test `uname` = 'Linux'  &&  {
-  examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
-}
+test `uname` = 'Linux'  &&  examples/ex12
 
 echo factorial
 CFLAGS=-g ./subx translate *.subx apps/factorial.subx  -o apps/factorial
 test `uname -m` = 'i686'  &&  git diff --quiet apps/factorial
 CFLAGS=-g ./subx run apps/factorial  ||  ret=$?
 test $ret -eq 120  # factorial(5)
-CFLAGS=-g ./subx run apps/factorial test 2>factorial.out  ||  true  # exit status for run_tests not yet well-defined
-grep -vq 'F' factorial.out  # no test failures
+CFLAGS=-g ./subx run apps/factorial test
 test `uname` = 'Linux'  &&  {
   apps/factorial  ||  ret=$?
   test $ret -eq 120  # factorial(5)
-  apps/factorial test 2>factorial.out  ||  true  # exit status for run_tests not yet well-defined
-  grep -vq 'F' factorial.out  # no test failures
+  apps/factorial test
 }
 
 echo crenshaw2-1
