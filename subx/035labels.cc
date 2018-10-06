@@ -26,7 +26,7 @@ if (SIZE(s) == 2) return true;
 :(scenario pack_immediate_ignores_single_byte_nondigit_operand)
 % Hide_errors = true;
 == 0x1
-b9/copy a/imm32  # copy to ECX
+b9/copy  a/imm32
 +transform: packing instruction 'b9/copy a/imm32'
 # no change (we're just not printing metadata to the trace)
 +transform: instruction after packing: 'b9 a'
@@ -34,7 +34,7 @@ b9/copy a/imm32  # copy to ECX
 :(scenario pack_immediate_ignores_3_hex_digit_operand)
 % Hide_errors = true;
 == 0x1
-b9/copy aaa/imm32  # copy to ECX
+b9/copy  aaa/imm32
 +transform: packing instruction 'b9/copy aaa/imm32'
 # no change (we're just not printing metadata to the trace)
 +transform: instruction after packing: 'b9 aaa'
@@ -42,7 +42,7 @@ b9/copy aaa/imm32  # copy to ECX
 :(scenario pack_immediate_ignores_non_hex_operand)
 % Hide_errors = true;
 == 0x1
-b9/copy xxx/imm32  # copy to ECX
+b9/copy xxx/imm32
 +transform: packing instruction 'b9/copy xxx/imm32'
 # no change (we're just not printing metadata to the trace)
 +transform: instruction after packing: 'b9 xxx'
@@ -70,11 +70,8 @@ void check_valid_name(const string& s) {
 
 :(scenario map_label)
 == 0x1
-          # instruction                     effective address                                                   operand     displacement    immediate
-          # op          subop               mod             rm32          base        index         scale       r32
-          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 loop:
-            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
+  05  0x0d0c0b0a/imm32
 +transform: label 'loop' is at address 1
 
 :(before "End Level-2 Transforms")
@@ -207,18 +204,15 @@ string drop_last(const string& s) {
 
 :(scenario multiple_labels_at)
 == 0x1
-          # instruction                     effective address                                                   operand     displacement    immediate
-          # op          subop               mod             rm32          base        index         scale       r32
-          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 # address 1
 loop:
  $loop2:
 # address 1 (labels take up no space)
-            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
+    05  0x0d0c0b0a/imm32
 # address 6
-            eb                                                                                                              $loop2/disp8
+    eb  $loop2/disp8
 # address 8
-            eb                                                                                                              $loop3/disp8
+    eb  $loop3/disp8
 # address 0xa
  $loop3:
 +transform: label 'loop' is at address 1
@@ -232,31 +226,22 @@ loop:
 :(scenario label_too_short)
 % Hide_errors = true;
 == 0x1
-          # instruction                     effective address                                                   operand     displacement    immediate
-          # op          subop               mod             rm32          base        index         scale       r32
-          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 xz:
-            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
+  05  0x0d0c0b0a/imm32
 +error: 'xz' is two characters long which can look like raw hex bytes at a glance; use a different name
 
 :(scenario label_hex)
 % Hide_errors = true;
 == 0x1
-          # instruction                     effective address                                                   operand     displacement    immediate
-          # op          subop               mod             rm32          base        index         scale       r32
-          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 0xab:
-            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
+  05  0x0d0c0b0a/imm32
 +error: '0xab' looks like a hex number; use a different name
 
 :(scenario label_negative_hex)
 % Hide_errors = true;
 == 0x1
-          # instruction                     effective address                                                   operand     displacement    immediate
-          # op          subop               mod             rm32          base        index         scale       r32
-          # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
  -a:  # indent to avoid looking like a trace_should_not_contain command for this scenario
-            05                                                                                                                              0x0d0c0b0a/imm32  # add to EAX
+    05  0x0d0c0b0a/imm32
 +error: '-a' starts with '-', which can be confused with a negative number; use a different name
 
 //: now that we have labels, we need to adjust segment size computation to
@@ -264,11 +249,11 @@ xz:
 
 :(scenario segment_size_ignores_labels)
 == code  # 0x09000074
-05/add 0x0d0c0b0a/imm32  # 5 bytes
-foo:                     # 0 bytes
+  05/add  0x0d0c0b0a/imm32  # 5 bytes
+foo:                      # 0 bytes
 == data  # 0x0a000079
 bar:
-00
+  00
 +transform: segment 1 begins at address 0x0a000079
 
 :(before "End num_bytes(curr) Special-cases")

@@ -30,7 +30,7 @@
   # exit(EAX)
 $exit:
   89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   cd/syscall  0x80/imm8
 
 # compare two null-terminated ascii strings
@@ -42,9 +42,9 @@ argv-equal:  # (s1, s2) : null-terminated ascii strings -> EAX : boolean
   # while (true)
 $argv-equal:loop:
     # c1/EAX, c2/EBX = *s1, *s2
-  b8/copy  0/imm32  # clear EAX
+  b8/copy-to-EAX  0/imm32
   8a/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy byte at *ECX to lower byte of EAX
-  bb/copy  0/imm32  # clear EBX
+  bb/copy-to-EBX  0/imm32
   8a/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy byte at *EDX to lower byte of EBX
     # if (c1 == 0) break
   3d/compare-EAX  0/imm32
@@ -62,11 +62,11 @@ $argv-equal:break:
   81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0/imm32           # compare EBX
   75/jump-if-not-equal  $argv-equal:false/disp8
 $argv-equal:success:
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   c3/return
   # return false
 $argv-equal:false:
-  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy to EAX
+  b8/copy-to-EAX  0/imm32
   c3/return
 
 # vim:nowrap:textwidth=0

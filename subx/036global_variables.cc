@@ -8,7 +8,7 @@
 
 :(scenario global_variable)
 == code
-b9/copy x/imm32  # copy to ECX
+b9  x/imm32
 == data
 x:
 00 00 00 00
@@ -129,7 +129,7 @@ bool has_metadata(const word& w, const string& m) {
 :(scenario global_variable_disallowed_in_jump)
 % Hide_errors = true;
 == code
-eb/jump x/disp8
+eb/jump  x/disp8
 == data
 x:
 00 00 00 00
@@ -140,7 +140,7 @@ x:
 :(scenario global_variable_disallowed_in_call)
 % Hide_errors = true;
 == code
-e8/call x/disp32
+e8/call  x/disp32
 == data
 x:
 00 00 00 00

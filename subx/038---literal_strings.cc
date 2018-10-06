@@ -5,7 +5,7 @@
 
 :(scenario transform_literal_string)
 == code
-  b8/copy "test"/imm32  # copy to EAX
+b8/copy  "test"/imm32
 == data  # need to manually create this for now
 +transform: -- move literal strings to data segment
 +transform: adding global variable '__subx_global_1' containing "test"

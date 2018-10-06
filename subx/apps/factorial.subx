@@ -50,7 +50,7 @@ $run-main:
 $main-exit:
   # exit(EAX)
   89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   cd/syscall  0x80/imm8
 
 # factorial(n)
@@ -60,7 +60,7 @@ factorial:
   89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
   53/push-EBX
   # initialize EAX to 1 (base case)
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   # if (n <= 1) jump exit
   81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         1/imm32           # compare *(EBP+8)
   7e/jump-if-<=  $factorial:exit/disp8

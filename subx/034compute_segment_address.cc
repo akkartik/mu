@@ -4,7 +4,7 @@
 
 :(scenario segment_name)
 == code
-05/add 0x0d0c0b0a/imm32  # add 0x0d0c0b0a to EAX
+05/add-to-EAX  0x0d0c0b0a/imm32
 # code starts at 0x08048000 + p_offset, which is 0x54 for a single-segment binary
 +load: 0x09000054 -> 05
 +load: 0x09000055 -> 0a
@@ -65,9 +65,9 @@ if (Currently_parsing_named_segment) {
 
 :(scenario repeated_segment_merges_data)
 == code
-05/add 0x0d0c0b0a/imm32  # add 0x0d0c0b0a to EAX
+05/add-to-EAX  0x0d0c0b0a/imm32
 == code
-2d/subtract 0xddccbbaa/imm32  # subtract 0xddccbbaa from EAX
+2d/subtract-from-EAX  0xddccbbaa/imm32
 +parse: new segment 'code'
 +parse: prepending to segment 'code'
 +load: 0x09000054 -> 2d

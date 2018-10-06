@@ -27,8 +27,8 @@
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
   # exit(0)
-  bb/copy                         .               .             .           .             .           .           .               0/imm32           # copy to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy to EAX
+  bb/copy-to-EBX  0/imm32
+  b8/copy-to-EAX  1/imm32/exit
   cd/syscall  0x80/imm8
 
 ## helpers
@@ -44,8 +44,8 @@ abort:  # s : (address array byte) -> <void>
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
   # exit(1)
-  bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32/exit      # copy to EAX
+  bb/copy-to-EBX  1/imm32
+  b8/copy-to-EAX  1/imm32/exit
   cd/syscall  0x80/imm8
 
 # print out "Error: #{s} expected\n" to stderr
@@ -92,7 +92,7 @@ write-stdout:  # s : (address array byte) -> <void>
   53/push-EBX
   # write(1/stdout, (data) s+4, (size) *s)
     # fd = 1 (stdout)
-  bb/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EBX
+  bb/copy-to-EBX  1/imm32
     # x = s+4
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
   81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
@@ -100,7 +100,7 @@ write-stdout:  # s : (address array byte) -> <void>
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
   8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # call write()
-  b8/copy                         .               .             .           .             .           .           .               4/imm32/write     # copy to EAX
+  b8/copy-to-EAX  4/imm32/write
   cd/syscall  0x80/imm8
   # restore registers
   5b/pop-to-EBX

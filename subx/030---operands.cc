@@ -29,10 +29,7 @@ cerr << "  instructions\n";
 
 :(scenario pack_immediate_constants)
 == 0x1
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                                              0x2a/imm32        # copy 42 to EBX
+bb  0x2a/imm32
 +transform: packing instruction 'bb 0x2a/imm32'
 +transform: instruction after packing: 'bb 2a 00 00 00'
 +run: copy imm32 0x0000002a to EBX
@@ -335,40 +332,31 @@ void transform(const string& text_bytes) {
 
 :(scenario pack_imm32_large)
 == 0x1
-b9 0x080490a7/imm32  # copy to ECX
+b9  0x080490a7/imm32
 +transform: packing instruction 'b9 0x080490a7/imm32'
 +transform: instruction after packing: 'b9 a7 90 04 08'
 
 :(scenario pack_immediate_constants_hex)
 == 0x1
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                                              0x2a/imm32        # copy 42 to EBX
-+transform: packing instruction 'bb 0x2a/imm32'
-+transform: instruction after packing: 'bb 2a 00 00 00'
-+run: copy imm32 0x0000002a to EBX
+b9  0x2a/imm32
++transform: packing instruction 'b9 0x2a/imm32'
++transform: instruction after packing: 'b9 2a 00 00 00'
++run: copy imm32 0x0000002a to ECX
 
 :(scenarios transform)
 :(scenario pack_silently_ignores_non_hex)
 % Hide_errors = true;
 == 0x1
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                                              foo/imm32         # copy to EBX
-+transform: packing instruction 'bb foo/imm32'
+b9  foo/imm32
++transform: packing instruction 'b9 foo/imm32'
 # no change (we're just not printing metadata to the trace)
-+transform: instruction after packing: 'bb foo'
++transform: instruction after packing: 'b9 foo'
 :(scenarios run)
 
 :(scenario pack_flags_bad_hex)
 % Hide_errors = true;
 == 0x1
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  bb                                                                                                                              0xfoo/imm32       # copy to EBX
+b9  0xfoo/imm32
 +error: not a number: 0xfoo
 
 //:: helpers

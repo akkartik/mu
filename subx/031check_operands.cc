@@ -4,10 +4,7 @@
 :(scenario check_missing_imm8_operand)
 % Hide_errors = true;
 == 0x1
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  cd                                                                                                                                                # int ??
+cd  # int ??
 +error: 'cd' (software interrupt): missing imm8 operand
 
 :(before "Pack Operands(segment code)")

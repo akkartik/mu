@@ -10,7 +10,7 @@
   e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
   # exit(Num-test-failures)
   8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   cd/syscall  0x80/imm8
 
 string-equal:  # s : string, benchmark : string -> EAX : boolean
@@ -46,7 +46,7 @@ string-equal:  # s : string, benchmark : string -> EAX : boolean
   75/jump-if-not-equal  $string-equal:false/disp8
 $string-equal:lengths:
   # var i/ECX : int = 0
-  b9/copy                         .               .             .           .             .           .           .               0/imm32           # copy to ECX
+  b9/copy-to-ECX  0/imm32
   # EBX = &b[i]
   43/inc-EBX
   # EAX = &s[i]
@@ -69,11 +69,11 @@ $string-equal:loop:
   eb/jump  $string-equal:loop/disp8
 $string-equal:true:
   # return true
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   eb/jump  $string-equal:end/disp8
 $string-equal:false:
   # return false
-  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy to EAX
+  b8/copy-to-EAX  0/imm32
 $string-equal:end:
   # restore registers
   5e/pop-to-ESI

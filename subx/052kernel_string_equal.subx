@@ -24,7 +24,7 @@
   e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
   # exit(Num-test-failures)
   8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   cd/syscall  0x80/imm8
 
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
@@ -63,15 +63,15 @@ kernel-string-equal:  # s : null-terminated ascii string, benchmark : length-pre
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
   81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
   # initialize loop counter i into ECX
-  b9/copy                         .               .             .           .             .           .           .               0/imm32/exit      # copy to ECX
+  b9/copy-to-ECX  0/imm32/exit
   # while (i/ECX < n/EDX)
 $kernel-string-equal:loop:
   39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
   74/jump-if-equal  $kernel-string-equal:break/disp8
     # c1/EAX, c2/EBX = *s, *benchmark
-  b8/copy  0/imm32  # clear EAX
+  b8/copy-to-EAX  0/imm32
   8a/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy byte at *EDI to lower byte of EAX
-  bb/copy  0/imm32  # clear EBX
+  bb/copy-to-EBX  0/imm32
   8a/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/EBX   .               .                 # copy byte at *ESI to lower byte of EBX
     # if (c1 == 0) return false
   3d/compare-EAX  0/imm32
@@ -87,16 +87,16 @@ $kernel-string-equal:loop:
   eb/jump  $kernel-string-equal:loop/disp8
 $kernel-string-equal:break:
   # if (*s/EDI == 0) return true
-  b8/copy  0/imm32  # clear EAX
+  b8/copy-to-EAX  0/imm32
   8a/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy byte at *EDI to lower byte of EAX
   3d/compare-EAX  0/imm32
   75/jump-if-not-equal  $kernel-string-equal:false/disp8
 $kernel-string-equal:true:
-  b8/copy                         .               .             .           .             .           .           .               1/imm32           # copy to EAX
+  b8/copy-to-EAX  1/imm32
   eb/jump  $kernel-string-equal:end/disp8
   # return false
 $kernel-string-equal:false:
-  b8/copy                         .               .             .           .             .           .           .               0/imm32           # copy to EAX
+  b8/copy-to-EAX  0/imm32
 
 $kernel-string-equal:end:
   # restore registers
