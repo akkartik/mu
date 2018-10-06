@@ -15,6 +15,8 @@ set cpo&vim
 setlocal formatoptions-=t  " allow long lines
 setlocal formatoptions+=c  " but comments should still wrap
 
+setlocal iskeyword+=-
+
 syntax match subxComment /#.*$/  | highlight link subxComment Comment
 syntax match subxSalientComment /##.*$/  | highlight link subxSalientComment SalientComment
 set comments-=:#
