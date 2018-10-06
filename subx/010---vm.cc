@@ -223,7 +223,7 @@ inline const char* mem_addr_kernel_string(uint32_t addr) {
 }
 inline string mem_addr_string(uint32_t addr, uint32_t size) {
   ostringstream out;
-  for (int i = 0;  i < size;  ++i)
+  for (size_t i = 0;  i < size;  ++i)
     out << read_mem_u8(addr+i);
   return out.str();
 }
