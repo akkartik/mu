@@ -73,3 +73,11 @@ function! SubxPath(arg)
     return "apps/" . a:arg . "*.subx"
   endif
 endfunction
+
+" we often want to crib lines of machine code from other files
+function! GrepSubX(regex)
+  " https://github.com/mtth/scratch.vim
+  Scratch!
+  silent exec "r !grep -h ".shellescape(a:regex)." *.subx */*.subx"
+endfunction
+command! -nargs=1 G call GrepSubX(<args>)
