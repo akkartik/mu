@@ -66,7 +66,7 @@ initialize-trace-stream:
   c7          0/copy              1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         0xff4/imm32       # copy 0xff4 to *(EAX+8)
   c3/return
 
-# Append to the given trace stream. If it's null, append to the trace-stream saved in 'Trace-stream'.
+# Append to the given trace stream.
 trace:  # t : (address trace-stream), line : string
   # prolog
   55/push-EBP
@@ -80,12 +80,7 @@ trace:  # t : (address trace-stream), line : string
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
   # EBX = line
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
-  # if (t == 0) t = *Trace-stream
-  81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
-  75/jump-if-not-equal  $trace:t-initialized/disp8
-  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
-$trace:t-initialized:
-  # otherwise append line to t.data from t.write
+  # append line to t.data from t.write
   #
   # pseudocode:
   #   length = *(EBX+8)
@@ -177,31 +172,6 @@ test-trace:
   68/push  0x0a6241/imm32/Ab-newline
     # push *Test-trace-stream.data
   b8/copy-to-EAX  Test-trace-stream/imm32
-  ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
-    # call
-  e8/call  check-ints-equal/disp32
-    # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-  # done
-  c3/return
-
-test-trace-real:
-  # initialize-trace-stream()
-  e8/call  initialize-trace-stream/disp32
-  # trace(null/Real-trace-stream, "Ab")
-    # push args
-  68/push  "Ab"/imm32
-  68/push  0/imm32
-    # call
-  e8/call  trace/disp32
-    # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # check-ints-equal(*(*Trace-stream).data, 41/A 62/b 0a/newline 00, msg)
-    # push args
-  68/push  "F - test-trace-real"/imm32
-  68/push  0x0a6241/imm32/Ab-newline
-    # push *(*Trace-stream).data
-  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
   ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # call
   e8/call  check-ints-equal/disp32
