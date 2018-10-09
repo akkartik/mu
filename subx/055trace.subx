@@ -1,0 +1,214 @@
+# helpers for emitting traces to a trace stream, and for tests to check the trace stream
+#
+# A trace stream looks like this:
+#   read : int
+#   write : int  # index at which writes go
+#   data : (array byte)  # prefixed by length
+# In a real trace the data will be in a special segment set aside for the purpose.
+#
+# primitives for operating on traces:
+#   - initialize-trace-stream (update global variable)
+#   - trace: stream, string
+#   - die: stream (exit(1) if using real trace)
+#   - check-trace-contains: stream, string/line, string/message (scans only from stream's read pointer, prints message to stderr on failure, updates stream's read pointer)
+#   - rewind-reads: stream (resets read pointer)
+#   - scan-to-next-line: stream (advance read pointer past next newline
+#
+# Traces are very fundamental, so many of the helpers we create here won't be
+# used elsewhere; we'll switch to more bounds-checked variants. But here we get
+# bounds-checking for free; we allocate a completely disjoint segment for trace
+# data, and overflowing it will generate a page fault.
+
+== data
+
+# We'll save the address of the trace segment here.
+Trace-stream:
+  00 00 00 00
+
+# Fake trace-stream for tests.
+# Also illustrates the layout of the real trace-stream (segment).
+Test-trace-stream:
+  # current write index
+  00 00 00 00
+  # current read index
+  00 00 00 00
+  # length (= 8)
+  08 00 00 00
+  # data
+  00 00 00 00 00 00 00 00  # 8 bytes
+
+== code
+
+# instruction                     effective address                                                   operand     displacement    immediate
+# op          subop               mod             rm32          base        index         scale       r32
+# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# main:  (manual test if this is the last file loaded)
+  e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
+  # exit(Num-test-failures)
+  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           1/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
+  b8/copy-to-EAX  1/imm32
+  cd/syscall  0x80/imm8
+
+# Allocate a new segment for the trace stream, initialize its length, and save its address to Trace-stream.
+# The Trace-stream segment will consist of variable-length lines separated by newlines (0x0a)
+initialize-trace-stream:
+  # EAX = new-segment(0x1000)
+    # push arg
+  68/push  0x1000/imm32/N
+    # call
+  e8/call  new-segment/disp32
+    # discard arg
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+  # copy EAX to *Trace-stream
+  89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+  # Trace-stream.length = 0x1000/N - 12
+  b9/copy-to-ECX  0xff4/imm32
+  89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy ECX to *(EAX+8)
+  c3/return
+
+# Append to the given trace stream. If it's null, append to the trace-stream saved in 'Trace-stream'.
+trace:  # t : (address trace-stream), line : string
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  51/push-ECX
+  52/push-EDX
+  53/push-EBX
+  56/push-ESI
+  # EAX = t
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+  # EBX = line
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+  # if (t == 0) t = *Trace-stream
+  81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+  75/jump-if-not-equal  $trace:t-initialized/disp8
+  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
+$trace:t-initialized:
+  # otherwise append line to t.data from t.write
+  #
+  # pseudocode:
+  #   length = *(EBX+8)
+  #   i = *EBX
+  #   j = 0
+  #   while i < length
+  #     if j >= len(line) break
+  #     t.data[i] = line[j]
+  #     inc j
+  #     inc i
+  # registers:
+  #   t, line, i, j, length, line.length, t.data[i]
+  #
+  # we could reduce registers to just tdata, line, tmax, lmax
+  #   A = *(BP+8)    # t
+  #   B = *(BP+12)   # line
+  #   C = *(A+8)  # t.length
+  #   C = A+12+C  # &t.data[t.length]
+  #   D = *A  # t.write
+  #   SI = *B  # line.length
+  #   *A = *A + SI  # update t.write  (can go over, we'll guard against it)
+  #   A = A+12+D  # &t.data[t.write]
+  #   D = B+4+SI  # &line.data[line.length]
+  #   B = B+4  # &line.data[0]
+  #
+  # ECX = t.length
+  8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EAX+8) to ECX
+  # ECX = &t.data[t.length]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
+  # EDX = t.write
+  8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
+  # ESI = line.length
+  8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # copy *EBX to ESI
+  # t.write += line.length
+  01/add                          0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # add ESI to *EAX
+  # EAX = &t.data[t.write]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           0/r32/EAX   0xc/disp8       .                 # copy EAX+EDX+12 to EAX
+  # EDX = &line.data[line.length]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  6/index/ESI   .           2/r32/EDX   4/disp8         .                 # copy EBX+ESI+4 to EDX
+  # EBX = &line.data
+  81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
+  # while (true)
+$trace:loop:
+  # if EBX >= EDX break
+  39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare EBX with EDX
+  7d/jump-if-greater-or-equal  $trace:break/disp8
+  # if EAX >= ECX break  (for now silently ignore full trace)
+  39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
+  7d/jump-if-greater-or-equal  $trace:break/disp8
+  # copy one byte
+  8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # copy byte at *EBX to ESI
+  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy lowest byte of ESI to *EAX
+  # updates
+  40/increment-EAX
+  43/increment-EBX
+  eb/jump  $trace:loop/disp8
+$trace:break:
+  # finally, append a newline
+  # todo: don't append a newline if 'line' is empty
+    # if EAX >= ECX return
+  39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
+  7d/jump-if-greater-or-equal  $trace:end/disp8
+    # append
+  be/copy-to-ESI  0x0a/imm32
+  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy lowest byte of ESI to *EAX
+$trace:end:
+  # restore registers
+  5e/pop-to-ESI
+  5b/pop-to-EBX
+  5a/pop-to-EDX
+  59/pop-to-ECX
+  # epilog
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
+  c3/return
+
+test-trace:
+  # trace(Test-trace-stream, "Ab")
+    # push args
+  68/push  "Ab"/imm32
+  68/push  Test-trace-stream/imm32
+    # call
+  e8/call  trace/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # check-ints-equal(*Test-trace-stream.data, 41/A 62/b 0a/newline 00, msg)
+    # push args
+  68/push  "F - test-trace"/imm32
+  68/push  0x0a6241/imm32/Ab-newline
+    # push *Test-trace-stream.data
+  b8/copy-to-EAX  Test-trace-stream/imm32
+  ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    # call
+  e8/call  check-ints-equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  # done
+  c3/return
+
+test-trace-real:
+  # initialize-trace-stream()
+  e8/call  initialize-trace-stream/disp32
+  # trace(null/Real-trace-stream, "Ab")
+    # push args
+  68/push  "Ab"/imm32
+  68/push  0/imm32
+    # call
+  e8/call  trace/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # check-ints-equal(*(*Trace-stream).data, 41/A 62/b 0a/newline 00, msg)
+    # push args
+  68/push  "F - test-trace-real"/imm32
+  68/push  0x0a6241/imm32/Ab-newline
+    # push *(*Trace-stream).data
+  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
+  ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    # call
+  e8/call  check-ints-equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  # done
+  c3/return
+
+# vim:nowrap:textwidth=0

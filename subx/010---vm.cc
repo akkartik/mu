@@ -265,12 +265,12 @@ inline bool already_allocated(uint32_t addr) {
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
-//?   if (Dump_trace) {
-//?     cerr << "inst: 0x" << EIP << " => ";
-//?     dump_registers();
-//?   }
   op = next();
-//?   cerr << HEXBYTE << NUM(op) << '\n';
+  if (Dump_trace) {
+    cerr << "opcode: " << HEXBYTE << NUM(op) << '\n';
+    cerr << "registers at start: ";
+    dump_registers();
+  }
   switch (op) {
   case 0xf4:  // hlt
     EIP = End_of_program;
