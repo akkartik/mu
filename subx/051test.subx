@@ -4,6 +4,17 @@
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
+# main:  (manual test if this is the last file loaded)
+  # check-ints-equal(34, 34) == 1
+  68/push  34/imm32
+  68/push  34/imm32
+  e8/call  check-ints-equal/disp32
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # exit(0)
+  bb/copy-to-EBX  0/imm32
+  b8/copy-to-EAX  1/imm32
+  cd/syscall  0x80/imm8
+
 # print msg to stderr if a != b, otherwise print "."
 check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
   # prolog

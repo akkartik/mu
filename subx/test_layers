@@ -1,11 +1,21 @@
 #!/bin/bash
 # Repeatedly stop building until successive layers, and run all tests built.
+#
+# Assumes .subx files all come after .cc files.
 
 set -e
 
 cd `dirname $0`
+# add C++ files one at a time
 for f in [0-9]*cc
 do
   echo "=== $f"
   ./build_and_test_until $f  ||  exit 1
+done
+
+# add SubX files one at a time
+for f in [0-9]*.subx
+do
+  echo "=== $f"
+  CFLAGS=-g ./subx translate $(../enumerate/enumerate --until $f |grep '\.subx$') -o foo  &&  ./subx run foo
 done
