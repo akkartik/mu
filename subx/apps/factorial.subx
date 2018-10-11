@@ -36,9 +36,10 @@
     # check result
   3d/compare-EAX  1/imm32
   75/jump-if-not-equal  $run-main/disp8
-  # then
+  # then return run-tests()
   e8/call  run-tests/disp32
-  eb/jump  $main-exit/disp8
+  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Num-test-failures/disp32          # copy *Num-test-failures to EAX
+  eb/jump  $main-exit/disp8  # where EAX will get copied to EBX
   # else EAX = factorial(5)
 $run-main:
     # push arg

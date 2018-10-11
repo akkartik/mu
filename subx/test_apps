@@ -115,7 +115,11 @@ echo ex11
 CFLAGS=-g ./subx translate examples/ex11.subx  -o examples/ex11
 test `uname -m` = 'i686'  &&  git diff --quiet examples/ex11
 CFLAGS=-g ./subx run examples/ex11
-test `uname` = 'Linux'  &&  examples/ex11
+echo
+test `uname` = 'Linux'  &&  {
+  examples/ex11
+  echo
+}
 
 echo ex12
 CFLAGS=-g ./subx translate examples/ex12.subx  -o examples/ex12
@@ -129,10 +133,12 @@ test `uname -m` = 'i686'  &&  git diff --quiet apps/factorial
 CFLAGS=-g ./subx run apps/factorial  ||  ret=$?
 test $ret -eq 120  # factorial(5)
 CFLAGS=-g ./subx run apps/factorial test
+echo
 test `uname` = 'Linux'  &&  {
   apps/factorial  ||  ret=$?
   test $ret -eq 120  # factorial(5)
   apps/factorial test
+  echo
 }
 
 echo crenshaw2-1
