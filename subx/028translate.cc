@@ -20,6 +20,7 @@
 if (is_equal(argv[1], "translate")) {
   START_TRACING_UNTIL_END_OF_SCOPE;
   reset();
+  // Begin subx translate
   program p;
   string output_filename;
   for (int i = /*skip 'subx translate'*/2;  i < argc;  ++i) {
@@ -59,6 +60,7 @@ if (is_equal(argv[1], "translate")) {
     unlink(output_filename.c_str());
     return 1;
   }
+  // End subx translate
   return 0;
 }
 

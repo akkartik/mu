@@ -264,6 +264,7 @@ inline bool already_allocated(uint32_t addr) {
 // skeleton of how x86 instructions are decoded
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
+  // Run One Instruction
   trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
   op = next();
   if (Dump_trace) {
