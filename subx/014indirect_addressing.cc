@@ -402,7 +402,7 @@ f0 cc bb aa  # 0xf0 with more data in following bytes
 % CHECK_EQ(0xaabbccab, read_mem_u32(0x2000));
 
 :(before "End Single-Byte Opcodes")
-case 0x88: {  // copy r/m8 to r8
+case 0x88: {  // copy r8 to r/m8
   uint8_t modrm = next();
   uint8_t reg2 = (modrm>>3)&0x7;
   trace(90, "run") << "copy lowermost byte of " << rname(reg2) << " to r8/m8-at-r32" << end();
