@@ -343,11 +343,11 @@ put(name, "89", "copy r32 to rm32");
 :(before "End Single-Byte Opcodes")
 case 0x89: {  // copy r32 to r/m32
   uint8_t modrm = next();
-  uint8_t reg2 = (modrm>>3)&0x7;
-  trace(90, "run") << "copy " << rname(reg2) << " to r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  *arg1 = Reg[reg2].i;
-  trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  uint8_t rsrc = (modrm>>3)&0x7;
+  trace(90, "run") << "copy " << rname(rsrc) << " to r/m32" << end();
+  int32_t* dest = effective_address(modrm);
+  *dest = Reg[rsrc].i;
+  trace(90, "run") << "storing 0x" << HEXWORD << *dest << end();
   break;
 }
 

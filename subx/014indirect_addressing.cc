@@ -404,12 +404,12 @@ f0 cc bb aa  # 0xf0 with more data in following bytes
 :(before "End Single-Byte Opcodes")
 case 0x88: {  // copy r8 to r/m8
   uint8_t modrm = next();
-  uint8_t reg2 = (modrm>>3)&0x7;
-  trace(90, "run") << "copy lowermost byte of " << rname(reg2) << " to r8/m8-at-r32" << end();
+  uint8_t rsrc = (modrm>>3)&0x7;
+  trace(90, "run") << "copy lowermost byte of " << rname(rsrc) << " to r8/m8-at-r32" << end();
   // use unsigned to zero-extend 8-bit value to 32 bits
-  uint8_t* arg1 = reinterpret_cast<uint8_t*>(effective_address(modrm));
-  *arg1 = Reg[reg2].u;
-  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*arg1) << end();
+  uint8_t* dest = reinterpret_cast<uint8_t*>(effective_address(modrm));
+  *dest = Reg[rsrc].u;
+  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
   break;
 }
 
