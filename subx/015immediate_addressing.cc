@@ -437,10 +437,10 @@ case 0xbc:
 case 0xbd:
 case 0xbe:
 case 0xbf: {  // copy imm32 to r32
-  uint8_t reg1 = op & 0x7;
-  int32_t arg2 = next32();
-  trace(90, "run") << "copy imm32 0x" << HEXWORD << arg2 << " to " << rname(reg1) << end();
-  Reg[reg1].i = arg2;
+  uint8_t rdest = op & 0x7;
+  int32_t src = next32();
+  trace(90, "run") << "copy imm32 0x" << HEXWORD << src << " to " << rname(rdest) << end();
+  Reg[rdest].i = src;
   break;
 }
 
@@ -463,10 +463,10 @@ put(name, "c7", "copy imm32 to rm32");
 case 0xc7: {  // copy imm32 to r32
   uint8_t modrm = next();
   trace(90, "run") << "copy imm32 to r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  int32_t arg2 = next32();
-  trace(90, "run") << "imm32 is 0x" << HEXWORD << arg2 << end();
-  *arg1 = arg2;
+  int32_t* dest = effective_address(modrm);
+  int32_t src = next32();
+  trace(90, "run") << "imm32 is 0x" << HEXWORD << src << end();
+  *dest = src;
   break;
 }
 

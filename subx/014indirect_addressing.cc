@@ -374,11 +374,11 @@ af 00 00 00  # 0xaf
 :(before "End Single-Byte Opcodes")
 case 0x8b: {  // copy r32 to r/m32
   uint8_t modrm = next();
-  uint8_t reg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "copy r/m32 to " << rname(reg1) << end();
-  int32_t* arg2 = effective_address(modrm);
-  Reg[reg1].i = *arg2;
-  trace(90, "run") << "storing 0x" << HEXWORD << *arg2 << end();
+  uint8_t rdest = (modrm>>3)&0x7;
+  trace(90, "run") << "copy r/m32 to " << rname(rdest) << end();
+  int32_t* src = effective_address(modrm);
+  Reg[rdest].i = *src;
+  trace(90, "run") << "storing 0x" << HEXWORD << *src << end();
   break;
 }
 
@@ -436,13 +436,13 @@ ab ff ff ff  # 0xab with more data in following bytes
 :(before "End Single-Byte Opcodes")
 case 0x8a: {  // copy r/m8 to r8
   uint8_t modrm = next();
-  uint8_t reg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "copy r8/m8-at-r32 to lowermost byte of " << rname(reg1) << end();
+  uint8_t rdest = (modrm>>3)&0x7;
+  trace(90, "run") << "copy r8/m8-at-r32 to lowermost byte of " << rname(rdest) << end();
   // use unsigned to zero-extend 8-bit value to 32 bits
-  uint8_t* arg2 = reinterpret_cast<uint8_t*>(effective_address(modrm));
-  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*arg2) << end();
-  *reinterpret_cast<uint8_t*>(&Reg[reg1].u) = *arg2;  // assumes host is little-endian
-  trace(90, "run") << rname(reg1) << " now contains 0x" << HEXWORD << Reg[reg1].u << end();
+  uint8_t* src = reinterpret_cast<uint8_t*>(effective_address(modrm));
+  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*src) << end();
+  *reinterpret_cast<uint8_t*>(&Reg[rdest].u) = *src;  // assumes host is little-endian
+  trace(90, "run") << rname(rdest) << " now contains 0x" << HEXWORD << Reg[rdest].u << end();
   break;
 }
 
