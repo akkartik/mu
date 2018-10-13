@@ -21,8 +21,8 @@ case 4:  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
   break;
 :(code)
 uint32_t effective_address_from_sib(uint8_t mod) {
-  uint8_t sib = next();
-  uint8_t base = sib&0x7;
+  const uint8_t sib = next();
+  const uint8_t base = sib&0x7;
   uint32_t addr = 0;
   if (base != EBP || mod != 0) {
     addr = Reg[base].u;
@@ -33,13 +33,13 @@ uint32_t effective_address_from_sib(uint8_t mod) {
     addr = next32();  // ignore base
     trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (disp32)" << end();
   }
-  uint8_t index = (sib>>3)&0x7;
+  const uint8_t index = (sib>>3)&0x7;
   if (index == ESP) {
     // ignore index and scale
     trace(90, "run") << "effective address is 0x" << std::hex << addr << end();
   }
   else {
-    uint8_t scale = (1 << (sib>>6));
+    const uint8_t scale = (1 << (sib>>6));
     addr += Reg[index].i*scale;  // treat index register as signed. Maybe base as well? But we'll always ensure it's non-negative.
     trace(90, "run") << "effective address is 0x" << std::hex << addr << " (after adding " << rname(index) << "*" << NUM(scale) << ")" << end();
   }

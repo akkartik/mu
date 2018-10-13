@@ -16,7 +16,7 @@ put(name, "e8", "call disp32");
 
 :(before "End Single-Byte Opcodes")
 case 0xe8: {  // call disp32 relative to next EIP
-  int32_t offset = next32();
+  const int32_t offset = next32();
   trace(90, "run") << "call imm32 0x" << HEXWORD << offset << end();
 //?   cerr << "push: EIP: " << EIP << " => " << Reg[ESP].u << '\n';
   push(EIP);
@@ -43,7 +43,7 @@ case 0xe8: {  // call disp32 relative to next EIP
 :(before "End Op ff Subops")
 case 2: {  // call function pointer at r/m32
   trace(90, "run") << "call to r/m32" << end();
-  int32_t* offset = effective_address(modrm);
+  const int32_t* offset = effective_address(modrm);
   push(EIP);
   EIP += *offset;
   trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();

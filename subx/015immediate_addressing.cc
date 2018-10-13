@@ -18,11 +18,11 @@ put(name, "81", "combine rm32 with imm32 based on subop");
 :(before "End Single-Byte Opcodes")
 case 0x81: {  // combine imm32 with r/m32
   trace(90, "run") << "combine imm32 with r/m32" << end();
-  uint8_t modrm = next();
+  const uint8_t modrm = next();
   int32_t* arg1 = effective_address(modrm);
-  int32_t arg2 = next32();
+  const int32_t arg2 = next32();
   trace(90, "run") << "imm32 is 0x" << HEXWORD << arg2 << end();
-  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
   case 0:
     trace(90, "run") << "subop add" << end();
@@ -67,7 +67,7 @@ put(name, "2d", "subtract imm32 from R0 (EAX)");
 
 :(before "End Single-Byte Opcodes")
 case 0x2d: {  // subtract imm32 from EAX
-  int32_t arg2 = next32();
+  const int32_t arg2 = next32();
   trace(90, "run") << "subtract imm32 0x" << HEXWORD << arg2 << " from EAX" << end();
   BINARY_ARITHMETIC_OP(-, Reg[EAX].i, arg2);
   break;
@@ -125,7 +125,7 @@ put(name, "25", "R0 = bitwise AND of imm32 with R0 (EAX)");
 
 :(before "End Single-Byte Opcodes")
 case 0x25: {  // and imm32 with EAX
-  int32_t arg2 = next32();
+  const int32_t arg2 = next32();
   trace(90, "run") << "and imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
   BINARY_BITWISE_OP(&, Reg[EAX].i, arg2);
   break;
@@ -183,7 +183,7 @@ put(name, "0d", "R0 = bitwise OR of imm32 with R0 (EAX)");
 
 :(before "End Single-Byte Opcodes")
 case 0x0d: {  // or imm32 with EAX
-  int32_t arg2 = next32();
+  const int32_t arg2 = next32();
   trace(90, "run") << "or imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
   BINARY_BITWISE_OP(|, Reg[EAX].i, arg2);
   break;
@@ -239,7 +239,7 @@ put(name, "35", "R0 = bitwise XOR of imm32 with R0 (EAX)");
 
 :(before "End Single-Byte Opcodes")
 case 0x35: {  // xor imm32 with EAX
-  int32_t arg2 = next32();
+  const int32_t arg2 = next32();
   trace(90, "run") << "xor imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
   BINARY_BITWISE_OP(^, Reg[EAX].i, arg2);
   break;
@@ -295,13 +295,13 @@ put(name, "3d", "compare: set SF if R0 < imm32");
 
 :(before "End Single-Byte Opcodes")
 case 0x3d: {  // compare EAX with imm32
-  int32_t arg1 = Reg[EAX].i;
-  int32_t arg2 = next32();
+  const int32_t arg1 = Reg[EAX].i;
+  const int32_t arg2 = next32();
   trace(90, "run") << "compare EAX and imm32 0x" << HEXWORD << arg2 << end();
-  int32_t tmp1 = arg1 - arg2;
+  const int32_t tmp1 = arg1 - arg2;
   SF = (tmp1 < 0);
   ZF = (tmp1 == 0);
-  int64_t tmp2 = arg1 - arg2;
+  const int64_t tmp2 = arg1 - arg2;
   OF = (tmp1 != tmp2);
   trace(90, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
   break;
@@ -339,10 +339,10 @@ case 0x3d: {  // compare EAX with imm32
 :(before "End Op 81 Subops")
 case 7: {
   trace(90, "run") << "subop compare" << end();
-  int32_t tmp1 = *arg1 - arg2;
+  const int32_t tmp1 = *arg1 - arg2;
   SF = (tmp1 < 0);
   ZF = (tmp1 == 0);
-  int64_t tmp2 = *arg1 - arg2;
+  const int64_t tmp2 = *arg1 - arg2;
   OF = (tmp1 != tmp2);
   trace(90, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
   break;
@@ -437,8 +437,8 @@ case 0xbc:
 case 0xbd:
 case 0xbe:
 case 0xbf: {  // copy imm32 to r32
-  uint8_t rdest = op & 0x7;
-  int32_t src = next32();
+  const uint8_t rdest = op & 0x7;
+  const int32_t src = next32();
   trace(90, "run") << "copy imm32 0x" << HEXWORD << src << " to " << rname(rdest) << end();
   Reg[rdest].i = src;
   break;
@@ -461,10 +461,10 @@ put(name, "c7", "copy imm32 to rm32");
 
 :(before "End Single-Byte Opcodes")
 case 0xc7: {  // copy imm32 to r32
-  uint8_t modrm = next();
+  const uint8_t modrm = next();
   trace(90, "run") << "copy imm32 to r/m32" << end();
   int32_t* dest = effective_address(modrm);
-  int32_t src = next32();
+  const int32_t src = next32();
   trace(90, "run") << "imm32 is 0x" << HEXWORD << src << end();
   *dest = src;
   break;
@@ -486,7 +486,7 @@ put(name, "68", "push imm32 to stack");
 
 :(before "End Single-Byte Opcodes")
 case 0x68: {
-  uint32_t val = static_cast<uint32_t>(next32());
+  const uint32_t val = static_cast<uint32_t>(next32());
   trace(90, "run") << "push imm32 0x" << HEXWORD << val << end();
 //?   cerr << "push: " << val << " => " << Reg[ESP].u << '\n';
   push(val);

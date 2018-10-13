@@ -29,9 +29,9 @@ case 0x01: {  // add r32 to r/m32
 // We return a pointer so that instructions can write to multiple bytes in
 // 'Mem' at once.
 int32_t* effective_address(uint8_t modrm) {
-  uint8_t mod = (modrm>>6);
+  const uint8_t mod = (modrm>>6);
   // ignore middle 3 'reg opcode' bits
-  uint8_t rm = modrm & 0x7;
+  const uint8_t rm = modrm & 0x7;
   if (mod == 3) {
     // mod 3 is just register direct addressing
     trace(90, "run") << "r/m32 is " << rname(rm) << end();
@@ -41,9 +41,9 @@ int32_t* effective_address(uint8_t modrm) {
 }
 
 uint32_t effective_address_number(uint8_t modrm) {
-  uint8_t mod = (modrm>>6);
+  const uint8_t mod = (modrm>>6);
   // ignore middle 3 'reg opcode' bits
-  uint8_t rm = modrm & 0x7;
+  const uint8_t rm = modrm & 0x7;
   uint32_t addr = 0;
   switch (mod) {
   case 3:
@@ -91,8 +91,8 @@ put(name, "29", "subtract r32 from rm32");
 
 :(before "End Single-Byte Opcodes")
 case 0x29: {  // subtract r32 from r/m32
-  uint8_t modrm = next();
-  uint8_t arg2 = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t arg2 = (modrm>>3)&0x7;
   trace(90, "run") << "subtract " << rname(arg2) << " from r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(-, *arg1, Reg[arg2].i);
@@ -118,14 +118,14 @@ put(name, "f7", "test/negate/mul/div rm32 (with EAX if necessary) depending on s
 
 :(before "End Single-Byte Opcodes")
 case 0xf7: {  // xor r32 with r/m32
-  uint8_t modrm = next();
+  const uint8_t modrm = next();
   trace(90, "run") << "operate on r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
-  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
   case 4: {  // mul unsigned EAX by r/m32
     trace(90, "run") << "subop: multiply EAX by r/m32" << end();
-    uint64_t result = Reg[EAX].u * static_cast<uint32_t>(*arg1);
+    const uint64_t result = Reg[EAX].u * static_cast<uint32_t>(*arg1);
     Reg[EAX].u = result & 0xffffffff;
     Reg[EDX].u = result >> 32;
     OF = (Reg[EDX].u != 0);
@@ -158,10 +158,10 @@ put(name_0f, "af", "multiply rm32 into r32");
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0xaf: {  // multiply r32 into r/m32
-  uint8_t modrm = next();
-  uint8_t arg2 = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t arg2 = (modrm>>3)&0x7;
   trace(90, "run") << "multiply r/m32 into " << rname(arg2) << end();
-  int32_t* arg1 = effective_address(modrm);
+  const int32_t* arg1 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(*, Reg[arg2].i, *arg1);
   break;
 }
@@ -184,8 +184,8 @@ put(name, "21", "rm32 = bitwise AND of r32 with rm32");
 
 :(before "End Single-Byte Opcodes")
 case 0x21: {  // and r32 with r/m32
-  uint8_t modrm = next();
-  uint8_t arg2 = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t arg2 = (modrm>>3)&0x7;
   trace(90, "run") << "and " << rname(arg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_BITWISE_OP(&, *arg1, Reg[arg2].u);
@@ -210,8 +210,8 @@ put(name, "09", "rm32 = bitwise OR of r32 with rm32");
 
 :(before "End Single-Byte Opcodes")
 case 0x09: {  // or r32 with r/m32
-  uint8_t modrm = next();
-  uint8_t arg2 = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t arg2 = (modrm>>3)&0x7;
   trace(90, "run") << "or " << rname(arg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_BITWISE_OP(|, *arg1, Reg[arg2].u);
@@ -236,8 +236,8 @@ put(name, "31", "rm32 = bitwise XOR of r32 with rm32");
 
 :(before "End Single-Byte Opcodes")
 case 0x31: {  // xor r32 with r/m32
-  uint8_t modrm = next();
-  uint8_t arg2 = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t arg2 = (modrm>>3)&0x7;
   trace(90, "run") << "xor " << rname(arg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_BITWISE_OP(^, *arg1, Reg[arg2].u);
@@ -289,15 +289,15 @@ put(name, "39", "compare: set SF if rm32 < r32");
 
 :(before "End Single-Byte Opcodes")
 case 0x39: {  // set SF if r/m32 < r32
-  uint8_t modrm = next();
-  uint8_t reg2 = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t reg2 = (modrm>>3)&0x7;
   trace(90, "run") << "compare " << rname(reg2) << " with r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  int32_t arg2 = Reg[reg2].i;
-  int32_t tmp1 = *arg1 - arg2;
+  const int32_t* arg1 = effective_address(modrm);
+  const int32_t arg2 = Reg[reg2].i;
+  const int32_t tmp1 = *arg1 - arg2;
   SF = (tmp1 < 0);
   ZF = (tmp1 == 0);
-  int64_t tmp2 = *arg1 - arg2;
+  const int64_t tmp2 = *arg1 - arg2;
   OF = (tmp1 != tmp2);
   trace(90, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
   break;
@@ -342,8 +342,8 @@ put(name, "89", "copy r32 to rm32");
 
 :(before "End Single-Byte Opcodes")
 case 0x89: {  // copy r32 to r/m32
-  uint8_t modrm = next();
-  uint8_t rsrc = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t rsrc = (modrm>>3)&0x7;
   trace(90, "run") << "copy " << rname(rsrc) << " to r/m32" << end();
   int32_t* dest = effective_address(modrm);
   *dest = Reg[rsrc].i;
@@ -370,11 +370,11 @@ put(name, "87", "swap the contents of r32 and rm32");
 
 :(before "End Single-Byte Opcodes")
 case 0x87: {  // exchange r32 with r/m32
-  uint8_t modrm = next();
-  uint8_t reg2 = (modrm>>3)&0x7;
+  const uint8_t modrm = next();
+  const uint8_t reg2 = (modrm>>3)&0x7;
   trace(90, "run") << "exchange " << rname(reg2) << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
-  int32_t tmp = *arg1;
+  const int32_t tmp = *arg1;
   *arg1 = Reg[reg2].i;
   Reg[reg2].i = tmp;
   trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << " in r/m32" << end();
@@ -411,7 +411,7 @@ case 0x44:
 case 0x45:
 case 0x46:
 case 0x47: {  // increment r32
-  uint8_t reg = op & 0x7;
+  const uint8_t reg = op & 0x7;
   trace(90, "run") << "increment " << rname(reg) << end();
   ++Reg[reg].u;
   trace(90, "run") << "storing value 0x" << HEXWORD << Reg[reg].u << end();
@@ -433,8 +433,8 @@ put(name, "ff", "inc/dec/jump/push/call rm32 based on subop");
 
 :(before "End Single-Byte Opcodes")
 case 0xff: {
-  uint8_t modrm = next();
-  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  const uint8_t modrm = next();
+  const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
     case 0: {  // increment r/m32
       trace(90, "run") << "increment r/m32" << end();
@@ -477,7 +477,7 @@ case 0x4c:
 case 0x4d:
 case 0x4e:
 case 0x4f: {  // decrement r32
-  uint8_t reg = op & 0x7;
+  const uint8_t reg = op & 0x7;
   trace(90, "run") << "decrement " << rname(reg) << end();
   --Reg[reg].u;
   trace(90, "run") << "storing value 0x" << HEXWORD << Reg[reg].u << end();
@@ -575,7 +575,7 @@ case 0x5c:
 case 0x5d:
 case 0x5e:
 case 0x5f: {  // pop stack into r32
-  uint8_t reg = op & 0x7;
+  const uint8_t reg = op & 0x7;
   trace(90, "run") << "pop into " << rname(reg) << end();
 //?   cerr << "pop from " << Reg[ESP].u << '\n';
   Reg[reg].u = pop();
@@ -584,7 +584,7 @@ case 0x5f: {  // pop stack into r32
 }
 :(code)
 uint32_t pop() {
-  uint32_t result = read_mem_u32(Reg[ESP].u);
+  const uint32_t result = read_mem_u32(Reg[ESP].u);
   trace(90, "run") << "popping value 0x" << HEXWORD << result << end();
   Reg[ESP].u += 4;
   trace(90, "run") << "incrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
