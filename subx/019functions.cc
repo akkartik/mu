@@ -1,7 +1,7 @@
 //:: call
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "e8", "call disp32 (call)");
+:(before "End Initialize Op Names")
+put_new(Name, "e8", "call disp32 (call)");
 
 :(scenario call_disp32)
 % Reg[ESP].u = 0x64;
@@ -67,8 +67,8 @@ a0 00 00 00  # 0xa0
 
 //:: ret
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "c3", "return from most recent unfinished call (ret)");
+:(before "End Initialize Op Names")
+put_new(Name, "c3", "return from most recent unfinished call (ret)");
 
 :(scenario ret)
 % Reg[ESP].u = 0x2000;

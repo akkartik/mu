@@ -365,28 +365,28 @@ void dump_registers() {
 
 //: start tracking supported opcodes
 :(before "End Globals")
-map</*op*/string, string> name;
-map</*op*/string, string> name_0f;
-map</*op*/string, string> name_f3;
-map</*op*/string, string> name_f3_0f;
+map</*op*/string, string> Name;
+map</*op*/string, string> Name_0f;
+map</*op*/string, string> Name_f3;
+map</*op*/string, string> Name_f3_0f;
 :(before "End One-time Setup")
 init_op_names();
 :(code)
 void init_op_names() {
-  put(name, "f4", "halt (hlt)");
-  // End Initialize Op Names(name)
+  put(Name, "f4", "halt (hlt)");
+  // End Initialize Op Names
 }
 
 :(before "End Help Special-cases(key)")
 if (key == "opcodes") {
   cerr << "Opcodes currently supported by SubX:\n";
-  for (map<string, string>::iterator p = name.begin();  p != name.end();  ++p)
+  for (map<string, string>::iterator p = Name.begin();  p != Name.end();  ++p)
     cerr << "  " << p->first << ": " << p->second << '\n';
-  for (map<string, string>::iterator p = name_0f.begin();  p != name_0f.end();  ++p)
+  for (map<string, string>::iterator p = Name_0f.begin();  p != Name_0f.end();  ++p)
     cerr << "  0f " << p->first << ": " << p->second << '\n';
-  for (map<string, string>::iterator p = name_f3.begin();  p != name_f3.end();  ++p)
+  for (map<string, string>::iterator p = Name_f3.begin();  p != Name_f3.end();  ++p)
     cerr << "  f3 " << p->first << ": " << p->second << '\n';
-  for (map<string, string>::iterator p = name_f3_0f.begin();  p != name_f3_0f.end();  ++p)
+  for (map<string, string>::iterator p = Name_f3_0f.begin();  p != Name_f3_0f.end();  ++p)
     cerr << "  f3 0f " << p->first << ": " << p->second << '\n';
   cerr << "Run `subx help instructions` for details on words like 'r32' and 'disp8'.\n"
           "For complete details on these instructions, consult the IA-32 manual (volume 2).\n"

@@ -1,7 +1,7 @@
 //: instructions that (immediately) contain an argument to act with
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "81", "combine rm32 with imm32 based on subop (add/sub/and/or/xor/cmp)");
+:(before "End Initialize Op Names")
+put_new(Name, "81", "combine rm32 with imm32 based on subop (add/sub/and/or/xor/cmp)");
 
 :(scenario add_imm32_to_r32)
 % Reg[EBX].i = 1;
@@ -54,8 +54,8 @@ case 0x81: {  // combine imm32 with r/m32
 
 //:: subtract
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "2d", "subtract imm32 from EAX (sub)");
+:(before "End Initialize Op Names")
+put_new(Name, "2d", "subtract imm32 from EAX (sub)");
 
 :(scenario subtract_imm32_from_eax)
 % Reg[EAX].i = 0x0d0c0baa;
@@ -112,8 +112,8 @@ case 5: {
 
 //:: and
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "25", "EAX = bitwise AND of imm32 with EAX (and)");
+:(before "End Initialize Op Names")
+put_new(Name, "25", "EAX = bitwise AND of imm32 with EAX (and)");
 
 :(scenario and_imm32_with_eax)
 % Reg[EAX].i = 0xff;
@@ -170,8 +170,8 @@ case 4: {
 
 //:: or
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "0d", "EAX = bitwise OR of imm32 with EAX (or)");
+:(before "End Initialize Op Names")
+put_new(Name, "0d", "EAX = bitwise OR of imm32 with EAX (or)");
 
 :(scenario or_imm32_with_eax)
 % Reg[EAX].i = 0xd0c0b0a0;
@@ -226,8 +226,8 @@ case 1: {
 
 //:: xor
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "35", "EAX = bitwise XOR of imm32 with EAX (xor)");
+:(before "End Initialize Op Names")
+put_new(Name, "35", "EAX = bitwise XOR of imm32 with EAX (xor)");
 
 :(scenario xor_imm32_with_eax)
 % Reg[EAX].i = 0xddccb0a0;
@@ -282,8 +282,8 @@ case 6: {
 
 //:: compare (cmp)
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "3d", "compare: set SF if EAX < imm32 (cmp)");
+:(before "End Initialize Op Names")
+put_new(Name, "3d", "compare: set SF if EAX < imm32 (cmp)");
 
 :(scenario compare_imm32_with_eax_greater)
 % Reg[EAX].i = 0x0d0c0b0a;
@@ -412,15 +412,15 @@ case 7: {
 
 //:: copy (mov)
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "b8", "copy imm32 to EAX (mov)");
-put_new(name, "b9", "copy imm32 to ECX (mov)");
-put_new(name, "ba", "copy imm32 to EDX (mov)");
-put_new(name, "bb", "copy imm32 to EBX (mov)");
-put_new(name, "bc", "copy imm32 to ESP (mov)");
-put_new(name, "bd", "copy imm32 to EBP (mov)");
-put_new(name, "be", "copy imm32 to ESI (mov)");
-put_new(name, "bf", "copy imm32 to EDI (mov)");
+:(before "End Initialize Op Names")
+put_new(Name, "b8", "copy imm32 to EAX (mov)");
+put_new(Name, "b9", "copy imm32 to ECX (mov)");
+put_new(Name, "ba", "copy imm32 to EDX (mov)");
+put_new(Name, "bb", "copy imm32 to EBX (mov)");
+put_new(Name, "bc", "copy imm32 to ESP (mov)");
+put_new(Name, "bd", "copy imm32 to EBP (mov)");
+put_new(Name, "be", "copy imm32 to ESI (mov)");
+put_new(Name, "bf", "copy imm32 to EDI (mov)");
 
 :(scenario copy_imm32_to_r32)
 == 0x1
@@ -446,8 +446,8 @@ case 0xbf: {  // copy imm32 to r32
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "c7", "copy imm32 to rm32 (mov)");
+:(before "End Initialize Op Names")
+put_new(Name, "c7", "copy imm32 to rm32 (mov)");
 
 :(scenario copy_imm32_to_mem_at_r32)
 % Reg[EBX].i = 0x60;
@@ -472,8 +472,8 @@ case 0xc7: {  // copy imm32 to r32
 
 //:: push
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "68", "push imm32 to stack (push)");
+:(before "End Initialize Op Names")
+put_new(Name, "68", "push imm32 to stack (push)");
 
 :(scenario push_imm32)
 % Reg[ESP].u = 0x14;

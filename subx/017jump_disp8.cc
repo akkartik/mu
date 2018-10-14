@@ -2,8 +2,8 @@
 
 //:: jump
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "eb", "jump disp8 bytes away (jmp)");
+:(before "End Initialize Op Names")
+put_new(Name, "eb", "jump disp8 bytes away (jmp)");
 
 :(scenario jump_rel8)
 == 0x1
@@ -26,8 +26,8 @@ case 0xeb: {  // jump rel8
 
 //:: jump if equal/zero
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "74", "jump disp8 bytes away if equal, if ZF is set. (jcc/jz/je)");
+:(before "End Initialize Op Names")
+put_new(Name, "74", "jump disp8 bytes away if equal, if ZF is set. (jcc/jz/je)");
 
 :(scenario je_rel8_success)
 % ZF = true;
@@ -65,8 +65,8 @@ case 0x74: {  // jump rel8 if ZF
 
 //:: jump if not equal/not zero
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "75", "jump disp8 bytes away if not equal, if ZF is not set. (jcc/jnz/jne)");
+:(before "End Initialize Op Names")
+put_new(Name, "75", "jump disp8 bytes away if not equal, if ZF is not set. (jcc/jnz/jne)");
 
 :(scenario jne_rel8_success)
 % ZF = false;
@@ -104,8 +104,8 @@ case 0x75: {  // jump rel8 unless ZF
 
 //:: jump if greater
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "7f", "jump disp8 bytes away if greater, if ZF is unset and SF == OF. (jcc/jg/jnle)");
+:(before "End Initialize Op Names")
+put_new(Name, "7f", "jump disp8 bytes away if greater, if ZF is unset and SF == OF. (jcc/jg/jnle)");
 
 :(scenario jg_rel8_success)
 % ZF = false;
@@ -147,8 +147,8 @@ case 0x7f: {  // jump rel8 if !SF and !ZF
 
 //:: jump if greater or equal
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "7d", "jump disp8 bytes away if greater or equal, if SF == OF. (jcc/jge/jnl)");
+:(before "End Initialize Op Names")
+put_new(Name, "7d", "jump disp8 bytes away if greater or equal, if SF == OF. (jcc/jge/jnl)");
 
 :(scenario jge_rel8_success)
 % SF = false;
@@ -188,8 +188,8 @@ case 0x7d: {  // jump rel8 if !SF
 
 //:: jump if lesser
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "7c", "jump disp8 bytes away if lesser, if SF != OF. (jcc/jl/jnge)");
+:(before "End Initialize Op Names")
+put_new(Name, "7c", "jump disp8 bytes away if lesser, if SF != OF. (jcc/jl/jnge)");
 
 :(scenario jl_rel8_success)
 % ZF = false;
@@ -231,8 +231,8 @@ case 0x7c: {  // jump rel8 if SF and !ZF
 
 //:: jump if lesser or equal
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "7e", "jump disp8 bytes away if lesser or equal, if ZF is set or SF != OF. (jcc/jle/jng)");
+:(before "End Initialize Op Names")
+put_new(Name, "7e", "jump disp8 bytes away if lesser or equal, if ZF is set or SF != OF. (jcc/jle/jng)");
 
 :(scenario jle_rel8_equal)
 % ZF = true;

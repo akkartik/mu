@@ -274,8 +274,8 @@ void compare_bitvector(const line& inst, uint8_t expected, const word& op) {
 
 string maybe_name(const word& op) {
   if (!is_hex_byte(op)) return "";
-  if (!contains_key(name, op.data)) return "";
-  return " ("+get(name, op.data)+')';
+  if (!contains_key(Name, op.data)) return "";
+  return " ("+get(Name, op.data)+')';
 }
 
 uint32_t compute_operand_bitvector(const line& inst) {
@@ -385,12 +385,12 @@ void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op)
 
 void check_operand_metadata_present(const line& inst, const string& type, const word& op) {
   if (!has_operand_metadata(inst, type))
-    raise << "'" << to_string(inst) << "' (" << get(name, op.data) << "): missing " << type << " operand\n" << end();
+    raise << "'" << to_string(inst) << "' (" << get(Name, op.data) << "): missing " << type << " operand\n" << end();
 }
 
 void check_operand_metadata_absent(const line& inst, const string& type, const word& op, const string& msg) {
   if (has_operand_metadata(inst, type))
-    raise << "'" << to_string(inst) << "' (" << get(name, op.data) << "): unexpected " << type << " operand (" << msg << ")\n" << end();
+    raise << "'" << to_string(inst) << "' (" << get(Name, op.data) << "): unexpected " << type << " operand (" << msg << ")\n" << end();
 }
 
 :(scenarios transform)
@@ -459,7 +459,7 @@ void check_operands_0f(const line& inst) {
     return;
   }
   word op = preprocess_op(inst.words.at(1));
-  if (!contains_key(name_0f, op.data)) {
+  if (!contains_key(Name_0f, op.data)) {
     raise << "unknown 2-byte opcode '0f " << op.data << "'\n" << end();
     return;
   }
@@ -515,9 +515,9 @@ void compare_bitvector_0f(const line& inst, uint8_t expected, const word& op) {
     if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
     const string& optype = Operand_type_name.at(i);
     if ((bitvector & 0x1) > (expected & 0x1))
-      raise << "'" << to_string(inst) << "' (" << get(name_0f, op.data) << "): unexpected " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "' (" << get(Name_0f, op.data) << "): unexpected " << optype << " operand\n" << end();
     else
-      raise << "'" << to_string(inst) << "' (" << get(name_0f, op.data) << "): missing " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "' (" << get(Name_0f, op.data) << "): missing " << optype << " operand\n" << end();
     // continue giving all errors for a single instruction
   }
   // ignore settings in any unused bits

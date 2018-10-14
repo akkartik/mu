@@ -326,8 +326,8 @@ void parse_and_load(const string& text_bytes) {
 
 //:: run
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "05", "add imm32 to EAX (add)");
+:(before "End Initialize Op Names")
+put_new(Name, "05", "add imm32 to EAX (add)");
 
 //: our first opcode
 :(before "End Single-Byte Opcodes")

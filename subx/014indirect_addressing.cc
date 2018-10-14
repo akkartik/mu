@@ -27,8 +27,8 @@ case 0:  // indirect addressing
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "03", "add rm32 to r32 (add)");
+:(before "End Initialize Op Names")
+put_new(Name, "03", "add rm32 to r32 (add)");
 
 :(scenario add_mem_at_r32_to_r32)
 % Reg[EAX].i = 0x2000;
@@ -70,8 +70,8 @@ case 0x03: {  // add r/m32 to r32
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "2b", "subtract rm32 from r32 (sub)");
+:(before "End Initialize Op Names")
+put_new(Name, "2b", "subtract rm32 from r32 (sub)");
 
 :(scenario subtract_mem_at_r32_from_r32)
 % Reg[EAX].i = 0x2000;
@@ -113,8 +113,8 @@ case 0x2b: {  // subtract r/m32 from r32
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "23", "r32 = bitwise AND of r32 with rm32 (and)");
+:(before "End Initialize Op Names")
+put_new(Name, "23", "r32 = bitwise AND of r32 with rm32 (and)");
 
 :(scenario and_mem_at_r32_with_r32)
 % Reg[EAX].i = 0x2000;
@@ -156,8 +156,8 @@ case 0x23: {  // and r/m32 with r32
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "0b", "r32 = bitwise OR of r32 with rm32 (or)");
+:(before "End Initialize Op Names")
+put_new(Name, "0b", "r32 = bitwise OR of r32 with rm32 (or)");
 
 :(scenario or_mem_at_r32_with_r32)
 % Reg[EAX].i = 0x2000;
@@ -199,8 +199,8 @@ case 0x0b: {  // or r/m32 with r32
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "33", "r32 = bitwise XOR of r32 with rm32 (xor)");
+:(before "End Initialize Op Names")
+put_new(Name, "33", "r32 = bitwise XOR of r32 with rm32 (xor)");
 
 :(scenario xor_mem_at_r32_with_r32)
 % Reg[EAX].i = 0x2000;
@@ -283,8 +283,8 @@ ff 00 0f 0f  # 0x0f0f00ff
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "3b", "compare: set SF if r32 < rm32 (cmp)");
+:(before "End Initialize Op Names")
+put_new(Name, "3b", "compare: set SF if r32 < rm32 (cmp)");
 
 :(scenario compare_r32_with_mem_at_r32_greater)
 % Reg[EAX].i = 0x2000;
@@ -356,8 +356,8 @@ case 0x3b: {  // set SF if r32 < r/m32
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "8b", "copy rm32 to r32 (mov)");
+:(before "End Initialize Op Names")
+put_new(Name, "8b", "copy rm32 to r32 (mov)");
 
 :(scenario copy_mem_at_r32_to_r32)
 % Reg[EAX].i = 0x2000;
@@ -436,8 +436,8 @@ case 6: {  // push r/m32 to stack
 
 //:: pop
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "8f", "pop top of stack to rm32 (pop)");
+:(before "End Initialize Op Names")
+put_new(Name, "8f", "pop top of stack to rm32 (pop)");
 
 :(scenario pop_mem_at_r32)
 % Reg[EAX].i = 0x60;
@@ -580,8 +580,8 @@ case 2:  // indirect + disp32 addressing
 
 //:: lea
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "8d", "copy address in rm32 into r32 (lea)");
+:(before "End Initialize Op Names")
+put_new(Name, "8d", "copy address in rm32 into r32 (lea)");
 
 :(scenario lea)
 % Reg[EAX].u = 0x2000;

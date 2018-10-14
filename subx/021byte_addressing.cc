@@ -37,8 +37,8 @@ uint8_t* reg_8bit(uint8_t rm) {
   return result;
 }
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "88", "copy r8 to r8/m8-at-r32");
+:(before "End Initialize Op Names")
+put_new(Name, "88", "copy r8 to r8/m8-at-r32");
 
 :(scenario copy_r8_to_mem_at_r32)
 % Reg[EBX].i = 0x224488ab;
@@ -69,8 +69,8 @@ case 0x88: {  // copy r8 to r/m8
 
 //:
 
-:(before "End Initialize Op Names(name)")
-put_new(name, "8a", "copy r8/m8-at-r32 to r8");
+:(before "End Initialize Op Names")
+put_new(Name, "8a", "copy r8/m8-at-r32 to r8");
 
 :(scenario copy_mem_at_r32_to_r8)
 % Reg[EBX].i = 0xaabbcc0f;  // one nibble each of lowest byte set to all 0s and all 1s, to maximize value of this test
