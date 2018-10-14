@@ -100,45 +100,45 @@ trace:  # t : (address trace-stream), line : string
   #   B = *(BP+12)   # line
   #   C = *(A+8)  # t.length
   #   C = A+12+C  # &t.data[t.length]
-  #   D = *A  # t.write
-  #   SI = *B  # line.length
-  #   *A = *A + SI  # update t.write  (can go over, we'll guard against it)
-  #   A = A+12+D  # &t.data[t.write]
-  #   D = B+4+SI  # &line.data[line.length]
+  #   SI = *A  # t.write
+  #   D = *B  # line.length
+  #   *A = *A + D  # update t.write  (can go over, we'll guard against it)
+  #   A = A+12+SI  # &t.data[t.write]
+  #   SI = B+4+D  # &line.data[line.length]
   #   B = B+4  # &line.data[0]
   #
   # ECX = t.length
   8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EAX+8) to ECX
   # ECX = &t.data[t.length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
-  # EDX = t.write
-  8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-  # ESI = line.length
-  8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # copy *EBX to ESI
-  # if ESI == 0 return
-  81          7/subop/compare     3/mod/direct    6/rm32/ESI    .           .             .           .           .               0/imm32           # compare ESI
+  # ESI = t.write
+  8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy *EAX to ESI
+  # EDX = line.length
+  8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # copy *EBX to EDX
+  # if EDX == 0 return
+  81          7/subop/compare     3/mod/direct    2/rm32/EDX    .           .             .           .           .               0/imm32           # compare EDX
   74/jump-if-equal  $trace:end/disp8
   # t.write += line.length
-  01/add                          0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # add ESI to *EAX
+  01/add                          0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # add EDX to *EAX
   # t.write++ (for the newline we'll append below)
   81          0/subop/add         0/mod/indirect  0/rm32/EAX    .           .             .           .           .               1/imm32           # add to *EAX
   # EAX = &t.data[old t.write]
-  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           0/r32/EAX   0xc/disp8       .                 # copy EAX+EDX+12 to EAX
-  # EDX = &line.data[line.length]
-  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  6/index/ESI   .           2/r32/EDX   4/disp8         .                 # copy EBX+ESI+4 to EDX
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  6/index/ESI   .           0/r32/EAX   0xc/disp8       .                 # copy EAX+ESI+12 to EAX
+  # ESI = &line.data[line.length]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  2/index/EDX   .           6/r32/ESI   4/disp8         .                 # copy EBX+EDX+4 to ESI
   # EBX = &line.data
   81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
   # while (true)
 $trace:loop:
-  # if EBX >= EDX break
-  39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare EBX with EDX
+  # if EBX >= ESI break
+  39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # compare EBX with ESI
   7d/jump-if-greater-or-equal  $trace:break/disp8
   # if EAX >= ECX break  (for now silently ignore full trace)
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
   7d/jump-if-greater-or-equal  $trace:break/disp8
   # copy one byte
-  8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # copy byte at *EBX to ESI
-  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy lowest byte of ESI to *EAX
+  8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/DL    .               .                 # copy byte at *EBX to DL
+  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/DL    .               .                 # copy byte at DL to *EAX
   # updates
   40/increment-EAX
   43/increment-EBX
@@ -149,8 +149,8 @@ $trace:break:
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
   7d/jump-if-greater-or-equal  $trace:end/disp8
     # append
-  be/copy-to-ESI  0x0a/imm32
-  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy lowest byte of ESI to *EAX
+  ba/copy-to-EDX  0x0a/imm32
+  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/DL    .               .                 # copy byte at DL to *EAX
 $trace:end:
   # restore registers
   5e/pop-to-ESI
