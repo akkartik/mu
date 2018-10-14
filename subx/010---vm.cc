@@ -34,7 +34,7 @@ EIP = 1;  // preserve null pointer
 :(before "End Help Contents")
 cerr << "  registers\n";
 :(before "End Help Texts")
-put(Help, "registers",
+put_new(Help, "registers",
   "SubX currently supports eight 32-bit integer registers. From 0 to 7, they are:\n"
   "  EAX ECX EDX EBX ESP EBP ESI EDI\n"
   "ESP contains the top of the stack.\n"

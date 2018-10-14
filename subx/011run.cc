@@ -4,7 +4,7 @@
 //: the VM. That comes later.)
 
 :(before "End Help Texts")
-put(Help, "syntax",
+put_new(Help, "syntax",
   "SubX programs consist of segments, each segment in turn consisting of lines.\n"
   "Line-endings are significant; each line should contain a single\n"
   "instruction, macro or directive.\n"
@@ -327,7 +327,7 @@ void parse_and_load(const string& text_bytes) {
 //:: run
 
 :(before "End Initialize Op Names(name)")
-put(name, "05", "add imm32 to EAX (add)");
+put_new(name, "05", "add imm32 to EAX (add)");
 
 //: our first opcode
 :(before "End Single-Byte Opcodes")

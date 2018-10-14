@@ -13,7 +13,7 @@
 //: pack and order the bytes corresponding to the operands in an instruction.
 
 :(before "End Help Texts")
-put(Help, "instructions",
+put_new(Help, "instructions",
   "Each x86 instruction consists of an instruction or opcode and some number\n"
   "of operands.\n"
   "Each operand has a type. An instruction won't have more than one operand of\n"

@@ -9,17 +9,17 @@
 :(before "End Globals")
 map<string, uint32_t> Operand_bound;
 :(before "End One-time Setup")
-put(Operand_bound, "subop", 1<<3);
-put(Operand_bound, "mod", 1<<2);
-put(Operand_bound, "rm32", 1<<3);
-put(Operand_bound, "base", 1<<3);
-put(Operand_bound, "index", 1<<3);
-put(Operand_bound, "scale", 1<<2);
-put(Operand_bound, "r32", 1<<3);
-put(Operand_bound, "disp8", 1<<8);
-put(Operand_bound, "disp16", 1<<16);
+put_new(Operand_bound, "subop", 1<<3);
+put_new(Operand_bound, "mod", 1<<2);
+put_new(Operand_bound, "rm32", 1<<3);
+put_new(Operand_bound, "base", 1<<3);
+put_new(Operand_bound, "index", 1<<3);
+put_new(Operand_bound, "scale", 1<<2);
+put_new(Operand_bound, "r32", 1<<3);
+put_new(Operand_bound, "disp8", 1<<8);
+put_new(Operand_bound, "disp16", 1<<16);
 // no bound needed for disp32
-put(Operand_bound, "imm8", 1<<8);
+put_new(Operand_bound, "imm8", 1<<8);
 // no bound needed for imm32
 
 :(before "Pack Operands(segment code)")
