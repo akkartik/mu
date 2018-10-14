@@ -275,7 +275,9 @@ void compare_bitvector(const line& inst, uint8_t expected, const word& op) {
 string maybe_name(const word& op) {
   if (!is_hex_byte(op)) return "";
   if (!contains_key(Name, op.data)) return "";
-  return " ("+get(Name, op.data)+')';
+  // strip stuff in parens from the name
+  const string& s = get(Name, op.data);
+  return " ("+s.substr(0, s.find(" ("))+')';
 }
 
 uint32_t compute_operand_bitvector(const line& inst) {
@@ -385,12 +387,12 @@ void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op)
 
 void check_operand_metadata_present(const line& inst, const string& type, const word& op) {
   if (!has_operand_metadata(inst, type))
-    raise << "'" << to_string(inst) << "' (" << get(Name, op.data) << "): missing " << type << " operand\n" << end();
+    raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": missing " << type << " operand\n" << end();
 }
 
 void check_operand_metadata_absent(const line& inst, const string& type, const word& op, const string& msg) {
   if (has_operand_metadata(inst, type))
-    raise << "'" << to_string(inst) << "' (" << get(Name, op.data) << "): unexpected " << type << " operand (" << msg << ")\n" << end();
+    raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << type << " operand (" << msg << ")\n" << end();
 }
 
 :(scenarios transform)
@@ -477,7 +479,7 @@ void check_operands_f3(const line& /*unused*/) {
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   0f 84                                                                                                                                             # jmp if ZF to ??
-+error: '0f 84' (jump disp16 bytes away if ZF is set): missing disp16 operand
++error: '0f 84' (jump disp16 bytes away if equal, if ZF is set): missing disp16 operand
 
 :(before "End Globals")
 map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_0f;
@@ -515,12 +517,20 @@ void compare_bitvector_0f(const line& inst, uint8_t expected, const word& op) {
     if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
     const string& optype = Operand_type_name.at(i);
     if ((bitvector & 0x1) > (expected & 0x1))
-      raise << "'" << to_string(inst) << "' (" << get(Name_0f, op.data) << "): unexpected " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "'" << maybe_name_0f(op) << ": unexpected " << optype << " operand\n" << end();
     else
-      raise << "'" << to_string(inst) << "' (" << get(Name_0f, op.data) << "): missing " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "'" << maybe_name_0f(op) << ": missing " << optype << " operand\n" << end();
     // continue giving all errors for a single instruction
   }
   // ignore settings in any unused bits
+}
+
+string maybe_name_0f(const word& op) {
+  if (!is_hex_byte(op)) return "";
+  if (!contains_key(Name_0f, op.data)) return "";
+  // strip stuff in parens from the name
+  const string& s = get(Name_0f, op.data);
+  return " ("+s.substr(0, s.find(" ("))+')';
 }
 
 string tolower(const char* s) {
