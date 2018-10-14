@@ -1,7 +1,7 @@
 //: operating directly on a register
 
 :(before "End Initialize Op Names(name)")
-put(name, "01", "add r32 to rm32");
+put(name, "01", "add r32 to rm32 (add)");
 
 :(scenario add_r32_to_r32)
 % Reg[EAX].i = 0x10;
@@ -76,7 +76,7 @@ string rname(uint8_t r) {
 //:: subtract
 
 :(before "End Initialize Op Names(name)")
-put(name, "29", "subtract r32 from rm32");
+put(name, "29", "subtract r32 from rm32 (sub)");
 
 :(scenario subtract_r32_from_r32)
 % Reg[EAX].i = 10;
@@ -102,7 +102,7 @@ case 0x29: {  // subtract r32 from r/m32
 //:: multiply
 
 :(before "End Initialize Op Names(name)")
-put(name, "f7", "test/negate/mul/div rm32 (with EAX if necessary) depending on subop");
+put(name, "f7", "negate/multiply rm32 (with EAX if necessary) depending on subop (neg/mul)");
 
 :(scenario multiply_eax_by_r32)
 % Reg[EAX].i = 4;
@@ -143,7 +143,7 @@ case 0xf7: {  // xor r32 with r/m32
 //:
 
 :(before "End Initialize Op Names(name)")
-put(name_0f, "af", "multiply rm32 into r32");
+put(name_0f, "af", "multiply rm32 into r32 (imul)");
 
 :(scenario multiply_r32_into_r32)
 % Reg[EAX].i = 4;
@@ -169,7 +169,7 @@ case 0xaf: {  // multiply r32 into r/m32
 //:: and
 
 :(before "End Initialize Op Names(name)")
-put(name, "21", "rm32 = bitwise AND of r32 with rm32");
+put(name, "21", "rm32 = bitwise AND of r32 with rm32 (and)");
 
 :(scenario and_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
@@ -195,7 +195,7 @@ case 0x21: {  // and r32 with r/m32
 //:: or
 
 :(before "End Initialize Op Names(name)")
-put(name, "09", "rm32 = bitwise OR of r32 with rm32");
+put(name, "09", "rm32 = bitwise OR of r32 with rm32 (or)");
 
 :(scenario or_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
@@ -221,7 +221,7 @@ case 0x09: {  // or r32 with r/m32
 //:: xor
 
 :(before "End Initialize Op Names(name)")
-put(name, "31", "rm32 = bitwise XOR of r32 with rm32");
+put(name, "31", "rm32 = bitwise XOR of r32 with rm32 (xor)");
 
 :(scenario xor_r32_with_r32)
 % Reg[EAX].i = 0x0a0b0c0d;
@@ -245,9 +245,6 @@ case 0x31: {  // xor r32 with r/m32
 }
 
 //:: not
-
-:(before "End Initialize Op Names(name)")
-put(name, "f7", "bitwise complement of rm32");
 
 :(scenario not_r32)
 % Reg[EBX].i = 0x0f0f00ff;
@@ -274,7 +271,7 @@ case 2: {  // not r/m32
 //:: compare (cmp)
 
 :(before "End Initialize Op Names(name)")
-put(name, "39", "compare: set SF if rm32 < r32");
+put(name, "39", "compare: set SF if rm32 < r32 (cmp)");
 
 :(scenario compare_r32_with_r32_greater)
 % Reg[EAX].i = 0x0a0b0c0d;
@@ -328,7 +325,7 @@ case 0x39: {  // set SF if r/m32 < r32
 //:: copy (mov)
 
 :(before "End Initialize Op Names(name)")
-put(name, "89", "copy r32 to rm32");
+put(name, "89", "copy r32 to rm32 (mov)");
 
 :(scenario copy_r32_to_r32)
 % Reg[EBX].i = 0xaf;
@@ -354,7 +351,7 @@ case 0x89: {  // copy r32 to r/m32
 //:: xchg
 
 :(before "End Initialize Op Names(name)")
-put(name, "87", "swap the contents of r32 and rm32");
+put(name, "87", "swap the contents of r32 and rm32 (xchg)");
 
 :(scenario xchg_r32_with_r32)
 % Reg[EBX].i = 0xaf;
@@ -385,14 +382,14 @@ case 0x87: {  // exchange r32 with r/m32
 //:: increment
 
 :(before "End Initialize Op Names(name)")
-put(name, "40", "increment EAX");
-put(name, "41", "increment ECX");
-put(name, "42", "increment EDX");
-put(name, "43", "increment EBX");
-put(name, "44", "increment ESP");
-put(name, "45", "increment EBP");
-put(name, "46", "increment ESI");
-put(name, "47", "increment EDI");
+put(name, "40", "increment EAX (inc)");
+put(name, "41", "increment ECX (inc)");
+put(name, "42", "increment EDX (inc)");
+put(name, "43", "increment EBX (inc)");
+put(name, "44", "increment ESP (inc)");
+put(name, "45", "increment EBP (inc)");
+put(name, "46", "increment ESI (inc)");
+put(name, "47", "increment EDI (inc)");
 
 :(scenario increment_r32)
 % Reg[ECX].u = 0x1f;
@@ -419,7 +416,7 @@ case 0x47: {  // increment r32
 }
 
 :(before "End Initialize Op Names(name)")
-put(name, "ff", "inc/dec/jump/push/call rm32 based on subop");
+put(name, "ff", "increment/decrement/jump/push/call rm32 based on subop (inc/dec/jmp/push/call)");
 
 :(scenario increment_rm32)
 % Reg[EAX].u = 0x20;
@@ -451,14 +448,14 @@ case 0xff: {
 //:: decrement
 
 :(before "End Initialize Op Names(name)")
-put(name, "48", "decrement EAX");
-put(name, "49", "decrement ECX");
-put(name, "4a", "decrement EDX");
-put(name, "4b", "decrement EBX");
-put(name, "4c", "decrement ESP");
-put(name, "4d", "decrement EBP");
-put(name, "4e", "decrement ESI");
-put(name, "4f", "decrement EDI");
+put(name, "48", "decrement EAX (dec)");
+put(name, "49", "decrement ECX (dec)");
+put(name, "4a", "decrement EDX (dec)");
+put(name, "4b", "decrement EBX (dec)");
+put(name, "4c", "decrement ESP (dec)");
+put(name, "4d", "decrement EBP (dec)");
+put(name, "4e", "decrement ESI (dec)");
+put(name, "4f", "decrement EDI (dec)");
 
 :(scenario decrement_r32)
 % Reg[ECX].u = 0x1f;
@@ -506,14 +503,14 @@ case 1: {  // decrement r/m32
 //:: push
 
 :(before "End Initialize Op Names(name)")
-put(name, "50", "push EAX to stack");
-put(name, "51", "push ECX to stack");
-put(name, "52", "push EDX to stack");
-put(name, "53", "push EBX to stack");
-put(name, "54", "push ESP to stack");
-put(name, "55", "push EBP to stack");
-put(name, "56", "push ESI to stack");
-put(name, "57", "push EDI to stack");
+put(name, "50", "push EAX to stack (push)");
+put(name, "51", "push ECX to stack (push)");
+put(name, "52", "push EDX to stack (push)");
+put(name, "53", "push EBX to stack (push)");
+put(name, "54", "push ESP to stack (push)");
+put(name, "55", "push EBP to stack (push)");
+put(name, "56", "push ESI to stack (push)");
+put(name, "57", "push EDI to stack (push)");
 
 :(scenario push_r32)
 % Reg[ESP].u = 0x64;
@@ -544,14 +541,14 @@ case 0x57: {  // push r32 to stack
 //:: pop
 
 :(before "End Initialize Op Names(name)")
-put(name, "58", "pop top of stack to EAX");
-put(name, "59", "pop top of stack to ECX");
-put(name, "5a", "pop top of stack to EDX");
-put(name, "5b", "pop top of stack to EBX");
-put(name, "5c", "pop top of stack to ESP");
-put(name, "5d", "pop top of stack to EBP");
-put(name, "5e", "pop top of stack to ESI");
-put(name, "5f", "pop top of stack to EDI");
+put(name, "58", "pop top of stack to EAX (pop)");
+put(name, "59", "pop top of stack to ECX (pop)");
+put(name, "5a", "pop top of stack to EDX (pop)");
+put(name, "5b", "pop top of stack to EBX (pop)");
+put(name, "5c", "pop top of stack to ESP (pop)");
+put(name, "5d", "pop top of stack to EBP (pop)");
+put(name, "5e", "pop top of stack to ESI (pop)");
+put(name, "5f", "pop top of stack to EDI (pop)");
 
 :(scenario pop_r32)
 % Reg[ESP].u = 0x2000;

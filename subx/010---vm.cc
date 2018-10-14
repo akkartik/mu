@@ -373,7 +373,7 @@ map</*op*/string, string> name_f3_0f;
 init_op_names();
 :(code)
 void init_op_names() {
-  put(name, "f4", "halt");
+  put(name, "f4", "halt (hlt)");
   // End Initialize Op Names(name)
 }
 
@@ -390,7 +390,8 @@ if (key == "opcodes") {
     cerr << "  f3 0f " << p->first << ": " << p->second << '\n';
   cerr << "Run `subx help instructions` for details on words like 'r32' and 'disp8'.\n"
           "For complete details on these instructions, consult the IA-32 manual (volume 2).\n"
-          "There's various versions of it online, such as https://c9x.me/x86.\n";
+          "There's various versions of it online, such as https://c9x.me/x86.\n"
+          "The mnemonics in brackets will help you locate each instruction.\n";
   return 0;
 }
 :(before "End Help Contents")

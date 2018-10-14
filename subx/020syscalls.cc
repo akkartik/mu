@@ -1,5 +1,5 @@
 :(before "End Initialize Op Names(name)")
-put(name, "cd", "software interrupt");
+put(name, "cd", "software interrupt (int)");
 
 :(before "End Single-Byte Opcodes")
 case 0xcd: {  // int imm8 (software interrupt)
