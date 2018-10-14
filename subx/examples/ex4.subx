@@ -5,29 +5,29 @@
 #   $ subx run examples/ex4
 
 == code
-# read(stdin, x, 1)
+# syscall(read, stdin, x, 1)
   # fd = 0 (stdin)
 bb/copy-to-EBX  0/imm32
   # initialize x (location to write result to)
 b9/copy-to-ECX  x/imm32
   # size = 1 character
 ba/copy-to-EDX  1/imm32
-  # read(fd, x, size)
+  # syscall
 b8/copy-to-EAX  3/imm32/read
 cd/syscall  0x80/imm8
 
-# write(stdout, x, 1)
+# syscall(write, stdout, x, 1)
   # fd = 1 (stdout)
 bb/copy-to-EBX  1/imm32
   # initialize x (location to read from)
 b9/copy-to-ECX  x/imm32
   # size = 1 character
 ba/copy-to-EDX  1/imm32
-  # write(fd, x, size)
+  # syscall
 b8/copy-to-EAX  4/imm32/write
 cd/syscall  0x80/imm8
 
-# exit(EBX)
+# syscall(exit, EBX)
 b8/copy-to-EAX  1/imm32/exit
 cd/syscall  0x80/imm8
 
