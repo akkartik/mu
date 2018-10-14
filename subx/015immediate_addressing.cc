@@ -55,7 +55,7 @@ case 0x81: {  // combine imm32 with r/m32
 //:: subtract
 
 :(before "End Initialize Op Names(name)")
-put(name, "2d", "subtract imm32 from R0 (EAX)");
+put(name, "2d", "subtract imm32 from EAX");
 
 :(scenario subtract_imm32_from_eax)
 % Reg[EAX].i = 0x0d0c0baa;
@@ -113,7 +113,7 @@ case 5: {
 //:: and
 
 :(before "End Initialize Op Names(name)")
-put(name, "25", "R0 = bitwise AND of imm32 with R0 (EAX)");
+put(name, "25", "EAX = bitwise AND of imm32 with EAX");
 
 :(scenario and_imm32_with_eax)
 % Reg[EAX].i = 0xff;
@@ -171,7 +171,7 @@ case 4: {
 //:: or
 
 :(before "End Initialize Op Names(name)")
-put(name, "0d", "R0 = bitwise OR of imm32 with R0 (EAX)");
+put(name, "0d", "EAX = bitwise OR of imm32 with EAX");
 
 :(scenario or_imm32_with_eax)
 % Reg[EAX].i = 0xd0c0b0a0;
@@ -227,7 +227,7 @@ case 1: {
 //:: xor
 
 :(before "End Initialize Op Names(name)")
-put(name, "35", "R0 = bitwise XOR of imm32 with R0 (EAX)");
+put(name, "35", "EAX = bitwise XOR of imm32 with EAX");
 
 :(scenario xor_imm32_with_eax)
 % Reg[EAX].i = 0xddccb0a0;
@@ -283,7 +283,7 @@ case 6: {
 //:: compare (cmp)
 
 :(before "End Initialize Op Names(name)")
-put(name, "3d", "compare: set SF if R0 < imm32");
+put(name, "3d", "compare: set SF if EAX < imm32");
 
 :(scenario compare_imm32_with_eax_greater)
 % Reg[EAX].i = 0x0d0c0b0a;
@@ -413,14 +413,14 @@ case 7: {
 //:: copy (mov)
 
 :(before "End Initialize Op Names(name)")
-put(name, "b8", "copy imm32 to R0 (EAX)");
-put(name, "b9", "copy imm32 to R1 (ECX)");
-put(name, "ba", "copy imm32 to R2 (EDX)");
-put(name, "bb", "copy imm32 to R3 (EBX)");
-put(name, "bc", "copy imm32 to R4 (ESP)");
-put(name, "bd", "copy imm32 to R5 (EBP)");
-put(name, "be", "copy imm32 to R6 (ESI)");
-put(name, "bf", "copy imm32 to R7 (EDI)");
+put(name, "b8", "copy imm32 to EAX");
+put(name, "b9", "copy imm32 to ECX");
+put(name, "ba", "copy imm32 to EDX");
+put(name, "bb", "copy imm32 to EBX");
+put(name, "bc", "copy imm32 to ESP");
+put(name, "bd", "copy imm32 to EBP");
+put(name, "be", "copy imm32 to ESI");
+put(name, "bf", "copy imm32 to EDI");
 
 :(scenario copy_imm32_to_r32)
 == 0x1

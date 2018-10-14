@@ -385,14 +385,14 @@ case 0x87: {  // exchange r32 with r/m32
 //:: increment
 
 :(before "End Initialize Op Names(name)")
-put(name, "40", "increment R0 (EAX)");
-put(name, "41", "increment R1 (ECX)");
-put(name, "42", "increment R2 (EDX)");
-put(name, "43", "increment R3 (EBX)");
-put(name, "44", "increment R4 (ESP)");
-put(name, "45", "increment R5 (EBP)");
-put(name, "46", "increment R6 (ESI)");
-put(name, "47", "increment R7 (EDI)");
+put(name, "40", "increment EAX");
+put(name, "41", "increment ECX");
+put(name, "42", "increment EDX");
+put(name, "43", "increment EBX");
+put(name, "44", "increment ESP");
+put(name, "45", "increment EBP");
+put(name, "46", "increment ESI");
+put(name, "47", "increment EDI");
 
 :(scenario increment_r32)
 % Reg[ECX].u = 0x1f;
@@ -451,14 +451,14 @@ case 0xff: {
 //:: decrement
 
 :(before "End Initialize Op Names(name)")
-put(name, "48", "decrement R0 (EAX)");
-put(name, "49", "decrement R1 (ECX)");
-put(name, "4a", "decrement R2 (EDX)");
-put(name, "4b", "decrement R3 (EBX)");
-put(name, "4c", "decrement R4 (ESP)");
-put(name, "4d", "decrement R5 (EBP)");
-put(name, "4e", "decrement R6 (ESI)");
-put(name, "4f", "decrement R7 (EDI)");
+put(name, "48", "decrement EAX");
+put(name, "49", "decrement ECX");
+put(name, "4a", "decrement EDX");
+put(name, "4b", "decrement EBX");
+put(name, "4c", "decrement ESP");
+put(name, "4d", "decrement EBP");
+put(name, "4e", "decrement ESI");
+put(name, "4f", "decrement EDI");
 
 :(scenario decrement_r32)
 % Reg[ECX].u = 0x1f;
@@ -506,14 +506,14 @@ case 1: {  // decrement r/m32
 //:: push
 
 :(before "End Initialize Op Names(name)")
-put(name, "50", "push R0 (EAX) to stack");
-put(name, "51", "push R1 (ECX) to stack");
-put(name, "52", "push R2 (EDX) to stack");
-put(name, "53", "push R3 (EBX) to stack");
-put(name, "54", "push R4 (ESP) to stack");
-put(name, "55", "push R5 (EBP) to stack");
-put(name, "56", "push R6 (ESI) to stack");
-put(name, "57", "push R7 (EDI) to stack");
+put(name, "50", "push EAX to stack");
+put(name, "51", "push ECX to stack");
+put(name, "52", "push EDX to stack");
+put(name, "53", "push EBX to stack");
+put(name, "54", "push ESP to stack");
+put(name, "55", "push EBP to stack");
+put(name, "56", "push ESI to stack");
+put(name, "57", "push EDI to stack");
 
 :(scenario push_r32)
 % Reg[ESP].u = 0x64;
@@ -544,14 +544,14 @@ case 0x57: {  // push r32 to stack
 //:: pop
 
 :(before "End Initialize Op Names(name)")
-put(name, "58", "pop top of stack to R0 (EAX)");
-put(name, "59", "pop top of stack to R1 (ECX)");
-put(name, "5a", "pop top of stack to R2 (EDX)");
-put(name, "5b", "pop top of stack to R3 (EBX)");
-put(name, "5c", "pop top of stack to R4 (ESP)");
-put(name, "5d", "pop top of stack to R5 (EBP)");
-put(name, "5e", "pop top of stack to R6 (ESI)");
-put(name, "5f", "pop top of stack to R7 (EDI)");
+put(name, "58", "pop top of stack to EAX");
+put(name, "59", "pop top of stack to ECX");
+put(name, "5a", "pop top of stack to EDX");
+put(name, "5b", "pop top of stack to EBX");
+put(name, "5c", "pop top of stack to ESP");
+put(name, "5d", "pop top of stack to EBP");
+put(name, "5e", "pop top of stack to ESI");
+put(name, "5f", "pop top of stack to EDI");
 
 :(scenario pop_r32)
 % Reg[ESP].u = 0x2000;

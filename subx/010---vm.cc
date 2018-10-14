@@ -35,21 +35,43 @@ EIP = 1;  // preserve null pointer
 cerr << "  registers\n";
 :(before "End Help Texts")
 put(Help, "registers",
-  "SubX currently supports eight 32-bit integer registers: R0 to R7.\n"
-  "R4 (ESP) contains the top of the stack.\n"
+  "SubX currently supports eight 32-bit integer registers. From 0 to 7, they are:\n"
+  "  EAX ECX EDX EBX ESP EBP ESI EDI\n"
+  "ESP contains the top of the stack.\n"
   "\n"
-  "There's also a register for the address of the currently executing\n"
-  "instruction. It is modified by jumps.\n"
+  "-- 8-bit registers\n"
+  "Some instructions operate on eight *overlapping* 8-bit registers.\n"
+  "From 0 to 7, they are:\n"
+  "  AL CL DL BL AH CH DH BH\n"
+  "The 8-bit registers overlap with the 32-bit ones. AL is the lowest signicant byte\n"
+  "of EAX, AH is the second lowest significant byte, and so on.\n"
   "\n"
-  "Various instructions modify one or more of three 1-bit 'flag' registers,\n"
-  "as a side-effect:\n"
+  "For example, if EBX contains 0x11223344, then BL contains 0x44, and BH contains 0x33.\n"
+  "\n"
+  "There is no way to access bytes within ESP, EBP, ESI or EDI.\n"
+  "\n"
+  "For complete details consult the IA-32 software developer's manual, volume 2,\n"
+  "table 2-2, \"32-bit addressing forms with the ModR/M byte\".\n"
+  "It is included in this repository as 'modrm.pdf'.\n"
+  "The register encodings are described in the top row of the table, but you'll need\n"
+  "to spend some time with it.\n"
+  "\n"
+  "-- flag registers\n"
+  "Various instructions (particularly 'compare') modify one or more of three 1-bit 'flag'\n"
+  "registers, as a side-effect:\n"
   "- the sign flag (SF): usually set if an arithmetic result is negative, or\n"
   "  reset if not.\n"
   "- the zero flag (ZF): usually set if a result is zero, or reset if not.\n"
   "- the overflow flag (OF): usually set if an arithmetic result overflows.\n"
   "The flag bits are read by conditional jumps.\n"
   "\n"
-  "We don't support non-integer (floating-point) registers yet.\n"
+  "For complete details on how different instructions update the flags, consult the IA-32\n"
+  "manual (volume 2). There's various versions of it online, such as https://c9x.me/x86,\n"
+  "though of course you'll need to be careful to ignore instructions and flag registers\n"
+  "that SubX doesn't support.\n"
+  "\n"
+  "It isn't simple, but if this is the processor you have running on your computer,\n"
+  "might as well get good at it.\n"
 );
 
 :(before "End Globals")
@@ -366,7 +388,9 @@ if (key == "opcodes") {
     cerr << "  f3 " << p->first << ": " << p->second << '\n';
   for (map<string, string>::iterator p = name_f3_0f.begin();  p != name_f3_0f.end();  ++p)
     cerr << "  f3 0f " << p->first << ": " << p->second << '\n';
-  cerr << "Run `subx help instructions` for details on words like 'r32' and 'disp8'.\n";
+  cerr << "Run `subx help instructions` for details on words like 'r32' and 'disp8'.\n"
+          "For complete details on these instructions, consult the IA-32 manual (volume 2).\n"
+          "There's various versions of it online, such as https://c9x.me/x86.\n";
   return 0;
 }
 :(before "End Help Contents")
