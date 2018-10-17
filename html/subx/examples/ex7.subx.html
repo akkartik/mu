@@ -71,79 +71,79 @@ if ('onhashchange' in window) {
 <span id="L15" class="LineNr"> 15 </span><span class="Comment"># op          subop               mod             rm32          base        index         scale       r32</span>
 <span id="L16" class="LineNr"> 16 </span><span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L17" class="LineNr"> 17 </span>
-<span id="L18" class="LineNr"> 18 </span>  <span class="Comment"># creat(filename)</span>
-<span id="L19" class="LineNr"> 19 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              filename/imm32          <span class="Comment"># copy to EBX</span>
-<span id="L20" class="LineNr"> 20 </span>  b9/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0x180/imm32/fixed-perms <span class="Comment"># copy to ECX</span>
-<span id="L21" class="LineNr"> 21 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32/creat           <span class="Comment"># copy to EAX</span>
+<span id="L18" class="LineNr"> 18 </span>  <span class="Comment"># syscall(creat, filename)</span>
+<span id="L19" class="LineNr"> 19 </span>  bb/copy-to-EBX  filename/imm32
+<span id="L20" class="LineNr"> 20 </span>  b9/copy-to-ECX  0x180/imm32/fixed-perms
+<span id="L21" class="LineNr"> 21 </span>  b8/copy-to-EAX  8/imm32/creat
 <span id="L22" class="LineNr"> 22 </span>  cd/syscall  0x80/imm8
 <span id="L23" class="LineNr"> 23 </span>
-<span id="L24" class="LineNr"> 24 </span>  <span class="Comment"># stream = open(filename, O_WRONLY, 0)  # we can't use 'fd' because it looks like a hex byte</span>
-<span id="L25" class="LineNr"> 25 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              filename/imm32          <span class="Comment"># copy to EBX</span>
-<span id="L26" class="LineNr"> 26 </span>  b9/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              1/imm32/wronly          <span class="Comment"># copy to ECX</span>
-<span id="L27" class="LineNr"> 27 </span>  ba/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0x180/imm32/fixed-perms <span class="Comment"># copy to EDX</span>
-<span id="L28" class="LineNr"> 28 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              5/imm32/open            <span class="Comment"># copy to EAX</span>
+<span id="L24" class="LineNr"> 24 </span>  <span class="Comment"># stream = syscall(open, filename, O_WRONLY, 0)  # we can't use 'fd' because it looks like a hex byte</span>
+<span id="L25" class="LineNr"> 25 </span>  bb/copy-to-EBX  filename/imm32
+<span id="L26" class="LineNr"> 26 </span>  b9/copy-to-ECX  1/imm32/wronly
+<span id="L27" class="LineNr"> 27 </span>  ba/copy-to-EDX  0x180/imm32/fixed-perms
+<span id="L28" class="LineNr"> 28 </span>  b8/copy-to-EAX  5/imm32/open
 <span id="L29" class="LineNr"> 29 </span>  cd/syscall  0x80/imm8
 <span id="L30" class="LineNr"> 30 </span>    <span class="Comment"># save stream</span>
-<span id="L31" class="LineNr"> 31 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              stream/imm32            <span class="Comment"># copy to EBX</span>
-<span id="L32" class="LineNr"> 32 </span>  89/copy                         0/mod/indirect  3/rm32/EBX                                          0/r32/EAX                                           <span class="Comment"># copy EAX to *EBX</span>
+<span id="L31" class="LineNr"> 31 </span>  bb/copy-to-EBX  stream/imm32
+<span id="L32" class="LineNr"> 32 </span>  89/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          0/r32/EAX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                      <span class="Comment"># copy EAX to *EBX</span>
 <span id="L33" class="LineNr"> 33 </span>
-<span id="L34" class="LineNr"> 34 </span>  <span class="Comment"># write(stream, &quot;a&quot;, 1)</span>
+<span id="L34" class="LineNr"> 34 </span>  <span class="Comment"># syscall(write, stream, &quot;a&quot;, 1)</span>
 <span id="L35" class="LineNr"> 35 </span>    <span class="Comment"># load stream</span>
-<span id="L36" class="LineNr"> 36 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              stream/imm32            <span class="Comment"># copy to EBX</span>
-<span id="L37" class="LineNr"> 37 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX                                          3/r32/EBX                                           <span class="Comment"># copy *EBX to EBX</span>
+<span id="L36" class="LineNr"> 36 </span>  bb/copy-to-EBX  stream/imm32
+<span id="L37" class="LineNr"> 37 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          3/r32/EBX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                      <span class="Comment"># copy *EBX to EBX</span>
 <span id="L38" class="LineNr"> 38 </span>    <span class="Comment">#</span>
-<span id="L39" class="LineNr"> 39 </span>  b9/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              a/imm32                 <span class="Comment"># copy to ECX</span>
-<span id="L40" class="LineNr"> 40 </span>  ba/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              1/imm32/size            <span class="Comment"># copy to EDX</span>
-<span id="L41" class="LineNr"> 41 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32/write           <span class="Comment"># copy to EAX</span>
+<span id="L39" class="LineNr"> 39 </span>  b9/copy-to-ECX  a/imm32
+<span id="L40" class="LineNr"> 40 </span>  ba/copy-to-EDX  1/imm32/size
+<span id="L41" class="LineNr"> 41 </span>  b8/copy-to-EAX  4/imm32/write
 <span id="L42" class="LineNr"> 42 </span>  cd/syscall  0x80/imm8
 <span id="L43" class="LineNr"> 43 </span>
-<span id="L44" class="LineNr"> 44 </span>  <span class="Comment"># close(stream)</span>
+<span id="L44" class="LineNr"> 44 </span>  <span class="Comment"># syscall(close, stream)</span>
 <span id="L45" class="LineNr"> 45 </span>    <span class="Comment"># load stream</span>
-<span id="L46" class="LineNr"> 46 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              stream/imm32            <span class="Comment"># copy to EBX</span>
-<span id="L47" class="LineNr"> 47 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX                                          3/r32/EBX                                           <span class="Comment"># copy *EBX to EBX</span>
+<span id="L46" class="LineNr"> 46 </span>  bb/copy-to-EBX  stream/imm32
+<span id="L47" class="LineNr"> 47 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          3/r32/EBX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                      <span class="Comment"># copy *EBX to EBX</span>
 <span id="L48" class="LineNr"> 48 </span>    <span class="Comment">#</span>
-<span id="L49" class="LineNr"> 49 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              6/imm32/close           <span class="Comment"># copy to EAX</span>
+<span id="L49" class="LineNr"> 49 </span>  b8/copy-to-EAX  6/imm32/close
 <span id="L50" class="LineNr"> 50 </span>  cd/syscall  0x80/imm8
 <span id="L51" class="LineNr"> 51 </span>
-<span id="L52" class="LineNr"> 52 </span>  <span class="Comment"># stream = open(filename, O_RDONLY, 0)</span>
-<span id="L53" class="LineNr"> 53 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              filename/imm32          <span class="Comment"># copy to EBX</span>
-<span id="L54" class="LineNr"> 54 </span>  b9/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0/imm32/rdonly          <span class="Comment"># copy to ECX</span>
-<span id="L55" class="LineNr"> 55 </span>  ba/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0x180/imm32/fixed-perms <span class="Comment"># copy to EDX</span>
-<span id="L56" class="LineNr"> 56 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              5/imm32/open            <span class="Comment"># copy to EAX</span>
+<span id="L52" class="LineNr"> 52 </span>  <span class="Comment"># stream = syscall(open, filename, O_RDONLY, 0)</span>
+<span id="L53" class="LineNr"> 53 </span>  bb/copy-to-EBX  filename/imm32
+<span id="L54" class="LineNr"> 54 </span>  b9/copy-to-ECX  0/imm32/rdonly
+<span id="L55" class="LineNr"> 55 </span>  ba/copy-to-EDX  0x180/imm32/fixed-perms
+<span id="L56" class="LineNr"> 56 </span>  b8/copy-to-EAX  5/imm32/open
 <span id="L57" class="LineNr"> 57 </span>  cd/syscall  0x80/imm8
 <span id="L58" class="LineNr"> 58 </span>    <span class="Comment"># save stream</span>
-<span id="L59" class="LineNr"> 59 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              stream/imm32            <span class="Comment"># copy to EBX</span>
-<span id="L60" class="LineNr"> 60 </span>  89/copy                         0/mod/indirect  3/rm32/EBX                                          0/r32/EAX                                           <span class="Comment"># copy EAX to *EBX</span>
+<span id="L59" class="LineNr"> 59 </span>  bb/copy-to-EBX  stream/imm32
+<span id="L60" class="LineNr"> 60 </span>  89/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          0/r32/EAX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                      <span class="Comment"># copy EAX to *EBX</span>
 <span id="L61" class="LineNr"> 61 </span>
-<span id="L62" class="LineNr"> 62 </span>  <span class="Comment"># read(stream, b, 1)</span>
+<span id="L62" class="LineNr"> 62 </span>  <span class="Comment"># syscall(read, stream, b, 1)</span>
 <span id="L63" class="LineNr"> 63 </span>    <span class="Comment"># load stream</span>
-<span id="L64" class="LineNr"> 64 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              stream/imm32            <span class="Comment"># copy to EBX</span>
-<span id="L65" class="LineNr"> 65 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX                                          3/r32/EBX                                           <span class="Comment"># copy *EBX to EBX</span>
+<span id="L64" class="LineNr"> 64 </span>  bb/copy-to-EBX  stream/imm32
+<span id="L65" class="LineNr"> 65 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          3/r32/EBX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                      <span class="Comment"># copy *EBX to EBX</span>
 <span id="L66" class="LineNr"> 66 </span>    <span class="Comment">#</span>
-<span id="L67" class="LineNr"> 67 </span>  b9/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              b/imm32                 <span class="Comment"># copy to ECX</span>
-<span id="L68" class="LineNr"> 68 </span>  ba/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              1/imm32/size            <span class="Comment"># copy to EDX</span>
-<span id="L69" class="LineNr"> 69 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              3/imm32/read            <span class="Comment"># copy to EAX</span>
+<span id="L67" class="LineNr"> 67 </span>  b9/copy-to-ECX  b/imm32
+<span id="L68" class="LineNr"> 68 </span>  ba/copy-to-EDX  1/imm32/size
+<span id="L69" class="LineNr"> 69 </span>  b8/copy-to-EAX  3/imm32/read
 <span id="L70" class="LineNr"> 70 </span>  cd/syscall  0x80/imm8
 <span id="L71" class="LineNr"> 71 </span>
-<span id="L72" class="LineNr"> 72 </span>  <span class="Comment"># close(stream)</span>
+<span id="L72" class="LineNr"> 72 </span>  <span class="Comment"># syscall(close, stream)</span>
 <span id="L73" class="LineNr"> 73 </span>    <span class="Comment"># load stream</span>
-<span id="L74" class="LineNr"> 74 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              stream/imm32            <span class="Comment"># copy to EBX</span>
-<span id="L75" class="LineNr"> 75 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX                                          3/r32/EBX                                           <span class="Comment"># copy *EBX to EBX</span>
+<span id="L74" class="LineNr"> 74 </span>  bb/copy-to-EBX  stream/imm32
+<span id="L75" class="LineNr"> 75 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          3/r32/EBX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                      <span class="Comment"># copy *EBX to EBX</span>
 <span id="L76" class="LineNr"> 76 </span>    <span class="Comment">#</span>
-<span id="L77" class="LineNr"> 77 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              6/imm32/close           <span class="Comment"># copy to EAX</span>
+<span id="L77" class="LineNr"> 77 </span>  b8/copy-to-EAX  6/imm32/close
 <span id="L78" class="LineNr"> 78 </span>  cd/syscall  0x80/imm8
 <span id="L79" class="LineNr"> 79 </span>
-<span id="L80" class="LineNr"> 80 </span>  <span class="Comment"># unlink(filename)</span>
-<span id="L81" class="LineNr"> 81 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              filename/imm32          <span class="Comment"># copy to EBX</span>
-<span id="L82" class="LineNr"> 82 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0xa/imm32/unlink        <span class="Comment"># copy to EAX</span>
+<span id="L80" class="LineNr"> 80 </span>  <span class="Comment"># syscall(unlink, filename)</span>
+<span id="L81" class="LineNr"> 81 </span>  bb/copy-to-EBX  filename/imm32
+<span id="L82" class="LineNr"> 82 </span>  b8/copy-to-EAX  0xa/imm32/unlink
 <span id="L83" class="LineNr"> 83 </span>  cd/syscall  0x80/imm8
 <span id="L84" class="LineNr"> 84 </span>
-<span id="L85" class="LineNr"> 85 </span>  <span class="Comment"># exit(b)</span>
+<span id="L85" class="LineNr"> 85 </span>  <span class="Comment"># syscall(exit, b)</span>
 <span id="L86" class="LineNr"> 86 </span>    <span class="Comment"># load b</span>
-<span id="L87" class="LineNr"> 87 </span>  bb/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              b/imm32                 <span class="Comment"># copy to EBX</span>
-<span id="L88" class="LineNr"> 88 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX                                          3/r32/EBX                                           <span class="Comment"># copy *EBX to EBX</span>
+<span id="L87" class="LineNr"> 87 </span>  bb/copy-to-EBX  b/imm32
+<span id="L88" class="LineNr"> 88 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          3/r32/EBX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                      <span class="Comment"># copy *EBX to EBX</span>
 <span id="L89" class="LineNr"> 89 </span>    <span class="Comment">#</span>
-<span id="L90" class="LineNr"> 90 </span>  b8/copy                        <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              1/imm32/exit            <span class="Comment"># copy to EAX</span>
+<span id="L90" class="LineNr"> 90 </span>  b8/copy-to-EAX  1/imm32/exit
 <span id="L91" class="LineNr"> 91 </span>  cd/syscall  0x80/imm8
 <span id="L92" class="LineNr"> 92 </span>
 <span id="L93" class="LineNr"> 93 </span>== data
@@ -156,7 +156,7 @@ if ('onhashchange' in window) {
 <span id="L100" class="LineNr">100 </span>filename:
 <span id="L101" class="LineNr">101 </span>  2e 66 6f 6f 00 00 00 00
 <span id="L102" class="LineNr">102 </span>
-<span id="L103" class="LineNr">103 </span><span class="Comment"># vim&#0058;ft=subx:nowrap:tw&amp;</span>
+<span id="L103" class="LineNr">103 </span><span class="Comment"># vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>

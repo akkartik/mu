@@ -63,8 +63,8 @@ if ('onhashchange' in window) {
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr"> 1 </span><span class="SalientComment">//:: call</span>
 <span id="L2" class="LineNr"> 2 </span>
-<span id="L3" class="LineNr"> 3 </span><span class="Delimiter">:(before &quot;End Initialize Op Names(name)&quot;)</span>
-<span id="L4" class="LineNr"> 4 </span><a href='001help.cc.html#L243'>put</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L336'>name</a><span class="Delimiter">,</span> <span class="Constant">&quot;e8&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;call disp32&quot;</span><span class="Delimiter">);</span>
+<span id="L3" class="LineNr"> 3 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
+<span id="L4" class="LineNr"> 4 </span><a href='001help.cc.html#L253'>put_new</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L368'>Name</a><span class="Delimiter">,</span> <span class="Constant">&quot;e8&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;call disp32 (call)&quot;</span><span class="Delimiter">);</span>
 <span id="L5" class="LineNr"> 5 </span>
 <span id="L6" class="LineNr"> 6 </span><span class="Delimiter">:(scenario call_disp32)</span>
 <span id="L7" class="LineNr"> 7 </span><span class="Special">% Reg[ESP].u = 0x64;</span>
@@ -79,12 +79,12 @@ if ('onhashchange' in window) {
 <span id="L16" class="LineNr">16 </span>
 <span id="L17" class="LineNr">17 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L18" class="LineNr">18 </span><span class="Normal">case</span> <span class="Constant">0xe8</span>: <span class="Delimiter">{</span>  <span class="Comment">// call disp32 relative to next EIP</span>
-<span id="L19" class="LineNr">19 </span>  <span class="Normal">int32_t</span> offset = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L20" class="LineNr">20 </span>  <a href='003trace.cc.html#L204'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;call imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L368'>HEXWORD</a> &lt;&lt; offset &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L19" class="LineNr">19 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> offset = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
+<span id="L20" class="LineNr">20 </span>  <a href='003trace.cc.html#L203'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;call imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L403'>HEXWORD</a> &lt;&lt; offset &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L21" class="LineNr">21 </span><span class="CommentedCode">//?   cerr &lt;&lt; &quot;push: EIP: &quot; &lt;&lt; EIP &lt;&lt; &quot; =&gt; &quot; &lt;&lt; Reg[ESP].u &lt;&lt; '\n';</span>
 <span id="L22" class="LineNr">22 </span>  <a href='012elf.cc.html#L89'>push</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L29'>EIP</a><span class="Delimiter">);</span>
 <span id="L23" class="LineNr">23 </span>  <a href='010---vm.cc.html#L29'>EIP</a> += offset<span class="Delimiter">;</span>
-<span id="L24" class="LineNr">24 </span>  <a href='003trace.cc.html#L204'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L368'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L29'>EIP</a> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L24" class="LineNr">24 </span>  <a href='003trace.cc.html#L203'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L403'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L29'>EIP</a> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L25" class="LineNr">25 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L26" class="LineNr">26 </span><span class="Delimiter">}</span>
 <span id="L27" class="LineNr">27 </span>
@@ -105,11 +105,11 @@ if ('onhashchange' in window) {
 <span id="L42" class="LineNr">42 </span>
 <span id="L43" class="LineNr">43 </span><span class="Delimiter">:(before &quot;End Op ff Subops&quot;)</span>
 <span id="L44" class="LineNr">44 </span><span class="Normal">case</span> <span class="Constant">2</span>: <span class="Delimiter">{</span>  <span class="Comment">// call function pointer at r/m32</span>
-<span id="L45" class="LineNr">45 </span>  <a href='003trace.cc.html#L204'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;call to r/m32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L46" class="LineNr">46 </span>  <span class="Normal">int32_t</span>* offset = <a href='013direct_addressing.cc.html#L31'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
+<span id="L45" class="LineNr">45 </span>  <a href='003trace.cc.html#L203'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;call to r/m32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L46" class="LineNr">46 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* offset = <a href='013direct_addressing.cc.html#L31'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L47" class="LineNr">47 </span>  <a href='012elf.cc.html#L89'>push</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L29'>EIP</a><span class="Delimiter">);</span>
 <span id="L48" class="LineNr">48 </span>  <a href='010---vm.cc.html#L29'>EIP</a> += *offset<span class="Delimiter">;</span>
-<span id="L49" class="LineNr">49 </span>  <a href='003trace.cc.html#L204'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L368'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L29'>EIP</a> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L49" class="LineNr">49 </span>  <a href='003trace.cc.html#L203'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L403'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L29'>EIP</a> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L50" class="LineNr">50 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L51" class="LineNr">51 </span><span class="Delimiter">}</span>
 <span id="L52" class="LineNr">52 </span>
@@ -130,8 +130,8 @@ if ('onhashchange' in window) {
 <span id="L67" class="LineNr">67 </span>
 <span id="L68" class="LineNr">68 </span><span class="SalientComment">//:: ret</span>
 <span id="L69" class="LineNr">69 </span>
-<span id="L70" class="LineNr">70 </span><span class="Delimiter">:(before &quot;End Initialize Op Names(name)&quot;)</span>
-<span id="L71" class="LineNr">71 </span><a href='001help.cc.html#L243'>put</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L336'>name</a><span class="Delimiter">,</span> <span class="Constant">&quot;c3&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;return from most recent unfinished call&quot;</span><span class="Delimiter">);</span>
+<span id="L70" class="LineNr">70 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
+<span id="L71" class="LineNr">71 </span><a href='001help.cc.html#L253'>put_new</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L368'>Name</a><span class="Delimiter">,</span> <span class="Constant">&quot;c3&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;return from most recent unfinished call (ret)&quot;</span><span class="Delimiter">);</span>
 <span id="L72" class="LineNr">72 </span>
 <span id="L73" class="LineNr">73 </span><span class="Delimiter">:(scenario ret)</span>
 <span id="L74" class="LineNr">74 </span><span class="Special">% Reg[ESP].u = 0x2000;</span>
@@ -146,9 +146,9 @@ if ('onhashchange' in window) {
 <span id="L83" class="LineNr">83 </span>
 <span id="L84" class="LineNr">84 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L85" class="LineNr">85 </span><span class="Normal">case</span> <span class="Constant">0xc3</span>: <span class="Delimiter">{</span>  <span class="Comment">// return from a call</span>
-<span id="L86" class="LineNr">86 </span>  <a href='003trace.cc.html#L204'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;return&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L87" class="LineNr">87 </span>  <a href='010---vm.cc.html#L29'>EIP</a> = <a href='013direct_addressing.cc.html#L586'>pop</a><span class="Delimiter">();</span>
-<span id="L88" class="LineNr">88 </span>  <a href='003trace.cc.html#L204'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L368'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L29'>EIP</a> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L86" class="LineNr">86 </span>  <a href='003trace.cc.html#L203'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;return&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L87" class="LineNr">87 </span>  <a href='010---vm.cc.html#L29'>EIP</a> = <a href='013direct_addressing.cc.html#L583'>pop</a><span class="Delimiter">();</span>
+<span id="L88" class="LineNr">88 </span>  <a href='003trace.cc.html#L203'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L403'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L29'>EIP</a> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L89" class="LineNr">89 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L90" class="LineNr">90 </span><span class="Delimiter">}</span>
 </pre>

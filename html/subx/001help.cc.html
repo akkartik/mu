@@ -123,7 +123,7 @@ if ('onhashchange' in window) {
 <span id="L63" class="LineNr"> 63 </span>    <span class="Constant">&quot;SubX uses a subset of the x86 instruction set. SubX programs will <a href='011run.cc.html#L83'>run</a></span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L64" class="LineNr"> 64 </span>    <span class="Constant">&quot;without modification on Linux computers.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L65" class="LineNr"> 65 </span>    <span class="Constant">&quot;It provides a better experience and better error messages than</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-<span id="L66" class="LineNr"> 66 </span>    <span class="Constant">&quot;programming directly in machine <a href='031check_operands.cc.html#L14'>code</a>, but you have to stick to the</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+<span id="L66" class="LineNr"> 66 </span>    <span class="Constant">&quot;programming directly in machine <a href='031check_operands.cc.html#L11'>code</a>, but you have to stick to the</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L67" class="LineNr"> 67 </span>    <span class="Constant">&quot;instructions it supports.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L68" class="LineNr"> 68 </span>    <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L69" class="LineNr"> 69 </span>    <span class="Constant">&quot;== Ways to invoke subx</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
@@ -136,7 +136,7 @@ if ('onhashchange' in window) {
 <span id="L76" class="LineNr"> 76 </span>    <span class="Constant">&quot;    subx translate input1.subx intput2.subx ... -o &lt;output ELF binary&gt;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L77" class="LineNr"> 77 </span>    <span class="Constant">&quot;- Run a SubX binary using SubX itself (for better error messages):</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L78" class="LineNr"> 78 </span>    <span class="Constant">&quot;    subx <a href='011run.cc.html#L83'>run</a> &lt;ELF binary&gt;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-<span id="L79" class="LineNr"> 79 </span>    <span class="Constant">&quot;Add '--trace' to any of these commands to also emit a <a href='003trace.cc.html#L204'>trace</a>, for debugging purposes.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+<span id="L79" class="LineNr"> 79 </span>    <span class="Constant">&quot;Add '--trace' to any of these commands to also emit a <a href='003trace.cc.html#L203'>trace</a>, for debugging purposes.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L80" class="LineNr"> 80 </span>    <span class="Constant">&quot;However, options starting with '--' must always come before any other arguments.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L81" class="LineNr"> 81 </span>    <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
 <span id="L82" class="LineNr"> 82 </span>    <span class="Constant">&quot;To start learning how to write SubX programs, <a href='011run.cc.html#L83'>run</a>:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
@@ -310,36 +310,41 @@ if ('onhashchange' in window) {
 <span id="L250" class="LineNr">250 </span><span class="Normal">template</span>&lt;<span class="Normal">typename</span> T&gt; <span class="Normal">typename</span> T::mapped_type&amp; <a href='001help.cc.html#L250'>get_or_insert</a><span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> <span class="Normal">typename</span> T::key_type <span class="Normal">const</span>&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L251" class="LineNr">251 </span>  <span class="Identifier">return</span> map[key]<span class="Delimiter">;</span>
 <span id="L252" class="LineNr">252 </span><span class="Delimiter">}</span>
-<span id="L253" class="LineNr">253 </span><span class="Comment">//: The contract: any container that relies on get_or_insert should never call</span>
-<span id="L254" class="LineNr">254 </span><span class="Comment">//: contains_key.</span>
-<span id="L255" class="LineNr">255 </span>
-<span id="L256" class="LineNr">256 </span><span class="Comment">//: 7. istreams are a royal pain in the arse. You have to be careful about</span>
-<span id="L257" class="LineNr">257 </span><span class="Comment">//: what subclass you try to putback into. You have to watch out for the pesky</span>
-<span id="L258" class="LineNr">258 </span><span class="Comment">//: failbit and badbit. Just avoid eof() and use this helper instead.</span>
-<span id="L259" class="LineNr">259 </span><span class="Delimiter">:(code)</span>
-<span id="L260" class="LineNr">260 </span><span class="Normal">bool</span> <a href='001help.cc.html#L260'>has_data</a><span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L261" class="LineNr">261 </span>  <span class="Identifier">return</span> in &amp;&amp; !in<span class="Delimiter">.</span>eof<span class="Delimiter">();</span>
-<span id="L262" class="LineNr">262 </span><span class="Delimiter">}</span>
-<span id="L263" class="LineNr">263 </span>
-<span id="L264" class="LineNr">264 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L265" class="LineNr">265 </span><span class="Comment">#include &lt;assert.h&gt;</span>
-<span id="L266" class="LineNr">266 </span>
-<span id="L267" class="LineNr">267 </span><span class="Comment">#include &lt;iostream&gt;</span>
-<span id="L268" class="LineNr">268 </span><span class="Normal">using</span> std::istream<span class="Delimiter">;</span>
-<span id="L269" class="LineNr">269 </span><span class="Normal">using</span> std::ostream<span class="Delimiter">;</span>
-<span id="L270" class="LineNr">270 </span><span class="Normal">using</span> std::iostream<span class="Delimiter">;</span>
-<span id="L271" class="LineNr">271 </span><span class="Normal">using</span> std::cin<span class="Delimiter">;</span>
-<span id="L272" class="LineNr">272 </span><span class="Normal">using</span> std::cout<span class="Delimiter">;</span>
-<span id="L273" class="LineNr">273 </span><span class="Normal">using</span> std::cerr<span class="Delimiter">;</span>
-<span id="L274" class="LineNr">274 </span><span class="Comment">#include &lt;iomanip&gt;</span>
-<span id="L275" class="LineNr">275 </span>
-<span id="L276" class="LineNr">276 </span><span class="Comment">#include &lt;string.h&gt;</span>
-<span id="L277" class="LineNr">277 </span><span class="Comment">#include &lt;string&gt;</span>
-<span id="L278" class="LineNr">278 </span><span class="Normal">using</span> std::string<span class="Delimiter">;</span>
-<span id="L279" class="LineNr">279 </span>
-<span id="L280" class="LineNr">280 </span><span class="Comment">#include &lt;algorithm&gt;</span>
-<span id="L281" class="LineNr">281 </span><span class="Normal">using</span> std::min<span class="Delimiter">;</span>
-<span id="L282" class="LineNr">282 </span><span class="Normal">using</span> std::max<span class="Delimiter">;</span>
+<span id="L253" class="LineNr">253 </span><span class="Normal">template</span>&lt;<span class="Normal">typename</span> T&gt; <span class="Normal">typename</span> T::mapped_type <span class="Normal">const</span>&amp; <a href='001help.cc.html#L253'>put_new</a><span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> <span class="Normal">typename</span> T::key_type <span class="Normal">const</span>&amp; key<span class="Delimiter">,</span> <span class="Normal">typename</span> T::mapped_type <span class="Normal">const</span>&amp; value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L254" class="LineNr">254 </span>  assert<span class="Delimiter">(</span>map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">)</span> == map<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+<span id="L255" class="LineNr">255 </span>  map[key] = value<span class="Delimiter">;</span>
+<span id="L256" class="LineNr">256 </span>  <span class="Identifier">return</span> map[key]<span class="Delimiter">;</span>
+<span id="L257" class="LineNr">257 </span><span class="Delimiter">}</span>
+<span id="L258" class="LineNr">258 </span><span class="Comment">//: The contract: any container that relies on get_or_insert should never call</span>
+<span id="L259" class="LineNr">259 </span><span class="Comment">//: contains_key.</span>
+<span id="L260" class="LineNr">260 </span>
+<span id="L261" class="LineNr">261 </span><span class="Comment">//: 7. istreams are a royal pain in the arse. You have to be careful about</span>
+<span id="L262" class="LineNr">262 </span><span class="Comment">//: what subclass you try to putback into. You have to watch out for the pesky</span>
+<span id="L263" class="LineNr">263 </span><span class="Comment">//: failbit and badbit. Just avoid eof() and use this helper instead.</span>
+<span id="L264" class="LineNr">264 </span><span class="Delimiter">:(code)</span>
+<span id="L265" class="LineNr">265 </span><span class="Normal">bool</span> <a href='001help.cc.html#L265'>has_data</a><span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L266" class="LineNr">266 </span>  <span class="Identifier">return</span> in &amp;&amp; !in<span class="Delimiter">.</span>eof<span class="Delimiter">();</span>
+<span id="L267" class="LineNr">267 </span><span class="Delimiter">}</span>
+<span id="L268" class="LineNr">268 </span>
+<span id="L269" class="LineNr">269 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L270" class="LineNr">270 </span><span class="Comment">#include &lt;assert.h&gt;</span>
+<span id="L271" class="LineNr">271 </span>
+<span id="L272" class="LineNr">272 </span><span class="Comment">#include &lt;iostream&gt;</span>
+<span id="L273" class="LineNr">273 </span><span class="Normal">using</span> std::istream<span class="Delimiter">;</span>
+<span id="L274" class="LineNr">274 </span><span class="Normal">using</span> std::ostream<span class="Delimiter">;</span>
+<span id="L275" class="LineNr">275 </span><span class="Normal">using</span> std::iostream<span class="Delimiter">;</span>
+<span id="L276" class="LineNr">276 </span><span class="Normal">using</span> std::cin<span class="Delimiter">;</span>
+<span id="L277" class="LineNr">277 </span><span class="Normal">using</span> std::cout<span class="Delimiter">;</span>
+<span id="L278" class="LineNr">278 </span><span class="Normal">using</span> std::cerr<span class="Delimiter">;</span>
+<span id="L279" class="LineNr">279 </span><span class="Comment">#include &lt;iomanip&gt;</span>
+<span id="L280" class="LineNr">280 </span>
+<span id="L281" class="LineNr">281 </span><span class="Comment">#include &lt;string.h&gt;</span>
+<span id="L282" class="LineNr">282 </span><span class="Comment">#include &lt;string&gt;</span>
+<span id="L283" class="LineNr">283 </span><span class="Normal">using</span> std::string<span class="Delimiter">;</span>
+<span id="L284" class="LineNr">284 </span>
+<span id="L285" class="LineNr">285 </span><span class="Comment">#include &lt;algorithm&gt;</span>
+<span id="L286" class="LineNr">286 </span><span class="Normal">using</span> std::min<span class="Delimiter">;</span>
+<span id="L287" class="LineNr">287 </span><span class="Normal">using</span> std::max<span class="Delimiter">;</span>
 </pre>
 </body>
 </html>
