@@ -84,34 +84,46 @@ trace:  # t : (address trace-stream), line : string
   # append line to t.data from t.write
   #
   # pseudocode:
-  #   length = *(EBX+8)
-  #   i = *EBX
-  #   j = 0
-  #   while i < length
-  #     if j >= len(line) break
-  #     t.data[i] = line[j]
-  #     inc j
-  #     inc i
-  # registers:
-  #   t, line, i, j, length, line.length, t.data[i]
+  #   destend = &t.data[t.length]
+  #   oldw = t.write
+  #   if line.length == 0 return
+  #   t.write += line.length + 1  # for newline
+  #   dest = &t.data[oldw]
+  #   srcend = &line.data[line.length]
+  #   src = &line.data[0]
+  #   while true:
+  #     if src >= srcend break
+  #     if dest >= destend break  # for now silently ignore filled up trace buffer
+  #     *dest = *src
+  #     ++src
+  #     ++dest
+  #   if dest >= destend return
+  #   *dest = 10/newline
   #
-  # we could reduce registers to just tdata, line, tmax, lmax
-  #   A = *(BP+8)    # t
-  #   B = *(BP+12)   # line
-  #   C = *(A+8)  # t.length
-  #   C = A+12+C  # &t.data[t.length]
-  #   SI = *A  # t.write
-  #   D = *B  # line.length
-  #   *A = *A + D  # update t.write  (can go over, we'll guard against it)
-  #   A = A+12+SI  # &t.data[t.write]
-  #   SI = B+4+D  # &line.data[line.length]
-  #   B = B+4  # &line.data[0]
+  # key registers to set up for the loop:
+  #   EAX/dest, ECX/destend, EBX/src, ESI/srcend
+  # we save EDX for byte operations (has to be one of the first 4 registers)
   #
+  # register setup before the loop:
+  #   EAX = *(EBP+8)    # t
+  #   EBX = *(EBP+12)   # line
+  #   ECX = *(EAX+8)    # t.length
+  #   ECX = EAX+12+ECX  # destend = &t.data[t.length]
+  #   ESI = *EAX        # oldw = t.write
+  #   EDX = *EBX        # line.length
+  #   *EAX = *EAX + EDX # update t.write  (allowed to go past t.length)
+  #                     # do this here just because it's convenient
+  #   ++ *EAX  # for the newline
+  #   EAX = EAX+12+ESI  # dest = &t.data[t.write]
+  #   ESI = EBX+4+EDX   # srcend = &line.data[line.length]
+  #   EBX = EBX+4       # src = &line.data[0]
+  #
+  # EAX/t and EBX/line are already initialized
   # ECX = t.length
   8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EAX+8) to ECX
-  # ECX = &t.data[t.length]
+  # ECX/destend = &t.data[t.length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
-  # ESI = t.write
+  # ESI/oldw = t.write
   8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy *EAX to ESI
   # EDX = line.length
   8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # copy *EBX to EDX
@@ -122,18 +134,18 @@ trace:  # t : (address trace-stream), line : string
   01/add                          0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # add EDX to *EAX
   # t.write++ (for the newline we'll append below)
   81          0/subop/add         0/mod/indirect  0/rm32/EAX    .           .             .           .           .               1/imm32           # add to *EAX
-  # EAX = &t.data[old t.write]
+  # EAX/dest = &t.data[oldw]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  6/index/ESI   .           0/r32/EAX   0xc/disp8       .                 # copy EAX+ESI+12 to EAX
-  # ESI = &line.data[line.length]
+  # ESI/srcend = &line.data[line.length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  2/index/EDX   .           6/r32/ESI   4/disp8         .                 # copy EBX+EDX+4 to ESI
-  # EBX = &line.data
+  # EBX/src = &line.data
   81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
   # while (true)
 $trace:loop:
-  # if EBX >= ESI break
+  # if EBX/src >= ESI/srcend break
   39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # compare EBX with ESI
   7d/jump-if-greater-or-equal  $trace:break/disp8
-  # if EAX >= ECX break  (for now silently ignore full trace)
+  # if EAX/dest >= ECX/destend break  (for now silently ignore filled up trace buffer)
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
   7d/jump-if-greater-or-equal  $trace:break/disp8
   # copy one byte
@@ -145,7 +157,7 @@ $trace:loop:
   eb/jump  $trace:loop/disp8
 $trace:break:
   # finally, append a newline
-    # if EAX >= ECX return
+    # if EAX/dest >= ECX/destend return
   39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
   7d/jump-if-greater-or-equal  $trace:end/disp8
     # append
