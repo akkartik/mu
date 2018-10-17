@@ -39,7 +39,7 @@
   # then return run-tests()
   e8/call  run-tests/disp32
   8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Num-test-failures/disp32          # copy *Num-test-failures to EAX
-  eb/jump  $main:exit/disp8  # where EAX will get copied to EBX
+  eb/jump  $main:end/disp8  # where EAX will get copied to EBX
   # else EAX = factorial(5)
 $run-main:
     # push arg
@@ -48,7 +48,7 @@ $run-main:
   e8/call  factorial/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-$main:exit:
+$main:end:
   # exit(EAX)
   89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
   b8/copy-to-EAX  1/imm32
@@ -64,7 +64,7 @@ factorial:
   b8/copy-to-EAX  1/imm32
   # if (n <= 1) jump exit
   81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         1/imm32           # compare *(EBP+8)
-  7e/jump-if-<=  $factorial:exit/disp8
+  7e/jump-if-<=  $factorial:end/disp8
   # EBX = n-1
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
   81          5/subop/subtract    3/mod/direct    3/rm32/EBX    .           .             .           .           .               1/imm32           # subtract from EBX
@@ -78,7 +78,7 @@ factorial:
   # return n * factorial(n-1)
   f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none                          8/disp8         .                 # multiply *(EBP+8) into EAX
   # TODO: check for overflow
-$factorial:exit:
+$factorial:end:
   # epilog
   5b/pop-to-EBX
   89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
