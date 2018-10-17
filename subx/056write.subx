@@ -92,7 +92,7 @@ $write:else:
   #   EDX = *EBX        # s.length
   #   *EAX = *EAX + EDX # update f.write  (allowed to go past f.length)
   #                     # do this here just because it's convenient
-  #   EAX = EAX+8+ESI  # dest = &f.data[f.write]
+  #   EAX = EAX+8+ESI  # dest = &f.data[oldw]
   #   ESI = EBX+4+EDX   # srcend = &s.data[s.length]
   #   EBX = EBX+4       # src = &s.data[0]
   #
@@ -117,7 +117,7 @@ $write:else:
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  6/index/ESI   .           0/r32/EAX   8/disp8         .                 # copy EAX+ESI+8 to EAX
   # ESI/srcend = &s.data[s.length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  2/index/EDX   .           6/r32/ESI   4/disp8         .                 # copy EBX+EDX+4 to ESI
-  # EBX/src = &s.data
+  # EBX/src = &s.data[0]
   81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
   # while (true)
 $write:loop:

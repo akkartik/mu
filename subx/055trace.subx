@@ -114,7 +114,7 @@ trace:  # t : (address trace-stream), line : string
   #   *EAX = *EAX + EDX # update t.write  (allowed to go past t.length)
   #                     # do this here just because it's convenient
   #   ++ *EAX  # for the newline
-  #   EAX = EAX+12+ESI  # dest = &t.data[t.write]
+  #   EAX = EAX+12+ESI  # dest = &t.data[oldw]
   #   ESI = EBX+4+EDX   # srcend = &line.data[line.length]
   #   EBX = EBX+4       # src = &line.data[0]
   #
@@ -138,7 +138,7 @@ trace:  # t : (address trace-stream), line : string
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  6/index/ESI   .           0/r32/EAX   0xc/disp8       .                 # copy EAX+ESI+12 to EAX
   # ESI/srcend = &line.data[line.length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  2/index/EDX   .           6/r32/ESI   4/disp8         .                 # copy EBX+EDX+4 to ESI
-  # EBX/src = &line.data
+  # EBX/src = &line.data[0]
   81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
   # while (true)
 $trace:loop:
