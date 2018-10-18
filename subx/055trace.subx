@@ -77,99 +77,109 @@ trace:  # t : (address trace-stream), line : string
   52/push-EDX
   53/push-EBX
   56/push-ESI
-  # EAX = t
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-  # EBX = line
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
-  # append line to t.data from t.write
-  #
-  # pseudocode:
-  #   destend = &t.data[t.length]
-  #   oldw = t.write
-  #   if line.length == 0 return
-  #   t.write += line.length + 1  # for newline
-  #   dest = &t.data[oldw]
-  #   srcend = &line.data[line.length]
-  #   src = &line.data[0]
-  #   while true:
-  #     if src >= srcend break
-  #     if dest >= destend break  # for now silently ignore filled up trace buffer
-  #     *dest = *src
-  #     ++src
-  #     ++dest
-  #   if dest >= destend return
-  #   *dest = 10/newline
-  #
-  # key registers to set up for the loop:
-  #   EAX/dest, ECX/destend, EBX/src, ESI/srcend
-  # we save EDX for byte operations (has to be one of the first 4 registers)
-  #
-  # register setup before the loop:
-  #   EAX = *(EBP+8)    # t
-  #   EBX = *(EBP+12)   # line
-  #   ECX = *(EAX+8)    # t.length
-  #   ECX = EAX+12+ECX  # destend = &t.data[t.length]
-  #   ESI = *EAX        # oldw = t.write
-  #   EDX = *EBX        # line.length
-  #   *EAX = *EAX + EDX # update t.write  (allowed to go past t.length)
-  #                     # do this here just because it's convenient
-  #   ++ *EAX  # for the newline
-  #   EAX = EAX+12+ESI  # dest = &t.data[oldw]
-  #   ESI = EBX+4+EDX   # srcend = &line.data[line.length]
-  #   EBX = EBX+4       # src = &line.data[0]
-  #
-  # EAX/t and EBX/line are already initialized
-  # ECX = t.length
-  8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EAX+8) to ECX
-  # ECX/destend = &t.data[t.length]
-  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
-  # ESI/oldw = t.write
-  8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy *EAX to ESI
-  # EDX = line.length
-  8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # copy *EBX to EDX
-  # if EDX == 0 return
-  81          7/subop/compare     3/mod/direct    2/rm32/EDX    .           .             .           .           .               0/imm32           # compare EDX
+  57/push-EDI
+  # EDI = t
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+  # ESI = line
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+  # ECX = t.write
+  8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
+  # EDX = t.length
+  8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(EDI+8) to EDX
+  # EAX = _append(&t.data[t.write], &t.data[t.length], line)
+    # push line
+  56/push-ESI
+    # push &t.data[t.length]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  2/index/EDX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+EDX+12 to EBX
+  53/push-EBX
+    # push &t.data[t.write]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+ECX+12 to EBX
+  53/push-EBX
+    # call
+  e8/call  _append/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  # if EAX == 0 return
+  81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EDX
   74/jump-if-equal  $trace:end/disp8
-  # t.write += line.length
-  01/add                          0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # add EDX to *EAX
-  # t.write++ (for the newline we'll append below)
-  81          0/subop/add         0/mod/indirect  0/rm32/EAX    .           .             .           .           .               1/imm32           # add to *EAX
-  # EAX/dest = &t.data[oldw]
-  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  6/index/ESI   .           0/r32/EAX   0xc/disp8       .                 # copy EAX+ESI+12 to EAX
-  # ESI/srcend = &line.data[line.length]
-  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  2/index/EDX   .           6/r32/ESI   4/disp8         .                 # copy EBX+EDX+4 to ESI
-  # EBX/src = &line.data[0]
-  81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
-  # while (true)
-$trace:loop:
-  # if EBX/src >= ESI/srcend break
-  39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # compare EBX with ESI
-  7d/jump-if-greater-or-equal  $trace:break/disp8
-  # if EAX/dest >= ECX/destend break  (for now silently ignore filled up trace buffer)
-  39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
-  7d/jump-if-greater-or-equal  $trace:break/disp8
-  # copy one byte
-  8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/DL    .               .                 # copy byte at *EBX to DL
-  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/DL    .               .                 # copy byte at DL to *EAX
-  # updates
-  40/increment-EAX
-  43/increment-EBX
-  eb/jump  $trace:loop/disp8
-$trace:break:
-  # finally, append a newline
-    # if EAX/dest >= ECX/destend return
-  39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
-  7d/jump-if-greater-or-equal  $trace:end/disp8
-    # append
-  ba/copy-to-EDX  0x0a/imm32
-  88/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/DL    .               .                 # copy byte at DL to *EAX
+  # t.write += EAX
+  01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
+  # refresh ECX = t.write
+  8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
+  # EAX = _append(&t.data[t.write], &t.data[t.length], line)
+    # push line
+  68/push  Newline/imm32
+    # push &t.data[t.length]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  2/index/EDX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+EDX+12 to EBX
+  53/push-EBX
+    # push &t.data[t.write]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+ECX+12 to EBX
+  53/push-EBX
+    # call
+  e8/call  _append/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  # t.write += EAX
+  01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
 $trace:end:
   # restore registers
+  5f/pop-to-EDI
   5e/pop-to-ESI
   5b/pop-to-EBX
   5a/pop-to-EDX
   59/pop-to-ECX
   58/pop-to-EAX
+  # epilog
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
+  c3/return
+
+_append:  # out : address, outend : address, s : (array byte) -> num_bytes_appended/EAX
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  51/push-ECX
+  52/push-EDX
+  53/push-EBX
+  56/push-ESI
+  57/push-EDI
+  # EAX/num_bytes_appended = 0
+  b8/copy-to-EAX  0/imm32
+  # EDI = out
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   0x8/disp8       .                 # copy *(EBP+8) to EDI
+  # EDX = outend
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
+  # ESI = s
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   0x10/disp8      .                 # copy *(EBP+16) to ESI
+  # ECX = line.length
+  8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+  # ECX/srcend = &line.data[line.length]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy ESI+ECX+4 to ECX
+  # ESI/src = &line.data[0]
+  81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
+$_append:loop:
+  # if ESI/src >= ECX/srcend break
+  39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
+  7d/jump-if-greater-or-equal  $_append:end/disp8
+  # if EDI/out >= EDX/outend break  (for now silently ignore filled up trace buffer)
+  39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
+  7d/jump-if-greater-or-equal  $_append:end/disp8
+  # copy one byte from ESI/src to EDI/out
+  8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
+  88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
+  # updates
+  40/increment-EAX
+  46/increment-ESI
+  47/increment-EDI
+  eb/jump  $_append:loop/disp8
+$_append:end:
+  # restore registers
+  5f/pop-to-EDI
+  5e/pop-to-ESI
+  5b/pop-to-EBX
+  5a/pop-to-EDX
+  59/pop-to-ECX
   # epilog
   89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
   5d/pop-to-EBP
