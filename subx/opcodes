@@ -1,91 +1,94 @@
 Opcodes currently supported by SubX:
-  01: add r32 to rm32
-  03: add rm32 to r32
-  05: add imm32 to R0 (EAX)
-  09: rm32 = bitwise OR of r32 with rm32
-  0b: r32 = bitwise OR of r32 with rm32
-  0d: R0 = bitwise OR of imm32 with R0 (EAX)
-  21: rm32 = bitwise AND of r32 with rm32
-  23: r32 = bitwise AND of r32 with rm32
-  25: R0 = bitwise AND of imm32 with R0 (EAX)
-  29: subtract r32 from rm32
-  2b: subtract rm32 from r32
-  2d: subtract imm32 from R0 (EAX)
-  31: rm32 = bitwise XOR of r32 with rm32
-  33: r32 = bitwise XOR of r32 with rm32
-  35: R0 = bitwise XOR of imm32 with R0 (EAX)
-  39: compare: set SF if rm32 < r32
-  3b: compare: set SF if r32 < rm32
-  3d: compare: set SF if R0 < imm32
-  40: increment R0 (EAX)
-  41: increment R1 (ECX)
-  42: increment R2 (EDX)
-  43: increment R3 (EBX)
-  44: increment R4 (ESP)
-  45: increment R5 (EBP)
-  46: increment R6 (ESI)
-  47: increment R7 (EDI)
-  48: decrement R0 (EAX)
-  49: decrement R1 (ECX)
-  4a: decrement R2 (EDX)
-  4b: decrement R3 (EBX)
-  4c: decrement R4 (ESP)
-  4d: decrement R5 (EBP)
-  4e: decrement R6 (ESI)
-  4f: decrement R7 (EDI)
-  50: push R0 (EAX) to stack
-  51: push R1 (ECX) to stack
-  52: push R2 (EDX) to stack
-  53: push R3 (EBX) to stack
-  54: push R4 (ESP) to stack
-  55: push R5 (EBP) to stack
-  56: push R6 (ESI) to stack
-  57: push R7 (EDI) to stack
-  58: pop top of stack to R0 (EAX)
-  59: pop top of stack to R1 (ECX)
-  5a: pop top of stack to R2 (EDX)
-  5b: pop top of stack to R3 (EBX)
-  5c: pop top of stack to R4 (ESP)
-  5d: pop top of stack to R5 (EBP)
-  5e: pop top of stack to R6 (ESI)
-  5f: pop top of stack to R7 (EDI)
-  68: push imm32 to stack
-  74: jump disp8 bytes away if ZF is set
-  75: jump disp8 bytes away if ZF is not set
-  7c: jump disp8 bytes away if lesser (SF != OF)
-  7d: jump disp8 bytes away if greater or equal (SF == OF)
-  7e: jump disp8 bytes away if lesser or equal (ZF is set or SF != OF)
-  7f: jump disp8 bytes away if greater (ZF is unset, SF == OF)
-  81: combine rm32 with imm32 based on subop
-  87: swap the contents of r32 and rm32
-  88: copy r8 (lowermost byte of r32) to r8/m8-at-r32
-  89: copy r32 to rm32
-  8a: copy r8/m8-at-r32 to r8 (lowermost byte of r32)
-  8b: copy rm32 to r32
-  8d: load effective address of memory in rm32 into r32
-  8f: pop top of stack to rm32
-  b8: copy imm32 to R0 (EAX)
-  b9: copy imm32 to R1 (ECX)
-  ba: copy imm32 to R2 (EDX)
-  bb: copy imm32 to R3 (EBX)
-  bc: copy imm32 to R4 (ESP)
-  bd: copy imm32 to R5 (EBP)
-  be: copy imm32 to R6 (ESI)
-  bf: copy imm32 to R7 (EDI)
-  c3: return from most recent unfinished call
-  c7: copy imm32 to rm32
-  cd: software interrupt
-  e8: call disp32
-  e9: jump disp16 bytes away
-  eb: jump disp8 bytes away
-  f4: halt
-  f7: bitwise complement of rm32
-  ff: inc/dec/jump/push/call rm32 based on subop
-  0f 84: jump disp16 bytes away if ZF is set
-  0f 85: jump disp16 bytes away if ZF is not set
-  0f 8c: jump disp16 bytes away if lesser (SF != OF)
-  0f 8d: jump disp16 bytes away if greater or equal (SF == OF)
-  0f 8e: jump disp16 bytes away if lesser or equal (ZF is set or SF != OF)
-  0f 8f: jump disp16 bytes away if greater (ZF is unset, SF == OF)
-  0f af: multiply rm32 into r32
+  01: add r32 to rm32 (add)
+  03: add rm32 to r32 (add)
+  05: add imm32 to EAX (add)
+  09: rm32 = bitwise OR of r32 with rm32 (or)
+  0b: r32 = bitwise OR of r32 with rm32 (or)
+  0d: EAX = bitwise OR of imm32 with EAX (or)
+  21: rm32 = bitwise AND of r32 with rm32 (and)
+  23: r32 = bitwise AND of r32 with rm32 (and)
+  25: EAX = bitwise AND of imm32 with EAX (and)
+  29: subtract r32 from rm32 (sub)
+  2b: subtract rm32 from r32 (sub)
+  2d: subtract imm32 from EAX (sub)
+  31: rm32 = bitwise XOR of r32 with rm32 (xor)
+  33: r32 = bitwise XOR of r32 with rm32 (xor)
+  35: EAX = bitwise XOR of imm32 with EAX (xor)
+  39: compare: set SF if rm32 < r32 (cmp)
+  3b: compare: set SF if r32 < rm32 (cmp)
+  3d: compare: set SF if EAX < imm32 (cmp)
+  40: increment EAX (inc)
+  41: increment ECX (inc)
+  42: increment EDX (inc)
+  43: increment EBX (inc)
+  44: increment ESP (inc)
+  45: increment EBP (inc)
+  46: increment ESI (inc)
+  47: increment EDI (inc)
+  48: decrement EAX (dec)
+  49: decrement ECX (dec)
+  4a: decrement EDX (dec)
+  4b: decrement EBX (dec)
+  4c: decrement ESP (dec)
+  4d: decrement EBP (dec)
+  4e: decrement ESI (dec)
+  4f: decrement EDI (dec)
+  50: push EAX to stack (push)
+  51: push ECX to stack (push)
+  52: push EDX to stack (push)
+  53: push EBX to stack (push)
+  54: push ESP to stack (push)
+  55: push EBP to stack (push)
+  56: push ESI to stack (push)
+  57: push EDI to stack (push)
+  58: pop top of stack to EAX (pop)
+  59: pop top of stack to ECX (pop)
+  5a: pop top of stack to EDX (pop)
+  5b: pop top of stack to EBX (pop)
+  5c: pop top of stack to ESP (pop)
+  5d: pop top of stack to EBP (pop)
+  5e: pop top of stack to ESI (pop)
+  5f: pop top of stack to EDI (pop)
+  68: push imm32 to stack (push)
+  74: jump disp8 bytes away if equal, if ZF is set (jcc/jz/je)
+  75: jump disp8 bytes away if not equal, if ZF is not set (jcc/jnz/jne)
+  7c: jump disp8 bytes away if lesser, if SF != OF (jcc/jl/jnge)
+  7d: jump disp8 bytes away if greater or equal, if SF == OF (jcc/jge/jnl)
+  7e: jump disp8 bytes away if lesser or equal, if ZF is set or SF != OF (jcc/jle/jng)
+  7f: jump disp8 bytes away if greater, if ZF is unset and SF == OF (jcc/jg/jnle)
+  81: combine rm32 with imm32 based on subop (add/sub/and/or/xor/cmp)
+  87: swap the contents of r32 and rm32 (xchg)
+  88: copy r8 to r8/m8-at-r32
+  89: copy r32 to rm32 (mov)
+  8a: copy r8/m8-at-r32 to r8
+  8b: copy rm32 to r32 (mov)
+  8d: copy address in rm32 into r32 (lea)
+  8f: pop top of stack to rm32 (pop)
+  b8: copy imm32 to EAX (mov)
+  b9: copy imm32 to ECX (mov)
+  ba: copy imm32 to EDX (mov)
+  bb: copy imm32 to EBX (mov)
+  bc: copy imm32 to ESP (mov)
+  bd: copy imm32 to EBP (mov)
+  be: copy imm32 to ESI (mov)
+  bf: copy imm32 to EDI (mov)
+  c3: return from most recent unfinished call (ret)
+  c7: copy imm32 to rm32 (mov)
+  cd: software interrupt (int)
+  e8: call disp32 (call)
+  e9: jump disp16 bytes away (jmp)
+  eb: jump disp8 bytes away (jmp)
+  f4: halt (hlt)
+  f7: negate/multiply rm32 (with EAX if necessary) depending on subop (neg/mul)
+  ff: increment/decrement/jump/push/call rm32 based on subop (inc/dec/jmp/push/call)
+  0f 84: jump disp16 bytes away if equal, if ZF is set (jcc/jz/je)
+  0f 85: jump disp16 bytes away if not equal, if ZF is not set (jcc/jnz/jne)
+  0f 8c: jump disp16 bytes away if lesser, if SF != OF (jcc/jl/jnge)
+  0f 8d: jump disp16 bytes away if greater or equal, if SF == OF (jcc/jge/jnl)
+  0f 8e: jump disp16 bytes away if lesser or equal, if ZF is set or SF != OF (jcc/jle/jng)
+  0f 8f: jump disp16 bytes away if greater, if ZF is unset and SF == OF (jcc/jg/jnle)
+  0f af: multiply rm32 into r32 (imul)
 Run `subx help instructions` for details on words like 'r32' and 'disp8'.
+For complete details on these instructions, consult the IA-32 manual (volume 2).
+There's various versions of it online, such as https://c9x.me/x86.
+The mnemonics in brackets will help you locate each instruction.
