@@ -1,4 +1,11 @@
-//: Automatically aggregating functions into test suites.
+//: Automatically aggregate functions starting with 'test-' into a test suite
+//: called 'run-tests'. Running this function will run all tests.
+//:
+//: This is actually SubX's first (trivial) compiler. We generate all the code
+//: needed for the 'run-tests' function.
+//:
+//: By convention, temporary functions needed by tests will start with
+//: '_test-'.
 
 //: We don't rely on any transforms running in previous layers, but this layer
 //: knows about labels and will emit labels for previous layers to transform.
