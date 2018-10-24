@@ -374,8 +374,22 @@ void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op)
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
 //?     cerr << "comparing for modrm " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
     if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
-    if (i == DISP8 || i == DISP32) continue;  // exception 2
     const string& optype = Operand_type_name.at(i);
+    if (i == DISP8) {
+      int32_t mod = parse_int(metadata(inst, "mod").data);
+      if (mod != 1)
+        raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
+      continue;  // exception 2
+    }
+    if (i == DISP32) {
+      int32_t mod = parse_int(metadata(inst, "mod").data);
+      int32_t rm32 = parse_int(metadata(inst, "rm32").data);
+      if (mod == 0 && rm32 == 5)
+        ;  // ok: special-case for loading address from disp32
+      else if (mod != 2)
+        raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
+      continue;  // exception 2
+    }
     if ((bitvector & 0x1) > (expected & 0x1))
       raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
     else
@@ -445,6 +459,12 @@ $error: 0
 == 0x1
 81 0/add/subop 0/mod/indirect 4/rm32/use-sib 2/index 3/scale 1/imm32
 +error: '81 0/add/subop 0/mod/indirect 4/rm32/use-sib 2/index 3/scale 1/imm32' (combine rm32 with imm32 based on subop): missing base operand
+
+:(scenario check_extra_displacement)
+% Hide_errors = true;
+== 0x1
+89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 4/disp8
++error: '89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 4/disp8' (copy r32 to rm32): unexpected disp8 operand
 
 :(scenario check_base_operand_not_needed_in_direct_mode)
 == 0x1
