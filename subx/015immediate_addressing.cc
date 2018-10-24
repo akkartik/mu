@@ -47,7 +47,7 @@ case 0x81: {  // combine imm32 with r/m32
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x0d0c0b0a
 +run: subop add
 +run: storing 0x0d0c0b0b
@@ -84,7 +84,7 @@ case 0x2d: {  // subtract imm32 from EAX
 == 0x2000  # data segment
 0a 00 00 00  # 10
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x00000001
 +run: subop subtract
 +run: storing 0x00000009
@@ -142,7 +142,7 @@ case 0x25: {  // and imm32 with EAX
 == 0x2000  # data segment
 ff 00 00 00  # 0xff
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x0d0c0b0a
 +run: subop and
 +run: storing 0x0000000a
@@ -200,7 +200,7 @@ case 0x0d: {  // or imm32 with EAX
 == 0x2000  # data segment
 a0 b0 c0 d0  # 0xd0c0b0a0
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x0d0c0b0a
 +run: subop or
 +run: storing 0xddccbbaa
@@ -256,7 +256,7 @@ case 0x35: {  // xor imm32 with EAX
 == 0x2000  # data segment
 a0 b0 c0 d0  # 0xd0c0b0a0
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x0d0c0b0a
 +run: subop xor
 +run: storing 0xddccbbaa
@@ -379,7 +379,7 @@ case 7: {
 == 0x2000  # data segment
 0a 0b 0c 0d  # 0x0d0c0b0a
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x0d0c0b07
 +run: SF=0; ZF=0; OF=0
 
@@ -392,7 +392,7 @@ case 7: {
 == 0x2000  # data segment
 07 0b 0c 0d  # 0x0d0c0b07
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x0d0c0b0a
 +run: SF=1; ZF=0; OF=0
 
@@ -406,7 +406,7 @@ case 7: {
 == 0x2000  # data segment
 0a 0b 0c 0d  # 0x0d0c0b0a
 +run: combine imm32 with r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: imm32 is 0x0d0c0b0a
 +run: SF=0; ZF=1; OF=0
 
@@ -456,7 +456,7 @@ put_new(Name, "c7", "copy imm32 to rm32 (mov)");
   c7  03                          0a 0b 0c 0d  # copy 0x0d0c0b0a to *EBX
 # ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
 +run: copy imm32 to r/m32
-+run: effective address is 0x60 (EBX)
++run: effective address is 0x00000060 (EBX)
 +run: imm32 is 0x0d0c0b0a
 
 :(before "End Single-Byte Opcodes")

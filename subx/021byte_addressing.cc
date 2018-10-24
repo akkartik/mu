@@ -50,7 +50,7 @@ put_new(Name, "88", "copy r8 to r8/m8-at-r32");
 == 0x2000
 f0 cc bb aa  # 0xf0 with more data in following bytes
 +run: copy BL to r8/m8-at-r32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0xab
 % CHECK_EQ(0xaabbccab, read_mem_u32(0x2000));
 
@@ -82,7 +82,7 @@ put_new(Name, "8a", "copy r8/m8-at-r32 to r8");
 == 0x2000  # data segment
 ab ff ff ff  # 0xab with more data in following bytes
 +run: copy r8/m8-at-r32 to BL
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0xab
 # remaining bytes of EBX are *not* cleared
 +run: EBX now contains 0xaabbccab

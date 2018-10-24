@@ -60,7 +60,7 @@ case 2: {  // call function pointer at r/m32
 == 0x2000  # data segment
 a0 00 00 00  # 0xa0
 +run: call to r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: decrementing ESP to 0x00000060
 +run: pushing value 0x00000003
 +run: jumping to 0x000000a3

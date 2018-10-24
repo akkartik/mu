@@ -11,8 +11,8 @@
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x2000 (EAX)
-+run: effective address is 0x2000
++run: effective address is initially 0x00002000 (EAX)
++run: effective address is 0x00002000
 +run: storing 0x00000011
 
 :(before "End Mod 0 Special-cases(addr)")
@@ -26,22 +26,22 @@ uint32_t effective_address_from_sib(uint8_t mod) {
   uint32_t addr = 0;
   if (base != EBP || mod != 0) {
     addr = Reg[base].u;
-    trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(base) << ")" << end();
+    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(base) << ")" << end();
   }
   else {
     // base == EBP && mod == 0
     addr = next32();  // ignore base
-    trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (disp32)" << end();
+    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (disp32)" << end();
   }
   const uint8_t index = (sib>>3)&0x7;
   if (index == ESP) {
     // ignore index and scale
-    trace(90, "run") << "effective address is 0x" << std::hex << addr << end();
+    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << end();
   }
   else {
     const uint8_t scale = (1 << (sib>>6));
     addr += Reg[index].i*scale;  // treat index register as signed. Maybe base as well? But we'll always ensure it's non-negative.
-    trace(90, "run") << "effective address is 0x" << std::hex << addr << " (after adding " << rname(index) << "*" << NUM(scale) << ")" << end();
+    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding " << rname(index) << "*" << NUM(scale) << ")" << end();
   }
   return addr;
 }
@@ -58,8 +58,8 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x1ffe (EAX)
-+run: effective address is 0x2000 (after adding ECX*1)
++run: effective address is initially 0x00001ffe (EAX)
++run: effective address is 0x00002000 (after adding ECX*1)
 +run: storing 0x00000011
 
 :(scenario add_r32_to_mem_at_displacement_using_sib)
@@ -72,8 +72,8 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x2000 (disp32)
-+run: effective address is 0x2000
++run: effective address is initially 0x00002000 (disp32)
++run: effective address is 0x00002000
 +run: storing 0x00000011
 
 //:
@@ -90,9 +90,9 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x1ff9 (EAX)
-+run: effective address is 0x1ffe (after adding ECX*1)
-+run: effective address is 0x2000 (after adding disp8)
++run: effective address is initially 0x00001ff9 (EAX)
++run: effective address is 0x00001ffe (after adding ECX*1)
++run: effective address is 0x00002000 (after adding disp8)
 +run: storing 0x00000011
 
 :(before "End Mod 1 Special-cases(addr)")
@@ -114,9 +114,9 @@ case 4:  // exception: mod 0b01 rm 0b100 => incoming SIB (scale-index-base) byte
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x1ff9 (EAX)
-+run: effective address is 0x1ffe (after adding ECX*1)
-+run: effective address is 0x2000 (after adding disp32)
++run: effective address is initially 0x00001ff9 (EAX)
++run: effective address is 0x00001ffe (after adding ECX*1)
++run: effective address is 0x00002000 (after adding disp32)
 +run: storing 0x00000011
 
 :(before "End Mod 2 Special-cases(addr)")

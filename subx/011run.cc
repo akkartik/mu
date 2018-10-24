@@ -201,7 +201,7 @@ void parse_word(const string& data, word& out) {
 void sanity_check_program_segment(const program& p, uint32_t addr) {
   for (int i = 0;  i < SIZE(p.segments);  ++i) {
     if (p.segments.at(i).start == addr)
-      raise << "can't have multiple segments starting at address 0x" << std::hex << addr << '\n' << end();
+      raise << "can't have multiple segments starting at address 0x" << HEXWORD << addr << '\n' << end();
   }
 }
 
@@ -219,7 +219,7 @@ void parse(const string& text_bytes) {
 ab
 == 0xee
 cd
-+error: can't have multiple segments starting at address 0xee
++error: can't have multiple segments starting at address 0x000000ee
 
 //:: transform
 

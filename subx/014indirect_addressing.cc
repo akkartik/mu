@@ -11,14 +11,14 @@
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x00000011
 
 :(before "End Mod Special-cases(addr)")
 case 0:  // indirect addressing
   switch (rm) {
   default:  // address in register
-    trace(90, "run") << "effective address is 0x" << std::hex << Reg[rm].u << " (" << rname(rm) << ")" << end();
+    trace(90, "run") << "effective address is 0x" << HEXWORD << Reg[rm].u << " (" << rname(rm) << ")" << end();
     addr = Reg[rm].u;
     break;
   // End Mod 0 Special-cases(addr)
@@ -40,7 +40,7 @@ put_new(Name, "03", "add rm32 to r32 (add)");
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add r/m32 to EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x00000011
 
 :(before "End Single-Byte Opcodes")
@@ -65,7 +65,7 @@ case 0x03: {  // add r/m32 to r32
 == 0x2000  # data segment
 0a 00 00 00  # 10
 +run: subtract EBX from r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x00000009
 
 //:
@@ -83,7 +83,7 @@ put_new(Name, "2b", "subtract rm32 from r32 (sub)");
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: subtract r/m32 from EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x00000009
 
 :(before "End Single-Byte Opcodes")
@@ -108,7 +108,7 @@ case 0x2b: {  // subtract r/m32 from r32
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: and EBX with r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x0000000d
 
 //:
@@ -126,7 +126,7 @@ put_new(Name, "23", "r32 = bitwise AND of r32 with rm32 (and)");
 == 0x2000  # data segment
 ff 00 00 00  # 0xff
 +run: and r/m32 with EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x0000000d
 
 :(before "End Single-Byte Opcodes")
@@ -151,7 +151,7 @@ case 0x23: {  // and r/m32 with r32
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: or EBX with r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0xaabbccdd
 
 //:
@@ -169,7 +169,7 @@ put_new(Name, "0b", "r32 = bitwise OR of r32 with rm32 (or)");
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: or r/m32 with EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0xaabbccdd
 
 :(before "End Single-Byte Opcodes")
@@ -194,7 +194,7 @@ case 0x0b: {  // or r/m32 with r32
 == 0x2000  # data segment
 0d 0c bb aa  # 0xaabb0c0d
 +run: xor EBX with r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x0a0bccdd
 
 //:
@@ -212,7 +212,7 @@ put_new(Name, "33", "r32 = bitwise XOR of r32 with rm32 (xor)");
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: xor r/m32 with EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0xaabbccdd
 
 :(before "End Single-Byte Opcodes")
@@ -236,7 +236,7 @@ case 0x33: {  // xor r/m32 with r32
 == 0x2000  # data segment
 ff 00 0f 0f  # 0x0f0f00ff
 +run: operate on r/m32
-+run: effective address is 0x2000 (EBX)
++run: effective address is 0x00002000 (EBX)
 +run: subop: not
 +run: storing 0xf0f0ff00
 
@@ -252,7 +252,7 @@ ff 00 0f 0f  # 0x0f0f00ff
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: compare EBX with r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: SF=0; ZF=0; OF=0
 
 :(scenario compare_mem_at_r32_with_r32_lesser)
@@ -265,7 +265,7 @@ ff 00 0f 0f  # 0x0f0f00ff
 == 0x2000  # data segment
 07 0c 0b 0a  # 0x0a0b0c0d
 +run: compare EBX with r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: SF=1; ZF=0; OF=0
 
 :(scenario compare_mem_at_r32_with_r32_equal)
@@ -278,7 +278,7 @@ ff 00 0f 0f  # 0x0f0f00ff
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: compare EBX with r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: SF=0; ZF=1; OF=0
 
 //:
@@ -296,7 +296,7 @@ put_new(Name, "3b", "compare: set SF if r32 < rm32 (cmp)");
 == 0x2000  # data segment
 07 0c 0b 0a  # 0x0a0b0c0d
 +run: compare r/m32 with EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: SF=0; ZF=0; OF=0
 
 :(before "End Single-Byte Opcodes")
@@ -325,7 +325,7 @@ case 0x3b: {  // set SF if r32 < r/m32
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: compare r/m32 with EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: SF=1; ZF=0; OF=0
 
 :(scenario compare_r32_with_mem_at_r32_equal)
@@ -338,7 +338,7 @@ case 0x3b: {  // set SF if r32 < r/m32
 == 0x2000  # data segment
 0d 0c 0b 0a  # 0x0a0b0c0d
 +run: compare r/m32 with EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: SF=0; ZF=1; OF=0
 
 //:: copy (mov)
@@ -351,7 +351,7 @@ case 0x3b: {  // set SF if r32 < r/m32
   89  18                                      # copy EBX to *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
 +run: copy EBX to r/m32
-+run: effective address is 0x60 (EAX)
++run: effective address is 0x00000060 (EAX)
 +run: storing 0x000000af
 
 //:
@@ -368,7 +368,7 @@ put_new(Name, "8b", "copy rm32 to r32 (mov)");
 == 0x2000  # data segment
 af 00 00 00  # 0xaf
 +run: copy r/m32 to EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: storing 0x000000af
 
 :(before "End Single-Byte Opcodes")
@@ -396,7 +396,7 @@ case 0x8b: {  // copy r32 to r/m32
 08 00 00 00  # 8
 +run: inst: 0x00000001
 +run: jump to r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: jumping to 0x00000008
 +run: inst: 0x00000008
 -run: inst: 0x00000003
@@ -422,7 +422,7 @@ case 4: {  // jump to r/m32
 == 0x2000  # data segment
 af 00 00 00  # 0xaf
 +run: push r/m32
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 +run: decrementing ESP to 0x00000010
 +run: pushing value 0x000000af
 
@@ -449,7 +449,7 @@ put_new(Name, "8f", "pop top of stack to rm32 (pop)");
 == 0x2000  # data segment
 30 00 00 00  # 0x30
 +run: pop into r/m32
-+run: effective address is 0x60 (EAX)
++run: effective address is 0x00000060 (EAX)
 +run: popping value 0x00000030
 +run: incrementing ESP to 0x00002004
 
@@ -479,13 +479,13 @@ case 0x8f: {  // pop stack into r/m32
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is 0x2000 (disp32)
++run: effective address is 0x00002000 (disp32)
 +run: storing 0x00000011
 
 :(before "End Mod 0 Special-cases(addr)")
 case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
   addr = next32();
-  trace(90, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
+  trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (disp32)" << end();
   break;
 
 //:
@@ -500,8 +500,8 @@ case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x1ffe (EAX)
-+run: effective address is 0x2000 (after adding disp8)
++run: effective address is initially 0x00001ffe (EAX)
++run: effective address is 0x00002000 (after adding disp8)
 +run: storing 0x00000011
 
 :(before "End Mod Special-cases(addr)")
@@ -509,13 +509,13 @@ case 1:  // indirect + disp8 addressing
   switch (rm) {
   default:
     addr = Reg[rm].u;
-    trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
+    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(rm) << ")" << end();
     break;
   // End Mod 1 Special-cases(addr)
   }
   if (addr > 0) {
     addr += static_cast<int8_t>(next());
-    trace(90, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp8)" << end();
+    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding disp8)" << end();
   }
   break;
 
@@ -529,8 +529,8 @@ case 1:  // indirect + disp8 addressing
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x2001 (EAX)
-+run: effective address is 0x2000 (after adding disp8)
++run: effective address is initially 0x00002001 (EAX)
++run: effective address is 0x00002000 (after adding disp8)
 +run: storing 0x00000011
 
 //:
@@ -545,8 +545,8 @@ case 1:  // indirect + disp8 addressing
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x1ffe (EAX)
-+run: effective address is 0x2000 (after adding disp32)
++run: effective address is initially 0x00001ffe (EAX)
++run: effective address is 0x00002000 (after adding disp32)
 +run: storing 0x00000011
 
 :(before "End Mod Special-cases(addr)")
@@ -554,13 +554,13 @@ case 2:  // indirect + disp32 addressing
   switch (rm) {
   default:
     addr = Reg[rm].u;
-    trace(90, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
+    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(rm) << ")" << end();
     break;
   // End Mod 2 Special-cases(addr)
   }
   if (addr > 0) {
     addr += next32();
-    trace(90, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp32)" << end();
+    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding disp32)" << end();
   }
   break;
 
@@ -574,8 +574,8 @@ case 2:  // indirect + disp32 addressing
 == 0x2000  # data segment
 01 00 00 00  # 1
 +run: add EBX to r/m32
-+run: effective address is initially 0x2001 (EAX)
-+run: effective address is 0x2000 (after adding disp32)
++run: effective address is initially 0x00002001 (EAX)
++run: effective address is 0x00002000 (after adding disp32)
 +run: storing 0x00000011
 
 //:: lea
@@ -590,7 +590,7 @@ put_new(Name, "8d", "copy address in rm32 into r32 (lea)");
   8d  18
 # ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)
 +run: lea into EBX
-+run: effective address is 0x2000 (EAX)
++run: effective address is 0x00002000 (EAX)
 
 :(before "End Single-Byte Opcodes")
 case 0x8d: {  // lea m32 to r32
