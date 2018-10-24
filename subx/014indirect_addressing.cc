@@ -578,25 +578,25 @@ case 2:  // indirect + disp32 addressing
 +run: effective address is 0x00002000 (after adding disp32)
 +run: storing 0x00000011
 
-//:: lea
+//:: copy address (lea)
 
 :(before "End Initialize Op Names")
 put_new(Name, "8d", "copy address in rm32 into r32 (lea)");
 
-:(scenario lea)
+:(scenario copy_address)
 % Reg[EAX].u = 0x2000;
 == 0x1
 # op  ModR/M  SIB   displacement  immediate
   8d  18
 # ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)
-+run: lea into EBX
++run: copy address into EBX
 +run: effective address is 0x00002000 (EAX)
 
 :(before "End Single-Byte Opcodes")
-case 0x8d: {  // lea m32 to r32
+case 0x8d: {  // copy address of m32 to r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "lea into " << rname(arg1) << end();
+  trace(90, "run") << "copy address into " << rname(arg1) << end();
   Reg[arg1].u = effective_address_number(modrm);
   break;
 }
