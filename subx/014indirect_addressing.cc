@@ -231,7 +231,7 @@ case 0x33: {  // xor r/m32 with r32
 % Reg[EBX].i = 0x2000;
 == 0x1  # code segment
 # op  ModR/M  SIB   displacement  immediate
-  f7  13                                      # negate *EBX
+  f7  13                                      # not *EBX
 # ModR/M in binary: 00 (indirect mode) 010 (subop not) 011 (dest EBX)
 == 0x2000  # data segment
 ff 00 0f 0f  # 0x0f0f00ff

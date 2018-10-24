@@ -166,6 +166,49 @@ case 0xaf: {  // multiply r32 into r/m32
   break;
 }
 
+//:: negate
+
+:(scenario negate_r32)
+% Reg[EBX].i = 1;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  f7  db                                      # negate EBX
+# ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: negate
++run: storing 0xffffffff
+
+:(before "End Op f7 Subops")
+case 3: {  // negate r/m32
+  trace(90, "run") << "subop: negate" << end();
+  // one case that can overflow
+  if (static_cast<uint32_t>(*arg1) == 0x80000000) {
+    trace(90, "run") << "overflow" << end();
+    SF = true;
+    ZF = false;
+    OF = true;
+    break;
+  }
+  *arg1 = -(*arg1);
+  trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  SF = (*arg1 >> 31);
+  ZF = (*arg1 == 0);
+  OF = false;
+  break;
+}
+
+:(scenario negate_can_overflow)  // in exactly one situation
+% Reg[EBX].i = 0x80000000;  // INT_MIN
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  f7  db                                      # negate EBX
+# ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: negate
++run: overflow
+
 //:: and
 
 :(before "End Initialize Op Names")
@@ -440,6 +483,10 @@ case 0xff: {
       trace(90, "run") << "storing value 0x" << HEXWORD << *arg << end();
       break;
     }
+    default:
+      cerr << "unrecognized subop for ff: " << HEXBYTE << NUM(subop) << '\n';
+      DUMP("");
+      exit(1);
     // End Op ff Subops
   }
   break;
