@@ -15,7 +15,6 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
-.CommentedCode { color: #6c6c6c; }
 .LineNr { color: #444444; }
 .Delimiter { color: #800080; }
 .Comment { color: #9090ff; }
@@ -89,222 +88,169 @@ if ('onhashchange' in window) {
 <span id="L33" class="LineNr"> 33 </span><span class="Comment"># 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L34" class="LineNr"> 34 </span>
 <span id="L35" class="LineNr"> 35 </span><span class="Comment"># main:  (manual test if this is the last file loaded)</span>
-<span id="L36" class="LineNr"> 36 </span><span class="CommentedCode">#?   e8/call  test-write-appends/disp32</span>
-<span id="L37" class="LineNr"> 37 </span>  e8/call  run-tests/disp32  <span class="Comment"># 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.</span>
-<span id="L38" class="LineNr"> 38 </span>  <span class="Comment"># syscall(exit, Num-test-failures)</span>
-<span id="L39" class="LineNr"> 39 </span>  8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/EBX   Num-test-failures/disp32          <span class="Comment"># copy *Num-test-failures to EBX</span>
-<span id="L40" class="LineNr"> 40 </span>  b8/copy-to-EAX  1/imm32
-<span id="L41" class="LineNr"> 41 </span>  cd/syscall  0x80/imm8
-<span id="L42" class="LineNr"> 42 </span>
-<span id="L43" class="LineNr"> 43 </span>write:  <span class="Comment"># f : fd or (address stream), s : (address array byte) -&gt; &lt;void&gt;</span>
-<span id="L44" class="LineNr"> 44 </span>  <span class="Comment"># prolog</span>
-<span id="L45" class="LineNr"> 45 </span>  55/push-EBP
-<span id="L46" class="LineNr"> 46 </span>  89/copy                         3/mod/direct    5/rm32/EBP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          4/r32/ESP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy ESP to EBP</span>
-<span id="L47" class="LineNr"> 47 </span>  <span class="Comment"># save registers</span>
-<span id="L48" class="LineNr"> 48 </span>  50/push-EAX
-<span id="L49" class="LineNr"> 49 </span>  51/push-ECX
-<span id="L50" class="LineNr"> 50 </span>  52/push-EDX
-<span id="L51" class="LineNr"> 51 </span>  53/push-EBX
-<span id="L52" class="LineNr"> 52 </span>  56/push-ESI
-<span id="L53" class="LineNr"> 53 </span>  <span class="Comment"># if (f &lt; 0x08000000) _write(f, s), return  # f can't be a user-mode address, so treat it as a kernel file descriptor</span>
-<span id="L54" class="LineNr"> 54 </span>  81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8         0x08000000/imm32  <span class="Comment"># compare *(EBP+8)</span>
-<span id="L55" class="LineNr"> 55 </span>  7f/jump-if-greater  $write:else/disp8
-<span id="L56" class="LineNr"> 56 </span>    <span class="Comment"># push args</span>
-<span id="L57" class="LineNr"> 57 </span>  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># push *(EBP+8)</span>
-<span id="L58" class="LineNr"> 58 </span>  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          0xc/disp8      <span class="Delimiter"> . </span>                <span class="Comment"># push *(EBP+12)</span>
-<span id="L59" class="LineNr"> 59 </span>    <span class="Comment"># call</span>
-<span id="L60" class="LineNr"> 60 </span>  e8/call  _write/disp32
-<span id="L61" class="LineNr"> 61 </span>    <span class="Comment"># discard args</span>
-<span id="L62" class="LineNr"> 62 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
-<span id="L63" class="LineNr"> 63 </span>  eb/jump  $write:end/disp8
-<span id="L64" class="LineNr"> 64 </span>$write:else:
-<span id="L65" class="LineNr"> 65 </span>  <span class="Comment"># otherwise, treat 'f' as a stream to append to</span>
-<span id="L66" class="LineNr"> 66 </span>  <span class="Comment">#</span>
-<span id="L67" class="LineNr"> 67 </span>  <span class="Comment"># pseudocode:</span>
-<span id="L68" class="LineNr"> 68 </span>  <span class="Comment">#   destend = &amp;f.data[t.length]</span>
-<span id="L69" class="LineNr"> 69 </span>  <span class="Comment">#   oldw = f.write</span>
-<span id="L70" class="LineNr"> 70 </span>  <span class="Comment">#   if s.length == 0 return</span>
-<span id="L71" class="LineNr"> 71 </span>  <span class="Comment">#   f.write += s.length</span>
-<span id="L72" class="LineNr"> 72 </span>  <span class="Comment">#   dest = &amp;f.data[oldw]</span>
-<span id="L73" class="LineNr"> 73 </span>  <span class="Comment">#   srcend = &amp;s.data[s.length]</span>
-<span id="L74" class="LineNr"> 74 </span>  <span class="Comment">#   src = &amp;s.data[0]</span>
-<span id="L75" class="LineNr"> 75 </span>  <span class="Comment">#   while true:</span>
-<span id="L76" class="LineNr"> 76 </span>  <span class="Comment">#     if src &gt;= srcend break</span>
-<span id="L77" class="LineNr"> 77 </span>  <span class="Comment">#     if dest &gt;= destend break  # for now silently ignore filled up ostream buffer</span>
-<span id="L78" class="LineNr"> 78 </span>  <span class="Comment">#     *dest = *src</span>
-<span id="L79" class="LineNr"> 79 </span>  <span class="Comment">#     ++src</span>
-<span id="L80" class="LineNr"> 80 </span>  <span class="Comment">#     ++dest</span>
-<span id="L81" class="LineNr"> 81 </span>  <span class="Comment">#</span>
-<span id="L82" class="LineNr"> 82 </span>  <span class="Comment"># key registers to set up for the loop:</span>
-<span id="L83" class="LineNr"> 83 </span>  <span class="Comment">#   EAX/dest, ECX/destend, EBX/src, ESI/srcend</span>
-<span id="L84" class="LineNr"> 84 </span>  <span class="Comment"># we save EDX for byte operations (has to be one of the first 4 registers)</span>
-<span id="L85" class="LineNr"> 85 </span>  <span class="Comment">#</span>
-<span id="L86" class="LineNr"> 86 </span>  <span class="Comment"># register setup before the loop:</span>
-<span id="L87" class="LineNr"> 87 </span>  <span class="Comment">#   EAX = *(EBP+8)    # f</span>
-<span id="L88" class="LineNr"> 88 </span>  <span class="Comment">#   EBX = *(EBP+12)   # s</span>
-<span id="L89" class="LineNr"> 89 </span>  <span class="Comment">#   ECX = *(EAX+4)    # f.length</span>
-<span id="L90" class="LineNr"> 90 </span>  <span class="Comment">#   ECX = EAX+8+ECX  # destend = &amp;f.data[f.length]</span>
-<span id="L91" class="LineNr"> 91 </span>  <span class="Comment">#   ESI = *EAX        # oldw = f.write</span>
-<span id="L92" class="LineNr"> 92 </span>  <span class="Comment">#   EDX = *EBX        # s.length</span>
-<span id="L93" class="LineNr"> 93 </span>  <span class="Comment">#   *EAX = *EAX + EDX # update f.write  (allowed to go past f.length)</span>
-<span id="L94" class="LineNr"> 94 </span>  <span class="Comment">#                     # do this here just because it's convenient</span>
-<span id="L95" class="LineNr"> 95 </span>  <span class="Comment">#   EAX = EAX+8+ESI  # dest = &amp;f.data[oldw]</span>
-<span id="L96" class="LineNr"> 96 </span>  <span class="Comment">#   ESI = EBX+4+EDX   # srcend = &amp;s.data[s.length]</span>
-<span id="L97" class="LineNr"> 97 </span>  <span class="Comment">#   EBX = EBX+4       # src = &amp;s.data[0]</span>
-<span id="L98" class="LineNr"> 98 </span>  <span class="Comment">#</span>
-<span id="L99" class="LineNr"> 99 </span>  <span class="Comment"># EAX = f</span>
-<span id="L100" class="LineNr">100 </span>  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EBP+8) to EAX</span>
-<span id="L101" class="LineNr">101 </span>  <span class="Comment"># EBX = s</span>
-<span id="L102" class="LineNr">102 </span>  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   0xc/disp8      <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EBP+12) to EBX</span>
-<span id="L103" class="LineNr">103 </span>  <span class="Comment"># ECX = f.length</span>
-<span id="L104" class="LineNr">104 </span>  8b/copy                         1/mod/*+disp8   0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/ECX   4/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EAX+4) to ECX</span>
-<span id="L105" class="LineNr">105 </span>  <span class="Comment"># ECX/destend = &amp;f.data[f.length]</span>
-<span id="L106" class="LineNr">106 </span>  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX  <span class="Delimiter"> . </span>          1/r32/ECX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy EAX+ECX+8 to ECX</span>
-<span id="L107" class="LineNr">107 </span>  <span class="Comment"># ESI/oldw = f.write</span>
-<span id="L108" class="LineNr">108 </span>  8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          6/r32/ESI  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy *EAX to ESI</span>
-<span id="L109" class="LineNr">109 </span>  <span class="Comment"># EDX = s.length</span>
-<span id="L110" class="LineNr">110 </span>  8b/copy                         0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          2/r32/EDX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy *EBX to EDX</span>
-<span id="L111" class="LineNr">111 </span>  <span class="Comment"># if EDX == 0 return</span>
-<span id="L112" class="LineNr">112 </span>  81          7/subop/compare     3/mod/direct    2/rm32/EDX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0/imm32           <span class="Comment"># compare EDX</span>
-<span id="L113" class="LineNr">113 </span>  74/jump-if-equal  $write:end/disp8
-<span id="L114" class="LineNr">114 </span>  <span class="Comment"># f.write += s.length</span>
-<span id="L115" class="LineNr">115 </span>  01/add                          0/mod/indirect  0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          2/r32/EDX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># add EDX to *EAX</span>
-<span id="L116" class="LineNr">116 </span>  <span class="Comment"># EAX/dest = &amp;f.data[oldw]</span>
-<span id="L117" class="LineNr">117 </span>  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  6/index/ESI  <span class="Delimiter"> . </span>          0/r32/EAX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy EAX+ESI+8 to EAX</span>
-<span id="L118" class="LineNr">118 </span>  <span class="Comment"># ESI/srcend = &amp;s.data[s.length]</span>
-<span id="L119" class="LineNr">119 </span>  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  2/index/EDX  <span class="Delimiter"> . </span>          6/r32/ESI   4/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy EBX+EDX+4 to ESI</span>
-<span id="L120" class="LineNr">120 </span>  <span class="Comment"># EBX/src = &amp;s.data[0]</span>
-<span id="L121" class="LineNr">121 </span>  81          0/subop/add         3/mod/direct    3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32           <span class="Comment"># add to EBX</span>
-<span id="L122" class="LineNr">122 </span>  <span class="Comment"># while (true)</span>
-<span id="L123" class="LineNr">123 </span>$write:loop:
-<span id="L124" class="LineNr">124 </span>  <span class="Comment"># if EBX/src &gt;= ESI/srcend break</span>
-<span id="L125" class="LineNr">125 </span>  39/compare                      3/mod/direct    3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          6/r32/ESI  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># compare EBX with ESI</span>
-<span id="L126" class="LineNr">126 </span>  7d/jump-if-greater-or-equal  $write:end/disp8
-<span id="L127" class="LineNr">127 </span>  <span class="Comment"># if EAX/dest &gt;= ECX/destend break  (for now silently ignore filled up ostream buffer)</span>
-<span id="L128" class="LineNr">128 </span>  39/compare                      3/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/ECX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># compare EAX with ECX</span>
-<span id="L129" class="LineNr">129 </span>  7d/jump-if-greater-or-equal  $write:end/disp8
-<span id="L130" class="LineNr">130 </span>  <span class="Comment"># copy one byte</span>
-<span id="L131" class="LineNr">131 </span>  8a/copy-byte                    0/mod/indirect  3/rm32/EBX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          2/r32/DL   <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy byte at *EBX to DL</span>
-<span id="L132" class="LineNr">132 </span>  88/copy-byte                    0/mod/indirect  0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          2/r32/DL   <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy byte at DL to *EAX</span>
-<span id="L133" class="LineNr">133 </span>  <span class="Comment"># updates</span>
-<span id="L134" class="LineNr">134 </span>  40/increment-EAX
-<span id="L135" class="LineNr">135 </span>  43/increment-EBX
-<span id="L136" class="LineNr">136 </span>  eb/jump  $write:loop/disp8
-<span id="L137" class="LineNr">137 </span>$write:end:
-<span id="L138" class="LineNr">138 </span>  <span class="Comment"># restore registers</span>
-<span id="L139" class="LineNr">139 </span>  5e/pop-to-ESI
-<span id="L140" class="LineNr">140 </span>  5b/pop-to-EBX
-<span id="L141" class="LineNr">141 </span>  5a/pop-to-EDX
-<span id="L142" class="LineNr">142 </span>  59/pop-to-ECX
-<span id="L143" class="LineNr">143 </span>  58/pop-to-EAX
-<span id="L144" class="LineNr">144 </span>  <span class="Comment"># epilog</span>
-<span id="L145" class="LineNr">145 </span>  89/copy                         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          5/r32/EBP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy EBP to ESP</span>
-<span id="L146" class="LineNr">146 </span>  5d/pop-to-EBP
-<span id="L147" class="LineNr">147 </span>  c3/return
-<span id="L148" class="LineNr">148 </span>
-<span id="L149" class="LineNr">149 </span>clear-ostream:  <span class="Comment"># f : (address ostream)</span>
-<span id="L150" class="LineNr">150 </span>  <span class="Comment"># prolog</span>
-<span id="L151" class="LineNr">151 </span>  55/push-EBP
-<span id="L152" class="LineNr">152 </span>  89/copy                         3/mod/direct    5/rm32/EBP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          4/r32/ESP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy ESP to EBP</span>
-<span id="L153" class="LineNr">153 </span>  <span class="Comment"># save registers</span>
-<span id="L154" class="LineNr">154 </span>  50/push-EAX
-<span id="L155" class="LineNr">155 </span>  51/push-ECX
-<span id="L156" class="LineNr">156 </span>  <span class="Comment"># EAX = f</span>
-<span id="L157" class="LineNr">157 </span>  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EBP+8) to EAX</span>
-<span id="L158" class="LineNr">158 </span>  <span class="Comment"># ECX = f.length</span>
-<span id="L159" class="LineNr">159 </span>  8b/copy                         1/mod/*+disp8   0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/ECX   4/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EAX+4) to ECX</span>
-<span id="L160" class="LineNr">160 </span>  <span class="Comment"># ECX = &amp;f.data[f.length]</span>
-<span id="L161" class="LineNr">161 </span>  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX  <span class="Delimiter"> . </span>          1/r32/ECX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy EAX+ECX+8 to ECX</span>
-<span id="L162" class="LineNr">162 </span>  <span class="Comment"># f.write = 0</span>
-<span id="L163" class="LineNr">163 </span>  c7/copy                         0/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0/imm32           <span class="Comment"># copy to *EAX</span>
-<span id="L164" class="LineNr">164 </span>  <span class="Comment"># EAX = f.data</span>
-<span id="L165" class="LineNr">165 </span>  81          0/subop/add         3/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to EAX</span>
-<span id="L166" class="LineNr">166 </span>  <span class="Comment"># while (true)</span>
-<span id="L167" class="LineNr">167 </span>$clear-ostream:loop:
-<span id="L168" class="LineNr">168 </span>  <span class="Comment"># if EAX &gt;= ECX break</span>
-<span id="L169" class="LineNr">169 </span>  39/compare                      3/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/ECX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># compare EAX with ECX</span>
-<span id="L170" class="LineNr">170 </span>  7d/jump-if-greater-or-equal  $clear-ostream:end/disp8
-<span id="L171" class="LineNr">171 </span>  <span class="Comment"># *EAX = 0</span>
-<span id="L172" class="LineNr">172 </span>  c7/copy                         0/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0/imm32           <span class="Comment"># copy to *EAX</span>
-<span id="L173" class="LineNr">173 </span>  <span class="Comment"># EAX += 4</span>
-<span id="L174" class="LineNr">174 </span>  81          0/subop/add         3/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32           <span class="Comment"># add to EAX</span>
-<span id="L175" class="LineNr">175 </span>  eb/jump  $clear-ostream:loop/disp8
-<span id="L176" class="LineNr">176 </span>$clear-ostream:end:
-<span id="L177" class="LineNr">177 </span>  <span class="Comment"># restore registers</span>
-<span id="L178" class="LineNr">178 </span>  59/pop-to-ECX
-<span id="L179" class="LineNr">179 </span>  58/pop-to-EAX
-<span id="L180" class="LineNr">180 </span>  <span class="Comment"># epilog</span>
-<span id="L181" class="LineNr">181 </span>  89/copy                         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          5/r32/EBP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy EBP to ESP</span>
-<span id="L182" class="LineNr">182 </span>  5d/pop-to-EBP
-<span id="L183" class="LineNr">183 </span>  c3/return
-<span id="L184" class="LineNr">184 </span>
-<span id="L185" class="LineNr">185 </span>test-write-single:
-<span id="L186" class="LineNr">186 </span>  <span class="Comment"># clear-ostream(Test-ostream)</span>
+<span id="L36" class="LineNr"> 36 </span>  e8/call  run-tests/disp32  <span class="Comment"># 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.</span>
+<span id="L37" class="LineNr"> 37 </span>  <span class="Comment"># syscall(exit, Num-test-failures)</span>
+<span id="L38" class="LineNr"> 38 </span>  8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/EBX   Num-test-failures/disp32          <span class="Comment"># copy *Num-test-failures to EBX</span>
+<span id="L39" class="LineNr"> 39 </span>  b8/copy-to-EAX  1/imm32
+<span id="L40" class="LineNr"> 40 </span>  cd/syscall  0x80/imm8
+<span id="L41" class="LineNr"> 41 </span>
+<span id="L42" class="LineNr"> 42 </span>write:  <span class="Comment"># f : fd or (address stream), s : (address array byte) -&gt; &lt;void&gt;</span>
+<span id="L43" class="LineNr"> 43 </span>  <span class="Comment"># prolog</span>
+<span id="L44" class="LineNr"> 44 </span>  55/push-EBP
+<span id="L45" class="LineNr"> 45 </span>  89/copy                         3/mod/direct    5/rm32/EBP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          4/r32/ESP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy ESP to EBP</span>
+<span id="L46" class="LineNr"> 46 </span>  <span class="Comment"># if (f &lt; 0x08000000) _write(f, s), return  # f can't be a user-mode address, so treat it as a kernel file descriptor</span>
+<span id="L47" class="LineNr"> 47 </span>  81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8         0x08000000/imm32  <span class="Comment"># compare *(EBP+8)</span>
+<span id="L48" class="LineNr"> 48 </span>  7f/jump-if-greater  $write:fake/disp8
+<span id="L49" class="LineNr"> 49 </span>    <span class="Comment"># push args</span>
+<span id="L50" class="LineNr"> 50 </span>  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          0xc/disp8      <span class="Delimiter"> . </span>                <span class="Comment"># push *(EBP+12)</span>
+<span id="L51" class="LineNr"> 51 </span>  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># push *(EBP+8)</span>
+<span id="L52" class="LineNr"> 52 </span>    <span class="Comment"># call</span>
+<span id="L53" class="LineNr"> 53 </span>  e8/call  _write/disp32
+<span id="L54" class="LineNr"> 54 </span>    <span class="Comment"># discard args</span>
+<span id="L55" class="LineNr"> 55 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
+<span id="L56" class="LineNr"> 56 </span>  eb/jump  $write:end/disp8
+<span id="L57" class="LineNr"> 57 </span>$write:fake:
+<span id="L58" class="LineNr"> 58 </span>  <span class="Comment"># otherwise, treat 'f' as a stream to append to</span>
+<span id="L59" class="LineNr"> 59 </span>  <span class="Comment"># save registers</span>
+<span id="L60" class="LineNr"> 60 </span>  50/push-EAX
+<span id="L61" class="LineNr"> 61 </span>  51/push-ECX
+<span id="L62" class="LineNr"> 62 </span>  52/push-EDX
+<span id="L63" class="LineNr"> 63 </span>  53/push-EBX
+<span id="L64" class="LineNr"> 64 </span>  <span class="Comment"># ECX = f</span>
+<span id="L65" class="LineNr"> 65 </span>  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              1/r32/ECX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EBP+8) to ECX</span>
+<span id="L66" class="LineNr"> 66 </span>  <span class="Comment"># EDX = f.write</span>
+<span id="L67" class="LineNr"> 67 </span>  8b/copy                         0/mod/indirect  1/rm32/ECX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          2/r32/EDX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy *ECX to EDX</span>
+<span id="L68" class="LineNr"> 68 </span>  <span class="Comment"># EBX = f.length</span>
+<span id="L69" class="LineNr"> 69 </span>  8b/copy                         1/mod/*+disp8   1/rm32/ECX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          3/r32/EBX   4/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(ECX+4) to EBX</span>
+<span id="L70" class="LineNr"> 70 </span>  <span class="Comment"># EAX = _append(&amp;f.data[f.write], &amp;f.data[f.length], s)</span>
+<span id="L71" class="LineNr"> 71 </span>    <span class="Comment"># push s</span>
+<span id="L72" class="LineNr"> 72 </span>  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          0xc/disp8      <span class="Delimiter"> . </span>                <span class="Comment"># push *(EBP+12)</span>
+<span id="L73" class="LineNr"> 73 </span>    <span class="Comment"># push &amp;f.data[f.length]</span>
+<span id="L74" class="LineNr"> 74 </span>  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ECX  3/index/EBX  <span class="Delimiter"> . </span>          3/r32/EBX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy ECX+EBX+8 to EBX</span>
+<span id="L75" class="LineNr"> 75 </span>  53/push-EBX
+<span id="L76" class="LineNr"> 76 </span>    <span class="Comment"># push &amp;f.data[f.write]</span>
+<span id="L77" class="LineNr"> 77 </span>  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ECX  2/index/EDX  <span class="Delimiter"> . </span>          3/r32/EBX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy ECX+EBX+8 to EBX</span>
+<span id="L78" class="LineNr"> 78 </span>  53/push-EBX
+<span id="L79" class="LineNr"> 79 </span>    <span class="Comment"># call</span>
+<span id="L80" class="LineNr"> 80 </span>  e8/call  _append/disp32
+<span id="L81" class="LineNr"> 81 </span>    <span class="Comment"># discard args</span>
+<span id="L82" class="LineNr"> 82 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0xc/imm32         <span class="Comment"># add to ESP</span>
+<span id="L83" class="LineNr"> 83 </span>  <span class="Comment"># f.write += EAX</span>
+<span id="L84" class="LineNr"> 84 </span>  01/add                          0/mod/indirect  1/rm32/ECX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          0/r32/EAX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># add EAX to *ECX</span>
+<span id="L85" class="LineNr"> 85 </span>  <span class="Comment"># restore registers</span>
+<span id="L86" class="LineNr"> 86 </span>  5b/pop-to-EBX
+<span id="L87" class="LineNr"> 87 </span>  5a/pop-to-EDX
+<span id="L88" class="LineNr"> 88 </span>  59/pop-to-ECX
+<span id="L89" class="LineNr"> 89 </span>  58/pop-to-EAX
+<span id="L90" class="LineNr"> 90 </span>$write:end:
+<span id="L91" class="LineNr"> 91 </span>  <span class="Comment"># epilog</span>
+<span id="L92" class="LineNr"> 92 </span>  89/copy                         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          5/r32/EBP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy EBP to ESP</span>
+<span id="L93" class="LineNr"> 93 </span>  5d/pop-to-EBP
+<span id="L94" class="LineNr"> 94 </span>  c3/return
+<span id="L95" class="LineNr"> 95 </span>
+<span id="L96" class="LineNr"> 96 </span>clear-ostream:  <span class="Comment"># f : (address ostream)</span>
+<span id="L97" class="LineNr"> 97 </span>  <span class="Comment"># prolog</span>
+<span id="L98" class="LineNr"> 98 </span>  55/push-EBP
+<span id="L99" class="LineNr"> 99 </span>  89/copy                         3/mod/direct    5/rm32/EBP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          4/r32/ESP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy ESP to EBP</span>
+<span id="L100" class="LineNr">100 </span>  <span class="Comment"># save registers</span>
+<span id="L101" class="LineNr">101 </span>  50/push-EAX
+<span id="L102" class="LineNr">102 </span>  51/push-ECX
+<span id="L103" class="LineNr">103 </span>  <span class="Comment"># EAX = f</span>
+<span id="L104" class="LineNr">104 </span>  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EBP+8) to EAX</span>
+<span id="L105" class="LineNr">105 </span>  <span class="Comment"># ECX = f.length</span>
+<span id="L106" class="LineNr">106 </span>  8b/copy                         1/mod/*+disp8   0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/ECX   4/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy *(EAX+4) to ECX</span>
+<span id="L107" class="LineNr">107 </span>  <span class="Comment"># ECX = &amp;f.data[f.length]</span>
+<span id="L108" class="LineNr">108 </span>  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX  <span class="Delimiter"> . </span>          1/r32/ECX   8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># copy EAX+ECX+8 to ECX</span>
+<span id="L109" class="LineNr">109 </span>  <span class="Comment"># f.write = 0</span>
+<span id="L110" class="LineNr">110 </span>  c7/copy                         0/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0/imm32           <span class="Comment"># copy to *EAX</span>
+<span id="L111" class="LineNr">111 </span>  <span class="Comment"># EAX = f.data</span>
+<span id="L112" class="LineNr">112 </span>  81          0/subop/add         3/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to EAX</span>
+<span id="L113" class="LineNr">113 </span>  <span class="Comment"># while (true)</span>
+<span id="L114" class="LineNr">114 </span>$clear-ostream:loop:
+<span id="L115" class="LineNr">115 </span>  <span class="Comment"># if EAX &gt;= ECX break</span>
+<span id="L116" class="LineNr">116 </span>  39/compare                      3/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          1/r32/ECX  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># compare EAX with ECX</span>
+<span id="L117" class="LineNr">117 </span>  7d/jump-if-greater-or-equal  $clear-ostream:end/disp8
+<span id="L118" class="LineNr">118 </span>  <span class="Comment"># *EAX = 0</span>
+<span id="L119" class="LineNr">119 </span>  c7/copy                         0/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0/imm32           <span class="Comment"># copy to *EAX</span>
+<span id="L120" class="LineNr">120 </span>  <span class="Comment"># EAX += 4</span>
+<span id="L121" class="LineNr">121 </span>  81          0/subop/add         3/mod/direct    0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32           <span class="Comment"># add to EAX</span>
+<span id="L122" class="LineNr">122 </span>  eb/jump  $clear-ostream:loop/disp8
+<span id="L123" class="LineNr">123 </span>$clear-ostream:end:
+<span id="L124" class="LineNr">124 </span>  <span class="Comment"># restore registers</span>
+<span id="L125" class="LineNr">125 </span>  59/pop-to-ECX
+<span id="L126" class="LineNr">126 </span>  58/pop-to-EAX
+<span id="L127" class="LineNr">127 </span>  <span class="Comment"># epilog</span>
+<span id="L128" class="LineNr">128 </span>  89/copy                         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>          5/r32/EBP  <span class="Delimiter"> . </span>             <span class="Delimiter"> . </span>                <span class="Comment"># copy EBP to ESP</span>
+<span id="L129" class="LineNr">129 </span>  5d/pop-to-EBP
+<span id="L130" class="LineNr">130 </span>  c3/return
+<span id="L131" class="LineNr">131 </span>
+<span id="L132" class="LineNr">132 </span>test-write-single:
+<span id="L133" class="LineNr">133 </span>  <span class="Comment"># clear-ostream(Test-ostream)</span>
+<span id="L134" class="LineNr">134 </span>    <span class="Comment"># push args</span>
+<span id="L135" class="LineNr">135 </span>  68/push  Test-ostream/imm32
+<span id="L136" class="LineNr">136 </span>    <span class="Comment"># call</span>
+<span id="L137" class="LineNr">137 </span>  e8/call  clear-ostream/disp32
+<span id="L138" class="LineNr">138 </span>    <span class="Comment"># discard args</span>
+<span id="L139" class="LineNr">139 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32           <span class="Comment"># add to ESP</span>
+<span id="L140" class="LineNr">140 </span>  <span class="Comment"># write(Test-ostream, &quot;Ab&quot;)</span>
+<span id="L141" class="LineNr">141 </span>    <span class="Comment"># push args</span>
+<span id="L142" class="LineNr">142 </span>  68/push  &quot;Ab&quot;/imm32
+<span id="L143" class="LineNr">143 </span>  68/push  Test-ostream/imm32
+<span id="L144" class="LineNr">144 </span>    <span class="Comment"># call</span>
+<span id="L145" class="LineNr">145 </span>  e8/call  write/disp32
+<span id="L146" class="LineNr">146 </span>    <span class="Comment"># discard args</span>
+<span id="L147" class="LineNr">147 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
+<span id="L148" class="LineNr">148 </span>  <span class="Comment"># check-ints-equal(*Test-ostream.data, 41/A 62/b 00 00, msg)</span>
+<span id="L149" class="LineNr">149 </span>    <span class="Comment"># push args</span>
+<span id="L150" class="LineNr">150 </span>  68/push  &quot;F - test-write-single&quot;/imm32
+<span id="L151" class="LineNr">151 </span>  68/push  0x006241/imm32/Ab
+<span id="L152" class="LineNr">152 </span>    <span class="Comment"># push *Test-ostream.data</span>
+<span id="L153" class="LineNr">153 </span>  b8/copy-to-EAX  Test-ostream/imm32
+<span id="L154" class="LineNr">154 </span>  ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># push *(EAX+8)</span>
+<span id="L155" class="LineNr">155 </span>    <span class="Comment"># call</span>
+<span id="L156" class="LineNr">156 </span>  e8/call  check-ints-equal/disp32
+<span id="L157" class="LineNr">157 </span>    <span class="Comment"># discard args</span>
+<span id="L158" class="LineNr">158 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0xc/imm32         <span class="Comment"># add to ESP</span>
+<span id="L159" class="LineNr">159 </span>  <span class="Comment"># end</span>
+<span id="L160" class="LineNr">160 </span>  c3/return
+<span id="L161" class="LineNr">161 </span>
+<span id="L162" class="LineNr">162 </span>test-write-appends:
+<span id="L163" class="LineNr">163 </span>  <span class="Comment"># clear-ostream(Test-ostream)</span>
+<span id="L164" class="LineNr">164 </span>    <span class="Comment"># push args</span>
+<span id="L165" class="LineNr">165 </span>  68/push  Test-ostream/imm32
+<span id="L166" class="LineNr">166 </span>    <span class="Comment"># call</span>
+<span id="L167" class="LineNr">167 </span>  e8/call  clear-ostream/disp32
+<span id="L168" class="LineNr">168 </span>    <span class="Comment"># discard args</span>
+<span id="L169" class="LineNr">169 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32           <span class="Comment"># add to ESP</span>
+<span id="L170" class="LineNr">170 </span>  <span class="Comment"># write(Test-ostream, &quot;C&quot;)</span>
+<span id="L171" class="LineNr">171 </span>    <span class="Comment"># push args</span>
+<span id="L172" class="LineNr">172 </span>  68/push  &quot;C&quot;/imm32
+<span id="L173" class="LineNr">173 </span>  68/push  Test-ostream/imm32
+<span id="L174" class="LineNr">174 </span>    <span class="Comment"># call</span>
+<span id="L175" class="LineNr">175 </span>  e8/call  write/disp32
+<span id="L176" class="LineNr">176 </span>    <span class="Comment"># discard args</span>
+<span id="L177" class="LineNr">177 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
+<span id="L178" class="LineNr">178 </span>  <span class="Comment"># write(Test-ostream, &quot;D&quot;)</span>
+<span id="L179" class="LineNr">179 </span>    <span class="Comment"># push args</span>
+<span id="L180" class="LineNr">180 </span>  68/push  &quot;D&quot;/imm32
+<span id="L181" class="LineNr">181 </span>  68/push  Test-ostream/imm32
+<span id="L182" class="LineNr">182 </span>    <span class="Comment"># call</span>
+<span id="L183" class="LineNr">183 </span>  e8/call  write/disp32
+<span id="L184" class="LineNr">184 </span>    <span class="Comment"># discard args</span>
+<span id="L185" class="LineNr">185 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
+<span id="L186" class="LineNr">186 </span>  <span class="Comment"># check-ints-equal(*Test-ostream.data, 43/C 44/D 00 00, msg)</span>
 <span id="L187" class="LineNr">187 </span>    <span class="Comment"># push args</span>
-<span id="L188" class="LineNr">188 </span>  68/push  Test-ostream/imm32
-<span id="L189" class="LineNr">189 </span>    <span class="Comment"># call</span>
-<span id="L190" class="LineNr">190 </span>  e8/call  clear-ostream/disp32
-<span id="L191" class="LineNr">191 </span>    <span class="Comment"># discard args</span>
-<span id="L192" class="LineNr">192 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32           <span class="Comment"># add to ESP</span>
-<span id="L193" class="LineNr">193 </span>  <span class="Comment"># write(Test-ostream, &quot;Ab&quot;)</span>
-<span id="L194" class="LineNr">194 </span>    <span class="Comment"># push args</span>
-<span id="L195" class="LineNr">195 </span>  68/push  &quot;Ab&quot;/imm32
-<span id="L196" class="LineNr">196 </span>  68/push  Test-ostream/imm32
-<span id="L197" class="LineNr">197 </span>    <span class="Comment"># call</span>
-<span id="L198" class="LineNr">198 </span>  e8/call  write/disp32
-<span id="L199" class="LineNr">199 </span>    <span class="Comment"># discard args</span>
-<span id="L200" class="LineNr">200 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
-<span id="L201" class="LineNr">201 </span>  <span class="Comment"># check-ints-equal(*Test-ostream.data, 41/A 62/b 00 00, msg)</span>
-<span id="L202" class="LineNr">202 </span>    <span class="Comment"># push args</span>
-<span id="L203" class="LineNr">203 </span>  68/push  &quot;F - test-write-single&quot;/imm32
-<span id="L204" class="LineNr">204 </span>  68/push  0x006241/imm32/Ab
-<span id="L205" class="LineNr">205 </span>    <span class="Comment"># push *Test-ostream.data</span>
-<span id="L206" class="LineNr">206 </span>  b8/copy-to-EAX  Test-ostream/imm32
-<span id="L207" class="LineNr">207 </span>  ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># push *(EAX+8)</span>
-<span id="L208" class="LineNr">208 </span>    <span class="Comment"># call</span>
-<span id="L209" class="LineNr">209 </span>  e8/call  check-ints-equal/disp32
-<span id="L210" class="LineNr">210 </span>    <span class="Comment"># discard args</span>
-<span id="L211" class="LineNr">211 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0xc/imm32         <span class="Comment"># add to ESP</span>
-<span id="L212" class="LineNr">212 </span>  <span class="Comment"># end</span>
-<span id="L213" class="LineNr">213 </span>  c3/return
-<span id="L214" class="LineNr">214 </span>
-<span id="L215" class="LineNr">215 </span>test-write-appends:
-<span id="L216" class="LineNr">216 </span>  <span class="Comment"># clear-ostream(Test-ostream)</span>
-<span id="L217" class="LineNr">217 </span>    <span class="Comment"># push args</span>
-<span id="L218" class="LineNr">218 </span>  68/push  Test-ostream/imm32
-<span id="L219" class="LineNr">219 </span>    <span class="Comment"># call</span>
-<span id="L220" class="LineNr">220 </span>  e8/call  clear-ostream/disp32
-<span id="L221" class="LineNr">221 </span>    <span class="Comment"># discard args</span>
-<span id="L222" class="LineNr">222 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              4/imm32           <span class="Comment"># add to ESP</span>
-<span id="L223" class="LineNr">223 </span>  <span class="Comment"># write(Test-ostream, &quot;C&quot;)</span>
-<span id="L224" class="LineNr">224 </span>    <span class="Comment"># push args</span>
-<span id="L225" class="LineNr">225 </span>  68/push  &quot;C&quot;/imm32
-<span id="L226" class="LineNr">226 </span>  68/push  Test-ostream/imm32
-<span id="L227" class="LineNr">227 </span>    <span class="Comment"># call</span>
-<span id="L228" class="LineNr">228 </span>  e8/call  write/disp32
-<span id="L229" class="LineNr">229 </span>    <span class="Comment"># discard args</span>
-<span id="L230" class="LineNr">230 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
-<span id="L231" class="LineNr">231 </span>  <span class="Comment"># write(Test-ostream, &quot;D&quot;)</span>
-<span id="L232" class="LineNr">232 </span>    <span class="Comment"># push args</span>
-<span id="L233" class="LineNr">233 </span>  68/push  &quot;D&quot;/imm32
-<span id="L234" class="LineNr">234 </span>  68/push  Test-ostream/imm32
-<span id="L235" class="LineNr">235 </span>    <span class="Comment"># call</span>
-<span id="L236" class="LineNr">236 </span>  e8/call  write/disp32
-<span id="L237" class="LineNr">237 </span>    <span class="Comment"># discard args</span>
-<span id="L238" class="LineNr">238 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              8/imm32           <span class="Comment"># add to ESP</span>
-<span id="L239" class="LineNr">239 </span>  <span class="Comment"># check-ints-equal(*Test-ostream.data, 43/C 44/D 00 00, msg)</span>
-<span id="L240" class="LineNr">240 </span>    <span class="Comment"># push args</span>
-<span id="L241" class="LineNr">241 </span>  68/push  &quot;F - test-write-appends&quot;/imm32
-<span id="L242" class="LineNr">242 </span>  68/push  0x00004443/imm32/C-D
-<span id="L243" class="LineNr">243 </span>    <span class="Comment"># push *Test-ostream.data</span>
-<span id="L244" class="LineNr">244 </span>  b8/copy-to-EAX  Test-ostream/imm32
-<span id="L245" class="LineNr">245 </span>  ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># push *(EAX+8)</span>
-<span id="L246" class="LineNr">246 </span>    <span class="Comment"># call</span>
-<span id="L247" class="LineNr">247 </span>  e8/call  check-ints-equal/disp32
-<span id="L248" class="LineNr">248 </span>    <span class="Comment"># discard args</span>
-<span id="L249" class="LineNr">249 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0xc/imm32         <span class="Comment"># add to ESP</span>
-<span id="L250" class="LineNr">250 </span>  <span class="Comment"># end</span>
-<span id="L251" class="LineNr">251 </span>  c3/return
+<span id="L188" class="LineNr">188 </span>  68/push  &quot;F - test-write-appends&quot;/imm32
+<span id="L189" class="LineNr">189 </span>  68/push  0x00004443/imm32/C-D
+<span id="L190" class="LineNr">190 </span>    <span class="Comment"># push *Test-ostream.data</span>
+<span id="L191" class="LineNr">191 </span>  b8/copy-to-EAX  Test-ostream/imm32
+<span id="L192" class="LineNr">192 </span>  ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>          8/disp8        <span class="Delimiter"> . </span>                <span class="Comment"># push *(EAX+8)</span>
+<span id="L193" class="LineNr">193 </span>    <span class="Comment"># call</span>
+<span id="L194" class="LineNr">194 </span>  e8/call  check-ints-equal/disp32
+<span id="L195" class="LineNr">195 </span>    <span class="Comment"># discard args</span>
+<span id="L196" class="LineNr">196 </span>  81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>           <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>         <span class="Delimiter"> . </span>              0xc/imm32         <span class="Comment"># add to ESP</span>
+<span id="L197" class="LineNr">197 </span>  <span class="Comment"># end</span>
+<span id="L198" class="LineNr">198 </span>  c3/return
 </pre>
 </body>
 </html>
