@@ -138,6 +138,15 @@ const int STACK_SEGMENT = 0x0b000000;
 const int AFTER_STACK = 0x0b000ffc;  // forget final word because of the off-by-one with INITIAL_SEGMENT_SIZE;
 const int ARGV_DATA_SEGMENT = 0x0c000000;
 :(code)
+void dump_stack() {
+  cerr << "stack:\n";
+  for (uint32_t a = AFTER_STACK-4;  a > Reg[ESP].u;  a -= 4)
+    cerr << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << '\n';
+  cerr << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP\n";
+  for (uint32_t a = Reg[ESP].u-4;  a > Reg[ESP].u-40;  a -= 4)
+    cerr << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << '\n';
+}
+
 inline uint32_t u32_in(uint8_t* p) {
   return p[0] | p[1] << 8 | p[2] << 16 | p[3] << 24;
 }
