@@ -293,6 +293,7 @@ void run_one_instruction() {
     cerr << "opcode: " << HEXBYTE << NUM(op) << '\n';
     cerr << "registers at start: ";
     dump_registers();
+//?     dump_stack();
   }
   switch (op) {
   case 0xf4:  // hlt
@@ -361,6 +362,15 @@ void dump_registers() {
     cerr << "  " << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
   }
   cerr << " -- SF: " << SF << "; ZF: " << ZF << "; OF: " << OF << '\n';
+}
+
+void dump_stack() {
+  cerr << "stack:\n";
+  for (uint32_t a = AFTER_STACK-4;  a > Reg[ESP].u;  a -= 4)
+    cerr << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << '\n';
+  cerr << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP\n";
+  for (uint32_t a = Reg[ESP].u-4;  a > Reg[ESP].u-40;  a -= 4)
+    cerr << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << '\n';
 }
 
 //: start tracking supported opcodes
