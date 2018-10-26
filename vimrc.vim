@@ -81,3 +81,12 @@ function! GrepSubX(regex)
   silent exec "r !grep -h '".a:regex."' *.subx */*.subx"
 endfunction
 command! -nargs=1 G call GrepSubX(<q-args>)
+
+" temporary helpers while we port https://github.com/akkartik/crenshaw to apps/crenshaw*.subx
+function! Orig()
+  let l:p = expand("%:t:r")
+  if l:p =~ "^crenshaw\\d*-\\d*$"
+    exec "vert split crenshaw/tutor" . substitute(expand("%:t:r"), "^crenshaw\\(\\d*\\)-\\(\\d*\\)$", "\\1.\\2", "") . ".pas"
+  endif
+endfunction
+command! O call Orig()
