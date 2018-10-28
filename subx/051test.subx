@@ -44,17 +44,16 @@ check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
   eb/jump  $check-ints-equal:end/disp8
   # else:
 $check-ints-equal:else:
-  # copy third arg (msg) into ECX
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x10/disp8       .                # copy *(EBP+16) to ECX
-    # _write(2/stderr, ECX)
+    # _write(2/stderr, msg)
       # push args
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x10/disp8      .                 # copy *(EBP+16) to ECX
   51/push-ECX
   68/push  2/imm32/stderr
       # call
   e8/call  _write/disp32
       # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # print newline
+    # _write(2/stderr, Newline)
       # push args
   68/push  Newline/imm32
   68/push  2/imm32/stderr
