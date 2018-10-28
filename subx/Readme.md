@@ -138,9 +138,8 @@ The `examples/` directory shows some simpler programs giving a more gradual
 introduction to SubX features. The repo includes the binary for all examples.
 At any commit an example's binary should be identical bit for bit with the
 result of translating the .subx file. The binary should also be natively
-runnable on a 32-bit Linux system. If either of these invariants is broken
-it's a bug on my part. The binary should also be runnable on a 64-bit Linux
-system. I can't guarantee it, but I'd appreciate hearing if it doesn't run.
+runnable on a Linux system running on Intel x86 processors, either 32- or
+64-bit. If either of these invariants is broken it's a bug on my part.
 
 However, not all 32-bit Linux binaries are guaranteed to be runnable by
 `subx`. I'm not building general infrastructure here for all of the x86 ISA

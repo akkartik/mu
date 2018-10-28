@@ -6,12 +6,11 @@
 set -e
 cd `dirname $0`
 
-test `uname -m` = 'i686'  &&  echo 'comparing generated binaries'
 test `uname` = 'Linux'  &&  echo 'testing native runs as well'
 
 echo ex1
 CFLAGS=-g ./subx translate examples/ex1.subx  -o examples/ex1
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex1
+git diff --quiet examples/ex1
 CFLAGS=-g ./subx run examples/ex1  ||  ret=$?
 test $ret -eq 42  # life, the universe and everything
 test `uname` = 'Linux'  &&  {
@@ -21,7 +20,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex2
 CFLAGS=-g ./subx translate examples/ex2.subx  -o examples/ex2
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex2
+git diff --quiet examples/ex2
 CFLAGS=-g ./subx run examples/ex2  ||  ret=$?
 test $ret -eq 2  # 1 + 1
 test `uname` = 'Linux'  &&  {
@@ -31,7 +30,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex3
 CFLAGS=-g ./subx translate examples/ex3.subx  -o examples/ex3
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex3
+git diff --quiet examples/ex3
 CFLAGS=-g ./subx run examples/ex3  ||  ret=$?
 test $ret -eq 55  # 1 + 2 + ... + 10
 test `uname` = 'Linux'  &&  {
@@ -41,7 +40,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex4
 CFLAGS=-g ./subx translate examples/ex4.subx  -o examples/ex4
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex4
+git diff --quiet examples/ex4
 echo a | CFLAGS=-g ./subx run examples/ex4 >ex4.out  ||  true
 test `cat ex4.out` = 'a'
 test `uname` = 'Linux'  &&  {
@@ -51,7 +50,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex5
 CFLAGS=-g ./subx translate examples/ex5.subx  -o examples/ex5
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex5
+git diff --quiet examples/ex5
 echo a | CFLAGS=-g ./subx run examples/ex5 >ex5.out  ||  true
 test `cat ex5.out` = 'a'
 test `uname` = 'Linux'  &&  {
@@ -61,7 +60,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex6
 CFLAGS=-g ./subx translate examples/ex6.subx  -o examples/ex6
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex6
+git diff --quiet examples/ex6
 CFLAGS=-g ./subx run examples/ex6 >ex6.out  ||  true
 test "`cat ex6.out`" = 'Hello, world!'
 test `uname` = 'Linux'  &&  {
@@ -71,7 +70,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex7
 CFLAGS=-g ./subx translate examples/ex7.subx  -o examples/ex7
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex7
+git diff --quiet examples/ex7
 CFLAGS=-g ./subx run examples/ex7  ||  ret=$?
 test $ret -eq 97  # 'a'
 test `uname` = 'Linux'  &&  {
@@ -81,7 +80,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex8
 CFLAGS=-g ./subx translate examples/ex8.subx  -o examples/ex8
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex8
+git diff --quiet examples/ex8
 CFLAGS=-g ./subx run examples/ex8 abcd  ||  ret=$?
 test $ret -eq 4  # length('abcd')
 test `uname` = 'Linux'  &&  {
@@ -91,7 +90,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex9
 CFLAGS=-g ./subx translate examples/ex9.subx  -o examples/ex9
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex9
+git diff --quiet examples/ex9
 CFLAGS=-g ./subx run examples/ex9 z x  ||  ret=$?
 test $ret -eq 2  # 'z' - 'x'
 test `uname` = 'Linux'  &&  {
@@ -101,7 +100,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex10
 CFLAGS=-g ./subx translate examples/ex10.subx  -o examples/ex10
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex10
+git diff --quiet examples/ex10
 CFLAGS=-g ./subx run examples/ex10 abc abc  ||  ret=$?
 test $ret -eq 1  # equal
 CFLAGS=-g ./subx run examples/ex10 abc abcd  # 0; not equal
@@ -113,7 +112,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex11
 CFLAGS=-g ./subx translate examples/ex11.subx  -o examples/ex11
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex11
+git diff --quiet examples/ex11
 CFLAGS=-g ./subx run examples/ex11
 echo
 test `uname` = 'Linux'  &&  {
@@ -123,13 +122,13 @@ test `uname` = 'Linux'  &&  {
 
 echo ex12
 CFLAGS=-g ./subx translate examples/ex12.subx  -o examples/ex12
-test `uname -m` = 'i686'  &&  git diff --quiet examples/ex12
+git diff --quiet examples/ex12
 CFLAGS=-g ./subx run examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
 test `uname` = 'Linux'  &&  examples/ex12
 
 echo factorial
 CFLAGS=-g ./subx translate *.subx apps/factorial.subx  -o apps/factorial
-test `uname -m` = 'i686'  &&  git diff --quiet apps/factorial
+git diff --quiet apps/factorial
 CFLAGS=-g ./subx run apps/factorial  ||  ret=$?
 test $ret -eq 120  # factorial(5)
 CFLAGS=-g ./subx run apps/factorial test
@@ -143,7 +142,7 @@ test `uname` = 'Linux'  &&  {
 
 echo crenshaw2-1
 CFLAGS=-g ./subx translate *.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
-test `uname -m` = 'i686'  &&  git diff --quiet apps/crenshaw2-1
+git diff --quiet apps/crenshaw2-1
 CFLAGS=-g ./subx run apps/crenshaw2-1 2>crenshaw2-1.out  ||  true
 test "`cat crenshaw2-1.out`" = 'Error: Integer expected'
 test `uname` = 'Linux'  &&  {
