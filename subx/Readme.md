@@ -111,7 +111,7 @@ Running `subx` will transparently compile it as necessary.
 
 * `subx test`: runs all automated tests.
 
-* `subx translate <input file> -o <output ELF binary>`: translates a text file
+* `subx translate <input files> -o <output ELF binary>`: translates text files
   containing hex bytes and macros into an executable ELF binary.
 
 * `subx run <ELF binary>`: simulates running the ELF binaries emitted by `subx
