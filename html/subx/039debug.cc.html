@@ -61,25 +61,25 @@ if ('onhashchange' in window) {
 <span id="L4" class="LineNr"> 4 </span><span class="Comment">// (It'll only affect the trace.)</span>
 <span id="L5" class="LineNr"> 5 </span>
 <span id="L6" class="LineNr"> 6 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L7" class="LineNr"> 7 </span>map&lt;<span class="Comment">/*</span><span class="Comment">address</span><span class="Comment">*/</span><span class="Normal">uint32_t</span><span class="Delimiter">,</span> string&gt; Symbol_name<span class="Delimiter">;</span>  <span class="Comment">// used only by 'subx run'</span>
+<span id="L7" class="LineNr"> 7 </span>map&lt;<span class="Comment">/*</span><span class="Comment">address</span><span class="Comment">*/</span><span class="Normal">uint32_t</span><span class="Delimiter">,</span> string&gt; <a href='039debug.cc.html#L7'>Symbol_name</a><span class="Delimiter">;</span>  <span class="Comment">// used only by 'subx run'</span>
 <span id="L8" class="LineNr"> 8 </span><span class="Delimiter">:(before &quot;End --map Settings&quot;)</span>
-<span id="L9" class="LineNr"> 9 </span>load_map<span class="Delimiter">(</span><span class="Constant">&quot;map&quot;</span><span class="Delimiter">);</span>
+<span id="L9" class="LineNr"> 9 </span><a href='039debug.cc.html#L11'>load_map</a><span class="Delimiter">(</span><span class="Constant">&quot;map&quot;</span><span class="Delimiter">);</span>
 <span id="L10" class="LineNr">10 </span><span class="Delimiter">:(code)</span>
-<span id="L11" class="LineNr">11 </span><span class="Normal">void</span> load_map<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; map_filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L11" class="LineNr">11 </span><span class="Normal">void</span> <a href='039debug.cc.html#L11'>load_map</a><span class="Delimiter">(</span><span class="Normal">const</span> string&amp; map_filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L12" class="LineNr">12 </span>  ifstream fin<span class="Delimiter">(</span>map_filename<span class="Delimiter">.</span>c_str<span class="Delimiter">());</span>
 <span id="L13" class="LineNr">13 </span>  fin &gt;&gt; std::hex<span class="Delimiter">;</span>
-<span id="L14" class="LineNr">14 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>fin<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L14" class="LineNr">14 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span><a href='001help.cc.html#L265'>has_data</a><span class="Delimiter">(</span>fin<span class="Delimiter">))</span> <span class="Delimiter">{</span>
 <span id="L15" class="LineNr">15 </span>    <span class="Normal">uint32_t</span> addr = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L16" class="LineNr">16 </span>    fin &gt;&gt; addr<span class="Delimiter">;</span>
 <span id="L17" class="LineNr">17 </span>    string name<span class="Delimiter">;</span>
 <span id="L18" class="LineNr">18 </span>    fin &gt;&gt; name<span class="Delimiter">;</span>
-<span id="L19" class="LineNr">19 </span>    put<span class="Delimiter">(</span>Symbol_name<span class="Delimiter">,</span> addr<span class="Delimiter">,</span> name<span class="Delimiter">);</span>
+<span id="L19" class="LineNr">19 </span>    <a href='001help.cc.html#L243'>put</a><span class="Delimiter">(</span><a href='039debug.cc.html#L7'>Symbol_name</a><span class="Delimiter">,</span> addr<span class="Delimiter">,</span> name<span class="Delimiter">);</span>
 <span id="L20" class="LineNr">20 </span>  <span class="Delimiter">}</span>
 <span id="L21" class="LineNr">21 </span><span class="Delimiter">}</span>
 <span id="L22" class="LineNr">22 </span>
 <span id="L23" class="LineNr">23 </span><span class="Delimiter">:(after &quot;Run One Instruction&quot;)</span>
-<span id="L24" class="LineNr">24 </span><span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Symbol_name<span class="Delimiter">,</span> EIP<span class="Delimiter">))</span>
-<span id="L25" class="LineNr">25 </span>  trace<span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;== label &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Symbol_name<span class="Delimiter">,</span> EIP<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L24" class="LineNr">24 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L247'>contains_key</a><span class="Delimiter">(</span><a href='039debug.cc.html#L7'>Symbol_name</a><span class="Delimiter">,</span> <a href='010---vm.cc.html#L29'>EIP</a><span class="Delimiter">))</span>
+<span id="L25" class="LineNr">25 </span>  <a href='003trace.cc.html#L203'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;== label &quot;</span> &lt;&lt; get<span class="Delimiter">(</span><a href='039debug.cc.html#L7'>Symbol_name</a><span class="Delimiter">,</span> <a href='010---vm.cc.html#L29'>EIP</a><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 </pre>
 </body>
 </html>
