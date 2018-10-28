@@ -83,6 +83,9 @@ endfunction
 command! -nargs=1 G call GrepSubX(<q-args>)
 
 " temporary helpers while we port https://github.com/akkartik/crenshaw to apps/crenshaw*.subx
+command! -nargs=1 C exec "E crenshaw".<f-args>
+command! -nargs=1 CS exec "S crenshaw".<f-args>
+command! -nargs=1 CH exec "H crenshaw".<f-args>
 function! Orig()
   let l:p = expand("%:t:r")
   if l:p =~ "^crenshaw\\d*-\\d*$"
