@@ -2,16 +2,24 @@
 # corresponds to the section "single digits" in https://compilers.iecc.com/crenshaw/tutor2.txt
 #
 # To run (from the subx directory):
-#   $ subx translate *.subx apps/crenshaw2.1.subx -o crenshaw 2.1
-#   $ echo '3'  |subx run apps/crenshaw2.1  |xxd -
-# Expected output:
-#   TODO
+#   $ ./subx translate *.subx apps/crenshaw2-1.subx -o crenshaw2-1
+#   $ echo '3'  |./subx run apps/crenshaw2-1
+# Expected output (not working yet):
+#   # syscall(exit, 3)
+#   bb/copy-to-EBX  3/imm32
+#   b8/copy-to-EAX  1/imm32/exit
+#   cd/syscall  0x80/imm8
 #
-# The output is the code a function would need to include, returning the
-# result in EAX.
+# To run the generated output:
+#   $ echo '3'  |./subx run apps/crenshaw2-1 > z1.subx
+#   $ ./subx translate z1.subx -o z1
+#   $ ./z1
+#   $ echo $?
+#   3
 #
-# Major note: byte strings are not null-terminated. Instead they're prefixed
-# with a 32-bit length.
+# Stdin must contain just a single hex number. Other input will print an error:
+#   $ echo 'xyz'  |./subx run apps/crenshaw2-1
+#   Error: integer expected
 
 == code
 # instruction                     effective address                                                   operand     displacement    immediate
@@ -19,11 +27,19 @@
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # main:
-  # abort("Integer")
+  # allocate space for an exit-descriptor
+  # var ed/EAX : (address exit-descriptor)
+  81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
+  8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # copy ESP to EAX
+  # clear ed->target (so we really exit)
+  c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
+  # expected(ed, 2/stderr, "integer")
     # push args
-  68/push  "Integer"/imm32
+  68/push  "integer"/imm32
+  68/push  2/imm32/stderr
+  50/push-EAX
     # call
-  e8/call  abort/disp32
+  e8/call  expected/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
   # syscall(exit, 0)
@@ -33,56 +49,52 @@
 
 ## helpers
 
-# print error message and exit
-# really maps to the 'Expected' function in Crenshaw
-abort:  # s : (address array byte) -> <void>
-  # error(s)
-    # push args
-  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           .           4/disp8         .                 # push *(ESP+4)
-    # call
-  e8/call  error/disp32
-    # discard arg
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-  # syscall(exit, 1)
-  bb/copy-to-EBX  1/imm32
-  b8/copy-to-EAX  1/imm32/exit
-  cd/syscall  0x80/imm8
-
-# print out "Error: #{s} expected\n" to stderr
-error:  # s : (address array byte) -> <void>
-  # write(2/stderr, "Error: ")
+expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte)
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # write(f, "Error: ")
     # push args
   68/push  "Error: "/imm32
-  68/push  2/imm32/stderr
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
     # call
   e8/call  write/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # write(2/stderr, s)
+  # write(f, s)
     # push args
-  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           .           4/disp8         .                 # push *(ESP+4)
-  68/push  2/imm32/stderr
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
     # call
   e8/call  write/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # write(2/stderr, " expected")
+  # write(f, " expected")
     # push args
   68/push  " expected"/imm32
-  68/push  2/imm32/stderr
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
     # call
   e8/call  write/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # write(2/stderr, "\n")
+  # write(f, Newline)
     # push args
   68/push  Newline/imm32
-  68/push  2/imm32/stderr
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
     # call
   e8/call  write/disp32
     # discard arg
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # end
+  # stop(ed, 1)
+    # push args
+  68/push  1/imm32
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    # call
+  e8/call  stop/disp32
+  ## should never get past this point
+  # epilog
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 
 # vim:nowrap:textwidth=0

@@ -96,8 +96,8 @@ stop:  # ed : (address exit-descriptor), value : int
   # exit(value) if ed->target == 0
   81          7/subop/compare     0/mod/indirect  0/rm32/EAX    .           .             .           .           .               0/imm32           # compare *EAX
   75/jump-if-not-equal  $stop:fake/disp8
-  # syscall(exit, ed->value)
-  8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy *(EAX+4) to EBX
+  # syscall(exit, value)
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           3/r32/EBX   8/disp8         .                 # copy *(ESP+8) to EBX
   b8/copy-to-EAX  1/imm32
   cd/syscall  0x80/imm8
 $stop:fake:
