@@ -2,10 +2,10 @@
 # in addition to file descriptors.
 #
 # Our first dependency-injected and testable primitive. We can pass it either
-# a file descriptor or an address to an output stream or ostream. If a file
-# descriptor is passed in, we _write to it using the right syscall. If a 'fake
-# file descriptor' or ostream is passed in, we append to the output stream.
-# This lets us redirect output in tests and check it later.
+# a file descriptor or an address to an ostream. If a file descriptor is
+# passed in, we _write to it using the right syscall. If a 'fake file descriptor'
+# or ostream is passed in, we append to the ostream. This lets us redirect
+# output in tests and check it later.
 #
 # We assume our data segment will never begin at an address shorter than
 # 0x08000000, so any smaller arguments are assumed to be real file descriptors.
@@ -39,7 +39,7 @@ Test-ostream:
   b8/copy-to-EAX  1/imm32
   cd/syscall  0x80/imm8
 
-write:  # f : fd or (address stream), s : (address array byte) -> <void>
+write:  # f : fd or (address ostream), s : (address array byte) -> <void>
   # prolog
   55/push-EBP
   89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -55,7 +55,7 @@ write:  # f : fd or (address stream), s : (address array byte) -> <void>
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   eb/jump  $write:end/disp8
 $write:fake:
-  # otherwise, treat 'f' as a stream to append to
+  # otherwise, treat 'f' as an ostream to append to
   # save registers
   50/push-EAX
   51/push-ECX
