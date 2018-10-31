@@ -86,7 +86,7 @@ trace:  # t : (address trace-stream), line : string
   8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
   # EDX = t.length
   8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(EDI+8) to EDX
-  # EAX = _append(&t.data[t.write], &t.data[t.length], line)
+  # EAX = _append-3(&t.data[t.write], &t.data[t.length], line)
     # push line
   56/push-ESI
     # push &t.data[t.length]
@@ -96,7 +96,7 @@ trace:  # t : (address trace-stream), line : string
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+ECX+12 to EBX
   53/push-EBX
     # call
-  e8/call  _append/disp32
+  e8/call  _append-3/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   # if EAX == 0 return
@@ -106,7 +106,7 @@ trace:  # t : (address trace-stream), line : string
   01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
   # refresh ECX = t.write
   8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
-  # EAX = _append(&t.data[t.write], &t.data[t.length], line)
+  # EAX = _append-3(&t.data[t.write], &t.data[t.length], line)
     # push line
   68/push  Newline/imm32
     # push &t.data[t.length]
@@ -116,7 +116,7 @@ trace:  # t : (address trace-stream), line : string
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+ECX+12 to EBX
   53/push-EBX
     # call
-  e8/call  _append/disp32
+  e8/call  _append-3/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   # t.write += EAX
@@ -134,7 +134,8 @@ $trace:end:
   5d/pop-to-EBP
   c3/return
 
-_append:  # out : address, outend : address, s : (array byte) -> num_bytes_appended/EAX
+# 3-argument variant of _append
+_append-3:  # out : address, outend : address, s : (array byte) -> num_bytes_appended/EAX
   # prolog
   55/push-EBP
   89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -158,13 +159,13 @@ _append:  # out : address, outend : address, s : (array byte) -> num_bytes_appen
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy ESI+ECX+4 to ECX
   # ESI/src = &line.data[0]
   81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
-$_append:loop:
+$_append-3:loop:
   # if ESI/src >= ECX/srcend break
   39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
-  7d/jump-if-greater-or-equal  $_append:end/disp8
+  7d/jump-if-greater-or-equal  $_append-3:end/disp8
   # if EDI/out >= EDX/outend break  (for now silently ignore filled up trace buffer)
   39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
-  7d/jump-if-greater-or-equal  $_append:end/disp8
+  7d/jump-if-greater-or-equal  $_append-3:end/disp8
   # copy one byte from ESI/src to EDI/out
   8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
   88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
@@ -172,8 +173,8 @@ $_append:loop:
   40/increment-EAX
   46/increment-ESI
   47/increment-EDI
-  eb/jump  $_append:loop/disp8
-$_append:end:
+  eb/jump  $_append-3:loop/disp8
+$_append-3:end:
   # restore registers
   5f/pop-to-EDI
   5e/pop-to-ESI
