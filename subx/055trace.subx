@@ -1,4 +1,4 @@
-# helpers for emitting traces to a trace stream, and for tests to check the trace stream
+# primitives for emitting traces to a trace stream, and for tests to check the trace stream
 #
 # A trace stream looks like this:
 #   read : int  # index that we've read until
@@ -134,58 +134,6 @@ $trace:end:
   5d/pop-to-EBP
   c3/return
 
-# 3-argument variant of _append
-_append-3:  # out : address, outend : address, s : (array byte) -> num_bytes_appended/EAX
-  # prolog
-  55/push-EBP
-  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-  # save registers
-  51/push-ECX
-  52/push-EDX
-  53/push-EBX
-  56/push-ESI
-  57/push-EDI
-  # EAX/num_bytes_appended = 0
-  b8/copy-to-EAX  0/imm32
-  # EDI = out
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   0x8/disp8       .                 # copy *(EBP+8) to EDI
-  # EDX = outend
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
-  # ESI = s
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   0x10/disp8      .                 # copy *(EBP+16) to ESI
-  # ECX = s.length
-  8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
-  # ECX/srcend = &s.data[s.length]
-  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy ESI+ECX+4 to ECX
-  # ESI/src = &s.data[0]
-  81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
-$_append-3:loop:
-  # if ESI/src >= ECX/srcend break
-  39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
-  7d/jump-if-greater-or-equal  $_append-3:end/disp8
-  # if EDI/out >= EDX/outend break  (for now silently ignore filled up trace buffer)
-  39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
-  7d/jump-if-greater-or-equal  $_append-3:end/disp8
-  # copy one byte from ESI/src to EDI/out
-  8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
-  88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
-  # updates
-  40/increment-EAX
-  46/increment-ESI
-  47/increment-EDI
-  eb/jump  $_append-3:loop/disp8
-$_append-3:end:
-  # restore registers
-  5f/pop-to-EDI
-  5e/pop-to-ESI
-  5b/pop-to-EBX
-  5a/pop-to-EDX
-  59/pop-to-ECX
-  # epilog
-  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-  5d/pop-to-EBP
-  c3/return
-
 clear-trace-stream:  # t : (address trace-stream)
   # prolog
   55/push-EBP
@@ -223,6 +171,8 @@ $clear-trace-stream:end:
   89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
   5d/pop-to-EBP
   c3/return
+
+## tests
 
 test-trace-single:
   # clear-trace-stream(Test-trace-stream)
@@ -320,6 +270,60 @@ test-trace-empty-line:
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   # end
+  c3/return
+
+## helpers
+
+# 3-argument variant of _append
+_append-3:  # out : address, outend : address, s : (array byte) -> num_bytes_appended/EAX
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  51/push-ECX
+  52/push-EDX
+  53/push-EBX
+  56/push-ESI
+  57/push-EDI
+  # EAX/num_bytes_appended = 0
+  b8/copy-to-EAX  0/imm32
+  # EDI = out
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   0x8/disp8       .                 # copy *(EBP+8) to EDI
+  # EDX = outend
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
+  # ESI = s
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   0x10/disp8      .                 # copy *(EBP+16) to ESI
+  # ECX = s.length
+  8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+  # ECX/srcend = &s.data[s.length]
+  8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy ESI+ECX+4 to ECX
+  # ESI/src = &s.data[0]
+  81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
+$_append-3:loop:
+  # if ESI/src >= ECX/srcend break
+  39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
+  7d/jump-if-greater-or-equal  $_append-3:end/disp8
+  # if EDI/out >= EDX/outend break  (for now silently ignore filled up trace buffer)
+  39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
+  7d/jump-if-greater-or-equal  $_append-3:end/disp8
+  # copy one byte from ESI/src to EDI/out
+  8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
+  88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
+  # updates
+  40/increment-EAX
+  46/increment-ESI
+  47/increment-EDI
+  eb/jump  $_append-3:loop/disp8
+$_append-3:end:
+  # restore registers
+  5f/pop-to-EDI
+  5e/pop-to-ESI
+  5b/pop-to-EBX
+  5a/pop-to-EDX
+  59/pop-to-ECX
+  # epilog
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
   c3/return
 
 # vim:nowrap:textwidth=0
