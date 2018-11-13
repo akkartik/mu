@@ -42,7 +42,10 @@ Test-stream:
   b8/copy-to-EAX  1/imm32
   cd/syscall  0x80/imm8
 
-write:  # f : fd or (address stream), s : (address array byte) -> <void>
+write:  # f : fd or (address stream), s : (address array byte) -> bytes_written/EAX
+    # (If we ever leave the Linux kernel behind, it may be better to return
+    # the number of bytes *not* written. Success would then be signaled by
+    # returning 0.)
   # prolog
   55/push-EBP
   89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -58,9 +61,8 @@ write:  # f : fd or (address stream), s : (address array byte) -> <void>
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
   eb/jump  $write:end/disp8
 $write:fake:
-  # otherwise, treat 'f' as an stream to append to
+  # otherwise, treat 'f' as a stream to append to
   # save registers
-  50/push-EAX
   51/push-ECX
   52/push-EDX
   53/push-EBX
@@ -89,7 +91,6 @@ $write:fake:
   5b/pop-to-EBX
   5a/pop-to-EDX
   59/pop-to-ECX
-  58/pop-to-EAX
 $write:end:
   # epilog
   89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
