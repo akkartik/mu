@@ -128,7 +128,7 @@ test `uname` = 'Linux'  &&  examples/ex12
 
 echo factorial
 CFLAGS=-g ./subx translate *.subx apps/factorial.subx  -o apps/factorial
-git diff --quiet apps/factorial
+[ "$1" != record ]  &&  git diff --quiet apps/factorial
 CFLAGS=-g ./subx run apps/factorial  ||  ret=$?
 test $ret -eq 120  # factorial(5)
 CFLAGS=-g ./subx run apps/factorial test
@@ -142,7 +142,7 @@ test `uname` = 'Linux'  &&  {
 
 echo crenshaw2-1
 CFLAGS=-g ./subx translate *.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
-git diff --quiet apps/crenshaw2-1
+[ "$1" != record ]  &&  git diff --quiet apps/crenshaw2-1
 CFLAGS=-g ./subx run apps/crenshaw2-1 2>crenshaw2-1.out  ||  true
 test "`cat crenshaw2-1.out`" = 'Error: integer expected'
 test `uname` = 'Linux'  &&  {
