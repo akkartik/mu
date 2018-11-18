@@ -139,6 +139,10 @@ struct vma {
       #define align_upwards(x, align)  (((x)+(align)-1) & -(align))
       uint32_t new_size = align_upwards(result_size, align);
       #undef align_upwards
+      // grow at least 2x to maintain some amortized complexity guarantees
+      if (new_size < _data.size() * 2)
+        new_size = _data.size() * 2;
+      // never grow past the stated limit
       if (new_size > end-start)
         new_size = end-start;
       _data.resize(new_size);
