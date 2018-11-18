@@ -93,3 +93,9 @@ function! Orig()
   endif
 endfunction
 command! O call Orig()
+
+if exists("&splitvertical")
+  command! -nargs=0 P hor split opcodes
+else
+  command! -nargs=0 P split opcodes
+endif
