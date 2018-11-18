@@ -122,12 +122,8 @@ struct vma {
   uint32_t start;  // inclusive
   uint32_t end;  // exclusive
   vector<uint8_t> _data;
-  vma(uint32_t s, uint32_t e) :start(s), end(e) {
-    _data.resize(end-start);
-  }
-  vma(uint32_t s) :start(s), end(s+INITIAL_SEGMENT_SIZE) {
-    _data.resize(end-start);
-  }
+  vma(uint32_t s, uint32_t e) :start(s), end(e) {}
+  vma(uint32_t s) :start(s), end(s+INITIAL_SEGMENT_SIZE) {}
   bool match(uint32_t a) {
     return a >= start && a < end;
   }
@@ -136,7 +132,18 @@ struct vma {
   }
   uint8_t& data(uint32_t a) {
     assert(match(a));
-    return _data.at(a-start);
+    uint32_t result_index = a-start;
+    if (_data.size() <= result_index) {
+      const int align = 0x1000;
+      uint32_t result_size = result_index + 1;  // size needed for result_index to be valid
+      #define align_upwards(x, align)  (((x)+(align)-1) & -(align))
+      uint32_t new_size = align_upwards(result_size, align);
+      #undef align_upwards
+      if (new_size > end-start)
+        new_size = end-start;
+      _data.resize(new_size);
+    }
+    return _data.at(result_index);
   }
   void grow_until(uint32_t new_end_address) {
     if (new_end_address < end) return;
@@ -144,7 +151,6 @@ struct vma {
     void sanity_check(uint32_t start, uint32_t end);
     sanity_check(start, new_end_address);
     end = new_end_address;
-    _data.resize(new_end_address - start);
   }
   // End vma Methods
 };
