@@ -15,20 +15,6 @@
 #   write: int  # index at which writes go
 #   data: (array byte)  # prefixed by length as usual
 
-== data
-
-# In-memory stream for tests to write() to.
-# Also illustrates the layout of streams.
-_test-stream:
-  # current write index
-  00 00 00 00
-  # current read index
-  00 00 00 00
-  # length (= 8)
-  08 00 00 00
-  # data
-  00 00 00 00 00 00 00 00  # 8 bytes
-
 == code
 
 # instruction                     effective address                                                   operand     displacement    immediate
@@ -97,7 +83,7 @@ $write:end:
   5d/pop-to-EBP
   c3/return
 
-clear-stream:  # f : (address stream)
+clear-stream:  # f : (address stream) -> <void>
   # prolog
   55/push-EBP
   89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -151,6 +137,15 @@ test-write-single:
   e8/call  write/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # check-ints-equal(EAX, 2)
+    # push args
+  68/push  "F - test-read-single: return EAX"/imm32
+  68/push  2/imm32
+  50/push-EAX
+    # call
+  e8/call  check-ints-equal/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   # check-ints-equal(*_test-stream.data, 41/A 62/b 00 00, msg)
     # push args
   68/push  "F - test-write-single"/imm32
@@ -202,3 +197,15 @@ test-write-appends:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
   # end
   c3/return
+
+== data
+
+_test-stream:
+  # current write index
+  00 00 00 00
+  # current read index
+  00 00 00 00
+  # length (= 8)
+  08 00 00 00
+  # data
+  00 00 00 00 00 00 00 00  # 8 bytes

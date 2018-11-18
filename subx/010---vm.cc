@@ -112,7 +112,7 @@ SF = ZF = OF = false;
 //:: simulated RAM
 
 :(before "End Types")
-const uint32_t INITIAL_SEGMENT_SIZE = 0x1000 - 1;
+const uint32_t INITIAL_SEGMENT_SIZE = 0x1000000 - 1;
 // Subtract one just so we can start the first segment at address 1 without
 // overflowing the first segment. Other segments will learn to adjust.
 
