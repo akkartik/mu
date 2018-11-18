@@ -19,7 +19,7 @@
 
 # In-memory stream for tests to write() to.
 # Also illustrates the layout of streams.
-Test-stream:
+_test-stream:
   # current write index
   00 00 00 00
   # current read index
@@ -136,27 +136,27 @@ $clear-stream:end:
   c3/return
 
 test-write-single:
-  # clear-stream(Test-stream)
+  # clear-stream(_test-stream)
     # push args
-  68/push  Test-stream/imm32
+  68/push  _test-stream/imm32
     # call
   e8/call  clear-stream/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-  # write(Test-stream, "Ab")
+  # write(_test-stream, "Ab")
     # push args
   68/push  "Ab"/imm32
-  68/push  Test-stream/imm32
+  68/push  _test-stream/imm32
     # call
   e8/call  write/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # check-ints-equal(*Test-stream.data, 41/A 62/b 00 00, msg)
+  # check-ints-equal(*_test-stream.data, 41/A 62/b 00 00, msg)
     # push args
   68/push  "F - test-write-single"/imm32
   68/push  0x006241/imm32/Ab
-    # push *Test-stream.data
-  b8/copy-to-EAX  Test-stream/imm32
+    # push *_test-stream.data
+  b8/copy-to-EAX  _test-stream/imm32
   ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # call
   e8/call  check-ints-equal/disp32
@@ -166,35 +166,35 @@ test-write-single:
   c3/return
 
 test-write-appends:
-  # clear-stream(Test-stream)
+  # clear-stream(_test-stream)
     # push args
-  68/push  Test-stream/imm32
+  68/push  _test-stream/imm32
     # call
   e8/call  clear-stream/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-  # write(Test-stream, "C")
+  # write(_test-stream, "C")
     # push args
   68/push  "C"/imm32
-  68/push  Test-stream/imm32
+  68/push  _test-stream/imm32
     # call
   e8/call  write/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # write(Test-stream, "D")
+  # write(_test-stream, "D")
     # push args
   68/push  "D"/imm32
-  68/push  Test-stream/imm32
+  68/push  _test-stream/imm32
     # call
   e8/call  write/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # check-ints-equal(*Test-stream.data, 43/C 44/D 00 00, msg)
+  # check-ints-equal(*_test-stream.data, 43/C 44/D 00 00, msg)
     # push args
   68/push  "F - test-write-appends"/imm32
   68/push  0x00004443/imm32/C-D
-    # push *Test-stream.data
-  b8/copy-to-EAX  Test-stream/imm32
+    # push *_test-stream.data
+  b8/copy-to-EAX  _test-stream/imm32
   ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # call
   e8/call  check-ints-equal/disp32
