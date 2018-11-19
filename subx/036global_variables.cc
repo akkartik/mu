@@ -11,7 +11,7 @@
 b9  x/imm32
 == data
 x:
-00 00 00 00
+  00 00 00 00
 +transform: global variable 'x' is at address 0x0a000079
 
 :(before "End Level-2 Transforms")
@@ -132,7 +132,7 @@ bool has_metadata(const word& w, const string& m) {
 eb/jump  x/disp8
 == data
 x:
-00 00 00 00
+  00 00 00 00
 +error: 'eb/jump x/disp8': can't refer to global variable 'x'
 # sub-optimal error message; should be
 #? +error: can't jump to data (variable 'x')
@@ -143,7 +143,7 @@ x:
 e8/call  x/disp32
 == data
 x:
-00 00 00 00
+  00 00 00 00
 +error: 'e8/call x/disp32': can't refer to global variable 'x'
 # sub-optimal error message; should be
 #? +error: can't call to the data segment ('x')
@@ -153,14 +153,14 @@ x:
 8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX x/disp32
 == data
 x:
-00 00 00 00
+  00 00 00 00
 $error: 0
 
 :(scenarios transform)
 :(scenario disp32_data_with_call)
 == code
 foo:
-e8/call bar/disp32
+  e8/call bar/disp32
 bar:
 $error: 0
 
