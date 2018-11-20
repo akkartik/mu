@@ -265,6 +265,6 @@ bar:
   00
 +transform: segment 1 begins at address 0x0a000079
 
-:(before "End num_bytes(curr) Special-cases")
-else if (is_label(curr))
-  ;  // don't count it
+:(before "End size_of(word w) Special-cases")
+else if (is_label(w))
+  return 0;

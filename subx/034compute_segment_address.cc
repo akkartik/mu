@@ -111,15 +111,17 @@ uint32_t size_of(const segment& s) {
 // Assumes all bitfields are packed.
 uint32_t num_bytes(const line& inst) {
   uint32_t sum = 0;
-  for (int i = 0;  i < SIZE(inst.words);  ++i) {
-    const word& curr = inst.words.at(i);
-    if (has_operand_metadata(curr, "disp32") || has_operand_metadata(curr, "imm32"))  // only multi-byte operands
-      sum += 4;
-    // End num_bytes(curr) Special-cases
-    else
-      sum++;
-  }
+  for (int i = 0;  i < SIZE(inst.words);  ++i)
+    sum += size_of(inst.words.at(i));
   return sum;
+}
+
+int size_of(const word& w) {
+  if (has_operand_metadata(w, "disp32") || has_operand_metadata(w, "imm32"))
+    return 4;
+  // End size_of(word w) Special-cases
+  else
+    return 1;
 }
 
 //: Dependencies:

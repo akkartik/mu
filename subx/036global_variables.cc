@@ -38,7 +38,7 @@ void compute_addresses_for_global_variables(const segment& s, map<string, uint32
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       const word& curr = inst.words.at(j);
       if (*curr.data.rbegin() != ':') {
-        ++current_address;
+        current_address += size_of(curr);
       }
       else {
         string variable = drop_last(curr.data);
@@ -64,7 +64,12 @@ void drop_global_variables(program& p) {
 
 void replace_global_variables_with_addresses(program& p, const map<string, uint32_t>& address) {
   if (p.segments.empty()) return;
-  segment& code = p.segments.at(0);
+  replace_global_variables_in_code_segment(p.segments.at(0), address);
+  for (int i = /*skip code*/1;  i < SIZE(p.segments);  ++i)
+    replace_global_variables_in_data_segment(p.segments.at(i), address);
+}
+
+void replace_global_variables_in_code_segment(segment& code, const map<string, uint32_t>& address) {
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
     line new_inst;
@@ -84,6 +89,26 @@ void replace_global_variables_with_addresses(program& p, const map<string, uint3
     }
     inst.words.swap(new_inst.words);
     trace(99, "transform") << "instruction after transform: '" << data_to_string(inst) << "'" << end();
+  }
+}
+
+void replace_global_variables_in_data_segment(segment& data, const map<string, uint32_t>& address) {
+  for (int i = 0;  i < SIZE(data.lines);  ++i) {
+    line& l = data.lines.at(i);
+    line new_l;
+    for (int j = 0;  j < SIZE(l.words);  ++j) {
+      const word& curr = l.words.at(j);
+      if (!contains_key(address, curr.data)) {
+        if (!looks_like_hex_int(curr.data))
+          raise << "missing reference to global '" << curr.data << "'\n" << end();
+        new_l.words.push_back(curr);
+        continue;
+      }
+      trace(99, "transform") << curr.data << " maps to " << HEXWORD << get(address, curr.data) << end();
+      emit_hex_bytes(new_l, get(address, curr.data), 4);
+    }
+    l.words.swap(new_l.words);
+    trace(99, "transform") << "after transform: '" << data_to_string(l) << "'" << end();
   }
 }
 
@@ -147,6 +172,21 @@ x:
 +error: 'e8/call x/disp32': can't refer to global variable 'x'
 # sub-optimal error message; should be
 #? +error: can't call to the data segment ('x')
+
+:(scenario global_variable_in_data_segment)
+== 0x1
+b9  x/imm32
+== 0x0a000000
+x:
+  y/imm32
+y:
+  00 00 00 00
+# check that we loaded 'x' with the address of 'y'
++load: 0x0a000000 -> 04
++load: 0x0a000001 -> 00
++load: 0x0a000002 -> 00
++load: 0x0a000003 -> 0a
+$error: 0
 
 :(scenario disp32_data_with_modrm)
 == code
