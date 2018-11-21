@@ -39,6 +39,9 @@ function! HighlightTangledFile()
   syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
   syntax match muPendingScenario "^pending-scenario\>" | highlight link muPendingScenario SpecialChar
   syntax match muData "^type\>\|^container\>\|^exclusive-container\>" | highlight muData ctermfg=226
+
+  syntax match subxString %"[^"]*"% | highlight link subxString Constant
+  syntax match subxGlobal %\<[A-Z][a-z-]*\>% | highlight link subxGlobal SpecialChar
 endfunction
 augroup LocalVimrc
   autocmd BufRead,BufNewFile *.mu set ft=mu

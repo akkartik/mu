@@ -27,4 +27,7 @@ let b:cmt_head = "#? "
 " comment token
 syntax match subxDelimiter / \. /  | highlight link subxDelimiter Delimiter
 
+syntax match subxString %"[^"]*"% | highlight link subxString Constant
+syntax match subxGlobal %\<[A-Z][a-z-]*\>% | highlight link subxGlobal SpecialChar
+
 let &cpo = s:save_cpo
