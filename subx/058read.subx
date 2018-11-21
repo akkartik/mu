@@ -75,11 +75,11 @@ $read:fake:
   56/push-ESI
   57/push-EDI
   # ESI = f
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
   # EDI = s
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to ESI
   # EAX = _append-4(out = &s->data[s->write], outend = &s->data[s->length],
-  #                 in  = &f->data[f->read],  inend =  &f->data[f->write])
+  #                 in  = &f->data[f->read],  inend  = &f->data[f->write])
     # push &f->data[f->write]
   8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
@@ -115,7 +115,7 @@ $read:end:
 
 ## helpers
 
-# idea: we could create a clear-if-empty method that clears only if f.read == f.write
+# idea: a clear-if-empty method on streams that clears only if f.read == f.write
 # Unclear how I'd use it, though. Callers seem to need the check anyway.
 # Maybe a better helper would be 'empty-stream?'
 
