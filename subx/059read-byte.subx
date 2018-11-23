@@ -51,9 +51,9 @@ read-byte:  # f : (address buffered-file) -> byte/EAX
   56/push-ESI
   # ESI = f
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-  # ECX = f.read
+  # ECX = f->read
   8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(ESI+8) to ECX
-  ## if (f.read < f.write) read byte from stream
+  ## if (f->read < f->write) read byte from stream
   3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # compare ECX with *(ESI+4)
   7c/jump-if-lesser  $read-byte:from-stream/disp8
   # clear-stream(stream = f+4)
@@ -64,7 +64,7 @@ read-byte:  # f : (address buffered-file) -> byte/EAX
   e8/call  clear-stream/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-  # EAX = read(f.fd, stream = f+4)
+  # EAX = read(f->fd, stream = f+4)
     # push args
   50/push-EAX
   ff          6/subop/push        0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # push *ESI
@@ -78,10 +78,10 @@ read-byte:  # f : (address buffered-file) -> byte/EAX
   b8/copy-to-EAX  0xffffffff/imm32
   eb/jump  $read-byte:end/disp8
 $read-byte:from-stream:
-  # AL = f.data[f.read]
+  # AL = f->data[f->read]
   31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
   8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy *(ESI+ECX+16) to AL
-  # ++f.read
+  # ++f->read
   ff          0/subop/increment   1/mod/*+disp8   6/rm32/ESI    .           .             .           .           8/disp8         .                 # increment *(ESI+8)
 $read-byte:end:
   # restore registers
@@ -91,6 +91,9 @@ $read-byte:end:
   89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
   5d/pop-to-EBP
   c3/return
+
+# todo: how should write-byte look? What should it do when the output has no
+# space remaining? Maybe return an error code.
 
 ## tests
 
