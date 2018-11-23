@@ -112,9 +112,10 @@ SF = ZF = OF = false;
 //:: simulated RAM
 
 :(before "End Types")
-const uint32_t INITIAL_SEGMENT_SIZE = 0x1000000 - 1;
-// Subtract one just so we can start the first segment at address 1 without
-// overflowing the first segment. Other segments will learn to adjust.
+const uint32_t SEGMENT_ALIGNMENT = 0x1000000;
+inline uint32_t align_upwards(uint32_t x, uint32_t align) {
+  return (x+align-1) & -(align);
+}
 
 // Like in real-world Linux, we'll allocate RAM for our programs in disjoint
 // slabs called VMAs or Virtual Memory Areas.
@@ -123,7 +124,7 @@ struct vma {
   uint32_t end;  // exclusive
   vector<uint8_t> _data;
   vma(uint32_t s, uint32_t e) :start(s), end(e) {}
-  vma(uint32_t s) :start(s), end(s+INITIAL_SEGMENT_SIZE) {}
+  vma(uint32_t s) :start(s), end(align_upwards(s+1, SEGMENT_ALIGNMENT)) {}
   bool match(uint32_t a) {
     return a >= start && a < end;
   }
@@ -136,9 +137,7 @@ struct vma {
     if (_data.size() <= result_index) {
       const int align = 0x1000;
       uint32_t result_size = result_index + 1;  // size needed for result_index to be valid
-      #define align_upwards(x, align)  (((x)+(align)-1) & -(align))
       uint32_t new_size = align_upwards(result_size, align);
-      #undef align_upwards
       // grow at least 2x to maintain some amortized complexity guarantees
       if (new_size < _data.size() * 2)
         new_size = _data.size() * 2;

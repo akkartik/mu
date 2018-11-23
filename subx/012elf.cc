@@ -80,7 +80,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
       assert(overlap.find(argv_data) == overlap.end());  // don't bother comparing ARGV and STACK
       write_mem_u8(argv_data, argv[i][j]);
       argv_data += sizeof(char);
-      assert(argv_data < ARGV_DATA_SEGMENT + INITIAL_SEGMENT_SIZE);
+      assert(argv_data < ARGV_DATA_SEGMENT + SEGMENT_ALIGNMENT);
     }
   }
   push(argc-/*skip 'subx_bin' and 'run'*/2);
@@ -111,8 +111,8 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 
   if (p_offset + p_filesz > size)
     raise << "Invalid binary; segment at offset " << offset << " is too large: wants to end at " << p_offset+p_filesz << " but the file ends at " << size << '\n' << die();
-  if (p_memsz >= INITIAL_SEGMENT_SIZE) {
-    raise << "Code segment too small for SubX; for now please manually increase INITIAL_SEGMENT_SIZE.\n" << end();
+  if (p_memsz >= SEGMENT_ALIGNMENT) {
+    raise << "Code segment too small for SubX; for now please manually increase SEGMENT_ALIGNMENT.\n" << end();
     return;
   }
   trace(90, "load") << "blitting file offsets (" << p_offset << ", " << (p_offset+p_filesz) << ") to addresses (" << p_vaddr << ", " << (p_vaddr+p_memsz) << ')' << end();
@@ -135,7 +135,7 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 const int CODE_SEGMENT = 0x09000000;
 const int DATA_SEGMENT = 0x0a000000;
 const int STACK_SEGMENT = 0x0b000000;
-const int AFTER_STACK = 0x0b000ffc;  // forget final word because of the off-by-one with INITIAL_SEGMENT_SIZE;
+const int AFTER_STACK = 0x0b000ffc;  // forget final word because of the off-by-one with SEGMENT_ALIGNMENT;
 const int ARGV_DATA_SEGMENT = 0x0c000000;
 :(code)
 void dump_stack() {

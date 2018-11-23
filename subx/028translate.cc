@@ -139,7 +139,7 @@ void write_elf_header(ostream& out, const program& p) {
     emit(p_start);
     // p_filesz
     uint32_t size = num_words(p.segments.at(i));
-    assert(p_offset + size < INITIAL_SEGMENT_SIZE);
+    assert(p_offset + size < SEGMENT_ALIGNMENT);
     emit(size);
     // p_memsz
     emit(size);

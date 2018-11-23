@@ -97,7 +97,7 @@ void compute_segment_starts(program& p) {
       trace(99, "transform") << "segment " << i << " begins at address 0x" << HEXWORD << curr.start << end();
     }
     p_offset += size_of(curr);
-    assert(p_offset < INITIAL_SEGMENT_SIZE);  // for now we get less and less available space in each successive segment
+    assert(p_offset < SEGMENT_ALIGNMENT);  // for now we get less and less available space in each successive segment
   }
 }
 
