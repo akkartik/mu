@@ -83,17 +83,17 @@ trace:  # t : (address trace-stream), line : string
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
   # ESI = line
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
-  # ECX = t.write
+  # ECX = t->write
   8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
-  # EDX = t.length
+  # EDX = t->length
   8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(EDI+8) to EDX
-  # EAX = _append-3(&t.data[t.write], &t.data[t.length], line)
+  # EAX = _append-3(&t->data[t->write], &t->data[t->length], line)
     # push line
   56/push-ESI
-    # push &t.data[t.length]
+    # push &t->data[t->length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  2/index/EDX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+EDX+12 to EBX
   53/push-EBX
-    # push &t.data[t.write]
+    # push &t->data[t->write]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+ECX+12 to EBX
   53/push-EBX
     # call
@@ -103,24 +103,24 @@ trace:  # t : (address trace-stream), line : string
   # if EAX == 0 return
   81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EDX
   74/jump-if-equal  $trace:end/disp8
-  # t.write += EAX
+  # t->write += EAX
   01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
-  # refresh ECX = t.write
+  # refresh ECX = t->write
   8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
-  # EAX = _append-3(&t.data[t.write], &t.data[t.length], line)
+  # EAX = _append-3(&t->data[t->write], &t->data[t->length], line)
     # push line
   68/push  Newline/imm32
-    # push &t.data[t.length]
+    # push &t->data[t->length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  2/index/EDX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+EDX+12 to EBX
   53/push-EBX
-    # push &t.data[t.write]
+    # push &t->data[t->write]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+ECX+12 to EBX
   53/push-EBX
     # call
   e8/call  _append-3/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-  # t.write += EAX
+  # t->write += EAX
   01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
 $trace:end:
   # restore registers
@@ -144,15 +144,15 @@ clear-trace-stream:  # t : (address trace-stream)
   51/push-ECX
   # EAX = t
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-  # ECX = t.length
+  # ECX = t->length
   8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EAX+8) to ECX
-  # ECX = &t.data[t.length]
+  # ECX = &t->data[t->length]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
-  # t.write = 0
+  # t->write = 0
   c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
-  # t.read = 0
+  # t->read = 0
   c7/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
-  # EAX = t.data
+  # EAX = t->data
   81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xc/imm32         # add to EAX
   # while (true)
 $clear-trace-stream:loop:

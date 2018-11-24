@@ -88,11 +88,11 @@ $read:fake:
   8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ESI+4) to EAX
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
   50/push-EAX
-    # push &s.data[s.length]
+    # push &s->data[s->length]
   8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EDI+8) to EAX
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
   50/push-EAX
-    # push &s.data[s.write]
+    # push &s->data[s->write]
   8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy *EDI to EAX
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
   50/push-EAX
@@ -100,7 +100,7 @@ $read:fake:
   e8/call  _append-4/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-  # s.write += EAX
+  # s->write += EAX
   01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
   # f.read += EAX
   01/add                          1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # add EAX to *(ESI+4)
@@ -130,21 +130,21 @@ _read:  # fd : int, s : (address stream) -> num-bytes-read/EAX
   56/push-ESI
   # ESI = s
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
-  # EAX = s.write
+  # EAX = s->write
   8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
-  # EDX = s.length
+  # EDX = s->length
   8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(ESI+8) to EDX
-  # syscall(read, fd, &s.data[s.write], s.length - s.write)
+  # syscall(read, fd, &s->data[s->write], s->length - s->write)
     # fd : EBX
   8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
-    # data : ECX = &s.data[s.write]
+    # data : ECX = &s->data[s->write]
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           1/r32/ECX   0xc/disp8       .                 # copy ESI+EAX+12 to ECX
-    # size : EDX = s.length - s.write
+    # size : EDX = s->length - s->write
   29/subtract                     3/mod/direct    2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from EDX
     # syscall
   b8/copy-to-EAX  3/imm32/read
   cd/syscall  0x80/imm8
-  # add the result EAX to s.write
+  # add the result EAX to s->write
   01/add                          0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # add EAX to *ESI
   # restore registers
   5e/pop-to-ESI
@@ -159,19 +159,19 @@ _read:  # fd : int, s : (address stream) -> num-bytes-read/EAX
   # Two options:
   #   1 (what we have above):
   #     ECX = s
-  #     EAX = s.write
-  #     EDX = s.length
+  #     EAX = s->write
+  #     EDX = s->length
   #     # syscall
   #     ECX = lea ECX+EAX+12
   #     EDX = sub EDX EAX
   #
   #   2:
   #     ECX = s
-  #     EDX = s.length
-  #     ECX = &s.data
+  #     EDX = s->length
+  #     ECX = &s->data
   #     # syscall
-  #     ECX = add ECX, s.write
-  #     EDX = sub EDX, s.write
+  #     ECX = add ECX, s->write
+  #     EDX = sub EDX, s->write
   #
   # Not much to choose between the two? Option 2 performs a duplicate load to
   # use one less register, but doesn't increase the amount of spilling (ECX
@@ -219,11 +219,11 @@ test-read-single:
   e8/call  check-ints-equal/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-  # check-ints-equal(*_test-stream-buffer.data, 41/A 62/b 00 00, msg)
+  # check-ints-equal(*_test-stream-buffer->data, 41/A 62/b 00 00, msg)
     # push args
   68/push  "F - test-read-single"/imm32
   68/push  0x006241/imm32/Ab
-    # push *_test-stream-buffer.data
+    # push *_test-stream-buffer->data
   b8/copy-to-EAX  _test-stream-buffer/imm32
   ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # call
@@ -281,11 +281,11 @@ test-read-is-stateful:
   e8/call  read/disp32
     # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-  # check-ints-equal(*_test-stream-buffer.data, 43/C 44/D 00 00, msg)
+  # check-ints-equal(*_test-stream-buffer->data, 43/C 44/D 00 00, msg)
     # push args
   68/push  "F - test-read-is-stateful"/imm32
   68/push  0x00004443/imm32/C-D
-    # push *_test-stream-buffer.data
+    # push *_test-stream-buffer->data
   b8/copy-to-EAX  _test-stream-buffer/imm32
   ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # call
