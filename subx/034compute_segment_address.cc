@@ -119,6 +119,8 @@ uint32_t num_bytes(const line& inst) {
 int size_of(const word& w) {
   if (has_operand_metadata(w, "disp32") || has_operand_metadata(w, "imm32"))
     return 4;
+  else if (has_operand_metadata(w, "disp16"))
+    return 2;
   // End size_of(word w) Special-cases
   else
     return 1;
