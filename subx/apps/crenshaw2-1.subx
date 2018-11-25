@@ -194,9 +194,6 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
   # pseudocode:
   #   if !is-digit?(Look) expected(ed, err, "integer")
   #   do
-  #     if Look > 0xff
-  #       write(err, "Error: tried to write too large a value into a single byte\n")
-  #       stop(ed, 1)
   #     if out.write >= out.length
   #       write(err, "Error: too many digits in number\n")
   #       stop(ed, 1)
@@ -258,23 +255,9 @@ $get-num:main:
     # EDX = out->length
   8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(EDI+8) to EDX
 $get-num:loop:
-  # if Look > 0xff error
-  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Look/disp32     .                 # copy *Look to EAX
-  3d/compare-EAX  0xff/imm32
-  7e/jump-if-lesser-or-equal  $get-num:loop-stage2/disp8
-    # error(ed, err, "get-num: tried to write too large a value into a single byte")  # TODO: show value being printed
-      # push args
-  68/push  "get-num: tried to write too large a value into a single byte"/imm32
-  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
-  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
-      # call
-  e8/call  error/disp32  # never returns
-      # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$get-num:loop-stage2:
   # if out->write >= out->length error
   3b/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare EDX with ECX
-  7d/jump-if-lesser  $get-num:loop-stage3/disp8
+  7d/jump-if-lesser  $get-num:loop-stage2/disp8
     # error(ed, err, "get-num: too many digits in number")  # TODO: show full number
       # push args
   68/push  "get-num: too many digits in number"/imm32
@@ -284,7 +267,7 @@ $get-num:loop-stage2:
   e8/call  error/disp32  # never returns
       # discard args
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$get-num:loop-stage3:
+$get-num:loop-stage2:
   # out->data[out->write] = LSB(Look)
   8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+ECX+12 to EBX
   8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Look/disp32     .                 # copy *Look to EAX
