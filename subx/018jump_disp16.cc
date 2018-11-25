@@ -49,7 +49,7 @@ put_new(Name_0f, "84", "jump disp16 bytes away if equal, if ZF is set (jcc/jz/je
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x84: {  // jump rel16 if ZF
-  const int8_t offset = imm16();
+  const int16_t offset = imm16();
   if (ZF) {
     trace(90, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
@@ -88,7 +88,7 @@ put_new(Name_0f, "85", "jump disp16 bytes away if not equal, if ZF is not set (j
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x85: {  // jump rel16 unless ZF
-  const int8_t offset = imm16();
+  const int16_t offset = imm16();
   if (!ZF) {
     trace(90, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
@@ -129,7 +129,7 @@ put_new(Name_0f, "8f", "jump disp16 bytes away if greater, if ZF is unset and SF
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8f: {  // jump rel16 if !SF and !ZF
-  const int8_t offset = imm16();
+  const int16_t offset = imm16();
   if (!ZF && SF == OF) {
     trace(90, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
@@ -171,7 +171,7 @@ put_new(Name_0f, "8d", "jump disp16 bytes away if greater or equal, if SF == OF 
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8d: {  // jump rel16 if !SF
-  const int8_t offset = imm16();
+  const int16_t offset = imm16();
   if (SF == OF) {
     trace(90, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
@@ -213,7 +213,7 @@ put_new(Name_0f, "8c", "jump disp16 bytes away if lesser, if SF != OF (jcc/jl/jn
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8c: {  // jump rel16 if SF and !ZF
-  const int8_t offset = imm16();
+  const int16_t offset = imm16();
   if (SF != OF) {
     trace(90, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
@@ -270,7 +270,7 @@ put_new(Name_0f, "8e", "jump disp16 bytes away if lesser or equal, if ZF is set 
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8e: {  // jump rel16 if SF or ZF
-  const int8_t offset = imm16();
+  const int16_t offset = imm16();
   if (ZF || SF != OF) {
     trace(90, "run") << "jump " << NUM(offset) << end();
     EIP += offset;

@@ -22,7 +22,6 @@ void process_int80() {
     break;
   case 3:
     trace(91, "run") << "read: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
-    trace(91, "run") << Reg[ECX].u << " => " << mem_addr_string(Reg[ECX].u, Reg[EDX].u) << end();
     Reg[EAX].i = read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     trace(91, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();

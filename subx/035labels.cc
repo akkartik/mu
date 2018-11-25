@@ -105,7 +105,7 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
           raise << "'" << to_string(inst) << "': don't use ':' when jumping to labels\n" << end();
         current_byte += 4;
       }
-      else if (has_operand_metadata(curr, "imm16")) {
+      else if (has_operand_metadata(curr, "disp16")) {
         if (*curr.data.rbegin() == ':')
           raise << "'" << to_string(inst) << "': don't use ':' when jumping to labels\n" << end();
         current_byte += 2;

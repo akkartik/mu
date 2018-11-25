@@ -48,6 +48,7 @@
   75/jump-if-not-equal  $run-main/disp8
   # then return run-tests()
   e8/call  run-tests/disp32
+#?   e8/call test-get-num-reads-multiple-digits/disp32
   8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
   eb/jump  $main:end/disp8
 $run-main:
@@ -57,20 +58,133 @@ $run-main:
   8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # copy ESP to EAX
     # clear ed->target (so we really exit)
   c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
-  # expected(ed, 2/stderr, "integer")
+  # compile(Stdin, 1/stdout, 2/stderr, ed)
     # push args
-  68/push  "integer"/imm32
+  50/push-EAX/ed
   68/push  2/imm32/stderr
-  50/push-EAX
+  68/push  1/imm32/stdout
+  68/push  Stdin/imm32
     # call
-  e8/call  expected/disp32
+  e8/call  compile/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
   # syscall(exit, 0)
   bb/copy-to-EBX  0/imm32
 $main:end:
   b8/copy-to-EAX  1/imm32/exit
   cd/syscall  0x80/imm8
+
+# the main entry point
+compile:  # in : fd or (address stream), out : fd or (address stream), err : fd or (address stream), ed : (address exit-descriptor) -> <void>
+  # prolog
+  55/push-EBP
+  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+  # save registers
+  50/push-EAX
+  51/push-ECX
+  # Look = get-char(in)
+    # push args
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8      .                    # push *(EBP+8)
+    # call
+  e8/call  get-char/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+  # var num/ECX : (address stream) on the stack
+  # Numbers can be 32 bits or 8 hex bytes long. One of them will be in 'Look', so we need space for 7 bytes.
+  # We won't add more, so that we can get overflow-handling for free.
+  # Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.
+  81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x13/imm32        # subtract from ESP
+  8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
+  # num->length = 7
+  c7/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           .           8/disp8         7/imm32           # copy to *(ECX+8)
+  # clear-stream(num)
+    # push args
+  51/push-ECX
+    # call
+  e8/call  clear-stream/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+  # get-num(in, num, err, ed)
+    # push args
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
+  51/push-ECX/num
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8      .                    # push *(EBP+8)
+    # call
+  e8/call  get-num/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+  # EAX = write(_test-stream, "Ab")
+    # push args
+  68/push  "Ab"/imm32
+  68/push  _test-stream/imm32
+    # call
+  e8/call  write/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # EAX = write(out, "bb/copy-to-EBX  ")
+    # push args
+  68/push  "bb/copy-to-EBX  "/imm32
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # call
+  e8/call  write/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # write-stream(out, num)
+    # push args
+  51/push-ECX/num
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # call
+  e8/call  write-stream/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # write(out, Newline)
+    # push args
+  68/push  Newline/imm32
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # call
+  e8/call  write/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # EAX = write(out, "b8/copy-to-EAX  1/imm32/exit")
+    # push args
+  68/push  "b8/copy-to-EAX  1/imm32/exit"/imm32
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # call
+  e8/call  write/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # EAX = write(out, Newline)
+    # push args
+  68/push  Newline/imm32
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # call
+  e8/call  write/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # EAX = write(out, "cd/syscall  0x80/imm8")
+    # push args
+  68/push  "cd/syscall  0x80/imm8"/imm32
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # call
+  e8/call  write/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # EAX = write(out, Newline)
+    # push args
+  68/push  Newline/imm32
+  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # call
+  e8/call  write/disp32
+    # discard args
+  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+  # restore registers
+  59/pop-to-ECX
+  58/pop-to-EAX
+  # epilog
+  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+  5d/pop-to-EBP
+  c3/return
 
 # Read a sequence of digits into 'out'. Abort if there are none, or if there
 # are too many to fit in 'out'.
@@ -81,7 +195,7 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
   #   if !is-digit?(Look) expected(ed, err, "integer")
   #   do
   #     if Look > 0xff
-  #       write(err, "Error: tried to write more than one byte\n")
+  #       write(err, "Error: tried to write too large a value into a single byte\n")
   #       stop(ed, 1)
   #     if out.write >= out.length
   #       write(err, "Error: too many digits in number\n")
@@ -193,7 +307,7 @@ $get-num:loop-stage3:
   81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
   # if EAX loop
   3d/compare-EAX  0/imm32
-  75/jump-if-not-equal  $get-num:loop/disp8
+  0f 85/jump-if-not-equal  $get-num:loop/disp16
 $get-num:loop-end:
   # persist necessary variables from registers
   89/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy ECX to *EDI
