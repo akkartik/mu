@@ -94,6 +94,10 @@ if (line_data.find('"') != string::npos) {  // can cause false-positives, but we
 
 :(code)
 void parse_instruction_character_by_character(const string& line_data, vector<line>& out) {
+  if (line_data.find('\n') != string::npos  && line_data.find('\n') != line_data.size()-1) {
+    raise << "parse_instruction_character_by_character: should receive only a single line\n" << end();
+    return;
+  }
   // parse literals
   istringstream in(line_data);
   in >> std::noskipws;
@@ -110,23 +114,41 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
       if (isspace(in.peek()))
         continue;  // '.' followed by space is comment token; skip
     }
-    ostringstream w;
-    w << c;
+    result.words.push_back(word());
     if (c == '"') {
-      // slurp until '"'
+      // slurp word data
+      ostringstream d;
+      d << c;
       while (has_data(in)) {
         in >> c;
-        w << c;
+        d << c;
         if (c == '"') break;
       }
+      result.words.back().data = d.str();
+      // slurp metadata
+      ostringstream m;
+      while (!isspace(in.peek()) && has_data(in)) {
+        in >> c;
+        if (c == '/') {
+          if (!m.str().empty()) result.words.back().metadata.push_back(m.str());
+          m.str("");
+        }
+        else {
+          m << c;
+        }
+      }
+      if (!m.str().empty()) result.words.back().metadata.push_back(m.str());
     }
-    // slurp any remaining characters until whitespace
-    while (!isspace(in.peek()) && has_data(in)) {  // peek can sometimes trigger eof(), so do it first
-      in >> c;
+    else {
+      // slurp all characters until whitespace
+      ostringstream w;
       w << c;
+      while (!isspace(in.peek()) && has_data(in)) {  // peek can sometimes trigger eof(), so do it first
+        in >> c;
+        w << c;
+      }
+      parse_word(w.str(), result.words.back());
     }
-    result.words.push_back(word());
-    parse_word(w.str(), result.words.back());
     trace(99, "parse2") << "word: " << to_string(result.words.back()) << end();
   }
   if (!result.words.empty())
@@ -212,3 +234,9 @@ void test_parse2_string_with_metadata_at_end_of_line_without_newline() {
       "parse2: word: \"test\" /f"
   );
 }
+
+//: Make sure slashes inside strings don't trigger adding stuff from inside the
+//: string to metadata.
+:(scenario parse2_string_containing_slashes)
+a "bc/def"/disp32
++parse2: word: "bc/def" /disp32
