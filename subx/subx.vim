@@ -28,6 +28,7 @@ let b:cmt_head = "#? "
 syntax match subxDelimiter / \. /  | highlight link subxDelimiter Delimiter
 
 syntax match subxString %"[^"]*"% | highlight link subxString Constant
-syntax match subxGlobal %\<[A-Z][a-z-]*\>% | highlight link subxGlobal SpecialChar
+" match globals but not registers like 'EAX'
+syntax match subxGlobal %\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
 
 let &cpo = s:save_cpo

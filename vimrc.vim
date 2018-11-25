@@ -41,7 +41,8 @@ function! HighlightTangledFile()
   syntax match muData "^type\>\|^container\>\|^exclusive-container\>" | highlight muData ctermfg=226
 
   syntax match subxString %"[^"]*"% | highlight link subxString Constant
-  syntax match subxGlobal %\<[A-Z][a-z-]*\>% | highlight link subxGlobal SpecialChar
+  " match globals but not registers like 'EAX'
+  syntax match subxGlobal %\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
 endfunction
 augroup LocalVimrc
   autocmd BufRead,BufNewFile *.mu set ft=mu
