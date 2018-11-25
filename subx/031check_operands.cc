@@ -147,15 +147,11 @@ void init_permitted_operands() {
   put(Permitted_operands, "7e", 0x04);
   put(Permitted_operands, "7f", 0x04);
 
-  //// Class C: just op and disp16
-  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
-  //  0     0     0      |1       0     0     0
-  put(Permitted_operands, "e9", 0x08);  // jump
-
   //// Class D: just op and disp32
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  0     0     1      |0       0     0     0
   put(Permitted_operands, "e8", 0x10);  // call
+  put(Permitted_operands, "e9", 0x10);  // jump
 
   //// Class E: just op and imm8
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
@@ -492,27 +488,27 @@ void check_operands_f3(const line& /*unused*/) {
   raise << "no supported opcodes starting with f3\n" << end();
 }
 
-:(scenario check_missing_disp16_operand)
+:(scenario check_missing_disp32_operand)
 % Hide_errors = true;
 == 0x1
 # instruction                     effective address                                                   operand     displacement    immediate
 # op          subop               mod             rm32          base        index         scale       r32
 # 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
   0f 84                                                                                                                                             # jmp if ZF to ??
-+error: '0f 84' (jump disp16 bytes away if equal, if ZF is set): missing disp16 operand
++error: '0f 84' (jump disp32 bytes away if equal, if ZF is set): missing disp32 operand
 
 :(before "End Globals")
 map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_0f;
 :(before "End Init Permitted Operands")
-//// Class C: just op and disp16
+//// Class D: just op and disp32
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
-//  0     0     0      |1       0     0     0
-put_new(Permitted_operands_0f, "84", 0x08);
-put_new(Permitted_operands_0f, "85", 0x08);
-put_new(Permitted_operands_0f, "8c", 0x08);
-put_new(Permitted_operands_0f, "8d", 0x08);
-put_new(Permitted_operands_0f, "8e", 0x08);
-put_new(Permitted_operands_0f, "8f", 0x08);
+//  0     0     1      |0       0     0     0
+put_new(Permitted_operands_0f, "84", 0x10);
+put_new(Permitted_operands_0f, "85", 0x10);
+put_new(Permitted_operands_0f, "8c", 0x10);
+put_new(Permitted_operands_0f, "8d", 0x10);
+put_new(Permitted_operands_0f, "8e", 0x10);
+put_new(Permitted_operands_0f, "8f", 0x10);
 
 //// Class M: using ModR/M byte
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
