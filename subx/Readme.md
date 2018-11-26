@@ -24,32 +24,71 @@ by:
    test could check that the number of swaps doesn't quadruple when the size
    of the input doubles.
 
+The hypothesis is that designing the entire system to be testable from day 1
+and from the ground up would radically impact the culture of an eco-system in
+a way that no bolted-on tool or service at higher levels can replicate. It
+would make it easier to write programs that can be [easily understood by newcomers](http://akkartik.name/about).
+It would reassure authors that an app is free from regression if all automated
+tests pass. It would make the stack easy to rewrite and simplify by dropping
+features, without fear that a subset of targeted apps might break. As a result
+people might fork projects more easily, and also exchange code between
+disparate forks more easily (copy the tests over, then try copying code over
+and making tests pass, rewriting and polishing where necessary). The community
+would have in effect a diversified portfolio of forks, a “wavefront” of
+possible combinations of features and alternative implementations of features
+instead of the single trunk with monotonically growing complexity that we get
+today. Application writers who wrote thorough tests for their apps (something
+they just can’t do today) would be able to bounce around between forks more
+easily without getting locked in to a single one as currently happens.
+
+However, that vision is far away, and SubX is just a first, hesitant step.
 SubX supports a small, regular subset of the 32-bit x86 instruction set.
-(Think of the name as short for "sub-x86".) The ELF binaries it generates can
-be run natively on Linux, and they require only the Linux kernel.
+(Think of the name as short for "sub-x86".)
+
+  - Only instructions that operate on the 32-bit integer E\*X registers, and a
+    couple of instructions for operating on 8-bit values. No floating-point
+    yet. Most legacy registers will never be supported.
+
+  - Only instructions that assume a flat address space; legacy instructions
+    that use segment registers will never be supported.
+
+  - No instructions that check the carry or parity flags; arithmetic operations
+    always operate on signed integers (while bitwise operations always operate
+    on unsigned integers).
+
+  - Only relative jump instructions (with 8-bit or 32-bit offsets).
+
+The (rudimentary, statically linked) ELF binaries SubX generates can be run
+natively on Linux, and they require only the Linux kernel.
 
 _Status_: SubX is currently implemented in C++, so you need a C++ compiler and
 libraries to build SubX binaries. However, I'm learning how to build a
 compiler in assembly language by working through [Jack Crenshaw's "Let's build
-a compiler" series](https://compilers.iecc.com/crenshaw). Look in the `apps/`
-sub-directory.
+a compiler" series](https://compilers.iecc.com/crenshaw). Look in [the `apps/`
+sub-directory](http://akkartik.github.io/mu/html/subx/apps/crenshaw2-1.subx.html).
 
 ## An example program
 
 In the interest of minimalism, SubX requires more knowledge than traditional
 assembly languages of the x86 instructions it supports. Here's an example
-SubX program, one instruction per line:
+SubX program, using one line per instruction:
 
 <img alt='examples/ex3.subx' src='../html/subx/ex3.png'>
 
-It sums the first 10 natural numbers. As you can see, the programmer needs to
-know the (kinda complex) structure of x86 instructions, all the different
-operands that an instruction can have, their layout in bytes (for example, the
-`subop` and `r32` fields use the same bits, so an instruction can't have
-both), the opcodes for supported instructions, and so on.
+This program sums the first 10 natural numbers. By convention I use horizontal
+tabstops to help read instructions, dots to help follow the long lines,
+comments before groups of instructions to describe their high-level purpose,
+and comments at the end of complex instructions to state the low-level
+operation they perform.
 
-While SubX the syntax is fairly dumb, the error-checking is smarter. I try to
-provide clear error messages on instructions missing operands or having
+As you can see, programming in SubX requires the programmer to know the (kinda
+complex) structure of x86 instructions, all the different operands that an
+instruction can have, their layout in bytes (for example, the `subop` and
+`r32` fields use the same bits, so an instruction can't have both; more on
+this below), the opcodes for supported instructions, and so on.
+
+While SubX syntax is fairly dumb, the error-checking is relatively smart. I
+try to provide clear error messages on instructions missing operands or having
 unexpected operands. Either case would otherwise cause instruction boundaries
 to diverge from what you expect, and potentially lead to errors far away. It's
 useful to catch such errors early.
@@ -78,15 +117,17 @@ with a few prerequisites about the x86 instruction set.
 
 ## A quick tour of the x86 instruction set
 
-The Intel manuals are the final source of truth, but they can be forbidding to
-make sense of, so here's a quick orientation. You will need familiarity with
-binary and hexadecimal encodings (starting with '0x') for numbers, and maybe a
-few other things. Email [Kartik](mailto:mu@akkartik.com) anytime if something
-isn't clear.
+The [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf)
+is the final source of truth on the x86 instruction set, but it can be
+forbidding to make sense of, so here's a quick orientation. You will need
+familiarity with binary and hexadecimal encodings (starting with '0x') for
+numbers, and maybe a few other things. Email [me](mailto:mu@akkartik.com)
+anytime if something isn't clear. I love explaining this stuff for as long as
+it takes.
 
 The x86 instructions SubX supports can take anywhere from 1 to 13 bytes. Early
 bytes affect what later bytes mean and where an instruction ends. Here's the
-big picture of a single x86 instruction from the Intel processor manual:
+big picture of a single x86 instruction from the Intel manual:
 
 <img alt='x86 instruction structure' src='../html/subx/encoding.png'>
 
@@ -97,15 +138,16 @@ There's a lot here, so let's unpack it piece by piece:
 * The opcode bytes encode the instruction used. Ignore their internal structure;
   we'll just treat them as a sequence of whole bytes. The opcode sequences
   SubX recognizes are enumerated by running `subx help opcodes`. For more
-  details, consult html guides like https://c9x.me/x86 or [the Intel manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf).
+  details on a specific opcode, consult html guides like https://c9x.me/x86 or
+  the Intel manual.
 
 * The addressing mode byte is used by all instructions that take an `rm32`
-  operand according to `subx help opcodes` and load an operand from memory.
-  That's most of them. That operand is encoded by the addressing mode byte
-  and, optionally, the SIB (scale, index, base) byte. The `rm32` operand is
-  constructed like this:
+  operand according to `subx help opcodes`. (That's most instructions.) The
+  `rm32` operand shows how these instructions load one operand from memory.
+  That operand is encoded by the addressing mode byte and, optionally, the SIB
+  (scale, index, base) byte. The `rm32` operand is constructed like this:
 
-  - if `mod` is 3: the contents of the register described by `r/m`.
+  - if `mod` is 3: the contents of the register described by the `r/m` bits.
     - `000` (0) means register `EAX`
     - `001` (1) means register `ECX`
     - `010` (2) means register `EDX`
@@ -134,8 +176,8 @@ There's a lot here, so let's unpack it piece by piece:
   base * 2^scale + index
   ```
 
-  There are a couple more exceptions; see [Table 2-2](modrm.pdf) and [Table
-  2-3](sib.pdf) of the manual for the complete story.
+  (There are a couple more exceptions ☹; see [Table 2-2](modrm.pdf) and [Table 2-3](sib.pdf)
+  of the Intel manual for the complete story.)
 
   Phew, that was a lot to take in. Some examples to work through as you reread
   and digest it:
@@ -168,11 +210,11 @@ There's a lot here, so let's unpack it piece by piece:
   some instructions use a displacement as part of `rm32` and an immediate for
   the other operand).
 
-* Finally, the `reg` bits in the addressing mode byte can encode the second
-  operand. Sometimes they can also be part of the opcode bits. For example, an
-  operand byte of `ff` and `reg` bits of `001` mean "increment rm32". Obviously,
-  instructions that use the `reg` bits as a "sub-opcode" cannot also use it as
-  a second operand.
+* Finally, the `reg` bits in the addressing mode byte can also encode the
+  second operand. Sometimes they can also be part of the opcode bits. For
+  example, an operand byte of `ff` and `reg` bits of `001` means "increment
+  rm32". (Notice that instructions that use the `reg` bits as a "sub-opcode"
+  cannot also use it as a second operand.)
 
 That concludes our quick tour. By this point it's probably clear to you that
 the x86 instruction set is overly complicated. Many simpler instruction sets
@@ -242,22 +284,33 @@ Instructions can refer to labels in displacement or immediate operands, and
 they'll obtain a value based on the address of the label: immediate operands
 will contain the address directly, while displacement operands will contain
 the difference between the address and the address of the current instruction.
+The latter is mostly useful for `jump` and `call` instructions.
+
+Functions are defined using labels. By convention, labels internal to functions
+(that must only be jumped to) start with a `$`. Any other labels must only be
+called, never jumped to.
 
 The data segment consists of labels as before and byte values. Referring to
 data labels in either code segment instructions or data segment values (using
 the `imm32` metadata either way) yields their address.
 
+Automatic tests are an important part of SubX, and there's a simple mechanism
+to provide a test harness: all functions that start with `test-` are called in
+turn by a special, auto-generated function called `run-tests`. How you choose
+to call it is up to you.
+
 I try to keep things simple so that there's less work to do when I eventually
 implement SubX in SubX. But there _is_ one convenience: instructions can
-provide a string literal surrounded by `"`s in an `imm32` operand. SubX will
-transparently copy it to the `data` segment and replace it with its address.
-Strings are the only place where a SubX operand is allowed to contain spaces.
+provide a string literal surrounded by quotes (`"`) in an `imm32` operand.
+SubX will transparently copy it to the `data` segment and replace it with its
+address. Strings are the only place where a SubX operand is allowed to contain
+spaces.
 
-That should be enough information for writing simple SubX programs. The
-`examples/` directory provides some fodder for practice, giving a more gradual
-introduction to SubX features. This repo includes the binary for all examples.
-At any commit an example's binary should be identical bit for bit with the
-result of translating the .subx file. The binary should also be natively
+That should be enough information for writing SubX programs. The `examples/`
+directory provides some fodder for practice, giving a more gradual introduction
+to SubX features. This repo includes the binary for all examples. At any
+commit, an example's binary should be identical bit for bit with the result of
+translating the corresponding `.subx` file. The binary should also be natively
 runnable on a Linux system running on Intel x86 processors, either 32- or
 64-bit. If either of these invariants is broken it's a bug on my part.
 
@@ -280,26 +333,14 @@ Running `subx` will transparently compile it as necessary.
 
   Remember, not all 32-bit Linux binaries are guaranteed to run. I'm not
   building general infrastructure here for all of the x86 instruction set.
-  SubX is about programming with a small, regular subset of 32-bit x86:
-
-  - Only instructions that operate on the 32-bit integer E\*X registers. (No
-    floating-point yet.)
-
-  - Only instructions that assume a flat address space; no instructions that use
-    segment registers.
-
-  - No instructions that check the carry or parity flags; arithmetic operations
-    always operate on signed integers (while bitwise operations always operate
-    on unsigned integers)
-
-  - Only relative jump instructions (with 8-bit or 16-bit offsets).
+  SubX is about programming with a small, regular subset of 32-bit x86.
 
 ## Resources
 
 * [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
   (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/subx/cheatsheet.pdf))
 * [Concise reference for the x86 ISA](https://c9x.me/x86)
-* [Intel programming manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
+* [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
 
 ## Inspirations
 
