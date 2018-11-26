@@ -62,8 +62,8 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='white-box test' src='html/tracing-test.png'>
 
    Another example: if a sort function logs each swap, a performance test can
-   ensure that the number of swaps doesn't quadruple when the size of the
-   input doubles.
+   check that the number of swaps doesn't quadruple when the size of the input
+   doubles.
 
    Besides expanding the scope of tests, this ability also allows more
    radical refactoring without needing to modify tests. All Mu's tests call a
