@@ -337,6 +337,52 @@ Running `subx` will transparently compile it as necessary.
   building general infrastructure here for all of the x86 instruction set.
   SubX is about programming with a small, regular subset of 32-bit x86.
 
+## SubX library
+
+A major goal of SubX is testable wrappers for operating system syscalls.
+Here's what I've built so far:
+
+* `write`: takes two arguments, `f` and `s`.
+  - `s` is an address to an _array_. Arrays in SubX are always assumed to
+    start with a 4-byte length.
+  - `f` is either a file descriptor to write `s` to, or (in tests) a _stream_.
+    Streams are in-memory buffers that can be read or written. They consist of
+    a `data` array of bytes as well as `read` and `write` indexes into the
+    array, showing how far we've read and written so far.
+
+  Comparing this interface with the Unix `write()` syscall shows two benefits:
+
+  1. SubX can handle 'fake' file descriptors in tests.
+
+  1. `write()` accepts buffer and its length in separate arguments, which
+     requires callers to manage the two separately and so can be error-prone.
+     SubX's wrapper keeps the two together to increase the chances that we
+     never accidentally go out of array bounds.
+
+* `read`: takes two arguments, `f` and `s`.
+  - `s` is an address to a _stream_ to save the read data to. We read as much
+    data as can fit in `s`, and no more.
+  - `f` is either a file descriptor to write `s` to, or (in tests) a _stream_.
+
+  Like with `write()`, this wrapper around the Unix `read()` syscall adds the
+  ability to handle 'fake' file descriptors in tests, and reduces the chances
+  of clobbering outside array bounds.
+
+  One bit of weirdness here: in tests we do a redundant copy from one stream
+  to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/subx/058read.subx.html)
+  for a discussion of alternative interfaces.
+
+* `stop`: takes two arguments:
+  - `ed` is an address to an _exit descriptor_. Exit descriptors allow us to
+    `exit()` the program normally, but return to the test harness within
+    tests. That allows tests to make assertions about when `exit()` is called.
+  - `value` is the status code to `exit()` with.
+
+  For more details on exit descriptors and how to create one, see [the
+  comments before the implementation](http://akkartik.github.io/mu/html/subx/057stop.subx.html).
+
+* ... _(to be continued)_
+
 ## Resources
 
 * [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
