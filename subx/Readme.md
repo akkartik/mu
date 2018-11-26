@@ -112,6 +112,8 @@ $ echo $?
 55
 ```
 
+[![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
+
 The rest of this Readme elaborates on the syntax for SubX programs, starting
 with a few prerequisites about the x86 instruction set.
 
@@ -225,7 +227,7 @@ fairly directly, with only minimal-going-on-zero reliance on a C compiler.
 ## The syntax of SubX programs
 
 SubX programs map to the same ELF binaries that a conventional Linux system
-uses. Linux ELF binaries consist of a series of segments. In particular, they
+uses. Linux ELF binaries consist of a series of _segments_. In particular, they
 distinguish between code and data. Correspondingly, SubX programs consist of a
 series of segments, each starting with a header line: `==` followed by a name.
 The first segment is assumed to be for code, and the second for data. By
@@ -246,11 +248,11 @@ You can reuse segment names:
 ...C...
 ```
 
-The code segment now contains fragment `A` as well as `C`. `C` comes _before_
-`A`. This behavior allows me to split SubX programs between multiple _layers_.
-A program built with just layer 1 would start executing at layer 1's first
-instruction, while one built with layer 1 and layer 2 (in that order) would
-start executing at layer 2's first instruction.
+The code segment now contains the instructions of `A` as well as `C`. `C`
+comes _before_ `A`. This order allows me to split SubX programs between
+multiple _layers_. A program built with just layer 1 would start executing at
+layer 1's first instruction, while one built with layer 1 and layer 2 (in that
+order) would start executing at layer 2's first instruction.
 
 Within the code segment, each line contains a comment, label or instruction.
 Comments start with a `#` and are ignored. Labels should always be the first
@@ -320,12 +322,12 @@ Running `subx` will transparently compile it as necessary.
 
 `subx` currently has the following sub-commands:
 
-* `subx test`: provides some online help.
+* `subx help`: some helpful documentation to have at your fingertips.
 
 * `subx test`: runs all automated tests.
 
-* `subx translate <input files> -o <output ELF binary>`: translates text files
-  containing hex bytes and macros into an executable ELF binary.
+* `subx translate <input files> -o <output ELF binary>`: translates `.subx`
+  files into an executable ELF binary.
 
 * `subx run <ELF binary>`: simulates running the ELF binaries emitted by `subx
   translate`. Useful for debugging, and also enables more thorough testing of
