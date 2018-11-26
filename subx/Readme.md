@@ -79,7 +79,7 @@ This program sums the first 10 natural numbers. By convention I use horizontal
 tabstops to help read instructions, dots to help follow the long lines,
 comments before groups of instructions to describe their high-level purpose,
 and comments at the end of complex instructions to state the low-level
-operation they perform.
+operation they perform. Numbers are always shown in hexadecimal (base 16).
 
 As you can see, programming in SubX requires the programmer to know the (kinda
 complex) structure of x86 instructions, all the different operands that an
