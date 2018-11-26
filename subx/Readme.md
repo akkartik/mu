@@ -4,7 +4,7 @@ SubX is a minimalist assembly language designed:
 * to explore ways to turn arbitrary manual tests into reproducible automated
   tests,
 * to be easy to implement in itself, and
-* to help learn the x86 instruction set.
+* to help learn and teach the x86 instruction set.
 
 Expanding on the first bullet, it hopes to support more comprehensive tests
 by:
