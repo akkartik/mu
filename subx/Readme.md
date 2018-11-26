@@ -124,7 +124,7 @@ is the final source of truth on the x86 instruction set, but it can be
 forbidding to make sense of, so here's a quick orientation. You will need
 familiarity with binary and hexadecimal encodings (starting with '0x') for
 numbers, and maybe a few other things. Email [me](mailto:mu@akkartik.com)
-anytime if something isn't clear. I love explaining this stuff for as long as
+any time if something isn't clear. I love explaining this stuff for as long as
 it takes.
 
 The x86 instructions SubX supports can take anywhere from 1 to 13 bytes. Early
