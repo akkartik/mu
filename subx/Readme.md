@@ -360,9 +360,9 @@ Here's what I've built so far:
      never accidentally go out of array bounds.
 
 * `read`: takes two arguments, `f` and `s`.
-  - `s` is an address to a _stream_ to save the read data to. We read as much
-    data as can fit in `s`, and no more.
-  - `f` is either a file descriptor to write `s` to, or (in tests) a _stream_.
+  - `f` is either a file descriptor to read from, or (in tests) a stream.
+  - `s` is an address to a stream to save the read data to. We read as much
+    data as can fit in (the free space of) `s`, and no more.
 
   Like with `write()`, this wrapper around the Unix `read()` syscall adds the
   ability to handle 'fake' file descriptors in tests, and reduces the chances
@@ -374,7 +374,7 @@ Here's what I've built so far:
 
 * `stop`: takes two arguments:
   - `ed` is an address to an _exit descriptor_. Exit descriptors allow us to
-    `exit()` the program normally, but return to the test harness within
+    `exit()` the program in production, but return to the test harness within
     tests. That allows tests to make assertions about when `exit()` is called.
   - `value` is the status code to `exit()` with.
 
