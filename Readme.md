@@ -86,9 +86,9 @@ of features usually associated with higher-level languages: strong
 type-safety, function overloading, lexical scope, generic functions,
 higher-order functions, and [delimited continuations](http://akkartik.name/coroutines-in-mu).
 
-Mu is currently interpreted and too slow for graphics or sound. We're
-actively investigating ways to speed it up. In the meantime, Kartik uses it to
-teach programming 1-on-1 with the motto, "teach testing before syntax."
+Mu is currently interpreted and too slow for graphics or sound. Kartik is
+working on a way to compile it to native code. Recent activity is all in the
+[`subx/`](https://github.com/akkartik/mu/tree/master/subx) directory.
 
 *Taking Mu for a spin*
 
