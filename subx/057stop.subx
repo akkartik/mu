@@ -16,14 +16,21 @@
 # input target with an output status parameter into a type called 'exit-descriptor'.
 #
 # So the exit-descriptor looks like this:
-#   target : address  # input return address for 'stop' to unwind to
-#   value : int  # output exit status stop was called with
+#   target : address  # return address for 'stop' to unwind to
+#   value : int  # exit status stop was called with
 #
 # 'stop' thus takes two parameters: an exit-descriptor and the exit status.
 #
-# We won't bother cleaning up any other processor state besides the stack,
+# 'stop' won't bother cleaning up any other processor state besides the stack,
 # such as registers. Only ESP will have a well-defined value after 'stop'
 # returns. (This is a poor man's setjmp/longjmp, if you know what that is.)
+#
+# Before you an call any function that may call 'stop', you need to pass in an
+# exit-descriptor to it. To create an exit-descriptor use 'tailor-exit-descriptor'
+# below. It's not the most pleasant abstraction in the world.
+#
+# An exit-descriptor's target is its input, computed during 'tailor-exit-descriptor'.
+# Its value is its output, computed during stop and available to the test.
 
 == code
 # instruction                     effective address                                                   operand     displacement    immediate
