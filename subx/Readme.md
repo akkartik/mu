@@ -47,7 +47,7 @@ by:
    also trigger checks. Here, tagging operands with the `imm32` type allows
    SubX to check that instructions have precisely the operand types they
    should. x86 instructions have 14 types of operands, and missing one causes
-   all future instructions to go out off the rails, interpreting operands as
+   all future instructions to go off the rails, interpreting operands as
    opcodes and vice versa. So this is a useful check.
 
 1. Designing testable wrappers for operating system interfaces. For example,
