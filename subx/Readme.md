@@ -145,11 +145,12 @@ There's a lot here, so let's unpack it piece by piece:
 
 * The addressing mode byte is used by all instructions that take an `rm32`
   operand according to `subx help opcodes`. (That's most instructions.) The
-  `rm32` operand shows how these instructions load one operand from memory.
-  That operand is encoded by the addressing mode byte and, optionally, the SIB
-  (scale, index, base) byte. The `rm32` operand is constructed like this:
+  `rm32` operand expresses how an instruction should load one 32-bit operand
+  from either a register or memory. It is configured by the addressing mode
+  byte and, optionally, the SIB (scale, index, base) byte as follows:
 
-  - if `mod` is 3: the contents of the register described by the `r/m` bits.
+  - if the `mod` (mode) field is 3: the `rm32` operand is the contents of the
+    register described by the `r/m` bits.
     - `000` (0) means register `EAX`
     - `001` (1) means register `ECX`
     - `010` (2) means register `EDX`
@@ -162,17 +163,17 @@ There's a lot here, so let's unpack it piece by piece:
   - if `mod` is 0: `rm32` is the contents of the address provided in the
     register provided by `r/m`. That's `*r/m` in C syntax.
 
-  - if `mod` is 1: the contents of the address provided by adding the register
-    in `r/m` with the (1-byte) displacement. That's `*(r/m + disp8)` in C
-    syntax.
+  - if `mod` is 1: `rm32` is the contents of the address provided by adding
+    the register in `r/m` with the (1-byte) displacement. That's `*(r/m +
+    disp8)` in C syntax.
 
-  - if `mod` is 2: the contents of the address provided by adding the register
-    in `r/m` with the (4-byte) displacement. That's `*(r/m + disp32)` in C
-    syntax.
+  - if `mod` is 2: `rm32` is the contents of the address provided by adding
+    the register in `r/m` with the (4-byte) displacement. That's `*(r/m +
+    disp32)` in C syntax.
 
-  In the last 3 cases, one exception occurs when `r/m` contains `010` or 4.
-  Rather than encoding register ESP, '4' means the address is provided by a
-  SIB byte next:
+  In the last 3 cases, one exception occurs when the `r/m` field contains
+  `010` or 4. Rather than encoding register ESP, '4' means the address is
+  provided by a SIB byte next:
 
   ```
   base * 2^scale + index
