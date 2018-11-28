@@ -17,9 +17,9 @@ $ ./subx  # print out a help message
 Expanding on the first bullet, it hopes to support more comprehensive tests
 by:
 
-0. Running generated binaries in _emulated mode_. It's slower, but there's
-   more sanity checking, and more descriptive error messages for common
-   low-level problems.
+0. Running generated binaries in _emulated mode_. It's slower than native
+   execution (which will also work), but there's more sanity checking, and
+   more descriptive error messages for common low-level problems.
 
    ```
    $ ./subx translate examples/ex1.subx -o examples/ex1
