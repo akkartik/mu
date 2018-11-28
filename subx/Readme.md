@@ -6,8 +6,49 @@ SubX is a minimalist assembly language designed:
 * to be easy to implement in itself, and
 * to help learn and teach the x86 instruction set.
 
+```
+$ git clone https://github.com/akkartik/mu
+$ cd mu/subx
+$ ./subx  # print out a help message
+```
+
+[![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
+
 Expanding on the first bullet, it hopes to support more comprehensive tests
 by:
+
+0. Running generated binaries in _emulated mode_. It's slower, but there's
+   more sanity checking, and more descriptive error messages for common
+   low-level problems.
+
+   ```
+   $ ./subx translate examples/ex1.subx -o examples/ex1
+   $ ./examples/ex1  # only on Linux
+   $ echo $?
+   42
+   $ ./subx run examples/ex1  # on Linux or BSD or OS X
+   $ echo $?
+   42
+   ```
+
+   The assembly syntax is designed so the assembler (`subx translate`) has
+   very little to do, making it feasible to reimplement in itself. Programmers
+   have to explicitly specify all opcodes and operands.
+
+   ```
+   # exit(42)
+   bb/copy-to-EBX  0x2a/imm32  # 42 in hex
+   b8/copy-to-EAX  1/imm32/exit
+   cd/syscall  0x80/imm8
+   ```
+
+   To keep code readable you can add _metadata_ to any word after a `/`.
+   Metadata can be just comments for readers, and they'll be ignored. They can
+   also trigger checks. Here, tagging operands with the `imm32` type allows
+   SubX to check that instructions have precisely the operand types they
+   should. x86 instructions have 14 types of operands, and missing one causes
+   all future instructions to go out off the rails, interpreting operands as
+   opcodes and vice versa. So this is a useful check.
 
 1. Designing testable wrappers for operating system interfaces. For example,
    it can `read()` from or `write()` to fake in-memory files in tests. We'll
@@ -96,8 +137,6 @@ useful to catch such errors early.
 Try running this example now:
 
 ```
-$ git clone https://github.com/akkartik/mu
-$ cd mu/subx
 $ ./subx translate examples/ex3.subx -o examples/ex3
 $ ./subx run examples/ex3
 $ echo $?
@@ -111,8 +150,6 @@ $ ./examples/ex3
 $ echo $?
 55
 ```
-
-[![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
 
 The rest of this Readme elaborates on the syntax for SubX programs, starting
 with a few prerequisites about the x86 instruction set.
@@ -259,11 +296,11 @@ Within the code segment, each line contains a comment, label or instruction.
 Comments start with a `#` and are ignored. Labels should always be the first
 word on a line, and they end with a `:`.
 
-Instructions consist of a sequence of opcode bytes and their operands. Each
-opcode and operand can contain _metadata_ after a `/`. Metadata can be either
-for SubX or act as a comment for the reader; SubX silently ignores unrecognized
-metadata. A single word can contain multiple pieces of metadata, each starting
-with a `/`.
+Instructions consist of a sequence of opcode bytes and their operands. As
+mentioned above, each opcode and operand can contain _metadata_ after a `/`.
+Metadata can be either for SubX or act as a comment for the reader; SubX
+silently ignores unrecognized metadata. A single word can contain multiple
+pieces of metadata, each starting with a `/`.
 
 SubX uses metadata to express instruction encoding and get decent error
 messages. You must tag each instruction operand with the appropriate operand
