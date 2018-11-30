@@ -15,44 +15,44 @@
 # Locals start from ESP-4 downwards.
 
 == code
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+#   instruction                     effective address                                                   operand     displacement    immediate
+#   op          subop               mod             rm32          base        index         scale       r32
+#   1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-  # prolog
-  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-  # call ascii-length(argv[1])
+    # prolog
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # call ascii-length(argv[1])
     # push args
-  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
     # call
-  e8/call  ascii-length/disp32
+    e8/call  ascii-length/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 
-  # exit(EAX)
-  89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-  b8/copy-to-EAX  1/imm32/exit
-  cd/syscall  0x80/imm8
+    # exit(EAX)
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
 
 ascii-length:  # (s)
-  # initialize s (EDX)
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
-  # var result = 0 (EAX)
-  b8/copy-to-EAX  0/imm32
+    # initialize s (EDX)
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
+    # var result = 0 (EAX)
+    b8/copy-to-EAX  0/imm32
 $ascii-length-loop:
-  # var c = *s (ECX)
-  8a/copy                         0/mod/*         2/rm32/EDX    .           .             .           1/r32/ECX   .               .                 # copy byte at *EDX to lower byte of ECX
-  # if c == '\0' break
-  81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
-  74/jump-if-equal  $ascii-length-ret/disp8
-  # ++s
-  81          0/subop/add         3/mod/direct    2/rm32/EDX    .           .             .           .           .               1/imm32           # add to EDX
-  # ++result
-  40/inc-EAX
-  # loop
-  eb/jump  $ascii-length-loop/disp8
+    # var c = *s (ECX)
+    8a/copy                         0/mod/*         2/rm32/EDX    .           .             .           1/r32/ECX   .               .                 # copy byte at *EDX to lower byte of ECX
+    # if c == '\0' break
+    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
+    74/jump-if-equal  $ascii-length-ret/disp8
+    # ++s
+    81          0/subop/add         3/mod/direct    2/rm32/EDX    .           .             .           .           .               1/imm32           # add to EDX
+    # ++result
+    40/inc-EAX
+    # loop
+    eb/jump  $ascii-length-loop/disp8
 $ascii-length-ret:
-  # return (result in EAX)
-  c3/return
+    # return (result in EAX)
+    c3/return
 
 # vim:nowrap:textwidth=0

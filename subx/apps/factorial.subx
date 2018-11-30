@@ -15,94 +15,94 @@
 # When running tests the exit status doesn't mean anything. Yet.
 
 == code
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+#   instruction                     effective address                                                   operand     displacement    immediate
+#   op          subop               mod             rm32          base        index         scale       r32
+#   1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # main:
-  # prolog
-  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-  # if (argc > 1)
-  81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0/disp8         1/imm32           # compare *EBP
-  7e/jump-if-lesser-or-equal  $run-main/disp8
-  # and if (argv[1] == "test")
+    # prolog
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # if (argc > 1)
+    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0/disp8         1/imm32           # compare *EBP
+    7e/jump-if-lesser-or-equal  $run-main/disp8
+    # and if (argv[1] == "test")
     # push args
-  68/push  "test"/imm32
-  ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    68/push  "test"/imm32
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
     # call
-  e8/call  kernel-string-equal/disp32
+    e8/call  kernel-string-equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check result
-  3d/compare-EAX  1/imm32
-  75/jump-if-not-equal  $run-main/disp8
-  # then return run-tests()
-  e8/call  run-tests/disp32
-  8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Num-test-failures/disp32          # copy *Num-test-failures to EAX
-  eb/jump  $main:end/disp8  # where EAX will get copied to EBX
-  # else EAX = factorial(5)
+    3d/compare-EAX  1/imm32
+    75/jump-if-not-equal  $run-main/disp8
+    # then return run-tests()
+    e8/call  run-tests/disp32
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Num-test-failures/disp32          # copy *Num-test-failures to EAX
+    eb/jump  $main:end/disp8  # where EAX will get copied to EBX
+    # else EAX = factorial(5)
 $run-main:
     # push args
-  68/push  5/imm32
+    68/push  5/imm32
     # call
-  e8/call  factorial/disp32
+    e8/call  factorial/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $main:end:
-  # exit(EAX)
-  89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-  b8/copy-to-EAX  1/imm32
-  cd/syscall  0x80/imm8
+    # exit(EAX)
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
+    b8/copy-to-EAX  1/imm32
+    cd/syscall  0x80/imm8
 
 # factorial(n)
 factorial:
-  # prolog
-  55/push-EBP
-  89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-  53/push-EBX
-  # initialize EAX to 1 (base case)
-  b8/copy-to-EAX  1/imm32
-  # if (n <= 1) jump exit
-  81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         1/imm32           # compare *(EBP+8)
-  7e/jump-if-<=  $factorial:end/disp8
-  # EBX = n-1
-  8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
-  81          5/subop/subtract    3/mod/direct    3/rm32/EBX    .           .             .           .           .               1/imm32           # subtract from EBX
-  # EAX = factorial(n-1)
+    # prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    53/push-EBX
+    # initialize EAX to 1 (base case)
+    b8/copy-to-EAX  1/imm32
+    # if (n <= 1) jump exit
+    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         1/imm32           # compare *(EBP+8)
+    7e/jump-if-<=  $factorial:end/disp8
+    # EBX = n-1
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
+    81          5/subop/subtract    3/mod/direct    3/rm32/EBX    .           .             .           .           .               1/imm32           # subtract from EBX
+    # EAX = factorial(n-1)
     # push args
-  53/push-EBX
+    53/push-EBX
     # call
-  e8/call  factorial/disp32
+    e8/call  factorial/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-  # return n * factorial(n-1)
-  f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none                          8/disp8         .                 # multiply *(EBP+8) into EAX
-  # TODO: check for overflow
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # return n * factorial(n-1)
+    f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none                          8/disp8         .                 # multiply *(EBP+8) into EAX
+    # TODO: check for overflow
 $factorial:end:
-  # epilog
-  5b/pop-to-EBX
-  89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-  5d/pop-to-EBP
-  c3/return
+    # epilog
+    5b/pop-to-EBX
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
 
 test-factorial:
-  # factorial(5)
+    # factorial(5)
     # push args
-  68/push  5/imm32
+    68/push  5/imm32
     # call
-  e8/call  factorial/disp32
+    e8/call  factorial/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-  # check-ints-equal(EAX, 120, failure message)
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 120, failure message)
     # push args
-  68/push  "F - test-factorial"/imm32
-  68/push  0x78/imm32/expected-120
-  50/push-EAX
+    68/push  "F - test-factorial"/imm32
+    68/push  0x78/imm32/expected-120
+    50/push-EAX
     # call
-  e8/call  check-ints-equal/disp32
+    e8/call  check-ints-equal/disp32
     # discard args
-  81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-  # end
-  c3/return
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
 
 # vim:nowrap:textwidth=0
