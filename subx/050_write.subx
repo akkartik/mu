@@ -1,9 +1,9 @@
 # _write: write to a file descriptor
 
 == code
-#   instruction                     effective address                                                   operand     displacement    immediate
-#   op          subop               mod             rm32          base        index         scale       r32
-#   1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # main:
     # syscall(exit, 0) -- can't test _write just yet
@@ -12,34 +12,34 @@
     cd/syscall  0x80/imm8
 
 _write:  # fd : int, s : (address array byte) -> <void>
-    # prolog
+    # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # save registers
+    # . save registers
     50/push-EAX
     51/push-ECX
     52/push-EDX
     53/push-EBX
     # syscall(write, fd, (data) s+4, (size) *s)
-    # fd : EBX
+    # . fd : EBX
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
-    # data : ECX = s+4
+    # . data : ECX = s+4
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0xc/disp8       .                 # copy *(EBP+12) to ECX
     81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
-    # size : EDX = *s
+    # . size : EDX = *s
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
     8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
-    # syscall
+    # . syscall
     b8/copy-to-EAX  4/imm32/write
     cd/syscall  0x80/imm8
-    # restore registers
+    # . restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
     58/pop-to-EAX
-    # epilog
+    # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
 
-# vim:nowrap:textwidth=0
+# . . vim:nowrap:textwidth=0

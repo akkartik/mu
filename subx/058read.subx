@@ -41,9 +41,9 @@
 #   data: (array byte)  # prefixed by length as usual
 
 == code
-#   instruction                     effective address                                                   operand     displacement    immediate
-#   op          subop               mod             rm32          base        index         scale       r32
-#   1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # main:
     e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
@@ -53,24 +53,24 @@
     cd/syscall  0x80/imm8
 
 read:  # f : fd or (address stream), s : (address stream) -> num-bytes-read/EAX
-    # prolog
+    # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     ## if (f < 0x08000000) return _read(f, s)  # f can't be a user-mode address, so treat it as a kernel file descriptor
     81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         0x08000000/imm32  # compare *(EBP+8)
     7d/jump-if-greater-or-equal  $read:fake/disp8
-    # push args
+    # . . push args
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
-    # call
+    # . . call
     e8/call  _read/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # return
     eb/jump  $read:end/disp8
 $read:fake:
     ## otherwise, treat 'f' as a stream to scan from
-    # save registers
+    # . save registers
     56/push-ESI
     57/push-EDI
     # ESI = f
@@ -95,19 +95,19 @@ $read:fake:
     8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy *EDI to EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
     50/push-EAX
-    # call
+    # . . call
     e8/call  _append-4/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # s->write += EAX
     01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
     # f.read += EAX
     01/add                          1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # add EAX to *(ESI+4)
-    # restore registers
+    # . restore registers
     5f/pop-to-EDI
     5e/pop-to-ESI
 $read:end:
-    # epilog
+    # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
@@ -119,10 +119,10 @@ $read:end:
 # Maybe a better helper would be 'empty-stream?'
 
 _read:  # fd : int, s : (address stream) -> num-bytes-read/EAX
-    # prolog
+    # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # save registers
+    # . save registers
     51/push-ECX
     52/push-EDX
     53/push-EBX
@@ -145,12 +145,12 @@ _read:  # fd : int, s : (address stream) -> num-bytes-read/EAX
     cd/syscall  0x80/imm8
     # add the result EAX to s->write
     01/add                          0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # add EAX to *ESI
-    # restore registers
+    # . restore registers
     5e/pop-to-ESI
     5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
-    # epilog
+    # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
@@ -180,54 +180,54 @@ _read:  # fd : int, s : (address stream) -> num-bytes-read/EAX
 
 test-read-single:
     # clear-stream(_test-stream)
-    # push args
+    # . . push args
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  clear-stream/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # clear-stream(_test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
-    # call
+    # . . call
     e8/call  clear-stream/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # write(_test-stream, "Ab")
-    # push args
+    # . . push args
     68/push  "Ab"/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  write/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # read(_test-stream, _test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  read/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(EAX, 2)
-    # push args
+    # . . push args
     68/push  "F - test-read-single: return EAX"/imm32
     68/push  2/imm32
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-ints-equal(*_test-stream-buffer->data, 41/A 62/b 00 00, msg)
-    # push args
+    # . . push args
     68/push  "F - test-read-single"/imm32
     68/push  0x006241/imm32/Ab
     # push *_test-stream-buffer->data
     b8/copy-to-EAX  _test-stream-buffer/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # end
     c3/return
@@ -235,61 +235,61 @@ test-read-single:
 test-read-is-stateful:
     ## make two consecutive reads, check that their results are appended
     # clear-stream(_test-stream)
-    # push args
+    # . . push args
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  clear-stream/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # clear-stream(_test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
-    # call
+    # . . call
     e8/call  clear-stream/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # write(_test-stream, "C")
-    # push args
+    # . . push args
     68/push  "C"/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  write/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # read(_test-stream, _test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  read/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # write(_test-stream, "D")
-    # push args
+    # . . push args
     68/push  "D"/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  write/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # read(_test-stream, _test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  read/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(*_test-stream-buffer->data, 43/C 44/D 00 00, msg)
-    # push args
+    # . . push args
     68/push  "F - test-read-is-stateful"/imm32
     68/push  0x00004443/imm32/C-D
     # push *_test-stream-buffer->data
     b8/copy-to-EAX  _test-stream-buffer/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # end
     c3/return
@@ -297,53 +297,53 @@ test-read-is-stateful:
 test-read-returns-0-on-end-of-file:
     ## read after hitting end-of-file, check that result is 0
     # clear-stream(_test-stream)
-    # push args
+    # . . push args
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  clear-stream/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # clear-stream(_test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
-    # call
+    # . . call
     e8/call  clear-stream/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # write(_test-stream, "Ab")
-    # push args
+    # . . push args
     68/push  "Ab"/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  write/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     ## first read gets to end-of-file
     # read(_test-stream, _test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  read/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     ## second read
     # read(_test-stream, _test-stream-buffer)
-    # push args
+    # . . push args
     68/push  _test-stream-buffer/imm32
     68/push  _test-stream/imm32
-    # call
+    # . . call
     e8/call  read/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(EAX, 0)
-    # push args
+    # . . push args
     68/push  "F - test-read-returns-0-on-end-of-file"/imm32
     68/push  0/imm32
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # end
     c3/return
@@ -360,4 +360,4 @@ _test-stream-buffer:
     # data
     00 00 00 00 00 00 00 00  # 8 bytes
 
-# vim:nowrap:textwidth=0
+# . . vim:nowrap:textwidth=0

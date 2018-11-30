@@ -15,9 +15,9 @@
 # would cause tests to not run, rather than to fail as we'd like.)
 
 == code
-#   instruction                     effective address                                                   operand     displacement    immediate
-#   op          subop               mod             rm32          base        index         scale       r32
-#   1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # main:
     e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
@@ -29,10 +29,10 @@
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
 kernel-string-equal:  # s : null-terminated ascii string, benchmark : length-prefixed ascii string -> EAX : boolean
-    # prolog
+    # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # save registers
+    # . save registers
     51/push-ECX
     52/push-EDX
     53/push-EBX
@@ -97,7 +97,7 @@ $kernel-string-equal:false:
     b8/copy-to-EAX  0/imm32
 
 $kernel-string-equal:end:
-    # restore registers
+    # . restore registers
     5f/pop-to-EDI
     5e/pop-to-ESI
     5b/pop-to-EBX
@@ -112,141 +112,141 @@ $kernel-string-equal:end:
 
 test-compare-null-kernel-string-with-empty-array:
     # EAX = kernel-string-equal(Null-kernel-string, "")
-    # push args
+    # . . push args
     68/push  ""/imm32
     68/push  Null-kernel-string/imm32
-    # call
+    # . . call
     e8/call  kernel-string-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # call check-ints-equal(EAX, 1, msg)
-    # push args
+    # . . call check-ints-equal(EAX, 1, msg)
+    # . . push args
     68/push  "F - test-compare-null-kernel-string-with-empty-array"/imm32
     68/push  1/imm32/true
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 test-compare-null-kernel-string-with-non-empty-array:
     # EAX = kernel-string-equal(Null-kernel-string, "Abc")
-    # push args
+    # . . push args
     68/push  "Abc"/imm32
     68/push  Null-kernel-string/imm32
-    # call
+    # . . call
     e8/call  kernel-string-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # call check-ints-equal(EAX, 0, msg)
-    # push args
+    # . . call check-ints-equal(EAX, 0, msg)
+    # . . push args
     68/push  "F - test-compare-null-kernel-string-with-non-empty-array"/imm32
     68/push  0/imm32/false
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 test-compare-kernel-string-with-equal-array:
     # EAX = kernel-string-equal(Abc-kernel-string, "Abc")
-    # push args
+    # . . push args
     68/push  "Abc"/imm32
     68/push  Abc-kernel-string/imm32
-    # call
+    # . . call
     e8/call  kernel-string-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # call check-ints-equal(EAX, 1, msg)
-    # push args
+    # . . call check-ints-equal(EAX, 1, msg)
+    # . . push args
     68/push  "F - test-compare-kernel-string-with-equal-array"/imm32
     68/push  1/imm32/true
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 test-compare-kernel-string-with-inequal-array:
     # EAX = kernel-string-equal(Abc-kernel-string, "Adc")
-    # push args
+    # . . push args
     68/push  "Adc"/imm32
     68/push  Abc-kernel-string/imm32
-    # call
+    # . . call
     e8/call  kernel-string-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # call check-ints-equal(EAX, 0, msg)
-    # push args
+    # . . call check-ints-equal(EAX, 0, msg)
+    # . . push args
     68/push  "F - test-compare-kernel-string-with-equal-array"/imm32
     68/push  0/imm32/false
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 test-compare-kernel-string-with-empty-array:
     # EAX = kernel-string-equal(Abc-kernel-string, "")
-    # push args
+    # . . push args
     68/push  ""/imm32
     68/push  Abc-kernel-string/imm32
-    # call
+    # . . call
     e8/call  kernel-string-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # call check-ints-equal(EAX, 0)
-    # push args
+    # . . call check-ints-equal(EAX, 0)
+    # . . push args
     68/push  "F - test-compare-kernel-string-with-equal-array"/imm32
     68/push  0/imm32/false
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 test-compare-kernel-string-with-shorter-array:
     # EAX = kernel-string-equal(Abc-kernel-string, "Ab")
-    # push args
+    # . . push args
     68/push  "Ab"/imm32
     68/push  Abc-kernel-string/imm32
-    # call
+    # . . call
     e8/call  kernel-string-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # call check-ints-equal(EAX, 0)
-    # push args
+    # . . call check-ints-equal(EAX, 0)
+    # . . push args
     68/push  "F - test-compare-kernel-string-with-shorter-array"/imm32
     68/push  0/imm32/false
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 test-compare-kernel-string-with-longer-array:
     # EAX = kernel-string-equal(Abc-kernel-string, "Abcd")
-    # push args
+    # . . push args
     68/push  "Abcd"/imm32
     68/push  Abc-kernel-string/imm32
-    # call
+    # . . call
     e8/call  kernel-string-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # call check-ints-equal(EAX, 0)
-    # push args
+    # . . call check-ints-equal(EAX, 0)
+    # . . push args
     68/push  "F - test-compare-kernel-string-with-longer-array"/imm32
     68/push  0/imm32/false
     50/push-EAX
-    # call
+    # . . call
     e8/call  check-ints-equal/disp32
-    # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
@@ -254,10 +254,10 @@ test-compare-kernel-string-with-longer-array:
 
 # print msg to stderr if a != b, otherwise print "."
 check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
-    # prolog
+    # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # save registers
+    # . save registers
     51/push-ECX
     53/push-EBX
     # load args into EAX, EBX and ECX
@@ -267,11 +267,11 @@ check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
     75/jump-if-unequal  $check-ints-equal:else/disp8
     # print('.')
-      # push args
+    # . . push args
     68/push  "."/imm32
-      # call
+    # . . call
     e8/call  write-stderr/disp32
-      # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # return
     eb/jump  $check-ints-equal:end/disp8
@@ -280,21 +280,21 @@ $check-ints-equal:else:
     # copy msg into ECX
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x10/disp8       .                # copy *(EBP+16) to ECX
     # print(ECX)
-      # push args
+    # . . push args
     51/push-ECX
-      # call
+    # . . call
     e8/call  write-stderr/disp32
-      # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # print newline
-      # push args
+    # . . push args
     68/push  Newline/imm32
-      # call
+    # . . call
     e8/call  write-stderr/disp32
-      # discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $check-ints-equal:end:
-    # restore registers
+    # . restore registers
     5b/pop-to-EBX
     59/pop-to-ECX
     # end
@@ -303,10 +303,10 @@ $check-ints-equal:end:
     c3/return
 
 write-stderr:  # s : (address array byte) -> <void>
-    # prolog
+    # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # save registers
+    # . save registers
     50/push-EAX
     51/push-ECX
     52/push-EDX
@@ -323,7 +323,7 @@ write-stderr:  # s : (address array byte) -> <void>
     # syscall
     b8/copy-to-EAX  4/imm32/write
     cd/syscall  0x80/imm8
-    # restore registers
+    # . restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
@@ -347,4 +347,4 @@ Null-kernel-string:
 Abc-kernel-string:
     41/A 62/b 63/c 00/null
 
-# vim:nowrap:textwidth=0
+# . . vim:nowrap:textwidth=0
