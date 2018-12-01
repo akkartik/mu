@@ -34,7 +34,8 @@ syntax match subxDelimiter / \. /  | highlight link subxDelimiter CommentedCode
 
 syntax match subxString %"[^"]*"% | highlight link subxString Constant
 " match globals but not registers like 'EAX'
-syntax match subxGlobal %\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
+syntax match subxGlobal %[^/]\<[A-Z][a-z0-9_-]*\>\|^[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
+"? syntax match subxGlobal %\/\@!\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
 " tweak the red color from the colorscheme just a tad to improve contrast
 highlight SpecialChar ctermfg=196
 
