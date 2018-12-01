@@ -11,20 +11,21 @@
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-a { color:#eeeeee; text-decoration: none; }
-a:hover { text-decoration: underline; }
-* { font-size: 12pt; font-size: 1em; }
-.cSpecial { color: #008000; }
-.LineNr { color: #444444; }
-.Constant { color: #00a0a0; }
+body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+.subxS2Comment a { color:inherit; }
+.subxS1Comment a { color:inherit; }
+.subxComment a { color:inherit; }
+.subxH2Comment a { color:inherit; }
+.subxH1Comment a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.LineNr { color:#444444; }
+.Constant { color:#00a0a0; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #800080; }
-.Special { color: #c00000; }
-.Identifier { color: #c0a020; }
+.Delimiter { color:#800080; }
+.Special { color:#c00000; }
+.Identifier { color:#c0a020; }
 .Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
+.Comment { color: #8080ff; }
 .traceContains { color: #008000; }
 -->
 </style>
@@ -59,6 +60,7 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/044space_surround.cc'>https://github.com/akkartik/mu/blob/master/044space_surround.cc</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr"> 1 </span><span class="Comment">//: So far you can have global variables by not setting default-space, and</span>
 <span id="L2" class="LineNr"> 2 </span><span class="Comment">//: local variables by setting default-space. You can isolate variables</span>
@@ -111,7 +113,7 @@ if ('onhashchange' in window) {
 <span id="L49" class="LineNr">49 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='044space_surround.cc.html#L56'>space_index</a> == <span class="Constant">0</span><span class="Delimiter">)</span>
 <span id="L50" class="LineNr">50 </span>    <span class="Identifier">return</span> base<span class="Delimiter">;</span>
 <span id="L51" class="LineNr">51 </span>  <span class="Normal">double</span> chained_space_address = base+<span class="Comment">/*</span><span class="Comment">skip length</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">skip alloc id of chaining slot</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
-<span id="L52" class="LineNr">52 </span>  <span class="Normal">double</span> chained_space_base = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> chained_space_address<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">skip alloc id of chained space</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+<span id="L52" class="LineNr">52 </span>  <span class="Normal">double</span> chained_space_base = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> chained_space_address<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">skip alloc id of chained space</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L53" class="LineNr">53 </span>  <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> chained_space_base<span class="Delimiter">);</span>
 <span id="L54" class="LineNr">54 </span><span class="Delimiter">}</span>
 <span id="L55" class="LineNr">55 </span>
@@ -119,7 +121,7 @@ if ('onhashchange' in window) {
 <span id="L57" class="LineNr">57 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L58" class="LineNr">58 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L59" class="LineNr">59 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second || x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
-<span id="L60" class="LineNr">60 </span>        <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;/space metadata should take exactly one value in '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L60" class="LineNr">60 </span>        <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;/space metadata should take exactly one value in '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L61" class="LineNr">61 </span>      <span class="Identifier">return</span> to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
 <span id="L62" class="LineNr">62 </span>    <span class="Delimiter">}</span>
 <span id="L63" class="LineNr">63 </span>  <span class="Delimiter">}</span>

@@ -11,19 +11,21 @@
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-a { color:#eeeeee; text-decoration: none; }
-a:hover { text-decoration: underline; }
-* { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
-.LineNr { color: #444444; }
+body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+.subxS2Comment a { color:inherit; }
+.subxS1Comment a { color:inherit; }
+.subxComment a { color:inherit; }
+.subxH2Comment a { color:inherit; }
+.subxH1Comment a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.Constant { color:#00a0a0; }
+.LineNr { color:#444444; }
 .muScenario { color: #00af00; }
-.Delimiter { color: #800080; }
-.Special { color: #c00000; }
-.Identifier { color: #c0a020; }
+.Delimiter { color:#800080; }
+.Special { color:#c00000; }
+.Identifier { color:#c0a020; }
 .Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
+.Comment { color: #8080ff; }
 .cSpecial { color: #008000; }
 -->
 </style>
@@ -58,6 +60,7 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/089scenario_filesystem.cc'>https://github.com/akkartik/mu/blob/master/089scenario_filesystem.cc</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: Clean syntax to manipulate and check the file system in scenarios.</span>
 <span id="L2" class="LineNr">  2 </span><span class="Comment">//: Instruction 'assume-resources' implicitly creates a variable called</span>
@@ -135,7 +138,7 @@ if ('onhashchange' in window) {
 <span id="L74" class="LineNr"> 74 </span><span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> RESOURCES = next_predefined_global_for_scenarios<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">size_of(address:resources)</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">);</span>
 <span id="L75" class="LineNr"> 75 </span><span class="Comment">//: give 'resources' a fixed location in scenarios</span>
 <span id="L76" class="LineNr"> 76 </span><span class="Delimiter">:(before &quot;End Special Scenario Variable Names(r)&quot;)</span>
-<span id="L77" class="LineNr"> 77 </span>Name[r][<span class="Constant">&quot;resources&quot;</span>] = RESOURCES<span class="Delimiter">;</span>
+<span id="L77" class="LineNr"> 77 </span><span class="Special">Name</span>[r][<span class="Constant">&quot;resources&quot;</span>] = RESOURCES<span class="Delimiter">;</span>
 <span id="L78" class="LineNr"> 78 </span><span class="Comment">//: make 'resources' always a raw location in scenarios</span>
 <span id="L79" class="LineNr"> 79 </span><span class="Delimiter">:(before &quot;End <a href='042name.cc.html#L172'>is_special_name</a> Special-cases&quot;)</span>
 <span id="L80" class="LineNr"> 80 </span><span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
@@ -149,7 +152,7 @@ if ('onhashchange' in window) {
 <span id="L88" class="LineNr"> 88 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 <span id="L89" class="LineNr"> 89 </span>ASSUME_RESOURCES<span class="Delimiter">,</span>
 <span id="L90" class="LineNr"> 90 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L91" class="LineNr"> 91 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;assume-resources&quot;</span><span class="Delimiter">,</span> ASSUME_RESOURCES<span class="Delimiter">);</span>
+<span id="L91" class="LineNr"> 91 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;assume-resources&quot;</span><span class="Delimiter">,</span> ASSUME_RESOURCES<span class="Delimiter">);</span>
 <span id="L92" class="LineNr"> 92 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span id="L93" class="LineNr"> 93 </span><span class="Normal">case</span> ASSUME_RESOURCES: <span class="Delimiter">{</span>
 <span id="L94" class="LineNr"> 94 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -178,49 +181,49 @@ if ('onhashchange' in window) {
 <span id="L117" class="LineNr">117 </span>    string filename = <a href='011load.cc.html#L169'>next_word</a><span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 <span id="L118" class="LineNr">118 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>filename<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
 <span id="L119" class="LineNr">119 </span>      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
-<span id="L120" class="LineNr">120 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at <a href='003trace.cc.html#L225'>end</a> of file (0)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L120" class="LineNr">120 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at <a href='003trace.cc.html#L225'>end</a> of file (0)\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L121" class="LineNr">121 </span>      <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L122" class="LineNr">122 </span>    <span class="Delimiter">}</span>
 <span id="L123" class="LineNr">123 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>*filename<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L124" class="LineNr">124 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L124" class="LineNr">124 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L125" class="LineNr">125 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L126" class="LineNr">126 </span>    <span class="Delimiter">}</span>
 <span id="L127" class="LineNr">127 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>*filename<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L128" class="LineNr">128 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must <a href='003trace.cc.html#L225'>end</a> with a ']'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L128" class="LineNr">128 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must <a href='003trace.cc.html#L225'>end</a> with a ']'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L129" class="LineNr">129 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L130" class="LineNr">130 </span>    <span class="Delimiter">}</span>
 <span id="L131" class="LineNr">131 </span>    filename<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L132" class="LineNr">132 </span>    filename<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>filename<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L133" class="LineNr">133 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L134" class="LineNr">134 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L134" class="LineNr">134 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L135" class="LineNr">135 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L136" class="LineNr">136 </span>    <span class="Delimiter">}</span>
 <span id="L137" class="LineNr">137 </span>    string arrow = <a href='011load.cc.html#L169'>next_word</a><span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 <span id="L138" class="LineNr">138 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>arrow<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
 <span id="L139" class="LineNr">139 </span>      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
-<span id="L140" class="LineNr">140 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at <a href='003trace.cc.html#L225'>end</a> of file (1)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L140" class="LineNr">140 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at <a href='003trace.cc.html#L225'>end</a> of file (1)\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L141" class="LineNr">141 </span>      <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L142" class="LineNr">142 </span>    <span class="Delimiter">}</span>
 <span id="L143" class="LineNr">143 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>arrow != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L144" class="LineNr">144 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: expected '&lt;-' after filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' but got '&quot;</span> &lt;&lt; arrow &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L144" class="LineNr">144 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: expected '&lt;-' after filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' but got '&quot;</span> &lt;&lt; arrow &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L145" class="LineNr">145 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L146" class="LineNr">146 </span>    <span class="Delimiter">}</span>
 <span id="L147" class="LineNr">147 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L148" class="LineNr">148 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' after '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L148" class="LineNr">148 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' after '&lt;-'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L149" class="LineNr">149 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L150" class="LineNr">150 </span>    <span class="Delimiter">}</span>
 <span id="L151" class="LineNr">151 </span>    string contents = <a href='011load.cc.html#L169'>next_word</a><span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 <span id="L152" class="LineNr">152 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
 <span id="L153" class="LineNr">153 </span>      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
-<span id="L154" class="LineNr">154 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at <a href='003trace.cc.html#L225'>end</a> of file (2)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L154" class="LineNr">154 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at <a href='003trace.cc.html#L225'>end</a> of file (2)\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L155" class="LineNr">155 </span>      <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L156" class="LineNr">156 </span>    <span class="Delimiter">}</span>
 <span id="L157" class="LineNr">157 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>*contents<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L158" class="LineNr">158 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L158" class="LineNr">158 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L159" class="LineNr">159 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L160" class="LineNr">160 </span>    <span class="Delimiter">}</span>
 <span id="L161" class="LineNr">161 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>*contents<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L162" class="LineNr">162 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must <a href='003trace.cc.html#L225'>end</a> with a ']'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L162" class="LineNr">162 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must <a href='003trace.cc.html#L225'>end</a> with a ']'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L163" class="LineNr">163 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L164" class="LineNr">164 </span>    <span class="Delimiter">}</span>
 <span id="L165" class="LineNr">165 </span>    contents<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
@@ -240,7 +243,7 @@ if ('onhashchange' in window) {
 <span id="L179" class="LineNr">179 </span>    <a href='038new_text.cc.html#L229'>skip_whitespace</a><span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 <span id="L180" class="LineNr">180 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L181" class="LineNr">181 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'|'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L182" class="LineNr">182 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must be delimited in '|'s</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L182" class="LineNr">182 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must be delimited in '|'s\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L183" class="LineNr">183 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L184" class="LineNr">184 </span>    <span class="Delimiter">}</span>
 <span id="L185" class="LineNr">185 </span>    in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip leading '|'</span>
@@ -251,7 +254,7 @@ if ('onhashchange' in window) {
 <span id="L190" class="LineNr">190 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>line<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L191" class="LineNr">191 </span>        ++i<span class="Delimiter">;</span>  <span class="Comment">// skip</span>
 <span id="L192" class="LineNr">192 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>i == <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>line<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L193" class="LineNr">193 </span>          <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents can't end a line with '</span><span class="cSpecial">\\</span><span class="Constant">'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L193" class="LineNr">193 </span>          <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents can't end a line with '\\'\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L194" class="LineNr">194 </span>          <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L195" class="LineNr">195 </span>        <span class="Delimiter">}</span>
 <span id="L196" class="LineNr">196 </span>      <span class="Delimiter">}</span>
@@ -268,24 +271,24 @@ if ('onhashchange' in window) {
 <span id="L207" class="LineNr">207 </span>  <span class="Normal">int</span> curr = resources_data_address + <span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">skip array length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L208" class="LineNr">208 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::const_iterator p = contents<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != contents<span class="Delimiter">.</span><a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L209" class="LineNr">209 </span>    ++curr<span class="Delimiter">;</span>  <span class="Comment">// skip alloc id of resource.name</span>
-<span id="L210" class="LineNr">210 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> <a href='038new_text.cc.html#L39'>new_mu_text</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">));</span>
-<span id="L211" class="LineNr">211 </span>    <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing file name &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L210" class="LineNr">210 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">,</span> <a href='038new_text.cc.html#L39'>new_mu_text</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">));</span>
+<span id="L211" class="LineNr">211 </span>    <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing file name &quot;</span> &lt;&lt; get<span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L212" class="LineNr">212 </span>    ++curr<span class="Delimiter">;</span>
 <span id="L213" class="LineNr">213 </span>    ++curr<span class="Delimiter">;</span>  <span class="Comment">// skip alloc id of resource.contents</span>
-<span id="L214" class="LineNr">214 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> <a href='038new_text.cc.html#L39'>new_mu_text</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">));</span>
-<span id="L215" class="LineNr">215 </span>    <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing file contents &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L214" class="LineNr">214 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">,</span> <a href='038new_text.cc.html#L39'>new_mu_text</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">));</span>
+<span id="L215" class="LineNr">215 </span>    <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing file contents &quot;</span> &lt;&lt; get<span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L216" class="LineNr">216 </span>    ++curr<span class="Delimiter">;</span>
 <span id="L217" class="LineNr">217 </span>  <span class="Delimiter">}</span>
 <span id="L218" class="LineNr">218 </span>  curr = resources_data_address + <span class="Comment">/*</span><span class="Comment">skip alloc id of resources.data</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
-<span id="L219" class="LineNr">219 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>contents<span class="Delimiter">));</span>  <span class="Comment">// array length</span>
-<span id="L220" class="LineNr">220 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing resources size &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L219" class="LineNr">219 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">,</span> <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>contents<span class="Delimiter">));</span>  <span class="Comment">// array length</span>
+<span id="L220" class="LineNr">220 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing resources size &quot;</span> &lt;&lt; get<span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L221" class="LineNr">221 </span>  <span class="Comment">// wrap the resources data in a 'resources' object</span>
 <span id="L222" class="LineNr">222 </span>  <span class="Normal">int</span> resources_address = allocate<span class="Delimiter">(</span><a href='089scenario_filesystem.cc.html#L231'>size_of_resources</a><span class="Delimiter">());</span>
 <span id="L223" class="LineNr">223 </span>  curr = resources_address+<span class="Comment">/*</span><span class="Comment">alloc id</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'data' element</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">skip alloc id of 'data' element</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
-<span id="L224" class="LineNr">224 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> resources_data_address<span class="Delimiter">);</span>
+<span id="L224" class="LineNr">224 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">,</span> resources_data_address<span class="Delimiter">);</span>
 <span id="L225" class="LineNr">225 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing resources data <a href='043space.cc.html#L101'>address</a> &quot;</span> &lt;&lt; resources_data_address &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L226" class="LineNr">226 </span>  <span class="Comment">// save in product</span>
-<span id="L227" class="LineNr">227 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> RESOURCES+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> resources_address<span class="Delimiter">);</span>
+<span id="L227" class="LineNr">227 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> RESOURCES+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> resources_address<span class="Delimiter">);</span>
 <span id="L228" class="LineNr">228 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing resources <a href='043space.cc.html#L101'>address</a> &quot;</span> &lt;&lt; resources_address &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; RESOURCES &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L229" class="LineNr">229 </span><span class="Delimiter">}</span>
 <span id="L230" class="LineNr">230 </span>
@@ -293,7 +296,7 @@ if ('onhashchange' in window) {
 <span id="L232" class="LineNr">232 </span>  <span class="Comment">// memoize result if already computed</span>
 <span id="L233" class="LineNr">233 </span>  <span class="Normal">static</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L234" class="LineNr">234 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span id="L235" class="LineNr">235 </span>  assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">));</span>
+<span id="L235" class="LineNr">235 </span>  assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">));</span>
 <span id="L236" class="LineNr">236 </span>  type_tree* type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;resources&quot;</span><span class="Delimiter">);</span>
 <span id="L237" class="LineNr">237 </span>  result = size_of<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
 <span id="L238" class="LineNr">238 </span>  <span class="Normal">delete</span> type<span class="Delimiter">;</span>

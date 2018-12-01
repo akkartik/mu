@@ -11,20 +11,21 @@
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-a { color:#eeeeee; text-decoration: none; }
-a:hover { text-decoration: underline; }
-* { font-size: 12pt; font-size: 1em; }
-.LineNr { color: #444444; }
-.Constant { color: #00a0a0; }
-.Special { color: #c00000; }
-.Delimiter { color: #800080; }
+body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+.subxS2Comment a { color:inherit; }
+.subxS1Comment a { color:inherit; }
+.subxComment a { color:inherit; }
+.subxH2Comment a { color:inherit; }
+.subxH1Comment a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.LineNr { color:#444444; }
+.Constant { color:#00a0a0; }
+.Special { color:#c00000; }
+.Delimiter { color:#800080; }
 .muScenario { color: #00af00; }
-.Identifier { color: #c0a020; }
+.Identifier { color:#c0a020; }
 .Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
-.cSpecial { color: #008000; }
+.Comment { color: #8080ff; }
 -->
 </style>
 
@@ -58,6 +59,7 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/085scenario_console.cc'>https://github.com/akkartik/mu/blob/master/085scenario_console.cc</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: Clean syntax to manipulate and check the console in scenarios.</span>
 <span id="L2" class="LineNr">  2 </span><span class="Comment">//: Instruction 'assume-console' implicitly creates a variable called</span>
@@ -98,7 +100,7 @@ if ('onhashchange' in window) {
 <span id="L37" class="LineNr"> 37 </span><span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> CONSOLE = next_predefined_global_for_scenarios<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">size_of(address:console)</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">);</span>
 <span id="L38" class="LineNr"> 38 </span><span class="Comment">//: give 'console' a fixed location in scenarios</span>
 <span id="L39" class="LineNr"> 39 </span><span class="Delimiter">:(before &quot;End Special Scenario Variable Names(r)&quot;)</span>
-<span id="L40" class="LineNr"> 40 </span>Name[r][<span class="Constant">&quot;console&quot;</span>] = CONSOLE<span class="Delimiter">;</span>
+<span id="L40" class="LineNr"> 40 </span><span class="Special">Name</span>[r][<span class="Constant">&quot;console&quot;</span>] = CONSOLE<span class="Delimiter">;</span>
 <span id="L41" class="LineNr"> 41 </span><span class="Comment">//: make 'console' always a raw location in scenarios</span>
 <span id="L42" class="LineNr"> 42 </span><span class="Delimiter">:(before &quot;End <a href='042name.cc.html#L172'>is_special_name</a> Special-cases&quot;)</span>
 <span id="L43" class="LineNr"> 43 </span><span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;console&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Constant"> true</span><span class="Delimiter">;</span>
@@ -106,7 +108,7 @@ if ('onhashchange' in window) {
 <span id="L45" class="LineNr"> 45 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 <span id="L46" class="LineNr"> 46 </span>ASSUME_CONSOLE<span class="Delimiter">,</span>
 <span id="L47" class="LineNr"> 47 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L48" class="LineNr"> 48 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;assume-console&quot;</span><span class="Delimiter">,</span> ASSUME_CONSOLE<span class="Delimiter">);</span>
+<span id="L48" class="LineNr"> 48 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;assume-console&quot;</span><span class="Delimiter">,</span> ASSUME_CONSOLE<span class="Delimiter">);</span>
 <span id="L49" class="LineNr"> 49 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span id="L50" class="LineNr"> 50 </span><span class="Normal">case</span> ASSUME_CONSOLE: <span class="Delimiter">{</span>
 <span id="L51" class="LineNr"> 51 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -122,33 +124,33 @@ if ('onhashchange' in window) {
 <span id="L61" class="LineNr"> 61 </span>  <span class="Normal">int</span> size = <span class="Comment">/*</span><span class="Comment">length</span><span class="Comment">*/</span><span class="Constant">1</span> + num_events*size_of_event<span class="Delimiter">();</span>
 <span id="L62" class="LineNr"> 62 </span>  <span class="Normal">int</span> event_data_address = allocate<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
 <span id="L63" class="LineNr"> 63 </span>  <span class="Comment">// store length</span>
-<span id="L64" class="LineNr"> 64 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> event_data_address+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> num_events<span class="Delimiter">);</span>
+<span id="L64" class="LineNr"> 64 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> event_data_address+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> num_events<span class="Delimiter">);</span>
 <span id="L65" class="LineNr"> 65 </span>  <span class="Normal">int</span> curr_address = event_data_address + <span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">skip length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L66" class="LineNr"> 66 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L67" class="LineNr"> 67 </span>    <span class="Normal">const</span> instruction&amp; inst = r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 <span id="L68" class="LineNr"> 68 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;left-click&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L69" class="LineNr"> 69 </span>      <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 'left-click' event starting at &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L70" class="LineNr"> 70 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'touch-event' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">);</span>
-<span id="L71" class="LineNr"> 71 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'type' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">,</span> TB_KEY_MOUSE_LEFT<span class="Delimiter">);</span>
-<span id="L72" class="LineNr"> 72 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'row' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> to_integer<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
-<span id="L73" class="LineNr"> 73 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'column' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">,</span> to_integer<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+<span id="L69" class="LineNr"> 69 </span>      <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 'left-click' event starting at &quot;</span> &lt;&lt; <span class="Special">Current_routine</span><span class="Delimiter">-&gt;</span>alloc &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L70" class="LineNr"> 70 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'touch-event' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">);</span>
+<span id="L71" class="LineNr"> 71 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'type' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">,</span> TB_KEY_MOUSE_LEFT<span class="Delimiter">);</span>
+<span id="L72" class="LineNr"> 72 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'row' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> to_integer<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+<span id="L73" class="LineNr"> 73 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'column' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">,</span> to_integer<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
 <span id="L74" class="LineNr"> 74 </span>      curr_address += <a href='085scenario_console.cc.html#L292'>size_of_event</a><span class="Delimiter">();</span>
 <span id="L75" class="LineNr"> 75 </span>    <span class="Delimiter">}</span>
 <span id="L76" class="LineNr"> 76 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;press&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L77" class="LineNr"> 77 </span>      <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 'press' event starting at &quot;</span> &lt;&lt; curr_address &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L78" class="LineNr"> 78 </span>      string key = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 <span id="L79" class="LineNr"> 79 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>key<span class="Delimiter">))</span>
-<span id="L80" class="LineNr"> 80 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address+<span class="Constant">1</span><span class="Delimiter">,</span> to_integer<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
-<span id="L81" class="LineNr"> 81 </span>      <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L226'>contains_key</a><span class="Delimiter">(</span>Key<span class="Delimiter">,</span> key<span class="Delimiter">))</span>
-<span id="L82" class="LineNr"> 82 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address+<span class="Constant">1</span><span class="Delimiter">,</span> Key[key]<span class="Delimiter">);</span>
+<span id="L80" class="LineNr"> 80 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address+<span class="Constant">1</span><span class="Delimiter">,</span> to_integer<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
+<span id="L81" class="LineNr"> 81 </span>      <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L226'>contains_key</a><span class="Delimiter">(</span><span class="Special">Key</span><span class="Delimiter">,</span> key<span class="Delimiter">))</span>
+<span id="L82" class="LineNr"> 82 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Special">Key</span>[key]<span class="Delimiter">);</span>
 <span id="L83" class="LineNr"> 83 </span>      <span class="Normal">else</span>
-<span id="L84" class="LineNr"> 84 </span>        <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;assume-console: can't press '&quot;</span> &lt;&lt; key &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L85" class="LineNr"> 85 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address+<span class="Constant">1</span><span class="Delimiter">)</span> &lt; <span class="Constant">256</span><span class="Delimiter">)</span>
+<span id="L84" class="LineNr"> 84 </span>        <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;assume-console: can't press '&quot;</span> &lt;&lt; key &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L85" class="LineNr"> 85 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address+<span class="Constant">1</span><span class="Delimiter">)</span> &lt; <span class="Constant">256</span><span class="Delimiter">)</span>
 <span id="L86" class="LineNr"> 86 </span>        <span class="Comment">// these keys are in ascii</span>
-<span id="L87" class="LineNr"> 87 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L87" class="LineNr"> 87 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L88" class="LineNr"> 88 </span>      <span class="Normal">else</span> <span class="Delimiter">{</span>
 <span id="L89" class="LineNr"> 89 </span>        <span class="Comment">// distinguish from unicode</span>
-<span id="L90" class="LineNr"> 90 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'keycode' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L90" class="LineNr"> 90 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'keycode' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L91" class="LineNr"> 91 </span>      <span class="Delimiter">}</span>
 <span id="L92" class="LineNr"> 92 </span>      curr_address += <a href='085scenario_console.cc.html#L292'>size_of_event</a><span class="Delimiter">();</span>
 <span id="L93" class="LineNr"> 93 </span>    <span class="Delimiter">}</span>
@@ -163,12 +165,12 @@ if ('onhashchange' in window) {
 <span id="L102" class="LineNr">102 </span>      <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L103" class="LineNr">103 </span>      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; num_keyboard_events<span class="Delimiter">;</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L104" class="LineNr">104 </span>        <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 'text' tag at &quot;</span> &lt;&lt; curr_address &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L105" class="LineNr">105 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L105" class="LineNr">105 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L106" class="LineNr">106 </span>        <span class="Normal">uint32_t</span> curr_character<span class="Delimiter">;</span>
 <span id="L107" class="LineNr">107 </span>        assert<span class="Delimiter">(</span>curr &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
 <span id="L108" class="LineNr">108 </span>        tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
 <span id="L109" class="LineNr">109 </span>        <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing character &quot;</span> &lt;&lt; curr_character &lt;&lt; <span class="Constant">&quot; at &quot;</span> &lt;&lt; curr_address+<span class="Comment">/*</span><span class="Comment">skip exclusive container tag</span><span class="Comment">*/</span><span class="Constant">1</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L110" class="LineNr">110 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip exclusive container tag</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
+<span id="L110" class="LineNr">110 </span>        <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address+<span class="Comment">/*</span><span class="Comment">skip exclusive container tag</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
 <span id="L111" class="LineNr">111 </span>        curr += tb_utf8_char_length<span class="Delimiter">(</span>raw_contents[curr]<span class="Delimiter">);</span>
 <span id="L112" class="LineNr">112 </span>        curr_address += <a href='085scenario_console.cc.html#L292'>size_of_event</a><span class="Delimiter">();</span>
 <span id="L113" class="LineNr">113 </span>      <span class="Delimiter">}</span>
@@ -178,71 +180,71 @@ if ('onhashchange' in window) {
 <span id="L117" class="LineNr">117 </span>  <span class="Comment">// wrap the array of events in a console object</span>
 <span id="L118" class="LineNr">118 </span>  <span class="Normal">int</span> console_address = allocate<span class="Delimiter">(</span><a href='085scenario_console.cc.html#L302'>size_of_console</a><span class="Delimiter">());</span>
 <span id="L119" class="LineNr">119 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing console in &quot;</span> &lt;&lt; console_address &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L120" class="LineNr">120 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> console_address<span class="Delimiter">);</span>
+<span id="L120" class="LineNr">120 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> CONSOLE+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> console_address<span class="Delimiter">);</span>
 <span id="L121" class="LineNr">121 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing console data in &quot;</span> &lt;&lt; console_address+<span class="Comment">/*</span><span class="Comment">offset of 'data' in container 'events'</span><span class="Comment">*/</span><span class="Constant">1</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L122" class="LineNr">122 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_address+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'data' in container 'events'</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">skip alloc id of 'data'</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> event_data_address<span class="Delimiter">);</span>
+<span id="L122" class="LineNr">122 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> console_address+<span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'data' in container 'events'</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">skip alloc id of 'data'</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> event_data_address<span class="Delimiter">);</span>
 <span id="L123" class="LineNr">123 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L124" class="LineNr">124 </span><span class="Delimiter">}</span>
 <span id="L125" class="LineNr">125 </span>
 <span id="L126" class="LineNr">126 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L127" class="LineNr">127 </span>map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; Key<span class="Delimiter">;</span>
+<span id="L127" class="LineNr">127 </span>map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; <span class="Special">Key</span><span class="Delimiter">;</span>
 <span id="L128" class="LineNr">128 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
 <span id="L129" class="LineNr">129 </span><a href='085scenario_console.cc.html#L131'>initialize_key_names</a><span class="Delimiter">();</span>
 <span id="L130" class="LineNr">130 </span><span class="Delimiter">:(code)</span>
 <span id="L131" class="LineNr">131 </span><span class="Normal">void</span> <a href='085scenario_console.cc.html#L131'>initialize_key_names</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L132" class="LineNr">132 </span>  Key[<span class="Constant">&quot;F1&quot;</span>] = TB_KEY_F1<span class="Delimiter">;</span>
-<span id="L133" class="LineNr">133 </span>  Key[<span class="Constant">&quot;F2&quot;</span>] = TB_KEY_F2<span class="Delimiter">;</span>
-<span id="L134" class="LineNr">134 </span>  Key[<span class="Constant">&quot;F3&quot;</span>] = TB_KEY_F3<span class="Delimiter">;</span>
-<span id="L135" class="LineNr">135 </span>  Key[<span class="Constant">&quot;F4&quot;</span>] = TB_KEY_F4<span class="Delimiter">;</span>
-<span id="L136" class="LineNr">136 </span>  Key[<span class="Constant">&quot;F5&quot;</span>] = TB_KEY_F5<span class="Delimiter">;</span>
-<span id="L137" class="LineNr">137 </span>  Key[<span class="Constant">&quot;F6&quot;</span>] = TB_KEY_F6<span class="Delimiter">;</span>
-<span id="L138" class="LineNr">138 </span>  Key[<span class="Constant">&quot;F7&quot;</span>] = TB_KEY_F7<span class="Delimiter">;</span>
-<span id="L139" class="LineNr">139 </span>  Key[<span class="Constant">&quot;F8&quot;</span>] = TB_KEY_F8<span class="Delimiter">;</span>
-<span id="L140" class="LineNr">140 </span>  Key[<span class="Constant">&quot;F9&quot;</span>] = TB_KEY_F9<span class="Delimiter">;</span>
-<span id="L141" class="LineNr">141 </span>  Key[<span class="Constant">&quot;F10&quot;</span>] = TB_KEY_F10<span class="Delimiter">;</span>
-<span id="L142" class="LineNr">142 </span>  Key[<span class="Constant">&quot;F11&quot;</span>] = TB_KEY_F11<span class="Delimiter">;</span>
-<span id="L143" class="LineNr">143 </span>  Key[<span class="Constant">&quot;F12&quot;</span>] = TB_KEY_F12<span class="Delimiter">;</span>
-<span id="L144" class="LineNr">144 </span>  Key[<span class="Constant">&quot;insert&quot;</span>] = TB_KEY_INSERT<span class="Delimiter">;</span>
-<span id="L145" class="LineNr">145 </span>  Key[<span class="Constant">&quot;delete&quot;</span>] = TB_KEY_DELETE<span class="Delimiter">;</span>
-<span id="L146" class="LineNr">146 </span>  Key[<span class="Constant">&quot;home&quot;</span>] = TB_KEY_HOME<span class="Delimiter">;</span>
-<span id="L147" class="LineNr">147 </span>  Key[<span class="Constant">&quot;end&quot;</span>] = TB_KEY_END<span class="Delimiter">;</span>
-<span id="L148" class="LineNr">148 </span>  Key[<span class="Constant">&quot;page-up&quot;</span>] = TB_KEY_PGUP<span class="Delimiter">;</span>
-<span id="L149" class="LineNr">149 </span>  Key[<span class="Constant">&quot;page-down&quot;</span>] = TB_KEY_PGDN<span class="Delimiter">;</span>
-<span id="L150" class="LineNr">150 </span>  Key[<span class="Constant">&quot;up-arrow&quot;</span>] = TB_KEY_ARROW_UP<span class="Delimiter">;</span>
-<span id="L151" class="LineNr">151 </span>  Key[<span class="Constant">&quot;down-arrow&quot;</span>] = TB_KEY_ARROW_DOWN<span class="Delimiter">;</span>
-<span id="L152" class="LineNr">152 </span>  Key[<span class="Constant">&quot;left-arrow&quot;</span>] = TB_KEY_ARROW_LEFT<span class="Delimiter">;</span>
-<span id="L153" class="LineNr">153 </span>  Key[<span class="Constant">&quot;right-arrow&quot;</span>] = TB_KEY_ARROW_RIGHT<span class="Delimiter">;</span>
-<span id="L154" class="LineNr">154 </span>  Key[<span class="Constant">&quot;ctrl-a&quot;</span>] = TB_KEY_CTRL_A<span class="Delimiter">;</span>
-<span id="L155" class="LineNr">155 </span>  Key[<span class="Constant">&quot;ctrl-b&quot;</span>] = TB_KEY_CTRL_B<span class="Delimiter">;</span>
-<span id="L156" class="LineNr">156 </span>  Key[<span class="Constant">&quot;ctrl-c&quot;</span>] = TB_KEY_CTRL_C<span class="Delimiter">;</span>
-<span id="L157" class="LineNr">157 </span>  Key[<span class="Constant">&quot;ctrl-d&quot;</span>] = TB_KEY_CTRL_D<span class="Delimiter">;</span>
-<span id="L158" class="LineNr">158 </span>  Key[<span class="Constant">&quot;ctrl-e&quot;</span>] = TB_KEY_CTRL_E<span class="Delimiter">;</span>
-<span id="L159" class="LineNr">159 </span>  Key[<span class="Constant">&quot;ctrl-f&quot;</span>] = TB_KEY_CTRL_F<span class="Delimiter">;</span>
-<span id="L160" class="LineNr">160 </span>  Key[<span class="Constant">&quot;ctrl-g&quot;</span>] = TB_KEY_CTRL_G<span class="Delimiter">;</span>
-<span id="L161" class="LineNr">161 </span>  Key[<span class="Constant">&quot;backspace&quot;</span>] = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
-<span id="L162" class="LineNr">162 </span>  Key[<span class="Constant">&quot;ctrl-h&quot;</span>] = TB_KEY_CTRL_H<span class="Delimiter">;</span>
-<span id="L163" class="LineNr">163 </span>  Key[<span class="Constant">&quot;tab&quot;</span>] = TB_KEY_TAB<span class="Delimiter">;</span>
-<span id="L164" class="LineNr">164 </span>  Key[<span class="Constant">&quot;ctrl-i&quot;</span>] = TB_KEY_CTRL_I<span class="Delimiter">;</span>
-<span id="L165" class="LineNr">165 </span>  Key[<span class="Constant">&quot;ctrl-j&quot;</span>] = TB_KEY_CTRL_J<span class="Delimiter">;</span>
-<span id="L166" class="LineNr">166 </span>  Key[<span class="Constant">&quot;enter&quot;</span>] = TB_KEY_NEWLINE<span class="Delimiter">;</span>  <span class="Comment">// ignore CR/LF distinction; there is only 'enter'</span>
-<span id="L167" class="LineNr">167 </span>  Key[<span class="Constant">&quot;ctrl-k&quot;</span>] = TB_KEY_CTRL_K<span class="Delimiter">;</span>
-<span id="L168" class="LineNr">168 </span>  Key[<span class="Constant">&quot;ctrl-l&quot;</span>] = TB_KEY_CTRL_L<span class="Delimiter">;</span>
-<span id="L169" class="LineNr">169 </span>  Key[<span class="Constant">&quot;ctrl-m&quot;</span>] = TB_KEY_CTRL_M<span class="Delimiter">;</span>
-<span id="L170" class="LineNr">170 </span>  Key[<span class="Constant">&quot;ctrl-n&quot;</span>] = TB_KEY_CTRL_N<span class="Delimiter">;</span>
-<span id="L171" class="LineNr">171 </span>  Key[<span class="Constant">&quot;ctrl-o&quot;</span>] = TB_KEY_CTRL_O<span class="Delimiter">;</span>
-<span id="L172" class="LineNr">172 </span>  Key[<span class="Constant">&quot;ctrl-p&quot;</span>] = TB_KEY_CTRL_P<span class="Delimiter">;</span>
-<span id="L173" class="LineNr">173 </span>  Key[<span class="Constant">&quot;ctrl-q&quot;</span>] = TB_KEY_CTRL_Q<span class="Delimiter">;</span>
-<span id="L174" class="LineNr">174 </span>  Key[<span class="Constant">&quot;ctrl-r&quot;</span>] = TB_KEY_CTRL_R<span class="Delimiter">;</span>
-<span id="L175" class="LineNr">175 </span>  Key[<span class="Constant">&quot;ctrl-s&quot;</span>] = TB_KEY_CTRL_S<span class="Delimiter">;</span>
-<span id="L176" class="LineNr">176 </span>  Key[<span class="Constant">&quot;ctrl-t&quot;</span>] = TB_KEY_CTRL_T<span class="Delimiter">;</span>
-<span id="L177" class="LineNr">177 </span>  Key[<span class="Constant">&quot;ctrl-u&quot;</span>] = TB_KEY_CTRL_U<span class="Delimiter">;</span>
-<span id="L178" class="LineNr">178 </span>  Key[<span class="Constant">&quot;ctrl-v&quot;</span>] = TB_KEY_CTRL_V<span class="Delimiter">;</span>
-<span id="L179" class="LineNr">179 </span>  Key[<span class="Constant">&quot;ctrl-w&quot;</span>] = TB_KEY_CTRL_W<span class="Delimiter">;</span>
-<span id="L180" class="LineNr">180 </span>  Key[<span class="Constant">&quot;ctrl-x&quot;</span>] = TB_KEY_CTRL_X<span class="Delimiter">;</span>
-<span id="L181" class="LineNr">181 </span>  Key[<span class="Constant">&quot;ctrl-y&quot;</span>] = TB_KEY_CTRL_Y<span class="Delimiter">;</span>
-<span id="L182" class="LineNr">182 </span>  Key[<span class="Constant">&quot;ctrl-z&quot;</span>] = TB_KEY_CTRL_Z<span class="Delimiter">;</span>
-<span id="L183" class="LineNr">183 </span>  Key[<span class="Constant">&quot;escape&quot;</span>] = TB_KEY_ESC<span class="Delimiter">;</span>
-<span id="L184" class="LineNr">184 </span>  Key[<span class="Constant">&quot;ctrl-slash&quot;</span>] = TB_KEY_CTRL_SLASH<span class="Delimiter">;</span>
+<span id="L132" class="LineNr">132 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F1&quot;</span>] = TB_KEY_F1<span class="Delimiter">;</span>
+<span id="L133" class="LineNr">133 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F2&quot;</span>] = TB_KEY_F2<span class="Delimiter">;</span>
+<span id="L134" class="LineNr">134 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F3&quot;</span>] = TB_KEY_F3<span class="Delimiter">;</span>
+<span id="L135" class="LineNr">135 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F4&quot;</span>] = TB_KEY_F4<span class="Delimiter">;</span>
+<span id="L136" class="LineNr">136 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F5&quot;</span>] = TB_KEY_F5<span class="Delimiter">;</span>
+<span id="L137" class="LineNr">137 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F6&quot;</span>] = TB_KEY_F6<span class="Delimiter">;</span>
+<span id="L138" class="LineNr">138 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F7&quot;</span>] = TB_KEY_F7<span class="Delimiter">;</span>
+<span id="L139" class="LineNr">139 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F8&quot;</span>] = TB_KEY_F8<span class="Delimiter">;</span>
+<span id="L140" class="LineNr">140 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F9&quot;</span>] = TB_KEY_F9<span class="Delimiter">;</span>
+<span id="L141" class="LineNr">141 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F10&quot;</span>] = TB_KEY_F10<span class="Delimiter">;</span>
+<span id="L142" class="LineNr">142 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F11&quot;</span>] = TB_KEY_F11<span class="Delimiter">;</span>
+<span id="L143" class="LineNr">143 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;F12&quot;</span>] = TB_KEY_F12<span class="Delimiter">;</span>
+<span id="L144" class="LineNr">144 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;insert&quot;</span>] = TB_KEY_INSERT<span class="Delimiter">;</span>
+<span id="L145" class="LineNr">145 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;delete&quot;</span>] = TB_KEY_DELETE<span class="Delimiter">;</span>
+<span id="L146" class="LineNr">146 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;home&quot;</span>] = TB_KEY_HOME<span class="Delimiter">;</span>
+<span id="L147" class="LineNr">147 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;end&quot;</span>] = TB_KEY_END<span class="Delimiter">;</span>
+<span id="L148" class="LineNr">148 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;page-up&quot;</span>] = TB_KEY_PGUP<span class="Delimiter">;</span>
+<span id="L149" class="LineNr">149 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;page-down&quot;</span>] = TB_KEY_PGDN<span class="Delimiter">;</span>
+<span id="L150" class="LineNr">150 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;up-arrow&quot;</span>] = TB_KEY_ARROW_UP<span class="Delimiter">;</span>
+<span id="L151" class="LineNr">151 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;down-arrow&quot;</span>] = TB_KEY_ARROW_DOWN<span class="Delimiter">;</span>
+<span id="L152" class="LineNr">152 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;left-arrow&quot;</span>] = TB_KEY_ARROW_LEFT<span class="Delimiter">;</span>
+<span id="L153" class="LineNr">153 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;right-arrow&quot;</span>] = TB_KEY_ARROW_RIGHT<span class="Delimiter">;</span>
+<span id="L154" class="LineNr">154 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-a&quot;</span>] = TB_KEY_CTRL_A<span class="Delimiter">;</span>
+<span id="L155" class="LineNr">155 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-b&quot;</span>] = TB_KEY_CTRL_B<span class="Delimiter">;</span>
+<span id="L156" class="LineNr">156 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-c&quot;</span>] = TB_KEY_CTRL_C<span class="Delimiter">;</span>
+<span id="L157" class="LineNr">157 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-d&quot;</span>] = TB_KEY_CTRL_D<span class="Delimiter">;</span>
+<span id="L158" class="LineNr">158 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-e&quot;</span>] = TB_KEY_CTRL_E<span class="Delimiter">;</span>
+<span id="L159" class="LineNr">159 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-f&quot;</span>] = TB_KEY_CTRL_F<span class="Delimiter">;</span>
+<span id="L160" class="LineNr">160 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-g&quot;</span>] = TB_KEY_CTRL_G<span class="Delimiter">;</span>
+<span id="L161" class="LineNr">161 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;backspace&quot;</span>] = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
+<span id="L162" class="LineNr">162 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-h&quot;</span>] = TB_KEY_CTRL_H<span class="Delimiter">;</span>
+<span id="L163" class="LineNr">163 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;tab&quot;</span>] = TB_KEY_TAB<span class="Delimiter">;</span>
+<span id="L164" class="LineNr">164 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-i&quot;</span>] = TB_KEY_CTRL_I<span class="Delimiter">;</span>
+<span id="L165" class="LineNr">165 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-j&quot;</span>] = TB_KEY_CTRL_J<span class="Delimiter">;</span>
+<span id="L166" class="LineNr">166 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;enter&quot;</span>] = TB_KEY_NEWLINE<span class="Delimiter">;</span>  <span class="Comment">// ignore CR/LF distinction; there is only 'enter'</span>
+<span id="L167" class="LineNr">167 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-k&quot;</span>] = TB_KEY_CTRL_K<span class="Delimiter">;</span>
+<span id="L168" class="LineNr">168 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-l&quot;</span>] = TB_KEY_CTRL_L<span class="Delimiter">;</span>
+<span id="L169" class="LineNr">169 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-m&quot;</span>] = TB_KEY_CTRL_M<span class="Delimiter">;</span>
+<span id="L170" class="LineNr">170 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-n&quot;</span>] = TB_KEY_CTRL_N<span class="Delimiter">;</span>
+<span id="L171" class="LineNr">171 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-o&quot;</span>] = TB_KEY_CTRL_O<span class="Delimiter">;</span>
+<span id="L172" class="LineNr">172 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-p&quot;</span>] = TB_KEY_CTRL_P<span class="Delimiter">;</span>
+<span id="L173" class="LineNr">173 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-q&quot;</span>] = TB_KEY_CTRL_Q<span class="Delimiter">;</span>
+<span id="L174" class="LineNr">174 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-r&quot;</span>] = TB_KEY_CTRL_R<span class="Delimiter">;</span>
+<span id="L175" class="LineNr">175 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-s&quot;</span>] = TB_KEY_CTRL_S<span class="Delimiter">;</span>
+<span id="L176" class="LineNr">176 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-t&quot;</span>] = TB_KEY_CTRL_T<span class="Delimiter">;</span>
+<span id="L177" class="LineNr">177 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-u&quot;</span>] = TB_KEY_CTRL_U<span class="Delimiter">;</span>
+<span id="L178" class="LineNr">178 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-v&quot;</span>] = TB_KEY_CTRL_V<span class="Delimiter">;</span>
+<span id="L179" class="LineNr">179 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-w&quot;</span>] = TB_KEY_CTRL_W<span class="Delimiter">;</span>
+<span id="L180" class="LineNr">180 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-x&quot;</span>] = TB_KEY_CTRL_X<span class="Delimiter">;</span>
+<span id="L181" class="LineNr">181 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-y&quot;</span>] = TB_KEY_CTRL_Y<span class="Delimiter">;</span>
+<span id="L182" class="LineNr">182 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-z&quot;</span>] = TB_KEY_CTRL_Z<span class="Delimiter">;</span>
+<span id="L183" class="LineNr">183 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;escape&quot;</span>] = TB_KEY_ESC<span class="Delimiter">;</span>
+<span id="L184" class="LineNr">184 </span>  <span class="Special">Key</span>[<span class="Constant">&quot;ctrl-slash&quot;</span>] = TB_KEY_CTRL_SLASH<span class="Delimiter">;</span>
 <span id="L185" class="LineNr">185 </span><span class="Delimiter">}</span>
 <span id="L186" class="LineNr">186 </span>
 <span id="L187" class="LineNr">187 </span><span class="Delimiter">:(after &quot;Begin check_or_set_invalid_types(r)&quot;)</span>
@@ -313,7 +315,7 @@ if ('onhashchange' in window) {
 <span id="L252" class="LineNr">252 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 <span id="L253" class="LineNr">253 </span>REPLACE_IN_CONSOLE<span class="Delimiter">,</span>
 <span id="L254" class="LineNr">254 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L255" class="LineNr">255 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;replace-in-console&quot;</span><span class="Delimiter">,</span> REPLACE_IN_CONSOLE<span class="Delimiter">);</span>
+<span id="L255" class="LineNr">255 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;replace-in-console&quot;</span><span class="Delimiter">,</span> REPLACE_IN_CONSOLE<span class="Delimiter">);</span>
 <span id="L256" class="LineNr">256 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span id="L257" class="LineNr">257 </span><span class="Normal">case</span> REPLACE_IN_CONSOLE: <span class="Delimiter">{</span>
 <span id="L258" class="LineNr">258 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -321,18 +323,18 @@ if ('onhashchange' in window) {
 <span id="L260" class="LineNr">260 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span id="L261" class="LineNr">261 </span><span class="Normal">case</span> REPLACE_IN_CONSOLE: <span class="Delimiter">{</span>
 <span id="L262" class="LineNr">262 </span>  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-<span id="L263" class="LineNr">263 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L264" class="LineNr">264 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;console not initialized</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L263" class="LineNr">263 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!get_or_insert<span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> CONSOLE<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L264" class="LineNr">264 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <span class="Constant">&quot;console not initialized\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L265" class="LineNr">265 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L266" class="LineNr">266 </span>  <span class="Delimiter">}</span>
-<span id="L267" class="LineNr">267 </span>  <span class="Normal">int</span> console_address = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE<span class="Delimiter">);</span>
-<span id="L268" class="LineNr">268 </span>  <span class="Normal">int</span> console_data = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_address+<span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L269" class="LineNr">269 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_data<span class="Delimiter">);</span>  <span class="Comment">// array length</span>
+<span id="L267" class="LineNr">267 </span>  <span class="Normal">int</span> console_address = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> CONSOLE<span class="Delimiter">);</span>
+<span id="L268" class="LineNr">268 </span>  <span class="Normal">int</span> console_data = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> console_address+<span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L269" class="LineNr">269 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> console_data<span class="Delimiter">);</span>  <span class="Comment">// array length</span>
 <span id="L270" class="LineNr">270 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">,</span> curr = console_data+<span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; length<span class="Delimiter">;</span>  ++i<span class="Delimiter">,</span> curr+=size_of_event<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L271" class="LineNr">271 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> != <span class="Comment">/*</span><span class="Comment">text</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L272" class="LineNr">272 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr+<span class="Constant">1</span><span class="Delimiter">)</span> != ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L271" class="LineNr">271 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">)</span> != <span class="Comment">/*</span><span class="Comment">text</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L272" class="LineNr">272 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr+<span class="Constant">1</span><span class="Delimiter">)</span> != ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
 <span id="L273" class="LineNr">273 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> n = <span class="Constant">0</span><span class="Delimiter">;</span>  n &lt; <a href='085scenario_console.cc.html#L292'>size_of_event</a><span class="Delimiter">();</span>  ++n<span class="Delimiter">)</span>
-<span id="L274" class="LineNr">274 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr+n<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span>n<span class="Delimiter">));</span>
+<span id="L274" class="LineNr">274 </span>      <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr+n<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span>n<span class="Delimiter">));</span>
 <span id="L275" class="LineNr">275 </span>  <span class="Delimiter">}</span>
 <span id="L276" class="LineNr">276 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L277" class="LineNr">277 </span><span class="Delimiter">}</span>
@@ -364,7 +366,7 @@ if ('onhashchange' in window) {
 <span id="L303" class="LineNr">303 </span>  <span class="Comment">// memoize result if already computed</span>
 <span id="L304" class="LineNr">304 </span>  <span class="Normal">static</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L305" class="LineNr">305 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span id="L306" class="LineNr">306 </span>  assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;console&quot;</span><span class="Delimiter">));</span>
+<span id="L306" class="LineNr">306 </span>  assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;console&quot;</span><span class="Delimiter">));</span>
 <span id="L307" class="LineNr">307 </span>  type_tree* type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;console&quot;</span><span class="Delimiter">);</span>
 <span id="L308" class="LineNr">308 </span>  result = size_of<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
 <span id="L309" class="LineNr">309 </span>  <span class="Normal">delete</span> type<span class="Delimiter">;</span>

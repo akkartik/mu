@@ -11,15 +11,18 @@
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-a { color:#eeeeee; text-decoration: none; }
-a:hover { text-decoration: underline; }
-* { font-size: 12pt; font-size: 1em; }
-.LineNr { color: #444444; }
-.Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
+body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+.subxS2Comment a { color:inherit; }
+.subxS1Comment a { color:inherit; }
+.subxComment a { color:inherit; }
+.subxH2Comment a { color:inherit; }
+.subxH1Comment a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.LineNr { color:#444444; }
+.Constant { color:#00a0a0; }
+.Delimiter { color:#800080; }
+.Special { color:#c00000; }
+.Comment { color: #8080ff; }
 .SalientComment { color: #00ffff; }
 -->
 </style>
@@ -54,6 +57,7 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/999spaces.cc'>https://github.com/akkartik/mu/blob/master/999spaces.cc</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr"> 1 </span><span class="Comment">//: Since different layers all carve out different parts of various namespaces</span>
 <span id="L2" class="LineNr"> 2 </span><span class="Comment">//: (recipes, memory, etc.) for their own use, there's no previous place where</span>
@@ -67,9 +71,9 @@ if ('onhashchange' in window) {
 <span id="L10" class="LineNr">10 </span><span class="Comment">//: Locations 1-899 - reserved for tests</span>
 <span id="L11" class="LineNr">11 </span><span class="Comment">//: Locations 900-999 - reserved for predefined globals in Mu scenarios, like keyboard, screen, etc.</span>
 <span id="L12" class="LineNr">12 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
-<span id="L13" class="LineNr">13 </span>assert<span class="Delimiter">(</span>Max_variables_in_scenarios == <span class="Constant">900</span><span class="Delimiter">);</span>
+<span id="L13" class="LineNr">13 </span>assert<span class="Delimiter">(</span><span class="Special">Max_variables_in_scenarios</span> == <span class="Constant">900</span><span class="Delimiter">);</span>
 <span id="L14" class="LineNr">14 </span><span class="Comment">//: Locations 1000 ('Reserved_for_tests') onward - available to the allocator in chunks of size Initial_memory_per_routine.</span>
-<span id="L15" class="LineNr">15 </span>assert<span class="Delimiter">(</span>Reserved_for_tests == <span class="Constant">1000</span><span class="Delimiter">);</span>
+<span id="L15" class="LineNr">15 </span>assert<span class="Delimiter">(</span><span class="Special">Reserved_for_tests</span> == <span class="Constant">1000</span><span class="Delimiter">);</span>
 <span id="L16" class="LineNr">16 </span>
 <span id="L17" class="LineNr">17 </span><span class="SalientComment">//:: Recipes</span>
 <span id="L18" class="LineNr">18 </span><span class="Comment">//:</span>
@@ -77,7 +81,7 @@ if ('onhashchange' in window) {
 <span id="L20" class="LineNr">20 </span><span class="Comment">//: 1-199 - primitives</span>
 <span id="L21" class="LineNr">21 </span>assert<span class="Delimiter">(</span><a href='010vm.cc.html#L198'>MAX_PRIMITIVE_RECIPES</a> &lt; <span class="Constant">200</span><span class="Delimiter">);</span>
 <span id="L22" class="LineNr">22 </span><span class="Comment">//: 200-999 - defined in .mu files as sequences of primitives</span>
-<span id="L23" class="LineNr">23 </span>assert<span class="Delimiter">(</span>Next_recipe_ordinal == <span class="Constant">1000</span><span class="Delimiter">);</span>
+<span id="L23" class="LineNr">23 </span>assert<span class="Delimiter">(</span><span class="Special">Next_recipe_ordinal</span> == <span class="Constant">1000</span><span class="Delimiter">);</span>
 <span id="L24" class="LineNr">24 </span><span class="Comment">//: 1000 onwards - reserved for tests, cleared between tests</span>
 <span id="L25" class="LineNr">25 </span>
 <span id="L26" class="LineNr">26 </span><span class="SalientComment">//:: Depths for tracing</span>
@@ -85,8 +89,8 @@ if ('onhashchange' in window) {
 <span id="L28" class="LineNr">28 </span><span class="Comment">//: 0 - unused</span>
 <span id="L29" class="LineNr">29 </span><span class="Comment">//: 1-100 - app-level trace statements in Mu</span>
 <span id="L30" class="LineNr">30 </span><span class="Comment">//: 101-9989 - call-stack statements (mostly label run)</span>
-<span id="L31" class="LineNr">31 </span>assert<span class="Delimiter">(</span>Initial_callstack_depth == <span class="Constant">101</span><span class="Delimiter">);</span>
-<span id="L32" class="LineNr">32 </span>assert<span class="Delimiter">(</span>Max_callstack_depth == <span class="Constant">9989</span><span class="Delimiter">);</span>
+<span id="L31" class="LineNr">31 </span>assert<span class="Delimiter">(</span><span class="Special">Initial_callstack_depth</span> == <span class="Constant">101</span><span class="Delimiter">);</span>
+<span id="L32" class="LineNr">32 </span>assert<span class="Delimiter">(</span><span class="Special">Max_callstack_depth</span> == <span class="Constant">9989</span><span class="Delimiter">);</span>
 <span id="L33" class="LineNr">33 </span><span class="Comment">//: 9990-9999 - intra-instruction lines (mostly label mem)</span>
 <span id="L34" class="LineNr">34 </span>
 <span id="L35" class="LineNr">35 </span><span class="SalientComment">//:: Summary of transforms and their dependencies</span>

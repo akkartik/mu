@@ -11,19 +11,21 @@
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-a { color:#eeeeee; text-decoration: none; }
-a:hover { text-decoration: underline; }
-* { font-size: 12pt; font-size: 1em; }
-.LineNr { color: #444444; }
-.Constant { color: #00a0a0; }
+body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+.subxS2Comment a { color:inherit; }
+.subxS1Comment a { color:inherit; }
+.subxComment a { color:inherit; }
+.subxH2Comment a { color:inherit; }
+.subxH1Comment a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
+.LineNr { color:#444444; }
+.Constant { color:#00a0a0; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #800080; }
-.Special { color: #c00000; }
-.Identifier { color: #c0a020; }
+.Delimiter { color:#800080; }
+.Special { color:#c00000; }
+.Identifier { color:#c0a020; }
 .Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
+.Comment { color: #8080ff; }
 .traceContains { color: #008000; }
 -->
 </style>
@@ -58,6 +60,7 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/060rewrite_literal_string.cc'>https://github.com/akkartik/mu/blob/master/060rewrite_literal_string.cc</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr"> 1 </span><span class="Comment">//: allow using literal strings anywhere that will accept immutable strings</span>
 <span id="L2" class="LineNr"> 2 </span>
@@ -74,7 +77,7 @@ if ('onhashchange' in window) {
 <span id="L13" class="LineNr">13 </span>
 <span id="L14" class="LineNr">14 </span><span class="Delimiter">:(before &quot;End Instruction Inserting/Deleting Transforms&quot;)</span>
 <span id="L15" class="LineNr">15 </span><a href='060rewrite_literal_string.cc.html#L21'>initialize_transform_rewrite_literal_string_to_text</a><span class="Delimiter">();</span>
-<span id="L16" class="LineNr">16 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><a href='060rewrite_literal_string.cc.html#L39'>rewrite_literal_string_to_text</a><span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L16" class="LineNr">16 </span><span class="Special">Transform</span><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><a href='060rewrite_literal_string.cc.html#L39'>rewrite_literal_string_to_text</a><span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 <span id="L17" class="LineNr">17 </span>
 <span id="L18" class="LineNr">18 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span id="L19" class="LineNr">19 </span>set&lt;string&gt; recipes_taking_literal_strings<span class="Delimiter">;</span>
@@ -98,7 +101,7 @@ if ('onhashchange' in window) {
 <span id="L37" class="LineNr">37 </span><span class="Delimiter">}</span>
 <span id="L38" class="LineNr">38 </span>
 <span id="L39" class="LineNr">39 </span><span class="Normal">void</span> <a href='060rewrite_literal_string.cc.html#L39'>rewrite_literal_string_to_text</a><span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L40" class="LineNr">40 </span>  recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+<span id="L40" class="LineNr">40 </span>  recipe&amp; caller = get<span class="Delimiter">(</span><span class="Special">Recipe</span><span class="Delimiter">,</span> r<span class="Delimiter">);</span>
 <span id="L41" class="LineNr">41 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- rewrite literal strings in <a href='010vm.cc.html#L19'>recipe</a> &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L42" class="LineNr">42 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='060rewrite_literal_string.cc.html#L65'>contains_numeric_locations</a><span class="Delimiter">(</span>caller<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L43" class="LineNr">43 </span>  vector&lt;instruction&gt; new_instructions<span class="Delimiter">;</span>

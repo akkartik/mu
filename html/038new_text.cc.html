@@ -11,21 +11,23 @@
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-a { color:#eeeeee; text-decoration: none; }
-a:hover { text-decoration: underline; }
-* { font-size: 12pt; font-size: 1em; }
+body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+.subxS2Comment a { color:inherit; }
+.subxS1Comment a { color:inherit; }
+.subxComment a { color:inherit; }
+.subxH2Comment a { color:inherit; }
+.subxH1Comment a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
 .CommentedCode { color: #6c6c6c; }
 .cSpecial { color: #008000; }
-.LineNr { color: #444444; }
-.Constant { color: #00a0a0; }
+.LineNr { color:#444444; }
+.Constant { color:#00a0a0; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #800080; }
-.Special { color: #c00000; }
-.Identifier { color: #c0a020; }
+.Delimiter { color:#800080; }
+.Special { color:#c00000; }
+.Identifier { color:#c0a020; }
 .Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
+.Comment { color: #8080ff; }
 .SalientComment { color: #00ffff; }
 .traceContains { color: #008000; }
 -->
@@ -61,12 +63,13 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/038new_text.cc'>https://github.com/akkartik/mu/blob/master/038new_text.cc</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: Extend 'new' to handle a unicode string literal argument or 'text'.</span>
 <span id="L2" class="LineNr">  2 </span>
 <span id="L3" class="LineNr">  3 </span><span class="Comment">//: A Mu text is an address to an array of characters.</span>
 <span id="L4" class="LineNr">  4 </span><span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
-<span id="L5" class="LineNr">  5 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</span> <span class="Constant">&quot;text&quot;</span><span class="Delimiter">,</span> <a href='019type_abbreviations.cc.html#L58'>new_type_tree</a><span class="Delimiter">(</span><span class="Constant">&quot;&amp;:@:character&quot;</span><span class="Delimiter">));</span>
+<span id="L5" class="LineNr">  5 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_abbreviations</span><span class="Delimiter">,</span> <span class="Constant">&quot;text&quot;</span><span class="Delimiter">,</span> <a href='019type_abbreviations.cc.html#L58'>new_type_tree</a><span class="Delimiter">(</span><span class="Constant">&quot;&amp;:@:character&quot;</span><span class="Delimiter">));</span>
 <span id="L6" class="LineNr">  6 </span>
 <span id="L7" class="LineNr">  7 </span><span class="Delimiter">:(scenario new_string)</span>
 <span id="L8" class="LineNr">  8 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
@@ -109,7 +112,7 @@ if ('onhashchange' in window) {
 <span id="L45" class="LineNr"> 45 </span>  <span class="Normal">int</span> curr_address = result<span class="Delimiter">;</span>
 <span id="L46" class="LineNr"> 46 </span>  ++curr_address<span class="Delimiter">;</span>  <span class="Comment">// skip alloc id</span>
 <span id="L47" class="LineNr"> 47 </span>  <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string length &quot;</span> &lt;&lt; string_length &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L48" class="LineNr"> 48 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> string_length<span class="Delimiter">);</span>
+<span id="L48" class="LineNr"> 48 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> string_length<span class="Delimiter">);</span>
 <span id="L49" class="LineNr"> 49 </span>  ++curr_address<span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
 <span id="L50" class="LineNr"> 50 </span>  <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L51" class="LineNr"> 51 </span>  <span class="Normal">const</span> <span class="Normal">char</span>* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
@@ -118,7 +121,7 @@ if ('onhashchange' in window) {
 <span id="L54" class="LineNr"> 54 </span>    assert<span class="Delimiter">(</span>curr &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
 <span id="L55" class="LineNr"> 55 </span>    tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
 <span id="L56" class="LineNr"> 56 </span>    <a href='003trace.cc.html#L189'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string character &quot;</span> &lt;&lt; curr_character &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L57" class="LineNr"> 57 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
+<span id="L57" class="LineNr"> 57 </span>    <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
 <span id="L58" class="LineNr"> 58 </span>    curr += tb_utf8_char_length<span class="Delimiter">(</span>raw_contents[curr]<span class="Delimiter">);</span>
 <span id="L59" class="LineNr"> 59 </span>    ++curr_address<span class="Delimiter">;</span>
 <span id="L60" class="LineNr"> 60 </span>  <span class="Delimiter">}</span>
@@ -205,7 +208,7 @@ if ('onhashchange' in window) {
 <span id="L141" class="LineNr">141 </span>
 <span id="L142" class="LineNr">142 </span>string <a href='038new_text.cc.html#L142'>read_mu_text</a><span class="Delimiter">(</span><span class="Normal">int</span> <a href='043space.cc.html#L101'>address</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L143" class="LineNr">143 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='043space.cc.html#L101'>address</a> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-<span id="L144" class="LineNr">144 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+<span class="Comment">/*</span><span class="Comment">alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L144" class="LineNr">144 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> address+<span class="Comment">/*</span><span class="Comment">alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L145" class="LineNr">145 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>length == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span id="L146" class="LineNr">146 </span>  <span class="Identifier">return</span> <a href='038new_text.cc.html#L149'>read_mu_characters</a><span class="Delimiter">(</span>address+<span class="Comment">/*</span><span class="Comment">alloc id</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> length<span class="Delimiter">);</span>
 <span id="L147" class="LineNr">147 </span><span class="Delimiter">}</span>
@@ -213,7 +216,7 @@ if ('onhashchange' in window) {
 <span id="L149" class="LineNr">149 </span>string <a href='038new_text.cc.html#L149'>read_mu_characters</a><span class="Delimiter">(</span><span class="Normal">int</span> start<span class="Delimiter">,</span> <span class="Normal">int</span> length<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L150" class="LineNr">150 </span>  ostringstream tmp<span class="Delimiter">;</span>
 <span id="L151" class="LineNr">151 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = start<span class="Delimiter">;</span>  curr &lt; start+length<span class="Delimiter">;</span>  ++curr<span class="Delimiter">)</span>
-<span id="L152" class="LineNr">152 </span>    tmp &lt;&lt; to_unicode<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)));</span>
+<span id="L152" class="LineNr">152 </span>    tmp &lt;&lt; to_unicode<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Memory</span><span class="Delimiter">,</span> curr<span class="Delimiter">)));</span>
 <span id="L153" class="LineNr">153 </span>  <span class="Identifier">return</span> tmp<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span id="L154" class="LineNr">154 </span><span class="Delimiter">}</span>
 <span id="L155" class="LineNr">155 </span>
@@ -224,14 +227,14 @@ if ('onhashchange' in window) {
 <span id="L160" class="LineNr">160 </span><span class="Delimiter">:(scenario assert_literal)</span>
 <span id="L161" class="LineNr">161 </span><span class="Special">% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.</span>
 <span id="L162" class="LineNr">162 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L163" class="LineNr">163 </span>  assert <span class="Constant">0</span><span class="Delimiter">,</span> [<span class="Normal">this</span> is an assert in Mu]
+<span id="L163" class="LineNr">163 </span>  assert <span class="Constant">0</span><span class="Delimiter">,</span> [<span class="Normal">this</span> is an assert in <span class="Special">Mu</span>]
 <span id="L164" class="LineNr">164 </span>]
 <span id="L165" class="LineNr">165 </span><span class="traceContains">+error: this is an assert in Mu</span>
 <span id="L166" class="LineNr">166 </span>
 <span id="L167" class="LineNr">167 </span><span class="Delimiter">:(scenario assert)</span>
 <span id="L168" class="LineNr">168 </span><span class="Special">% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.</span>
 <span id="L169" class="LineNr">169 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L170" class="LineNr">170 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Normal">this</span> is an assert in Mu]
+<span id="L170" class="LineNr">170 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Normal">this</span> is an assert in <span class="Special">Mu</span>]
 <span id="L171" class="LineNr">171 </span>  assert <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>:text
 <span id="L172" class="LineNr">172 </span>]
 <span id="L173" class="LineNr">173 </span><span class="traceContains">+error: this is an assert in Mu</span>
@@ -239,19 +242,19 @@ if ('onhashchange' in window) {
 <span id="L175" class="LineNr">175 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 <span id="L176" class="LineNr">176 </span>ASSERT<span class="Delimiter">,</span>
 <span id="L177" class="LineNr">177 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L178" class="LineNr">178 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;assert&quot;</span><span class="Delimiter">,</span> ASSERT<span class="Delimiter">);</span>
+<span id="L178" class="LineNr">178 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;assert&quot;</span><span class="Delimiter">,</span> ASSERT<span class="Delimiter">);</span>
 <span id="L179" class="LineNr">179 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span id="L180" class="LineNr">180 </span><span class="Normal">case</span> ASSERT: <span class="Delimiter">{</span>
 <span id="L181" class="LineNr">181 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L182" class="LineNr">182 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' takes exactly two ingredients rather than '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L182" class="LineNr">182 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span><span class="Special">Recipe</span><span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' takes exactly two ingredients rather than '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L183" class="LineNr">183 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L184" class="LineNr">184 </span>  <span class="Delimiter">}</span>
 <span id="L185" class="LineNr">185 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_address<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; !is_mu_scalar<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-<span id="L186" class="LineNr">186 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a scalar or <a href='043space.cc.html#L101'>address</a> for its first ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L186" class="LineNr">186 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span><span class="Special">Recipe</span><span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a scalar or <a href='043space.cc.html#L101'>address</a> for its first ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L187" class="LineNr">187 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L188" class="LineNr">188 </span>  <span class="Delimiter">}</span>
 <span id="L189" class="LineNr">189 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &amp;&amp; !is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-<span id="L190" class="LineNr">190 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a text as its second ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
+<span id="L190" class="LineNr">190 </span>    <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span><span class="Special">Recipe</span><span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a text as its second ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L191" class="LineNr">191 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L192" class="LineNr">192 </span>  <span class="Delimiter">}</span>
 <span id="L193" class="LineNr">193 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -263,7 +266,7 @@ if ('onhashchange' in window) {
 <span id="L199" class="LineNr">199 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
 <span id="L200" class="LineNr">200 </span>    <span class="Normal">else</span>
 <span id="L201" class="LineNr">201 </span>      <a href='003trace.cc.html#L196'>raise</a> &lt;&lt; <a href='038new_text.cc.html#L142'>read_mu_text</a><span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip alloc id</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>
-<span id="L202" class="LineNr">202 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!Hide_errors<span class="Delimiter">)</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L202" class="LineNr">202 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!<span class="Special">Hide_errors</span><span class="Delimiter">)</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L203" class="LineNr">203 </span>  <span class="Delimiter">}</span>
 <span id="L204" class="LineNr">204 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L205" class="LineNr">205 </span><span class="Delimiter">}</span>
@@ -273,7 +276,7 @@ if ('onhashchange' in window) {
 <span id="L209" class="LineNr">209 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 <span id="L210" class="LineNr">210 </span>_READ<span class="Delimiter">,</span>
 <span id="L211" class="LineNr">211 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L212" class="LineNr">212 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$read&quot;</span><span class="Delimiter">,</span> _READ<span class="Delimiter">);</span>
+<span id="L212" class="LineNr">212 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;$read&quot;</span><span class="Delimiter">,</span> _READ<span class="Delimiter">);</span>
 <span id="L213" class="LineNr">213 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span id="L214" class="LineNr">214 </span><span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
 <span id="L215" class="LineNr">215 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>

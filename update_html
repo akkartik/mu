@@ -13,11 +13,16 @@ process() {
   mv html/$1.html.out html/$1.html
 }
 
+URL_BASE='https://github.com/akkartik/mu/blob/master'
+
 convert_html() {
   vim -c "set number" -c TOhtml -c write -c qall $1
 
   sed -i 's,<title>.*/mu/,<title>Mu - ,' $1.html
   sed -i 's,\.html</title>,</title>,' $1.html
+
+  sed -i "/^<body/a <a href='$URL_BASE/$1'>$URL_BASE/$1</a>" $1.html
+
   sed -i 's/^\* { \(.*\) }/* { font-size:12pt; \1 }/g' $1.html
   sed -i 's/^body { \(.*\) }/body { font-size:12pt; \1 }/g' $1.html
   # turn most code grey

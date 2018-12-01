@@ -11,19 +11,22 @@
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-a { color:#eeeeee; text-decoration: none; }
-a:hover { text-decoration: underline; }
-* { font-size: 12pt; font-size: 1em; }
+body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+.subxS2Comment a { color:inherit; }
+.subxS1Comment a { color:inherit; }
+.subxComment a { color:inherit; }
+.subxH2Comment a { color:inherit; }
+.subxH1Comment a { color:inherit; }
+* { font-size:12pt; font-size: 1em; }
 .cSpecial { color: #008000; }
-.LineNr { color: #444444; }
-.Constant { color: #00a0a0; }
+.LineNr { color:#444444; }
+.Constant { color:#00a0a0; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #800080; }
-.Identifier { color: #c0a020; }
+.Delimiter { color:#800080; }
+.Special { color:#c00000; }
+.Identifier { color:#c0a020; }
 .Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
+.Comment { color: #8080ff; }
 .CommentedCode { color: #6c6c6c; }
 .SalientComment { color: #00ffff; }
 -->
@@ -59,14 +62,15 @@ if ('onhashchange' in window) {
 </script>
 </head>
 <body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/010vm.cc'>https://github.com/akkartik/mu/blob/master/010vm.cc</a>
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: A Mu program is a book of 'recipes' (functions)</span>
 <span id="L2" class="LineNr">  2 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span id="L3" class="LineNr">  3 </span><span class="Comment">//: Each recipe is stored at a specific page number, or ordinal.</span>
-<span id="L4" class="LineNr">  4 </span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt; Recipe<span class="Delimiter">;</span>
+<span id="L4" class="LineNr">  4 </span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt; <span class="Special">Recipe</span><span class="Delimiter">;</span>
 <span id="L5" class="LineNr">  5 </span><span class="Comment">//: You can also refer to each recipe by its name.</span>
-<span id="L6" class="LineNr">  6 </span>map&lt;string<span class="Delimiter">,</span> recipe_ordinal&gt; Recipe_ordinal<span class="Delimiter">;</span>
-<span id="L7" class="LineNr">  7 </span><a href='010vm.cc.html#L14'>recipe_ordinal</a> Next_recipe_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span id="L6" class="LineNr">  6 </span>map&lt;string<span class="Delimiter">,</span> recipe_ordinal&gt; <span class="Special">Recipe_ordinal</span><span class="Delimiter">;</span>
+<span id="L7" class="LineNr">  7 </span><a href='010vm.cc.html#L14'>recipe_ordinal</a> <span class="Special">Next_recipe_ordinal</span> = <span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L8" class="LineNr">  8 </span>
 <span id="L9" class="LineNr">  9 </span><span class="Comment">//: Ordinals are like numbers, except you can't do arithmetic on them. Ordinal</span>
 <span id="L10" class="LineNr"> 10 </span><span class="Comment">//: 1 is not less than 2, it's just different. Phone numbers are ordinals;</span>
@@ -167,13 +171,13 @@ if ('onhashchange' in window) {
 <span id="L105" class="LineNr">105 </span>
 <span id="L106" class="LineNr">106 </span><span class="Comment">// End type_tree Definition</span>
 <span id="L107" class="LineNr">107 </span><span class="Delimiter">:(code)</span>
-<span id="L108" class="LineNr">108 </span>type_tree::type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">)</span> :atom<span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">),</span> name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span id="L108" class="LineNr">108 </span>type_tree::type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">)</span> :atom<span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">),</span> name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>get<span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> name<span class="Delimiter">)),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 <span id="L109" class="LineNr">109 </span>
 <span id="L110" class="LineNr">110 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span id="L111" class="LineNr">111 </span><span class="Comment">// Locations refer to a common 'memory'. Each location can store a number.</span>
-<span id="L112" class="LineNr">112 </span>map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt; Memory<span class="Delimiter">;</span>
+<span id="L112" class="LineNr">112 </span>map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt; <span class="Special">Memory</span><span class="Delimiter">;</span>
 <span id="L113" class="LineNr">113 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
-<span id="L114" class="LineNr">114 </span>Memory<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
+<span id="L114" class="LineNr">114 </span><span class="Special">Memory</span><span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
 <span id="L115" class="LineNr">115 </span>
 <span id="L116" class="LineNr">116 </span><span class="Delimiter">:(after &quot;Types&quot;)</span>
 <span id="L117" class="LineNr">117 </span><span class="Comment">// Mu types encode how the numbers stored in different parts of memory are</span>
@@ -186,41 +190,41 @@ if ('onhashchange' in window) {
 <span id="L124" class="LineNr">124 </span><span class="Comment">// seamless experience to help understand arbitrary Mu programs.</span>
 <span id="L125" class="LineNr">125 </span><span class="Normal">typedef</span> <span class="Normal">int</span> <a href='010vm.cc.html#L125'>type_ordinal</a><span class="Delimiter">;</span>
 <span id="L126" class="LineNr">126 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L127" class="LineNr">127 </span>map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal<span class="Delimiter">;</span>
-<span id="L128" class="LineNr">128 </span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type<span class="Delimiter">;</span>
-<span id="L129" class="LineNr">129 </span><a href='010vm.cc.html#L125'>type_ordinal</a> Next_type_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
-<span id="L130" class="LineNr">130 </span><a href='010vm.cc.html#L125'>type_ordinal</a> Number_type_ordinal = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L131" class="LineNr">131 </span><a href='010vm.cc.html#L125'>type_ordinal</a> Boolean_type_ordinal = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L132" class="LineNr">132 </span><a href='010vm.cc.html#L125'>type_ordinal</a> Character_type_ordinal = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L133" class="LineNr">133 </span><a href='010vm.cc.html#L125'>type_ordinal</a> Address_type_ordinal = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L134" class="LineNr">134 </span><a href='010vm.cc.html#L125'>type_ordinal</a> Array_type_ordinal = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L127" class="LineNr">127 </span>map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; <span class="Special">Type_ordinal</span><span class="Delimiter">;</span>
+<span id="L128" class="LineNr">128 </span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; <span class="Special">Type</span><span class="Delimiter">;</span>
+<span id="L129" class="LineNr">129 </span><a href='010vm.cc.html#L125'>type_ordinal</a> <span class="Special">Next_type_ordinal</span> = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span id="L130" class="LineNr">130 </span><a href='010vm.cc.html#L125'>type_ordinal</a> <span class="Special">Number_type_ordinal</span> = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L131" class="LineNr">131 </span><a href='010vm.cc.html#L125'>type_ordinal</a> <span class="Special">Boolean_type_ordinal</span> = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L132" class="LineNr">132 </span><a href='010vm.cc.html#L125'>type_ordinal</a> <span class="Special">Character_type_ordinal</span> = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L133" class="LineNr">133 </span><a href='010vm.cc.html#L125'>type_ordinal</a> <span class="Special">Address_type_ordinal</span> = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L134" class="LineNr">134 </span><a href='010vm.cc.html#L125'>type_ordinal</a> <span class="Special">Array_type_ordinal</span> = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L135" class="LineNr">135 </span><span class="Delimiter">:(code)</span>
 <span id="L136" class="LineNr">136 </span><span class="Normal">void</span> <a href='010vm.cc.html#L136'>setup_types</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L137" class="LineNr">137 </span>  Type<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>  Type_ordinal<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
-<span id="L138" class="LineNr">138 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L139" class="LineNr">139 </span>  Next_type_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span id="L137" class="LineNr">137 </span>  <span class="Special">Type</span><span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>  <span class="Special">Type_ordinal</span><span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
+<span id="L138" class="LineNr">138 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L139" class="LineNr">139 </span>  <span class="Special">Next_type_ordinal</span> = <span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L140" class="LineNr">140 </span>  <span class="Comment">// Mu Types Initialization</span>
-<span id="L141" class="LineNr">141 </span>  Number_type_ordinal = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-<span id="L142" class="LineNr">142 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Number_type_ordinal<span class="Delimiter">).</span>name = <span class="Constant">&quot;number&quot;</span><span class="Delimiter">;</span>
-<span id="L143" class="LineNr">143 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">,</span> Number_type_ordinal<span class="Delimiter">);</span>  <span class="Comment">// synonym of number for addresses we'll never look up</span>
-<span id="L144" class="LineNr">144 </span>  Address_type_ordinal = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-<span id="L145" class="LineNr">145 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Address_type_ordinal<span class="Delimiter">).</span>name = <span class="Constant">&quot;address&quot;</span><span class="Delimiter">;</span>
-<span id="L146" class="LineNr">146 </span>  Boolean_type_ordinal = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-<span id="L147" class="LineNr">147 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Boolean_type_ordinal<span class="Delimiter">).</span>name = <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">;</span>
-<span id="L148" class="LineNr">148 </span>  Character_type_ordinal = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-<span id="L149" class="LineNr">149 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Character_type_ordinal<span class="Delimiter">).</span>name = <span class="Constant">&quot;character&quot;</span><span class="Delimiter">;</span>
+<span id="L141" class="LineNr">141 </span>  <span class="Special">Number_type_ordinal</span> = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">,</span> <span class="Special">Next_type_ordinal</span>++<span class="Delimiter">);</span>
+<span id="L142" class="LineNr">142 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Type</span><span class="Delimiter">,</span> <span class="Special">Number_type_ordinal</span><span class="Delimiter">).</span>name = <span class="Constant">&quot;number&quot;</span><span class="Delimiter">;</span>
+<span id="L143" class="LineNr">143 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">,</span> <span class="Special">Number_type_ordinal</span><span class="Delimiter">);</span>  <span class="Comment">// synonym of number for addresses we'll never look up</span>
+<span id="L144" class="LineNr">144 </span>  <span class="Special">Address_type_ordinal</span> = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">,</span> <span class="Special">Next_type_ordinal</span>++<span class="Delimiter">);</span>
+<span id="L145" class="LineNr">145 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Type</span><span class="Delimiter">,</span> <span class="Special">Address_type_ordinal</span><span class="Delimiter">).</span>name = <span class="Constant">&quot;address&quot;</span><span class="Delimiter">;</span>
+<span id="L146" class="LineNr">146 </span>  <span class="Special">Boolean_type_ordinal</span> = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">,</span> <span class="Special">Next_type_ordinal</span>++<span class="Delimiter">);</span>
+<span id="L147" class="LineNr">147 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Type</span><span class="Delimiter">,</span> <span class="Special">Boolean_type_ordinal</span><span class="Delimiter">).</span>name = <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">;</span>
+<span id="L148" class="LineNr">148 </span>  <span class="Special">Character_type_ordinal</span> = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">,</span> <span class="Special">Next_type_ordinal</span>++<span class="Delimiter">);</span>
+<span id="L149" class="LineNr">149 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Type</span><span class="Delimiter">,</span> <span class="Special">Character_type_ordinal</span><span class="Delimiter">).</span>name = <span class="Constant">&quot;character&quot;</span><span class="Delimiter">;</span>
 <span id="L150" class="LineNr">150 </span>  <span class="Comment">// Array types are a special modifier to any other type. For example,</span>
 <span id="L151" class="LineNr">151 </span>  <span class="Comment">// array:number or array:address:boolean.</span>
-<span id="L152" class="LineNr">152 </span>  Array_type_ordinal = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-<span id="L153" class="LineNr">153 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Array_type_ordinal<span class="Delimiter">).</span>name = <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
+<span id="L152" class="LineNr">152 </span>  <span class="Special">Array_type_ordinal</span> = <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">,</span> <span class="Special">Next_type_ordinal</span>++<span class="Delimiter">);</span>
+<span id="L153" class="LineNr">153 </span>  <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span><span class="Special">Type</span><span class="Delimiter">,</span> <span class="Special">Array_type_ordinal</span><span class="Delimiter">).</span>name = <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
 <span id="L154" class="LineNr">154 </span>  <span class="Comment">// End Mu Types Initialization</span>
 <span id="L155" class="LineNr">155 </span><span class="Delimiter">}</span>
 <span id="L156" class="LineNr">156 </span><span class="Normal">void</span> <a href='010vm.cc.html#L156'>teardown_types</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L157" class="LineNr">157 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt;::iterator p = Type<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != Type<span class="Delimiter">.</span><a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L157" class="LineNr">157 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt;::iterator p = <span class="Special">Type</span><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <span class="Special">Type</span><span class="Delimiter">.</span><a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L158" class="LineNr">158 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>elements<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
 <span id="L159" class="LineNr">159 </span>      p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>elements<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
 <span id="L160" class="LineNr">160 </span>  <span class="Delimiter">}</span>
-<span id="L161" class="LineNr">161 </span>  Type_ordinal<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
+<span id="L161" class="LineNr">161 </span>  <span class="Special">Type_ordinal</span><span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
 <span id="L162" class="LineNr">162 </span><span class="Delimiter">}</span>
 <span id="L163" class="LineNr">163 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
 <span id="L164" class="LineNr">164 </span><a href='010vm.cc.html#L136'>setup_types</a><span class="Delimiter">();</span>
@@ -265,10 +269,10 @@ if ('onhashchange' in window) {
 <span id="L203" class="LineNr">203 </span><span class="Comment">//: recipes there are only codes, no entries in the book, because Mu just knows</span>
 <span id="L204" class="LineNr">204 </span><span class="Comment">//: what to do for them.</span>
 <span id="L205" class="LineNr">205 </span><span class="Normal">void</span> <a href='010vm.cc.html#L205'>setup_recipes</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L206" class="LineNr">206 </span>  Recipe<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>  Recipe_ordinal<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
-<span id="L207" class="LineNr">207 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;idle&quot;</span><span class="Delimiter">,</span> <a href='010vm.cc.html#L195'>IDLE</a><span class="Delimiter">);</span>
+<span id="L206" class="LineNr">206 </span>  <span class="Special">Recipe</span><span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>  <span class="Special">Recipe_ordinal</span><span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
+<span id="L207" class="LineNr">207 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;idle&quot;</span><span class="Delimiter">,</span> <a href='010vm.cc.html#L195'>IDLE</a><span class="Delimiter">);</span>
 <span id="L208" class="LineNr">208 </span>  <span class="Comment">// Primitive Recipe Numbers</span>
-<span id="L209" class="LineNr">209 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;copy&quot;</span><span class="Delimiter">,</span> <a href='010vm.cc.html#L196'>COPY</a><span class="Delimiter">);</span>
+<span id="L209" class="LineNr">209 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy&quot;</span><span class="Delimiter">,</span> <a href='010vm.cc.html#L196'>COPY</a><span class="Delimiter">);</span>
 <span id="L210" class="LineNr">210 </span>  <span class="Comment">// End Primitive Recipe Numbers</span>
 <span id="L211" class="LineNr">211 </span><span class="Delimiter">}</span>
 <span id="L212" class="LineNr">212 </span><span class="Comment">//: We could just reset the recipe table after every test, but that gets slow</span>
@@ -278,23 +282,23 @@ if ('onhashchange' in window) {
 <span id="L216" class="LineNr">216 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
 <span id="L217" class="LineNr">217 </span><a href='010vm.cc.html#L205'>setup_recipes</a><span class="Delimiter">();</span>
 <span id="L218" class="LineNr">218 </span>assert<span class="Delimiter">(</span><a href='010vm.cc.html#L198'>MAX_PRIMITIVE_RECIPES</a> &lt; <span class="Constant">200</span><span class="Delimiter">);</span>  <span class="Comment">// level 0 is primitives; until 199</span>
-<span id="L219" class="LineNr">219 </span>Next_recipe_ordinal = <span class="Constant">200</span><span class="Delimiter">;</span>
-<span id="L220" class="LineNr">220 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">,</span> Next_recipe_ordinal++<span class="Delimiter">);</span>
+<span id="L219" class="LineNr">219 </span><span class="Special">Next_recipe_ordinal</span> = <span class="Constant">200</span><span class="Delimiter">;</span>
+<span id="L220" class="LineNr">220 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span><span class="Special">Recipe_ordinal</span><span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">,</span> <span class="Special">Next_recipe_ordinal</span>++<span class="Delimiter">);</span>
 <span id="L221" class="LineNr">221 </span><span class="Comment">// Load Mu Prelude</span>
 <span id="L222" class="LineNr">222 </span><span class="Comment">// End Mu Prelude</span>
 <span id="L223" class="LineNr">223 </span><span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
-<span id="L224" class="LineNr">224 </span>assert<span class="Delimiter">(</span>Next_recipe_ordinal &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>  <span class="Comment">// recipes being tested didn't overflow into test space</span>
+<span id="L224" class="LineNr">224 </span>assert<span class="Delimiter">(</span><span class="Special">Next_recipe_ordinal</span> &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>  <span class="Comment">// recipes being tested didn't overflow into test space</span>
 <span id="L225" class="LineNr">225 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
-<span id="L226" class="LineNr">226 </span>Next_recipe_ordinal = <span class="Constant">1000</span><span class="Delimiter">;</span>  <span class="Comment">// consistent new numbers for each test</span>
+<span id="L226" class="LineNr">226 </span><span class="Special">Next_recipe_ordinal</span> = <span class="Constant">1000</span><span class="Delimiter">;</span>  <span class="Comment">// consistent new numbers for each test</span>
 <span id="L227" class="LineNr">227 </span>
 <span id="L228" class="LineNr">228 </span><span class="Comment">//: One final detail: tests can modify our global tables of recipes and types,</span>
 <span id="L229" class="LineNr">229 </span><span class="Comment">//: so we need some way to clean up after each test is done so it doesn't</span>
 <span id="L230" class="LineNr">230 </span><span class="Comment">//: influence later ones.</span>
 <span id="L231" class="LineNr">231 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L232" class="LineNr">232 </span>map&lt;string<span class="Delimiter">,</span> recipe_ordinal&gt; Recipe_ordinal_snapshot<span class="Delimiter">;</span>
-<span id="L233" class="LineNr">233 </span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt; Recipe_snapshot<span class="Delimiter">;</span>
-<span id="L234" class="LineNr">234 </span>map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal_snapshot<span class="Delimiter">;</span>
-<span id="L235" class="LineNr">235 </span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type_snapshot<span class="Delimiter">;</span>
+<span id="L232" class="LineNr">232 </span>map&lt;string<span class="Delimiter">,</span> recipe_ordinal&gt; <span class="Special">Recipe_ordinal_snapshot</span><span class="Delimiter">;</span>
+<span id="L233" class="LineNr">233 </span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt; <span class="Special">Recipe_snapshot</span><span class="Delimiter">;</span>
+<span id="L234" class="LineNr">234 </span>map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; <span class="Special">Type_ordinal_snapshot</span><span class="Delimiter">;</span>
+<span id="L235" class="LineNr">235 </span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; <span class="Special">Type_snapshot</span><span class="Delimiter">;</span>
 <span id="L236" class="LineNr">236 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
 <span id="L237" class="LineNr">237 </span>save_snapshots<span class="Delimiter">();</span>
 <span id="L238" class="LineNr">238 </span><span class="Delimiter">:(before &quot;End Reset&quot;)</span>
@@ -302,22 +306,22 @@ if ('onhashchange' in window) {
 <span id="L240" class="LineNr">240 </span>
 <span id="L241" class="LineNr">241 </span><span class="Delimiter">:(code)</span>
 <span id="L242" class="LineNr">242 </span><span class="Normal">void</span> save_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L243" class="LineNr">243 </span>  Recipe_ordinal_snapshot = Recipe_ordinal<span class="Delimiter">;</span>
-<span id="L244" class="LineNr">244 </span>  Recipe_snapshot = Recipe<span class="Delimiter">;</span>
-<span id="L245" class="LineNr">245 </span>  Type_ordinal_snapshot = Type_ordinal<span class="Delimiter">;</span>
-<span id="L246" class="LineNr">246 </span>  Type_snapshot = Type<span class="Delimiter">;</span>
+<span id="L243" class="LineNr">243 </span>  <span class="Special">Recipe_ordinal_snapshot</span> = <span class="Special">Recipe_ordinal</span><span class="Delimiter">;</span>
+<span id="L244" class="LineNr">244 </span>  <span class="Special">Recipe_snapshot</span> = <span class="Special">Recipe</span><span class="Delimiter">;</span>
+<span id="L245" class="LineNr">245 </span>  <span class="Special">Type_ordinal_snapshot</span> = <span class="Special">Type_ordinal</span><span class="Delimiter">;</span>
+<span id="L246" class="LineNr">246 </span>  <span class="Special">Type_snapshot</span> = <span class="Special">Type</span><span class="Delimiter">;</span>
 <span id="L247" class="LineNr">247 </span>  <span class="Comment">// End save_snapshots</span>
 <span id="L248" class="LineNr">248 </span><span class="Delimiter">}</span>
 <span id="L249" class="LineNr">249 </span>
 <span id="L250" class="LineNr">250 </span><span class="Normal">void</span> restore_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L251" class="LineNr">251 </span>  Recipe = Recipe_snapshot<span class="Delimiter">;</span>
-<span id="L252" class="LineNr">252 </span>  Recipe_ordinal = Recipe_ordinal_snapshot<span class="Delimiter">;</span>
+<span id="L251" class="LineNr">251 </span>  <span class="Special">Recipe</span> = <span class="Special">Recipe_snapshot</span><span class="Delimiter">;</span>
+<span id="L252" class="LineNr">252 </span>  <span class="Special">Recipe_ordinal</span> = <span class="Special">Recipe_ordinal_snapshot</span><span class="Delimiter">;</span>
 <span id="L253" class="LineNr">253 </span>  restore_non_recipe_snapshots<span class="Delimiter">();</span>
 <span id="L254" class="LineNr">254 </span><span class="Delimiter">}</span>
 <span id="L255" class="LineNr">255 </span><span class="Comment">// when running sandboxes in the edit/ app we'll want to restore everything except recipes defined in the app</span>
 <span id="L256" class="LineNr">256 </span><span class="Normal">void</span> restore_non_recipe_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L257" class="LineNr">257 </span>  Type_ordinal = Type_ordinal_snapshot<span class="Delimiter">;</span>
-<span id="L258" class="LineNr">258 </span>  Type = Type_snapshot<span class="Delimiter">;</span>
+<span id="L257" class="LineNr">257 </span>  <span class="Special">Type_ordinal</span> = <span class="Special">Type_ordinal_snapshot</span><span class="Delimiter">;</span>
+<span id="L258" class="LineNr">258 </span>  <span class="Special">Type</span> = <span class="Special">Type_snapshot</span><span class="Delimiter">;</span>
 <span id="L259" class="LineNr">259 </span>  <span class="Comment">// End restore_snapshots</span>
 <span id="L260" class="LineNr">260 </span><span class="Delimiter">}</span>
 <span id="L261" class="LineNr">261 </span>
@@ -413,8 +417,8 @@ if ('onhashchange' in window) {
 <span id="L351" class="LineNr">351 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L352" class="LineNr">352 </span>    <span class="Normal">const</span> string&amp; type_name = properties<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
 <span id="L353" class="LineNr">353 </span>    <span class="Normal">int</span> value = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L354" class="LineNr">354 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L226'>contains_key</a><span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">))</span>
-<span id="L355" class="LineNr">355 </span>      value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">);</span>
+<span id="L354" class="LineNr">354 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L226'>contains_key</a><span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> type_name<span class="Delimiter">))</span>
+<span id="L355" class="LineNr">355 </span>      value = get<span class="Delimiter">(</span><span class="Special">Type_ordinal</span><span class="Delimiter">,</span> type_name<span class="Delimiter">);</span>
 <span id="L356" class="LineNr">356 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>type_name<span class="Delimiter">))</span>  <span class="Comment">// sometimes types will contain literal integers, like for the size of an array</span>
 <span id="L357" class="LineNr">357 </span>      value = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L358" class="LineNr">358 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;-&gt;&quot;</span><span class="Delimiter">)</span>  <span class="Comment">// used in recipe types</span>
@@ -641,20 +645,20 @@ if ('onhashchange' in window) {
 <span id="L579" class="LineNr">579 </span><span class="Delimiter">}</span>
 <span id="L580" class="LineNr">580 </span>
 <span id="L581" class="LineNr">581 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L582" class="LineNr">582 </span><span class="Normal">extern</span> <span class="Normal">const</span> string Ignore<span class="Delimiter">(</span><span class="Constant">&quot;,&quot;</span><span class="Delimiter">);</span>  <span class="Comment">// commas are ignored in Mu except within [] strings</span>
+<span id="L582" class="LineNr">582 </span><span class="Normal">extern</span> <span class="Normal">const</span> string <span class="Special">Ignore</span><span class="Delimiter">(</span><span class="Constant">&quot;,&quot;</span><span class="Delimiter">);</span>  <span class="Comment">// commas are ignored in Mu except within [] strings</span>
 <span id="L583" class="LineNr">583 </span><span class="Delimiter">:(code)</span>
 <span id="L584" class="LineNr">584 </span><span class="Normal">void</span> skip_whitespace_but_not_newline<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L585" class="LineNr">585 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L586" class="LineNr">586 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L587" class="LineNr">587 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L588" class="LineNr">588 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-<span id="L589" class="LineNr">589 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+<span id="L589" class="LineNr">589 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Special">Ignore</span><span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
 <span id="L590" class="LineNr">590 </span>    <span class="Normal">else</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L591" class="LineNr">591 </span>  <span class="Delimiter">}</span>
 <span id="L592" class="LineNr">592 </span><span class="Delimiter">}</span>
 <span id="L593" class="LineNr">593 </span>
 <span id="L594" class="LineNr">594 </span><span class="Normal">void</span> dump_memory<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L595" class="LineNr">595 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt;::iterator p = Memory<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != Memory<span class="Delimiter">.</span><a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L595" class="LineNr">595 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt;::iterator p = <span class="Special">Memory</span><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != <span class="Special">Memory</span><span class="Delimiter">.</span><a href='003trace.cc.html#L225'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L596" class="LineNr">596 </span>    cerr &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span id="L597" class="LineNr">597 </span>  <span class="Delimiter">}</span>
 <span id="L598" class="LineNr">598 </span><span class="Delimiter">}</span>
@@ -667,19 +671,19 @@ if ('onhashchange' in window) {
 <span id="L605" class="LineNr">605 </span>
 <span id="L606" class="LineNr">606 </span>string <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L607" class="LineNr">607 </span>  ostringstream out<span class="Delimiter">;</span>
-<span id="L608" class="LineNr">608 </span>  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L608" class="LineNr">608 </span>  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; [\n&quot;</span><span class="Delimiter">;</span>
 <span id="L609" class="LineNr">609 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
 <span id="L610" class="LineNr">610 </span>    out &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L611" class="LineNr">611 </span>  out &lt;&lt; <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L611" class="LineNr">611 </span>  out &lt;&lt; <span class="Constant">&quot;]\n&quot;</span><span class="Delimiter">;</span>
 <span id="L612" class="LineNr">612 </span>  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span id="L613" class="LineNr">613 </span><span class="Delimiter">}</span>
 <span id="L614" class="LineNr">614 </span>
 <span id="L615" class="LineNr">615 </span>string to_original_string<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L616" class="LineNr">616 </span>  ostringstream out<span class="Delimiter">;</span>
-<span id="L617" class="LineNr">617 </span>  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L617" class="LineNr">617 </span>  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; [\n&quot;</span><span class="Delimiter">;</span>
 <span id="L618" class="LineNr">618 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
 <span id="L619" class="LineNr">619 </span>    out &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L620" class="LineNr">620 </span>  out &lt;&lt; <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L620" class="LineNr">620 </span>  out &lt;&lt; <span class="Constant">&quot;]\n&quot;</span><span class="Delimiter">;</span>
 <span id="L621" class="LineNr">621 </span>  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span id="L622" class="LineNr">622 </span><span class="Delimiter">}</span>
 <span id="L623" class="LineNr">623 </span>
@@ -690,10 +694,10 @@ if ('onhashchange' in window) {
 <span id="L628" class="LineNr">628 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span>  index &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>x<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L629" class="LineNr">629 </span>    <span class="Normal">const</span> instruction&amp; inst = x<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
 <span id="L630" class="LineNr">630 </span>    out &lt;&lt; <span class="Constant">&quot;inst: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L631" class="LineNr">631 </span>    out &lt;&lt; <span class="Constant">&quot;  ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L631" class="LineNr">631 </span>    out &lt;&lt; <span class="Constant">&quot;  ingredients\n&quot;</span><span class="Delimiter">;</span>
 <span id="L632" class="LineNr">632 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
 <span id="L633" class="LineNr">633 </span>      out &lt;&lt; <span class="Constant">&quot;    &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L634" class="LineNr">634 </span>    out &lt;&lt; <span class="Constant">&quot;  products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L634" class="LineNr">634 </span>    out &lt;&lt; <span class="Constant">&quot;  products\n&quot;</span><span class="Delimiter">;</span>
 <span id="L635" class="LineNr">635 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
 <span id="L636" class="LineNr">636 </span>      out &lt;&lt; <span class="Constant">&quot;    &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span id="L637" class="LineNr">637 </span>  <span class="Delimiter">}</span>
@@ -741,7 +745,7 @@ if ('onhashchange' in window) {
 <span id="L679" class="LineNr">679 </span>  out &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
 <span id="L680" class="LineNr">680 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
 <span id="L681" class="LineNr">681 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
-<span id="L682" class="LineNr">682 </span>      out &lt;&lt; <span class="Constant">&quot;, </span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">);</span>
+<span id="L682" class="LineNr">682 </span>      out &lt;&lt; <span class="Constant">&quot;, \&quot;&quot; &lt;&lt; r.properties.at(i).first &lt;&lt; &quot;</span>\<span class="Constant">&quot;: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">);</span>
 <span id="L683" class="LineNr">683 </span>  <span class="Delimiter">}</span>
 <span id="L684" class="LineNr">684 </span>  out &lt;&lt; <span class="Constant">&quot;}&quot;</span><span class="Delimiter">;</span>
 <span id="L685" class="LineNr">685 </span>  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
@@ -815,8 +819,8 @@ if ('onhashchange' in window) {
 <span id="L753" class="LineNr">753 </span><span class="Delimiter">}</span>
 <span id="L754" class="LineNr">754 </span>
 <span id="L755" class="LineNr">755 </span><span class="Normal">void</span> dump<span class="Delimiter">(</span><a href='010vm.cc.html#L125'>type_ordinal</a> type<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L756" class="LineNr">756 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L226'>contains_key</a><span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">))</span>
-<span id="L757" class="LineNr">757 </span>    out &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+<span id="L756" class="LineNr">756 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L226'>contains_key</a><span class="Delimiter">(</span><span class="Special">Type</span><span class="Delimiter">,</span> type<span class="Delimiter">))</span>
+<span id="L757" class="LineNr">757 </span>    out &lt;&lt; get<span class="Delimiter">(</span><span class="Special">Type</span><span class="Delimiter">,</span> type<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 <span id="L758" class="LineNr">758 </span>  <span class="Normal">else</span>
 <span id="L759" class="LineNr">759 </span>    out &lt;&lt; <span class="Constant">&quot;?&quot;</span> &lt;&lt; type<span class="Delimiter">;</span>
 <span id="L760" class="LineNr">760 </span><span class="Delimiter">}</span>
@@ -887,7 +891,7 @@ if ('onhashchange' in window) {
 <span id="L825" class="LineNr">825 </span>  <span class="Normal">char</span>* <a href='003trace.cc.html#L225'>end</a> = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span id="L826" class="LineNr">826 </span>  <span class="Comment">// safe because string.c_str() is guaranteed to be null-terminated</span>
 <span id="L827" class="LineNr">827 </span>  <span class="Normal">int</span> result = strtoll<span class="Delimiter">(</span>n<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;end<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">any base</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L828" class="LineNr">828 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>*end != <span class="cSpecial">'\0'</span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;tried to convert &quot;</span> &lt;&lt; n &lt;&lt; <span class="Constant">&quot; to number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L828" class="LineNr">828 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>*end != <span class="cSpecial">'\0'</span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;tried to convert &quot;</span> &lt;&lt; n &lt;&lt; <span class="Constant">&quot; to number\n&quot;</span><span class="Delimiter">;</span>
 <span id="L829" class="LineNr">829 </span>  assert<span class="Delimiter">(</span>*end == <span class="cSpecial">'\0'</span><span class="Delimiter">);</span>
 <span id="L830" class="LineNr">830 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span id="L831" class="LineNr">831 </span><span class="Delimiter">}</span>
