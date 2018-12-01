@@ -72,9 +72,9 @@ endfunction
 
 function! SubxPath(arg)
   if a:arg =~ "^ex"
-    return "examples/" . a:arg . "*.subx"
+    return "examples/" . a:arg . ".subx"
   else
-    return "apps/" . a:arg . "*.subx"
+    return "apps/" . a:arg . ".subx"
   endif
 endfunction
 
