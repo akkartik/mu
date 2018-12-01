@@ -1,4 +1,4 @@
-## print out a (global variable) string to stdout
+# Print out a (global variable) string to stdout.
 #
 # To run (from the subx directory):
 #   $ subx translate examples/ex6.subx -o examples/ex6
@@ -10,14 +10,14 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-    # syscall(write, stdout, X, size)
-    # fd = 1 (stdout)
+    # syscall(write, stdout, X, Size)
+    # . fd = 1 (stdout)
     bb/copy-to-EBX  1/imm32
-    # initialize X (location to write result to)
+    # . initialize X (location to write result to)
     b9/copy-to-ECX  X/imm32
-    # initialize size
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           2/r32/EDX   Size/disp32     .                 # copy *size to EDX
-    # syscall
+    # . initialize Size
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           2/r32/EDX   Size/disp32     .                 # copy *Size to EDX
+    # . syscall
     b8/copy-to-EAX  4/imm32/write
     cd/syscall  0x80/imm8
 

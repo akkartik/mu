@@ -22,10 +22,11 @@
 # main:
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # if (argc > 1)
+    # - if argc > 1 and argv[1] == "test" then return run_tests()
+    # . argc > 1
     81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0/disp8         1/imm32           # compare *EBP
     7e/jump-if-lesser-or-equal  $run-main/disp8
-    # and if (argv[1] == "test")
+    # . argv[1] == "test"
     # . . push args
     68/push  "test"/imm32
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
@@ -33,14 +34,14 @@
     e8/call  kernel-string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check result
+    # . check result
     3d/compare-EAX  1/imm32
     75/jump-if-not-equal  $run-main/disp8
-    # then return run-tests()
+    # . run-tests()
     e8/call  run-tests/disp32
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Num-test-failures/disp32          # copy *Num-test-failures to EAX
     eb/jump  $main:end/disp8  # where EAX will get copied to EBX
-    # else EAX = factorial(5)
+    # - otherwise return factorial(5)
 $run-main:
     # . . push args
     68/push  5/imm32
@@ -49,20 +50,19 @@ $run-main:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $main:end:
-    # exit(EAX)
+    # syscall(exit, EAX)
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
     b8/copy-to-EAX  1/imm32
     cd/syscall  0x80/imm8
 
-# factorial(n)
-factorial:
+factorial:  # n : int -> int/EAX
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     53/push-EBX
-    # initialize EAX to 1 (base case)
+    # EAX = 1 (base case)
     b8/copy-to-EAX  1/imm32
-    # if (n <= 1) jump exit
+    # if (n <= 1) return
     81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         1/imm32           # compare *(EBP+8)
     7e/jump-if-<=  $factorial:end/disp8
     # EBX = n-1

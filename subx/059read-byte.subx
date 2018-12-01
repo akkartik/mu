@@ -52,10 +52,11 @@ read-byte:  # f : (address buffered-file) -> byte/EAX
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # ECX = f->read
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(ESI+8) to ECX
-    ## if (f->read < f->write) read byte from stream
+    # if (f->read < f->write) read byte from stream
     3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # compare ECX with *(ESI+4)
     7c/jump-if-lesser  $read-byte:from-stream/disp8
-    # clear-stream(stream = f+4)
+    # otherwise first populate stream from file
+    # . clear-stream(stream = f+4)
     # . . push args
     8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy ESI+4 to EAX
     50/push-EAX
@@ -63,7 +64,7 @@ read-byte:  # f : (address buffered-file) -> byte/EAX
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # EAX = read(f->fd, stream = f+4)
+    # . EAX = read(f->fd, stream = f+4)
     # . . push args
     50/push-EAX
     ff          6/subop/push        0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # push *ESI
@@ -77,6 +78,7 @@ read-byte:  # f : (address buffered-file) -> byte/EAX
     b8/copy-to-EAX  0xffffffff/imm32
     eb/jump  $read-byte:end/disp8
 $read-byte:from-stream:
+    # reading from stream
     # AL = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy *(ESI+ECX+16) to AL
@@ -94,18 +96,19 @@ $read-byte:end:
 # todo: how should write-byte look? What should it do when the output has no
 # space remaining? Maybe return an error code.
 
-## tests
+# - tests
 
 test-read-byte-single:
-    ## check that read-byte returns first byte of 'file'
-    # clear-stream(_test-stream)
+    # - check that read-byte returns first byte of 'file'
+    # setup
+    # . clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-buffered-file+4)
     # . . push args
     b8/copy-to-EAX  _test-buffered-file/imm32
     05/add-to-EAX  4/imm32
@@ -114,7 +117,7 @@ test-read-byte-single:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # write(_test-stream, "Ab")
+    # . write(_test-stream, "Ab")
     # . . push args
     68/push  "Ab"/imm32
     68/push  _test-stream/imm32
@@ -138,19 +141,20 @@ test-read-byte-single:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # end
+    # . end
     c3/return
 
 test-read-byte-multiple:
-    ## call read-byte twice, check that second call returns second byte
-    # clear-stream(_test-stream)
+    # - call read-byte twice, check that second call returns second byte
+    # setup
+    # . clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-buffered-file+4)
     # . . push args
     b8/copy-to-EAX  _test-buffered-file/imm32
     05/add-to-EAX  4/imm32
@@ -159,7 +163,7 @@ test-read-byte-multiple:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # write(_test-stream, "Ab")
+    # . write(_test-stream, "Ab")
     # . . push args
     68/push  "Ab"/imm32
     68/push  _test-stream/imm32
@@ -190,19 +194,20 @@ test-read-byte-multiple:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # end
+    # . end
     c3/return
 
 test-read-byte-end-of-file:
-    ## call read-byte on an empty 'file', check that it returns -1
-    # clear-stream(_test-stream)
+    # - call read-byte on an empty 'file', check that it returns -1
+    # setup
+    # . clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-buffered-file+4)
     # . . push args
     b8/copy-to-EAX  _test-buffered-file/imm32
     05/add-to-EAX  4/imm32
@@ -227,7 +232,7 @@ test-read-byte-end-of-file:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # end
+    # . end
     c3/return
 
 == data

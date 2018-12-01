@@ -56,7 +56,7 @@ read:  # f : fd or (address stream), s : (address stream) -> num-bytes-read/EAX
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    ## if (f < 0x08000000) return _read(f, s)  # f can't be a user-mode address, so treat it as a kernel file descriptor
+    # if (f < 0x08000000) return _read(f, s)  # f can't be a user-mode address, so treat it as a kernel file descriptor
     81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         0x08000000/imm32  # compare *(EBP+8)
     7d/jump-if-greater-or-equal  $read:fake/disp8
     # . . push args
@@ -69,7 +69,7 @@ read:  # f : fd or (address stream), s : (address stream) -> num-bytes-read/EAX
     # return
     eb/jump  $read:end/disp8
 $read:fake:
-    ## otherwise, treat 'f' as a stream to scan from
+    # otherwise, treat 'f' as a stream to scan from
     # . save registers
     56/push-ESI
     57/push-EDI
@@ -79,19 +79,19 @@ $read:fake:
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     # EAX = _append-4(out = &s->data[s->write], outend = &s->data[s->length],
     #                 in  = &f->data[f->read],  inend  = &f->data[f->write])
-    # push &f->data[f->write]
+    # . . push &f->data[f->write]
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
     50/push-EAX
-    # push &f->data[f->read]
+    # . . push &f->data[f->read]
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ESI+4) to EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
     50/push-EAX
-    # push &s->data[s->length]
+    # . . push &s->data[s->length]
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EDI+8) to EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
     50/push-EAX
-    # push &s->data[s->write]
+    # . . push &s->data[s->write]
     8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy *EDI to EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
     50/push-EAX
@@ -112,7 +112,7 @@ $read:end:
     5d/pop-to-EBP
     c3/return
 
-## helpers
+# - helpers
 
 # idea: a clear-if-empty method on streams that clears only if f.read == f.write
 # Unclear how I'd use it, though. Callers seem to need the check anyway.
@@ -134,13 +134,13 @@ _read:  # fd : int, s : (address stream) -> num-bytes-read/EAX
     # EDX = s->length
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(ESI+8) to EDX
     # syscall(read, fd, &s->data[s->write], s->length - s->write)
-    # fd : EBX
+    # . . fd : EBX
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
-    # data : ECX = &s->data[s->write]
+    # . . data : ECX = &s->data[s->write]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           1/r32/ECX   0xc/disp8       .                 # copy ESI+EAX+12 to ECX
-    # size : EDX = s->length - s->write
+    # . . size : EDX = s->length - s->write
     29/subtract                     3/mod/direct    2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from EDX
-    # syscall
+    # . . syscall
     b8/copy-to-EAX  3/imm32/read
     cd/syscall  0x80/imm8
     # add the result EAX to s->write
@@ -176,9 +176,10 @@ _read:  # fd : int, s : (address stream) -> num-bytes-read/EAX
     # use one less register, but doesn't increase the amount of spilling (ECX
     # and EDX must be used, and EAX must be clobbered anyway).
 
-## tests
+# - tests
 
 test-read-single:
+    # - write a single character into _test-stream, then read from its buffered-file
     # clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32
@@ -222,7 +223,7 @@ test-read-single:
     # . . push args
     68/push  "F - test-read-single"/imm32
     68/push  0x006241/imm32/Ab
-    # push *_test-stream-buffer->data
+    # . . push *_test-stream-buffer->data
     b8/copy-to-EAX  _test-stream-buffer/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # . . call
@@ -233,7 +234,7 @@ test-read-single:
     c3/return
 
 test-read-is-stateful:
-    ## make two consecutive reads, check that their results are appended
+    # - make two consecutive reads, check that their results are appended
     # clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32
@@ -284,7 +285,7 @@ test-read-is-stateful:
     # . . push args
     68/push  "F - test-read-is-stateful"/imm32
     68/push  0x00004443/imm32/C-D
-    # push *_test-stream-buffer->data
+    # . push *_test-stream-buffer->data
     b8/copy-to-EAX  _test-stream-buffer/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # . . call
@@ -295,22 +296,23 @@ test-read-is-stateful:
     c3/return
 
 test-read-returns-0-on-end-of-file:
-    ## read after hitting end-of-file, check that result is 0
-    # clear-stream(_test-stream)
+    # - read after hitting end-of-file, check that result is 0
+    # setup
+    # . clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # clear-stream(_test-stream-buffer)
+    # . clear-stream(_test-stream-buffer)
     # . . push args
     68/push  _test-stream-buffer/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # write(_test-stream, "Ab")
+    # . write(_test-stream, "Ab")
     # . . push args
     68/push  "Ab"/imm32
     68/push  _test-stream/imm32
@@ -318,8 +320,8 @@ test-read-returns-0-on-end-of-file:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    ## first read gets to end-of-file
-    # read(_test-stream, _test-stream-buffer)
+    # first read gets to end-of-file
+    # . read(_test-stream, _test-stream-buffer)
     # . . push args
     68/push  _test-stream-buffer/imm32
     68/push  _test-stream/imm32
@@ -327,8 +329,8 @@ test-read-returns-0-on-end-of-file:
     e8/call  read/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    ## second read
-    # read(_test-stream, _test-stream-buffer)
+    # second read
+    # . read(_test-stream, _test-stream-buffer)
     # . . push args
     68/push  _test-stream-buffer/imm32
     68/push  _test-stream/imm32

@@ -65,7 +65,7 @@ tailor-exit-descriptor:  # ed : (address exit-descriptor), nbytes : int -> <void
     # That's the value we need to return: X-nbytes-4
     #
     # However, we also need to account for the perturbance to ESP caused by the
-    # . . call to tailor-exit-descriptor. It pushes 8 bytes of args followed by 4
+    # call to tailor-exit-descriptor. It pushes 8 bytes of args followed by 4
     # bytes for the return address and 4 bytes to push EBP above.
     # So EBP at this point is X-16.
     #
@@ -139,12 +139,12 @@ test-stop-skips-returns-on-exit:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . . call _test-stop-1(ed)
+    # . _test-stop-1(ed)
     # . . push args
     50/push-EAX
     # . . call
     e8/call  _test-stop-1/disp32
-    ## registers except ESP may be clobbered at this point
+    # registers except ESP may be clobbered at this point
     # restore args
     58/pop-to-EAX
     # check that _test-stop-1 tried to call exit(1)
@@ -152,7 +152,7 @@ test-stop-skips-returns-on-exit:
     # . . push args
     68/push  "F - test-stop-skips-returns-on-exit"/imm32
     68/push  2/imm32
-    # push ed->value
+    # . . push ed->value
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
     # . . call
     e8/call  check-ints-equal/disp32
@@ -173,7 +173,7 @@ _test-stop-1:  # ed : (address exit-descriptor)
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  _test-stop-2/disp32
-    ## should never get past this point
+    # should never get past this point
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # signal test failed: check-ints-equal(1, 0, msg)
@@ -194,13 +194,13 @@ _test-stop-2:  # ed : (address exit-descriptor)
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . . call stop(ed, 1)
+    # . stop(ed, 1)
     # . . push args
     68/push  1/imm32
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  stop/disp32
-    ## should never get past this point
+    # should never get past this point
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP

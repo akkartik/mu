@@ -1,4 +1,4 @@
-## Example reading commandline arguments: compute length of first arg.
+# Example reading commandline arguments: compute length of first arg.
 #
 # To run (from the subx directory):
 #   $ subx translate examples/ex8.subx -o examples/ex8
@@ -21,7 +21,7 @@
 
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . . call ascii-length(argv[1])
+    # EAX = ascii-length(argv[1])
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
     # . . call
@@ -34,13 +34,13 @@
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 
-ascii-length:  # (s)
-    # initialize s (EDX)
+ascii-length:  # s : (address array byte) -> n/EAX
+    # EDX = s
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
-    # var result = 0 (EAX)
+    # var result/EAX = 0
     b8/copy-to-EAX  0/imm32
 $ascii-length-loop:
-    # var c = *s (ECX)
+    # var c/ECX = *s
     8a/copy                         0/mod/*         2/rm32/EDX    .           .             .           1/r32/ECX   .               .                 # copy byte at *EDX to lower byte of ECX
     # if c == '\0' break
     81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
@@ -52,7 +52,7 @@ $ascii-length-loop:
     # loop
     eb/jump  $ascii-length-loop/disp8
 $ascii-length-ret:
-    # return (result in EAX)
+    # return EAX
     c3/return
 
 # . . vim:nowrap:textwidth=0

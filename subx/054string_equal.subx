@@ -6,8 +6,9 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # main:
+    # run-tests()
     e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
-    # exit(Num-test-failures)
+    # syscall(exit, Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
     b8/copy-to-EAX  1/imm32
     cd/syscall  0x80/imm8
@@ -84,7 +85,7 @@ $string-equal:end:
     5d/pop-to-EBP
     c3/return
 
-## tests
+# - tests
 
 test-compare-empty-with-empty-string:
     # EAX = string-equal("", "")
@@ -95,7 +96,7 @@ test-compare-empty-with-empty-string:
     e8/call  string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . . call check-ints-equal(EAX, 1, msg)
+    # check-ints-equal(EAX, 1, msg)
     # . . push args
     68/push  "F - test-compare-empty-with-empty-string"/imm32
     68/push  1/imm32/true
@@ -115,7 +116,7 @@ test-compare-empty-with-non-empty-string:  # also checks length-mismatch code pa
     e8/call  string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . . call check-ints-equal(EAX, 0, msg)
+    # check-ints-equal(EAX, 0, msg)
     # . . push args
     68/push  "F - test-compare-empty-with-non-empty-string"/imm32
     68/push  0/imm32/false
@@ -135,7 +136,7 @@ test-compare-equal-strings:
     e8/call  string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . . call check-ints-equal(EAX, 1, msg)
+    # check-ints-equal(EAX, 1, msg)
     # . . push args
     68/push  "F - test-compare-equal-strings"/imm32
     68/push  1/imm32/true
@@ -155,7 +156,7 @@ test-compare-inequal-strings-equal-lengths:
     e8/call  string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . . call check-ints-equal(EAX, 0, msg)
+    # check-ints-equal(EAX, 0, msg)
     # . . push args
     68/push  "F - test-compare-inequal-strings-equal-lengths"/imm32
     68/push  0/imm32/false
