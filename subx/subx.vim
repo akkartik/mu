@@ -33,11 +33,22 @@ let b:cmt_head = "#? "
 syntax match subxDelimiter / \. /  | highlight link subxDelimiter CommentedCode
 
 syntax match subxString %"[^"]*"% | highlight link subxString Constant
+
+"" definitions
 " match globals but not registers like 'EAX'
 " don't match capitalized words in metadata
 " don't match inside strings
 syntax match subxGlobal %\(/\)\@<!\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
 " tweak the red color from the colorscheme just a tad to improve contrast
 highlight SpecialChar ctermfg=196
+
+" functions but not tests, globals or internal functions
+syntax match subxFunction "^\(test_\)\@<![a-z][_a-zA-Z0-9-]*\(:\)\@=" | highlight subxFunction ctermfg=208
+" tests starting with 'test-'
+syntax match subxTest "^test-[_a-zA-Z0-9-]*\(:\)\@=" | highlight subxTest ctermfg=34
+" internal functions starting with '_'
+syntax match subxMinorFunction "^_[_a-zA-Z0-9-]*\(:\)\@=" | highlight subxMinorFunction ctermfg=95
+" other internal labels starting with '$'
+syntax match subxLabel "^\$[_a-zA-Z0-9:-]*\(:\)\@=" | highlight link subxLabel Constant
 
 let &cpo = s:save_cpo

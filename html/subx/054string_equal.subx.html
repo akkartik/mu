@@ -23,6 +23,8 @@ body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color:
 .LineNr { color:#444444; }
 .subxS1Comment { color:#2d8cff; }
 .CommentedCode { color: #6c6c6c; }
+.subxFunction { color: #ff8700; }
+.subxTest { color: #00af00; }
 .Constant { color:#00a0a0; }
 .SpecialChar { color: #ff0000; }
 .subxH1Comment { color:#00ffff; }
@@ -76,7 +78,7 @@ if ('onhashchange' in window) {
 <span id="L13" class="LineNr"> 13 </span>    b8/copy-to-EAX  1/imm32
 <span id="L14" class="LineNr"> 14 </span>    cd/syscall  0x80/imm8
 <span id="L15" class="LineNr"> 15 </span>
-<span id="L16" class="LineNr"> 16 </span>string-equal:  <span class="subxComment"># s : string, benchmark : string -&gt; EAX : boolean</span>
+<span id="L16" class="LineNr"> 16 </span><span class="subxFunction">string-equal</span>:  <span class="subxComment"># s : string, benchmark : string -&gt; EAX : boolean</span>
 <span id="L17" class="LineNr"> 17 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L18" class="LineNr"> 18 </span>    55/push-EBP
 <span id="L19" class="LineNr"> 19 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -107,14 +109,14 @@ if ('onhashchange' in window) {
 <span id="L44" class="LineNr"> 44 </span>    <span class="subxComment"># compare s.length and b.length</span>
 <span id="L45" class="LineNr"> 45 </span>    39/compare                      0/mod/indirect  3/rm32/EBX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare *EBX with EDX</span>
 <span id="L46" class="LineNr"> 46 </span>    75/jump-if-not-equal  $string-equal:false/disp8
-<span id="L47" class="LineNr"> 47 </span>$string-equal:lengths:
+<span id="L47" class="LineNr"> 47 </span><span class="Constant">$string-equal:lengths</span>:
 <span id="L48" class="LineNr"> 48 </span>    <span class="subxComment"># var i/ECX : int = 0</span>
 <span id="L49" class="LineNr"> 49 </span>    b9/copy-to-ECX  0/imm32
 <span id="L50" class="LineNr"> 50 </span>    <span class="subxComment"># EBX = &amp;b[i]</span>
 <span id="L51" class="LineNr"> 51 </span>    43/inc-EBX
 <span id="L52" class="LineNr"> 52 </span>    <span class="subxComment"># EAX = &amp;s[i]</span>
 <span id="L53" class="LineNr"> 53 </span>    40/inc-EAX
-<span id="L54" class="LineNr"> 54 </span>$string-equal:loop:
+<span id="L54" class="LineNr"> 54 </span><span class="Constant">$string-equal:loop</span>:
 <span id="L55" class="LineNr"> 55 </span>    <span class="subxComment"># if i &gt;= s.length return true</span>
 <span id="L56" class="LineNr"> 56 </span>    39/compare                      3/mod/direct    1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare ECX with EDX</span>
 <span id="L57" class="LineNr"> 57 </span>    7d/jump-if-greater-or-equal  $string-equal:true/disp8
@@ -130,14 +132,14 @@ if ('onhashchange' in window) {
 <span id="L67" class="LineNr"> 67 </span>    43/inc-EBX
 <span id="L68" class="LineNr"> 68 </span>    <span class="subxComment"># loop</span>
 <span id="L69" class="LineNr"> 69 </span>    eb/jump  $string-equal:loop/disp8
-<span id="L70" class="LineNr"> 70 </span>$string-equal:true:
+<span id="L70" class="LineNr"> 70 </span><span class="Constant">$string-equal:true</span>:
 <span id="L71" class="LineNr"> 71 </span>    <span class="subxComment"># return true</span>
 <span id="L72" class="LineNr"> 72 </span>    b8/copy-to-EAX  1/imm32
 <span id="L73" class="LineNr"> 73 </span>    eb/jump  $string-equal:end/disp8
-<span id="L74" class="LineNr"> 74 </span>$string-equal:false:
+<span id="L74" class="LineNr"> 74 </span><span class="Constant">$string-equal:false</span>:
 <span id="L75" class="LineNr"> 75 </span>    <span class="subxComment"># return false</span>
 <span id="L76" class="LineNr"> 76 </span>    b8/copy-to-EAX  0/imm32
-<span id="L77" class="LineNr"> 77 </span>$string-equal:end:
+<span id="L77" class="LineNr"> 77 </span><span class="Constant">$string-equal:end</span>:
 <span id="L78" class="LineNr"> 78 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L79" class="LineNr"> 79 </span>    5e/pop-to-ESI
 <span id="L80" class="LineNr"> 80 </span>    5b/pop-to-EBX
@@ -150,7 +152,7 @@ if ('onhashchange' in window) {
 <span id="L87" class="LineNr"> 87 </span>
 <span id="L88" class="LineNr"> 88 </span><span class="subxH1Comment"># - tests</span>
 <span id="L89" class="LineNr"> 89 </span>
-<span id="L90" class="LineNr"> 90 </span>test-compare-empty-with-empty-string:
+<span id="L90" class="LineNr"> 90 </span><span class="subxTest">test-compare-empty-with-empty-string</span>:
 <span id="L91" class="LineNr"> 91 </span>    <span class="subxComment"># EAX = string-equal(&quot;&quot;, &quot;&quot;)</span>
 <span id="L92" class="LineNr"> 92 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L93" class="LineNr"> 93 </span>    68/push  <span class="Constant">&quot;&quot;</span>/imm32
@@ -170,7 +172,7 @@ if ('onhashchange' in window) {
 <span id="L107" class="LineNr">107 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L108" class="LineNr">108 </span>    c3/return
 <span id="L109" class="LineNr">109 </span>
-<span id="L110" class="LineNr">110 </span>test-compare-empty-with-non-empty-string:  <span class="subxComment"># also checks length-mismatch code path</span>
+<span id="L110" class="LineNr">110 </span><span class="subxTest">test-compare-empty-with-non-empty-string</span>:  <span class="subxComment"># also checks length-mismatch code path</span>
 <span id="L111" class="LineNr">111 </span>    <span class="subxComment"># EAX = string-equal(&quot;&quot;, &quot;Abc&quot;)</span>
 <span id="L112" class="LineNr">112 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L113" class="LineNr">113 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
@@ -190,7 +192,7 @@ if ('onhashchange' in window) {
 <span id="L127" class="LineNr">127 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L128" class="LineNr">128 </span>    c3/return
 <span id="L129" class="LineNr">129 </span>
-<span id="L130" class="LineNr">130 </span>test-compare-equal-strings:
+<span id="L130" class="LineNr">130 </span><span class="subxTest">test-compare-equal-strings</span>:
 <span id="L131" class="LineNr">131 </span>    <span class="subxComment"># EAX = string-equal(&quot;Abc&quot;, &quot;Abc&quot;)</span>
 <span id="L132" class="LineNr">132 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L133" class="LineNr">133 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
@@ -210,7 +212,7 @@ if ('onhashchange' in window) {
 <span id="L147" class="LineNr">147 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L148" class="LineNr">148 </span>    c3/return
 <span id="L149" class="LineNr">149 </span>
-<span id="L150" class="LineNr">150 </span>test-compare-inequal-strings-equal-lengths:
+<span id="L150" class="LineNr">150 </span><span class="subxTest">test-compare-inequal-strings-equal-lengths</span>:
 <span id="L151" class="LineNr">151 </span>    <span class="subxComment"># EAX = string-equal(&quot;Abc&quot;, &quot;Adc&quot;)</span>
 <span id="L152" class="LineNr">152 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L153" class="LineNr">153 </span>    68/push  <span class="Constant">&quot;Adc&quot;</span>/imm32

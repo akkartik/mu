@@ -23,6 +23,9 @@ body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color:
 .LineNr { color:#444444; }
 .subxS1Comment { color:#2d8cff; }
 .CommentedCode { color: #6c6c6c; }
+.subxFunction { color: #ff8700; }
+.subxTest { color: #00af00; }
+.subxMinorFunction { color: #875f5f; }
 .Constant { color:#00a0a0; }
 .SpecialChar { color: #ff0000; }
 -->
@@ -110,7 +113,7 @@ if ('onhashchange' in window) {
 <span id="L48" class="LineNr"> 48 </span><span class="subxComment"># Configure an exit-descriptor for a call pushing 'nbytes' bytes of args to</span>
 <span id="L49" class="LineNr"> 49 </span><span class="subxComment"># the stack.</span>
 <span id="L50" class="LineNr"> 50 </span><span class="subxComment"># Ugly that we need to know the size of args, but so it goes.</span>
-<span id="L51" class="LineNr"> 51 </span>tailor-exit-descriptor:  <span class="subxComment"># ed : (address exit-descriptor), nbytes : int -&gt; &lt;void&gt;</span>
+<span id="L51" class="LineNr"> 51 </span><span class="subxFunction">tailor-exit-descriptor</span>:  <span class="subxComment"># ed : (address exit-descriptor), nbytes : int -&gt; &lt;void&gt;</span>
 <span id="L52" class="LineNr"> 52 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L53" class="LineNr"> 53 </span>    55/push-EBP
 <span id="L54" class="LineNr"> 54 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -157,7 +160,7 @@ if ('onhashchange' in window) {
 <span id="L95" class="LineNr"> 95 </span>    5d/pop-to-EBP
 <span id="L96" class="LineNr"> 96 </span>    c3/return
 <span id="L97" class="LineNr"> 97 </span>
-<span id="L98" class="LineNr"> 98 </span>stop:  <span class="subxComment"># ed : (address exit-descriptor), value : int</span>
+<span id="L98" class="LineNr"> 98 </span><span class="subxFunction">stop</span>:  <span class="subxComment"># ed : (address exit-descriptor), value : int</span>
 <span id="L99" class="LineNr"> 99 </span>    <span class="subxComment"># no prolog; one way or another, we're going to clobber registers</span>
 <span id="L100" class="LineNr">100 </span>    <span class="subxComment"># EAX = ed</span>
 <span id="L101" class="LineNr">101 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          0/r32/EAX   4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(ESP+4) to EAX</span>
@@ -168,7 +171,7 @@ if ('onhashchange' in window) {
 <span id="L106" class="LineNr">106 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          3/r32/EBX   8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(ESP+8) to EBX</span>
 <span id="L107" class="LineNr">107 </span>    b8/copy-to-EAX  1/imm32
 <span id="L108" class="LineNr">108 </span>    cd/syscall  0x80/imm8
-<span id="L109" class="LineNr">109 </span>$stop:fake:
+<span id="L109" class="LineNr">109 </span><span class="Constant">$stop:fake</span>:
 <span id="L110" class="LineNr">110 </span>    <span class="subxComment"># ed-&gt;value = value+1</span>
 <span id="L111" class="LineNr">111 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX   8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(ESP+8) to ECX</span>
 <span id="L112" class="LineNr">112 </span>    41/inc-ECX
@@ -177,7 +180,7 @@ if ('onhashchange' in window) {
 <span id="L115" class="LineNr">115 </span>    8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *EAX to ESP</span>
 <span id="L116" class="LineNr">116 </span>    c3/return  <span class="subxComment"># doesn't return to caller</span>
 <span id="L117" class="LineNr">117 </span>
-<span id="L118" class="LineNr">118 </span>test-stop-skips-returns-on-exit:
+<span id="L118" class="LineNr">118 </span><span class="subxTest">test-stop-skips-returns-on-exit</span>:
 <span id="L119" class="LineNr">119 </span>    <span class="subxComment"># This looks like the standard prolog, but is here for different reasons.</span>
 <span id="L120" class="LineNr">120 </span>    <span class="subxComment"># A function calling 'stop' can't rely on EBP persisting past the call.</span>
 <span id="L121" class="LineNr">121 </span>    <span class="subxComment">#</span>
@@ -226,7 +229,7 @@ if ('onhashchange' in window) {
 <span id="L164" class="LineNr">164 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L165" class="LineNr">165 </span>    c3/return
 <span id="L166" class="LineNr">166 </span>
-<span id="L167" class="LineNr">167 </span>_test-stop-1:  <span class="subxComment"># ed : (address exit-descriptor)</span>
+<span id="L167" class="LineNr">167 </span><span class="subxMinorFunction">_test-stop-1</span>:  <span class="subxComment"># ed : (address exit-descriptor)</span>
 <span id="L168" class="LineNr">168 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L169" class="LineNr">169 </span>    55/push-EBP
 <span id="L170" class="LineNr">170 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -252,7 +255,7 @@ if ('onhashchange' in window) {
 <span id="L190" class="LineNr">190 </span>    5d/pop-to-EBP
 <span id="L191" class="LineNr">191 </span>    c3/return
 <span id="L192" class="LineNr">192 </span>
-<span id="L193" class="LineNr">193 </span>_test-stop-2:  <span class="subxComment"># ed : (address exit-descriptor)</span>
+<span id="L193" class="LineNr">193 </span><span class="subxMinorFunction">_test-stop-2</span>:  <span class="subxComment"># ed : (address exit-descriptor)</span>
 <span id="L194" class="LineNr">194 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L195" class="LineNr">195 </span>    55/push-EBP
 <span id="L196" class="LineNr">196 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>

@@ -24,6 +24,8 @@ body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color:
 .subxS1Comment { color:#2d8cff; }
 .CommentedCode { color: #6c6c6c; }
 .Constant { color:#00a0a0; }
+.subxFunction { color: #ff8700; }
+.subxTest { color: #00af00; }
 .SpecialChar { color: #ff0000; }
 .subxH1Comment { color:#00ffff; }
 -->
@@ -105,20 +107,20 @@ if ('onhashchange' in window) {
 <span id="L42" class="LineNr"> 42 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          0/r32/EAX   <span class="SpecialChar">Num-test-failures</span>/disp32          <span class="subxComment"># copy *Num-test-failures to EAX</span>
 <span id="L43" class="LineNr"> 43 </span>    eb/jump  $main:end/disp8  <span class="subxComment"># where EAX will get copied to EBX</span>
 <span id="L44" class="LineNr"> 44 </span>    <span class="subxH1Comment"># - otherwise return factorial(5)</span>
-<span id="L45" class="LineNr"> 45 </span>$run-main:
+<span id="L45" class="LineNr"> 45 </span><span class="Constant">$run-main</span>:
 <span id="L46" class="LineNr"> 46 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L47" class="LineNr"> 47 </span>    68/push  5/imm32
 <span id="L48" class="LineNr"> 48 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L49" class="LineNr"> 49 </span>    e8/call  factorial/disp32
 <span id="L50" class="LineNr"> 50 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L51" class="LineNr"> 51 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L52" class="LineNr"> 52 </span>$main:end:
+<span id="L52" class="LineNr"> 52 </span><span class="Constant">$main:end</span>:
 <span id="L53" class="LineNr"> 53 </span>    <span class="subxComment"># syscall(exit, EAX)</span>
 <span id="L54" class="LineNr"> 54 </span>    89/copy                         3/mod/direct    3/rm32/EBX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          0/r32/EAX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EAX to EBX</span>
 <span id="L55" class="LineNr"> 55 </span>    b8/copy-to-EAX  1/imm32
 <span id="L56" class="LineNr"> 56 </span>    cd/syscall  0x80/imm8
 <span id="L57" class="LineNr"> 57 </span>
-<span id="L58" class="LineNr"> 58 </span>factorial:  <span class="subxComment"># n : int -&gt; int/EAX</span>
+<span id="L58" class="LineNr"> 58 </span><span class="subxFunction">factorial</span>:  <span class="subxComment"># n : int -&gt; int/EAX</span>
 <span id="L59" class="LineNr"> 59 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L60" class="LineNr"> 60 </span>    55/push-EBP
 <span id="L61" class="LineNr"> 61 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -141,14 +143,14 @@ if ('onhashchange' in window) {
 <span id="L78" class="LineNr"> 78 </span>    <span class="subxComment"># return n * factorial(n-1)</span>
 <span id="L79" class="LineNr"> 79 </span>    f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none                          8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># multiply *(EBP+8) into EAX</span>
 <span id="L80" class="LineNr"> 80 </span>    <span class="subxComment"># TODO: check for overflow</span>
-<span id="L81" class="LineNr"> 81 </span>$factorial:end:
+<span id="L81" class="LineNr"> 81 </span><span class="Constant">$factorial:end</span>:
 <span id="L82" class="LineNr"> 82 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L83" class="LineNr"> 83 </span>    5b/pop-to-EBX
 <span id="L84" class="LineNr"> 84 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
 <span id="L85" class="LineNr"> 85 </span>    5d/pop-to-EBP
 <span id="L86" class="LineNr"> 86 </span>    c3/return
 <span id="L87" class="LineNr"> 87 </span>
-<span id="L88" class="LineNr"> 88 </span>test-factorial:
+<span id="L88" class="LineNr"> 88 </span><span class="subxTest">test-factorial</span>:
 <span id="L89" class="LineNr"> 89 </span>    <span class="subxComment"># factorial(5)</span>
 <span id="L90" class="LineNr"> 90 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L91" class="LineNr"> 91 </span>    68/push  5/imm32

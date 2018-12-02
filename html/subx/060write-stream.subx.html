@@ -23,6 +23,9 @@ body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color:
 .LineNr { color:#444444; }
 .subxS1Comment { color:#2d8cff; }
 .CommentedCode { color: #6c6c6c; }
+.subxFunction { color: #ff8700; }
+.subxTest { color: #00af00; }
+.subxMinorFunction { color: #875f5f; }
 .Constant { color:#00a0a0; }
 .SpecialChar { color: #ff0000; }
 -->
@@ -81,7 +84,7 @@ if ('onhashchange' in window) {
 <span id="L19" class="LineNr"> 19 </span>    b8/copy-to-EAX  1/imm32
 <span id="L20" class="LineNr"> 20 </span>    cd/syscall  0x80/imm8
 <span id="L21" class="LineNr"> 21 </span>
-<span id="L22" class="LineNr"> 22 </span>write-stream:  <span class="subxComment"># f : fd or (address stream), s : (address stream) -&gt; &lt;void&gt;</span>
+<span id="L22" class="LineNr"> 22 </span><span class="subxFunction">write-stream</span>:  <span class="subxComment"># f : fd or (address stream), s : (address stream) -&gt; &lt;void&gt;</span>
 <span id="L23" class="LineNr"> 23 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L24" class="LineNr"> 24 </span>    55/push-EBP
 <span id="L25" class="LineNr"> 25 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -96,7 +99,7 @@ if ('onhashchange' in window) {
 <span id="L34" class="LineNr"> 34 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L35" class="LineNr"> 35 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L36" class="LineNr"> 36 </span>    eb/jump  $write-stream:end/disp8
-<span id="L37" class="LineNr"> 37 </span>$write-stream:fake:
+<span id="L37" class="LineNr"> 37 </span><span class="Constant">$write-stream:fake</span>:
 <span id="L38" class="LineNr"> 38 </span>    <span class="subxComment"># otherwise, treat 'f' as a stream to append to</span>
 <span id="L39" class="LineNr"> 39 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L40" class="LineNr"> 40 </span>    50/push-EAX
@@ -135,13 +138,13 @@ if ('onhashchange' in window) {
 <span id="L73" class="LineNr"> 73 </span>    5f/pop-to-EDI
 <span id="L74" class="LineNr"> 74 </span>    5e/pop-to-ESI
 <span id="L75" class="LineNr"> 75 </span>    58/pop-to-EAX
-<span id="L76" class="LineNr"> 76 </span>$write-stream:end:
+<span id="L76" class="LineNr"> 76 </span><span class="Constant">$write-stream:end</span>:
 <span id="L77" class="LineNr"> 77 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L78" class="LineNr"> 78 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
 <span id="L79" class="LineNr"> 79 </span>    5d/pop-to-EBP
 <span id="L80" class="LineNr"> 80 </span>    c3/return
 <span id="L81" class="LineNr"> 81 </span>
-<span id="L82" class="LineNr"> 82 </span>_write-stream:  <span class="subxComment"># fd : int, s : (address stream) -&gt; &lt;void&gt;</span>
+<span id="L82" class="LineNr"> 82 </span><span class="subxMinorFunction">_write-stream</span>:  <span class="subxComment"># fd : int, s : (address stream) -&gt; &lt;void&gt;</span>
 <span id="L83" class="LineNr"> 83 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L84" class="LineNr"> 84 </span>    55/push-EBP
 <span id="L85" class="LineNr"> 85 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -180,7 +183,7 @@ if ('onhashchange' in window) {
 <span id="L118" class="LineNr">118 </span>    5d/pop-to-EBP
 <span id="L119" class="LineNr">119 </span>    c3/return
 <span id="L120" class="LineNr">120 </span>
-<span id="L121" class="LineNr">121 </span>test-write-stream-single:
+<span id="L121" class="LineNr">121 </span><span class="subxTest">test-write-stream-single</span>:
 <span id="L122" class="LineNr">122 </span>    <span class="subxComment"># setup</span>
 <span id="L123" class="LineNr">123 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L124" class="LineNr">124 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -226,7 +229,7 @@ if ('onhashchange' in window) {
 <span id="L164" class="LineNr">164 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L165" class="LineNr">165 </span>    c3/return
 <span id="L166" class="LineNr">166 </span>
-<span id="L167" class="LineNr">167 </span>test-write-stream-appends:
+<span id="L167" class="LineNr">167 </span><span class="subxTest">test-write-stream-appends</span>:
 <span id="L168" class="LineNr">168 </span>    <span class="subxComment"># setup</span>
 <span id="L169" class="LineNr">169 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L170" class="LineNr">170 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -292,7 +295,7 @@ if ('onhashchange' in window) {
 <span id="L230" class="LineNr">230 </span>
 <span id="L231" class="LineNr">231 </span>== data
 <span id="L232" class="LineNr">232 </span>
-<span id="L233" class="LineNr">233 </span>_test-stream2:
+<span id="L233" class="LineNr">233 </span><span class="subxMinorFunction">_test-stream2</span>:
 <span id="L234" class="LineNr">234 </span>    <span class="subxComment"># current write index</span>
 <span id="L235" class="LineNr">235 </span>    04 00 00 00
 <span id="L236" class="LineNr">236 </span>    <span class="subxComment"># current read index</span>

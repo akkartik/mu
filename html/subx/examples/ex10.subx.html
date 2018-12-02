@@ -23,6 +23,8 @@ body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color:
 .LineNr { color:#444444; }
 .subxS1Comment { color:#2d8cff; }
 .CommentedCode { color: #6c6c6c; }
+.subxFunction { color: #ff8700; }
+.Constant { color:#00a0a0; }
 -->
 </style>
 
@@ -94,12 +96,12 @@ if ('onhashchange' in window) {
 <span id="L34" class="LineNr">34 </span>
 <span id="L35" class="LineNr">35 </span><span class="subxComment"># compare two null-terminated ascii strings</span>
 <span id="L36" class="LineNr">36 </span><span class="subxComment"># reason for the name: the only place we should have null-terminated ascii strings is from commandline args</span>
-<span id="L37" class="LineNr">37 </span>argv-equal:  <span class="subxComment"># (s1, s2) : null-terminated ascii strings -&gt; EAX : boolean</span>
+<span id="L37" class="LineNr">37 </span><span class="subxFunction">argv-equal</span>:  <span class="subxComment"># (s1, s2) : null-terminated ascii strings -&gt; EAX : boolean</span>
 <span id="L38" class="LineNr">38 </span>    <span class="subxComment"># initialize s1 (ECX) and s2 (EDX)</span>
 <span id="L39" class="LineNr">39 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX   4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(ESP+4) to ECX</span>
 <span id="L40" class="LineNr">40 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          2/r32/EDX   8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(ESP+8) to EDX</span>
 <span id="L41" class="LineNr">41 </span>    <span class="subxComment"># while (true)</span>
-<span id="L42" class="LineNr">42 </span>$argv-equal:loop:
+<span id="L42" class="LineNr">42 </span><span class="Constant">$argv-equal:loop</span>:
 <span id="L43" class="LineNr">43 </span>    <span class="subxComment"># c1/EAX, c2/EBX = *s1, *s2</span>
 <span id="L44" class="LineNr">44 </span>    b8/copy-to-EAX  0/imm32
 <span id="L45" class="LineNr">45 </span>    8a/copy                         0/mod/indirect  1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          0/r32/EAX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy byte at *ECX to lower byte of EAX</span>
@@ -116,15 +118,15 @@ if ('onhashchange' in window) {
 <span id="L56" class="LineNr">56 </span>    42/inc-EDX
 <span id="L57" class="LineNr">57 </span>    <span class="subxComment"># end while</span>
 <span id="L58" class="LineNr">58 </span>    eb/jump  $argv-equal:loop/disp8
-<span id="L59" class="LineNr">59 </span>$argv-equal:break:
+<span id="L59" class="LineNr">59 </span><span class="Constant">$argv-equal:break</span>:
 <span id="L60" class="LineNr">60 </span>    <span class="subxComment"># if (c2 == 0) return true</span>
 <span id="L61" class="LineNr">61 </span>    81          7/subop/compare     3/mod/direct    3/rm32/EBX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0/imm32           <span class="subxComment"># compare EBX</span>
 <span id="L62" class="LineNr">62 </span>    75/jump-if-not-equal  $argv-equal:false/disp8
-<span id="L63" class="LineNr">63 </span>$argv-equal:success:
+<span id="L63" class="LineNr">63 </span><span class="Constant">$argv-equal:success</span>:
 <span id="L64" class="LineNr">64 </span>    b8/copy-to-EAX  1/imm32
 <span id="L65" class="LineNr">65 </span>    c3/return
 <span id="L66" class="LineNr">66 </span>    <span class="subxComment"># return false</span>
-<span id="L67" class="LineNr">67 </span>$argv-equal:false:
+<span id="L67" class="LineNr">67 </span><span class="Constant">$argv-equal:false</span>:
 <span id="L68" class="LineNr">68 </span>    b8/copy-to-EAX  0/imm32
 <span id="L69" class="LineNr">69 </span>    c3/return
 <span id="L70" class="LineNr">70 </span>

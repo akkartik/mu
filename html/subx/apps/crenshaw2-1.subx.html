@@ -24,6 +24,9 @@ body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color:
 .subxS1Comment { color:#2d8cff; }
 .CommentedCode { color: #6c6c6c; }
 .Constant { color:#00a0a0; }
+.subxFunction { color: #ff8700; }
+.subxMinorFunction { color: #875f5f; }
+.subxTest { color: #00af00; }
 .SpecialChar { color: #ff0000; }
 .subxH1Comment { color:#00ffff; }
 -->
@@ -119,7 +122,7 @@ if ('onhashchange' in window) {
 <span id="L56" class="LineNr"> 56 </span>    e8/call  run-tests/disp32
 <span id="L57" class="LineNr"> 57 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/EBX   <span class="SpecialChar">Num-test-failures</span>/disp32          <span class="subxComment"># copy *Num-test-failures to EBX</span>
 <span id="L58" class="LineNr"> 58 </span>    eb/jump  $main:end/disp8
-<span id="L59" class="LineNr"> 59 </span>$run-main:
+<span id="L59" class="LineNr"> 59 </span><span class="Constant">$run-main</span>:
 <span id="L60" class="LineNr"> 60 </span>    <span class="subxH1Comment"># - otherwise read a program from stdin and emit its translation to stdout</span>
 <span id="L61" class="LineNr"> 61 </span>    <span class="subxComment"># var ed/EAX : exit-descriptor</span>
 <span id="L62" class="LineNr"> 62 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># subtract from ESP</span>
@@ -139,12 +142,12 @@ if ('onhashchange' in window) {
 <span id="L76" class="LineNr"> 76 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0x10/imm32        <span class="subxComment"># add to ESP</span>
 <span id="L77" class="LineNr"> 77 </span>    <span class="subxS1Comment"># . syscall(exit, 0)</span>
 <span id="L78" class="LineNr"> 78 </span>    bb/copy-to-EBX  0/imm32
-<span id="L79" class="LineNr"> 79 </span>$main:end:
+<span id="L79" class="LineNr"> 79 </span><span class="Constant">$main:end</span>:
 <span id="L80" class="LineNr"> 80 </span>    b8/copy-to-EAX  1/imm32/exit
 <span id="L81" class="LineNr"> 81 </span>    cd/syscall  0x80/imm8
 <span id="L82" class="LineNr"> 82 </span>
 <span id="L83" class="LineNr"> 83 </span><span class="subxComment"># the main entry point</span>
-<span id="L84" class="LineNr"> 84 </span>compile:  <span class="subxComment"># in : (address buffered-file), out : fd or (address stream), err : fd or (address stream), ed : (address exit-descriptor) -&gt; &lt;void&gt;</span>
+<span id="L84" class="LineNr"> 84 </span><span class="subxFunction">compile</span>:  <span class="subxComment"># in : (address buffered-file), out : fd or (address stream), err : fd or (address stream), ed : (address exit-descriptor) -&gt; &lt;void&gt;</span>
 <span id="L85" class="LineNr"> 85 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L86" class="LineNr"> 86 </span>    55/push-EBP
 <span id="L87" class="LineNr"> 87 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -258,7 +261,7 @@ if ('onhashchange' in window) {
 <span id="L195" class="LineNr">195 </span><span class="subxComment"># Read a single digit into 'out'. Abort if there are none, or if there is no space in 'out'.</span>
 <span id="L196" class="LineNr">196 </span><span class="subxComment"># Input comes from the global variable 'Look', and we leave the next byte from</span>
 <span id="L197" class="LineNr">197 </span><span class="subxComment"># 'in' into it on exit.</span>
-<span id="L198" class="LineNr">198 </span>get-num:  <span class="subxComment"># in : (address buffered-file), out : (address stream), err : fd or (address stream), ed : (address exit-descriptor) -&gt; &lt;void&gt;</span>
+<span id="L198" class="LineNr">198 </span><span class="subxFunction">get-num</span>:  <span class="subxComment"># in : (address buffered-file), out : (address stream), err : fd or (address stream), ed : (address exit-descriptor) -&gt; &lt;void&gt;</span>
 <span id="L199" class="LineNr">199 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L200" class="LineNr">200 </span>    <span class="subxComment">#   if !is-digit?(Look) expected(ed, err, &quot;integer&quot;)</span>
 <span id="L201" class="LineNr">201 </span>    <span class="subxComment">#   if out.write &gt;= out.length</span>
@@ -302,7 +305,7 @@ if ('onhashchange' in window) {
 <span id="L239" class="LineNr">239 </span>    e8/call  expected/disp32  <span class="subxComment"># never returns</span>
 <span id="L240" class="LineNr">240 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L241" class="LineNr">241 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L242" class="LineNr">242 </span>$get-num:main:
+<span id="L242" class="LineNr">242 </span><span class="Constant">$get-num:main</span>:
 <span id="L243" class="LineNr">243 </span>    <span class="subxH1Comment"># - otherwise read a digit</span>
 <span id="L244" class="LineNr">244 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L245" class="LineNr">245 </span>    50/push-EAX
@@ -332,7 +335,7 @@ if ('onhashchange' in window) {
 <span id="L269" class="LineNr">269 </span>    e8/call  error/disp32  <span class="subxComment"># never returns</span>
 <span id="L270" class="LineNr">270 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L271" class="LineNr">271 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L272" class="LineNr">272 </span>$get-num:stage2:
+<span id="L272" class="LineNr">272 </span><span class="Constant">$get-num:stage2</span>:
 <span id="L273" class="LineNr">273 </span>    <span class="subxComment"># out-&gt;data[out-&gt;write] = LSB(Look)</span>
 <span id="L274" class="LineNr">274 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX  <span class="CommentedCode"> . </span>          3/r32/EBX   0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EDI+ECX+12 to EBX</span>
 <span id="L275" class="LineNr">275 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          0/r32/EAX   <span class="SpecialChar">Look</span>/disp32    <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *Look to EAX</span>
@@ -346,7 +349,7 @@ if ('onhashchange' in window) {
 <span id="L283" class="LineNr">283 </span>    e8/call  get-char/disp32
 <span id="L284" class="LineNr">284 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L285" class="LineNr">285 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L286" class="LineNr">286 </span>$get-num:loop-end:
+<span id="L286" class="LineNr">286 </span><span class="Constant">$get-num:loop-end</span>:
 <span id="L287" class="LineNr">287 </span>    <span class="subxComment"># persist necessary variables from registers</span>
 <span id="L288" class="LineNr">288 </span>    89/copy                         0/mod/indirect  7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ECX to *EDI</span>
 <span id="L289" class="LineNr">289 </span>    <span class="subxS1Comment"># . restore registers</span>
@@ -361,7 +364,7 @@ if ('onhashchange' in window) {
 <span id="L298" class="LineNr">298 </span>    5d/pop-to-EBP
 <span id="L299" class="LineNr">299 </span>    c3/return
 <span id="L300" class="LineNr">300 </span>
-<span id="L301" class="LineNr">301 </span>test-get-num-reads-single-digit:
+<span id="L301" class="LineNr">301 </span><span class="subxTest">test-get-num-reads-single-digit</span>:
 <span id="L302" class="LineNr">302 </span>    <span class="subxH1Comment"># - check that get-num returns first character if it's a digit</span>
 <span id="L303" class="LineNr">303 </span>    <span class="subxComment"># This test uses exit-descriptors. Use EBP for setting up local variables.</span>
 <span id="L304" class="LineNr">304 </span>    55/push-EBP
@@ -452,7 +455,7 @@ if ('onhashchange' in window) {
 <span id="L389" class="LineNr">389 </span>    5d/pop-to-EBP
 <span id="L390" class="LineNr">390 </span>    c3/return
 <span id="L391" class="LineNr">391 </span>
-<span id="L392" class="LineNr">392 </span>test-get-num-aborts-on-non-digit-in-Look:
+<span id="L392" class="LineNr">392 </span><span class="subxTest">test-get-num-aborts-on-non-digit-in-Look</span>:
 <span id="L393" class="LineNr">393 </span>    <span class="subxH1Comment"># - check that get-num returns first character if it's a digit</span>
 <span id="L394" class="LineNr">394 </span>    <span class="subxComment"># This test uses exit-descriptors. Use EBP for setting up local variables.</span>
 <span id="L395" class="LineNr">395 </span>    55/push-EBP
@@ -540,7 +543,7 @@ if ('onhashchange' in window) {
 <span id="L477" class="LineNr">477 </span><span class="subxComment">## helpers</span>
 <span id="L478" class="LineNr">478 </span>
 <span id="L479" class="LineNr">479 </span><span class="subxComment"># write(f, &quot;Error: &quot;+s+&quot; expected\n&quot;) then stop(ed, 1)</span>
-<span id="L480" class="LineNr">480 </span>expected:  <span class="subxComment"># ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte) -&gt; &lt;void&gt;</span>
+<span id="L480" class="LineNr">480 </span><span class="subxFunction">expected</span>:  <span class="subxComment"># ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte) -&gt; &lt;void&gt;</span>
 <span id="L481" class="LineNr">481 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L482" class="LineNr">482 </span>    55/push-EBP
 <span id="L483" class="LineNr">483 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -589,7 +592,7 @@ if ('onhashchange' in window) {
 <span id="L526" class="LineNr">526 </span>    c3/return
 <span id="L527" class="LineNr">527 </span>
 <span id="L528" class="LineNr">528 </span><span class="subxComment"># write(f, &quot;Error: &quot;+s+&quot;\n&quot;) then stop(ed, 1)</span>
-<span id="L529" class="LineNr">529 </span>error:  <span class="subxComment"># ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte) -&gt; &lt;void&gt;</span>
+<span id="L529" class="LineNr">529 </span><span class="subxFunction">error</span>:  <span class="subxComment"># ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte) -&gt; &lt;void&gt;</span>
 <span id="L530" class="LineNr">530 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L531" class="LineNr">531 </span>    55/push-EBP
 <span id="L532" class="LineNr">532 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -630,7 +633,7 @@ if ('onhashchange' in window) {
 <span id="L567" class="LineNr">567 </span>    c3/return
 <span id="L568" class="LineNr">568 </span>
 <span id="L569" class="LineNr">569 </span><span class="subxComment"># read a byte from 'f', and save it in 'Look'</span>
-<span id="L570" class="LineNr">570 </span>get-char:  <span class="subxComment"># f : (address buffered-file) -&gt; &lt;void&gt;</span>
+<span id="L570" class="LineNr">570 </span><span class="subxFunction">get-char</span>:  <span class="subxComment"># f : (address buffered-file) -&gt; &lt;void&gt;</span>
 <span id="L571" class="LineNr">571 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L572" class="LineNr">572 </span>    55/push-EBP
 <span id="L573" class="LineNr">573 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -677,7 +680,7 @@ if ('onhashchange' in window) {
 <span id="L614" class="LineNr">614 </span><span class="SpecialChar">Look</span>: <span class="subxComment"># (char)</span>
 <span id="L615" class="LineNr">615 </span>    00 00 00 00  <span class="subxComment"># = 0</span>
 <span id="L616" class="LineNr">616 </span>
-<span id="L617" class="LineNr">617 </span>_test-output-stream:
+<span id="L617" class="LineNr">617 </span><span class="subxMinorFunction">_test-output-stream</span>:
 <span id="L618" class="LineNr">618 </span>    <span class="subxComment"># current write index</span>
 <span id="L619" class="LineNr">619 </span>    00 00 00 00
 <span id="L620" class="LineNr">620 </span>    <span class="subxComment"># current read index</span>
@@ -687,7 +690,7 @@ if ('onhashchange' in window) {
 <span id="L624" class="LineNr">624 </span>    <span class="subxComment"># data</span>
 <span id="L625" class="LineNr">625 </span>    00 00 00 00 00 00 00 00  <span class="subxComment"># 8 bytes</span>
 <span id="L626" class="LineNr">626 </span>
-<span id="L627" class="LineNr">627 </span>_test-error-stream:
+<span id="L627" class="LineNr">627 </span><span class="subxMinorFunction">_test-error-stream</span>:
 <span id="L628" class="LineNr">628 </span>    <span class="subxComment"># current write index</span>
 <span id="L629" class="LineNr">629 </span>    00 00 00 00
 <span id="L630" class="LineNr">630 </span>    <span class="subxComment"># current read index</span>
