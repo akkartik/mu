@@ -27,13 +27,13 @@ new-segment:  # len : int -> address
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                       # copy ESP to EBP
     53/push-EBX
-    # copy len to mmap-new-segment.len
-    # TODO: compute mmap-new-segment+4 before runtime
+    # copy len to _mmap-new-segment.len
+    # TODO: compute _mmap-new-segment+4 before runtime
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                       # copy *(EBP+8) to EAX
-    bb/copy-to-EBX  mmap-new-segment/imm32
+    bb/copy-to-EBX  _mmap-new-segment/imm32
     89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                       # copy EAX to *(EBX+4)
-    # mmap(mmap-new-segment)
-    bb/copy-to-EBX  mmap-new-segment/imm32
+    # mmap(_mmap-new-segment)
+    bb/copy-to-EBX  _mmap-new-segment/imm32
     b8/copy-to-EAX  0x5a/imm32/mmap
     cd/syscall  0x80/imm8
     # . epilog
@@ -45,7 +45,7 @@ new-segment:  # len : int -> address
 == data
 
 # various constants used here were found in the Linux sources (search for file mman-common.h)
-mmap-new-segment:  # type mmap_arg_struct
+_mmap-new-segment:  # type mmap_arg_struct
     # addr
     00 00 00 00  # null
     # len
