@@ -101,7 +101,7 @@ $read:fake:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # s->write += EAX
     01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
-    # f.read += EAX
+    # f->read += EAX
     01/add                          1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # add EAX to *(ESI+4)
     # . restore registers
     5f/pop-to-EDI
@@ -114,7 +114,7 @@ $read:end:
 
 # - helpers
 
-# idea: a clear-if-empty method on streams that clears only if f.read == f.write
+# idea: a clear-if-empty method on streams that clears only if f->read == f->write
 # Unclear how I'd use it, though. Callers seem to need the check anyway.
 # Maybe a better helper would be 'empty-stream?'
 
@@ -285,7 +285,7 @@ test-read-is-stateful:
     # . . push args
     68/push  "F - test-read-is-stateful"/imm32
     68/push  0x00004443/imm32/C-D
-    # . push *_test-stream-buffer->data
+    # . . push *_test-stream-buffer->data
     b8/copy-to-EAX  _test-stream-buffer/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # . . call

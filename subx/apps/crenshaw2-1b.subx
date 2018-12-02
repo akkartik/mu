@@ -201,11 +201,11 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     # pseudocode:
     #   if !is-digit?(Look) expected(ed, err, "integer")
     #   do
-    #     if out.write >= out.length
+    #     if out->write >= out->length
     #       write(err, "Error: too many digits in number\n")
     #       stop(ed, 1)
-    #     out.data[out.write] = LSB(Look)
-    #     ++out.write
+    #     out->data[out->write] = LSB(Look)
+    #     ++out->write
     #     Look = get-char(in)
     #   while is-digit?(Look)
     # This is complicated because I don't want to hard-code the error strategy in
@@ -392,7 +392,7 @@ test-get-num-reads-single-digit:
     # registers except ESP may be clobbered at this point
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # check-ints-equal(*_test-output-stream.data, '3')
+    # check-ints-equal(*_test-output-stream->data, '3')
     # . . push args
     68/push  "F - test-get-num-reads-single-digit"/imm32
     68/push  0x33/imm32
@@ -568,7 +568,7 @@ test-get-num-reads-multiple-digits:
     # registers except ESP may be clobbered at this point
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # check-ints-equal(*_test-output-stream.data, '3456')
+    # check-ints-equal(*_test-output-stream->data, '3456')
     # . . push args
     68/push  "F - test-get-num-reads-multiple-digits"/imm32
     68/push  0x36353433/imm32
@@ -659,7 +659,7 @@ test-get-num-reads-multiple-digits-followed-by-nondigit:
     # registers except ESP may be clobbered at this point
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # check-ints-equal(*_test-output-stream.data, '3456')
+    # check-ints-equal(*_test-output-stream->data, '3456')
     # . . push args
     68/push  "F - test-get-num-reads-multiple-digits-followed-by-nondigit"/imm32
     68/push  0x36353433/imm32

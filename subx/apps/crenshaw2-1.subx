@@ -88,6 +88,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . save registers
     50/push-EAX
     51/push-ECX
+    # prime the pump
     # . Look = get-char(in)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8      .                    # push *(EBP+8)
@@ -198,11 +199,11 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
 get-num:  # in : (address buffered-file), out : (address stream), err : fd or (address stream), ed : (address exit-descriptor) -> <void>
     # pseudocode:
     #   if !is-digit?(Look) expected(ed, err, "integer")
-    #   if out.write >= out.length
+    #   if out->write >= out->length
     #     write(err, "Error: too many digits in number\n")
     #     stop(ed, 1)
-    #   out.data[out.write] = LSB(Look)
-    #   ++out.write
+    #   out->data[out->write] = LSB(Look)
+    #   ++out->write
     #   Look = get-char(in)
     #
     # registers:
@@ -303,7 +304,7 @@ test-get-num-reads-single-digit:
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # setup
+    # clear all streams
     # . clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32
@@ -374,7 +375,7 @@ test-get-num-reads-single-digit:
     # registers except ESP may be clobbered at this point
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # check-ints-equal(*_test-output-stream.data, '3')
+    # check-ints-equal(*_test-output-stream->data, '3')
     # . . push args
     68/push  "F - test-get-num-reads-single-digit"/imm32
     68/push  0x33/imm32
@@ -394,7 +395,7 @@ test-get-num-aborts-on-non-digit-in-Look:
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # setup
+    # clear all streams
     # . clear-stream(_test-stream)
     # . . push args
     68/push  _test-stream/imm32

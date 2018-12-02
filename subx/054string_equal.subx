@@ -23,14 +23,14 @@ string-equal:  # s : string, benchmark : string -> EAX : boolean
     53/push-EBX
     56/push-ESI
     # pseudocode:
-    #   if s.length != b.length return false
-    #   for i = 0;  i < s.length;  ++i
+    #   if s->length != b->length return false
+    #   for i = 0;  i < s->length;  ++i
     #     if s[i] != b[i] return false
     #   return true
     # registers:
     #   i: ECX
-    #   s.length: EDX
-    #   b.length: EBX
+    #   s->length: EDX
+    #   b->length: EBX
     #   b[i]: EBX
     #   s[i]: EAX
     #
@@ -38,10 +38,10 @@ string-equal:  # s : string, benchmark : string -> EAX : boolean
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
     # var benchmark/EBX : (address array byte)
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
-    # if s.length != b.length return false
-    # EDX = s.length
+    # if s->length != b->length return false
+    # EDX = s->length
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    # compare s.length and b.length
+    # compare s->length and b->length
     39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare *EBX with EDX
     75/jump-if-not-equal  $string-equal:false/disp8
 $string-equal:lengths:
@@ -52,7 +52,7 @@ $string-equal:lengths:
     # EAX = &s[i]
     40/inc-EAX
 $string-equal:loop:
-    # if i >= s.length return true
+    # if i >= s->length return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     7d/jump-if-greater-or-equal  $string-equal:true/disp8
     # if b[i] != s[i] return false

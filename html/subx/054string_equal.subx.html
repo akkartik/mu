@@ -88,14 +88,14 @@ if ('onhashchange' in window) {
 <span id="L23" class="LineNr"> 23 </span>    53/push-EBX
 <span id="L24" class="LineNr"> 24 </span>    56/push-ESI
 <span id="L25" class="LineNr"> 25 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L26" class="LineNr"> 26 </span>    <span class="subxComment">#   if s.length != b.length return false</span>
-<span id="L27" class="LineNr"> 27 </span>    <span class="subxComment">#   for i = 0;  i &lt; s.length;  ++i</span>
+<span id="L26" class="LineNr"> 26 </span>    <span class="subxComment">#   if s-&gt;length != b-&gt;length return false</span>
+<span id="L27" class="LineNr"> 27 </span>    <span class="subxComment">#   for i = 0;  i &lt; s-&gt;length;  ++i</span>
 <span id="L28" class="LineNr"> 28 </span>    <span class="subxComment">#     if s[i] != b[i] return false</span>
 <span id="L29" class="LineNr"> 29 </span>    <span class="subxComment">#   return true</span>
 <span id="L30" class="LineNr"> 30 </span>    <span class="subxComment"># registers:</span>
 <span id="L31" class="LineNr"> 31 </span>    <span class="subxComment">#   i: ECX</span>
-<span id="L32" class="LineNr"> 32 </span>    <span class="subxComment">#   s.length: EDX</span>
-<span id="L33" class="LineNr"> 33 </span>    <span class="subxComment">#   b.length: EBX</span>
+<span id="L32" class="LineNr"> 32 </span>    <span class="subxComment">#   s-&gt;length: EDX</span>
+<span id="L33" class="LineNr"> 33 </span>    <span class="subxComment">#   b-&gt;length: EBX</span>
 <span id="L34" class="LineNr"> 34 </span>    <span class="subxComment">#   b[i]: EBX</span>
 <span id="L35" class="LineNr"> 35 </span>    <span class="subxComment">#   s[i]: EAX</span>
 <span id="L36" class="LineNr"> 36 </span>    <span class="subxComment">#</span>
@@ -103,10 +103,10 @@ if ('onhashchange' in window) {
 <span id="L38" class="LineNr"> 38 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          0/r32/EAX   8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+8) to EAX</span>
 <span id="L39" class="LineNr"> 39 </span>    <span class="subxComment"># var benchmark/EBX : (address array byte)</span>
 <span id="L40" class="LineNr"> 40 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          3/r32/EBX   0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+12) to EBX</span>
-<span id="L41" class="LineNr"> 41 </span>    <span class="subxComment"># if s.length != b.length return false</span>
-<span id="L42" class="LineNr"> 42 </span>    <span class="subxComment"># EDX = s.length</span>
+<span id="L41" class="LineNr"> 41 </span>    <span class="subxComment"># if s-&gt;length != b-&gt;length return false</span>
+<span id="L42" class="LineNr"> 42 </span>    <span class="subxComment"># EDX = s-&gt;length</span>
 <span id="L43" class="LineNr"> 43 </span>    8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *EAX to EDX</span>
-<span id="L44" class="LineNr"> 44 </span>    <span class="subxComment"># compare s.length and b.length</span>
+<span id="L44" class="LineNr"> 44 </span>    <span class="subxComment"># compare s-&gt;length and b-&gt;length</span>
 <span id="L45" class="LineNr"> 45 </span>    39/compare                      0/mod/indirect  3/rm32/EBX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare *EBX with EDX</span>
 <span id="L46" class="LineNr"> 46 </span>    75/jump-if-not-equal  $string-equal:false/disp8
 <span id="L47" class="LineNr"> 47 </span><span class="Constant">$string-equal:lengths</span>:
@@ -117,7 +117,7 @@ if ('onhashchange' in window) {
 <span id="L52" class="LineNr"> 52 </span>    <span class="subxComment"># EAX = &amp;s[i]</span>
 <span id="L53" class="LineNr"> 53 </span>    40/inc-EAX
 <span id="L54" class="LineNr"> 54 </span><span class="Constant">$string-equal:loop</span>:
-<span id="L55" class="LineNr"> 55 </span>    <span class="subxComment"># if i &gt;= s.length return true</span>
+<span id="L55" class="LineNr"> 55 </span>    <span class="subxComment"># if i &gt;= s-&gt;length return true</span>
 <span id="L56" class="LineNr"> 56 </span>    39/compare                      3/mod/direct    1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare ECX with EDX</span>
 <span id="L57" class="LineNr"> 57 </span>    7d/jump-if-greater-or-equal  $string-equal:true/disp8
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxComment"># if b[i] != s[i] return false</span>

@@ -62,7 +62,7 @@ initialize-trace-stream:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # copy EAX to *Trace-stream
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
-    # Trace-stream.length = 0x1000/N - 12
+    # Trace-stream->length = 0x1000/N - 12
     c7          0/copy              1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         0xff4/imm32       # copy 0xff4 to *(EAX+8)
     c3/return
 
@@ -191,11 +191,11 @@ test-trace-single:
     e8/call  trace/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(*_test-trace-stream.data, 41/A 62/b 0a/newline 00, msg)
+    # check-ints-equal(*_test-trace-stream->data, 41/A 62/b 0a/newline 00, msg)
     # . . push args
     68/push  "F - test-trace-single"/imm32
     68/push  0x0a6241/imm32/Ab-newline
-    # . . push *_test-trace-stream.data
+    # . . push *_test-trace-stream->data
     b8/copy-to-EAX  _test-trace-stream/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # . . call
@@ -229,11 +229,11 @@ test-trace-appends:
     e8/call  trace/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(*_test-trace-stream.data, 43/C 0a/newline 44/D 0a/newline, msg)
+    # check-ints-equal(*_test-trace-stream->data, 43/C 0a/newline 44/D 0a/newline, msg)
     # . . push args
     68/push  "F - test-trace-appends"/imm32
     68/push  0x0a440a43/imm32/C-newline-D-newline
-    # . . push *_test-trace-stream.data
+    # . . push *_test-trace-stream->data
     b8/copy-to-EAX  _test-trace-stream/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # . . call
@@ -259,11 +259,11 @@ test-trace-empty-line:
     e8/call  trace/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(*_test-trace-stream.data, 0, msg)
+    # check-ints-equal(*_test-trace-stream->data, 0, msg)
     # . . push args
     68/push  "F - test-trace-empty-line"/imm32
     68/push  0/imm32
-    # . . push *_test-trace-stream.data
+    # . . push *_test-trace-stream->data
     b8/copy-to-EAX  _test-trace-stream/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # . . call
@@ -282,13 +282,13 @@ _append-3:  # out : address, outend : address, s : (array byte) -> num_bytes_app
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
     51/push-ECX
-    # _append-4(out, outend, &s.data[0], &s.data[s.length]) -> num_bytes_appended/EAX
-    # . . push &s.data[s.length]
+    # _append-4(out, outend, &s->data[0], &s->data[s->length]) -> num_bytes_appended/EAX
+    # . . push &s->data[s->length]
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
     51/push-ECX
-    # . . push &s.data[0]
+    # . . push &s->data[0]
     8d/copy-address                 1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy EAX+4 to ECX
     51/push-ECX
     # . . push outend
