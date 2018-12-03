@@ -186,8 +186,8 @@ There's a lot here, so let's unpack it piece by piece:
   from either a register or memory. It is configured by the addressing mode
   byte and, optionally, the SIB (scale, index, base) byte as follows:
 
-  - if the `mod` (mode) field is 3: the `rm32` operand is the contents of the
-    register described by the `r/m` bits.
+  - if the `mod` (mode) field is `11` (3): the `rm32` operand is the contents
+    of the register described by the `r/m` bits.
     - `000` (0) means register `EAX`
     - `001` (1) means register `ECX`
     - `010` (2) means register `EDX`
@@ -197,19 +197,19 @@ There's a lot here, so let's unpack it piece by piece:
     - `110` (6) means register `ESI`
     - `111` (7) means register `EDI`
 
-  - if `mod` is 0: `rm32` is the contents of the address provided in the
+  - if `mod` is `00` (0): `rm32` is the contents of the address provided in the
     register provided by `r/m`. That's `*r/m` in C syntax.
 
-  - if `mod` is 1: `rm32` is the contents of the address provided by adding
-    the register in `r/m` with the (1-byte) displacement. That's `*(r/m +
-    disp8)` in C syntax.
+  - if `mod` is `01` (1): `rm32` is the contents of the address provided by
+    adding the register in `r/m` with the (1-byte) displacement. That's
+    `*(r/m + disp8)` in C syntax.
 
-  - if `mod` is 2: `rm32` is the contents of the address provided by adding
-    the register in `r/m` with the (4-byte) displacement. That's `*(r/m +
-    disp32)` in C syntax.
+  - if `mod` is `10` (2): `rm32` is the contents of the address provided by
+    adding the register in `r/m` with the (4-byte) displacement. That's
+    `*(r/m + disp32)` in C syntax.
 
   In the last 3 cases, one exception occurs when the `r/m` field contains
-  `010` or 4. Rather than encoding register ESP, '4' means the address is
+  `010` (4). Rather than encoding register ESP, that means the address is
   provided by a SIB byte next:
 
   ```
@@ -222,15 +222,15 @@ There's a lot here, so let's unpack it piece by piece:
   Phew, that was a lot to take in. Some examples to work through as you reread
   and digest it:
 
-  1. To read directly from the EAX register, `mod` must be `11` or 3 (direct
-     mode), and the `r/m` bits must be `000` (EAX). There must be no SIB byte.
+  1. To read directly from the EAX register, `mod` must be `11` (direct mode),
+     and the `r/m` bits must be `000` (EAX). There must be no SIB byte.
 
   1. To read from `*EAX` in C syntax, `mod` must be `00` (indirect mode), and
-     the `r/m` bits must be `00`. There must be no SIB byte.
+     the `r/m` bits must be `000`. There must be no SIB byte.
 
-  1. To read from `*(EAX+4)`, `mod` must be `01` or 1 (indirect + disp8 mode),
+  1. To read from `*(EAX+4)`, `mod` must be `01` (indirect + disp8 mode),
      `r/m` must be `000`, there must be no SIB byte, and there must be a
-     single displacement byte containing `00000010` or 4.
+     single displacement byte containing `00000010` (4).
 
   1. To read from `*(EAX+ECX+4)`, one approach would be to set `mod` to `01`,
      `r/m` to `100` (SIB byte next), `base` to `000`, `index` to `001` (ECX)
