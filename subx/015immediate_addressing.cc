@@ -110,6 +110,157 @@ case 5: {
 +run: subop subtract
 +run: storing 0x00000009
 
+//:: shift left
+
+:(before "End Initialize Op Names")
+put_new(Name, "c1", "shift rm32 by imm8 bits depending on subop (sal/sar/shl/shr)");
+
+:(scenario shift_left_r32_with_imm8)
+% Reg[EBX].i = 13;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c1  e3                          01          # negate EBX
+# ModR/M in binary: 11 (direct mode) 100 (subop shift left) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: shift left by CL bits
++run: storing 0x0000001a
+
+:(before "End Single-Byte Opcodes")
+case 0xc1: {
+  const uint8_t modrm = next();
+  trace(90, "run") << "operate on r/m32" << end();
+  int32_t* arg1 = effective_address(modrm);
+  const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  switch (subop) {
+  case 4: {  // shift left r/m32 by CL
+    trace(90, "run") << "subop: shift left by CL bits" << end();
+    uint8_t count = next() & 0x1f;
+    // OF is only defined if count is 1
+    if (count == 1) {
+      bool msb = (*arg1 & 0x80000000) >> 1;
+      bool pnsb = (*arg1 & 0x40000000);
+      OF = (msb != pnsb);
+    }
+    *arg1 = (*arg1 << count);
+    ZF = (*arg1 == 0);
+    SF = (*arg1 < 0);
+    trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+    break;
+  }
+  // End Op c1 Subops
+  default:
+    cerr << "unrecognized sub-opcode after c1: " << NUM(subop) << '\n';
+    exit(1);
+  }
+  break;
+}
+
+//:: shift right arithmetic
+
+:(scenario shift_right_arithmetic_r32_with_imm8)
+% Reg[EBX].i = 26;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c1  fb                          01          # negate EBX
+# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: shift right by CL bits, while preserving sign
++run: storing 0x0000000d
+
+:(before "End Op c1 Subops")
+case 7: {  // shift right r/m32 by CL, preserving sign
+  trace(90, "run") << "subop: shift right by CL bits, while preserving sign" << end();
+  uint8_t count = next() & 0x1f;
+  *arg1 = (*arg1 >> count);
+  ZF = (*arg1 == 0);
+  SF = (*arg1 < 0);
+  // OF is only defined if count is 1
+  if (count == 1) OF = false;
+  trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  break;
+}
+
+:(scenario shift_right_arithmetic_odd_r32_with_imm8)
+% Reg[EBX].i = 27;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c1  fb                          01          # negate EBX
+# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: shift right by CL bits, while preserving sign
+# result: 13
++run: storing 0x0000000d
+
+:(scenario shift_right_arithmetic_negative_r32_with_imm8)
+% Reg[EBX].i = 0xfffffffd;  // -3
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c1  fb                          01          # negate EBX
+# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: shift right by CL bits, while preserving sign
+# result: -2
++run: storing 0xfffffffe
+
+//:: shift right logical
+
+:(scenario shift_right_logical_r32_with_imm8)
+% Reg[EBX].i = 26;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c1  eb                          01          # negate EBX
+# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: shift right by CL bits, while padding zeroes
++run: storing 0x0000000d
+
+:(before "End Op c1 Subops")
+case 5: {  // shift right r/m32 by CL, preserving sign
+  trace(90, "run") << "subop: shift right by CL bits, while padding zeroes" << end();
+  uint8_t count = next() & 0x1f;
+  // OF is only defined if count is 1
+  if (count == 1) {
+    bool msb = (*arg1 & 0x80000000) >> 1;
+    bool pnsb = (*arg1 & 0x40000000);
+    OF = (msb != pnsb);
+  }
+  uint32_t* uarg1 = reinterpret_cast<uint32_t*>(arg1);
+  *uarg1 = (*uarg1 >> count);
+  ZF = (*uarg1 == 0);
+  // result is always positive by definition
+  SF = false;
+  trace(90, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  break;
+}
+
+:(scenario shift_right_logical_odd_r32_with_imm8)
+% Reg[EBX].i = 27;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c1  eb                          01          # negate EBX
+# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: shift right by CL bits, while padding zeroes
+# result: 13
++run: storing 0x0000000d
+
+:(scenario shift_right_logical_negative_r32_with_imm8)
+% Reg[EBX].i = 0xfffffffd;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c1  eb                          01          # negate EBX
+# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
++run: operate on r/m32
++run: r/m32 is EBX
++run: subop: shift right by CL bits, while padding zeroes
++run: storing 0x7ffffffe
+
 //:: and
 
 :(before "End Initialize Op Names")

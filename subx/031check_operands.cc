@@ -212,18 +212,24 @@ void init_permitted_operands() {
   // pop
   put(Permitted_operands, "8f", 0x01);
 
-  //// Class O: op, ModR/M and subop (not r32)
+  //// Class N: op, ModR/M and subop (not r32)
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  0     0     0      |0       0     1     1
+  put(Permitted_operands, "d3", 0x03);  // shift
   put(Permitted_operands, "f7", 0x03);  // test/not/mul/div
   put(Permitted_operands, "ff", 0x03);  // jump/push/call
 
-  //// Class N: op, ModR/M and imm32
+  //// Class O: op, ModR/M, subop (not r32) and imm8
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  0     1     0      |0       0     1     1
+  put(Permitted_operands, "c1", 0x23);  // combine
+
+  //// Class P: op, ModR/M and imm32
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  1     0     0      |0       0     0     1
   put(Permitted_operands, "c7", 0x41);  // copy
 
-  //// Class P: op, ModR/M, subop (not r32) and imm32
+  //// Class Q: op, ModR/M, subop (not r32) and imm32
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  1     0     0      |0       0     1     1
   put(Permitted_operands, "81", 0x43);  // combine
