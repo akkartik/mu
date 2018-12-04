@@ -87,6 +87,7 @@ tailor-exit-descriptor:  # ed : (address exit-descriptor), nbytes : int -> <void
     89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ECX
     # initialize ed->value
     c7/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # copy to *(ECX+4)
+$tailor-exit-descriptor:end:
     # . restore registers
     59/pop-to-ECX
     58/pop-to-EAX
@@ -113,6 +114,7 @@ $stop:fake:
     89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(EAX+4)
     # non-local jump to ed->target
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy *EAX to ESP
+$stop:end:
     c3/return  # doesn't return to caller
 
 test-stop-skips-returns-on-exit:
@@ -174,6 +176,7 @@ _test-stop-1:  # ed : (address exit-descriptor)
     # . . call
     e8/call  _test-stop-2/disp32
     # should never get past this point
+$_test-stop-1:dead-end:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # signal test failed: check-ints-equal(1, 0, msg)
@@ -201,6 +204,7 @@ _test-stop-2:  # ed : (address exit-descriptor)
     # . . call
     e8/call  stop/disp32
     # should never get past this point
+$_test-stop-2:dead-end:
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP

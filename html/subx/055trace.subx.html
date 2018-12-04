@@ -365,62 +365,63 @@ if ('onhashchange' in window) {
 <span id="L299" class="LineNr">299 </span>    e8/call  _append-4/disp32
 <span id="L300" class="LineNr">300 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L301" class="LineNr">301 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0x10/imm32        <span class="subxComment"># add to ESP</span>
-<span id="L302" class="LineNr">302 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L303" class="LineNr">303 </span>    59/pop-to-ECX
-<span id="L304" class="LineNr">304 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L305" class="LineNr">305 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
-<span id="L306" class="LineNr">306 </span>    5d/pop-to-EBP
-<span id="L307" class="LineNr">307 </span>    c3/return
-<span id="L308" class="LineNr">308 </span>
-<span id="L309" class="LineNr">309 </span><span class="subxComment"># 4-argument variant of _append</span>
-<span id="L310" class="LineNr">310 </span><span class="subxMinorFunction">_append-4</span>:  <span class="subxComment"># out : address, outend : address, in : address, inend : address -&gt; num_bytes_appended/EAX</span>
-<span id="L311" class="LineNr">311 </span>    <span class="subxS1Comment"># . prolog</span>
-<span id="L312" class="LineNr">312 </span>    55/push-EBP
-<span id="L313" class="LineNr">313 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
-<span id="L314" class="LineNr">314 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L315" class="LineNr">315 </span>    51/push-ECX
-<span id="L316" class="LineNr">316 </span>    52/push-EDX
-<span id="L317" class="LineNr">317 </span>    53/push-EBX
-<span id="L318" class="LineNr">318 </span>    56/push-ESI
-<span id="L319" class="LineNr">319 </span>    57/push-EDI
-<span id="L320" class="LineNr">320 </span>    <span class="subxComment"># EAX/num_bytes_appended = 0</span>
-<span id="L321" class="LineNr">321 </span>    b8/copy-to-EAX  0/imm32
-<span id="L322" class="LineNr">322 </span>    <span class="subxComment"># EDI = out</span>
-<span id="L323" class="LineNr">323 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          7/r32/EDI   0x8/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+8) to EDI</span>
-<span id="L324" class="LineNr">324 </span>    <span class="subxComment"># EDX = outend</span>
-<span id="L325" class="LineNr">325 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          2/r32/EDX   0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+12) to EDX</span>
-<span id="L326" class="LineNr">326 </span>    <span class="subxComment"># ESI = in</span>
-<span id="L327" class="LineNr">327 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          6/r32/ESI   0x10/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+16) to ESI</span>
-<span id="L328" class="LineNr">328 </span>    <span class="subxComment"># ECX = inend</span>
-<span id="L329" class="LineNr">329 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX   0x14/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+20) to ECX</span>
-<span id="L330" class="LineNr">330 </span><span class="Constant">$_append-4:loop</span>:
-<span id="L331" class="LineNr">331 </span>    <span class="subxComment"># if ESI/src &gt;= ECX/srcend break</span>
-<span id="L332" class="LineNr">332 </span>    39/compare                      3/mod/direct    6/rm32/ESI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare ESI with ECX</span>
-<span id="L333" class="LineNr">333 </span>    7d/jump-if-greater-or-equal  $_append-4:end/disp8
-<span id="L334" class="LineNr">334 </span>    <span class="subxComment"># if EDI/out &gt;= EDX/outend break  (for now silently ignore filled up buffer)</span>
-<span id="L335" class="LineNr">335 </span>    39/compare                      3/mod/direct    7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare EDI with EDX</span>
-<span id="L336" class="LineNr">336 </span>    7d/jump-if-greater-or-equal  $_append-4:end/disp8
-<span id="L337" class="LineNr">337 </span>    <span class="subxComment"># copy one byte from ESI/src to EDI/out</span>
-<span id="L338" class="LineNr">338 </span>    8a/copy-byte                    0/mod/indirect  6/rm32/ESI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/BL   <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy byte at *ESI to BL</span>
-<span id="L339" class="LineNr">339 </span>    88/copy-byte                    0/mod/indirect  7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/BL   <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy byte at BL to *EDI</span>
-<span id="L340" class="LineNr">340 </span>    <span class="subxComment"># updates</span>
-<span id="L341" class="LineNr">341 </span>    40/increment-EAX
-<span id="L342" class="LineNr">342 </span>    46/increment-ESI
-<span id="L343" class="LineNr">343 </span>    47/increment-EDI
-<span id="L344" class="LineNr">344 </span>    eb/jump  $_append-4:loop/disp8
-<span id="L345" class="LineNr">345 </span><span class="Constant">$_append-4:end</span>:
-<span id="L346" class="LineNr">346 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L347" class="LineNr">347 </span>    5f/pop-to-EDI
-<span id="L348" class="LineNr">348 </span>    5e/pop-to-ESI
-<span id="L349" class="LineNr">349 </span>    5b/pop-to-EBX
-<span id="L350" class="LineNr">350 </span>    5a/pop-to-EDX
-<span id="L351" class="LineNr">351 </span>    59/pop-to-ECX
-<span id="L352" class="LineNr">352 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L353" class="LineNr">353 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
-<span id="L354" class="LineNr">354 </span>    5d/pop-to-EBP
-<span id="L355" class="LineNr">355 </span>    c3/return
-<span id="L356" class="LineNr">356 </span>
-<span id="L357" class="LineNr">357 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L302" class="LineNr">302 </span><span class="Constant">$_append-3:end</span>:
+<span id="L303" class="LineNr">303 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L304" class="LineNr">304 </span>    59/pop-to-ECX
+<span id="L305" class="LineNr">305 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L306" class="LineNr">306 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L307" class="LineNr">307 </span>    5d/pop-to-EBP
+<span id="L308" class="LineNr">308 </span>    c3/return
+<span id="L309" class="LineNr">309 </span>
+<span id="L310" class="LineNr">310 </span><span class="subxComment"># 4-argument variant of _append</span>
+<span id="L311" class="LineNr">311 </span><span class="subxMinorFunction">_append-4</span>:  <span class="subxComment"># out : address, outend : address, in : address, inend : address -&gt; num_bytes_appended/EAX</span>
+<span id="L312" class="LineNr">312 </span>    <span class="subxS1Comment"># . prolog</span>
+<span id="L313" class="LineNr">313 </span>    55/push-EBP
+<span id="L314" class="LineNr">314 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L315" class="LineNr">315 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L316" class="LineNr">316 </span>    51/push-ECX
+<span id="L317" class="LineNr">317 </span>    52/push-EDX
+<span id="L318" class="LineNr">318 </span>    53/push-EBX
+<span id="L319" class="LineNr">319 </span>    56/push-ESI
+<span id="L320" class="LineNr">320 </span>    57/push-EDI
+<span id="L321" class="LineNr">321 </span>    <span class="subxComment"># EAX/num_bytes_appended = 0</span>
+<span id="L322" class="LineNr">322 </span>    b8/copy-to-EAX  0/imm32
+<span id="L323" class="LineNr">323 </span>    <span class="subxComment"># EDI = out</span>
+<span id="L324" class="LineNr">324 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          7/r32/EDI   0x8/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+8) to EDI</span>
+<span id="L325" class="LineNr">325 </span>    <span class="subxComment"># EDX = outend</span>
+<span id="L326" class="LineNr">326 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          2/r32/EDX   0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+12) to EDX</span>
+<span id="L327" class="LineNr">327 </span>    <span class="subxComment"># ESI = in</span>
+<span id="L328" class="LineNr">328 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          6/r32/ESI   0x10/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+16) to ESI</span>
+<span id="L329" class="LineNr">329 </span>    <span class="subxComment"># ECX = inend</span>
+<span id="L330" class="LineNr">330 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX   0x14/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+20) to ECX</span>
+<span id="L331" class="LineNr">331 </span><span class="Constant">$_append-4:loop</span>:
+<span id="L332" class="LineNr">332 </span>    <span class="subxComment"># if ESI/src &gt;= ECX/srcend break</span>
+<span id="L333" class="LineNr">333 </span>    39/compare                      3/mod/direct    6/rm32/ESI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare ESI with ECX</span>
+<span id="L334" class="LineNr">334 </span>    7d/jump-if-greater-or-equal  $_append-4:end/disp8
+<span id="L335" class="LineNr">335 </span>    <span class="subxComment"># if EDI/out &gt;= EDX/outend break  (for now silently ignore filled up buffer)</span>
+<span id="L336" class="LineNr">336 </span>    39/compare                      3/mod/direct    7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare EDI with EDX</span>
+<span id="L337" class="LineNr">337 </span>    7d/jump-if-greater-or-equal  $_append-4:end/disp8
+<span id="L338" class="LineNr">338 </span>    <span class="subxComment"># copy one byte from ESI/src to EDI/out</span>
+<span id="L339" class="LineNr">339 </span>    8a/copy-byte                    0/mod/indirect  6/rm32/ESI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/BL   <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy byte at *ESI to BL</span>
+<span id="L340" class="LineNr">340 </span>    88/copy-byte                    0/mod/indirect  7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/BL   <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy byte at BL to *EDI</span>
+<span id="L341" class="LineNr">341 </span>    <span class="subxComment"># updates</span>
+<span id="L342" class="LineNr">342 </span>    40/increment-EAX
+<span id="L343" class="LineNr">343 </span>    46/increment-ESI
+<span id="L344" class="LineNr">344 </span>    47/increment-EDI
+<span id="L345" class="LineNr">345 </span>    eb/jump  $_append-4:loop/disp8
+<span id="L346" class="LineNr">346 </span><span class="Constant">$_append-4:end</span>:
+<span id="L347" class="LineNr">347 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L348" class="LineNr">348 </span>    5f/pop-to-EDI
+<span id="L349" class="LineNr">349 </span>    5e/pop-to-ESI
+<span id="L350" class="LineNr">350 </span>    5b/pop-to-EBX
+<span id="L351" class="LineNr">351 </span>    5a/pop-to-EDX
+<span id="L352" class="LineNr">352 </span>    59/pop-to-ECX
+<span id="L353" class="LineNr">353 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L354" class="LineNr">354 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L355" class="LineNr">355 </span>    5d/pop-to-EBP
+<span id="L356" class="LineNr">356 </span>    c3/return
+<span id="L357" class="LineNr">357 </span>
+<span id="L358" class="LineNr">358 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
