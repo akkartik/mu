@@ -329,13 +329,13 @@ _append-4:  # out : address, outend : address, in : address, inend : address -> 
     # ECX = inend
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x14/disp8      .                 # copy *(EBP+20) to ECX
 $_append-4:loop:
-    # if ESI/src >= ECX/srcend break
+    # if ESI/in >= ECX/inend break
     39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
     7d/jump-if-greater-or-equal  $_append-4:end/disp8
     # if EDI/out >= EDX/outend break  (for now silently ignore filled up buffer)
     39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
     7d/jump-if-greater-or-equal  $_append-4:end/disp8
-    # copy one byte from ESI/src to EDI/out
+    # copy one byte from ESI/in to EDI/out
     8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
     88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
     # updates
