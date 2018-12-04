@@ -53,10 +53,9 @@ read-byte:  # f : (address buffered-file) -> byte-or-eof/EAX
     8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # ECX = f->read
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(ESI+8) to ECX
-    # if (f->read < f->write) read byte from stream
+    # if (f->read >= f->write) populate stream from file
     3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # compare ECX with *(ESI+4)
     7c/jump-if-lesser  $read-byte:from-stream/disp8
-    # otherwise first populate stream from file
     # . clear-stream(stream = f+4)
     # . . push args
     8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy ESI+4 to EAX
@@ -79,7 +78,7 @@ read-byte:  # f : (address buffered-file) -> byte-or-eof/EAX
     b8/copy-to-EAX  0xffffffff/imm32
     eb/jump  $read-byte:end/disp8
 $read-byte:from-stream:
-    # reading from stream
+    # read byte from stream
     # AL = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy *(ESI+ECX+16) to AL
