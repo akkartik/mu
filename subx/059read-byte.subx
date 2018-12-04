@@ -81,7 +81,7 @@ $read-byte:from-stream:
     # read byte from stream
     # AL = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy *(ESI+ECX+16) to AL
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy byte at *(ESI+ECX+16) to AL
     # ++f->read
     ff          0/subop/increment   1/mod/*+disp8   6/rm32/ESI    .           .             .           .           8/disp8         .                 # increment *(ESI+8)
 $read-byte:end:
@@ -234,6 +234,7 @@ test-read-byte-end-of-file:
 
 == data
 
+# a test buffered file for _test-stream
 _test-buffered-file:
     # file descriptor or (address stream)
     _test-stream/imm32
@@ -241,9 +242,9 @@ _test-buffered-file:
     00 00 00 00
     # current read index
     00 00 00 00
-    # length (8)
-    08 00 00 00
+    # length (6)
+    06 00 00 00
     # data
-    00 00 00 00 00 00 00 00  # 8 bytes
+    00 00 00 00 00 00  # 6 bytes
 
 # . . vim:nowrap:textwidth=0
