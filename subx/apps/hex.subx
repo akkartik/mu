@@ -44,6 +44,7 @@
 #?     e8/call test-scan-next-byte/disp32
 #?     e8/call test-scan-next-byte-handles-eof/disp32
 #?     e8/call test-scan-next-byte-skips-comment/disp32
+#?     e8/call test-scan-next-byte-aborts-on-invalid-byte/disp32
 #?     e8/call test-convert-next-hex-byte/disp32
     e8/call  run-tests/disp32
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
@@ -183,6 +184,15 @@ test-convert-next-hex-byte:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize '_test-stream' to "abc"
     # . write(_test-stream, "abc")
     # . . push args
@@ -204,10 +214,10 @@ test-convert-next-hex-byte:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = convert-next-hex-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = convert-next-hex-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  convert-next-hex-byte/disp32
@@ -359,6 +369,15 @@ test-scan-next-byte:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize '_test-stream' to "abc"
     # . write(_test-stream, "abc")
     # . . push args
@@ -380,10 +399,10 @@ test-scan-next-byte:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = scan-next-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  scan-next-byte/disp32
@@ -452,6 +471,15 @@ test-scan-next-byte-skips-whitespace:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize '_test-stream' to input with leading whitespace
     # . write(_test-stream, text)
     # . . push args
@@ -473,10 +501,10 @@ test-scan-next-byte-skips-whitespace:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = scan-next-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  scan-next-byte/disp32
@@ -545,6 +573,15 @@ test-scan-next-byte-skips-comment:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize '_test-stream' to input with leading comment
     # . write(_test-stream, comment)
     # . . push args
@@ -582,10 +619,10 @@ test-scan-next-byte-skips-comment:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = scan-next-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  scan-next-byte/disp32
@@ -654,6 +691,15 @@ test-scan-next-byte-skips-comment-and-whitespace:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize '_test-stream' to input with leading comment and more whitespace after newline
     # . write(_test-stream, comment)
     # . . push args
@@ -691,10 +737,10 @@ test-scan-next-byte-skips-comment-and-whitespace:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = scan-next-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  scan-next-byte/disp32
@@ -763,6 +809,15 @@ test-scan-next-byte-skips-whitespace-and-comment:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize '_test-stream' to input with leading whitespace and comment
     # . write(_test-stream, comment)
     # . . push args
@@ -800,10 +855,10 @@ test-scan-next-byte-skips-whitespace-and-comment:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = scan-next-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  scan-next-byte/disp32
@@ -872,6 +927,15 @@ test-scan-next-byte-reads-final-byte:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize '_test-stream' to input with single character
     # . write(_test-stream, character)
     # . . push args
@@ -893,10 +957,10 @@ test-scan-next-byte-reads-final-byte:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = scan-next-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  scan-next-byte/disp32
@@ -965,6 +1029,15 @@ test-scan-next-byte-handles-eof:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # leave '_test-stream' empty
     # initialize exit-descriptor 'ed' for the call to 'scan-next-byte' below
     # . var ed/ECX : exit-descriptor
@@ -978,10 +1051,10 @@ test-scan-next-byte-handles-eof:
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = scan-next-byte(_test-buffered-file, _test-error-stream, ed)
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
-    68/push  _test-error-stream/imm32
+    68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  scan-next-byte/disp32
@@ -1015,6 +1088,96 @@ test-scan-next-byte-handles-eof:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-scan-next-byte-handles-eof:end:
+    # . epilog
+    # don't restore ESP from EBP; manually reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-scan-next-byte-aborts-on-invalid-byte:
+    # - check that the a bad byte immediately aborts
+    # This test uses exit-descriptors. Use EBP for setting up local variables.
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # clear all streams
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-stream)
+    # . . push args
+    68/push  _test-error-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-error-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-error-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to "x"
+    # . write(_test-stream, "x")
+    # . . push args
+    68/push  "x"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # initialize exit-descriptor 'ed' for the call to 'scan-next-byte' below
+    # . var ed/ECX : exit-descriptor
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
+    # . tailor-exit-descriptor(ed, 12)
+    # . . push args
+    68/push  0xc/imm32/nbytes-of-args-for-scan-next-byte
+    51/push-ECX/ed
+    # . . call
+    e8/call  tailor-exit-descriptor/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # EAX = scan-next-byte(_test-buffered-file, _test-error-buffered-file, ed)
+    # . . push args
+    51/push-ECX/ed
+    68/push  _test-error-buffered-file/imm32
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  scan-next-byte/disp32
+    # registers except ESP may be clobbered at this point
+    # pop args to scan-next-bytes
+    # . . discard first 2 args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . . restore ed
+    59/pop-to-ECX
+    # check that scan-next-byte aborted
+    # . check-ints-equal(ed->value, 2, msg)
+    # . . push args
+    68/push  "F - test-scan-next-byte-aborts-on-invalid-byte"/imm32
+    68/push  2/imm32
+    # . . push ed->value
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-scan-next-byte-aborts-on-invalid-byte:end:
     # . epilog
     # don't restore ESP from EBP; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -1282,16 +1445,6 @@ test-skip-until-newline:
 
 == data
 
-_test-output-stream:
-    # current write index
-    00 00 00 00
-    # current read index
-    00 00 00 00
-    # length (= 8)
-    08 00 00 00
-    # data
-    00 00 00 00 00 00 00 00  # 8 bytes
-
 _test-error-stream:
     # current write index
     00 00 00 00
@@ -1301,5 +1454,18 @@ _test-error-stream:
     08 00 00 00
     # data
     00 00 00 00 00 00 00 00  # 8 bytes
+
+# a test buffered file for _test-stream
+_test-error-buffered-file:
+    # file descriptor or (address stream)
+    _test-error-stream/imm32
+    # current write index
+    00 00 00 00
+    # current read index
+    00 00 00 00
+    # length (6)
+    06 00 00 00
+    # data
+    00 00 00 00 00 00  # 6 bytes
 
 # . . vim:nowrap:textwidth=0
