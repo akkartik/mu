@@ -44,7 +44,7 @@
     # . argv[1] == "test"
     # . . push args
     68/push  "test"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  kernel-string-equal/disp32
     # . . discard args
@@ -538,7 +538,7 @@ get-char:  # f : (address buffered-file) -> <void>
     50/push-EAX
     # read-byte(f)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  read-byte/disp32
     # . . discard args
@@ -560,10 +560,10 @@ is-digit?:  # c : int -> bool/EAX
     # EAX = false
     b8/copy-to-EAX  0/imm32
     # if c < '0' return false
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       0x30/imm32        # compare *(EBP+8)
+    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         0x30/imm32        # compare *(EBP+8)
     7c/jump-if-lesser  $is-digit?:end/disp8
     # if c > '9' return false
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       0x39/imm32        # compare *(EBP+8)
+    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         0x39/imm32        # compare *(EBP+8)
     7f/jump-if-greater  $is-digit?:end/disp8
     # otherwise return true
     b8/copy-to-EAX  1/imm32
