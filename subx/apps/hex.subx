@@ -175,7 +175,6 @@ $scan-next-byte:check2:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     eb/jump  $scan-next-byte:loop/disp8
 $scan-next-byte:check3:
-# TODO: error-byte takes a buffered-file, not a (fd or (address stream))
     # otherwise error-byte(ed, err, msg, EAX)
     # . . push args
     50/push-EAX
@@ -192,7 +191,7 @@ $scan-next-byte:end:
     c3/return
 
 test-scan-next-byte:
-    # - check that the first two bytes of the input are assembled into the resulting number
+    # - check that the first byte of the input is returned
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -285,7 +284,7 @@ $test-scan-next-byte:end:
     c3/return
 
 test-scan-next-byte-skips-whitespace:
-    # - check that the first two bytes of the input are assembled into the resulting number
+    # - check that the first byte after whitespace is returned
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -378,7 +377,7 @@ $test-scan-next-byte-skips-whitespace:end:
     c3/return
 
 test-scan-next-byte-skips-comment:
-    # - check that the first two bytes of the input are assembled into the resulting number
+    # - check that the first byte after a comment (and newline) is returned
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -487,7 +486,7 @@ $test-scan-next-byte-skips-comment:end:
     c3/return
 
 test-scan-next-byte-skips-comment-and-whitespace:
-    # - check that the first two bytes of the input are assembled into the resulting number
+    # - check that the first byte after a comment and any further whitespace is returned
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -596,7 +595,7 @@ $test-scan-next-byte-skips-comment-and-whitespace:end:
     c3/return
 
 test-scan-next-byte-skips-whitespace-and-comment:
-    # - check that the first two bytes of the input are assembled into the resulting number
+    # - check that the first byte after any whitespace and comments is returned
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -705,7 +704,7 @@ $test-scan-next-byte-skips-whitespace-and-comment:end:
     c3/return
 
 test-scan-next-byte-reads-final-byte:
-    # - check that the first two bytes of the input are assembled into the resulting number
+    # - check that the final byte in input is returned
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
