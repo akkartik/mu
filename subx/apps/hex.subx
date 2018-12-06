@@ -1,0 +1,823 @@
+# Read a text file containing whitespace-separated ascii hex bytes from stdin,
+# and convert them into a binary file.
+#
+# To run (from the subx/ directory):
+#   $ ./subx translate *.subx apps/hex.subx -o apps/hex
+#   $ echo '80 81 82  # comment'  |./subx run apps/hex  |xxd -
+# Expected output:
+#   09000000: 8081 82
+#
+# Only hex bytes and comments are permitted. Outside of comments all words
+# must be exactly 2 characters long and contain only characters [0-9a-f]. No
+# uppercase hex.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+    # for debugging: run a single test
+#?     e8/call test-skip-until-newline/disp32
+#?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
+#?     eb/jump  $main:end/disp8
+
+# main: run tests if necessary, convert stdin if not
+    # . prolog
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # - if argc > 1 and argv[1] == "test" then return run_tests()
+    # . argc > 1
+    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0/disp8         1/imm32           # compare *EBP
+    7e/jump-if-lesser-or-equal  $run-main/disp8
+    # . argv[1] == "test"
+    # . . push args
+    68/push  "test"/imm32
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    # . . call
+    e8/call  kernel-string-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . check result
+    3d/compare-EAX  1/imm32
+    75/jump-if-not-equal  $run-main/disp8
+    # . run-tests()
+#?     e8/call test-hex-below-0/disp32
+#?     e8/call test-scan-next-byte/disp32
+#?     e8/call test-scan-next-byte-skips-comment/disp32
+    e8/call  run-tests/disp32
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
+    eb/jump  $main:end/disp8
+$run-main:
+    # - otherwise convert stdin
+    # var ed/EAX : exit-descriptor
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # copy ESP to EAX
+    # configure ed to really exit()
+    # . ed->target = 0
+    c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
+    # return convert(Stdin, 1/stdout, 2/stderr, ed)
+    # . . push args
+    50/push-EAX/ed
+    68/push  2/imm32/stderr
+    68/push  1/imm32/stdout
+    68/push  Stdin/imm32
+    # . . call
+    e8/call  convert/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    # . syscall(exit, 0)
+    bb/copy-to-EBX  0/imm32
+$main:end:
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+
+# the main entry point
+convert:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
+    # pseudocode:
+    #   repeatedly
+    #     EAX = convert-next-hex-byte(in, err, ed)
+    #     if EAX == 0xffffffff break  # eof
+    #     write-byte(out, EAX)
+    #   flush(out)
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    # var buf/ECX : (address stream) on the stack
+    # It occupies 1KB.
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x400/imm32       # subtract from ESP
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
+    # initialize the stream
+    # . length = 1KB - 12 bytes for 'read', 'write' and 'length' fields.
+    c7/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           .           8/disp8         0x3f4/imm32       # copy to *(ECX+8)
+    # . clear-stream(buf)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+$convert:loop:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# read bytes from 'in' until a sequence of two lowercase hex characters (0-9, a-f)
+# skip spaces and newlines
+# on '#' skip bytes until newline
+# raise an error and abort on all other unexpected bytes
+# return the binary value of the two hex characters in EAX
+# return 0xffffffff on end of file
+convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-eof/EAX
+    # pseudocode:
+    #   EAX = scan-next-byte(in, err, ed)
+    #   if (EAX == 0xffffffff) return
+    #   ECX = EAX
+    #   EAX = scan-next-byte(in, err, ed)
+    #   if (EAX == 0xffffffff) error("partial byte found")
+    #   ECX = (ECX << 8) | EAX
+    #   return
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    # var buf/ECX : (address stream) on the stack
+    # It occupies 1KB.
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x400/imm32       # subtract from ESP
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
+    # initialize the stream
+    # . length = 1KB - 12 bytes for 'read', 'write' and 'length' fields.
+    c7/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           .           8/disp8         0x3f4/imm32       # copy to *(ECX+8)
+    # . clear-stream(buf)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+$convert:loop:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# read whitespace until a hex byte, and return it
+# return 0xffffffff if file ends without finding a hex byte
+# on '#' skip all bytes until newline
+# abort on any other byte
+scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-eof/EAX
+    # pseudocode:
+    #   repeatedly
+    #     EAX = read-byte(in)
+    #     if is-hex-lowercase-byte?(EAX) return EAX
+    #     if EAX == 0x20 continue
+    #     if EAX == '#' skip-until-newline(in)
+    #     else error-byte(ed, err, "unexpected byte: " EAX)
+    #   return 0xffffffff
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$scan-next-byte:loop:
+    # EAX = read-byte(in)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    # . . call
+    e8/call  read-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # if is-hex-lowercase-byte?(EAX) return EAX
+    # . save EAX for now
+    50/push-EAX
+    # . is-hex-lowercase-byte?(EAX)
+    # . . push args
+    50/push-EAX
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . compare with 'false'
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    # . restore EAX (does not affect flags)
+    58/pop-to-EAX
+    # . check whether to return
+    75/jump-if-not-equal  $scan-next-byte:end/disp8
+$scan-next-byte:check1:
+    # if EAX == ' ' continue
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x20/imm32        # compare EAX
+    74/jump-if-equal  $scan-next-byte:loop/disp8
+$aa:
+    # if EAX == '\t' continue
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x9/imm32         # compare EAX
+    74/jump-if-equal  $scan-next-byte:loop/disp8
+$bb:
+    # if EAX == '\n' continue
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xa/imm32         # compare EAX
+    74/jump-if-equal  $scan-next-byte:loop/disp8
+$scan-next-byte:check2:
+    # if EAX == '#' skip-until-newline(in)
+    3d/compare-with-EAX  0x23/imm32
+    75/jump-if-not-equal  $scan-next-byte:check3/disp8
+$cc:
+    # . skip-until-newline(in)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    # . . call
+    e8/call  skip-until-newline/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    eb/jump  $scan-next-byte:loop/disp8
+$scan-next-byte:check3:
+# TODO: error-byte takes a buffered-file, not a (fd or (address stream))
+    # otherwise error-byte(ed, err, msg, EAX)
+    # . . push args
+    50/push-EAX
+    68/push  "scan-next-byte: invalid byte"/imm32
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
+    # . . call
+    e8/call  error-byte/disp32  # never returns
+$scan-next-byte:end:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-scan-next-byte:
+    # - check that the first two bytes of the input are assembled into the resulting number
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to "abc"
+    # . write(_test-stream, "abc")
+    # . . push args
+    68/push  "abc"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # scan-next-byte(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  scan-next-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x61/a, msg)
+    # . . push args
+    68/push  "F - test-scan-next-byte"/imm32
+    68/push  0x61/imm32/a
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-scan-next-byte-skips-whitespace:
+    # - check that the first two bytes of the input are assembled into the resulting number
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to input with leading whitespace
+    # . write(_test-stream, text)
+    # . . push args
+    68/push  "  abc"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # scan-next-byte(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  scan-next-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x61/a, msg)
+    # . . push args
+    68/push  "F - test-scan-next-byte-skips-whitespace"/imm32
+    68/push  0x61/imm32/a
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-scan-next-byte-skips-comment:
+    # - check that the first two bytes of the input are assembled into the resulting number
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to input with leading comment
+    # . write(_test-stream, comment)
+    # . . push args
+    68/push  "#x"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, real text)
+    # . . push args
+    68/push  "ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # scan-next-byte(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  scan-next-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x61/a, msg)
+    # . . push args
+    68/push  "F - test-scan-next-byte-skips-comment"/imm32
+    68/push  0x61/imm32/a
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-scan-next-byte-skips-comment-and-whitespace:
+    # - check that the first two bytes of the input are assembled into the resulting number
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to input with leading comment and more whitespace after newline
+    # . write(_test-stream, comment)
+    # . . push args
+    68/push  "#x"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, real text)
+    # . . push args
+    68/push  " ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # scan-next-byte(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  scan-next-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x61/a, msg)
+    # . . push args
+    68/push  "F - test-scan-next-byte-skips-comment"/imm32
+    68/push  0x61/imm32/a
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-scan-next-byte-skips-whitespace-and-comment:
+    # - check that the first two bytes of the input are assembled into the resulting number
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to input with leading whitespace and comment
+    # . write(_test-stream, comment)
+    # . . push args
+    68/push  " #x"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, real text)
+    # . . push args
+    68/push  "ab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # scan-next-byte(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  scan-next-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x61/a, msg)
+    # . . push args
+    68/push  "F - test-scan-next-byte-skips-comment"/imm32
+    68/push  0x61/imm32/a
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-scan-next-byte-reads-final-byte:
+    # - check that the first two bytes of the input are assembled into the resulting number
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to input with single character
+    # . write(_test-stream, character)
+    # . . push args
+    68/push  "a"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # scan-next-byte(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  scan-next-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x61/a, msg)
+    # . . push args
+    68/push  "F - test-scan-next-byte-skips-comment"/imm32
+    68/push  0x61/imm32/a
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+is-hex-lowercase-byte?:  # c : byte -> bool/EAX
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    # ECX = c
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x8/disp8       .                 # copy *(EBP+8) to ECX
+    # return false if c < '0'
+    b8/copy-to-EAX  0/imm32/false
+    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x30/imm32        # compare ECX
+    7c/jump-if-lesser  $is-hex-lowercase-byte?:end/disp8
+    # return false if c > 'f'
+    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x66/imm32        # compare ECX
+    7f/jump-if-greater  $is-hex-lowercase-byte?:end/disp8
+    # return true if c <= '9'
+    b8/copy-to-EAX  1/imm32/true
+    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x39/imm32        # compare ECX
+    7e/jump-if-lesser-or-equal  $is-hex-lowercase-byte?:end/disp8
+    # return true if c >= 'a'
+    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x61/imm32        # compare ECX
+    7d/jump-if-greater-or-equal  $is-hex-lowercase-byte?:end/disp8
+    # otherwise return false
+    b8/copy-to-EAX  0/imm32/false
+$is-hex-lowercase-byte?:end:
+    # . restore registers
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-hex-below-0:
+    # is-hex-lowercase-byte?(0x2f)
+    # . . push args
+    68/push  0x2f/imm32
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-hex-below-0"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    c3/return
+
+test-hex-0-to-9:
+    # is-hex-lowercase-byte?(0x30)
+    # . . push args
+    68/push  0x30/imm32
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-hex-at-0"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # is-hex-lowercase-byte?(0x39)
+    # . . push args
+    68/push  0x39/imm32
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-hex-at-9"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    c3/return
+
+test-hex-above-9-to-a:
+    # is-hex-lowercase-byte?(0x3a)
+    # . . push args
+    68/push  0x3a/imm32
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-hex-above-9-to-a"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    c3/return
+
+test-hex-a-to-f:
+    # is-hex-lowercase-byte?(0x61)
+    # . . push args
+    68/push  0x61/imm32
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-hex-at-a"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # is-hex-lowercase-byte?(0x66)
+    # . . push args
+    68/push  0x66/imm32
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-hex-at-f"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    c3/return
+
+test-hex-above-f:
+    # is-hex-lowercase-byte?(0x67)
+    # . . push args
+    68/push  0x67/imm32
+    # . . call
+    e8/call  is-hex-lowercase-byte?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-hex-above-f"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    c3/return
+
+skip-until-newline:  # in : (address buffered-file) -> <void>
+    # pseudocode:
+    #   push EAX
+    #   repeatedly:
+    #     EAX = read-byte(in)
+    #     if EAX == 0xffffffff break
+    #     if EAX == 0x0a break
+    #   pop EAX
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+$skip-until-newline:loop:
+    # . EAX = read-byte(in)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x8/disp8       .                 # push *(EBP+8)
+    # . . call
+    e8/call  read-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . if EAX == 0xffffffff break
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
+    74/jump-if-equal  $skip-until-newline:end/disp8
+$aa:
+    # . if EAX != 0xa/newline loop
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xa/imm32         # compare EAX
+    75/jump-if-not-equal  $skip-until-newline:loop/disp8
+$skip-until-newline:end:
+    # . restore registers
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-skip-until-newline:
+    # - check that the read pointer points after the newline
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize '_test-stream' to "abc\nde"
+    # . write(_test-stream, "abc")
+    # . . push args
+    68/push  "abc"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-stream, "de")
+    # . . push args
+    68/push  "de"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # skip-until-newline(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  skip-until-newline/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(_test-buffered-file->read, 4, msg)
+    # . . push args
+    68/push  "F - test-skip-until-newline"/imm32
+    68/push  4/imm32
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         .                 # push *(EAX+8)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+== data
+
+# . . vim:nowrap:textwidth=0
