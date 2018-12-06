@@ -16,7 +16,7 @@
 #?     # . error-byte(ed, Stdout, msg, 34)
 #?     68/push  0x34/imm32
 #?     68/push  "abc"/imm32
-#?     68/push  Stdout/imm32
+#?     68/push  Stderr/imm32
 #?     50/push-EAX
 #?     e8/call  error-byte/disp32
     # automatic test
@@ -90,5 +90,23 @@ $error-byte:dead-end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
+== data
+
+# The buffered file for standard error.
+Stderr:
+    # file descriptor or (address stream)
+    02 00 00 00  # 1 = standard error
+    # current write index
+    00 00 00 00
+    # current read index
+    00 00 00 00
+    # length (8)
+    08 00 00 00
+    # data
+    00 00 00 00 00 00 00 00  # 8 bytes
+
+# TODO: 8 bytes is too small. We'll need to grow the buffer for efficiency. But
+# I don't want to type in 1024 bytes here.
 
 # . . vim:nowrap:textwidth=0
