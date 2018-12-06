@@ -1,5 +1,6 @@
-# Read a text file containing whitespace-separated ascii hex bytes from stdin,
-# and convert them into a binary file.
+# Read a text file containing whitespace-separated pairs of ascii hex bytes
+# from stdin, and convert them into binary bytes (octets) on stdout. Ignore
+# comments between '#' and newline.
 #
 # To run (from the subx/ directory):
 #   $ ./subx translate *.subx apps/hex.subx -o apps/hex
@@ -86,11 +87,11 @@ $convert:end:
     5d/pop-to-EBP
     c3/return
 
-# read bytes from 'in' until a sequence of two lowercase hex characters (0-9, a-f)
+# read bytes from 'in' until a sequence of two lowercase hex (0-9, a-f) bytes
 # skip spaces and newlines
 # on '#' skip bytes until newline
 # raise an error and abort on all other unexpected bytes
-# return the binary value of the two hex characters in EAX
+# return in EAX an _octet_ containing the binary value of the two hex characters
 # return 0xffffffff on end of file
 convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-eof/EAX
     # pseudocode:
@@ -156,7 +157,7 @@ $convert-next-hex-byte:end:
     c3/return
 
 test-convert-next-hex-byte:
-    # - check that the first two bytes of the input are assembled into the resulting number
+    # - check that the first two bytes of the input are assembled into the resulting octet
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
