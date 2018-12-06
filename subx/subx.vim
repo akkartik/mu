@@ -43,12 +43,12 @@ syntax match subxGlobal %\(/\)\@<!\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlo
 highlight SpecialChar ctermfg=196
 
 " functions but not tests, globals or internal functions
-syntax match subxFunction "^\(test_\)\@<![a-z][_a-zA-Z0-9-]*\(:\)\@=" | highlight subxFunction ctermfg=208
+syntax match subxFunction "^\(test_\)\@<![a-z][^ ]*\(:\)\@=" | highlight subxFunction ctermfg=208
 " tests starting with 'test-'
-syntax match subxTest "^test-[_a-zA-Z0-9-]*\(:\)\@=" | highlight subxTest ctermfg=34
+syntax match subxTest "^test-[^ ]*\(:\)\@=" | highlight subxTest ctermfg=34
 " internal functions starting with '_'
-syntax match subxMinorFunction "^_[_a-zA-Z0-9-]*\(:\)\@=" | highlight subxMinorFunction ctermfg=95
+syntax match subxMinorFunction "^_[^ ]*\(:\)\@=" | highlight subxMinorFunction ctermfg=95
 " other internal labels starting with '$'
-syntax match subxLabel "^\$[_a-zA-Z0-9:-]*\(:\)\@=" | highlight link subxLabel Constant
+syntax match subxLabel "^\$[^ ]*\(:\)\@=" | highlight link subxLabel Constant
 
 let &cpo = s:save_cpo
