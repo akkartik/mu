@@ -160,4 +160,14 @@ test `uname` = 'Linux'  &&  {
   echo
 }
 
+echo hex
+CFLAGS=-g ./subx translate *.subx apps/hex.subx  -o apps/hex
+[ "$1" != record ]  &&  git diff --quiet apps/hex
+CFLAGS=-g ./subx run apps/hex test
+echo
+test `uname` = 'Linux'  &&  {
+  apps/hex test
+  echo
+}
+
 exit 0
