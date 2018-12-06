@@ -21,11 +21,12 @@
     cd/syscall  0x80/imm8
 
 # print msg to stderr if a != b, otherwise print "."
-check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
+check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> <void>
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
     51/push-ECX
     53/push-EBX
     # load first 2 args into EAX and EBX
@@ -69,6 +70,7 @@ $check-ints-equal:end:
     # . restore registers
     5b/pop-to-EBX
     59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
