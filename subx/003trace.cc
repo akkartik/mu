@@ -76,22 +76,9 @@ struct trace_line {
   trace_line(int d, string l, string c) :depth(d), label(l), contents(c) {}
 };
 
-//: Support for tracing an entire run.
-//: Traces can have a lot of overhead, so only turn them on when asked.
-:(before "End Commandline Options(*arg)")
-else if (is_equal(*arg, "--trace")) {
-  Save_trace = true;
-}
-:(before "End Commandline Parsing")
-if (Save_trace) {
-  cerr << "initializing trace\n";
-  Trace_stream = new trace_stream;
-}
 :(code)
 void cleanup_main() {
   if (!Trace_stream) return;
-  if (Save_trace)
-    Trace_stream->save();
   delete Trace_stream;
   Trace_stream = NULL;
 }
@@ -128,13 +115,6 @@ struct trace_stream {
     curr_depth = depth;
     (*curr_stream) << std::hex;
     return *curr_stream;
-  }
-
-  void save() {
-    cerr << "saving trace to 'last_run'\n";
-    ofstream fout("last_run");
-    fout << readable_contents("");
-    fout.close();
   }
 
   // be sure to call this before messing with curr_stream or curr_label
@@ -174,11 +154,11 @@ string trace_stream::readable_contents(string label) {
 trace_stream* Trace_stream = NULL;
 int Trace_errors = 0;  // used only when Trace_stream is NULL
 
-//: option to print trace to the screen
+//: commandline flag to print trace incrementally to stderr
 :(before "End Globals")
 bool Flag_dump_trace = false;
 :(before "End Commandline Options(*arg)")
-else if (is_equal(*arg, "--dump")) {
+else if (is_equal(*arg, "--trace")) {
   Flag_dump_trace = true;
 }
 
@@ -233,9 +213,6 @@ ostream& operator<<(ostream& os, end /*unused*/) {
   return os;
 }
 
-:(before "End Globals")
-bool Save_trace = false;  // if set, write out trace to disk
-
 // Trace_stream is a resource, lease_tracer uses RAII to manage it.
 :(before "End Types")
 struct lease_tracer {
@@ -245,7 +222,6 @@ struct lease_tracer {
 :(code)
 lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
 lease_tracer::~lease_tracer() {
-  if (Save_trace) Trace_stream->save();
   delete Trace_stream, Trace_stream = NULL;
 }
 :(before "End Includes")
