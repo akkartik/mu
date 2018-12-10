@@ -40,35 +40,35 @@ $write-stream:fake:
     50/push-EAX
     56/push-ESI
     57/push-EDI
-    # ESI = f
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # EDI = s
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to EDI
+    # EDI = f
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # ESI = s
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     # EAX = _append-4(&f->data[f->write], &f->data[f->length], &s->data[s->read], &s->data[s->write])
     # . . push &s->data[s->write]
-    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy *EDI to EAX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
-    50/push-EAX
-    # . . push &s->data[s->read]
-    8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EDI+4) to EAX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
-    50/push-EAX
-    # . . push &f->data[f->length]
-    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(ESI+8) to EAX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
-    50/push-EAX
-    # . . push &f->data[f->write]
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
+    50/push-EAX
+    # . . push &s->data[s->read]
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ESI+4) to EAX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
+    50/push-EAX
+    # . . push &f->data[f->length]
+    8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EDI+8) to EAX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
+    50/push-EAX
+    # . . push &f->data[f->write]
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy *EDI to EAX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
     50/push-EAX
     # . . call
     e8/call  _append-4/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # f->write += EAX
-    01/add                          0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # add EAX to *ESI
+    01/add                          0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDI
     # s->read += EAX
-    01/add                          1/mod/*+disp8   7/rm32/EDI    .           .             .           0/r32/EAX   4/disp8         .                 # add EAX to *(EDI+4)
+    01/add                          1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # add EAX to *(ESI+4)
     # . restore registers
     5f/pop-to-EDI
     5e/pop-to-ESI
