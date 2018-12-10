@@ -46,7 +46,7 @@
 #?     e8/call test-scan-next-byte-handles-eof/disp32
 #?     e8/call test-scan-next-byte-skips-comment/disp32
 #?     e8/call test-scan-next-byte-aborts-on-invalid-byte/disp32
-#?     e8/call test-convert-next-hex-byte/disp32
+#?     e8/call test-convert-next-octet/disp32
     e8/call  run-tests/disp32
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
     eb/jump  $main:end/disp8
@@ -78,7 +78,7 @@ $main:end:
 convert:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
     # pseudocode:
     #   repeatedly
-    #     EAX = convert-next-hex-byte(in, err, ed)
+    #     EAX = convert-next-octet(in, err, ed)
     #     if EAX == 0xffffffff break  # eof
     #     write-byte(out, AL)
     #   flush(out)
@@ -89,13 +89,13 @@ convert:  # in : (address buffered-file), out : (address buffered-file), err : (
     # . save registers
     50/push-EAX
 $convert:loop:
-    # EAX = convert-next-hex-byte(in, err, ed)
+    # EAX = convert-next-octet(in, err, ed)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  convert-next-hex-byte/disp32
+    e8/call  convert-next-octet/disp32
     # . . discard first 2 args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # if EAX == 0xffffffff break
@@ -133,7 +133,7 @@ $convert:end:
 # raise an error and abort on all other unexpected bytes
 # return in EAX an _octet_ containing the binary value of the two hex characters
 # return 0xffffffff on end of file
-convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-eof/EAX
+convert-next-octet:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-eof/EAX
     # pseudocode:
     #   EAX = scan-next-byte(in, err, ed)
     #   if (EAX == 0xffffffff) return
@@ -160,7 +160,7 @@ convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # if (EAX == 0xffffffff) return
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
-    74/jump-if-equal  $convert-next-hex-byte:end/disp8
+    74/jump-if-equal  $convert-next-octet:end/disp8
     # EAX = parse-hex-digit(EAX)
     e8/call parse-hex-digit/disp32
     # ECX = EAX
@@ -176,16 +176,16 @@ convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # if (EAX == 0xffffffff) error(ed, err, "partial byte found.")
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
-    75/jump-if-not-equal  $convert-next-hex-byte:convert/disp8
+    75/jump-if-not-equal  $convert-next-octet:convert/disp8
     # . error-byte(ed, err, msg, '.')  # reusing error-byte to avoid creating _yet_ another helper
     # . . push args
     68/push  0x2e/imm32/period/dummy
-    68/push  "convert-next-hex-byte: partial byte found"/imm32
+    68/push  "convert-next-octet: partial byte found"/imm32
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
     ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
     # . . call
     e8/call  error-byte/disp32  # never returns
-$convert-next-hex-byte:convert:
+$convert-next-octet:convert:
     # EAX = parse-hex-digit(EAX)
     e8/call parse-hex-digit/disp32
     # EAX = (ECX << 4) | EAX
@@ -193,7 +193,7 @@ $convert-next-hex-byte:convert:
     c1/shift    4/subop/left        3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm8            # shift ECX left by 4 bits
     # . EAX |= ECX
     09/or                           3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # EAX = bitwise OR with ECX
-$convert-next-hex-byte:end:
+$convert-next-octet:end:
     # . restore registers
     59/pop-to-ECX
     # . epilog
@@ -201,7 +201,7 @@ $convert-next-hex-byte:end:
     5d/pop-to-EBP
     c3/return
 
-test-convert-next-hex-byte:
+test-convert-next-octet:
     # - check that the first two bytes of the input are assembled into the resulting octet
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
@@ -248,35 +248,35 @@ test-convert-next-hex-byte:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # initialize exit-descriptor 'ed' for the call to 'convert-next-hex-byte' below
+    # initialize exit-descriptor 'ed' for the call to 'convert-next-octet' below
     # . var ed/ECX : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
     8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
     # . tailor-exit-descriptor(ed, 12)
     # . . push args
-    68/push  0xc/imm32/nbytes-of-args-for-convert-next-hex-byte
+    68/push  0xc/imm32/nbytes-of-args-for-convert-next-octet
     51/push-ECX/ed
     # . . call
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = convert-next-hex-byte(_test-buffered-file, _test-error-buffered-file, ed)
+    # EAX = convert-next-octet(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
     68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
-    e8/call  convert-next-hex-byte/disp32
+    e8/call  convert-next-octet/disp32
     # registers except ESP may be clobbered at this point
-    # pop args to convert-next-hex-bytes
+    # pop args to convert-next-octet
     # . . discard first 2 args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . . restore ed
     59/pop-to-ECX
-    # check that convert-next-hex-byte didn't abort
+    # check that convert-next-octet didn't abort
     # . check-ints-equal(ed->value, 0, msg)
     # . . push args
-    68/push  "F - test-convert-next-hex-byte: unexpected abort"/imm32
+    68/push  "F - test-convert-next-octet: unexpected abort"/imm32
     68/push  0/imm32
     # . . push ed->value
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
@@ -286,24 +286,24 @@ test-convert-next-hex-byte:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # return if abort
     81          7/subop/compare     1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # compare *(ECX+4)
-    75/jump-if-not-equal  $test-convert-next-hex-byte:end/disp8
+    75/jump-if-not-equal  $test-convert-next-octet:end/disp8
     # check-ints-equal(EAX, 0xab, msg)
     # . . push args
-    68/push  "F - test-convert-next-hex-byte"/imm32
+    68/push  "F - test-convert-next-octet"/imm32
     68/push  0xab/imm32/ab
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-convert-next-hex-byte:end:
+$test-convert-next-octet:end:
     # . epilog
     # don't restore ESP from EBP; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     5d/pop-to-EBP
     c3/return
 
-test-convert-next-hex-byte-handles-eof:
+test-convert-next-octet-handles-eof:
     # - check that eof returns the sentinel octet
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
@@ -342,35 +342,35 @@ test-convert-next-hex-byte-handles-eof:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # don't initialize '_test-stream'
-    # initialize exit-descriptor 'ed' for the call to 'convert-next-hex-byte' below
+    # initialize exit-descriptor 'ed' for the call to 'convert-next-octet' below
     # . var ed/ECX : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
     8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
     # . tailor-exit-descriptor(ed, 12)
     # . . push args
-    68/push  0xc/imm32/nbytes-of-args-for-convert-next-hex-byte
+    68/push  0xc/imm32/nbytes-of-args-for-convert-next-octet
     51/push-ECX/ed
     # . . call
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = convert-next-hex-byte(_test-buffered-file, _test-error-buffered-file, ed)
+    # EAX = convert-next-octet(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
     68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
-    e8/call  convert-next-hex-byte/disp32
+    e8/call  convert-next-octet/disp32
     # registers except ESP may be clobbered at this point
-    # pop args to convert-next-hex-bytes
+    # pop args to convert-next-octet
     # . . discard first 2 args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . . restore ed
     59/pop-to-ECX
-    # check that convert-next-hex-byte didn't abort
+    # check that convert-next-octet didn't abort
     # . check-ints-equal(ed->value, 0, msg)
     # . . push args
-    68/push  "F - test-convert-next-hex-byte: unexpected abort"/imm32
+    68/push  "F - test-convert-next-octet: unexpected abort"/imm32
     68/push  0/imm32
     # . . push ed->value
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
@@ -380,24 +380,24 @@ test-convert-next-hex-byte-handles-eof:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # return if abort
     81          7/subop/compare     1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # compare *(ECX+4)
-    75/jump-if-not-equal  $test-convert-next-hex-byte-handles-eof:end/disp8
+    75/jump-if-not-equal  $test-convert-next-octet-handles-eof:end/disp8
     # check-ints-equal(EAX, 0xffffffff, msg)
     # . . push args
-    68/push  "F - test-convert-next-hex-byte-handles-eof"/imm32
+    68/push  "F - test-convert-next-octet-handles-eof"/imm32
     68/push  0xffffffff/imm32/eof
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-convert-next-hex-byte-handles-eof:end:
+$test-convert-next-octet-handles-eof:end:
     # . epilog
     # don't restore ESP from EBP; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     5d/pop-to-EBP
     c3/return
 
-test-convert-next-hex-byte-aborts-on-single-hex-byte:
+test-convert-next-octet-aborts-on-single-hex-byte:
     # - check that a single unaccompanied hex byte aborts
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
@@ -444,35 +444,35 @@ test-convert-next-hex-byte-aborts-on-single-hex-byte:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # initialize exit-descriptor 'ed' for the call to 'convert-next-hex-byte' below
+    # initialize exit-descriptor 'ed' for the call to 'convert-next-octet' below
     # . var ed/ECX : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
     8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
     # . tailor-exit-descriptor(ed, 12)
     # . . push args
-    68/push  0xc/imm32/nbytes-of-args-for-convert-next-hex-byte
+    68/push  0xc/imm32/nbytes-of-args-for-convert-next-octet
     51/push-ECX/ed
     # . . call
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # EAX = convert-next-hex-byte(_test-buffered-file, _test-error-buffered-file, ed)
+    # EAX = convert-next-octet(_test-buffered-file, _test-error-buffered-file, ed)
     # . . push args
     51/push-ECX/ed
     68/push  _test-error-buffered-file/imm32
     68/push  _test-buffered-file/imm32
     # . . call
-    e8/call  convert-next-hex-byte/disp32
+    e8/call  convert-next-octet/disp32
     # registers except ESP may be clobbered at this point
-    # pop args to convert-next-hex-bytes
+    # pop args to convert-next-octet
     # . . discard first 2 args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . . restore ed
     59/pop-to-ECX
-    # check that convert-next-hex-byte aborted
+    # check that convert-next-octet aborted
     # . check-ints-equal(ed->value, 2, msg)
     # . . push args
-    68/push  "F - test-convert-next-hex-byte-aborts-on-single-hex-byte: unexpected abort"/imm32
+    68/push  "F - test-convert-next-octet-aborts-on-single-hex-byte: unexpected abort"/imm32
     68/push  2/imm32
     # . . push ed->value
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
@@ -480,7 +480,7 @@ test-convert-next-hex-byte-aborts-on-single-hex-byte:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-convert-next-hex-byte-aborts-on-single-hex-byte:end:
+$test-convert-next-octet-aborts-on-single-hex-byte:end:
     # . epilog
     # don't restore ESP from EBP; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -499,7 +499,7 @@ scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), 
     #     if is-hex-lowercase-byte?(EAX) return EAX
     #     if EAX == 0x20 continue
     #     if EAX == '#' skip-until-newline(in)
-    #     else error-byte(ed, err, "unexpected byte: " EAX)
+    #     else error-byte(ed, err, "invalid byte: " EAX)
     #
     # . prolog
     55/push-EBP
