@@ -34,6 +34,7 @@ Stdin:
 # main:
     e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
 #?     e8/call test-read-byte-multiple/disp32
+#?     e8/call test-read-byte-refills-buffer/disp32
     # syscall(exit, Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
     b8/copy-to-EAX  1/imm32
@@ -63,6 +64,8 @@ read-byte:  # f : (address buffered-file) -> byte-or-eof/EAX
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . f->read must now be 0; update ECX
+    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
     # . EAX = read(f->fd, stream = f+4)
     # . . push args
     50/push-EAX
@@ -223,6 +226,56 @@ test-read-byte-end-of-file:
     # . . push args
     68/push  "F - test-read-byte-end-of-file"/imm32
     68/push  0xffffffff/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-read-byte-refills-buffer:
+    # - consume buffered-file's buffer, check that next read-byte still works
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . write(_test-stream, "Abcdefgh")
+    # . . push args
+    68/push  "Abcdefgh"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # pretend buffer is full
+    # . _test-buffered-file->read = 6  # >= _test-buffered-file->length
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    c7/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         6/imm32           # copy to *(EAX+8)
+    # read-byte(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  read-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 'A', msg)
+    # . . push args
+    68/push  "F - test-read-byte-refills-buffer"/imm32
+    68/push  0x41/imm32
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
