@@ -61,8 +61,8 @@ $run-main:
     # return convert(Stdin, 1/stdout, 2/stderr, ed)
     # . . push args
     50/push-EAX/ed
-    68/push  2/imm32/stderr
-    68/push  1/imm32/stdout
+    68/push  Stderr/imm32
+    68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
     e8/call  convert/disp32
@@ -76,12 +76,52 @@ $main:end:
 
 # the main entry point
 convert:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
+    # pseudocode:
+    #   repeatedly
+    #     EAX = convert-next-hex-byte(in, err, ed)
+    #     if EAX == 0xffffffff break  # eof
+    #     write-byte(out, AL)
+    #   flush(out)
+    #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+$convert:loop:
+    # EAX = convert-next-hex-byte(in, err, ed)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  convert-next-hex-byte/disp32
+    # . . discard first 2 args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # if EAX == 0xffffffff break
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
+    74/jump-if-equal  $convert:loop-end/disp8
+    # write-byte(out, AL)
+    # . . push args
+    50/push-EAX
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # loop
+    eb/jump  $convert:loop/disp8
+$convert:loop-end:
+    # flush(out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $convert:end:
     # . restore registers
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -97,10 +137,11 @@ convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-
     # pseudocode:
     #   EAX = scan-next-byte(in, err, ed)
     #   if (EAX == 0xffffffff) return
-    #   ECX = EAX
+    #   ECX = parse-hex-digit(EAX)
     #   EAX = scan-next-byte(in, err, ed)
     #   if (EAX == 0xffffffff) error("partial byte found.")
-    #   ECX = (ECX << 8) | EAX
+    #   EAX = parse-hex-digit(EAX)
+    #   EAX = (ECX << 4) | EAX
     #   return
     #
     # . prolog
@@ -120,6 +161,8 @@ convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-
     # if (EAX == 0xffffffff) return
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
     74/jump-if-equal  $convert-next-hex-byte:end/disp8
+    # EAX = parse-hex-digit(EAX)
+    e8/call parse-hex-digit/disp32
     # ECX = EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
     # EAX = scan-next-byte(in, err, ed)
@@ -143,9 +186,11 @@ convert-next-hex-byte:  # in : (address buffered-file), err : (address buffered-
     # . . call
     e8/call  error-byte/disp32  # never returns
 $convert-next-hex-byte:convert:
-    # EAX = (EAX << 8) | ECX
-    # . EAX <<= 8
-    c1/shift    4/subop/left        3/mod/direct    0/rm32/EAX    .           .             .           .           .               8/imm8            # shift EAX left by 8 bits
+    # EAX = parse-hex-digit(EAX)
+    e8/call parse-hex-digit/disp32
+    # EAX = (ECX << 4) | EAX
+    # . ECX <<= 4
+    c1/shift    4/subop/left        3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm8            # shift ECX left by 4 bits
     # . EAX |= ECX
     09/or                           3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # EAX = bitwise OR with ECX
 $convert-next-hex-byte:end:
@@ -242,10 +287,10 @@ test-convert-next-hex-byte:
     # return if abort
     81          7/subop/compare     1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # compare *(ECX+4)
     75/jump-if-not-equal  $test-convert-next-hex-byte:end/disp8
-    # check-ints-equal(EAX, 0x61/a 0x62/b, msg)
+    # check-ints-equal(EAX, 0xab, msg)
     # . . push args
     68/push  "F - test-convert-next-hex-byte"/imm32
-    68/push  0x6261/imm32/ab
+    68/push  0xab/imm32/ab
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
@@ -1526,6 +1571,18 @@ test-hex-above-f:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    c3/return
+
+parse-hex-digit:  # in/EAX : byte -> out/EAX : num
+    # no error checking; accepts argument in EAX
+    # if EAX <= '9' return EAX - '0'
+    3d/compare-EAX  0x39/imm32/9
+    7f/jump-if-greater  $parse-hex-digit:else/disp8
+    2d/subtract-from-EAX  0x30/imm32/0
+    c3/return
+$parse-hex-digit:else:
+    # otherwise return EAX - 'a' + 10
+    2d/subtract-from-EAX  0x57/imm32/a-10
     c3/return
 
 skip-until-newline:  # in : (address buffered-file) -> <void>
