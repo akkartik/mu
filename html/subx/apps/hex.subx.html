@@ -112,7 +112,7 @@ if ('onhashchange' in window) {
 <span id="L46" class="LineNr">  46 </span><span class="CommentedCode">#?     e8/call test-scan-next-byte-handles-eof/disp32</span>
 <span id="L47" class="LineNr">  47 </span><span class="CommentedCode">#?     e8/call test-scan-next-byte-skips-comment/disp32</span>
 <span id="L48" class="LineNr">  48 </span><span class="CommentedCode">#?     e8/call test-scan-next-byte-aborts-on-invalid-byte/disp32</span>
-<span id="L49" class="LineNr">  49 </span><span class="CommentedCode">#?     e8/call test-convert-next-hex-byte/disp32</span>
+<span id="L49" class="LineNr">  49 </span><span class="CommentedCode">#?     e8/call test-convert-next-octet/disp32</span>
 <span id="L50" class="LineNr">  50 </span>    e8/call  run-tests/disp32
 <span id="L51" class="LineNr">  51 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/EBX   <span class="SpecialChar">Num-test-failures</span>/disp32          <span class="subxComment"># copy *Num-test-failures to EBX</span>
 <span id="L52" class="LineNr">  52 </span>    eb/jump  $main:end/disp8
@@ -144,7 +144,7 @@ if ('onhashchange' in window) {
 <span id="L78" class="LineNr">  78 </span><span class="subxFunction">convert</span>:  <span class="subxComment"># in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -&gt; &lt;void&gt;</span>
 <span id="L79" class="LineNr">  79 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L80" class="LineNr">  80 </span>    <span class="subxComment">#   repeatedly</span>
-<span id="L81" class="LineNr">  81 </span>    <span class="subxComment">#     EAX = convert-next-hex-byte(in, err, ed)</span>
+<span id="L81" class="LineNr">  81 </span>    <span class="subxComment">#     EAX = convert-next-octet(in, err, ed)</span>
 <span id="L82" class="LineNr">  82 </span>    <span class="subxComment">#     if EAX == 0xffffffff break  # eof</span>
 <span id="L83" class="LineNr">  83 </span>    <span class="subxComment">#     write-byte(out, AL)</span>
 <span id="L84" class="LineNr">  84 </span>    <span class="subxComment">#   flush(out)</span>
@@ -155,13 +155,13 @@ if ('onhashchange' in window) {
 <span id="L89" class="LineNr">  89 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L90" class="LineNr">  90 </span>    50/push-EAX
 <span id="L91" class="LineNr">  91 </span><span class="Constant">$convert:loop</span>:
-<span id="L92" class="LineNr">  92 </span>    <span class="subxComment"># EAX = convert-next-hex-byte(in, err, ed)</span>
+<span id="L92" class="LineNr">  92 </span>    <span class="subxComment"># EAX = convert-next-octet(in, err, ed)</span>
 <span id="L93" class="LineNr">  93 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L94" class="LineNr">  94 </span>    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          0x14/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EBP+20)</span>
 <span id="L95" class="LineNr">  95 </span>    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          0x10/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EBP+16)</span>
 <span id="L96" class="LineNr">  96 </span>    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EBP+8)</span>
 <span id="L97" class="LineNr">  97 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L98" class="LineNr">  98 </span>    e8/call  convert-next-hex-byte/disp32
+<span id="L98" class="LineNr">  98 </span>    e8/call  convert-next-octet/disp32
 <span id="L99" class="LineNr">  99 </span>    <span class="subxS2Comment"># . . discard first 2 args</span>
 <span id="L100" class="LineNr"> 100 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L101" class="LineNr"> 101 </span>    <span class="subxComment"># if EAX == 0xffffffff break</span>
@@ -199,7 +199,7 @@ if ('onhashchange' in window) {
 <span id="L133" class="LineNr"> 133 </span><span class="subxComment"># raise an error and abort on all other unexpected bytes</span>
 <span id="L134" class="LineNr"> 134 </span><span class="subxComment"># return in EAX an _octet_ containing the binary value of the two hex characters</span>
 <span id="L135" class="LineNr"> 135 </span><span class="subxComment"># return 0xffffffff on end of file</span>
-<span id="L136" class="LineNr"> 136 </span><span class="subxFunction">convert-next-hex-byte</span>:  <span class="subxComment"># in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -&gt; byte-or-eof/EAX</span>
+<span id="L136" class="LineNr"> 136 </span><span class="subxFunction">convert-next-octet</span>:  <span class="subxComment"># in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -&gt; byte-or-eof/EAX</span>
 <span id="L137" class="LineNr"> 137 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L138" class="LineNr"> 138 </span>    <span class="subxComment">#   EAX = scan-next-byte(in, err, ed)</span>
 <span id="L139" class="LineNr"> 139 </span>    <span class="subxComment">#   if (EAX == 0xffffffff) return</span>
@@ -226,7 +226,7 @@ if ('onhashchange' in window) {
 <span id="L160" class="LineNr"> 160 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L161" class="LineNr"> 161 </span>    <span class="subxComment"># if (EAX == 0xffffffff) return</span>
 <span id="L162" class="LineNr"> 162 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xffffffff/imm32  <span class="subxComment"># compare EAX</span>
-<span id="L163" class="LineNr"> 163 </span>    74/jump-if-equal  $convert-next-hex-byte:end/disp8
+<span id="L163" class="LineNr"> 163 </span>    74/jump-if-equal  $convert-next-octet:end/disp8
 <span id="L164" class="LineNr"> 164 </span>    <span class="subxComment"># EAX = parse-hex-digit(EAX)</span>
 <span id="L165" class="LineNr"> 165 </span>    e8/call parse-hex-digit/disp32
 <span id="L166" class="LineNr"> 166 </span>    <span class="subxComment"># ECX = EAX</span>
@@ -242,16 +242,16 @@ if ('onhashchange' in window) {
 <span id="L176" class="LineNr"> 176 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L177" class="LineNr"> 177 </span>    <span class="subxComment"># if (EAX == 0xffffffff) error(ed, err, &quot;partial byte found.&quot;)</span>
 <span id="L178" class="LineNr"> 178 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xffffffff/imm32  <span class="subxComment"># compare EAX</span>
-<span id="L179" class="LineNr"> 179 </span>    75/jump-if-not-equal  $convert-next-hex-byte:convert/disp8
+<span id="L179" class="LineNr"> 179 </span>    75/jump-if-not-equal  $convert-next-octet:convert/disp8
 <span id="L180" class="LineNr"> 180 </span>    <span class="subxS1Comment"># . error-byte(ed, err, msg, '.')  # reusing error-byte to avoid creating _yet_ another helper</span>
 <span id="L181" class="LineNr"> 181 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L182" class="LineNr"> 182 </span>    68/push  0x2e/imm32/period/dummy
-<span id="L183" class="LineNr"> 183 </span>    68/push  <span class="Constant">&quot;convert-next-hex-byte: partial byte found&quot;</span>/imm32
+<span id="L183" class="LineNr"> 183 </span>    68/push  <span class="Constant">&quot;convert-next-octet: partial byte found&quot;</span>/imm32
 <span id="L184" class="LineNr"> 184 </span>    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EBP+12)</span>
 <span id="L185" class="LineNr"> 185 </span>    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          0x10/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EBP+16)</span>
 <span id="L186" class="LineNr"> 186 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L187" class="LineNr"> 187 </span>    e8/call  error-byte/disp32  <span class="subxComment"># never returns</span>
-<span id="L188" class="LineNr"> 188 </span><span class="Constant">$convert-next-hex-byte:convert</span>:
+<span id="L188" class="LineNr"> 188 </span><span class="Constant">$convert-next-octet:convert</span>:
 <span id="L189" class="LineNr"> 189 </span>    <span class="subxComment"># EAX = parse-hex-digit(EAX)</span>
 <span id="L190" class="LineNr"> 190 </span>    e8/call parse-hex-digit/disp32
 <span id="L191" class="LineNr"> 191 </span>    <span class="subxComment"># EAX = (ECX &lt;&lt; 4) | EAX</span>
@@ -259,7 +259,7 @@ if ('onhashchange' in window) {
 <span id="L193" class="LineNr"> 193 </span>    c1/shift    4/subop/left        3/mod/direct    1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm8            <span class="subxComment"># shift ECX left by 4 bits</span>
 <span id="L194" class="LineNr"> 194 </span>    <span class="subxS1Comment"># . EAX |= ECX</span>
 <span id="L195" class="LineNr"> 195 </span>    09/or                           3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># EAX = bitwise OR with ECX</span>
-<span id="L196" class="LineNr"> 196 </span><span class="Constant">$convert-next-hex-byte:end</span>:
+<span id="L196" class="LineNr"> 196 </span><span class="Constant">$convert-next-octet:end</span>:
 <span id="L197" class="LineNr"> 197 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L198" class="LineNr"> 198 </span>    59/pop-to-ECX
 <span id="L199" class="LineNr"> 199 </span>    <span class="subxS1Comment"># . epilog</span>
@@ -267,7 +267,7 @@ if ('onhashchange' in window) {
 <span id="L201" class="LineNr"> 201 </span>    5d/pop-to-EBP
 <span id="L202" class="LineNr"> 202 </span>    c3/return
 <span id="L203" class="LineNr"> 203 </span>
-<span id="L204" class="LineNr"> 204 </span><span class="subxTest">test-convert-next-hex-byte</span>:
+<span id="L204" class="LineNr"> 204 </span><span class="subxTest">test-convert-next-octet</span>:
 <span id="L205" class="LineNr"> 205 </span>    <span class="subxH1Comment"># - check that the first two bytes of the input are assembled into the resulting octet</span>
 <span id="L206" class="LineNr"> 206 </span>    <span class="subxComment"># This test uses exit-descriptors. Use EBP for setting up local variables.</span>
 <span id="L207" class="LineNr"> 207 </span>    55/push-EBP
@@ -314,35 +314,35 @@ if ('onhashchange' in window) {
 <span id="L248" class="LineNr"> 248 </span>    e8/call  write/disp32
 <span id="L249" class="LineNr"> 249 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L250" class="LineNr"> 250 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L251" class="LineNr"> 251 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'convert-next-hex-byte' below</span>
+<span id="L251" class="LineNr"> 251 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'convert-next-octet' below</span>
 <span id="L252" class="LineNr"> 252 </span>    <span class="subxS1Comment"># . var ed/ECX : exit-descriptor</span>
 <span id="L253" class="LineNr"> 253 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># subtract from ESP</span>
 <span id="L254" class="LineNr"> 254 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
 <span id="L255" class="LineNr"> 255 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 12)</span>
 <span id="L256" class="LineNr"> 256 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L257" class="LineNr"> 257 </span>    68/push  0xc/imm32/nbytes-of-args-for-convert-next-hex-byte
+<span id="L257" class="LineNr"> 257 </span>    68/push  0xc/imm32/nbytes-of-args-for-convert-next-octet
 <span id="L258" class="LineNr"> 258 </span>    51/push-ECX/ed
 <span id="L259" class="LineNr"> 259 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L260" class="LineNr"> 260 </span>    e8/call  tailor-exit-descriptor/disp32
 <span id="L261" class="LineNr"> 261 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L262" class="LineNr"> 262 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L263" class="LineNr"> 263 </span>    <span class="subxComment"># EAX = convert-next-hex-byte(_test-buffered-file, _test-error-buffered-file, ed)</span>
+<span id="L263" class="LineNr"> 263 </span>    <span class="subxComment"># EAX = convert-next-octet(_test-buffered-file, _test-error-buffered-file, ed)</span>
 <span id="L264" class="LineNr"> 264 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L265" class="LineNr"> 265 </span>    51/push-ECX/ed
 <span id="L266" class="LineNr"> 266 </span>    68/push  _test-error-buffered-file/imm32
 <span id="L267" class="LineNr"> 267 </span>    68/push  _test-buffered-file/imm32
 <span id="L268" class="LineNr"> 268 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L269" class="LineNr"> 269 </span>    e8/call  convert-next-hex-byte/disp32
+<span id="L269" class="LineNr"> 269 </span>    e8/call  convert-next-octet/disp32
 <span id="L270" class="LineNr"> 270 </span>    <span class="subxComment"># registers except ESP may be clobbered at this point</span>
-<span id="L271" class="LineNr"> 271 </span>    <span class="subxComment"># pop args to convert-next-hex-bytes</span>
+<span id="L271" class="LineNr"> 271 </span>    <span class="subxComment"># pop args to convert-next-octet</span>
 <span id="L272" class="LineNr"> 272 </span>    <span class="subxS2Comment"># . . discard first 2 args</span>
 <span id="L273" class="LineNr"> 273 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L274" class="LineNr"> 274 </span>    <span class="subxS2Comment"># . . restore ed</span>
 <span id="L275" class="LineNr"> 275 </span>    59/pop-to-ECX
-<span id="L276" class="LineNr"> 276 </span>    <span class="subxComment"># check that convert-next-hex-byte didn't abort</span>
+<span id="L276" class="LineNr"> 276 </span>    <span class="subxComment"># check that convert-next-octet didn't abort</span>
 <span id="L277" class="LineNr"> 277 </span>    <span class="subxS1Comment"># . check-ints-equal(ed-&gt;value, 0, msg)</span>
 <span id="L278" class="LineNr"> 278 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L279" class="LineNr"> 279 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-hex-byte: unexpected abort&quot;</span>/imm32
+<span id="L279" class="LineNr"> 279 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-octet: unexpected abort&quot;</span>/imm32
 <span id="L280" class="LineNr"> 280 </span>    68/push  0/imm32
 <span id="L281" class="LineNr"> 281 </span>    <span class="subxS2Comment"># . . push ed-&gt;value</span>
 <span id="L282" class="LineNr"> 282 </span>    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(ECX+4)</span>
@@ -352,24 +352,24 @@ if ('onhashchange' in window) {
 <span id="L286" class="LineNr"> 286 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L287" class="LineNr"> 287 </span>    <span class="subxComment"># return if abort</span>
 <span id="L288" class="LineNr"> 288 </span>    81          7/subop/compare     1/mod/*+disp8   1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          4/disp8         0/imm32           <span class="subxComment"># compare *(ECX+4)</span>
-<span id="L289" class="LineNr"> 289 </span>    75/jump-if-not-equal  $test-convert-next-hex-byte:end/disp8
+<span id="L289" class="LineNr"> 289 </span>    75/jump-if-not-equal  $test-convert-next-octet:end/disp8
 <span id="L290" class="LineNr"> 290 </span>    <span class="subxComment"># check-ints-equal(EAX, 0xab, msg)</span>
 <span id="L291" class="LineNr"> 291 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L292" class="LineNr"> 292 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-hex-byte&quot;</span>/imm32
+<span id="L292" class="LineNr"> 292 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-octet&quot;</span>/imm32
 <span id="L293" class="LineNr"> 293 </span>    68/push  0xab/imm32/ab
 <span id="L294" class="LineNr"> 294 </span>    50/push-EAX
 <span id="L295" class="LineNr"> 295 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L296" class="LineNr"> 296 </span>    e8/call  check-ints-equal/disp32
 <span id="L297" class="LineNr"> 297 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L298" class="LineNr"> 298 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L299" class="LineNr"> 299 </span><span class="Constant">$test-convert-next-hex-byte:end</span>:
+<span id="L299" class="LineNr"> 299 </span><span class="Constant">$test-convert-next-octet:end</span>:
 <span id="L300" class="LineNr"> 300 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L301" class="LineNr"> 301 </span>    <span class="subxComment"># don't restore ESP from EBP; manually reclaim locals</span>
 <span id="L302" class="LineNr"> 302 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L303" class="LineNr"> 303 </span>    5d/pop-to-EBP
 <span id="L304" class="LineNr"> 304 </span>    c3/return
 <span id="L305" class="LineNr"> 305 </span>
-<span id="L306" class="LineNr"> 306 </span><span class="subxTest">test-convert-next-hex-byte-handles-eof</span>:
+<span id="L306" class="LineNr"> 306 </span><span class="subxTest">test-convert-next-octet-handles-eof</span>:
 <span id="L307" class="LineNr"> 307 </span>    <span class="subxH1Comment"># - check that eof returns the sentinel octet</span>
 <span id="L308" class="LineNr"> 308 </span>    <span class="subxComment"># This test uses exit-descriptors. Use EBP for setting up local variables.</span>
 <span id="L309" class="LineNr"> 309 </span>    55/push-EBP
@@ -408,35 +408,35 @@ if ('onhashchange' in window) {
 <span id="L342" class="LineNr"> 342 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L343" class="LineNr"> 343 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L344" class="LineNr"> 344 </span>    <span class="subxComment"># don't initialize '_test-stream'</span>
-<span id="L345" class="LineNr"> 345 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'convert-next-hex-byte' below</span>
+<span id="L345" class="LineNr"> 345 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'convert-next-octet' below</span>
 <span id="L346" class="LineNr"> 346 </span>    <span class="subxS1Comment"># . var ed/ECX : exit-descriptor</span>
 <span id="L347" class="LineNr"> 347 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># subtract from ESP</span>
 <span id="L348" class="LineNr"> 348 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
 <span id="L349" class="LineNr"> 349 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 12)</span>
 <span id="L350" class="LineNr"> 350 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L351" class="LineNr"> 351 </span>    68/push  0xc/imm32/nbytes-of-args-for-convert-next-hex-byte
+<span id="L351" class="LineNr"> 351 </span>    68/push  0xc/imm32/nbytes-of-args-for-convert-next-octet
 <span id="L352" class="LineNr"> 352 </span>    51/push-ECX/ed
 <span id="L353" class="LineNr"> 353 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L354" class="LineNr"> 354 </span>    e8/call  tailor-exit-descriptor/disp32
 <span id="L355" class="LineNr"> 355 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L356" class="LineNr"> 356 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L357" class="LineNr"> 357 </span>    <span class="subxComment"># EAX = convert-next-hex-byte(_test-buffered-file, _test-error-buffered-file, ed)</span>
+<span id="L357" class="LineNr"> 357 </span>    <span class="subxComment"># EAX = convert-next-octet(_test-buffered-file, _test-error-buffered-file, ed)</span>
 <span id="L358" class="LineNr"> 358 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L359" class="LineNr"> 359 </span>    51/push-ECX/ed
 <span id="L360" class="LineNr"> 360 </span>    68/push  _test-error-buffered-file/imm32
 <span id="L361" class="LineNr"> 361 </span>    68/push  _test-buffered-file/imm32
 <span id="L362" class="LineNr"> 362 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L363" class="LineNr"> 363 </span>    e8/call  convert-next-hex-byte/disp32
+<span id="L363" class="LineNr"> 363 </span>    e8/call  convert-next-octet/disp32
 <span id="L364" class="LineNr"> 364 </span>    <span class="subxComment"># registers except ESP may be clobbered at this point</span>
-<span id="L365" class="LineNr"> 365 </span>    <span class="subxComment"># pop args to convert-next-hex-bytes</span>
+<span id="L365" class="LineNr"> 365 </span>    <span class="subxComment"># pop args to convert-next-octet</span>
 <span id="L366" class="LineNr"> 366 </span>    <span class="subxS2Comment"># . . discard first 2 args</span>
 <span id="L367" class="LineNr"> 367 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L368" class="LineNr"> 368 </span>    <span class="subxS2Comment"># . . restore ed</span>
 <span id="L369" class="LineNr"> 369 </span>    59/pop-to-ECX
-<span id="L370" class="LineNr"> 370 </span>    <span class="subxComment"># check that convert-next-hex-byte didn't abort</span>
+<span id="L370" class="LineNr"> 370 </span>    <span class="subxComment"># check that convert-next-octet didn't abort</span>
 <span id="L371" class="LineNr"> 371 </span>    <span class="subxS1Comment"># . check-ints-equal(ed-&gt;value, 0, msg)</span>
 <span id="L372" class="LineNr"> 372 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L373" class="LineNr"> 373 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-hex-byte: unexpected abort&quot;</span>/imm32
+<span id="L373" class="LineNr"> 373 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-octet: unexpected abort&quot;</span>/imm32
 <span id="L374" class="LineNr"> 374 </span>    68/push  0/imm32
 <span id="L375" class="LineNr"> 375 </span>    <span class="subxS2Comment"># . . push ed-&gt;value</span>
 <span id="L376" class="LineNr"> 376 </span>    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(ECX+4)</span>
@@ -446,24 +446,24 @@ if ('onhashchange' in window) {
 <span id="L380" class="LineNr"> 380 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L381" class="LineNr"> 381 </span>    <span class="subxComment"># return if abort</span>
 <span id="L382" class="LineNr"> 382 </span>    81          7/subop/compare     1/mod/*+disp8   1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          4/disp8         0/imm32           <span class="subxComment"># compare *(ECX+4)</span>
-<span id="L383" class="LineNr"> 383 </span>    75/jump-if-not-equal  $test-convert-next-hex-byte-handles-eof:end/disp8
+<span id="L383" class="LineNr"> 383 </span>    75/jump-if-not-equal  $test-convert-next-octet-handles-eof:end/disp8
 <span id="L384" class="LineNr"> 384 </span>    <span class="subxComment"># check-ints-equal(EAX, 0xffffffff, msg)</span>
 <span id="L385" class="LineNr"> 385 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L386" class="LineNr"> 386 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-hex-byte-handles-eof&quot;</span>/imm32
+<span id="L386" class="LineNr"> 386 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-octet-handles-eof&quot;</span>/imm32
 <span id="L387" class="LineNr"> 387 </span>    68/push  0xffffffff/imm32/eof
 <span id="L388" class="LineNr"> 388 </span>    50/push-EAX
 <span id="L389" class="LineNr"> 389 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L390" class="LineNr"> 390 </span>    e8/call  check-ints-equal/disp32
 <span id="L391" class="LineNr"> 391 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L392" class="LineNr"> 392 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L393" class="LineNr"> 393 </span><span class="Constant">$test-convert-next-hex-byte-handles-eof:end</span>:
+<span id="L393" class="LineNr"> 393 </span><span class="Constant">$test-convert-next-octet-handles-eof:end</span>:
 <span id="L394" class="LineNr"> 394 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L395" class="LineNr"> 395 </span>    <span class="subxComment"># don't restore ESP from EBP; manually reclaim locals</span>
 <span id="L396" class="LineNr"> 396 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L397" class="LineNr"> 397 </span>    5d/pop-to-EBP
 <span id="L398" class="LineNr"> 398 </span>    c3/return
 <span id="L399" class="LineNr"> 399 </span>
-<span id="L400" class="LineNr"> 400 </span><span class="subxTest">test-convert-next-hex-byte-aborts-on-single-hex-byte</span>:
+<span id="L400" class="LineNr"> 400 </span><span class="subxTest">test-convert-next-octet-aborts-on-single-hex-byte</span>:
 <span id="L401" class="LineNr"> 401 </span>    <span class="subxH1Comment"># - check that a single unaccompanied hex byte aborts</span>
 <span id="L402" class="LineNr"> 402 </span>    <span class="subxComment"># This test uses exit-descriptors. Use EBP for setting up local variables.</span>
 <span id="L403" class="LineNr"> 403 </span>    55/push-EBP
@@ -510,35 +510,35 @@ if ('onhashchange' in window) {
 <span id="L444" class="LineNr"> 444 </span>    e8/call  write/disp32
 <span id="L445" class="LineNr"> 445 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L446" class="LineNr"> 446 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L447" class="LineNr"> 447 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'convert-next-hex-byte' below</span>
+<span id="L447" class="LineNr"> 447 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'convert-next-octet' below</span>
 <span id="L448" class="LineNr"> 448 </span>    <span class="subxS1Comment"># . var ed/ECX : exit-descriptor</span>
 <span id="L449" class="LineNr"> 449 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># subtract from ESP</span>
 <span id="L450" class="LineNr"> 450 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
 <span id="L451" class="LineNr"> 451 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 12)</span>
 <span id="L452" class="LineNr"> 452 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L453" class="LineNr"> 453 </span>    68/push  0xc/imm32/nbytes-of-args-for-convert-next-hex-byte
+<span id="L453" class="LineNr"> 453 </span>    68/push  0xc/imm32/nbytes-of-args-for-convert-next-octet
 <span id="L454" class="LineNr"> 454 </span>    51/push-ECX/ed
 <span id="L455" class="LineNr"> 455 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L456" class="LineNr"> 456 </span>    e8/call  tailor-exit-descriptor/disp32
 <span id="L457" class="LineNr"> 457 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L458" class="LineNr"> 458 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L459" class="LineNr"> 459 </span>    <span class="subxComment"># EAX = convert-next-hex-byte(_test-buffered-file, _test-error-buffered-file, ed)</span>
+<span id="L459" class="LineNr"> 459 </span>    <span class="subxComment"># EAX = convert-next-octet(_test-buffered-file, _test-error-buffered-file, ed)</span>
 <span id="L460" class="LineNr"> 460 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L461" class="LineNr"> 461 </span>    51/push-ECX/ed
 <span id="L462" class="LineNr"> 462 </span>    68/push  _test-error-buffered-file/imm32
 <span id="L463" class="LineNr"> 463 </span>    68/push  _test-buffered-file/imm32
 <span id="L464" class="LineNr"> 464 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L465" class="LineNr"> 465 </span>    e8/call  convert-next-hex-byte/disp32
+<span id="L465" class="LineNr"> 465 </span>    e8/call  convert-next-octet/disp32
 <span id="L466" class="LineNr"> 466 </span>    <span class="subxComment"># registers except ESP may be clobbered at this point</span>
-<span id="L467" class="LineNr"> 467 </span>    <span class="subxComment"># pop args to convert-next-hex-bytes</span>
+<span id="L467" class="LineNr"> 467 </span>    <span class="subxComment"># pop args to convert-next-octet</span>
 <span id="L468" class="LineNr"> 468 </span>    <span class="subxS2Comment"># . . discard first 2 args</span>
 <span id="L469" class="LineNr"> 469 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L470" class="LineNr"> 470 </span>    <span class="subxS2Comment"># . . restore ed</span>
 <span id="L471" class="LineNr"> 471 </span>    59/pop-to-ECX
-<span id="L472" class="LineNr"> 472 </span>    <span class="subxComment"># check that convert-next-hex-byte aborted</span>
+<span id="L472" class="LineNr"> 472 </span>    <span class="subxComment"># check that convert-next-octet aborted</span>
 <span id="L473" class="LineNr"> 473 </span>    <span class="subxS1Comment"># . check-ints-equal(ed-&gt;value, 2, msg)</span>
 <span id="L474" class="LineNr"> 474 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L475" class="LineNr"> 475 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-hex-byte-aborts-on-single-hex-byte: unexpected abort&quot;</span>/imm32
+<span id="L475" class="LineNr"> 475 </span>    68/push  <span class="Constant">&quot;F - test-convert-next-octet-aborts-on-single-hex-byte: unexpected abort&quot;</span>/imm32
 <span id="L476" class="LineNr"> 476 </span>    68/push  2/imm32
 <span id="L477" class="LineNr"> 477 </span>    <span class="subxS2Comment"># . . push ed-&gt;value</span>
 <span id="L478" class="LineNr"> 478 </span>    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(ECX+4)</span>
@@ -546,7 +546,7 @@ if ('onhashchange' in window) {
 <span id="L480" class="LineNr"> 480 </span>    e8/call  check-ints-equal/disp32
 <span id="L481" class="LineNr"> 481 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L482" class="LineNr"> 482 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L483" class="LineNr"> 483 </span><span class="Constant">$test-convert-next-hex-byte-aborts-on-single-hex-byte:end</span>:
+<span id="L483" class="LineNr"> 483 </span><span class="Constant">$test-convert-next-octet-aborts-on-single-hex-byte:end</span>:
 <span id="L484" class="LineNr"> 484 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L485" class="LineNr"> 485 </span>    <span class="subxComment"># don't restore ESP from EBP; manually reclaim locals</span>
 <span id="L486" class="LineNr"> 486 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
@@ -563,9 +563,9 @@ if ('onhashchange' in window) {
 <span id="L497" class="LineNr"> 497 </span>    <span class="subxComment">#     EAX = read-byte(in)</span>
 <span id="L498" class="LineNr"> 498 </span>    <span class="subxComment">#     if EAX == 0xffffffff return EAX</span>
 <span id="L499" class="LineNr"> 499 </span>    <span class="subxComment">#     if is-hex-lowercase-byte?(EAX) return EAX</span>
-<span id="L500" class="LineNr"> 500 </span>    <span class="subxComment">#     if EAX == 0x20 continue</span>
+<span id="L500" class="LineNr"> 500 </span>    <span class="subxComment">#     if EAX == ' ' or '\t' or '\n' continue</span>
 <span id="L501" class="LineNr"> 501 </span>    <span class="subxComment">#     if EAX == '#' skip-until-newline(in)</span>
-<span id="L502" class="LineNr"> 502 </span>    <span class="subxComment">#     else error-byte(ed, err, &quot;unexpected byte: &quot; EAX)</span>
+<span id="L502" class="LineNr"> 502 </span>    <span class="subxComment">#     else error-byte(ed, err, &quot;invalid byte: &quot; EAX)</span>
 <span id="L503" class="LineNr"> 503 </span>    <span class="subxComment">#</span>
 <span id="L504" class="LineNr"> 504 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L505" class="LineNr"> 505 </span>    55/push-EBP
@@ -1675,108 +1675,107 @@ if ('onhashchange' in window) {
 <span id="L1609" class="LineNr">1609 </span>    <span class="subxS1Comment"># . if EAX == 0xffffffff break</span>
 <span id="L1610" class="LineNr">1610 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xffffffff/imm32  <span class="subxComment"># compare EAX</span>
 <span id="L1611" class="LineNr">1611 </span>    74/jump-if-equal  $skip-until-newline:end/disp8
-<span id="L1612" class="LineNr">1612 </span><span class="Constant">$aa</span>:
-<span id="L1613" class="LineNr">1613 </span>    <span class="subxS1Comment"># . if EAX != 0xa/newline loop</span>
-<span id="L1614" class="LineNr">1614 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xa/imm32         <span class="subxComment"># compare EAX</span>
-<span id="L1615" class="LineNr">1615 </span>    75/jump-if-not-equal  $skip-until-newline:loop/disp8
-<span id="L1616" class="LineNr">1616 </span><span class="Constant">$skip-until-newline:end</span>:
-<span id="L1617" class="LineNr">1617 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1618" class="LineNr">1618 </span>    58/pop-to-EAX
-<span id="L1619" class="LineNr">1619 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L1620" class="LineNr">1620 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
-<span id="L1621" class="LineNr">1621 </span>    5d/pop-to-EBP
-<span id="L1622" class="LineNr">1622 </span>    c3/return
-<span id="L1623" class="LineNr">1623 </span>
-<span id="L1624" class="LineNr">1624 </span><span class="subxTest">test-skip-until-newline</span>:
-<span id="L1625" class="LineNr">1625 </span>    <span class="subxH1Comment"># - check that the read pointer points after the newline</span>
-<span id="L1626" class="LineNr">1626 </span>    <span class="subxComment"># setup</span>
-<span id="L1627" class="LineNr">1627 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
-<span id="L1628" class="LineNr">1628 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1629" class="LineNr">1629 </span>    68/push  _test-stream/imm32
-<span id="L1630" class="LineNr">1630 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1631" class="LineNr">1631 </span>    e8/call  clear-stream/disp32
-<span id="L1632" class="LineNr">1632 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1633" class="LineNr">1633 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L1634" class="LineNr">1634 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file+4)</span>
-<span id="L1635" class="LineNr">1635 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1636" class="LineNr">1636 </span>    b8/copy-to-EAX  _test-buffered-file/imm32
-<span id="L1637" class="LineNr">1637 </span>    05/add-to-EAX  4/imm32
-<span id="L1638" class="LineNr">1638 </span>    50/push-EAX
-<span id="L1639" class="LineNr">1639 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1640" class="LineNr">1640 </span>    e8/call  clear-stream/disp32
-<span id="L1641" class="LineNr">1641 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1642" class="LineNr">1642 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L1643" class="LineNr">1643 </span>    <span class="subxComment"># initialize '_test-stream' to &quot;abc\nde&quot;</span>
-<span id="L1644" class="LineNr">1644 </span>    <span class="subxS1Comment"># . write(_test-stream, &quot;abc&quot;)</span>
-<span id="L1645" class="LineNr">1645 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1646" class="LineNr">1646 </span>    68/push  <span class="Constant">&quot;abc&quot;</span>/imm32
-<span id="L1647" class="LineNr">1647 </span>    68/push  _test-stream/imm32
-<span id="L1648" class="LineNr">1648 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1649" class="LineNr">1649 </span>    e8/call  write/disp32
-<span id="L1650" class="LineNr">1650 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1651" class="LineNr">1651 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L1652" class="LineNr">1652 </span>    <span class="subxS1Comment"># . write(_test-stream, Newline)</span>
-<span id="L1653" class="LineNr">1653 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1654" class="LineNr">1654 </span>    68/push  <span class="SpecialChar">Newline</span>/imm32
-<span id="L1655" class="LineNr">1655 </span>    68/push  _test-stream/imm32
-<span id="L1656" class="LineNr">1656 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1657" class="LineNr">1657 </span>    e8/call  write/disp32
-<span id="L1658" class="LineNr">1658 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1659" class="LineNr">1659 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L1660" class="LineNr">1660 </span>    <span class="subxS1Comment"># . write(_test-stream, &quot;de&quot;)</span>
-<span id="L1661" class="LineNr">1661 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1662" class="LineNr">1662 </span>    68/push  <span class="Constant">&quot;de&quot;</span>/imm32
-<span id="L1663" class="LineNr">1663 </span>    68/push  _test-stream/imm32
-<span id="L1664" class="LineNr">1664 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1665" class="LineNr">1665 </span>    e8/call  write/disp32
-<span id="L1666" class="LineNr">1666 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1667" class="LineNr">1667 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L1668" class="LineNr">1668 </span>    <span class="subxComment"># skip-until-newline(_test-buffered-file)</span>
-<span id="L1669" class="LineNr">1669 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1670" class="LineNr">1670 </span>    68/push  _test-buffered-file/imm32
-<span id="L1671" class="LineNr">1671 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1672" class="LineNr">1672 </span>    e8/call  skip-until-newline/disp32
-<span id="L1673" class="LineNr">1673 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1674" class="LineNr">1674 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L1675" class="LineNr">1675 </span>    <span class="subxComment"># check-ints-equal(_test-buffered-file-&gt;read, 4, msg)</span>
-<span id="L1676" class="LineNr">1676 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L1677" class="LineNr">1677 </span>    68/push  <span class="Constant">&quot;F - test-skip-until-newline&quot;</span>/imm32
-<span id="L1678" class="LineNr">1678 </span>    68/push  4/imm32
-<span id="L1679" class="LineNr">1679 </span>    b8/copy-to-EAX  _test-buffered-file/imm32
-<span id="L1680" class="LineNr">1680 </span>    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EAX+8)</span>
-<span id="L1681" class="LineNr">1681 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L1682" class="LineNr">1682 </span>    e8/call  check-ints-equal/disp32
-<span id="L1683" class="LineNr">1683 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L1684" class="LineNr">1684 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L1685" class="LineNr">1685 </span>    <span class="subxS1Comment"># . end</span>
-<span id="L1686" class="LineNr">1686 </span>    c3/return
-<span id="L1687" class="LineNr">1687 </span>
-<span id="L1688" class="LineNr">1688 </span>== data
-<span id="L1689" class="LineNr">1689 </span>
-<span id="L1690" class="LineNr">1690 </span><span class="subxMinorFunction">_test-error-stream</span>:
-<span id="L1691" class="LineNr">1691 </span>    <span class="subxComment"># current write index</span>
-<span id="L1692" class="LineNr">1692 </span>    00 00 00 00
-<span id="L1693" class="LineNr">1693 </span>    <span class="subxComment"># current read index</span>
-<span id="L1694" class="LineNr">1694 </span>    00 00 00 00
-<span id="L1695" class="LineNr">1695 </span>    <span class="subxComment"># length (= 8)</span>
-<span id="L1696" class="LineNr">1696 </span>    08 00 00 00
-<span id="L1697" class="LineNr">1697 </span>    <span class="subxComment"># data</span>
-<span id="L1698" class="LineNr">1698 </span>    00 00 00 00 00 00 00 00  <span class="subxComment"># 8 bytes</span>
-<span id="L1699" class="LineNr">1699 </span>
-<span id="L1700" class="LineNr">1700 </span><span class="subxComment"># a test buffered file for _test-stream</span>
-<span id="L1701" class="LineNr">1701 </span><span class="subxMinorFunction">_test-error-buffered-file</span>:
-<span id="L1702" class="LineNr">1702 </span>    <span class="subxComment"># file descriptor or (address stream)</span>
-<span id="L1703" class="LineNr">1703 </span>    _test-error-stream/imm32
-<span id="L1704" class="LineNr">1704 </span>    <span class="subxComment"># current write index</span>
-<span id="L1705" class="LineNr">1705 </span>    00 00 00 00
-<span id="L1706" class="LineNr">1706 </span>    <span class="subxComment"># current read index</span>
-<span id="L1707" class="LineNr">1707 </span>    00 00 00 00
-<span id="L1708" class="LineNr">1708 </span>    <span class="subxComment"># length (6)</span>
-<span id="L1709" class="LineNr">1709 </span>    06 00 00 00
-<span id="L1710" class="LineNr">1710 </span>    <span class="subxComment"># data</span>
-<span id="L1711" class="LineNr">1711 </span>    00 00 00 00 00 00  <span class="subxComment"># 6 bytes</span>
-<span id="L1712" class="LineNr">1712 </span>
-<span id="L1713" class="LineNr">1713 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L1612" class="LineNr">1612 </span>    <span class="subxS1Comment"># . if EAX != 0xa/newline loop</span>
+<span id="L1613" class="LineNr">1613 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xa/imm32         <span class="subxComment"># compare EAX</span>
+<span id="L1614" class="LineNr">1614 </span>    75/jump-if-not-equal  $skip-until-newline:loop/disp8
+<span id="L1615" class="LineNr">1615 </span><span class="Constant">$skip-until-newline:end</span>:
+<span id="L1616" class="LineNr">1616 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1617" class="LineNr">1617 </span>    58/pop-to-EAX
+<span id="L1618" class="LineNr">1618 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L1619" class="LineNr">1619 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L1620" class="LineNr">1620 </span>    5d/pop-to-EBP
+<span id="L1621" class="LineNr">1621 </span>    c3/return
+<span id="L1622" class="LineNr">1622 </span>
+<span id="L1623" class="LineNr">1623 </span><span class="subxTest">test-skip-until-newline</span>:
+<span id="L1624" class="LineNr">1624 </span>    <span class="subxH1Comment"># - check that the read pointer points after the newline</span>
+<span id="L1625" class="LineNr">1625 </span>    <span class="subxComment"># setup</span>
+<span id="L1626" class="LineNr">1626 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
+<span id="L1627" class="LineNr">1627 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1628" class="LineNr">1628 </span>    68/push  _test-stream/imm32
+<span id="L1629" class="LineNr">1629 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1630" class="LineNr">1630 </span>    e8/call  clear-stream/disp32
+<span id="L1631" class="LineNr">1631 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1632" class="LineNr">1632 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L1633" class="LineNr">1633 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file+4)</span>
+<span id="L1634" class="LineNr">1634 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1635" class="LineNr">1635 </span>    b8/copy-to-EAX  _test-buffered-file/imm32
+<span id="L1636" class="LineNr">1636 </span>    05/add-to-EAX  4/imm32
+<span id="L1637" class="LineNr">1637 </span>    50/push-EAX
+<span id="L1638" class="LineNr">1638 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1639" class="LineNr">1639 </span>    e8/call  clear-stream/disp32
+<span id="L1640" class="LineNr">1640 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1641" class="LineNr">1641 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L1642" class="LineNr">1642 </span>    <span class="subxComment"># initialize '_test-stream' to &quot;abc\nde&quot;</span>
+<span id="L1643" class="LineNr">1643 </span>    <span class="subxS1Comment"># . write(_test-stream, &quot;abc&quot;)</span>
+<span id="L1644" class="LineNr">1644 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1645" class="LineNr">1645 </span>    68/push  <span class="Constant">&quot;abc&quot;</span>/imm32
+<span id="L1646" class="LineNr">1646 </span>    68/push  _test-stream/imm32
+<span id="L1647" class="LineNr">1647 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1648" class="LineNr">1648 </span>    e8/call  write/disp32
+<span id="L1649" class="LineNr">1649 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1650" class="LineNr">1650 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L1651" class="LineNr">1651 </span>    <span class="subxS1Comment"># . write(_test-stream, Newline)</span>
+<span id="L1652" class="LineNr">1652 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1653" class="LineNr">1653 </span>    68/push  <span class="SpecialChar">Newline</span>/imm32
+<span id="L1654" class="LineNr">1654 </span>    68/push  _test-stream/imm32
+<span id="L1655" class="LineNr">1655 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1656" class="LineNr">1656 </span>    e8/call  write/disp32
+<span id="L1657" class="LineNr">1657 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1658" class="LineNr">1658 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L1659" class="LineNr">1659 </span>    <span class="subxS1Comment"># . write(_test-stream, &quot;de&quot;)</span>
+<span id="L1660" class="LineNr">1660 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1661" class="LineNr">1661 </span>    68/push  <span class="Constant">&quot;de&quot;</span>/imm32
+<span id="L1662" class="LineNr">1662 </span>    68/push  _test-stream/imm32
+<span id="L1663" class="LineNr">1663 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1664" class="LineNr">1664 </span>    e8/call  write/disp32
+<span id="L1665" class="LineNr">1665 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1666" class="LineNr">1666 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L1667" class="LineNr">1667 </span>    <span class="subxComment"># skip-until-newline(_test-buffered-file)</span>
+<span id="L1668" class="LineNr">1668 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1669" class="LineNr">1669 </span>    68/push  _test-buffered-file/imm32
+<span id="L1670" class="LineNr">1670 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1671" class="LineNr">1671 </span>    e8/call  skip-until-newline/disp32
+<span id="L1672" class="LineNr">1672 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1673" class="LineNr">1673 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L1674" class="LineNr">1674 </span>    <span class="subxComment"># check-ints-equal(_test-buffered-file-&gt;read, 4, msg)</span>
+<span id="L1675" class="LineNr">1675 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L1676" class="LineNr">1676 </span>    68/push  <span class="Constant">&quot;F - test-skip-until-newline&quot;</span>/imm32
+<span id="L1677" class="LineNr">1677 </span>    68/push  4/imm32
+<span id="L1678" class="LineNr">1678 </span>    b8/copy-to-EAX  _test-buffered-file/imm32
+<span id="L1679" class="LineNr">1679 </span>    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EAX+8)</span>
+<span id="L1680" class="LineNr">1680 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L1681" class="LineNr">1681 </span>    e8/call  check-ints-equal/disp32
+<span id="L1682" class="LineNr">1682 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L1683" class="LineNr">1683 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L1684" class="LineNr">1684 </span>    <span class="subxS1Comment"># . end</span>
+<span id="L1685" class="LineNr">1685 </span>    c3/return
+<span id="L1686" class="LineNr">1686 </span>
+<span id="L1687" class="LineNr">1687 </span>== data
+<span id="L1688" class="LineNr">1688 </span>
+<span id="L1689" class="LineNr">1689 </span><span class="subxMinorFunction">_test-error-stream</span>:
+<span id="L1690" class="LineNr">1690 </span>    <span class="subxComment"># current write index</span>
+<span id="L1691" class="LineNr">1691 </span>    00 00 00 00
+<span id="L1692" class="LineNr">1692 </span>    <span class="subxComment"># current read index</span>
+<span id="L1693" class="LineNr">1693 </span>    00 00 00 00
+<span id="L1694" class="LineNr">1694 </span>    <span class="subxComment"># length (= 8)</span>
+<span id="L1695" class="LineNr">1695 </span>    08 00 00 00
+<span id="L1696" class="LineNr">1696 </span>    <span class="subxComment"># data</span>
+<span id="L1697" class="LineNr">1697 </span>    00 00 00 00 00 00 00 00  <span class="subxComment"># 8 bytes</span>
+<span id="L1698" class="LineNr">1698 </span>
+<span id="L1699" class="LineNr">1699 </span><span class="subxComment"># a test buffered file for _test-stream</span>
+<span id="L1700" class="LineNr">1700 </span><span class="subxMinorFunction">_test-error-buffered-file</span>:
+<span id="L1701" class="LineNr">1701 </span>    <span class="subxComment"># file descriptor or (address stream)</span>
+<span id="L1702" class="LineNr">1702 </span>    _test-error-stream/imm32
+<span id="L1703" class="LineNr">1703 </span>    <span class="subxComment"># current write index</span>
+<span id="L1704" class="LineNr">1704 </span>    00 00 00 00
+<span id="L1705" class="LineNr">1705 </span>    <span class="subxComment"># current read index</span>
+<span id="L1706" class="LineNr">1706 </span>    00 00 00 00
+<span id="L1707" class="LineNr">1707 </span>    <span class="subxComment"># length (6)</span>
+<span id="L1708" class="LineNr">1708 </span>    06 00 00 00
+<span id="L1709" class="LineNr">1709 </span>    <span class="subxComment"># data</span>
+<span id="L1710" class="LineNr">1710 </span>    00 00 00 00 00 00  <span class="subxComment"># 6 bytes</span>
+<span id="L1711" class="LineNr">1711 </span>
+<span id="L1712" class="LineNr">1712 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>

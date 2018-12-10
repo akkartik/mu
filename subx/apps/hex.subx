@@ -497,7 +497,7 @@ scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), 
     #     EAX = read-byte(in)
     #     if EAX == 0xffffffff return EAX
     #     if is-hex-lowercase-byte?(EAX) return EAX
-    #     if EAX == 0x20 continue
+    #     if EAX == ' ' or '\t' or '\n' continue
     #     if EAX == '#' skip-until-newline(in)
     #     else error-byte(ed, err, "invalid byte: " EAX)
     #
@@ -1609,7 +1609,6 @@ $skip-until-newline:loop:
     # . if EAX == 0xffffffff break
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
     74/jump-if-equal  $skip-until-newline:end/disp8
-$aa:
     # . if EAX != 0xa/newline loop
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xa/imm32         # compare EAX
     75/jump-if-not-equal  $skip-until-newline:loop/disp8
