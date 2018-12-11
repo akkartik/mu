@@ -17,9 +17,9 @@ $ ./subx  # print out a help message
 Expanding on the first bullet, it hopes to support more comprehensive tests
 by:
 
-0. Running generated binaries in _emulated mode_. It's slower than native
-   execution (which will also work), but there's more sanity checking, and
-   more descriptive error messages for common low-level problems.
+0. Running generated binaries in _emulated mode_. Emulated mode is slower than
+   native execution (which will also work), but there's more sanity checking,
+   and more descriptive error messages for common low-level problems.
 
    ```
    $ ./subx translate examples/ex1.subx -o examples/ex1
@@ -51,9 +51,9 @@ by:
    opcodes and vice versa. So this is a useful check.
 
 1. Designing testable wrappers for operating system interfaces. For example,
-   it can `read()` from or `write()` to fake in-memory files in tests. We'll
-   gradually port ideas for other syscalls from [the old Mu VM in the parent
-   directory](https://github.com/akkartik/mu).
+   it can `read()` from or `write()` to fake in-memory files in tests. More
+   details [below](#subx-library). We are continuing to port syscalls from
+   [the old Mu VM in the parent directory](https://github.com/akkartik/mu).
 
 2. Supporting a special _trace_ stream in addition to the default `stdin`,
    `stdout` and `stderr` streams. The trace stream is designed for programs to
