@@ -17,12 +17,12 @@ setlocal formatoptions+=c  " but comments should still wrap
 
 setlocal iskeyword+=-
 
-"? syntax match subxComment /#.*$/  | highlight link subxComment Comment
-"? syntax match subxSalientComment /##.*$/  | highlight link subxSalientComment SalientComment
-syntax match subxH1Comment /# -.*/ | highlight subxH1Comment ctermfg=14
-syntax match subxComment /#[^ ].*\|# [^.-].*\|# \?$/ | highlight subxComment ctermfg=39
-syntax match subxS1Comment /# \..*/ | highlight subxS1Comment ctermfg=27
-syntax match subxS2Comment /# \. \..*/ | highlight subxS2Comment ctermfg=19
+" comment colors for dark terminal: 14, 39, 27, 19
+" comment colors for light terminal: 19, 27, 39, 6
+syntax match subxH1Comment /# -.*/ | highlight subxH1Comment ctermfg=19
+syntax match subxComment /#[^ ].*\|# [^.-].*\|# \?$/ | highlight subxComment ctermfg=27
+syntax match subxS1Comment /# \..*/ | highlight subxS1Comment ctermfg=39
+syntax match subxS2Comment /# \. \..*/ | highlight subxS2Comment ctermfg=6
 
 set comments-=:#
 set comments+=n:#
@@ -44,8 +44,8 @@ highlight SpecialChar ctermfg=196
 
 " functions but not tests, globals or internal functions
 syntax match subxFunction "^\(test_\)\@<![a-z][^ ]*\(:\)\@=" | highlight subxFunction ctermfg=208
-" tests starting with 'test-'
-syntax match subxTest "^test-[^ ]*\(:\)\@=" | highlight subxTest ctermfg=34
+" tests starting with 'test-'; dark:34 light:64
+syntax match subxTest "^test-[^ ]*\(:\)\@=" | highlight subxTest ctermfg=64
 " internal functions starting with '_'
 syntax match subxMinorFunction "^_[^ ]*\(:\)\@=" | highlight subxMinorFunction ctermfg=95
 " other internal labels starting with '$'
