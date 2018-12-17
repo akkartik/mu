@@ -19,7 +19,7 @@ setlocal iskeyword+=-
 
 " comment colors for dark terminal: 14, 39, 27, 19
 " comment colors for light terminal: 19, 27, 39, 6
-syntax match subxH1Comment /# -.*/ | highlight subxH1Comment ctermfg=19
+syntax match subxH1Comment /# - .*/ | highlight subxH1Comment ctermfg=19
 syntax match subxComment /#[^ ].*\|# [^.-].*\|# \?$/ | highlight subxComment ctermfg=27
 syntax match subxS1Comment /# \..*/ | highlight subxS1Comment ctermfg=39
 syntax match subxS2Comment /# \. \..*/ | highlight subxS2Comment ctermfg=6
