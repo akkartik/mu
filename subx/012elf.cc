@@ -1,4 +1,4 @@
-//: Generating ELF binaries for SubX programs.
+//: Loading SubX programs from ELF binaries.
 //: This will allow us to run them natively on a Linux kernel.
 //: Based on https://github.com/kragen/stoneknifeforth/blob/702d2ebe1b/386.c
 
