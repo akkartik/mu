@@ -102,11 +102,17 @@ SubX supports a small, regular subset of the 32-bit x86 instruction set.
 The (rudimentary, statically linked) ELF binaries SubX generates can be run
 natively on Linux, and they require only the Linux kernel.
 
-_Status_: SubX is currently implemented in C++, so you need a C++ compiler and
-libraries to build SubX binaries. However, I'm learning how to build a
-compiler in assembly language by working through [Jack Crenshaw's "Let's build
-a compiler" series](https://compilers.iecc.com/crenshaw). Look in [the `apps/`
-sub-directory](http://akkartik.github.io/mu/html/subx/apps/crenshaw2-1.subx.html).
+## Status
+
+I'm currently implementing SubX in SubX in 3 phases:
+
+  1. Converting ascii hex bytes to binary. (✓)
+  2. Packing bitfields for x86 instructions into bytes.
+  3. Replacing addresses with labels.
+
+In parallel, I'm designing testable wrappers for syscalls, particularly for
+scalably running blocking syscalls with a test harness concurrently monitoring
+their progress.
 
 ## An example program
 

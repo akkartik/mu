@@ -1,4 +1,5 @@
-_by Stephen Malina and Kartik Agaram_
+_(Current development is in the [`subx/`](https://github.com/akkartik/mu/blob/master/subx/Readme.md)
+sub-directory. That prototype will be promoted to the top-level one day.)_
 
 Mu explores ways to turn arbitrary manual tests into reproducible automated
 tests. Hoped-for benefits:
