@@ -12,10 +12,12 @@ function! HighlightTangledFile()
   syntax region tangleDirective start=+:(+ skip=+".*"+ end=+)+
   highlight link tangleDirective Delimiter
   syntax match traceContains /^+.*/
-  highlight traceContains ctermfg=darkgreen
+  highlight traceContains ctermfg=22
   syntax match traceAbsent /^-.*/
   highlight traceAbsent ctermfg=darkred
   syntax match tangleScenarioSetup /^\s*% .*/ | highlight link tangleScenarioSetup SpecialChar
+
+  highlight Special ctermfg=160
 
   " Our C++ files can have Mu code in scenarios, so highlight Mu comments like
   " regular comments.
