@@ -125,6 +125,10 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
         if (Map_file.is_open())
           Map_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << label << '\n';
+        if (contains_key(byte_index, label)) {
+          raise << "duplicate label '" << label << "'\n" << end();
+          return;
+        }
         put(byte_index, label, current_byte);
         trace(99, "transform") << "label '" << label << "' is at address " << (current_byte+code.start) << end();
         // no modifying current_byte; label definitions won't be in the final binary
@@ -236,6 +240,14 @@ loop:
 +transform: instruction after transform: 'eb f9'
 # second jump is to 0 (fall through)
 +transform: instruction after transform: 'eb 00'
+
+:(scenario duplicate_label)
+% Hide_errors = true;
+== 0x1
+loop:
+loop:
+    05  0x0d0c0b0a/imm32
++error: duplicate label 'loop'
 
 :(scenario label_too_short)
 % Hide_errors = true;

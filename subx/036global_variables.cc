@@ -49,6 +49,10 @@ void compute_addresses_for_global_variables(const segment& s, map<string, uint32
           raise << "'" << to_string(inst) << "': global variable names can only be the first word in a line.\n" << end();
         if (Map_file.is_open())
           Map_file << "0x" << HEXWORD << current_address << ' ' << variable << '\n';
+        if (contains_key(address, variable)) {
+          raise << "duplicate global '" << variable << "'\n" << end();
+          return;
+        }
         put(address, variable, current_address);
         trace(99, "transform") << "global variable '" << variable << "' is at address 0x" << HEXWORD << current_address << end();
         // no modifying current_address; global variable definitions won't be in the final binary
@@ -187,6 +191,16 @@ y:
 +load: 0x0a000002 -> 00
 +load: 0x0a000003 -> 0a
 $error: 0
+
+:(scenario duplicate_global_variable)
+% Hide_errors = true;
+== 0x1
+40/increment-EAX
+== 0x0a000000
+x:
+x:
+  00
++error: duplicate global 'x'
 
 :(scenario disp32_data_with_modrm)
 == code
