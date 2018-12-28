@@ -1,0 +1,152 @@
+# Helper to dynamically allocate memory on the heap.
+#
+# We'd like to be able to write tests for functions that allocate memory,
+# making assertions on the precise addresses used. To achieve this we'll pass
+# in an *allocation descriptor* to allocate from.
+#
+# Allocation descriptors are also useful outside of tests. Assembly and machine
+# code are of necessity unsafe languages, and one of the most insidious kinds
+# of bugs unsafe languages expose us to are dangling pointers to memory that
+# has been freed and potentially even reused for something totally different.
+# To reduce the odds of such "use after free" errors, SubX programs tend to not
+# reclaim and reuse dynamically allocated memory. (Running out of memory is far
+# easier to debug.) Long-running programs that want to reuse memory are mostly
+# on their own to be careful. However, they do get one bit of help: they can
+# carve out chunks of memory and then allocate from them manually using this
+# very same 'allocate' helper. They just need a new allocation descriptor for
+# their book-keeping.
+
+== data
+
+# The 'global' allocation descriptor. Pass this into 'allocate' to claim a
+# hitherto unused bit of memory.
+Heap:
+    Start-of-heap/imm32  # curr
+    00 00 00 0b  # limit = 0x0b000000; keep sync'd with DATA_SEGMENT + SEGMENT_ALIGNMENT
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+# main:
+    e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
+    # syscall(exit, Num-test-failures)
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+
+# Claim the next 'n' bytes of memory starting at ad->curr and update ad->curr.
+# If there isn't enough memory before ad->limit, return 0 and leave 'ad' unmodified.
+allocate:  # ad : (address allocation-descriptor), n : int -> address-or-null/EAX
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    # ECX = ad
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    # save ad->curr
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+    # check if there's enough space
+    # . EDX = ad->curr + n
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EDX
+    03/add                          1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           2/r32/EDX   0xc/disp8       .                 # add *(EBP+12) to EDX
+    3b/compare                      1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # compare EDX with *(ECX+4)
+    7c/jump-if-lesser  $allocate:commit/disp8
+    # return null if not
+    b8/copy-to-EAX  0/imm32
+    eb/jump  $allocate:end/disp8
+$allocate:commit:
+    # update ad->curr
+    89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # copy EDX to *ECX
+$allocate:end:
+    # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-allocate-success:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ad/ECX : (address allocation-descriptor) = {11, 15}
+    68/push  0xf/imm32/limit
+    68/push  0xb/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = allocate(ad, 3)
+    # . . push args
+    68/push  3/imm32
+    51/push-ECX
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 11, msg)
+    # . . push args
+    68/push  "F - test-allocate-success: returns current pointer of address descriptor"/imm32
+    68/push  0xb/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(ad->curr, 14, msg)
+    # . . push args
+    68/push  "F - test-allocate-success: updates address descriptor"/imm32
+    68/push  0xe/imm32
+    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-allocate-failure:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ad/ECX : (address allocation-descriptor) = {11, 15}
+    68/push  0xf/imm32/limit
+    68/push  0xb/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = allocate(ad, 6)
+    # . . push args
+    68/push  6/imm32
+    51/push-ECX
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-allocate-failure: returns null"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # no change to ad->curr
+    # . check-ints-equal(ad->curr, 11)
+    # . . push args
+    68/push  "F - test-allocate-failure: updates address descriptor"/imm32
+    68/push  0xb/imm32
+    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# . . vim:nowrap:textwidth=0

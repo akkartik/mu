@@ -67,13 +67,6 @@ void add_global_to_data_segment(const string& name, const word& value, segment& 
   }
 }
 
-line label(string s) {
-  line result;
-  result.words.push_back(word());
-  result.words.back().data = (s+":");
-  return result;
-}
-
 //: Within strings, whitespace is significant. So we need to redo our instruction
 //: parsing.
 

@@ -133,7 +133,7 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 //   data/heap: 0x0a000000 -> 0x0affffff
 //   stack: 0x0b000ffc -> 0x0b000000 (downward)
 const int CODE_SEGMENT = 0x09000000;
-const int DATA_SEGMENT = 0x0a000000;
+const int DATA_SEGMENT = 0x0a000000;  // keep sync'd with `Heap.limit` in allocate.subx
 const int STACK_SEGMENT = 0x0b000000;
 const int AFTER_STACK = 0x0c000000;
 const int ARGV_DATA_SEGMENT = 0x0c000000;
