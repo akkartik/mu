@@ -25,7 +25,7 @@ test-foo:  # offset 7
   01 d8  # just some unique instruction: add EBX to EAX
   c3/return
 
-# check that code in test_foo ran (implicitly called by run-tests)
+# check that code in test-foo ran (implicitly called by run-tests)
 +run: inst: 0x00000007
 
 :(code)
