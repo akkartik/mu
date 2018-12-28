@@ -60,7 +60,7 @@ $run-main:
     # - otherwise read a program from stdin and emit its translation to stdout
     # var ed/EAX : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # copy ESP to EAX
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
     # configure ed to really exit()
     # . ed->target = 0
     c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
@@ -102,7 +102,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.
     # The stack pointer is no longer aligned, so dump_stack() can be misleading past this point.
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x13/imm32        # subtract from ESP
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   .               .                 # copy ESP to ECX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # initialize the stream
     # . num->length = 7
     c7/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           .           8/disp8         7/imm32           # copy to *(ECX+8)
@@ -349,7 +349,7 @@ test-get-num-reads-single-digit:
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
     # . var ed/EAX : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # copy ESP to EAX
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
     # . tailor-exit-descriptor(ed, 16)
     # . . push args
     68/push  0x10/imm32/nbytes-of-args-for-get-num
@@ -440,7 +440,7 @@ test-get-num-aborts-on-non-digit-in-Look:
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
     # . var ed/EAX : (address exit-descriptor)
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # copy ESP to EAX
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
     # . tailor-exit-descriptor(ed, 16)
     # . . push args
     68/push  0x10/imm32/nbytes-of-args-for-get-num

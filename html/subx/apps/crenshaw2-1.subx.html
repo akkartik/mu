@@ -24,10 +24,10 @@ body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color:
 .subxS1Comment { color:#2d8cff; }
 .CommentedCode { color: #6c6c6c; }
 .Constant { color:#00a0a0; }
-.subxFunction { color: #ff8700; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
 .subxMinorFunction { color: #875f5f; }
 .subxTest { color: #5f8700; }
-.SpecialChar { color: #ff0000; }
+.SpecialChar { color: #d70000; }
 .subxH1Comment { color:#00ffff; }
 -->
 </style>
@@ -126,7 +126,7 @@ if ('onhashchange' in window) {
 <span id="L60" class="LineNr"> 60 </span>    <span class="subxH1Comment"># - otherwise read a program from stdin and emit its translation to stdout</span>
 <span id="L61" class="LineNr"> 61 </span>    <span class="subxComment"># var ed/EAX : exit-descriptor</span>
 <span id="L62" class="LineNr"> 62 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># subtract from ESP</span>
-<span id="L63" class="LineNr"> 63 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          0/r32/EAX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EAX</span>
+<span id="L63" class="LineNr"> 63 </span>    89/copy                         3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EAX</span>
 <span id="L64" class="LineNr"> 64 </span>    <span class="subxComment"># configure ed to really exit()</span>
 <span id="L65" class="LineNr"> 65 </span>    <span class="subxS1Comment"># . ed-&gt;target = 0</span>
 <span id="L66" class="LineNr"> 66 </span>    c7/copy                         0/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0/imm32           <span class="subxComment"># copy to *EAX</span>
@@ -168,7 +168,7 @@ if ('onhashchange' in window) {
 <span id="L102" class="LineNr">102 </span>    <span class="subxComment"># Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.</span>
 <span id="L103" class="LineNr">103 </span>    <span class="subxComment"># The stack pointer is no longer aligned, so dump_stack() can be misleading past this point.</span>
 <span id="L104" class="LineNr">104 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0x13/imm32        <span class="subxComment"># subtract from ESP</span>
-<span id="L105" class="LineNr">105 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          1/r32/ECX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
+<span id="L105" class="LineNr">105 </span>    89/copy                         3/mod/direct    1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
 <span id="L106" class="LineNr">106 </span>    <span class="subxComment"># initialize the stream</span>
 <span id="L107" class="LineNr">107 </span>    <span class="subxS1Comment"># . num-&gt;length = 7</span>
 <span id="L108" class="LineNr">108 </span>    c7/copy                         1/mod/*+disp8   1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          8/disp8         7/imm32           <span class="subxComment"># copy to *(ECX+8)</span>
@@ -415,7 +415,7 @@ if ('onhashchange' in window) {
 <span id="L349" class="LineNr">349 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
 <span id="L350" class="LineNr">350 </span>    <span class="subxS1Comment"># . var ed/EAX : exit-descriptor</span>
 <span id="L351" class="LineNr">351 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># subtract from ESP</span>
-<span id="L352" class="LineNr">352 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          0/r32/EAX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EAX</span>
+<span id="L352" class="LineNr">352 </span>    89/copy                         3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EAX</span>
 <span id="L353" class="LineNr">353 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
 <span id="L354" class="LineNr">354 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L355" class="LineNr">355 </span>    68/push  0x10/imm32/nbytes-of-args-for-get-num
@@ -506,7 +506,7 @@ if ('onhashchange' in window) {
 <span id="L440" class="LineNr">440 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
 <span id="L441" class="LineNr">441 </span>    <span class="subxS1Comment"># . var ed/EAX : (address exit-descriptor)</span>
 <span id="L442" class="LineNr">442 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># subtract from ESP</span>
-<span id="L443" class="LineNr">443 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none <span class="CommentedCode"> . </span>          0/r32/EAX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EAX</span>
+<span id="L443" class="LineNr">443 </span>    89/copy                         3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EAX</span>
 <span id="L444" class="LineNr">444 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
 <span id="L445" class="LineNr">445 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L446" class="LineNr">446 </span>    68/push  0x10/imm32/nbytes-of-args-for-get-num
