@@ -42,7 +42,7 @@
 #?     e8/call test-stop-skips-returns-on-exit/disp32
     # syscall(exit, Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
-    b8/copy-to-EAX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 
 # Configure an exit-descriptor for a call pushing 'nbytes' bytes of args to
@@ -105,7 +105,7 @@ stop:  # ed : (address exit-descriptor), value : int
     75/jump-if-not-equal  $stop:fake/disp8
     # syscall(exit, value)
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           3/r32/EBX   8/disp8         .                 # copy *(ESP+8) to EBX
-    b8/copy-to-EAX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 $stop:fake:
     # ed->value = value+1
