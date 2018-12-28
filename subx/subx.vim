@@ -27,7 +27,7 @@ setlocal iskeyword+=-
 
 " blue-green tones
 syntax match subxH1Comment /# - .*/ | highlight subxH1Comment cterm=underline ctermfg=25
-syntax match subxComment /#[^ ].*\|# [^.-].*\|# \?$/ | highlight subxComment ctermfg=25
+syntax match subxComment /#\( \.\| - \|? \)\@!.*/ | highlight subxComment ctermfg=25
 syntax match subxS1Comment /# \..*/ | highlight subxS1Comment ctermfg=19
 syntax match subxS2Comment /# \. \..*/ | highlight subxS2Comment ctermfg=245
 
