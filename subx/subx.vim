@@ -57,7 +57,7 @@ syntax match subxGlobal %\(/\)\@<!\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlo
 highlight SpecialChar ctermfg=160
 
 " functions but not tests, globals or internal functions
-syntax match subxFunction "^\(test_\)\@<![a-z][^ ]*\(:\)\@=" | highlight subxFunction ctermfg=130
+syntax match subxFunction "^\(test_\)\@<![a-z][^ ]*\(:\)\@=" | highlight subxFunction cterm=underline ctermfg=130
 " tests starting with 'test-'; dark:34 light:64
 syntax match subxTest "^test-[^ ]*\(:\)\@=" | highlight subxTest ctermfg=64
 " internal functions starting with '_'
