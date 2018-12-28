@@ -51,10 +51,15 @@ void test_preprocess_op() {
 
 //: To check the operands for an opcode, we'll track the permitted operands
 //: for each supported opcode in a bitvector. That way we can often compute the
-//: bitvector for each instruction's operands and compare it with the expected.
+//: 'received' operand bitvector for each instruction's operands and compare
+//: it with the 'expected' bitvector.
+//:
+//: The 'expected' and 'received' bitvectors can be different; the MODRM bit
+//: in the 'expected' bitvector maps to multiple 'received' operand types in
+//: an instruction. We deal in expected bitvectors throughout.
 
 :(before "End Types")
-enum operand_type {
+enum expected_operand_type {
   // start from the least significant bit
   MODRM,  // more complex, may also involve disp8 or disp32
   SUBOP,
@@ -67,7 +72,7 @@ enum operand_type {
 };
 :(before "End Globals")
 vector<string> Operand_type_name;
-map<string, operand_type> Operand_type;
+map<string, expected_operand_type> Operand_type;
 :(before "End One-time Setup")
 init_op_types();
 :(code)
@@ -258,7 +263,7 @@ void check_operands(const line& inst, const word& op) {
 
 void compare_bitvector(const line& inst, uint8_t expected, const word& op) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  uint8_t bitvector = compute_operand_bitvector(inst);
+  uint8_t bitvector = computed_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
   if (bitvector == expected) return;  // all good with this instruction
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
@@ -282,10 +287,10 @@ string maybe_name(const word& op) {
   return " ("+s.substr(0, s.find(" ("))+')';
 }
 
-uint32_t compute_operand_bitvector(const line& inst) {
+uint32_t computed_expected_operand_bitvector(const line& inst) {
   uint32_t bitvector = 0;
   for (int i = /*skip op*/1;  i < SIZE(inst.words);  ++i) {
-    bitvector = bitvector | bitvector_for_operand(inst.words.at(i));
+    bitvector = bitvector | expected_bit_for_received_operand(inst.words.at(i));
     if (trace_contains_errors()) return INVALID_OPERANDS;  // duplicate operand type
   }
   return bitvector;
@@ -306,14 +311,16 @@ int first_operand(const line& inst) {
   return 1;
 }
 
-// Scan the metadata of 'w' and return the bit corresponding to any operand type.
+// Scan the metadata of 'w' and return the expected bit corresponding to any operand type.
 // Also raise an error if metadata contains multiple operand types.
-uint32_t bitvector_for_operand(const word& w) {
+uint32_t expected_bit_for_received_operand(const word& w) {
   uint32_t bv = 0;
   bool found = false;
   for (int i = 0;  i < SIZE(w.metadata);  ++i) {
-    const string& curr = w.metadata.at(i);
-    if (!contains_key(Operand_type, curr)) continue;  // ignore unrecognized metadata
+    string/*copy*/ curr = w.metadata.at(i);
+    if (curr == "mod" || curr == "rm32" || curr == "r32" || curr == "scale" || curr == "index" || curr == "base")
+      curr = "modrm";
+    else if (!contains_key(Operand_type, curr)) continue;  // ignore unrecognized metadata
     if (found) {
       raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
       return INVALID_OPERANDS;
@@ -365,13 +372,11 @@ void check_operands_modrm(const line& inst, const word& op) {
 }
 
 // same as compare_bitvector, with a couple of exceptions for modrm-based instructions
-//   exception 1: ignore modrm bit since we already checked it above
-//   exception 2: modrm instructions can use a displacement on occasion
+//   exception: modrm instructions can use a displacement on occasion
 void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  uint8_t bitvector = compute_operand_bitvector(inst);
+  uint8_t bitvector = computed_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
-  expected = CLEAR(expected, MODRM);  // exception 1
   if (bitvector == expected) return;  // all good with this instruction
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
 //?     cerr << "comparing for modrm " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
@@ -473,6 +478,12 @@ $error: 0
 81 0/add/subop 3/mod/indirect 4/rm32/use-sib 1/imm32
 $error: 0
 
+:(scenario extra_modrm)
+% Hide_errors = true;
+== 0x1
+59/pop-to-ECX  3/mod/direct 1/rm32/ECX 4/r32/ESP
++error: '59/pop-to-ECX 3/mod/direct 1/rm32/ECX 4/r32/ESP' (pop top of stack to ECX): unexpected modrm operand
+
 //:: similarly handle multi-byte opcodes
 
 :(code)
@@ -531,7 +542,7 @@ void check_operands_0f(const line& inst, const word& op) {
 
 void compare_bitvector_0f(const line& inst, uint8_t expected, const word& op) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  uint8_t bitvector = compute_operand_bitvector(inst);
+  uint8_t bitvector = computed_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
   if (bitvector == expected) return;  // all good with this instruction
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
