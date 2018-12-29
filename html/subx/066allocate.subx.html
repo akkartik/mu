@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - subx/066allocate.subx</title>
+<meta name="Generator" content="Vim/8.0">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal-light">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+* { font-size:12pt; font-size: 1em; }
+.subxComment { color: #005faf; }
+.Constant { color: #008787; }
+.LineNr { }
+.subxS1Comment { color: #0000af; }
+.SpecialChar { color: #d70000; }
+.subxFunction { color: #af5f00; text-decoration: underline; }
+.subxTest { color: #5f8700; }
+.Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
+.subxS2Comment { color: #8a8a8a; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<a href='https://github.com/akkartik/mu/blob/master/subx/066allocate.subx'>https://github.com/akkartik/mu/blob/master/subx/066allocate.subx</a>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr">  1 </span><span class="subxComment"># Helper to dynamically allocate memory on the heap.</span>
+<span id="L2" class="LineNr">  2 </span><span class="subxComment">#</span>
+<span id="L3" class="LineNr">  3 </span><span class="subxComment"># We'd like to be able to write tests for functions that allocate memory,</span>
+<span id="L4" class="LineNr">  4 </span><span class="subxComment"># making assertions on the precise addresses used. To achieve this we'll pass</span>
+<span id="L5" class="LineNr">  5 </span><span class="subxComment"># in an *allocation descriptor* to allocate from.</span>
+<span id="L6" class="LineNr">  6 </span><span class="subxComment">#</span>
+<span id="L7" class="LineNr">  7 </span><span class="subxComment"># Allocation descriptors are also useful outside of tests. Assembly and machine</span>
+<span id="L8" class="LineNr">  8 </span><span class="subxComment"># code are of necessity unsafe languages, and one of the most insidious kinds</span>
+<span id="L9" class="LineNr">  9 </span><span class="subxComment"># of bugs unsafe languages expose us to are dangling pointers to memory that</span>
+<span id="L10" class="LineNr"> 10 </span><span class="subxComment"># has been freed and potentially even reused for something totally different.</span>
+<span id="L11" class="LineNr"> 11 </span><span class="subxComment"># To reduce the odds of such &quot;use after free&quot; errors, SubX programs tend to not</span>
+<span id="L12" class="LineNr"> 12 </span><span class="subxComment"># reclaim and reuse dynamically allocated memory. (Running out of memory is far</span>
+<span id="L13" class="LineNr"> 13 </span><span class="subxComment"># easier to debug.) Long-running programs that want to reuse memory are mostly</span>
+<span id="L14" class="LineNr"> 14 </span><span class="subxComment"># on their own to be careful. However, they do get one bit of help: they can</span>
+<span id="L15" class="LineNr"> 15 </span><span class="subxComment"># carve out chunks of memory and then allocate from them manually using this</span>
+<span id="L16" class="LineNr"> 16 </span><span class="subxComment"># very same 'allocate' helper. They just need a new allocation descriptor for</span>
+<span id="L17" class="LineNr"> 17 </span><span class="subxComment"># their book-keeping.</span>
+<span id="L18" class="LineNr"> 18 </span>
+<span id="L19" class="LineNr"> 19 </span>== data
+<span id="L20" class="LineNr"> 20 </span>
+<span id="L21" class="LineNr"> 21 </span><span class="subxComment"># The 'global' allocation descriptor. Pass this into 'allocate' to claim a</span>
+<span id="L22" class="LineNr"> 22 </span><span class="subxComment"># hitherto unused bit of memory.</span>
+<span id="L23" class="LineNr"> 23 </span><span class="SpecialChar"><a href='066allocate.subx.html#L23'>Heap</a></span>:
+<span id="L24" class="LineNr"> 24 </span>    <span class="SpecialChar">Start-of-heap</span>/imm32  <span class="subxComment"># curr</span>
+<span id="L25" class="LineNr"> 25 </span>    00 00 00 0b  <span class="subxComment"># limit = 0x0b000000; keep sync'd with DATA_SEGMENT + SEGMENT_ALIGNMENT</span>
+<span id="L26" class="LineNr"> 26 </span>
+<span id="L27" class="LineNr"> 27 </span>== code
+<span id="L28" class="LineNr"> 28 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
+<span id="L29" class="LineNr"> 29 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
+<span id="L30" class="LineNr"> 30 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
+<span id="L31" class="LineNr"> 31 </span>
+<span id="L32" class="LineNr"> 32 </span><span class="subxComment"># main:</span>
+<span id="L33" class="LineNr"> 33 </span>    e8/call  run-tests/disp32  <span class="subxComment"># 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.</span>
+<span id="L34" class="LineNr"> 34 </span>    <span class="subxComment"># syscall(exit, Num-test-failures)</span>
+<span id="L35" class="LineNr"> 35 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/EBX   <span class="SpecialChar"><a href='051test.subx.html#L87'>Num-test-failures</a></span>/disp32          <span class="subxComment"># copy *Num-test-failures to EBX</span>
+<span id="L36" class="LineNr"> 36 </span>    b8/copy-to-EAX  1/imm32/exit
+<span id="L37" class="LineNr"> 37 </span>    cd/syscall  0x80/imm8
+<span id="L38" class="LineNr"> 38 </span>
+<span id="L39" class="LineNr"> 39 </span><span class="subxComment"># Claim the next 'n' bytes of memory starting at ad-&gt;curr and update ad-&gt;curr.</span>
+<span id="L40" class="LineNr"> 40 </span><span class="subxComment"># If there isn't enough memory before ad-&gt;limit, return 0 and leave 'ad' unmodified.</span>
+<span id="L41" class="LineNr"> 41 </span><span class="subxFunction"><a href='066allocate.subx.html#L41'>allocate</a></span>:  <span class="subxComment"># ad : (address allocation-descriptor), n : int -&gt; address-or-null/EAX</span>
+<span id="L42" class="LineNr"> 42 </span>    <span class="subxS1Comment"># . prolog</span>
+<span id="L43" class="LineNr"> 43 </span>    55/push-EBP
+<span id="L44" class="LineNr"> 44 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L45" class="LineNr"> 45 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L46" class="LineNr"> 46 </span>    51/push-ECX
+<span id="L47" class="LineNr"> 47 </span>    52/push-EDX
+<span id="L48" class="LineNr"> 48 </span>    <span class="subxComment"># ECX = ad</span>
+<span id="L49" class="LineNr"> 49 </span>    8b/copy                         1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(EBP+8) to ECX</span>
+<span id="L50" class="LineNr"> 50 </span>    <span class="subxComment"># save ad-&gt;curr</span>
+<span id="L51" class="LineNr"> 51 </span>    8b/copy                         0/mod/indirect  1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ECX to EAX</span>
+<span id="L52" class="LineNr"> 52 </span>    <span class="subxComment"># check if there's enough space</span>
+<span id="L53" class="LineNr"> 53 </span>    <span class="subxS1Comment"># . EDX = ad-&gt;curr + n</span>
+<span id="L54" class="LineNr"> 54 </span>    89/copy                         3/mod/direct    2/rm32/EDX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EAX to EDX</span>
+<span id="L55" class="LineNr"> 55 </span>    03/add                          1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># add *(EBP+12) to EDX</span>
+<span id="L56" class="LineNr"> 56 </span>    3b/compare                      1/mod/*+disp8   1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare EDX with *(ECX+4)</span>
+<span id="L57" class="LineNr"> 57 </span>    7c/jump-if-lesser  $allocate:commit/disp8
+<span id="L58" class="LineNr"> 58 </span>    <span class="subxComment"># return null if not</span>
+<span id="L59" class="LineNr"> 59 </span>    b8/copy-to-EAX  0/imm32
+<span id="L60" class="LineNr"> 60 </span>    eb/jump  $allocate:end/disp8
+<span id="L61" class="LineNr"> 61 </span><span class="Constant">$allocate:commit</span>:
+<span id="L62" class="LineNr"> 62 </span>    <span class="subxComment"># update ad-&gt;curr</span>
+<span id="L63" class="LineNr"> 63 </span>    89/copy                         0/mod/indirect  1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EDX to *ECX</span>
+<span id="L64" class="LineNr"> 64 </span><span class="Constant">$allocate:end</span>:
+<span id="L65" class="LineNr"> 65 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L66" class="LineNr"> 66 </span>    5a/pop-to-EDX
+<span id="L67" class="LineNr"> 67 </span>    59/pop-to-ECX
+<span id="L68" class="LineNr"> 68 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L69" class="LineNr"> 69 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/EBP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L70" class="LineNr"> 70 </span>    5d/pop-to-EBP
+<span id="L71" class="LineNr"> 71 </span>    c3/return
+<span id="L72" class="LineNr"> 72 </span>
+<span id="L73" class="LineNr"> 73 </span><span class="subxTest"><a href='066allocate.subx.html#L73'>test-allocate-success</a></span>:
+<span id="L74" class="LineNr"> 74 </span>    <span class="subxS1Comment"># . prolog</span>
+<span id="L75" class="LineNr"> 75 </span>    55/push-EBP
+<span id="L76" class="LineNr"> 76 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L77" class="LineNr"> 77 </span>    <span class="subxComment"># var ad/ECX : (address allocation-descriptor) = {11, 15}</span>
+<span id="L78" class="LineNr"> 78 </span>    68/push  0xf/imm32/limit
+<span id="L79" class="LineNr"> 79 </span>    68/push  0xb/imm32/curr
+<span id="L80" class="LineNr"> 80 </span>    89/copy                         3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
+<span id="L81" class="LineNr"> 81 </span>    <span class="subxComment"># EAX = allocate(ad, 3)</span>
+<span id="L82" class="LineNr"> 82 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L83" class="LineNr"> 83 </span>    68/push  3/imm32
+<span id="L84" class="LineNr"> 84 </span>    51/push-ECX
+<span id="L85" class="LineNr"> 85 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L86" class="LineNr"> 86 </span>    e8/call  <a href='066allocate.subx.html#L41'>allocate</a>/disp32
+<span id="L87" class="LineNr"> 87 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L88" class="LineNr"> 88 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L89" class="LineNr"> 89 </span>    <span class="subxComment"># check-ints-equal(EAX, 11, msg)</span>
+<span id="L90" class="LineNr"> 90 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L91" class="LineNr"> 91 </span>    68/push  <span class="Constant">&quot;F - <a href='066allocate.subx.html#L73'>test-allocate-success</a>: returns current pointer of allocation descriptor&quot;</span>/imm32
+<span id="L92" class="LineNr"> 92 </span>    68/push  0xb/imm32
+<span id="L93" class="LineNr"> 93 </span>    50/push-EAX
+<span id="L94" class="LineNr"> 94 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L95" class="LineNr"> 95 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L96" class="LineNr"> 96 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L97" class="LineNr"> 97 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L98" class="LineNr"> 98 </span>    <span class="subxComment"># check-ints-equal(ad-&gt;curr, 14, msg)</span>
+<span id="L99" class="LineNr"> 99 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L100" class="LineNr">100 </span>    68/push  <span class="Constant">&quot;F - <a href='066allocate.subx.html#L73'>test-allocate-success</a>: updates allocation descriptor&quot;</span>/imm32
+<span id="L101" class="LineNr">101 </span>    68/push  0xe/imm32
+<span id="L102" class="LineNr">102 </span>    ff          6/subop/push        0/mod/indirect  1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *ECX</span>
+<span id="L103" class="LineNr">103 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L104" class="LineNr">104 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L105" class="LineNr">105 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L106" class="LineNr">106 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L107" class="LineNr">107 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L108" class="LineNr">108 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/EBP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L109" class="LineNr">109 </span>    5d/pop-to-EBP
+<span id="L110" class="LineNr">110 </span>    c3/return
+<span id="L111" class="LineNr">111 </span>
+<span id="L112" class="LineNr">112 </span><span class="subxTest"><a href='066allocate.subx.html#L112'>test-allocate-failure</a></span>:
+<span id="L113" class="LineNr">113 </span>    <span class="subxS1Comment"># . prolog</span>
+<span id="L114" class="LineNr">114 </span>    55/push-EBP
+<span id="L115" class="LineNr">115 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L116" class="LineNr">116 </span>    <span class="subxComment"># var ad/ECX : (address allocation-descriptor) = {11, 15}</span>
+<span id="L117" class="LineNr">117 </span>    68/push  0xf/imm32/limit
+<span id="L118" class="LineNr">118 </span>    68/push  0xb/imm32/curr
+<span id="L119" class="LineNr">119 </span>    89/copy                         3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
+<span id="L120" class="LineNr">120 </span>    <span class="subxComment"># EAX = allocate(ad, 6)</span>
+<span id="L121" class="LineNr">121 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L122" class="LineNr">122 </span>    68/push  6/imm32
+<span id="L123" class="LineNr">123 </span>    51/push-ECX
+<span id="L124" class="LineNr">124 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L125" class="LineNr">125 </span>    e8/call  <a href='066allocate.subx.html#L41'>allocate</a>/disp32
+<span id="L126" class="LineNr">126 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L127" class="LineNr">127 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L128" class="LineNr">128 </span>    <span class="subxComment"># check-ints-equal(EAX, 0, msg)</span>
+<span id="L129" class="LineNr">129 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L130" class="LineNr">130 </span>    68/push  <span class="Constant">&quot;F - <a href='066allocate.subx.html#L112'>test-allocate-failure</a>: returns null&quot;</span>/imm32
+<span id="L131" class="LineNr">131 </span>    68/push  0/imm32
+<span id="L132" class="LineNr">132 </span>    50/push-EAX
+<span id="L133" class="LineNr">133 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L134" class="LineNr">134 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L135" class="LineNr">135 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L136" class="LineNr">136 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L137" class="LineNr">137 </span>    <span class="subxComment"># no change to ad-&gt;curr</span>
+<span id="L138" class="LineNr">138 </span>    <span class="subxS1Comment"># . check-ints-equal(ad-&gt;curr, 11)</span>
+<span id="L139" class="LineNr">139 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L140" class="LineNr">140 </span>    68/push  <span class="Constant">&quot;F - <a href='066allocate.subx.html#L112'>test-allocate-failure</a>: updates allocation descriptor&quot;</span>/imm32
+<span id="L141" class="LineNr">141 </span>    68/push  0xb/imm32
+<span id="L142" class="LineNr">142 </span>    ff          6/subop/push        0/mod/indirect  1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *ECX</span>
+<span id="L143" class="LineNr">143 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L144" class="LineNr">144 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L145" class="LineNr">145 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L146" class="LineNr">146 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L147" class="LineNr">147 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L148" class="LineNr">148 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/EBP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L149" class="LineNr">149 </span>    5d/pop-to-EBP
+<span id="L150" class="LineNr">150 </span>    c3/return
+<span id="L151" class="LineNr">151 </span>
+<span id="L152" class="LineNr">152 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

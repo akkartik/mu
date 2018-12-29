@@ -7,29 +7,24 @@
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="colorscheme" content="minimal-light">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-.subxS2Comment a { color:inherit; }
-.subxS1Comment a { color:inherit; }
-.subxComment a { color:inherit; }
-.subxH2Comment a { color:inherit; }
-.subxH1Comment a { color:inherit; }
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
 * { font-size:12pt; font-size: 1em; }
 .cSpecial { color: #008000; }
-.PreProc { color:#800080; }
-.LineNr { color:#444444; }
-.Constant { color:#00a0a0; }
-.SalientComment { color: #00ffff; }
-.Delimiter { color:#800080; }
-.Special { color:#c00000; }
-.Identifier { color:#c0a020; }
-.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.Comment { color: #8080ff; }
-.CommentedCode { color: #6c6c6c; }
-.traceContains { color: #008000; }
+.PreProc { color: #c000c0; }
+.LineNr { }
+.Constant { color: #008787; }
+.SalientComment { color: #0000af; }
+.Delimiter { color: #c000c0; }
+.Special { color: #d70000; }
+.Identifier { color: #af5f00; }
+.Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
+.Comment { color: #005faf; }
+.CommentedCode { color: #8a8a8a; }
+.traceContains { color: #005f00; }
 -->
 </style>
 
@@ -68,7 +63,7 @@ if ('onhashchange' in window) {
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: instructions that (immediately) contain an argument to act with</span>
 <span id="L2" class="LineNr">  2 </span>
 <span id="L3" class="LineNr">  3 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L4" class="LineNr">  4 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;81&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;combine rm32 with imm32 based on subop (add/sub/and/or/xor/cmp)&quot;</span><span class="Delimiter">);</span>
+<span id="L4" class="LineNr">  4 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;81&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;combine rm32 with <a href='037heap.cc.html#L23'>imm32</a> based on subop (add/sub/and/or/xor/cmp)&quot;</span><span class="Delimiter">);</span>
 <span id="L5" class="LineNr">  5 </span>
 <span id="L6" class="LineNr">  6 </span><span class="Delimiter">:(scenario add_imm32_to_r32)</span>
 <span id="L7" class="LineNr">  7 </span><span class="Special">% Reg[EBX].i = 1;</span>
@@ -76,15 +71,15 @@ if ('onhashchange' in window) {
 <span id="L9" class="LineNr">  9 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L10" class="LineNr"> 10 </span>  <span class="Constant">81</span>  c3                          0a 0b 0c 0d  <span class="Comment"># add 0x0d0c0b0a to EBX</span>
 <span id="L11" class="LineNr"> 11 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 000 (add imm32) 011 (dest EBX)</span>
-<span id="L12" class="LineNr"> 12 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L12" class="LineNr"> 12 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L13" class="LineNr"> 13 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L14" class="LineNr"> 14 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L14" class="LineNr"> 14 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L15" class="LineNr"> 15 </span><span class="traceContains">+run: subop add</span>
 <span id="L16" class="LineNr"> 16 </span><span class="traceContains">+run: storing 0x0d0c0b0b</span>
 <span id="L17" class="LineNr"> 17 </span>
 <span id="L18" class="LineNr"> 18 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L19" class="LineNr"> 19 </span><span class="Normal">case</span> <span class="Constant">0x81</span>: <span class="Delimiter">{</span>  <span class="Comment">// combine imm32 with r/m32</span>
-<span id="L20" class="LineNr"> 20 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;combine imm32 with r/m32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L20" class="LineNr"> 20 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L21" class="LineNr"> 21 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L364'>next</a><span class="Delimiter">();</span>
 <span id="L22" class="LineNr"> 22 </span>  <span class="Normal">int32_t</span>* arg1 = <a href='013direct_addressing.cc.html#L31'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L23" class="LineNr"> 23 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> arg2 = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
@@ -97,7 +92,7 @@ if ('onhashchange' in window) {
 <span id="L30" class="LineNr"> 30 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L31" class="LineNr"> 31 </span>  <span class="Comment">// End Op 81 Subops</span>
 <span id="L32" class="LineNr"> 32 </span>  <span class="Normal">default</span>:
-<span id="L33" class="LineNr"> 33 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized sub-opcode after 81: &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L415'>NUM</a><span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L33" class="LineNr"> 33 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized subop for opcode 81: &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L415'>NUM</a><span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span id="L34" class="LineNr"> 34 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L35" class="LineNr"> 35 </span>  <span class="Delimiter">}</span>
 <span id="L36" class="LineNr"> 36 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -113,29 +108,29 @@ if ('onhashchange' in window) {
 <span id="L46" class="LineNr"> 46 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 000 (add imm32) 011 (dest EBX)</span>
 <span id="L47" class="LineNr"> 47 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L48" class="LineNr"> 48 </span><span class="PreProc">0</span><span class="Constant">1</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># 1</span>
-<span id="L49" class="LineNr"> 49 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L49" class="LineNr"> 49 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L50" class="LineNr"> 50 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L51" class="LineNr"> 51 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L51" class="LineNr"> 51 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L52" class="LineNr"> 52 </span><span class="traceContains">+run: subop add</span>
 <span id="L53" class="LineNr"> 53 </span><span class="traceContains">+run: storing 0x0d0c0b0b</span>
 <span id="L54" class="LineNr"> 54 </span>
 <span id="L55" class="LineNr"> 55 </span><span class="SalientComment">//:: subtract</span>
 <span id="L56" class="LineNr"> 56 </span>
 <span id="L57" class="LineNr"> 57 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L58" class="LineNr"> 58 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;2d&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;subtract imm32 from <a href='010---vm.cc.html#L13'>EAX</a> (sub)&quot;</span><span class="Delimiter">);</span>
+<span id="L58" class="LineNr"> 58 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;2d&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;subtract <a href='037heap.cc.html#L23'>imm32</a> from <a href='010---vm.cc.html#L13'>EAX</a> (sub)&quot;</span><span class="Delimiter">);</span>
 <span id="L59" class="LineNr"> 59 </span>
 <span id="L60" class="LineNr"> 60 </span><span class="Delimiter">:(scenario subtract_imm32_from_eax)</span>
 <span id="L61" class="LineNr"> 61 </span><span class="Special">% Reg[EAX].i = 0x0d0c0baa;</span>
 <span id="L62" class="LineNr"> 62 </span>== <span class="Constant">0x1</span>
 <span id="L63" class="LineNr"> 63 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L64" class="LineNr"> 64 </span>  2d                              0a 0b 0c 0d  <span class="Comment"># subtract 0x0d0c0b0a from EAX</span>
-<span id="L65" class="LineNr"> 65 </span><span class="traceContains">+run: subtract imm32 0x0d0c0b0a from <a href='010---vm.cc.html#L13'>EAX</a></span>
+<span id="L65" class="LineNr"> 65 </span><span class="traceContains">+run: subtract <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b0a from <a href='010---vm.cc.html#L13'>EAX</a></span>
 <span id="L66" class="LineNr"> 66 </span><span class="traceContains">+run: storing 0x000000a0</span>
 <span id="L67" class="LineNr"> 67 </span>
 <span id="L68" class="LineNr"> 68 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L69" class="LineNr"> 69 </span><span class="Normal">case</span> <span class="Constant">0x2d</span>: <span class="Delimiter">{</span>  <span class="Comment">// subtract imm32 from EAX</span>
 <span id="L70" class="LineNr"> 70 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> arg2 = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L71" class="LineNr"> 71 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;subtract imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; from EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L71" class="LineNr"> 71 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;subtract <a href='037heap.cc.html#L23'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; from EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L72" class="LineNr"> 72 </span>  <a href='010---vm.cc.html#L91'>BINARY_ARITHMETIC_OP</a><span class="Delimiter">(</span>-<span class="Delimiter">,</span> <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[EAX]<span class="Delimiter">.</span>i<span class="Delimiter">,</span> arg2<span class="Delimiter">);</span>
 <span id="L73" class="LineNr"> 73 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L74" class="LineNr"> 74 </span><span class="Delimiter">}</span>
@@ -150,9 +145,9 @@ if ('onhashchange' in window) {
 <span id="L83" class="LineNr"> 83 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 101 (subtract imm32) 011 (dest EBX)</span>
 <span id="L84" class="LineNr"> 84 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L85" class="LineNr"> 85 </span>0a <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># 10</span>
-<span id="L86" class="LineNr"> 86 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L86" class="LineNr"> 86 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L87" class="LineNr"> 87 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L88" class="LineNr"> 88 </span><span class="traceContains">+run: imm32 is 0x00000001</span>
+<span id="L88" class="LineNr"> 88 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x00000001</span>
 <span id="L89" class="LineNr"> 89 </span><span class="traceContains">+run: subop subtract</span>
 <span id="L90" class="LineNr"> 90 </span><span class="traceContains">+run: storing 0x00000009</span>
 <span id="L91" class="LineNr"> 91 </span>
@@ -171,9 +166,9 @@ if ('onhashchange' in window) {
 <span id="L104" class="LineNr">104 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L105" class="LineNr">105 </span>  <span class="Constant">81</span>  eb                          <span class="PreProc">0</span><span class="Constant">1</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># subtract 1 from EBX</span>
 <span id="L106" class="LineNr">106 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 101 (subtract imm32) 011 (dest EBX)</span>
-<span id="L107" class="LineNr">107 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L107" class="LineNr">107 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L108" class="LineNr">108 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L109" class="LineNr">109 </span><span class="traceContains">+run: imm32 is 0x00000001</span>
+<span id="L109" class="LineNr">109 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x00000001</span>
 <span id="L110" class="LineNr">110 </span><span class="traceContains">+run: subop subtract</span>
 <span id="L111" class="LineNr">111 </span><span class="traceContains">+run: storing 0x00000009</span>
 <span id="L112" class="LineNr">112 </span>
@@ -217,7 +212,7 @@ if ('onhashchange' in window) {
 <span id="L150" class="LineNr">150 </span>  <span class="Delimiter">}</span>
 <span id="L151" class="LineNr">151 </span>  <span class="Comment">// End Op c1 Subops</span>
 <span id="L152" class="LineNr">152 </span>  <span class="Normal">default</span>:
-<span id="L153" class="LineNr">153 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized sub-opcode after c1: &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L415'>NUM</a><span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L153" class="LineNr">153 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized subop for opcode c1: &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L415'>NUM</a><span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span id="L154" class="LineNr">154 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L155" class="LineNr">155 </span>  <span class="Delimiter">}</span>
 <span id="L156" class="LineNr">156 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -331,20 +326,20 @@ if ('onhashchange' in window) {
 <span id="L264" class="LineNr">264 </span><span class="SalientComment">//:: and</span>
 <span id="L265" class="LineNr">265 </span>
 <span id="L266" class="LineNr">266 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L267" class="LineNr">267 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;25&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;EAX = bitwise AND of imm32 with <a href='010---vm.cc.html#L13'>EAX</a> (and)&quot;</span><span class="Delimiter">);</span>
+<span id="L267" class="LineNr">267 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;25&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;EAX = bitwise AND of <a href='037heap.cc.html#L23'>imm32</a> with <a href='010---vm.cc.html#L13'>EAX</a> (and)&quot;</span><span class="Delimiter">);</span>
 <span id="L268" class="LineNr">268 </span>
 <span id="L269" class="LineNr">269 </span><span class="Delimiter">:(scenario and_imm32_with_eax)</span>
 <span id="L270" class="LineNr">270 </span><span class="Special">% Reg[EAX].i = 0xff;</span>
 <span id="L271" class="LineNr">271 </span>== <span class="Constant">0x1</span>
 <span id="L272" class="LineNr">272 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L273" class="LineNr">273 </span>  <span class="Constant">25</span>                              0a 0b 0c 0d  <span class="Comment"># and 0x0d0c0b0a with EAX</span>
-<span id="L274" class="LineNr">274 </span><span class="traceContains">+run: and imm32 0x0d0c0b0a with <a href='010---vm.cc.html#L13'>EAX</a></span>
+<span id="L274" class="LineNr">274 </span><span class="traceContains">+run: and <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b0a with <a href='010---vm.cc.html#L13'>EAX</a></span>
 <span id="L275" class="LineNr">275 </span><span class="traceContains">+run: storing 0x0000000a</span>
 <span id="L276" class="LineNr">276 </span>
 <span id="L277" class="LineNr">277 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L278" class="LineNr">278 </span><span class="Normal">case</span> <span class="Constant">0x25</span>: <span class="Delimiter">{</span>  <span class="Comment">// and imm32 with EAX</span>
 <span id="L279" class="LineNr">279 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> arg2 = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L280" class="LineNr">280 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;and imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; with EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L280" class="LineNr">280 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;and <a href='037heap.cc.html#L23'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; with EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L281" class="LineNr">281 </span>  <a href='010---vm.cc.html#L103'>BINARY_BITWISE_OP</a><span class="Delimiter">(</span>&amp;<span class="Delimiter">,</span> <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[EAX]<span class="Delimiter">.</span>i<span class="Delimiter">,</span> arg2<span class="Delimiter">);</span>
 <span id="L282" class="LineNr">282 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L283" class="LineNr">283 </span><span class="Delimiter">}</span>
@@ -359,9 +354,9 @@ if ('onhashchange' in window) {
 <span id="L292" class="LineNr">292 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 100 (and imm32) 011 (dest EBX)</span>
 <span id="L293" class="LineNr">293 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L294" class="LineNr">294 </span>ff <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># 0xff</span>
-<span id="L295" class="LineNr">295 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L295" class="LineNr">295 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L296" class="LineNr">296 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L297" class="LineNr">297 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L297" class="LineNr">297 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L298" class="LineNr">298 </span><span class="traceContains">+run: subop and</span>
 <span id="L299" class="LineNr">299 </span><span class="traceContains">+run: storing 0x0000000a</span>
 <span id="L300" class="LineNr">300 </span>
@@ -380,29 +375,29 @@ if ('onhashchange' in window) {
 <span id="L313" class="LineNr">313 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L314" class="LineNr">314 </span>  <span class="Constant">81</span>  e3                          0a 0b 0c 0d  <span class="Comment"># and 0x0d0c0b0a with EBX</span>
 <span id="L315" class="LineNr">315 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 100 (and imm32) 011 (dest EBX)</span>
-<span id="L316" class="LineNr">316 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L316" class="LineNr">316 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L317" class="LineNr">317 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L318" class="LineNr">318 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L318" class="LineNr">318 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L319" class="LineNr">319 </span><span class="traceContains">+run: subop and</span>
 <span id="L320" class="LineNr">320 </span><span class="traceContains">+run: storing 0x0000000a</span>
 <span id="L321" class="LineNr">321 </span>
 <span id="L322" class="LineNr">322 </span><span class="SalientComment">//:: or</span>
 <span id="L323" class="LineNr">323 </span>
 <span id="L324" class="LineNr">324 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L325" class="LineNr">325 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;0d&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;EAX = bitwise OR of imm32 with <a href='010---vm.cc.html#L13'>EAX</a> (or)&quot;</span><span class="Delimiter">);</span>
+<span id="L325" class="LineNr">325 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;0d&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;EAX = bitwise OR of <a href='037heap.cc.html#L23'>imm32</a> with <a href='010---vm.cc.html#L13'>EAX</a> (or)&quot;</span><span class="Delimiter">);</span>
 <span id="L326" class="LineNr">326 </span>
 <span id="L327" class="LineNr">327 </span><span class="Delimiter">:(scenario or_imm32_with_eax)</span>
 <span id="L328" class="LineNr">328 </span><span class="Special">% Reg[EAX].i = 0xd0c0b0a0;</span>
 <span id="L329" class="LineNr">329 </span>== <span class="Constant">0x1</span>
 <span id="L330" class="LineNr">330 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L331" class="LineNr">331 </span>  0d                              0a 0b 0c 0d  <span class="Comment"># or 0x0d0c0b0a with EAX</span>
-<span id="L332" class="LineNr">332 </span><span class="traceContains">+run: or imm32 0x0d0c0b0a with <a href='010---vm.cc.html#L13'>EAX</a></span>
+<span id="L332" class="LineNr">332 </span><span class="traceContains">+run: or <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b0a with <a href='010---vm.cc.html#L13'>EAX</a></span>
 <span id="L333" class="LineNr">333 </span><span class="traceContains">+run: storing 0xddccbbaa</span>
 <span id="L334" class="LineNr">334 </span>
 <span id="L335" class="LineNr">335 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L336" class="LineNr">336 </span><span class="Normal">case</span> <span class="Constant">0x0d</span>: <span class="Delimiter">{</span>  <span class="Comment">// or imm32 with EAX</span>
 <span id="L337" class="LineNr">337 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> arg2 = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L338" class="LineNr">338 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;or imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; with EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L338" class="LineNr">338 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;or <a href='037heap.cc.html#L23'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; with EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L339" class="LineNr">339 </span>  <a href='010---vm.cc.html#L103'>BINARY_BITWISE_OP</a><span class="Delimiter">(</span>|<span class="Delimiter">,</span> <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[EAX]<span class="Delimiter">.</span>i<span class="Delimiter">,</span> arg2<span class="Delimiter">);</span>
 <span id="L340" class="LineNr">340 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L341" class="LineNr">341 </span><span class="Delimiter">}</span>
@@ -417,9 +412,9 @@ if ('onhashchange' in window) {
 <span id="L350" class="LineNr">350 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 001 (or imm32) 011 (dest EBX)</span>
 <span id="L351" class="LineNr">351 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L352" class="LineNr">352 </span>a0 b0 c0 d0  <span class="Comment"># 0xd0c0b0a0</span>
-<span id="L353" class="LineNr">353 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L353" class="LineNr">353 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L354" class="LineNr">354 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L355" class="LineNr">355 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L355" class="LineNr">355 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L356" class="LineNr">356 </span><span class="traceContains">+run: subop or</span>
 <span id="L357" class="LineNr">357 </span><span class="traceContains">+run: storing 0xddccbbaa</span>
 <span id="L358" class="LineNr">358 </span>
@@ -436,29 +431,29 @@ if ('onhashchange' in window) {
 <span id="L369" class="LineNr">369 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L370" class="LineNr">370 </span>  <span class="Constant">81</span>  cb                          0a 0b 0c 0d  <span class="Comment"># or 0x0d0c0b0a with EBX</span>
 <span id="L371" class="LineNr">371 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 001 (or imm32) 011 (dest EBX)</span>
-<span id="L372" class="LineNr">372 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L372" class="LineNr">372 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L373" class="LineNr">373 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L374" class="LineNr">374 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L374" class="LineNr">374 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L375" class="LineNr">375 </span><span class="traceContains">+run: subop or</span>
 <span id="L376" class="LineNr">376 </span><span class="traceContains">+run: storing 0xddccbbaa</span>
 <span id="L377" class="LineNr">377 </span>
 <span id="L378" class="LineNr">378 </span><span class="SalientComment">//:: xor</span>
 <span id="L379" class="LineNr">379 </span>
 <span id="L380" class="LineNr">380 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L381" class="LineNr">381 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;35&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;EAX = bitwise XOR of imm32 with <a href='010---vm.cc.html#L13'>EAX</a> (xor)&quot;</span><span class="Delimiter">);</span>
+<span id="L381" class="LineNr">381 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;35&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;EAX = bitwise XOR of <a href='037heap.cc.html#L23'>imm32</a> with <a href='010---vm.cc.html#L13'>EAX</a> (xor)&quot;</span><span class="Delimiter">);</span>
 <span id="L382" class="LineNr">382 </span>
 <span id="L383" class="LineNr">383 </span><span class="Delimiter">:(scenario xor_imm32_with_eax)</span>
 <span id="L384" class="LineNr">384 </span><span class="Special">% Reg[EAX].i = 0xddccb0a0;</span>
 <span id="L385" class="LineNr">385 </span>== <span class="Constant">0x1</span>
 <span id="L386" class="LineNr">386 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L387" class="LineNr">387 </span>  <span class="Constant">35</span>                              0a 0b 0c 0d  <span class="Comment"># xor 0x0d0c0b0a with EAX</span>
-<span id="L388" class="LineNr">388 </span><span class="traceContains">+run: xor imm32 0x0d0c0b0a with <a href='010---vm.cc.html#L13'>EAX</a></span>
+<span id="L388" class="LineNr">388 </span><span class="traceContains">+run: xor <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b0a with <a href='010---vm.cc.html#L13'>EAX</a></span>
 <span id="L389" class="LineNr">389 </span><span class="traceContains">+run: storing 0xd0c0bbaa</span>
 <span id="L390" class="LineNr">390 </span>
 <span id="L391" class="LineNr">391 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L392" class="LineNr">392 </span><span class="Normal">case</span> <span class="Constant">0x35</span>: <span class="Delimiter">{</span>  <span class="Comment">// xor imm32 with EAX</span>
 <span id="L393" class="LineNr">393 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> arg2 = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L394" class="LineNr">394 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;xor imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; with EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L394" class="LineNr">394 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;xor <a href='037heap.cc.html#L23'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; with EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L395" class="LineNr">395 </span>  <a href='010---vm.cc.html#L103'>BINARY_BITWISE_OP</a><span class="Delimiter">(</span>^<span class="Delimiter">,</span> <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[EAX]<span class="Delimiter">.</span>i<span class="Delimiter">,</span> arg2<span class="Delimiter">);</span>
 <span id="L396" class="LineNr">396 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L397" class="LineNr">397 </span><span class="Delimiter">}</span>
@@ -473,9 +468,9 @@ if ('onhashchange' in window) {
 <span id="L406" class="LineNr">406 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 110 (xor imm32) 011 (dest EBX)</span>
 <span id="L407" class="LineNr">407 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L408" class="LineNr">408 </span>a0 b0 c0 d0  <span class="Comment"># 0xd0c0b0a0</span>
-<span id="L409" class="LineNr">409 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L409" class="LineNr">409 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L410" class="LineNr">410 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L411" class="LineNr">411 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L411" class="LineNr">411 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L412" class="LineNr">412 </span><span class="traceContains">+run: subop xor</span>
 <span id="L413" class="LineNr">413 </span><span class="traceContains">+run: storing 0xddccbbaa</span>
 <span id="L414" class="LineNr">414 </span>
@@ -492,30 +487,30 @@ if ('onhashchange' in window) {
 <span id="L425" class="LineNr">425 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L426" class="LineNr">426 </span>  <span class="Constant">81</span>  f3                          0a 0b 0c 0d  <span class="Comment"># xor 0x0d0c0b0a with EBX</span>
 <span id="L427" class="LineNr">427 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 110 (xor imm32) 011 (dest EBX)</span>
-<span id="L428" class="LineNr">428 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L428" class="LineNr">428 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L429" class="LineNr">429 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L430" class="LineNr">430 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L430" class="LineNr">430 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L431" class="LineNr">431 </span><span class="traceContains">+run: subop xor</span>
 <span id="L432" class="LineNr">432 </span><span class="traceContains">+run: storing 0xddccbbaa</span>
 <span id="L433" class="LineNr">433 </span>
 <span id="L434" class="LineNr">434 </span><span class="SalientComment">//:: compare (cmp)</span>
 <span id="L435" class="LineNr">435 </span>
 <span id="L436" class="LineNr">436 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L437" class="LineNr">437 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;3d&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;compare: set SF if <a href='010---vm.cc.html#L13'>EAX</a> &lt; imm32 (cmp)&quot;</span><span class="Delimiter">);</span>
+<span id="L437" class="LineNr">437 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;3d&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;compare: set SF if <a href='010---vm.cc.html#L13'>EAX</a> &lt; <a href='037heap.cc.html#L23'>imm32</a> (cmp)&quot;</span><span class="Delimiter">);</span>
 <span id="L438" class="LineNr">438 </span>
 <span id="L439" class="LineNr">439 </span><span class="Delimiter">:(scenario compare_imm32_with_eax_greater)</span>
 <span id="L440" class="LineNr">440 </span><span class="Special">% Reg[EAX].i = 0x0d0c0b0a;</span>
 <span id="L441" class="LineNr">441 </span>== <span class="Constant">0x1</span>
 <span id="L442" class="LineNr">442 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L443" class="LineNr">443 </span>  3d                              <span class="PreProc">0</span><span class="Constant">7</span> 0b 0c 0d  <span class="Comment"># compare 0x0d0c0b07 with EAX</span>
-<span id="L444" class="LineNr">444 </span><span class="traceContains">+run: compare <a href='010---vm.cc.html#L13'>EAX</a> and imm32 0x0d0c0b07</span>
+<span id="L444" class="LineNr">444 </span><span class="traceContains">+run: compare <a href='010---vm.cc.html#L13'>EAX</a> and <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b07</span>
 <span id="L445" class="LineNr">445 </span><span class="traceContains">+run: SF=0; ZF=0; OF=0</span>
 <span id="L446" class="LineNr">446 </span>
 <span id="L447" class="LineNr">447 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L448" class="LineNr">448 </span><span class="Normal">case</span> <span class="Constant">0x3d</span>: <span class="Delimiter">{</span>  <span class="Comment">// compare EAX with imm32</span>
 <span id="L449" class="LineNr">449 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> arg1 = <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[EAX]<span class="Delimiter">.</span>i<span class="Delimiter">;</span>
 <span id="L450" class="LineNr">450 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> arg2 = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L451" class="LineNr">451 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compare <a href='010---vm.cc.html#L13'>EAX</a> and imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L451" class="LineNr">451 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compare <a href='010---vm.cc.html#L13'>EAX</a> and <a href='037heap.cc.html#L23'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L452" class="LineNr">452 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> tmp1 = arg1 - arg2<span class="Delimiter">;</span>
 <span id="L453" class="LineNr">453 </span>  SF = <span class="Delimiter">(</span>tmp1 &lt; <span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L454" class="LineNr">454 </span>  ZF = <span class="Delimiter">(</span>tmp1 == <span class="Constant">0</span><span class="Delimiter">);</span>
@@ -530,7 +525,7 @@ if ('onhashchange' in window) {
 <span id="L463" class="LineNr">463 </span>== <span class="Constant">0x1</span>
 <span id="L464" class="LineNr">464 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L465" class="LineNr">465 </span>  3d                              0a 0b 0c 0d  <span class="Comment"># compare 0x0d0c0b0a with EAX</span>
-<span id="L466" class="LineNr">466 </span><span class="traceContains">+run: compare <a href='010---vm.cc.html#L13'>EAX</a> and imm32 0x0d0c0b0a</span>
+<span id="L466" class="LineNr">466 </span><span class="traceContains">+run: compare <a href='010---vm.cc.html#L13'>EAX</a> and <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b0a</span>
 <span id="L467" class="LineNr">467 </span><span class="traceContains">+run: SF=1; ZF=0; OF=0</span>
 <span id="L468" class="LineNr">468 </span>
 <span id="L469" class="LineNr">469 </span><span class="Delimiter">:(scenario compare_imm32_with_eax_equal)</span>
@@ -538,7 +533,7 @@ if ('onhashchange' in window) {
 <span id="L471" class="LineNr">471 </span>== <span class="Constant">0x1</span>
 <span id="L472" class="LineNr">472 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L473" class="LineNr">473 </span>  3d                              0a 0b 0c 0d  <span class="Comment"># compare 0x0d0c0b0a with EAX</span>
-<span id="L474" class="LineNr">474 </span><span class="traceContains">+run: compare <a href='010---vm.cc.html#L13'>EAX</a> and imm32 0x0d0c0b0a</span>
+<span id="L474" class="LineNr">474 </span><span class="traceContains">+run: compare <a href='010---vm.cc.html#L13'>EAX</a> and <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b0a</span>
 <span id="L475" class="LineNr">475 </span><span class="traceContains">+run: SF=0; ZF=1; OF=0</span>
 <span id="L476" class="LineNr">476 </span>
 <span id="L477" class="LineNr">477 </span><span class="Comment">//:</span>
@@ -549,9 +544,9 @@ if ('onhashchange' in window) {
 <span id="L482" class="LineNr">482 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L483" class="LineNr">483 </span>  <span class="Constant">81</span>  fb                          <span class="PreProc">0</span><span class="Constant">7</span> 0b 0c 0d  <span class="Comment"># compare 0x0d0c0b07 with EBX</span>
 <span id="L484" class="LineNr">484 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)</span>
-<span id="L485" class="LineNr">485 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L485" class="LineNr">485 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L486" class="LineNr">486 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L487" class="LineNr">487 </span><span class="traceContains">+run: imm32 is 0x0d0c0b07</span>
+<span id="L487" class="LineNr">487 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b07</span>
 <span id="L488" class="LineNr">488 </span><span class="traceContains">+run: SF=0; ZF=0; OF=0</span>
 <span id="L489" class="LineNr">489 </span>
 <span id="L490" class="LineNr">490 </span><span class="Delimiter">:(before &quot;End Op 81 Subops&quot;)</span>
@@ -572,9 +567,9 @@ if ('onhashchange' in window) {
 <span id="L505" class="LineNr">505 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L506" class="LineNr">506 </span>  <span class="Constant">81</span>  fb                          0a 0b 0c 0d  <span class="Comment"># compare 0x0d0c0b0a with EBX</span>
 <span id="L507" class="LineNr">507 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)</span>
-<span id="L508" class="LineNr">508 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L508" class="LineNr">508 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L509" class="LineNr">509 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L510" class="LineNr">510 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L510" class="LineNr">510 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L511" class="LineNr">511 </span><span class="traceContains">+run: SF=1; ZF=0; OF=0</span>
 <span id="L512" class="LineNr">512 </span>
 <span id="L513" class="LineNr">513 </span><span class="Delimiter">:(scenario compare_imm32_with_r32_equal)</span>
@@ -583,9 +578,9 @@ if ('onhashchange' in window) {
 <span id="L516" class="LineNr">516 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L517" class="LineNr">517 </span>  <span class="Constant">81</span>  fb                          0a 0b 0c 0d  <span class="Comment"># compare 0x0d0c0b0a with EBX</span>
 <span id="L518" class="LineNr">518 </span><span class="Comment"># ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)</span>
-<span id="L519" class="LineNr">519 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L519" class="LineNr">519 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L520" class="LineNr">520 </span><span class="traceContains">+run: r/m32 is <a href='010---vm.cc.html#L16'>EBX</a></span>
-<span id="L521" class="LineNr">521 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L521" class="LineNr">521 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L522" class="LineNr">522 </span><span class="traceContains">+run: SF=0; ZF=1; OF=0</span>
 <span id="L523" class="LineNr">523 </span>
 <span id="L524" class="LineNr">524 </span><span class="Delimiter">:(scenario compare_imm32_with_mem_at_r32_greater)</span>
@@ -596,9 +591,9 @@ if ('onhashchange' in window) {
 <span id="L529" class="LineNr">529 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)</span>
 <span id="L530" class="LineNr">530 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L531" class="LineNr">531 </span>0a 0b 0c 0d  <span class="Comment"># 0x0d0c0b0a</span>
-<span id="L532" class="LineNr">532 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L532" class="LineNr">532 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L533" class="LineNr">533 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L534" class="LineNr">534 </span><span class="traceContains">+run: imm32 is 0x0d0c0b07</span>
+<span id="L534" class="LineNr">534 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b07</span>
 <span id="L535" class="LineNr">535 </span><span class="traceContains">+run: SF=0; ZF=0; OF=0</span>
 <span id="L536" class="LineNr">536 </span>
 <span id="L537" class="LineNr">537 </span><span class="Delimiter">:(scenario compare_imm32_with_mem_at_r32_lesser)</span>
@@ -609,9 +604,9 @@ if ('onhashchange' in window) {
 <span id="L542" class="LineNr">542 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)</span>
 <span id="L543" class="LineNr">543 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L544" class="LineNr">544 </span><span class="PreProc">0</span><span class="Constant">7</span> 0b 0c 0d  <span class="Comment"># 0x0d0c0b07</span>
-<span id="L545" class="LineNr">545 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L545" class="LineNr">545 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L546" class="LineNr">546 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L547" class="LineNr">547 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L547" class="LineNr">547 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L548" class="LineNr">548 </span><span class="traceContains">+run: SF=1; ZF=0; OF=0</span>
 <span id="L549" class="LineNr">549 </span>
 <span id="L550" class="LineNr">550 </span><span class="Delimiter">:(scenario compare_imm32_with_mem_at_r32_equal)</span>
@@ -623,28 +618,28 @@ if ('onhashchange' in window) {
 <span id="L556" class="LineNr">556 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)</span>
 <span id="L557" class="LineNr">557 </span>== <span class="Constant">0x2000</span>  <span class="Comment"># data segment</span>
 <span id="L558" class="LineNr">558 </span>0a 0b 0c 0d  <span class="Comment"># 0x0d0c0b0a</span>
-<span id="L559" class="LineNr">559 </span><span class="traceContains">+run: combine imm32 with r/m32</span>
+<span id="L559" class="LineNr">559 </span><span class="traceContains">+run: combine <a href='037heap.cc.html#L23'>imm32</a> with r/m32</span>
 <span id="L560" class="LineNr">560 </span><span class="traceContains">+run: effective address is 0x00002000 (EBX)</span>
-<span id="L561" class="LineNr">561 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L561" class="LineNr">561 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L562" class="LineNr">562 </span><span class="traceContains">+run: SF=0; ZF=1; OF=0</span>
 <span id="L563" class="LineNr">563 </span>
 <span id="L564" class="LineNr">564 </span><span class="SalientComment">//:: copy (mov)</span>
 <span id="L565" class="LineNr">565 </span>
 <span id="L566" class="LineNr">566 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L567" class="LineNr">567 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;b8&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L13'>EAX</a> (mov)&quot;</span><span class="Delimiter">);</span>
-<span id="L568" class="LineNr">568 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;b9&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L14'>ECX</a> (mov)&quot;</span><span class="Delimiter">);</span>
-<span id="L569" class="LineNr">569 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;ba&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L15'>EDX</a> (mov)&quot;</span><span class="Delimiter">);</span>
-<span id="L570" class="LineNr">570 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bb&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L16'>EBX</a> (mov)&quot;</span><span class="Delimiter">);</span>
-<span id="L571" class="LineNr">571 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bc&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L17'>ESP</a> (mov)&quot;</span><span class="Delimiter">);</span>
-<span id="L572" class="LineNr">572 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bd&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L18'>EBP</a> (mov)&quot;</span><span class="Delimiter">);</span>
-<span id="L573" class="LineNr">573 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;be&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L19'>ESI</a> (mov)&quot;</span><span class="Delimiter">);</span>
-<span id="L574" class="LineNr">574 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bf&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L20'>EDI</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L567" class="LineNr">567 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;b8&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L13'>EAX</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L568" class="LineNr">568 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;b9&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L14'>ECX</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L569" class="LineNr">569 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;ba&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L15'>EDX</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L570" class="LineNr">570 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bb&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L16'>EBX</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L571" class="LineNr">571 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bc&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L17'>ESP</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L572" class="LineNr">572 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bd&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L18'>EBP</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L573" class="LineNr">573 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;be&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L19'>ESI</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L574" class="LineNr">574 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;bf&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to <a href='010---vm.cc.html#L20'>EDI</a> (mov)&quot;</span><span class="Delimiter">);</span>
 <span id="L575" class="LineNr">575 </span>
 <span id="L576" class="LineNr">576 </span><span class="Delimiter">:(scenario copy_imm32_to_r32)</span>
 <span id="L577" class="LineNr">577 </span>== <span class="Constant">0x1</span>
 <span id="L578" class="LineNr">578 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L579" class="LineNr">579 </span>  bb                              0a 0b 0c 0d  <span class="Comment"># copy 0x0d0c0b0a to EBX</span>
-<span id="L580" class="LineNr">580 </span><span class="traceContains">+run: copy imm32 0x0d0c0b0a to <a href='010---vm.cc.html#L16'>EBX</a></span>
+<span id="L580" class="LineNr">580 </span><span class="traceContains">+run: copy <a href='037heap.cc.html#L23'>imm32</a> 0x0d0c0b0a to <a href='010---vm.cc.html#L16'>EBX</a></span>
 <span id="L581" class="LineNr">581 </span>
 <span id="L582" class="LineNr">582 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L583" class="LineNr">583 </span><span class="Normal">case</span> <span class="Constant">0xb8</span>:
@@ -657,7 +652,7 @@ if ('onhashchange' in window) {
 <span id="L590" class="LineNr">590 </span><span class="Normal">case</span> <span class="Constant">0xbf</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy imm32 to r32</span>
 <span id="L591" class="LineNr">591 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> rdest = op &amp; <span class="Constant">0x7</span><span class="Delimiter">;</span>
 <span id="L592" class="LineNr">592 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> src = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L593" class="LineNr">593 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; src &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; <a href='013direct_addressing.cc.html#L62'>rname</a><span class="Delimiter">(</span>rdest<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L593" class="LineNr">593 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; src &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; <a href='013direct_addressing.cc.html#L62'>rname</a><span class="Delimiter">(</span>rdest<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L594" class="LineNr">594 </span>  <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[rdest]<span class="Delimiter">.</span>i = src<span class="Delimiter">;</span>
 <span id="L595" class="LineNr">595 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L596" class="LineNr">596 </span><span class="Delimiter">}</span>
@@ -665,7 +660,7 @@ if ('onhashchange' in window) {
 <span id="L598" class="LineNr">598 </span><span class="Comment">//:</span>
 <span id="L599" class="LineNr">599 </span>
 <span id="L600" class="LineNr">600 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L601" class="LineNr">601 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;c7&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to rm32 (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L601" class="LineNr">601 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;c7&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to rm32 (mov)&quot;</span><span class="Delimiter">);</span>
 <span id="L602" class="LineNr">602 </span>
 <span id="L603" class="LineNr">603 </span><span class="Delimiter">:(scenario copy_imm32_to_mem_at_r32)</span>
 <span id="L604" class="LineNr">604 </span><span class="Special">% Reg[EBX].i = 0x60;</span>
@@ -673,45 +668,50 @@ if ('onhashchange' in window) {
 <span id="L606" class="LineNr">606 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
 <span id="L607" class="LineNr">607 </span>  c7  <span class="PreProc">0</span><span class="Constant">3</span>                          0a 0b 0c 0d  <span class="Comment"># copy 0x0d0c0b0a to *EBX</span>
 <span id="L608" class="LineNr">608 </span><span class="Comment"># ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)</span>
-<span id="L609" class="LineNr">609 </span><span class="traceContains">+run: copy imm32 to r/m32</span>
+<span id="L609" class="LineNr">609 </span><span class="traceContains">+run: copy <a href='037heap.cc.html#L23'>imm32</a> to r/m32</span>
 <span id="L610" class="LineNr">610 </span><span class="traceContains">+run: effective address is 0x00000060 (EBX)</span>
-<span id="L611" class="LineNr">611 </span><span class="traceContains">+run: imm32 is 0x0d0c0b0a</span>
+<span id="L611" class="LineNr">611 </span><span class="traceContains">+run: <a href='037heap.cc.html#L23'>imm32</a> is 0x0d0c0b0a</span>
 <span id="L612" class="LineNr">612 </span>
 <span id="L613" class="LineNr">613 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L614" class="LineNr">614 </span><span class="Normal">case</span> <span class="Constant">0xc7</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy imm32 to r32</span>
 <span id="L615" class="LineNr">615 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L364'>next</a><span class="Delimiter">();</span>
-<span id="L616" class="LineNr">616 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy imm32 to r/m32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L617" class="LineNr">617 </span>  <span class="Normal">int32_t</span>* dest = <a href='013direct_addressing.cc.html#L31'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
-<span id="L618" class="LineNr">618 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> src = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
-<span id="L619" class="LineNr">619 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;imm32 is 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; src &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L620" class="LineNr">620 </span>  *dest = src<span class="Delimiter">;</span>
-<span id="L621" class="LineNr">621 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L622" class="LineNr">622 </span><span class="Delimiter">}</span>
-<span id="L623" class="LineNr">623 </span>
-<span id="L624" class="LineNr">624 </span><span class="SalientComment">//:: push</span>
-<span id="L625" class="LineNr">625 </span>
-<span id="L626" class="LineNr">626 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L627" class="LineNr">627 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;68&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;push imm32 to stack (push)&quot;</span><span class="Delimiter">);</span>
+<span id="L616" class="LineNr">616 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy <a href='037heap.cc.html#L23'>imm32</a> to r/m32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L617" class="LineNr">617 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> subop = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>  <span class="Comment">// middle 3 'reg opcode' bits</span>
+<span id="L618" class="LineNr">618 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>subop != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L619" class="LineNr">619 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized subop for opcode c7: &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L415'>NUM</a><span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; (only 0/copy currently implemented)\n&quot;</span><span class="Delimiter">;</span>
+<span id="L620" class="LineNr">620 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L621" class="LineNr">621 </span>  <span class="Delimiter">}</span>
+<span id="L622" class="LineNr">622 </span>  <span class="Normal">int32_t</span>* dest = <a href='013direct_addressing.cc.html#L31'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
+<span id="L623" class="LineNr">623 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> src = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
+<span id="L624" class="LineNr">624 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;imm32 is 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; src &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L625" class="LineNr">625 </span>  *dest = src<span class="Delimiter">;</span>
+<span id="L626" class="LineNr">626 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L627" class="LineNr">627 </span><span class="Delimiter">}</span>
 <span id="L628" class="LineNr">628 </span>
-<span id="L629" class="LineNr">629 </span><span class="Delimiter">:(scenario push_imm32)</span>
-<span id="L630" class="LineNr">630 </span><span class="Special">% Reg[ESP].u = 0x14;</span>
-<span id="L631" class="LineNr">631 </span>== <span class="Constant">0x1</span>
-<span id="L632" class="LineNr">632 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
-<span id="L633" class="LineNr">633 </span>  <span class="Constant">68</span>                              af <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># push *EAX to stack</span>
-<span id="L634" class="LineNr">634 </span><span class="traceContains">+run: <a href='012elf.cc.html#L89'>push</a> imm32 0x000000af</span>
-<span id="L635" class="LineNr">635 </span><span class="traceContains">+run: <a href='010---vm.cc.html#L17'>ESP</a> is now 0x00000010</span>
-<span id="L636" class="LineNr">636 </span><span class="traceContains">+run: <a href='003trace.cc.html#L74'>contents</a> at <a href='010---vm.cc.html#L17'>ESP</a>: 0x000000af</span>
-<span id="L637" class="LineNr">637 </span>
-<span id="L638" class="LineNr">638 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
-<span id="L639" class="LineNr">639 </span><span class="Normal">case</span> <span class="Constant">0x68</span>: <span class="Delimiter">{</span>
-<span id="L640" class="LineNr">640 </span>  <span class="Normal">const</span> <span class="Normal">uint32_t</span> val = <span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span><a href='011run.cc.html#L343'>next32</a><span class="Delimiter">());</span>
-<span id="L641" class="LineNr">641 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;push imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; val &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L642" class="LineNr">642 </span><span class="CommentedCode">//?   cerr &lt;&lt; &quot;push: &quot; &lt;&lt; val &lt;&lt; &quot; =&gt; &quot; &lt;&lt; Reg[ESP].u &lt;&lt; '\n';</span>
-<span id="L643" class="LineNr">643 </span>  <a href='012elf.cc.html#L89'>push</a><span class="Delimiter">(</span>val<span class="Delimiter">);</span>
-<span id="L644" class="LineNr">644 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ESP is now 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[ESP]<span class="Delimiter">.</span>u &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L645" class="LineNr">645 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;contents at <a href='010---vm.cc.html#L17'>ESP</a>: 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L209'>read_mem_u32</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[ESP]<span class="Delimiter">.</span>u<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L646" class="LineNr">646 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L647" class="LineNr">647 </span><span class="Delimiter">}</span>
+<span id="L629" class="LineNr">629 </span><span class="SalientComment">//:: push</span>
+<span id="L630" class="LineNr">630 </span>
+<span id="L631" class="LineNr">631 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
+<span id="L632" class="LineNr">632 </span><a href='001help.cc.html#L262'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L378'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;68&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;push <a href='037heap.cc.html#L23'>imm32</a> to stack (push)&quot;</span><span class="Delimiter">);</span>
+<span id="L633" class="LineNr">633 </span>
+<span id="L634" class="LineNr">634 </span><span class="Delimiter">:(scenario push_imm32)</span>
+<span id="L635" class="LineNr">635 </span><span class="Special">% Reg[ESP].u = 0x14;</span>
+<span id="L636" class="LineNr">636 </span>== <span class="Constant">0x1</span>
+<span id="L637" class="LineNr">637 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
+<span id="L638" class="LineNr">638 </span>  <span class="Constant">68</span>                              af <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># push *EAX to stack</span>
+<span id="L639" class="LineNr">639 </span><span class="traceContains">+run: <a href='012elf.cc.html#L89'>push</a> <a href='037heap.cc.html#L23'>imm32</a> 0x000000af</span>
+<span id="L640" class="LineNr">640 </span><span class="traceContains">+run: <a href='010---vm.cc.html#L17'>ESP</a> is now 0x00000010</span>
+<span id="L641" class="LineNr">641 </span><span class="traceContains">+run: <a href='003trace.cc.html#L74'>contents</a> at <a href='010---vm.cc.html#L17'>ESP</a>: 0x000000af</span>
+<span id="L642" class="LineNr">642 </span>
+<span id="L643" class="LineNr">643 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L644" class="LineNr">644 </span><span class="Normal">case</span> <span class="Constant">0x68</span>: <span class="Delimiter">{</span>
+<span id="L645" class="LineNr">645 </span>  <span class="Normal">const</span> <span class="Normal">uint32_t</span> val = <span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span><a href='011run.cc.html#L343'>next32</a><span class="Delimiter">());</span>
+<span id="L646" class="LineNr">646 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;push <a href='037heap.cc.html#L23'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; val &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L647" class="LineNr">647 </span><span class="CommentedCode">//?   cerr &lt;&lt; &quot;push: &quot; &lt;&lt; val &lt;&lt; &quot; =&gt; &quot; &lt;&lt; Reg[ESP].u &lt;&lt; '\n';</span>
+<span id="L648" class="LineNr">648 </span>  <a href='012elf.cc.html#L89'>push</a><span class="Delimiter">(</span>val<span class="Delimiter">);</span>
+<span id="L649" class="LineNr">649 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ESP is now 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[ESP]<span class="Delimiter">.</span>u &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L650" class="LineNr">650 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;contents at <a href='010---vm.cc.html#L17'>ESP</a>: 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L209'>read_mem_u32</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[ESP]<span class="Delimiter">.</span>u<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L651" class="LineNr">651 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L652" class="LineNr">652 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

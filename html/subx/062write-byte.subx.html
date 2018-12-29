@@ -7,27 +7,22 @@
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
 <meta name="settings" content="number_lines,use_css,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="colorscheme" content="minimal-light">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-.subxS2Comment a { color:inherit; }
-.subxS1Comment a { color:inherit; }
-.subxComment a { color:inherit; }
-.subxH2Comment a { color:inherit; }
-.subxH1Comment a { color:inherit; }
+pre { font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
 * { font-size:12pt; font-size: 1em; }
-.subxComment { color:#16bfff; }
-.subxS2Comment { color:#4466ff; }
-.LineNr { color:#444444; }
-.subxS1Comment { color:#2d8cff; }
+.subxComment { color: #005faf; }
+.subxS2Comment { color: #8a8a8a; }
+.LineNr { }
+.subxS1Comment { color: #0000af; }
 .SpecialChar { color: #d70000; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
 .subxTest { color: #5f8700; }
-.Constant { color:#00a0a0; }
-.CommentedCode { color: #6c6c6c; }
-.subxH1Comment { color:#00ffff; }
+.Constant { color: #008787; }
+.Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
 -->
 </style>
 
@@ -72,7 +67,7 @@ if ('onhashchange' in window) {
 <span id="L7" class="LineNr">  7 </span>== data
 <span id="L8" class="LineNr">  8 </span>
 <span id="L9" class="LineNr">  9 </span><span class="subxComment"># The buffered file for standard output.</span>
-<span id="L10" class="LineNr"> 10 </span><span class="SpecialChar">Stdout</span>:
+<span id="L10" class="LineNr"> 10 </span><span class="SpecialChar"><a href='062write-byte.subx.html#L10'>Stdout</a></span>:
 <span id="L11" class="LineNr"> 11 </span>    <span class="subxComment"># file descriptor or (address stream)</span>
 <span id="L12" class="LineNr"> 12 </span>    01 00 00 00  <span class="subxComment"># 1 = standard output</span>
 <span id="L13" class="LineNr"> 13 </span>    <span class="subxComment"># current write index</span>
@@ -95,131 +90,131 @@ if ('onhashchange' in window) {
 <span id="L30" class="LineNr"> 30 </span><span class="subxComment"># main:</span>
 <span id="L31" class="LineNr"> 31 </span>    e8/call  run-tests/disp32  <span class="subxComment"># 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.</span>
 <span id="L32" class="LineNr"> 32 </span>    <span class="subxComment"># syscall(exit, Num-test-failures)</span>
-<span id="L33" class="LineNr"> 33 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/EBX   <span class="SpecialChar">Num-test-failures</span>/disp32          <span class="subxComment"># copy *Num-test-failures to EBX</span>
-<span id="L34" class="LineNr"> 34 </span>    b8/copy-to-EAX  1/imm32
+<span id="L33" class="LineNr"> 33 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/EBX   <span class="SpecialChar"><a href='051test.subx.html#L87'>Num-test-failures</a></span>/disp32          <span class="subxComment"># copy *Num-test-failures to EBX</span>
+<span id="L34" class="LineNr"> 34 </span>    b8/copy-to-EAX  1/imm32/exit
 <span id="L35" class="LineNr"> 35 </span>    cd/syscall  0x80/imm8
 <span id="L36" class="LineNr"> 36 </span>
 <span id="L37" class="LineNr"> 37 </span><span class="subxComment"># Write lower byte of 'n' to 'f'.</span>
-<span id="L38" class="LineNr"> 38 </span><span class="subxFunction">write-byte</span>:  <span class="subxComment"># f : (address buffered-file), n : num -&gt; &lt;void&gt;</span>
+<span id="L38" class="LineNr"> 38 </span><span class="subxFunction"><a href='062write-byte.subx.html#L38'>write-byte</a></span>:  <span class="subxComment"># f : (address buffered-file), n : int -&gt; &lt;void&gt;</span>
 <span id="L39" class="LineNr"> 39 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L40" class="LineNr"> 40 </span>    55/push-EBP
-<span id="L41" class="LineNr"> 41 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L41" class="LineNr"> 41 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
 <span id="L42" class="LineNr"> 42 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L43" class="LineNr"> 43 </span>    51/push-ECX
 <span id="L44" class="LineNr"> 44 </span>    57/push-EDI
 <span id="L45" class="LineNr"> 45 </span>    <span class="subxComment"># EDI = f</span>
-<span id="L46" class="LineNr"> 46 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          7/r32/EDI   8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+8) to EDI</span>
+<span id="L46" class="LineNr"> 46 </span>    8b/copy                         1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/EDI   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(EBP+8) to EDI</span>
 <span id="L47" class="LineNr"> 47 </span>    <span class="subxComment"># ECX = f-&gt;write</span>
-<span id="L48" class="LineNr"> 48 </span>    8b/copy                         1/mod/*+disp8   7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          1/r32/ECX   4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EDI+4) to ECX</span>
+<span id="L48" class="LineNr"> 48 </span>    8b/copy                         1/mod/*+disp8   7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(EDI+4) to ECX</span>
 <span id="L49" class="LineNr"> 49 </span>    <span class="subxComment"># if (f-&gt;write &gt;= f-&gt;length) flush and clear f's stream</span>
-<span id="L50" class="LineNr"> 50 </span>    3b/compare                      1/mod/*+disp8   7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          1/r32/ECX   0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># compare ECX with *(EDI+12)</span>
+<span id="L50" class="LineNr"> 50 </span>    3b/compare                      1/mod/*+disp8   7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># compare ECX with *(EDI+12)</span>
 <span id="L51" class="LineNr"> 51 </span>    7c/jump-if-lesser  $write-byte:to-stream/disp8
 <span id="L52" class="LineNr"> 52 </span>    <span class="subxS1Comment"># . flush(f)</span>
 <span id="L53" class="LineNr"> 53 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L54" class="LineNr"> 54 </span>    57/push-EDI
 <span id="L55" class="LineNr"> 55 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L56" class="LineNr"> 56 </span>    e8/call  flush/disp32
+<span id="L56" class="LineNr"> 56 </span>    e8/call  <a href='062write-byte.subx.html#L84'>flush</a>/disp32
 <span id="L57" class="LineNr"> 57 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L58" class="LineNr"> 58 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L58" class="LineNr"> 58 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L59" class="LineNr"> 59 </span>    <span class="subxS1Comment"># . clear-stream(stream = f+4)</span>
 <span id="L60" class="LineNr"> 60 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L61" class="LineNr"> 61 </span>    8d/copy-address                 1/mod/*+disp8   7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          0/r32/EAX   4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EDI+4 to EAX</span>
+<span id="L61" class="LineNr"> 61 </span>    8d/copy-address                 1/mod/*+disp8   7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy EDI+4 to EAX</span>
 <span id="L62" class="LineNr"> 62 </span>    50/push-EAX
 <span id="L63" class="LineNr"> 63 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L64" class="LineNr"> 64 </span>    e8/call  clear-stream/disp32
+<span id="L64" class="LineNr"> 64 </span>    e8/call  <a href='056write.subx.html#L85'>clear-stream</a>/disp32
 <span id="L65" class="LineNr"> 65 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L66" class="LineNr"> 66 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L66" class="LineNr"> 66 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L67" class="LineNr"> 67 </span><span class="Constant">$write-byte:to-stream</span>:
 <span id="L68" class="LineNr"> 68 </span>    <span class="subxComment"># write to stream</span>
 <span id="L69" class="LineNr"> 69 </span>    <span class="subxComment"># f-&gt;data[f-&gt;read] = LSB(n)</span>
-<span id="L70" class="LineNr"> 70 </span>    31/xor                          3/mod/direct    0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          0/r32/EAX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># clear EAX</span>
-<span id="L71" class="LineNr"> 71 </span>    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          0/r32/AL    0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy byte at *(EBP+12) to AL</span>
-<span id="L72" class="LineNr"> 72 </span>    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX  <span class="CommentedCode"> . </span>          0/r32/AL    0x10/disp8     <span class="CommentedCode"> . </span>                <span class="subxComment"># copy AL to *(EDI+ECX+16)</span>
+<span id="L70" class="LineNr"> 70 </span>    31/xor                          3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear EAX</span>
+<span id="L71" class="LineNr"> 71 </span>    8a/copy-byte                    1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL    0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *(EBP+12) to AL</span>
+<span id="L72" class="LineNr"> 72 </span>    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX  <span class="Normal"> . </span>          0/r32/AL    0x10/disp8     <span class="Normal"> . </span>                <span class="subxComment"># copy AL to *(EDI+ECX+16)</span>
 <span id="L73" class="LineNr"> 73 </span>    <span class="subxComment"># ++f-&gt;read</span>
-<span id="L74" class="LineNr"> 74 </span>    ff          0/subop/increment   1/mod/*+disp8   7/rm32/EDI   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># increment *(EDI+4)</span>
+<span id="L74" class="LineNr"> 74 </span>    ff          0/subop/increment   1/mod/*+disp8   7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># increment *(EDI+4)</span>
 <span id="L75" class="LineNr"> 75 </span><span class="Constant">$write-byte:end</span>:
 <span id="L76" class="LineNr"> 76 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L77" class="LineNr"> 77 </span>    5f/pop-to-EDI
 <span id="L78" class="LineNr"> 78 </span>    59/pop-to-ECX
 <span id="L79" class="LineNr"> 79 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L80" class="LineNr"> 80 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L80" class="LineNr"> 80 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/EBP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
 <span id="L81" class="LineNr"> 81 </span>    5d/pop-to-EBP
 <span id="L82" class="LineNr"> 82 </span>    c3/return
 <span id="L83" class="LineNr"> 83 </span>
-<span id="L84" class="LineNr"> 84 </span><span class="subxFunction">flush</span>:  <span class="subxComment"># f : (address buffered-file) -&gt; &lt;void&gt;</span>
+<span id="L84" class="LineNr"> 84 </span><span class="subxFunction"><a href='062write-byte.subx.html#L84'>flush</a></span>:  <span class="subxComment"># f : (address buffered-file) -&gt; &lt;void&gt;</span>
 <span id="L85" class="LineNr"> 85 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L86" class="LineNr"> 86 </span>    55/push-EBP
-<span id="L87" class="LineNr"> 87 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L87" class="LineNr"> 87 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
 <span id="L88" class="LineNr"> 88 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L89" class="LineNr"> 89 </span>    50/push-EAX
 <span id="L90" class="LineNr"> 90 </span>    51/push-ECX
 <span id="L91" class="LineNr"> 91 </span>    <span class="subxComment"># EAX = f</span>
-<span id="L92" class="LineNr"> 92 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          0/r32/EAX   8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+8) to EAX</span>
+<span id="L92" class="LineNr"> 92 </span>    8b/copy                         1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(EBP+8) to EAX</span>
 <span id="L93" class="LineNr"> 93 </span>    <span class="subxComment"># write-stream(f-&gt;fd, data = f+4)</span>
 <span id="L94" class="LineNr"> 94 </span>      <span class="subxS2Comment"># . . push args</span>
-<span id="L95" class="LineNr"> 95 </span>    8d/copy-address                 1/mod/*+disp8   0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          1/r32/ECX   4/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EAX+4 to ECX</span>
+<span id="L95" class="LineNr"> 95 </span>    8d/copy-address                 1/mod/*+disp8   0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy EAX+4 to ECX</span>
 <span id="L96" class="LineNr"> 96 </span>    51/push-ECX
-<span id="L97" class="LineNr"> 97 </span>    ff          6/subop/push        0/mod/indirect  0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># push *EAX</span>
+<span id="L97" class="LineNr"> 97 </span>    ff          6/subop/push        0/mod/indirect  0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *EAX</span>
 <span id="L98" class="LineNr"> 98 </span>      <span class="subxS2Comment"># . . call</span>
-<span id="L99" class="LineNr"> 99 </span>    e8/call  write-stream/disp32
+<span id="L99" class="LineNr"> 99 </span>    e8/call  <a href='060write-stream.subx.html#L22'>write-stream</a>/disp32
 <span id="L100" class="LineNr">100 </span>      <span class="subxS2Comment"># . . discard args</span>
-<span id="L101" class="LineNr">101 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L101" class="LineNr">101 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L102" class="LineNr">102 </span><span class="Constant">$flush:end</span>:
 <span id="L103" class="LineNr">103 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L104" class="LineNr">104 </span>    59/pop-to-ECX
 <span id="L105" class="LineNr">105 </span>    58/pop-to-EAX
 <span id="L106" class="LineNr">106 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L107" class="LineNr">107 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L107" class="LineNr">107 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/EBP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
 <span id="L108" class="LineNr">108 </span>    5d/pop-to-EBP
 <span id="L109" class="LineNr">109 </span>    c3/return
 <span id="L110" class="LineNr">110 </span>
 <span id="L111" class="LineNr">111 </span><span class="subxH1Comment"># - tests</span>
 <span id="L112" class="LineNr">112 </span>
-<span id="L113" class="LineNr">113 </span><span class="subxTest">test-write-byte-single</span>:
+<span id="L113" class="LineNr">113 </span><span class="subxTest"><a href='062write-byte.subx.html#L113'>test-write-byte-single</a></span>:
 <span id="L114" class="LineNr">114 </span>    <span class="subxH1Comment"># - check that read-byte returns first byte of 'file'</span>
 <span id="L115" class="LineNr">115 </span>    <span class="subxComment"># setup</span>
 <span id="L116" class="LineNr">116 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L117" class="LineNr">117 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L118" class="LineNr">118 </span>    68/push  _test-stream/imm32
+<span id="L118" class="LineNr">118 </span>    68/push  <a href='056write.subx.html#L193'>_test-stream</a>/imm32
 <span id="L119" class="LineNr">119 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L120" class="LineNr">120 </span>    e8/call  clear-stream/disp32
+<span id="L120" class="LineNr">120 </span>    e8/call  <a href='056write.subx.html#L85'>clear-stream</a>/disp32
 <span id="L121" class="LineNr">121 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L122" class="LineNr">122 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L122" class="LineNr">122 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L123" class="LineNr">123 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file+4)</span>
 <span id="L124" class="LineNr">124 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L125" class="LineNr">125 </span>    b8/copy-to-EAX  _test-buffered-file/imm32
+<span id="L125" class="LineNr">125 </span>    b8/copy-to-EAX  <a href='059read-byte.subx.html#L290'>_test-buffered-file</a>/imm32
 <span id="L126" class="LineNr">126 </span>    05/add-to-EAX  4/imm32
 <span id="L127" class="LineNr">127 </span>    50/push-EAX
 <span id="L128" class="LineNr">128 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L129" class="LineNr">129 </span>    e8/call  clear-stream/disp32
+<span id="L129" class="LineNr">129 </span>    e8/call  <a href='056write.subx.html#L85'>clear-stream</a>/disp32
 <span id="L130" class="LineNr">130 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L131" class="LineNr">131 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L131" class="LineNr">131 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L132" class="LineNr">132 </span>    <span class="subxComment"># write-byte(_test-buffered-file, 'A')</span>
 <span id="L133" class="LineNr">133 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L134" class="LineNr">134 </span>    68/push  0x41/imm32
-<span id="L135" class="LineNr">135 </span>    68/push  _test-buffered-file/imm32
+<span id="L135" class="LineNr">135 </span>    68/push  <a href='059read-byte.subx.html#L290'>_test-buffered-file</a>/imm32
 <span id="L136" class="LineNr">136 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L137" class="LineNr">137 </span>    e8/call  write-byte/disp32
+<span id="L137" class="LineNr">137 </span>    e8/call  <a href='062write-byte.subx.html#L38'>write-byte</a>/disp32
 <span id="L138" class="LineNr">138 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L139" class="LineNr">139 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L139" class="LineNr">139 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L140" class="LineNr">140 </span>    <span class="subxComment"># flush(_test-buffered-file)</span>
 <span id="L141" class="LineNr">141 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L142" class="LineNr">142 </span>    68/push  _test-buffered-file/imm32
+<span id="L142" class="LineNr">142 </span>    68/push  <a href='059read-byte.subx.html#L290'>_test-buffered-file</a>/imm32
 <span id="L143" class="LineNr">143 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L144" class="LineNr">144 </span>    e8/call  flush/disp32
+<span id="L144" class="LineNr">144 </span>    e8/call  <a href='062write-byte.subx.html#L84'>flush</a>/disp32
 <span id="L145" class="LineNr">145 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L146" class="LineNr">146 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L146" class="LineNr">146 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L147" class="LineNr">147 </span>    <span class="subxComment"># check-ints-equal(*_test-stream-&gt;data, 'A', msg)</span>
 <span id="L148" class="LineNr">148 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L149" class="LineNr">149 </span>    68/push  <span class="Constant">&quot;F - test-write-byte-single&quot;</span>/imm32
 <span id="L150" class="LineNr">150 </span>    68/push  0x41/imm32
 <span id="L151" class="LineNr">151 </span>    <span class="subxS2Comment"># . . push *_test-stream-&gt;data</span>
-<span id="L152" class="LineNr">152 </span>    b8/copy-to-EAX  _test-stream/imm32
-<span id="L153" class="LineNr">153 </span>    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>          0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># push *(EAX+12)</span>
+<span id="L152" class="LineNr">152 </span>    b8/copy-to-EAX  <a href='056write.subx.html#L193'>_test-stream</a>/imm32
+<span id="L153" class="LineNr">153 </span>    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># push *(EAX+12)</span>
 <span id="L154" class="LineNr">154 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L155" class="LineNr">155 </span>    e8/call  check-ints-equal/disp32
+<span id="L155" class="LineNr">155 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
 <span id="L156" class="LineNr">156 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L157" class="LineNr">157 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L157" class="LineNr">157 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L158" class="LineNr">158 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L159" class="LineNr">159 </span>    c3/return
 <span id="L160" class="LineNr">160 </span>

@@ -7,27 +7,22 @@
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
 <meta name="settings" content="number_lines,use_css,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="colorscheme" content="minimal-light">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #aaaaaa; background-color: #080808; }
-body { font-size:12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
-.subxS2Comment a { color:inherit; }
-.subxS1Comment a { color:inherit; }
-.subxComment a { color:inherit; }
-.subxH2Comment a { color:inherit; }
-.subxH1Comment a { color:inherit; }
+pre { font-family: monospace; color: #000000; background-color: #c6c6c6; }
+body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
 * { font-size:12pt; font-size: 1em; }
-.subxComment { color:#16bfff; }
-.subxS2Comment { color:#4466ff; }
-.LineNr { color:#444444; }
-.subxS1Comment { color:#2d8cff; }
-.CommentedCode { color: #6c6c6c; }
+.subxComment { color: #005faf; }
+.Constant { color: #008787; }
+.LineNr { }
+.subxS1Comment { color: #0000af; }
+.SpecialChar { color: #d70000; }
 .subxFunction { color: #af5f00; text-decoration: underline; }
 .subxTest { color: #5f8700; }
-.Constant { color:#00a0a0; }
-.SpecialChar { color: #d70000; }
-.subxH1Comment { color:#00ffff; }
+.Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
+.subxS2Comment { color: #8a8a8a; }
+.subxH1Comment { color: #005faf; text-decoration: underline; }
 -->
 </style>
 
@@ -74,14 +69,14 @@ if ('onhashchange' in window) {
 <span id="L9" class="LineNr">  9 </span>    <span class="subxComment"># run-tests()</span>
 <span id="L10" class="LineNr"> 10 </span>    e8/call  run-tests/disp32  <span class="subxComment"># 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.</span>
 <span id="L11" class="LineNr"> 11 </span>    <span class="subxComment"># syscall(exit, Num-test-failures)</span>
-<span id="L12" class="LineNr"> 12 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          3/r32/EBX   <span class="SpecialChar">Num-test-failures</span>/disp32          <span class="subxComment"># copy *Num-test-failures to EBX</span>
-<span id="L13" class="LineNr"> 13 </span>    b8/copy-to-EAX  1/imm32
+<span id="L12" class="LineNr"> 12 </span>    8b/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/EBX   <span class="SpecialChar"><a href='051test.subx.html#L87'>Num-test-failures</a></span>/disp32          <span class="subxComment"># copy *Num-test-failures to EBX</span>
+<span id="L13" class="LineNr"> 13 </span>    b8/copy-to-EAX  1/imm32/exit
 <span id="L14" class="LineNr"> 14 </span>    cd/syscall  0x80/imm8
 <span id="L15" class="LineNr"> 15 </span>
-<span id="L16" class="LineNr"> 16 </span><span class="subxFunction">string-equal</span>:  <span class="subxComment"># s : string, benchmark : string -&gt; EAX : boolean</span>
+<span id="L16" class="LineNr"> 16 </span><span class="subxFunction"><a href='054string_equal.subx.html#L16'>string-equal</a></span>:  <span class="subxComment"># s : string, benchmark : string -&gt; EAX : boolean</span>
 <span id="L17" class="LineNr"> 17 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L18" class="LineNr"> 18 </span>    55/push-EBP
-<span id="L19" class="LineNr"> 19 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          4/r32/ESP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L19" class="LineNr"> 19 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
 <span id="L20" class="LineNr"> 20 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L21" class="LineNr"> 21 </span>    51/push-ECX
 <span id="L22" class="LineNr"> 22 </span>    52/push-EDX
@@ -100,14 +95,14 @@ if ('onhashchange' in window) {
 <span id="L35" class="LineNr"> 35 </span>    <span class="subxComment">#   s[i]: EAX</span>
 <span id="L36" class="LineNr"> 36 </span>    <span class="subxComment">#</span>
 <span id="L37" class="LineNr"> 37 </span>    <span class="subxComment"># var s/EAX : (address array byte)</span>
-<span id="L38" class="LineNr"> 38 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          0/r32/EAX   8/disp8        <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+8) to EAX</span>
+<span id="L38" class="LineNr"> 38 </span>    8b/copy                         1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(EBP+8) to EAX</span>
 <span id="L39" class="LineNr"> 39 </span>    <span class="subxComment"># var benchmark/EBX : (address array byte)</span>
-<span id="L40" class="LineNr"> 40 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none <span class="CommentedCode"> . </span>          3/r32/EBX   0xc/disp8      <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *(EBP+12) to EBX</span>
+<span id="L40" class="LineNr"> 40 </span>    8b/copy                         1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/EBX   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(EBP+12) to EBX</span>
 <span id="L41" class="LineNr"> 41 </span>    <span class="subxComment"># if s-&gt;length != b-&gt;length return false</span>
 <span id="L42" class="LineNr"> 42 </span>    <span class="subxComment"># EDX = s-&gt;length</span>
-<span id="L43" class="LineNr"> 43 </span>    8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *EAX to EDX</span>
+<span id="L43" class="LineNr"> 43 </span>    8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *EAX to EDX</span>
 <span id="L44" class="LineNr"> 44 </span>    <span class="subxComment"># compare s-&gt;length and b-&gt;length</span>
-<span id="L45" class="LineNr"> 45 </span>    39/compare                      0/mod/indirect  3/rm32/EBX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare *EBX with EDX</span>
+<span id="L45" class="LineNr"> 45 </span>    39/compare                      0/mod/indirect  3/rm32/EBX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare *EBX with EDX</span>
 <span id="L46" class="LineNr"> 46 </span>    75/jump-if-not-equal  $string-equal:false/disp8
 <span id="L47" class="LineNr"> 47 </span><span class="Constant">$string-equal:lengths</span>:
 <span id="L48" class="LineNr"> 48 </span>    <span class="subxComment"># var i/ECX : int = 0</span>
@@ -118,13 +113,13 @@ if ('onhashchange' in window) {
 <span id="L53" class="LineNr"> 53 </span>    40/inc-EAX
 <span id="L54" class="LineNr"> 54 </span><span class="Constant">$string-equal:loop</span>:
 <span id="L55" class="LineNr"> 55 </span>    <span class="subxComment"># if i &gt;= s-&gt;length return true</span>
-<span id="L56" class="LineNr"> 56 </span>    39/compare                      3/mod/direct    1/rm32/ECX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          2/r32/EDX  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare ECX with EDX</span>
+<span id="L56" class="LineNr"> 56 </span>    39/compare                      3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ECX with EDX</span>
 <span id="L57" class="LineNr"> 57 </span>    7d/jump-if-greater-or-equal  $string-equal:true/disp8
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxComment"># if b[i] != s[i] return false</span>
 <span id="L59" class="LineNr"> 59 </span>    <span class="subxComment"># ESI = s[i]</span>
-<span id="L60" class="LineNr"> 60 </span>    8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          6/r32/ESI  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy *EAX to ESI</span>
+<span id="L60" class="LineNr"> 60 </span>    8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/ESI  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *EAX to ESI</span>
 <span id="L61" class="LineNr"> 61 </span>    <span class="subxComment"># compare b[i] with ESI</span>
-<span id="L62" class="LineNr"> 62 </span>    39/compare                      0/mod/indirect  3/rm32/EBX   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          6/r32/ESI  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># compare *EBX with ESI</span>
+<span id="L62" class="LineNr"> 62 </span>    39/compare                      0/mod/indirect  3/rm32/EBX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/ESI  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare *EBX with ESI</span>
 <span id="L63" class="LineNr"> 63 </span>    75/jump-if-not-equal  $string-equal:false/disp8
 <span id="L64" class="LineNr"> 64 </span>    <span class="subxComment"># ++i</span>
 <span id="L65" class="LineNr"> 65 </span>    41/inc-ECX
@@ -146,90 +141,90 @@ if ('onhashchange' in window) {
 <span id="L81" class="LineNr"> 81 </span>    5a/pop-to-EDX
 <span id="L82" class="LineNr"> 82 </span>    59/pop-to-ECX
 <span id="L83" class="LineNr"> 83 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L84" class="LineNr"> 84 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>          5/r32/EBP  <span class="CommentedCode"> . </span>             <span class="CommentedCode"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L84" class="LineNr"> 84 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/EBP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
 <span id="L85" class="LineNr"> 85 </span>    5d/pop-to-EBP
 <span id="L86" class="LineNr"> 86 </span>    c3/return
 <span id="L87" class="LineNr"> 87 </span>
 <span id="L88" class="LineNr"> 88 </span><span class="subxH1Comment"># - tests</span>
 <span id="L89" class="LineNr"> 89 </span>
-<span id="L90" class="LineNr"> 90 </span><span class="subxTest">test-compare-empty-with-empty-string</span>:
+<span id="L90" class="LineNr"> 90 </span><span class="subxTest"><a href='054string_equal.subx.html#L90'>test-compare-empty-with-empty-string</a></span>:
 <span id="L91" class="LineNr"> 91 </span>    <span class="subxComment"># EAX = string-equal(&quot;&quot;, &quot;&quot;)</span>
 <span id="L92" class="LineNr"> 92 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L93" class="LineNr"> 93 </span>    68/push  <span class="Constant">&quot;&quot;</span>/imm32
 <span id="L94" class="LineNr"> 94 </span>    68/push  <span class="Constant">&quot;&quot;</span>/imm32
 <span id="L95" class="LineNr"> 95 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L96" class="LineNr"> 96 </span>    e8/call  string-equal/disp32
+<span id="L96" class="LineNr"> 96 </span>    e8/call  <a href='054string_equal.subx.html#L16'>string-equal</a>/disp32
 <span id="L97" class="LineNr"> 97 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L98" class="LineNr"> 98 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L98" class="LineNr"> 98 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L99" class="LineNr"> 99 </span>    <span class="subxComment"># check-ints-equal(EAX, 1, msg)</span>
 <span id="L100" class="LineNr">100 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L101" class="LineNr">101 </span>    68/push  <span class="Constant">&quot;F - test-compare-empty-with-empty-string&quot;</span>/imm32
 <span id="L102" class="LineNr">102 </span>    68/push  1/imm32/true
 <span id="L103" class="LineNr">103 </span>    50/push-EAX
 <span id="L104" class="LineNr">104 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L105" class="LineNr">105 </span>    e8/call  check-ints-equal/disp32
+<span id="L105" class="LineNr">105 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
 <span id="L106" class="LineNr">106 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L107" class="LineNr">107 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L107" class="LineNr">107 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L108" class="LineNr">108 </span>    c3/return
 <span id="L109" class="LineNr">109 </span>
-<span id="L110" class="LineNr">110 </span><span class="subxTest">test-compare-empty-with-non-empty-string</span>:  <span class="subxComment"># also checks length-mismatch code path</span>
+<span id="L110" class="LineNr">110 </span><span class="subxTest"><a href='054string_equal.subx.html#L110'>test-compare-empty-with-non-empty-string</a></span>:  <span class="subxComment"># also checks length-mismatch code path</span>
 <span id="L111" class="LineNr">111 </span>    <span class="subxComment"># EAX = string-equal(&quot;&quot;, &quot;Abc&quot;)</span>
 <span id="L112" class="LineNr">112 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L113" class="LineNr">113 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
 <span id="L114" class="LineNr">114 </span>    68/push  <span class="Constant">&quot;&quot;</span>/imm32
 <span id="L115" class="LineNr">115 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L116" class="LineNr">116 </span>    e8/call  string-equal/disp32
+<span id="L116" class="LineNr">116 </span>    e8/call  <a href='054string_equal.subx.html#L16'>string-equal</a>/disp32
 <span id="L117" class="LineNr">117 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L118" class="LineNr">118 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L118" class="LineNr">118 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L119" class="LineNr">119 </span>    <span class="subxComment"># check-ints-equal(EAX, 0, msg)</span>
 <span id="L120" class="LineNr">120 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L121" class="LineNr">121 </span>    68/push  <span class="Constant">&quot;F - test-compare-empty-with-non-empty-string&quot;</span>/imm32
 <span id="L122" class="LineNr">122 </span>    68/push  0/imm32/false
 <span id="L123" class="LineNr">123 </span>    50/push-EAX
 <span id="L124" class="LineNr">124 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L125" class="LineNr">125 </span>    e8/call  check-ints-equal/disp32
+<span id="L125" class="LineNr">125 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
 <span id="L126" class="LineNr">126 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L127" class="LineNr">127 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L127" class="LineNr">127 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L128" class="LineNr">128 </span>    c3/return
 <span id="L129" class="LineNr">129 </span>
-<span id="L130" class="LineNr">130 </span><span class="subxTest">test-compare-equal-strings</span>:
+<span id="L130" class="LineNr">130 </span><span class="subxTest"><a href='054string_equal.subx.html#L130'>test-compare-equal-strings</a></span>:
 <span id="L131" class="LineNr">131 </span>    <span class="subxComment"># EAX = string-equal(&quot;Abc&quot;, &quot;Abc&quot;)</span>
 <span id="L132" class="LineNr">132 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L133" class="LineNr">133 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
 <span id="L134" class="LineNr">134 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
 <span id="L135" class="LineNr">135 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L136" class="LineNr">136 </span>    e8/call  string-equal/disp32
+<span id="L136" class="LineNr">136 </span>    e8/call  <a href='054string_equal.subx.html#L16'>string-equal</a>/disp32
 <span id="L137" class="LineNr">137 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L138" class="LineNr">138 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L138" class="LineNr">138 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L139" class="LineNr">139 </span>    <span class="subxComment"># check-ints-equal(EAX, 1, msg)</span>
 <span id="L140" class="LineNr">140 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L141" class="LineNr">141 </span>    68/push  <span class="Constant">&quot;F - test-compare-equal-strings&quot;</span>/imm32
 <span id="L142" class="LineNr">142 </span>    68/push  1/imm32/true
 <span id="L143" class="LineNr">143 </span>    50/push-EAX
 <span id="L144" class="LineNr">144 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L145" class="LineNr">145 </span>    e8/call  check-ints-equal/disp32
+<span id="L145" class="LineNr">145 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
 <span id="L146" class="LineNr">146 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L147" class="LineNr">147 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L147" class="LineNr">147 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L148" class="LineNr">148 </span>    c3/return
 <span id="L149" class="LineNr">149 </span>
-<span id="L150" class="LineNr">150 </span><span class="subxTest">test-compare-inequal-strings-equal-lengths</span>:
+<span id="L150" class="LineNr">150 </span><span class="subxTest"><a href='054string_equal.subx.html#L150'>test-compare-inequal-strings-equal-lengths</a></span>:
 <span id="L151" class="LineNr">151 </span>    <span class="subxComment"># EAX = string-equal(&quot;Abc&quot;, &quot;Adc&quot;)</span>
 <span id="L152" class="LineNr">152 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L153" class="LineNr">153 </span>    68/push  <span class="Constant">&quot;Adc&quot;</span>/imm32
 <span id="L154" class="LineNr">154 </span>    68/push  <span class="Constant">&quot;Abc&quot;</span>/imm32
 <span id="L155" class="LineNr">155 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L156" class="LineNr">156 </span>    e8/call  string-equal/disp32
+<span id="L156" class="LineNr">156 </span>    e8/call  <a href='054string_equal.subx.html#L16'>string-equal</a>/disp32
 <span id="L157" class="LineNr">157 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L158" class="LineNr">158 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L158" class="LineNr">158 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L159" class="LineNr">159 </span>    <span class="subxComment"># check-ints-equal(EAX, 0, msg)</span>
 <span id="L160" class="LineNr">160 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L161" class="LineNr">161 </span>    68/push  <span class="Constant">&quot;F - test-compare-inequal-strings-equal-lengths&quot;</span>/imm32
 <span id="L162" class="LineNr">162 </span>    68/push  0/imm32/false
 <span id="L163" class="LineNr">163 </span>    50/push-EAX
 <span id="L164" class="LineNr">164 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L165" class="LineNr">165 </span>    e8/call  check-ints-equal/disp32
+<span id="L165" class="LineNr">165 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
 <span id="L166" class="LineNr">166 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L167" class="LineNr">167 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>           <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>         <span class="CommentedCode"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L167" class="LineNr">167 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L168" class="LineNr">168 </span>    c3/return
 <span id="L169" class="LineNr">169 </span>
 <span id="L170" class="LineNr">170 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
