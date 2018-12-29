@@ -30,7 +30,7 @@ case 0x81: {  // combine imm32 with r/m32
     break;
   // End Op 81 Subops
   default:
-    cerr << "unrecognized sub-opcode after 81: " << NUM(subop) << '\n';
+    cerr << "unrecognized subop for opcode 81: " << NUM(subop) << '\n';
     exit(1);
   }
   break;
@@ -150,7 +150,7 @@ case 0xc1: {
   }
   // End Op c1 Subops
   default:
-    cerr << "unrecognized sub-opcode after c1: " << NUM(subop) << '\n';
+    cerr << "unrecognized subop for opcode c1: " << NUM(subop) << '\n';
     exit(1);
   }
   break;
@@ -614,6 +614,11 @@ put_new(Name, "c7", "copy imm32 to rm32 (mov)");
 case 0xc7: {  // copy imm32 to r32
   const uint8_t modrm = next();
   trace(90, "run") << "copy imm32 to r/m32" << end();
+  const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  if (subop != 0) {
+    cerr << "unrecognized subop for opcode c7: " << NUM(subop) << " (only 0/copy currently implemented)\n";
+    exit(1);
+  }
   int32_t* dest = effective_address(modrm);
   const int32_t src = next32();
   trace(90, "run") << "imm32 is 0x" << HEXWORD << src << end();

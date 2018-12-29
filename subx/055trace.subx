@@ -63,7 +63,7 @@ initialize-trace-stream:
     # copy EAX to *Trace-stream
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
     # Trace-stream->length = 0x1000/N - 12
-    c7          0/copy              1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         0xff4/imm32       # copy 0xff4 to *(EAX+8)
+    c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         0xff4/imm32       # copy 0xff4 to *(EAX+8)
     c3/return
 
 # Append a string to the given trace stream.
@@ -149,9 +149,9 @@ clear-trace-stream:  # t : (address trace-stream)
     # ECX = &t->data[t->length]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
     # t->write = 0
-    c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
     # t->read = 0
-    c7/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
+    c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
     # EAX = t->data
     81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xc/imm32         # add to EAX
     # while (true)
@@ -160,7 +160,7 @@ $clear-trace-stream:loop:
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
     7d/jump-if-greater-or-equal  $clear-trace-stream:end/disp8
     # *EAX = 0
-    c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
     # EAX += 4
     81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               4/imm32           # add to EAX
     eb/jump  $clear-trace-stream:loop/disp8

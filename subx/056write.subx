@@ -96,9 +96,9 @@ clear-stream:  # f : (address stream) -> <void>
     # ECX = &f->data[f->length]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
     # f->write = 0
-    c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
     # f->read = 0
-    c7/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
+    c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
     # EAX = f->data
     81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xc/imm32         # add to EAX
     # while (true)
@@ -107,7 +107,7 @@ $clear-stream:loop:
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
     7d/jump-if-greater-or-equal  $clear-stream:end/disp8
     # *EAX = 0
-    c7/copy                         0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
     # EAX += 4
     81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               4/imm32           # add to EAX
     eb/jump  $clear-stream:loop/disp8

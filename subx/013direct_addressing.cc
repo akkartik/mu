@@ -134,7 +134,7 @@ case 0xf7: {
   }
   // End Op f7 Subops
   default:
-    cerr << "unrecognized sub-opcode after f7: " << NUM(subop) << '\n';
+    cerr << "unrecognized subop for opcode f7: " << NUM(subop) << '\n';
     exit(1);
   }
   break;
@@ -250,7 +250,7 @@ case 0xd3: {
   }
   // End Op d3 Subops
   default:
-    cerr << "unrecognized sub-opcode after d3: " << NUM(subop) << '\n';
+    cerr << "unrecognized subop for opcode d3: " << NUM(subop) << '\n';
     exit(1);
   }
   break;

@@ -229,15 +229,11 @@ void init_permitted_operands() {
   //  0     1     0      |0       0     1     1
   put(Permitted_operands, "c1", 0x23);  // combine
 
-  //// Class P: op, ModR/M and imm32
-  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
-  //  1     0     0      |0       0     0     1
-  put(Permitted_operands, "c7", 0x41);  // copy
-
-  //// Class Q: op, ModR/M, subop (not r32) and imm32
+  //// Class P: op, ModR/M, subop (not r32) and imm32
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  1     0     0      |0       0     1     1
   put(Permitted_operands, "81", 0x43);  // combine
+  put(Permitted_operands, "c7", 0x43);  // copy
 
   // End Init Permitted Operands
 }
