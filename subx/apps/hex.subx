@@ -27,12 +27,12 @@
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # - if argc > 1 and argv[1] == "test" then return run_tests()
     # . argc > 1
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0/disp8         1/imm32           # compare *EBP
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
     7e/jump-if-lesser-or-equal  $run-main/disp8
     # . argv[1] == "test"
     # . . push args
     68/push  "test"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  kernel-string-equal/disp32
     # . . discard args
@@ -91,9 +91,9 @@ convert:  # in : (address buffered-file), out : (address buffered-file), err : (
 $convert:loop:
     # EAX = convert-next-octet(in, err, ed)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  convert-next-octet/disp32
     # . . discard first 2 args
@@ -104,7 +104,7 @@ $convert:loop:
     # write-byte(out, AL)
     # . . push args
     50/push-EAX
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write-byte/disp32
     # . . discard args
@@ -114,7 +114,7 @@ $convert:loop:
 $convert:loop-end:
     # flush(out)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  flush/disp32
     # . . discard args
@@ -151,9 +151,9 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     51/push-ECX
     # EAX = scan-next-byte(in, err, ed)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  scan-next-byte/disp32
     # . . discard args
@@ -167,9 +167,9 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
     # EAX = scan-next-byte(in, err, ed)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  scan-next-byte/disp32
     # . . discard args
@@ -181,8 +181,8 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     # . . push args
     68/push  0x2e/imm32/period/dummy
     68/push  "convert-next-octet: partial byte found"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     # . . call
     e8/call  error-byte/disp32  # never returns
 $convert-next-octet:convert:
@@ -508,7 +508,7 @@ scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), 
 $scan-next-byte:loop:
     # EAX = read-byte(in)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  read-byte/disp32
     # . . discard args
@@ -548,7 +548,7 @@ $scan-next-byte:check2:
     75/jump-if-not-equal  $scan-next-byte:check3/disp8
     # . skip-until-newline(in)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  skip-until-newline/disp32
     # . . discard args
@@ -559,8 +559,8 @@ $scan-next-byte:check3:
     # . . push args
     50/push-EAX
     68/push  "scan-next-byte: invalid byte"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     # . . call
     e8/call  error-byte/disp32  # never returns
 $scan-next-byte:end:
@@ -1421,7 +1421,7 @@ is-hex-lowercase-byte?:  # c : byte -> bool/EAX
     # . save registers
     51/push-ECX
     # ECX = c
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
     # return false if c < '0'
     b8/copy-to-EAX  0/imm32/false
     81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x30/imm32        # compare ECX
@@ -1601,7 +1601,7 @@ skip-until-newline:  # in : (address buffered-file) -> <void>
 $skip-until-newline:loop:
     # . EAX = read-byte(in)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  read-byte/disp32
     # . . discard args

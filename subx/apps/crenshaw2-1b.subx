@@ -39,12 +39,12 @@
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # - if argc > 1 and argv[1] == "test" then return run_tests()
     # . argc > 1
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0/disp8         1/imm32           # compare *EBP
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
     7e/jump-if-lesser-or-equal  $run-main/disp8
     # . argv[1] == "test"
     # . . push args
     68/push  "test"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  kernel-string-equal/disp32
     # . . discard args
@@ -91,7 +91,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # prime the pump
     # . Look = get-char(in)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8      .                    # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8      .                    # push *(EBP+8)
     # . . call
     e8/call  get-char/disp32
     # . . discard args
@@ -116,10 +116,10 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # read a digit from 'in' into 'num'
     # . get-num(in, num, err, ed)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     51/push-ECX/num
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8      .                    # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8      .                    # push *(EBP+8)
     # . . call
     e8/call  get-num/disp32
     # . . discard args
@@ -132,7 +132,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . write(out, "bb/copy-to-EBX  ")
     # . . push args
     68/push  "bb/copy-to-EBX  "/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -140,7 +140,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . write-stream(out, num)
     # . . push args
     51/push-ECX/num
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write-stream/disp32
     # . . discard args
@@ -148,7 +148,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . write(out, Newline)
     # . . push args
     68/push  Newline/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -156,7 +156,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . write(out, "b8/copy-to-EAX  1/imm32/exit")
     # . . push args
     68/push  "b8/copy-to-EAX  1/imm32/exit"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -164,7 +164,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . write(out, Newline)
     # . . push args
     68/push  Newline/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -172,7 +172,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . write(out, "cd/syscall  0x80/imm8")
     # . . push args
     68/push  "cd/syscall  0x80/imm8"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -180,7 +180,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     # . write(out, Newline)
     # . . push args
     68/push  Newline/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -240,8 +240,8 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     # . expected(ed, err, "integer")
     # . . push args
     68/push  "integer"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
     # . . call
     e8/call  expected/disp32  # never returns
     # . . discard args
@@ -257,9 +257,9 @@ $get-num:main:
     57/push-EDI
     # read necessary variables to registers
     # ESI = in
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # EDI = out
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to EDI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to EDI
     # ECX = out->write
     8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
     # EDX = out->length
@@ -271,8 +271,8 @@ $get-num:loop:
     # . error(ed, err, msg)  # TODO: show full number
     # . . push args
     68/push  "get-num: too many digits in number"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
     # . . call
     e8/call  error/disp32  # never returns
     # . . discard args
@@ -686,15 +686,15 @@ expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (ad
     # write(f, "Error: ")
     # . . push args
     68/push  "Error: "/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # write(f, s)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0x10/disp8      .                 # push *(EBP+16)
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -702,7 +702,7 @@ expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (ad
     # write(f, " expected")
     # . . push args
     68/push  " expected"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -710,7 +710,7 @@ expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (ad
     # write(f, Newline)
     # . . push args
     68/push  Newline/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -718,7 +718,7 @@ expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (ad
     # stop(ed, 1)
     # . . push args
     68/push  1/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  stop/disp32
     # should never get past this point
@@ -736,7 +736,7 @@ get-char:  # f : (address buffered-file) -> <void>
     50/push-EAX
     # read-byte(f)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  read-byte/disp32
     # . . discard args
@@ -757,10 +757,10 @@ is-digit?:  # c : int -> bool/EAX
     # EAX = false
     b8/copy-to-EAX  0/imm32
     # if c < '0' return false
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         0x30/imm32        # compare *(EBP+8)
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         0x30/imm32        # compare *(EBP+8)
     7c/jump-if-lesser  $is-digit?:end/disp8
     # if c > '9' return false
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         0x39/imm32        # compare *(EBP+8)
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         0x39/imm32        # compare *(EBP+8)
     7f/jump-if-greater  $is-digit?:end/disp8
     # otherwise return true
     b8/copy-to-EAX  1/imm32

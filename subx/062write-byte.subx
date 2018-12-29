@@ -43,7 +43,7 @@ write-byte:  # f : (address buffered-file), n : int -> <void>
     51/push-ECX
     57/push-EDI
     # EDI = f
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
     # ECX = f->write
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EDI+4) to ECX
     # if (f->write >= f->length) flush and clear f's stream
@@ -68,7 +68,7 @@ $write-byte:to-stream:
     # write to stream
     # f->data[f->read] = LSB(n)
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/AL    0xc/disp8       .                 # copy byte at *(EBP+12) to AL
+    8a/copy-byte                    1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/AL    0xc/disp8       .                 # copy byte at *(EBP+12) to AL
     88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy AL to *(EDI+ECX+16)
     # ++f->read
     ff          0/subop/increment   1/mod/*+disp8   7/rm32/EDI    .           .             .           .           4/disp8         .                 # increment *(EDI+4)
@@ -89,7 +89,7 @@ flush:  # f : (address buffered-file) -> <void>
     50/push-EAX
     51/push-ECX
     # EAX = f
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
     # write-stream(f->fd, data = f+4)
       # . . push args
     8d/copy-address                 1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy EAX+4 to ECX

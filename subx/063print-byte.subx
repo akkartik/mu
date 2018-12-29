@@ -19,7 +19,7 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     # . save registers
     50/push-EAX
     # AL = convert upper nibble to hex
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     c1/shift    5/subop/logic-right 3/mod/direct    0/rm32/EAX    .           .             .           .           .               4/imm8            # shift EAX right by 4 bits, while padding zeroes
     # . hex-char(AL)
     # . . push args
@@ -31,13 +31,13 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     # write-byte(f, AL)
     # . . push args
     50/push-EAX
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  write-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # AL = convert lower nibble to hex
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     25/and-EAX  0xf/imm32
     # . hex-char(AL)
     # . . push args
@@ -49,7 +49,7 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     # write-byte(f, AL)
     # . . push args
     50/push-EAX
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  write-byte/disp32
     # . . discard args
@@ -70,7 +70,7 @@ hex-char:  # n : int -> char_or_error/EAX
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # EAX = n
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
     # if it's <= 9 add '0' to it
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x9/imm32         # compare EAX
     7f/jump-if-greater  $hex-char:check2/disp8

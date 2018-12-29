@@ -53,12 +53,12 @@ kernel-string-equal:  # s : null-terminated ascii string, benchmark : length-pre
     #       return false
     #   return *s1 == 0
     # initialize s into EDI
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
     # initialize benchmark length n into EDX
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
     8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # initialize benchmark data into ESI
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
     # initialize loop counter i into ECX
     b9/copy-to-ECX  0/imm32/exit
@@ -261,8 +261,8 @@ check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
     51/push-ECX
     53/push-EBX
     # load args into EAX, EBX and ECX
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
     # if EAX == b/EBX print('.') and return
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
     75/jump-if-unequal  $check-ints-equal:else/disp8
@@ -278,7 +278,7 @@ check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> boolean
     # otherwise print(msg)
 $check-ints-equal:else:
     # copy msg into ECX
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x10/disp8       .                # copy *(EBP+16) to ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8       .                # copy *(EBP+16) to ECX
     # print(ECX)
     # . . push args
     51/push-ECX
@@ -315,10 +315,10 @@ write-stderr:  # s : (address array byte) -> <void>
     # . . fd = 2 (stderr)
     bb/copy-to-EBX  2/imm32
     # . . x = s+4
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
     81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
     # . . size = *s
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
     8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
     # . . syscall
     b8/copy-to-EAX  4/imm32/write

@@ -46,13 +46,13 @@ allocate:  # ad : (address allocation-descriptor), n : int -> address-or-null/EA
     51/push-ECX
     52/push-EDX
     # ECX = ad
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
     # save ad->curr
     8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
     # check if there's enough space
     # . EDX = ad->curr + n
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EDX
-    03/add                          1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           2/r32/EDX   0xc/disp8       .                 # add *(EBP+12) to EDX
+    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           2/r32/EDX   0xc/disp8       .                 # add *(EBP+12) to EDX
     3b/compare                      1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # compare EDX with *(ECX+4)
     7c/jump-if-lesser  $allocate:commit/disp8
     # return null if not

@@ -56,7 +56,7 @@ tailor-exit-descriptor:  # ed : (address exit-descriptor), nbytes : int -> <void
     50/push-EAX
     51/push-ECX
     # EAX = nbytes
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     # Let X be the value of ESP in the caller, before the call to tailor-exit-descriptor.
     # The return address for a call in the caller's body will be at:
     #   X-8 if the caller takes 4 bytes of args for the exit-descriptor (add 4 bytes for the return address)
@@ -83,7 +83,7 @@ tailor-exit-descriptor:  # ed : (address exit-descriptor), nbytes : int -> <void
     f7          3/subop/negate      3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    5/base/EBP  0/index/EAX   .           0/r32/EAX   0xc/disp8         .               # copy EBP+EAX+12 to EAX
     # copy EAX to ed->target
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
     89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ECX
     # initialize ed->value
     c7          0/subop/copy        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # copy to *(ECX+4)
@@ -172,7 +172,7 @@ _test-stop-1:  # ed : (address exit-descriptor)
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # _test-stop-2(ed)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  _test-stop-2/disp32
     # should never get past this point
@@ -200,7 +200,7 @@ _test-stop-2:  # ed : (address exit-descriptor)
     # . stop(ed, 1)
     # . . push args
     68/push  1/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  stop/disp32
     # should never get past this point

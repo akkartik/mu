@@ -30,8 +30,8 @@ check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> <void>
     51/push-ECX
     53/push-EBX
     # load first 2 args into EAX and EBX
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
     # if EAX == EBX success
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
     75/jump-if-unequal  $check-ints-equal:else/disp8
@@ -49,7 +49,7 @@ check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> <void>
 $check-ints-equal:else:
     # . _write(2/stderr, msg)
     # . . push args
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           1/r32/ECX   0x10/disp8      .                 # copy *(EBP+16) to ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # copy *(EBP+16) to ECX
     51/push-ECX
     68/push  2/imm32/stderr
     # . . call

@@ -24,12 +24,12 @@
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # - if argc > 1 and argv[1] == "test" then return run_tests()
     # . argc > 1
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           0/disp8         1/imm32           # compare *EBP
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
     7e/jump-if-lesser-or-equal  $run-main/disp8
     # . argv[1] == "test"
     # . . push args
     68/push  "test"/imm32
-    ff          6/subop/push        1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  kernel-string-equal/disp32
     # . . discard args
@@ -63,10 +63,10 @@ factorial:  # n : int -> int/EAX
     # EAX = 1 (base case)
     b8/copy-to-EAX  1/imm32
     # if (n <= 1) return
-    81          7/subop/compare     1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none  .           .           8/disp8         1/imm32           # compare *(EBP+8)
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         1/imm32           # compare *(EBP+8)
     7e/jump-if-<=  $factorial:end/disp8
     # EBX = n-1
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none              3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
     81          5/subop/subtract    3/mod/direct    3/rm32/EBX    .           .             .           .           .               1/imm32           # subtract from EBX
     # EAX = factorial(n-1)
     # . . push args
@@ -76,7 +76,7 @@ factorial:  # n : int -> int/EAX
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # return n * factorial(n-1)
-    f7          4/subop/multiply    1/mod/*+disp8   4/rm32/sib    5/base/EBP  4/index/none                          8/disp8         .                 # multiply *(EBP+8) into EAX
+    f7          4/subop/multiply    1/mod/*+disp8   5/rm32/EBP    .           .                                     8/disp8         .                 # multiply *(EBP+8) into EAX
     # TODO: check for overflow
 $factorial:end:
     # . epilog
