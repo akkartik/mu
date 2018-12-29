@@ -44,7 +44,7 @@ syntax match subxCommentedCode "#? .*"  | highlight link subxCommentedCode Comme
 let b:cmt_head = "#? "
 
 " comment token
-syntax match subxDelimiter / \. /  | highlight link subxDelimiter CommentedCode
+syntax match subxDelimiter / \. /  | highlight link subxDelimiter Normal
 
 syntax match subxString %"[^"]*"% | highlight link subxString Constant
 
