@@ -11,6 +11,12 @@
 # Layout of a handle:
 #   offset 0: alloc id
 #   offset 4: address
+#
+# To run (from the subx directory):
+#   $ ./subx translate *.subx apps/handle.subx -o apps/handle
+#   $ ./subx run apps/handle
+# Expected result is a hard abort:
+#   ........lookup failed
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -197,6 +203,160 @@ test-new-failure:
     # clean up
     # . *Next-alloc-id = 1
     c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               1/imm32           # copy to *EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+lookup:  # h : (handle T) -> EAX : (address T)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    # ECX = handle
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    # EDX = handle->alloc_id
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # copy *ECX to EDX
+    # EAX = handle->address
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
+    # if (*EAX == EDX) return
+    39/compare                      0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # compare *EAX and EDX
+    74/jump-if-equal  $lookup:success/disp8
+    # otherwise print a message and exit
+    # hard-coded abort just to minimize args and simplify calls
+    # TODO: emit stack trace, etc.
+    # . _write(2/stderr, msg)
+    # . . push args
+    68/push  "lookup failed"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32/exit-status
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+$lookup:success:
+    # increment past payload alloc id
+    05/add-to-EAX  4/imm32
+    # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-lookup-success:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    # var handle/ECX = {0, 0}
+    68/push  0/imm32/address
+    68/push  0/imm32/alloc-id
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # var ad/EAX : (address allocation-descriptor) = {0x0b000000, 0x0b000010}
+    68/push  0x0b000010/imm32/limit
+    68/push  0x0b000000/imm32/curr
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
+    # new(ad, 2, handle)
+    # . . push args
+    51/push-ECX
+    68/push  2/imm32/size
+    50/push-EAX
+    # . . call
+    e8/call  new/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # EAX = lookup(handle)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # EAX contains old ad->address, after skipping the alloc id in the payload
+    # . check-ints-equal(EAX, 0x0b000004, msg)
+    # . . push args
+    68/push  "F - test-lookup-success"/imm32
+    68/push  0x0b000004/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # clean up
+    # . *Next-alloc-id = 1
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               1/imm32           # copy to *EAX
+    # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-lookup-failure:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    # var h1/ECX = {0, 0}
+    68/push  0/imm32/address
+    68/push  0/imm32/alloc-id
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # var ad/EAX : (address allocation-descriptor) = {0x0b000000, 0x0b000010}
+    68/push  0x0b000010/imm32/limit
+    68/push  0x0b000000/imm32/curr
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
+    # first allocation, to h1
+    # . new(ad, 2, h1)
+    # . . push args
+    51/push-ECX
+    68/push  2/imm32/size
+    50/push-EAX
+    # . . call
+    e8/call  new/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # reset ad->curr to mimic reclamation
+    c7          0/subop/copy        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               0x0b000000/imm32  # copy to *EAX
+    # second allocation that returns the same address as the first
+    # var h2/EDX = {0, 0}
+    68/push  0/imm32/address
+    68/push  0/imm32/alloc-id
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # . new(ad, 2, h2)
+    # . . push args
+    52/push-EDX
+    68/push  2/imm32/size
+    50/push-EAX
+    # . . call
+    e8/call  new/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # lookup(h1) should crash
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  lookup/disp32
+    # should never get past this point
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # clean up
+    # . *Next-alloc-id = 1
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               1/imm32           # copy to *EAX
+    # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP

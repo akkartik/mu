@@ -126,6 +126,16 @@ CFLAGS=-g ./subx translate examples/ex12.subx  -o examples/ex12
 CFLAGS=-g ./subx run examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
 test `uname` = 'Linux'  &&  examples/ex12
 
+echo handle
+CFLAGS=-g ./subx translate *.subx apps/handle.subx  -o apps/handle
+[ "$1" != record ]  &&  git diff --quiet apps/handle
+CFLAGS=-g ./subx run apps/handle 2>&1  |grep -q 'lookup failed'
+echo
+test `uname` = 'Linux'  &&  {
+  apps/handle test 2>&1  |grep -q 'lookup failed'
+  echo
+}
+
 echo factorial
 CFLAGS=-g ./subx translate *.subx apps/factorial.subx  -o apps/factorial
 [ "$1" != record ]  &&  git diff --quiet apps/factorial
