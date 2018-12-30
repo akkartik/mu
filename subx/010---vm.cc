@@ -112,7 +112,7 @@ SF = ZF = OF = false;
 //:: simulated RAM
 
 :(before "End Types")
-const uint32_t SEGMENT_ALIGNMENT = 0x1000000;
+const uint32_t SEGMENT_ALIGNMENT = 0x1000000;  // 16MB
 inline uint32_t align_upwards(uint32_t x, uint32_t align) {
   return (x+align-1) & -(align);
 }

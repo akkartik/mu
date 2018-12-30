@@ -128,7 +128,7 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 }
 
 :(before "End Includes")
-// Very primitive/fixed/insecure ELF segments for now.
+// Very primitive/fixed/insecure ELF segments for now: just consecutive VMAs.
 //   code: 0x09000000 -> 0x09ffffff
 //   data/heap: 0x0a000000 -> 0x0affffff
 //   stack: 0x0b000ffc -> 0x0b000000 (downward)
