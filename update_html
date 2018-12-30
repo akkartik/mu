@@ -26,6 +26,8 @@ convert_html() {
   sed -i 's/^\* { \(.*\) }/* { font-size:12pt; \1 }/g' $1.html
   sed -i 's/^body { \(.*\) }/body { font-size:12pt; \1 }/g' $1.html
 
+  sed -i '/^body {/a a { color:inherit; }' $1.html
+
   # switch unicode characters around in the rendered html
   #   the ones we have in the source files render double-wide in html
   #   the ones we want in the html cause iTerm2 to slow down in alt-tabbing for some reason
@@ -69,11 +71,27 @@ do
   process $f
 done
 
+for f in subx/examples/*.subx
+do
+  ( cd subx/examples
+    ctags -x `basename $f` > /tmp/tags
+  )
+  process $f
+done
+
 ( cd subx
   ctags -x *.subx  > /tmp/tags
 )
-for f in subx/*.subx subx/examples/*.subx subx/apps/*.subx
+for f in subx/*.subx
 do
+  process $f
+done
+
+for f in subx/apps/hex.subx
+do
+  ( cd subx/apps
+    ctags -x ../*.subx `basename $f` > /tmp/tags
+  )
   process $f
 done
 
