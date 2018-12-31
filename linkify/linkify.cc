@@ -131,7 +131,9 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
       out << line.substr(0, skip_first_span);
       istringstream in2(line.substr(skip_first_span));
       in2 >> std::noskipws;
-      bool at_start_of_line = ends_with(filename, ".subx");
+      // only in .subx files, refuse to linkify the first word on a line
+      bool at_start_of_line = ends_with(filename, ".subx.html");
+//?       cerr << filename << ": " << at_start_of_line << '\n';
       while (has_data(in2)) {
         if (isspace(in2.peek())) {
 //?           cerr << "space\n";
@@ -229,7 +231,7 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
               }
               else {
                 if (at_start_of_line) {
-//?                   cerr << "  at start of line\n";
+//?                   cerr << "  at start of line; refusing to linkify " << symbol << "\n";
                   out << symbol;
                 }
                 else {
