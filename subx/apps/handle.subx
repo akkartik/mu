@@ -201,21 +201,26 @@ lookup:  # h : (handle T) -> EAX : (address T)
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-    51/push-ECX
-    52/push-EDX
-    # ECX = handle
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
-    # EDX = handle->alloc_id
-    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # copy *ECX to EDX
-    # EAX = handle->address
-    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
-    # if (*EAX == EDX) return
-    39/compare                      0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # compare *EAX and EDX
-    74/jump-if-equal  $lookup:success/disp8
-    # otherwise print a message and exit
-    # hard-coded abort just to minimize args and simplify calls
-    # TODO: emit stack trace, etc.
+    # - as a proof of concept for future inlining, uses no general-purpose registers besides the output (EAX)
+    # EAX = handle
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    # - inline {
+    # push handle->address
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
+    # EAX = handle->alloc_id
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # copy *EAX to EAX
+    # if (EAX != *ESP) abort
+    39/compare                      0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # compare *ESP and EAX
+    75/jump-if-not-equal  $lookup:fail/disp8
+    # return ESP+4
+    58/pop-to-EAX
+    05/add-to-EAX  4/imm32
+    # - }
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+$lookup:fail:
     # . _write(2/stderr, msg)
     # . . push args
     68/push  "lookup failed"/imm32
@@ -228,16 +233,6 @@ lookup:  # h : (handle T) -> EAX : (address T)
     bb/copy-to-EBX  1/imm32/exit-status
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
-$lookup:success:
-    # increment past payload alloc id
-    05/add-to-EAX  4/imm32
-    # . restore registers
-    5a/pop-to-EDX
-    59/pop-to-ECX
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
 
 test-lookup-success:
     # . prolog
