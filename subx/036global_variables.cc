@@ -203,7 +203,7 @@ x:
   00
 +error: duplicate global 'x'
 
-:(scenario disp32_data_with_modrm)
+:(scenario global_variable_disp32_with_modrm)
 == code
 8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX x/disp32
 == data
@@ -212,7 +212,7 @@ x:
 $error: 0
 
 :(scenarios transform)
-:(scenario disp32_data_with_call)
+:(scenario global_variable_disp32_with_call)
 == code
 foo:
   e8/call bar/disp32

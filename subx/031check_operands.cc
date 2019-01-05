@@ -368,32 +368,33 @@ void check_operands_modrm(const line& inst, const word& op) {
   // no check for scale; 0 (2**0 = 1) by default
 }
 
-// same as compare_bitvector, with a couple of exceptions for modrm-based instructions
-//   exception: modrm instructions can use a displacement on occasion
+// same as compare_bitvector, with one additional exception for modrm-based
+// instructions: they may use an extra displacement on occasion
 void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
   uint8_t bitvector = computed_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
+  // update 'expected' bitvector for the additional exception
+  if (has_operand_metadata(inst, "mod")) {
+    int32_t mod = parse_int(metadata(inst, "mod").data);
+    switch (mod) {
+    case 0:
+      if (has_operand_metadata(inst, "rm32") && parse_int(metadata(inst, "rm32").data) == 5)
+        expected |= (1<<DISP32);
+      break;
+    case 1:
+      expected |= (1<<DISP8);
+      break;
+    case 2:
+      expected |= (1<<DISP32);
+      break;
+    }
+  }
   if (bitvector == expected) return;  // all good with this instruction
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
 //?     cerr << "comparing for modrm " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
     if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
     const string& optype = Operand_type_name.at(i);
-    if (i == DISP8) {
-      int32_t mod = parse_int(metadata(inst, "mod").data);
-      if (mod != 1)
-        raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
-      continue;  // exception 2
-    }
-    if (i == DISP32) {
-      int32_t mod = parse_int(metadata(inst, "mod").data);
-      int32_t rm32 = parse_int(metadata(inst, "rm32").data);
-      if (mod == 0 && rm32 == 5)
-        ;  // ok: special-case for loading address from disp32
-      else if (mod != 2)
-        raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
-      continue;  // exception 2
-    }
     if ((bitvector & 0x1) > (expected & 0x1))
       raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
     else
@@ -420,6 +421,18 @@ void check_operand_metadata_absent(const line& inst, const string& type, const w
 # just avoid null pointer
 8b/copy 1/mod/lookup+disp8 0/rm32/EAX 2/r32/EDX 4/disp8  # copy *(EAX+4) to EDX
 $error: 0
+
+:(scenario check_missing_disp8)
+% Hide_errors = true;
+== 0x1
+89/copy 1/mod/lookup+disp8 0/rm32/EAX 1/r32/ECX  # missing disp8
++error: '89/copy 1/mod/lookup+disp8 0/rm32/EAX 1/r32/ECX' (copy r32 to rm32): missing disp8 operand
+
+:(scenario check_missing_disp32)
+% Hide_errors = true;
+== 0x1
+8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX  # missing disp32
++error: '8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX' (copy rm32 to r32): missing disp32 operand
 :(scenarios run)
 
 :(scenario conflicting_operands_in_modrm_instruction)
