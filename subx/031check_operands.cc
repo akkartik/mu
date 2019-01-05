@@ -228,6 +228,7 @@ void init_permitted_operands() {
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  0     1     0      |0       0     1     1
   put(Permitted_operands, "c1", 0x23);  // combine
+  put(Permitted_operands, "c6", 0x23);  // copy
 
   //// Class P: op, ModR/M, subop (not r32) and imm32
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm

@@ -48,7 +48,7 @@ put_new(Name, "88", "copy r8 to r8/m8-at-r32");
   88  18                                      # copy BL to the byte at *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src BL) 000 (dest EAX)
 == 0x2000
-f0 cc bb aa  # 0xf0 with more data in following bytes
+f0 cc bb aa
 +run: copy BL to r8/m8-at-r32
 +run: effective address is 0x00002000 (EAX)
 +run: storing 0xab
@@ -114,3 +114,39 @@ case 0x8a: {  // copy r/m8 to r8
 +run: storing 0x44
 # ensure ESI is unchanged
 % CHECK_EQ(Reg[ESI].u, 0xaabbccdd);
+
+//:
+
+:(before "End Initialize Op Names")
+put_new(Name, "c6", "copy imm8 to r8/m8-at-r32 (mov)");
+
+:(scenario copy_imm8_to_mem_at_r32)
+% Reg[EAX].i = 0x2000;
+== 0x1
+# op  ModR/M  SIB   displacement  immediate
+  c6  00                          dd          # copy to the byte at *EAX
+# ModR/M in binary: 00 (indirect mode) 000 (unused) 000 (dest EAX)
+== 0x2000
+f0 cc bb aa
++run: copy imm8 to r8/m8-at-r32
++run: effective address is 0x00002000 (EAX)
++run: storing 0xdd
+% CHECK_EQ(0xaabbccdd, read_mem_u32(0x2000));
+
+:(before "End Single-Byte Opcodes")
+case 0xc6: {  // copy imm8 to r/m8
+  const uint8_t modrm = next();
+  const uint8_t src = next();
+  trace(90, "run") << "copy imm8 to r8/m8-at-r32" << end();
+  trace(90, "run") << "imm8 is 0x" << HEXWORD << src << end();
+  const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  if (subop != 0) {
+    cerr << "unrecognized subop for opcode c6: " << NUM(subop) << " (only 0/copy currently implemented)\n";
+    exit(1);
+  }
+  // use unsigned to zero-extend 8-bit value to 32 bits
+  uint8_t* dest = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
+  *dest = src;
+  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
+  break;
+}
