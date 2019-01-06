@@ -183,6 +183,12 @@ allocate-region:  # ad : (address allocation-descriptor), n : int -> new-ad : (a
     5d/pop-to-EBP
     c3/return
 
+# We could create a more general '$abort' jump target, but then we'd need to do
+# a conditional jump followed by loading the error message and an unconditional
+# jump. Or we'd need to unconditionally load the error message before a
+# conditional jump, even if it's unused the vast majority of the time. This way
+# we bloat a potentially cold segment in RAM so we can abort with a single
+# instruction.
 $allocate-region:abort:
     # . _write(2/stderr, error)
     # . . push args

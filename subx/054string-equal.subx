@@ -14,14 +14,6 @@
     cd/syscall  0x80/imm8
 
 string-equal:  # s : string, benchmark : string -> EAX : boolean
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-    51/push-ECX
-    52/push-EDX
-    53/push-EBX
-    56/push-ESI
     # pseudocode:
     #   if s->length != b->length return false
     #   for i = 0;  i < s->length;  ++i
@@ -34,6 +26,14 @@ string-equal:  # s : string, benchmark : string -> EAX : boolean
     #   b[i]: EBX
     #   s[i]: EAX
     #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
     # var s/EAX : (address array byte)
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
     # var benchmark/EBX : (address array byte)

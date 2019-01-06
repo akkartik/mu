@@ -29,16 +29,6 @@
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
 kernel-string-equal:  # s : null-terminated ascii string, benchmark : length-prefixed ascii string -> EAX : boolean
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-    51/push-ECX
-    52/push-EDX
-    53/push-EBX
-    56/push-ESI
-    57/push-EDI
-
     # pseudocode:
     #   initialize n = b->length
     #   initialize s1 = s
@@ -53,6 +43,15 @@ kernel-string-equal:  # s : null-terminated ascii string, benchmark : length-pre
     #       return false
     #   return *s1 == 0
     #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    57/push-EDI
     # initialize s into EDI
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
     # initialize benchmark length n into EDX

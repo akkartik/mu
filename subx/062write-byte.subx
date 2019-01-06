@@ -66,11 +66,11 @@ write-byte:  # f : (address buffered-file), n : int -> <void>
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $write-byte:to-stream:
     # write to stream
-    # f->data[f->read] = LSB(n)
+    # f->data[f->write] = LSB(n)
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/AL    0xc/disp8       .                 # copy byte at *(EBP+12) to AL
     88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy AL to *(EDI+ECX+16)
-    # ++f->read
+    # ++f->write
     ff          0/subop/increment   1/mod/*+disp8   7/rm32/EDI    .           .             .           .           4/disp8         .                 # increment *(EDI+4)
 $write-byte:end:
     # . restore registers
