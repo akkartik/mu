@@ -82,17 +82,17 @@ syntax keyword muControl loop-if loop-unless
 syntax match muControl "^jump\>\| jump\>\|^break\>\| break\>\|^loop\>\| loop\>"
 syntax keyword muControl start-running
 syntax keyword muControl call-with-continuation-mark return-continuation-until-mark
-highlight muControl ctermfg=3
+highlight link muControl Identifier
 
 syntax match muRecipe "->"
 syntax match muRecipe "^recipe\>\|^def\>\|^before\>\|^after\>\| -> "
 syntax keyword muRecipe recipe! def! function fn
-highlight muRecipe ctermfg=208
+highlight link muRecipe PreProc
 
-syntax match muScenario "^scenario\>"  | highlight muScenario ctermfg=34
+syntax match muScenario "^scenario\>"  | highlight link muScenario Statement
 syntax keyword muPendingScenario pending-scenario  | highlight link muPendingScenario SpecialChar
 syntax match muData "^type\>\|^container\>"
 syntax keyword muData exclusive-container
-highlight muData ctermfg=226
+highlight link muData Constant
 
 let &cpo = s:save_cpo
