@@ -117,7 +117,7 @@ $main:end:
 #   word = name until '/', then 0 or more metadata separated by '/'
 #
 # we won't bother saving the internal structure of lines; reparsing should be cheap using two primitives:
-#   next-token(stream, delim char) -> slice (start, end pointer)
+#   next-token(stream, delim char) -> slice (start, end pointers)
 #   slice-equal?(slice, kernel string)
 
 # helpers:
@@ -136,7 +136,6 @@ $main:end:
 #   emit(out : &buffered-file, word : &slice)
 #   has-metadata?(word : &slice, s : &kernel-string) -> bool
 
-# the main entry point
 convert:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
     # pseudocode:
     #   line = new-stream(512, 1)
@@ -151,6 +150,27 @@ convert:  # in : (address buffered-file), out : (address buffered-file), err : (
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# (re)compute the bounds of the next word in the line
+next-word:  # line : (address stream byte), out : (address slice)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    # skip-whitespace(line)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  skip-whitespace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # if line->data[line->read] == '#' return (&line->data[line->read], &line->data[line->write])
+    # return next-token(line, ' ')
     # . restore registers
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
