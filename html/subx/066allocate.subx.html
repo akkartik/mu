@@ -209,7 +209,62 @@ if ('onhashchange' in window) {
 <span id="L149" class="LineNr">149 </span>    5d/pop-to-EBP
 <span id="L150" class="LineNr">150 </span>    c3/return
 <span id="L151" class="LineNr">151 </span>
-<span id="L152" class="LineNr">152 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L152" class="LineNr">152 </span><span class="subxComment"># helper: create a nested allocation descriptor (useful for tests)</span>
+<span id="L153" class="LineNr">153 </span><span class="subxFunction">allocate-region</span>:  <span class="subxComment"># ad : (address allocation-descriptor), n : int -&gt; new-ad : (address allocation-descriptor)</span>
+<span id="L154" class="LineNr">154 </span>    <span class="subxS1Comment"># . prolog</span>
+<span id="L155" class="LineNr">155 </span>    55/push-EBP
+<span id="L156" class="LineNr">156 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
+<span id="L157" class="LineNr">157 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L158" class="LineNr">158 </span>    51/push-ECX
+<span id="L159" class="LineNr">159 </span>    <span class="subxComment"># EAX = allocate(ad, n)</span>
+<span id="L160" class="LineNr">160 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L161" class="LineNr">161 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># push *(EBP+12)</span>
+<span id="L162" class="LineNr">162 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(EBP+8)</span>
+<span id="L163" class="LineNr">163 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L164" class="LineNr">164 </span>    e8/call  <a href='066allocate.subx.html#L41'>allocate</a>/disp32
+<span id="L165" class="LineNr">165 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L166" class="LineNr">166 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L167" class="LineNr">167 </span>    <span class="subxComment"># if EAX == 0 abort</span>
+<span id="L168" class="LineNr">168 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32           <span class="subxComment"># compare EAX</span>
+<span id="L169" class="LineNr">169 </span>    74/jump-if-equal  $allocate-region:abort/disp8
+<span id="L170" class="LineNr">170 </span>    <span class="subxComment"># earmark 8 bytes at the start for a new allocation descriptor</span>
+<span id="L171" class="LineNr">171 </span>    <span class="subxS1Comment"># . *EAX = EAX + 8</span>
+<span id="L172" class="LineNr">172 </span>    89/copy                         3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EAX to ECX</span>
+<span id="L173" class="LineNr">173 </span>    81          0/subop/add         3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ECX</span>
+<span id="L174" class="LineNr">174 </span>    89/copy                         0/mod/indirect  0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ECX to *EAX</span>
+<span id="L175" class="LineNr">175 </span>    <span class="subxS1Comment"># . *(EAX+4) = EAX + n</span>
+<span id="L176" class="LineNr">176 </span>    89/copy                         3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EAX to ECX</span>
+<span id="L177" class="LineNr">177 </span>    03/add                          1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># add *(EBP+12) to ECX</span>
+<span id="L178" class="LineNr">178 </span>    89/copy                         1/mod/*+disp8   0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy ECX to *(EAX+4)</span>
+<span id="L179" class="LineNr">179 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L180" class="LineNr">180 </span>    59/pop-to-ECX
+<span id="L181" class="LineNr">181 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L182" class="LineNr">182 </span>    89/copy                         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/EBP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EBP to ESP</span>
+<span id="L183" class="LineNr">183 </span>    5d/pop-to-EBP
+<span id="L184" class="LineNr">184 </span>    c3/return
+<span id="L185" class="LineNr">185 </span>
+<span id="L186" class="LineNr">186 </span><span class="subxComment"># We could create a more general '$abort' jump target, but then we'd need to do</span>
+<span id="L187" class="LineNr">187 </span><span class="subxComment"># a conditional jump followed by loading the error message and an unconditional</span>
+<span id="L188" class="LineNr">188 </span><span class="subxComment"># jump. Or we'd need to unconditionally load the error message before a</span>
+<span id="L189" class="LineNr">189 </span><span class="subxComment"># conditional jump, even if it's unused the vast majority of the time. This way</span>
+<span id="L190" class="LineNr">190 </span><span class="subxComment"># we bloat a potentially cold segment in RAM so we can abort with a single</span>
+<span id="L191" class="LineNr">191 </span><span class="subxComment"># instruction.</span>
+<span id="L192" class="LineNr">192 </span><span class="Constant">$allocate-region:abort</span>:
+<span id="L193" class="LineNr">193 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
+<span id="L194" class="LineNr">194 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L195" class="LineNr">195 </span>    68/push  <span class="Constant">&quot;allocate-region: failed to allocate&quot;</span>/imm32
+<span id="L196" class="LineNr">196 </span>    68/push  2/imm32/stderr
+<span id="L197" class="LineNr">197 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L198" class="LineNr">198 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
+<span id="L199" class="LineNr">199 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L200" class="LineNr">200 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L201" class="LineNr">201 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L202" class="LineNr">202 </span>    bb/copy-to-EBX  1/imm32
+<span id="L203" class="LineNr">203 </span>    b8/copy-to-EAX  1/imm32/exit
+<span id="L204" class="LineNr">204 </span>    cd/syscall  0x80/imm8
+<span id="L205" class="LineNr">205 </span>    <span class="subxComment"># never gets here</span>
+<span id="L206" class="LineNr">206 </span>
+<span id="L207" class="LineNr">207 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
