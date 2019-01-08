@@ -466,6 +466,12 @@ rudimentary but hopefully still workable toolkit:
   Now the trace should have a lot more detail on which of these labels was
   reached, and precisely when the exit was taken.
 
+* If you find yourself wondering, "when did the contents of this memory
+  address change?", `subx run` has some rudimentary support for _watch
+  points_. Just insert a label starting with `$watch-` before an instruction
+  that writes to the address, and its value will start getting dumped to the
+  trace after every instruction thereafter.
+
 * Once we have a sense for precisely which instructions we want to look at,
   it's time to look at the trace as a whole. Key is the state of registers
   before each instruction. If a function is receiving bad arguments it becomes

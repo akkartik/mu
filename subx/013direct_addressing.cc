@@ -56,6 +56,7 @@ uint32_t effective_address_number(uint8_t modrm) {
     exit(1);
   }
   //: other mods are indirect, and they'll set addr appropriately
+  // Found effective_address(addr)
   return addr;
 }
 
