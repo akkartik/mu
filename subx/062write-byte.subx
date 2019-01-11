@@ -64,6 +64,8 @@ write-byte:  # f : (address buffered-file), n : int -> <void>
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear ECX (cached f->write)
+    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
 $write-byte:to-stream:
     # write to stream
     # f->data[f->write] = LSB(n)
@@ -111,7 +113,7 @@ $flush:end:
 # - tests
 
 test-write-byte-single:
-    # - check that read-byte returns first byte of 'file'
+    # - check that write-byte writes to first byte of 'file'
     # setup
     # . clear-stream(_test-stream)
     # . . push args
@@ -151,6 +153,76 @@ test-write-byte-single:
     # . . push *_test-stream->data
     b8/copy-to-EAX  _test-stream/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-write-byte-multiple-flushes:
+    # - check that write-byte correctly flushes buffered data
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # fill up the buffer for _test-buffered-file
+    # . write(_test-buffered-file+4, 'abcdef')
+    # . . push args
+    68/push  "abcdef"/imm32
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write-byte(_test-buffered-file, 'g')
+    # . . push args
+    68/push  0x67/imm32
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  write-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # flush(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(_test-stream->data[0..3], 'abcd', msg)
+    # . . push args
+    68/push  "F - test-write-byte-multiple-flushes: 1"/imm32
+    68/push  0x64636261/imm32
+    # . . push *_test-stream->data
+    b8/copy-to-EAX  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(_test-stream->data[4..8], 'efg', msg)
+    # . . push args
+    68/push  "F - test-write-byte-multiple-flushes"/imm32
+    68/push  0x00676665/imm32
+    # . . push *_test-stream->data
+    b8/copy-to-EAX  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0x10/disp8      .                 # push *(EAX+16)
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
