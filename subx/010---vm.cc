@@ -296,14 +296,14 @@ inline bool already_allocated(uint32_t addr) {
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   // Run One Instruction
-  trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
-  op = next();
   if (Dump_trace) {
-    cerr << "opcode: " << HEXBYTE << NUM(op) << '\n';
-    cerr << "registers at start: ";
+    cerr << "registers: ";
     dump_registers();
 //?     dump_stack();  // for debugging; not defined until later layer
   }
+  trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
+  op = next();
+  if (Dump_trace) cerr << "opcode: " << HEXBYTE << NUM(op) << '\n';
   switch (op) {
   case 0xf4:  // hlt
     EIP = End_of_program;
