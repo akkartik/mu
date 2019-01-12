@@ -1,7 +1,7 @@
-//: Some helpers for debugging.
+//:: Some helpers for debugging.
 
-// Load the 'map' file generated during 'subx --map translate' when running 'subx --map --dump run'.
-// (It'll only affect the trace.)
+//: Load the 'map' file generated during 'subx --map translate' when running 'subx --map --dump run'.
+//: (It'll only affect the trace.)
 
 :(before "End Globals")
 map</*address*/uint32_t, string> Symbol_name;  // used only by 'subx run'
@@ -24,9 +24,9 @@ void load_map(const string& map_filename) {
 if (contains_key(Symbol_name, EIP))
   trace(90, "run") << "== label " << get(Symbol_name, EIP) << end();
 
-// If a label starts with '$watch-', make a note of the effective address
-// computed by the next instruction. Start dumping out its contents to the
-// trace after every subsequent instruction.
+//: If a label starts with '$watch-', make a note of the effective address
+//: computed by the next instruction. Start dumping out its contents to the
+//: trace after every subsequent instruction.
 
 :(after "Run One Instruction")
 dump_watch_points();
