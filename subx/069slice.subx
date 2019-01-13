@@ -95,7 +95,7 @@ test-slice-empty-false:
     5d/pop-to-EBP
     c3/return
 
-slice-equal?:  # s : (address slice), k : (address kernel-string) -> bool/EAX
+slice-equal?:  # s : (address slice), p : (address string) -> bool/EAX
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -104,36 +104,37 @@ slice-equal?:  # s : (address slice), k : (address kernel-string) -> bool/EAX
     52/push-EDX
     53/push-EBX
     56/push-ESI
-    # EAX = ECX = false
-    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
     # ESI = s
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # curr/EDX = s->start
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
     # max/ESI = s->end
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           6/r32/ESI   4/disp8         .                 # copy *(ESI+4) to ESI
-    # EBX = k
+    # EBX = p
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+    # EAX = s->end - s->start
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy ESI to EAX
+    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # subtract EDX from EAX
+    # if (EAX != p->length) return false;
+    39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # compare *EBX and EAX
+    75/jump-if-not-equal  $slice-equal?:false/disp8
+    # skip p->length
+    81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
+    # EAX = ECX = false
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
 $slice-equal?:loop:
-    # AL = *k
-    8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/AL    .               .                 # copy byte at *EBX to AL
-    # if (curr >= max) return *k == 0
+    # if (curr >= max) return true
     39/compare                      3/mod/direct    2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # compare EDX and ESI
-    7c/jump-if-lesser  $slice-equal?:check2/disp8
-    3d/compare-with-EAX  0/imm32
-    74/jump-if-equal  $slice-equal?:true/disp8
-    eb/jump  $slice-equal?:false/disp8
-$slice-equal?:check2:
-    # if (EAX == 0) return false
-    3d/compare-with-EAX  0/imm32
-    74/jump-if-equal  $slice-equal?:false/disp8
+    7d/jump-if-greater-or-equal  $slice-equal?:true/disp8
+    # AL = *p
+    8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/AL    .               .                 # copy byte at *EBX to AL
     # CL = *curr
     8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           1/r32/CL    .               .                 # copy byte at *EDX to CL
     # if (EAX != ECX) return false
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX and ECX
     75/jump-if-not-equal  $slice-equal?:false/disp8
-    # ++k
+    # ++p
     43/increment-EBX
     # ++curr
     42/increment-EDX
@@ -165,7 +166,7 @@ test-slice-equal:
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
-    68/push  _test-Abc-kernel-string/imm32
+    68/push  "Abc"/imm32
     51/push-ECX
     # . . call
     e8/call  slice-equal?/disp32
@@ -196,7 +197,7 @@ test-slice-equal-false:
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
-    68/push  _test-Abc-kernel-string/imm32
+    68/push  "Abc"/imm32
     51/push-ECX
     # . . call
     e8/call  slice-equal?/disp32
@@ -227,7 +228,7 @@ test-slice-equal-too-long:
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
-    68/push  _test-Abc-kernel-string/imm32
+    68/push  "Abc"/imm32
     51/push-ECX
     # . . call
     e8/call  slice-equal?/disp32
@@ -258,7 +259,7 @@ test-slice-equal-too-short:
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
-    68/push  _test-Abc-kernel-string/imm32
+    68/push  "Abc"/imm32
     51/push-ECX
     # . . call
     e8/call  slice-equal?/disp32
@@ -289,7 +290,7 @@ test-slice-equal-empty:
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
-    68/push  _test-Abc-kernel-string/imm32
+    68/push  "Abc"/imm32
     51/push-ECX
     # . . call
     e8/call  slice-equal?/disp32
@@ -320,7 +321,7 @@ test-slice-equal-with-empty:
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "")
     # . . push args
-    68/push  Null-kernel-string/imm32
+    68/push  ""/imm32
     51/push-ECX
     # . . call
     e8/call  slice-equal?/disp32
@@ -351,7 +352,7 @@ test-slice-equal-empty-with-empty:
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "")
     # . . push args
-    68/push  Null-kernel-string/imm32
+    68/push  ""/imm32
     51/push-ECX
     # . . call
     e8/call  slice-equal?/disp32
@@ -383,4 +384,4 @@ _test-slice-data-3:
     64/d
 _test-slice-data-4:
 
-# . . vim:nowrap:textwidth=0
+# . _. vim:nowrap:textwidth=0

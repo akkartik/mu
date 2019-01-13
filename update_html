@@ -37,40 +37,6 @@ convert_html() {
   mv -i $1.html html/`dirname $1`
 }
 
-ctags -x *.cc  |grep -v "^operator \| member \| variable "  > /tmp/tags
-for f in *.cc
-do
-  process $f
-done
-
-ctags -x [0-9]*.mu  > /tmp/tags
-for f in [0-9]*.mu
-do
-  process $f
-done
-
-for f in [a-zA-Z]*.mu
-do
-  ctags -x [0-9]*.mu $f  > /tmp/tags
-  process $f
-done
-
-( cd edit
-  ctags -x ../[0-9]*.mu *.mu  > /tmp/tags
-)
-for f in edit/*.mu
-do
-  process $f
-done
-
-( cd subx
-  ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
-)
-for f in subx/*.cc
-do
-  process $f
-done
-
 for f in subx/examples/*.subx
 do
   ( cd subx/examples
@@ -84,14 +50,6 @@ done
 )
 for f in subx/*.subx
 do
-  process $f
-done
-
-for f in subx/apps/*.subx
-do
-  ( cd subx/apps
-    ctags -x ../*.subx `basename $f` > /tmp/tags
-  )
   process $f
 done
 
