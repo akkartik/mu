@@ -265,6 +265,7 @@ parse-hex-int:  # in : (address slice) -> result/EAX
     51/push-ECX
     52/push-EDX
     53/push-EBX
+    56/push-ESI
     # result/EBX = 0
     31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
     # ECX = s
@@ -273,10 +274,21 @@ parse-hex-int:  # in : (address slice) -> result/EAX
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ECX+4) to EDX
     # curr/ECX = s->start
     8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # copy *ECX to ECX
-    # skip past leading '0x'
-$parse-hex-int:initial-0:
-    # . if (*curr != '0') jump to loop
+    # negate?/ESI = false
+    31/xor                          3/mod/direct    6/rm32/ESI    .           .             .           6/r32/ESI   .               .                 # clear ESI
+$parse-hex-int:negative:
+    # . if (*curr == '-') negate = true
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x2d/imm32/-      # compare EAX
+    75/jump-if-not-equal  $parse-hex-int:initial-0/disp8
+    # . ++curr
+    41/increment-ECX
+    # . negate = true
+    be/copy-to-ESI  1/imm32/true
+$parse-hex-int:initial-0:
+    # skip past leading '0x'
+    # . if (*curr != '0') jump to loop
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x30/imm32/0      # compare EAX
     75/jump-if-not-equal  $parse-hex-int:loop/disp8
@@ -296,7 +308,7 @@ $parse-hex-int:initial-0x:
 $parse-hex-int:loop:
     # if (curr >= in->end) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $parse-hex-int:end/disp8
+    7d/jump-if-greater-or-equal  $parse-hex-int:negate/disp8
     # EAX = parse-hex-digit(*curr)
     # . . push args
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
@@ -312,9 +324,14 @@ $parse-hex-int:loop:
     41/increment-ECX
     # loop
     eb/jump  $parse-hex-int:loop/disp8
+$parse-hex-int:negate:
+    81          7/subop/compare     3/mod/direct    6/rm32/ESI    .           .             .           .           .               0/imm32           # compare ESI
+    74/jump-if-equal  $parse-hex-int:end/disp8
+    f7          3/subop/negate      3/mod/direct    3/rm32/EBX    .           .             .           .           .               .                 # negate EBX
 $parse-hex-int:end:
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to EAX
     # . restore registers
+    5e/pop-to-ESI
     5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
@@ -458,6 +475,35 @@ test-parse-hex-int-0-prefix:
     # . . push args
     68/push  "F - test-parse-hex-int-0-prefix"/imm32
     68/push  0x3/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-parse-hex-int-negative:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "-03"
+    68/push  _test-slice-hex-int-negative-with-0-prefix-end/imm32
+    68/push  _test-slice-hex-int-negative-with-0-prefix/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = parse-hex-int(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  parse-hex-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0xfffffffd, msg)
+    # . . push args
+    68/push  "F - test-parse-hex-int-negative"/imm32
+    68/push  0xfffffffd/imm32
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
@@ -676,5 +722,9 @@ _test-slice-hex-int-zero-end:
 _test-slice-hex-int-with-0-prefix:
   30/0 33/3
 _test-slice-hex-int-with-0-prefix-end:
+
+_test-slice-hex-int-negative-with-0-prefix:
+  2d/- 30/0 33/3
+_test-slice-hex-int-negative-with-0-prefix-end:
 
 # . . vim:nowrap:textwidth=0
