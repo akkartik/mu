@@ -78,28 +78,28 @@ $main:end:
 # - To pack an instruction, following the C++ version:
 # read line
 # parse words
-# read first word as opcode and emit
-# if 0f or f2 or f3 read second opcode and emit
-# if 'f2 0f' or 'f3 0f' read third opcode and emit
+# read first word as opcode and write-slice
+# if 0f or f2 or f3 read second opcode and write-slice
+# if 'f2 0f' or 'f3 0f' read third opcode and write-slice
 # scan words
 #   if has metadata 'mod', parse into mod
 #   if has metadata 'rm32', parse into rm32
 #   if has metadata 'r32', parse into r32
 #   if has metadata 'subop', parse into r32
-# if at least one of the 3 was present, emit modrm byte
+# if at least one of the 3 was present, print-byte
 # scan words
 #   if has metadata 'base', parse into base
 #   if has metadata 'index', parse into index
 #   if has metadata 'scale', parse into scale
-# if at least one of the 3 was present, emit sib byte
+# if at least one of the 3 was present, print-byte
 # parse errors => <abort>
 # scan words
-#   if has metadata 'disp8', emit-maybe
-#   if has metadata 'disp16', emit-maybe as 2 bytes
-#   if has metadata 'disp32', emit-maybe as 4 bytes
+#   if has metadata 'disp8', emit as 1 byte
+#   if has metadata 'disp16', emit as 2 bytes
+#   if has metadata 'disp32', emit as 4 bytes
 # scan words
-#   if has metadata 'imm8', emit-maybe
-#   if has metadata 'imm32', emit-maybe as 4 bytes
+#   if has metadata 'imm8', emit
+#   if has metadata 'imm32', emit as 4 bytes
 # finally, emit line prefixed with a '  # '
 
 # simplifications since we perform zero error handling (continuing to rely on the C++ version for that):
@@ -121,8 +121,9 @@ $main:end:
 #   slice-equal?(slice, kernel string)
 
 # helpers:
-#   emit-maybe(out : &buffered-file, n : int, width : int)
-#   emit(out : &buffered-file, word : &slice)
+#   emit(out : &buffered-file, word : &slice, width : int)
+#     if slice is all hex digits, parse and print appropriate digits
+#     otherwise just write-slice
 #   has-metadata?(word : &slice, s : &kernel-string) -> bool
 
 convert:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
