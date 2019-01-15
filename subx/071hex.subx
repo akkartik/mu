@@ -410,6 +410,64 @@ test-parse-hex-int-0x-prefix:
     5d/pop-to-EBP
     c3/return
 
+test-parse-hex-int-zero:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "0"
+    68/push  _test-slice-hex-int-zero-end/imm32
+    68/push  _test-slice-hex-int-zero/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = parse-hex-int(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  parse-hex-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x34a, msg)
+    # . . push args
+    68/push  "F - test-parse-hex-int-zero"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-parse-hex-int-0-prefix:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "03"
+    68/push  _test-slice-hex-int-with-0-prefix-end/imm32
+    68/push  _test-slice-hex-int-with-0-prefix/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = parse-hex-int(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  parse-hex-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0x3, msg)
+    # . . push args
+    68/push  "F - test-parse-hex-int-0-prefix"/imm32
+    68/push  0x3/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
 is-hex-digit?:  # c : byte -> bool/EAX
     # . prolog
     55/push-EBP
@@ -591,10 +649,6 @@ _test-slice-hex-int:
   33/3 34/4
 _test-slice-hex-int-end:
 
-_test-slice-hex-int-with-0x-prefix:
-  30/0 78/x 33/3 34/4
-_test-slice-hex-int-with-0x-prefix-end:
-
 _test-slice-hex-int-letters:
   33/3 34/4 61/a
 _test-slice-hex-int-letters-end:
@@ -610,5 +664,17 @@ _test-slice-char-and-digits-end:
 _test-slice-digits-and-char:
   33/3 34/4 71/q
 _test-slice-digits-and-char-end:
+
+_test-slice-hex-int-with-0x-prefix:
+  30/0 78/x 33/3 34/4
+_test-slice-hex-int-with-0x-prefix-end:
+
+_test-slice-hex-int-zero:
+  30/0
+_test-slice-hex-int-zero-end:
+
+_test-slice-hex-int-with-0-prefix:
+  30/0 33/3
+_test-slice-hex-int-with-0-prefix-end:
 
 # . . vim:nowrap:textwidth=0
