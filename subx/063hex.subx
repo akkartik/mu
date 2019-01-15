@@ -309,14 +309,11 @@ $parse-hex-int:loop:
     # if (curr >= in->end) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     7d/jump-if-greater-or-equal  $parse-hex-int:negate/disp8
-    # EAX = parse-hex-digit(*curr)
-    # . . push args
+    # EAX = from-hex-char(*curr)
+    # . . copy arg to EAX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
-    50/push-EAX
     # . . call
-    e8/call  parse-hex-digit/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    e8/call  from-hex-char/disp32
     # result = result * 16 + EAX
     c1/shift    4/subop/left        3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm8            # shift EBX left by 4 bits
     01/add                          3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # add EAX to EBX
@@ -673,16 +670,28 @@ test-hex-above-f:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
-parse-hex-digit:  # in/EAX : byte -> out/EAX : num
+from-hex-char:  # in/EAX : byte -> out/EAX : num
     # no error checking; accepts argument in EAX
     # if EAX <= '9' return EAX - '0'
     3d/compare-EAX  0x39/imm32/9
-    7f/jump-if-greater  $parse-hex-digit:else/disp8
+    7f/jump-if-greater  $from-hex-char:else/disp8
     2d/subtract-from-EAX  0x30/imm32/0
     c3/return
-$parse-hex-digit:else:
+$from-hex-char:else:
     # otherwise return EAX - 'a' + 10
     2d/subtract-from-EAX  0x57/imm32/a-10
+    c3/return
+
+to-hex-char:  # in/EAX : nibble -> out/EAX : byte
+    # no error checking; accepts argument in EAX
+    # if EAX <= 9 return EAX + '0'
+    3d/compare-EAX  0x9/imm32/9
+    7f/jump-if-greater  $to-hex-char:else/disp8
+    05/add-to-EAX  0x30/imm32/0
+    c3/return
+$to-hex-char:else:
+    # otherwise return EAX + 'a' - 10
+    05/add-to-EAX  0x57/imm32/a-10
     c3/return
 
 == data

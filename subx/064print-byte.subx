@@ -21,13 +21,8 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     # AL = convert upper nibble to hex
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     c1/shift    5/subop/logic-right 3/mod/direct    0/rm32/EAX    .           .             .           .           .               4/imm8            # shift EAX right by 4 bits, while padding zeroes
-    # . hex-char(AL)
-    # . . push args
-    50/push-EAX
-    # . . call
-    e8/call  hex-char/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . AL = to-hex-char(AL)
+    e8/call  to-hex-char/disp32
     # write-byte(f, AL)
     # . . push args
     50/push-EAX
@@ -39,13 +34,8 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     # AL = convert lower nibble to hex
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     25/and-EAX  0xf/imm32
-    # . hex-char(AL)
-    # . . push args
-    50/push-EAX
-    # . . call
-    e8/call  hex-char/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . AL = to-hex-char(AL)
+    e8/call  to-hex-char/disp32
     # write-byte(f, AL)
     # . . push args
     50/push-EAX
@@ -58,34 +48,6 @@ $print-byte:end:
     # . restore registers
     59/pop-to-ECX
     58/pop-to-EAX
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
-# extract lowest 4 bits and convert to 8-byte ascii
-# return 0xffffffff if more than 4 bits are set
-hex-char:  # n : int -> char_or_error/EAX
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # EAX = n
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    # if it's <= 9 add '0' to it
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x9/imm32         # compare EAX
-    7f/jump-if-greater  $hex-char:check2/disp8
-    05/add-to-EAX  0x30/imm32/'0'
-    eb/jump  $hex-char:end/disp8
-$hex-char:check2:
-    # else if it's <= 15 add ('a' - 10) to it
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xf/imm32         # compare EAX
-    7f/jump-if-greater  $hex-char:error/disp8
-    05/add-to-EAX  0x57/imm32  # 'a' - 10
-    eb/jump  $hex-char:end/disp8
-$hex-char:error:
-    # otherwise return 0xffffffff
-    b8/copy-to-EAX  0xffffffff/imm32
-$hex-char:end:
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP

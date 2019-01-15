@@ -131,10 +131,10 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     # pseudocode:
     #   EAX = scan-next-byte(in, err, ed)
     #   if (EAX == 0xffffffff) return
-    #   ECX = parse-hex-digit(EAX)
+    #   ECX = from-hex-char(EAX)
     #   EAX = scan-next-byte(in, err, ed)
     #   if (EAX == 0xffffffff) error("partial byte found.")
-    #   EAX = parse-hex-digit(EAX)
+    #   EAX = from-hex-char(EAX)
     #   EAX = (ECX << 4) | EAX
     #   return
     #
@@ -155,8 +155,8 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     # if (EAX == 0xffffffff) return
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
     74/jump-if-equal  $convert-next-octet:end/disp8
-    # EAX = parse-hex-digit(EAX)
-    e8/call parse-hex-digit/disp32
+    # EAX = from-hex-char(EAX)
+    e8/call from-hex-char/disp32
     # ECX = EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
     # EAX = scan-next-byte(in, err, ed)
@@ -180,8 +180,8 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     # . . call
     e8/call  error-byte/disp32  # never returns
 $convert-next-octet:convert:
-    # EAX = parse-hex-digit(EAX)
-    e8/call parse-hex-digit/disp32
+    # EAX = from-hex-char(EAX)
+    e8/call from-hex-char/disp32
     # EAX = (ECX << 4) | EAX
     # . ECX <<= 4
     c1/shift    4/subop/left        3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm8            # shift ECX left by 4 bits
