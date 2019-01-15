@@ -219,7 +219,7 @@ if ('onhashchange' in window) {
 <span id="L156" class="LineNr"> 156 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xffffffff/imm32  <span class="subxComment"># compare EAX</span>
 <span id="L157" class="LineNr"> 157 </span>    74/jump-if-equal  $convert-next-octet:end/disp8
 <span id="L158" class="LineNr"> 158 </span>    <span class="subxComment"># EAX = parse-hex-digit(EAX)</span>
-<span id="L159" class="LineNr"> 159 </span>    e8/call <a href='../071hex.subx.html#L477'>parse-hex-digit</a>/disp32
+<span id="L159" class="LineNr"> 159 </span>    e8/call <a href='../071hex.subx.html#L572'>parse-hex-digit</a>/disp32
 <span id="L160" class="LineNr"> 160 </span>    <span class="subxComment"># ECX = EAX</span>
 <span id="L161" class="LineNr"> 161 </span>    89/copy                         3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy EAX to ECX</span>
 <span id="L162" class="LineNr"> 162 </span>    <span class="subxComment"># EAX = scan-next-byte(in, err, ed)</span>
@@ -244,7 +244,7 @@ if ('onhashchange' in window) {
 <span id="L181" class="LineNr"> 181 </span>    e8/call  <a href='../065error-byte.subx.html#L30'>error-byte</a>/disp32  <span class="subxComment"># never returns</span>
 <span id="L182" class="LineNr"> 182 </span><span class="Constant">$convert-next-octet:<a href='hex.subx.html#L72'>convert</a></span>:
 <span id="L183" class="LineNr"> 183 </span>    <span class="subxComment"># EAX = parse-hex-digit(EAX)</span>
-<span id="L184" class="LineNr"> 184 </span>    e8/call <a href='../071hex.subx.html#L477'>parse-hex-digit</a>/disp32
+<span id="L184" class="LineNr"> 184 </span>    e8/call <a href='../071hex.subx.html#L572'>parse-hex-digit</a>/disp32
 <span id="L185" class="LineNr"> 185 </span>    <span class="subxComment"># EAX = (ECX &lt;&lt; 4) | EAX</span>
 <span id="L186" class="LineNr"> 186 </span>    <span class="subxS1Comment"># . ECX &lt;&lt;= 4</span>
 <span id="L187" class="LineNr"> 187 </span>    c1/shift    4/subop/left        3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm8            <span class="subxComment"># shift ECX left by 4 bits</span>
@@ -553,7 +553,7 @@ if ('onhashchange' in window) {
 <span id="L490" class="LineNr"> 490 </span>    <span class="subxComment">#   repeatedly</span>
 <span id="L491" class="LineNr"> 491 </span>    <span class="subxComment">#     EAX = read-byte(in)</span>
 <span id="L492" class="LineNr"> 492 </span>    <span class="subxComment">#     if EAX == 0xffffffff return EAX</span>
-<span id="L493" class="LineNr"> 493 </span>    <span class="subxComment">#     if is-hex-byte?(EAX) return EAX</span>
+<span id="L493" class="LineNr"> 493 </span>    <span class="subxComment">#     if is-hex-digit?(EAX) return EAX</span>
 <span id="L494" class="LineNr"> 494 </span>    <span class="subxComment">#     if EAX == ' ' or '\t' or '\n' continue</span>
 <span id="L495" class="LineNr"> 495 </span>    <span class="subxComment">#     if EAX == '#' skip-until-newline(in)</span>
 <span id="L496" class="LineNr"> 496 </span>    <span class="subxComment">#     else error-byte(ed, err, &quot;invalid byte: &quot; EAX)</span>
@@ -573,14 +573,14 @@ if ('onhashchange' in window) {
 <span id="L510" class="LineNr"> 510 </span>    <span class="subxComment"># if (EAX == 0xffffffff) return EAX</span>
 <span id="L511" class="LineNr"> 511 </span>    3d/compare-with-EAX  0xffffffff/imm32
 <span id="L512" class="LineNr"> 512 </span>    74/jump-if-equal  $scan-next-byte:end/disp8
-<span id="L513" class="LineNr"> 513 </span>    <span class="subxComment"># if is-hex-byte?(EAX) return EAX</span>
+<span id="L513" class="LineNr"> 513 </span>    <span class="subxComment"># if is-hex-digit?(EAX) return EAX</span>
 <span id="L514" class="LineNr"> 514 </span>    <span class="subxS1Comment"># . save EAX for now</span>
 <span id="L515" class="LineNr"> 515 </span>    50/push-EAX
-<span id="L516" class="LineNr"> 516 </span>    <span class="subxS1Comment"># . is-hex-byte?(EAX)</span>
+<span id="L516" class="LineNr"> 516 </span>    <span class="subxS1Comment"># . is-hex-digit?(EAX)</span>
 <span id="L517" class="LineNr"> 517 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L518" class="LineNr"> 518 </span>    50/push-EAX
 <span id="L519" class="LineNr"> 519 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L520" class="LineNr"> 520 </span>    e8/call  <a href='../071hex.subx.html#L318'>is-hex-byte?</a>/disp32
+<span id="L520" class="LineNr"> 520 </span>    e8/call  <a href='../071hex.subx.html#L413'>is-hex-digit?</a>/disp32
 <span id="L521" class="LineNr"> 521 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L522" class="LineNr"> 522 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L523" class="LineNr"> 523 </span>    <span class="subxS1Comment"># . compare with 'false'</span>

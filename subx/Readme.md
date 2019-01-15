@@ -219,7 +219,7 @@ There's a lot here, so let's unpack it piece by piece:
   provided by a SIB byte next:
 
   ```
-  base * 2^scale + index
+  base + index * 2^scale + displacement
   ```
 
   (There are a couple more exceptions ☹; see [Table 2-2](modrm.pdf) and [Table 2-3](sib.pdf)
