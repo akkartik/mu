@@ -13,7 +13,7 @@
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 
-string-equal:  # s : string, benchmark : string -> EAX : boolean
+string-equal?:  # s : string, benchmark : string -> EAX : boolean
     # pseudocode:
     #   if s->length != b->length return false
     #   for i = 0;  i < s->length;  ++i
@@ -43,38 +43,38 @@ string-equal:  # s : string, benchmark : string -> EAX : boolean
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
     # compare s->length and b->length
     39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare *EBX with EDX
-    75/jump-if-not-equal  $string-equal:false/disp8
-$string-equal:lengths:
+    75/jump-if-not-equal  $string-equal?:false/disp8
+$string-equal?:lengths:
     # var i/ECX : int = 0
     b9/copy-to-ECX  0/imm32
     # EBX = &b[i]
     43/inc-EBX
     # EAX = &s[i]
     40/inc-EAX
-$string-equal:loop:
+$string-equal?:loop:
     # if i >= s->length return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $string-equal:true/disp8
+    7d/jump-if-greater-or-equal  $string-equal?:true/disp8
     # if b[i] != s[i] return false
     # ESI = s[i]
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy *EAX to ESI
     # compare b[i] with ESI
     39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # compare *EBX with ESI
-    75/jump-if-not-equal  $string-equal:false/disp8
+    75/jump-if-not-equal  $string-equal?:false/disp8
     # ++i
     41/inc-ECX
     40/inc-EAX
     43/inc-EBX
     # loop
-    eb/jump  $string-equal:loop/disp8
-$string-equal:true:
+    eb/jump  $string-equal?:loop/disp8
+$string-equal?:true:
     # return true
     b8/copy-to-EAX  1/imm32
-    eb/jump  $string-equal:end/disp8
-$string-equal:false:
+    eb/jump  $string-equal?:end/disp8
+$string-equal?:false:
     # return false
     b8/copy-to-EAX  0/imm32
-$string-equal:end:
+$string-equal?:end:
     # . restore registers
     5e/pop-to-ESI
     5b/pop-to-EBX
@@ -88,12 +88,12 @@ $string-equal:end:
 # - tests
 
 test-compare-empty-with-empty-string:
-    # EAX = string-equal("", "")
+    # EAX = string-equal?("", "")
     # . . push args
     68/push  ""/imm32
     68/push  ""/imm32
     # . . call
-    e8/call  string-equal/disp32
+    e8/call  string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(EAX, 1, msg)
@@ -108,12 +108,12 @@ test-compare-empty-with-empty-string:
     c3/return
 
 test-compare-empty-with-non-empty-string:  # also checks length-mismatch code path
-    # EAX = string-equal("", "Abc")
+    # EAX = string-equal?("", "Abc")
     # . . push args
     68/push  "Abc"/imm32
     68/push  ""/imm32
     # . . call
-    e8/call  string-equal/disp32
+    e8/call  string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(EAX, 0, msg)
@@ -128,12 +128,12 @@ test-compare-empty-with-non-empty-string:  # also checks length-mismatch code pa
     c3/return
 
 test-compare-equal-strings:
-    # EAX = string-equal("Abc", "Abc")
+    # EAX = string-equal?("Abc", "Abc")
     # . . push args
     68/push  "Abc"/imm32
     68/push  "Abc"/imm32
     # . . call
-    e8/call  string-equal/disp32
+    e8/call  string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(EAX, 1, msg)
@@ -148,12 +148,12 @@ test-compare-equal-strings:
     c3/return
 
 test-compare-inequal-strings-equal-lengths:
-    # EAX = string-equal("Abc", "Adc")
+    # EAX = string-equal?("Abc", "Adc")
     # . . push args
     68/push  "Adc"/imm32
     68/push  "Abc"/imm32
     # . . call
-    e8/call  string-equal/disp32
+    e8/call  string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(EAX, 0, msg)
