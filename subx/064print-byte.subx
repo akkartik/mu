@@ -21,6 +21,7 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     # AL = convert upper nibble to hex
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     c1/shift    5/subop/logic-right 3/mod/direct    0/rm32/EAX    .           .             .           .           .               4/imm8            # shift EAX right by 4 bits, while padding zeroes
+    25/and-EAX  0xf/imm32
     # . AL = to-hex-char(AL)
     e8/call  to-hex-char/disp32
     # write-byte(f, AL)
@@ -46,7 +47,6 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $print-byte:end:
     # . restore registers
-    59/pop-to-ECX
     58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
