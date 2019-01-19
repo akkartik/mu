@@ -51,5 +51,5 @@ if (contains_key(Symbol_name, EIP) && starts_with(get(Symbol_name, EIP), "$watch
 :(after "Found effective_address(addr)")
 if (!Watch_this_effective_address.empty()) {
   dbg << "now watching " << HEXWORD << addr << " for " << Watch_this_effective_address << end();
-  Watch_points[Watch_this_effective_address] = addr;
+  put(Watch_points, Watch_this_effective_address, addr);
 }
