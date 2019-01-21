@@ -260,7 +260,7 @@ void check_operands(const line& inst, const word& op) {
 
 void compare_bitvector(const line& inst, uint8_t expected, const word& op) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  uint8_t bitvector = computed_expected_operand_bitvector(inst);
+  uint8_t bitvector = compute_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
   if (bitvector == expected) return;  // all good with this instruction
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
@@ -284,7 +284,7 @@ string maybe_name(const word& op) {
   return " ("+s.substr(0, s.find(" ("))+')';
 }
 
-uint32_t computed_expected_operand_bitvector(const line& inst) {
+uint32_t compute_expected_operand_bitvector(const line& inst) {
   uint32_t bitvector = 0;
   for (int i = /*skip op*/1;  i < SIZE(inst.words);  ++i) {
     bitvector = bitvector | expected_bit_for_received_operand(inst.words.at(i));
@@ -372,7 +372,7 @@ void check_operands_modrm(const line& inst, const word& op) {
 // instructions: they may use an extra displacement on occasion
 void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  uint8_t bitvector = computed_expected_operand_bitvector(inst);
+  uint8_t bitvector = compute_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
   // update 'expected' bitvector for the additional exception
   if (has_operand_metadata(inst, "mod")) {
@@ -552,7 +552,7 @@ void check_operands_0f(const line& inst, const word& op) {
 
 void compare_bitvector_0f(const line& inst, uint8_t expected, const word& op) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  uint8_t bitvector = computed_expected_operand_bitvector(inst);
+  uint8_t bitvector = compute_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
   if (bitvector == expected) return;  // all good with this instruction
   for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
