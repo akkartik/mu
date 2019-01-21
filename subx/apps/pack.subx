@@ -86,26 +86,42 @@ $main:end:
 # read first word as opcode and write-slice
 # if 0f or f2 or f3 read second opcode and write-slice
 # if 'f2 0f' or 'f3 0f' read third opcode and write-slice
-# scan words
+# while true:
+#   word-slice = next-word
+#   if empty(word-slice) break
 #   if has metadata 'mod', parse into mod
 #   if has metadata 'rm32', parse into rm32
 #   if has metadata 'r32', parse into r32
 #   if has metadata 'subop', parse into r32
 # if at least one of the 3 was present, print-byte
-# scan words
+# while true:
+#   word-slice = next-word
+#   if empty(word-slice) break
 #   if has metadata 'base', parse into base
 #   if has metadata 'index', parse into index
 #   if has metadata 'scale', parse into scale
 # if at least one of the 3 was present, print-byte
 # parse errors => <abort>
-# scan words
+# while true:
+#   word-slice = next-word
+#   if empty(word-slice) break
 #   if has metadata 'disp8', emit as 1 byte
 #   if has metadata 'disp16', emit as 2 bytes
 #   if has metadata 'disp32', emit as 4 bytes
-# scan words
+# while true:
+#   word-slice = next-word
+#   if empty(word-slice) break
 #   if has metadata 'imm8', emit
 #   if has metadata 'imm32', emit as 4 bytes
 # finally, emit line prefixed with a '  # '
+
+# has-metadata?(word-slice, m):
+#   next-token2(word-slice, '/')  # skip
+#   while true:
+#     slice = next-token2(word-slice, '/')
+#     if empty?(slice) break
+#     if equal(slice, m) return true
+#   return false
 
 # simplifications since we perform zero error handling (continuing to rely on the C++ version for that):
 #   missing fields are always 0-filled
@@ -123,6 +139,7 @@ $main:end:
 #
 # we won't bother saving the internal structure of lines; reparsing should be cheap using two primitives:
 #   next-token(stream, delim char) -> slice (start, end pointers)
+#   next-token(stream, slice, delim char) -> slice'
 #   slice-equal?(slice, string)
 
 # helpers:
