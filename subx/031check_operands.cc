@@ -285,9 +285,10 @@ string maybe_name(const word& op) {
 }
 
 uint32_t compute_expected_operand_bitvector(const line& inst) {
+  set<string> operands_found;
   uint32_t bitvector = 0;
   for (int i = /*skip op*/1;  i < SIZE(inst.words);  ++i) {
-    bitvector = bitvector | expected_bit_for_received_operand(inst.words.at(i));
+    bitvector = bitvector | expected_bit_for_received_operand(inst.words.at(i), operands_found, inst);
     if (trace_contains_errors()) return INVALID_OPERANDS;  // duplicate operand type
   }
   return bitvector;
@@ -310,19 +311,25 @@ int first_operand(const line& inst) {
 
 // Scan the metadata of 'w' and return the expected bit corresponding to any operand type.
 // Also raise an error if metadata contains multiple operand types.
-uint32_t expected_bit_for_received_operand(const word& w) {
+uint32_t expected_bit_for_received_operand(const word& w, set<string>& instruction_operands, const line& inst) {
   uint32_t bv = 0;
   bool found = false;
   for (int i = 0;  i < SIZE(w.metadata);  ++i) {
     string/*copy*/ curr = w.metadata.at(i);
+    string expected_metadata = curr;
     if (curr == "mod" || curr == "rm32" || curr == "r32" || curr == "scale" || curr == "index" || curr == "base")
-      curr = "modrm";
+      expected_metadata = "modrm";
     else if (!contains_key(Operand_type, curr)) continue;  // ignore unrecognized metadata
     if (found) {
       raise << "'" << w.original << "' has conflicting operand types; it should have only one\n" << end();
       return INVALID_OPERANDS;
     }
-    bv = (1 << get(Operand_type, curr));
+    if (instruction_operands.find(curr) != instruction_operands.end()) {
+      raise << "'" << to_string(inst) << "': duplicate " << curr << " operand\n" << end();
+      return INVALID_OPERANDS;
+    }
+    instruction_operands.insert(curr);
+    bv = (1 << get(Operand_type, expected_metadata));
     found = true;
   }
   return bv;
@@ -482,6 +489,12 @@ $error: 0
 == 0x1
 89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 4/disp8
 +error: '89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 4/disp8' (copy r32 to rm32): unexpected disp8 operand
+
+:(scenario check_duplicate_operand)
+% Hide_errors = true;
+== 0x1
+89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 1/r32
++error: '89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 1/r32': duplicate r32 operand
 
 :(scenario check_base_operand_not_needed_in_direct_mode)
 == 0x1
