@@ -115,14 +115,6 @@ $main:end:
 #   if has metadata 'imm32', emit as 4 bytes
 # finally, emit line prefixed with a '  # '
 
-# has-metadata?(word-slice, m):
-#   next-token2(word-slice, '/')  # skip
-#   while true:
-#     slice = next-token2(word-slice, '/')
-#     if empty?(slice) break
-#     if equal(slice, m) return true
-#   return false
-
 # simplifications since we perform zero error handling (continuing to rely on the C++ version for that):
 #   missing fields are always 0-filled
 #   bytes never mentioned are silently dropped; if you don't provide /mod, /rm32 or /r32 you don't get a 0 modrm byte. You get *no* modrm byte.
@@ -354,6 +346,32 @@ test-next-word-returns-whole-comment:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+has-metadata?:  # word : (address slice), s : (address string) -> EAX : boolean
+    # pseudocode:
+    #   var twig : &slice
+    #   curr = word->start
+    #   while true:
+    #     twig = next-token-from-slice(curr, word->end, '/')
+    #     if twig.empty() break
+    #     if slice-equal?(twig, s) return true
+    #     curr = twig->end
+    #   return false
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    # ESI = word
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # var twig/EDI : (address slice) = {0, 0}
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    7/rm32/EDI    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDI
+    # . restore registers
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
