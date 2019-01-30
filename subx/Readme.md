@@ -21,7 +21,7 @@ by:
    native execution (which will also work), but there's more sanity checking,
    and more descriptive error messages for common low-level problems.
 
-   ```
+   ```sh
    $ ./subx translate examples/ex1.subx -o examples/ex1
    $ ./examples/ex1  # only on Linux
    $ echo $?
@@ -35,7 +35,7 @@ by:
    very little to do, making it feasible to reimplement in itself. Programmers
    have to explicitly specify all opcodes and operands.
 
-   ```
+   ```sh (just for syntax highlighting)
    # exit(42)
    bb/copy-to-EBX  0x2a/imm32  # 42 in hex
    b8/copy-to-EAX  1/imm32/exit
@@ -142,7 +142,7 @@ useful to catch such errors early.
 
 Try running this example now:
 
-```
+```sh
 $ ./subx translate examples/ex3.subx -o examples/ex3
 $ ./subx run examples/ex3
 $ echo $?
@@ -151,7 +151,7 @@ $ echo $?
 
 If you're on Linux you can also run it natively:
 
-```
+```sh
 $ ./examples/ex3
 $ echo $?
 55
