@@ -107,7 +107,7 @@ natively on Linux, and they require only the Linux kernel.
 I'm currently implementing SubX in SubX in 3 phases:
 
   1. Converting ascii hex bytes to binary. (✓)
-  2. Packing bitfields for x86 instructions into bytes.
+  2. Packing bitfields for x86 instructions into bytes. (80% complete)
   3. Replacing addresses with labels.
 
 In parallel, I'm designing testable wrappers for syscalls, particularly for
@@ -126,7 +126,7 @@ This program sums the first 10 natural numbers. By convention I use horizontal
 tabstops to help read instructions, dots to help follow the long lines,
 comments before groups of instructions to describe their high-level purpose,
 and comments at the end of complex instructions to state the low-level
-operation they perform. Numbers are always shown in hexadecimal (base 16).
+operation they perform. Numbers are always in hexadecimal (base 16).
 
 As you can see, programming in SubX requires the programmer to know the (kinda
 complex) structure of x86 instructions, all the different operands that an
