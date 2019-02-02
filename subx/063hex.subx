@@ -31,6 +31,14 @@ is-hex-int?:  # in : (address slice) -> EAX : boolean
     b8/copy-to-EAX  0/imm32/false
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     7d/jump-if-greater-or-equal  $is-hex-int?:end/disp8
+    # skip past leading '-'
+    # . if (*curr == '-') ++curr
+    31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           3/r32/BL    .               .                 # copy byte at *ECX to BL
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x2d/imm32/-      # compare EBX
+    75/jump-if-not-equal  $is-hex-int?:initial-0/disp8
+    # . ++curr
+    41/increment-ECX
     # skip past leading '0x'
 $is-hex-int?:initial-0:
     # . if (*curr != '0') jump to loop
@@ -246,6 +254,64 @@ test-is-hex-int-handles-0x-prefix:
     # check-ints-equal(EAX, 1, msg)
     # . . push args
     68/push  "F - test-is-hex-int-handles-0x-prefix"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-hex-int-handles-negative:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "-34a"
+    68/push  _test-slice-hex-int-letters-end/imm32
+    68/push  _test-slice-hex-int-letters-negative/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-hex-int?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-hex-int?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-is-hex-int-handles-negative"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-hex-int-handles-negative-0x-prefix:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "-0x3a"
+    68/push  _test-slice-hex-int-with-0x-prefix-end/imm32
+    68/push  _test-slice-hex-int-with-0x-prefix-negative/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-hex-int?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-hex-int?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-is-hex-int-handles-negative-0x-prefix"/imm32
     68/push  1/imm32/true
     50/push-EAX
     # . . call
@@ -704,6 +770,8 @@ _test-slice-hex-int:
   33/3 34/4
 _test-slice-hex-int-end:
 
+_test-slice-hex-int-letters-negative:
+  2d/-
 _test-slice-hex-int-letters:
   33/3 34/4 61/a
 _test-slice-hex-int-letters-end:
@@ -720,6 +788,8 @@ _test-slice-digits-and-char:
   33/3 34/4 71/q
 _test-slice-digits-and-char-end:
 
+_test-slice-hex-int-with-0x-prefix-negative:
+  2d/-
 _test-slice-hex-int-with-0x-prefix:
   30/0 78/x 33/3 34/4
 _test-slice-hex-int-with-0x-prefix-end:
