@@ -82,44 +82,6 @@ $write:end:
     5d/pop-to-EBP
     c3/return
 
-clear-stream:  # f : (address stream) -> <void>
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-    50/push-EAX
-    51/push-ECX
-    # EAX = f
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    # ECX = f->length
-    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EAX+8) to ECX
-    # ECX = &f->data[f->length]
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EAX+ECX+12 to ECX
-    # f->write = 0
-    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
-    # f->read = 0
-    c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
-    # EAX = f->data
-    81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xc/imm32         # add to EAX
-    # while (true)
-$clear-stream:loop:
-    # if EAX >= ECX break
-    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
-    7d/jump-if-greater-or-equal  $clear-stream:end/disp8
-    # *EAX = 0
-    c6          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm8            # copy byte to *EAX
-    # ++EAX
-    40/increment-EAX
-    eb/jump  $clear-stream:loop/disp8
-$clear-stream:end:
-    # . restore registers
-    59/pop-to-ECX
-    58/pop-to-EAX
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
 test-write-single:
     # clear-stream(_test-stream)
     # . . push args
