@@ -87,15 +87,13 @@ test-print-byte:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(*_test-stream->data, '0a', msg)
+    # check-stream-equal(_test-stream, "0a", msg)
     # . . push args
     68/push  "F - test-print-byte"/imm32
-    68/push  0x6130/imm32/0a
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "0a"/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . end

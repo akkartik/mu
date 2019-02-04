@@ -120,7 +120,7 @@ slice-equal?:  # s : (address slice), p : (address string) -> EAX : boolean
     75/jump-if-not-equal  $slice-equal?:false/disp8
     # skip p->length
     81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
-    # EAX = ECX = false
+    # EAX = ECX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
 $slice-equal?:loop:
@@ -489,15 +489,13 @@ test-write-slice:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(*_test-stream->data, "Abc", msg)
+    # check-stream-equal(_test-stream, "Abc", msg)
     # . . push args
     68/push  "F - test-write-slice"/imm32
-    68/push  0x636241/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "Abc"/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog

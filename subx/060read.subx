@@ -220,15 +220,13 @@ test-read-single:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(*_test-stream-buffer->data, 41/A 62/b 00 00, msg)
+    # check-stream-equal(_test-stream-buffer, "Ab", msg)
     # . . push args
     68/push  "F - test-read-single"/imm32
-    68/push  0x006241/imm32/Ab
-    # . . push *_test-stream-buffer->data
-    b8/copy-to-EAX  _test-stream-buffer/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "Ab"/imm32
+    68/push  _test-stream-buffer/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # end
@@ -282,15 +280,13 @@ test-read-is-stateful:
     e8/call  read/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(*_test-stream-buffer->data, 43/C 44/D 00 00, msg)
+    # check-stream-equal(_test-stream-buffer, "CD", msg)
     # . . push args
     68/push  "F - test-read-is-stateful"/imm32
-    68/push  0x00004443/imm32/C-D
-    # . . push *_test-stream-buffer->data
-    b8/copy-to-EAX  _test-stream-buffer/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "CD"/imm32
+    68/push  _test-stream-buffer/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # end
