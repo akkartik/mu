@@ -184,16 +184,13 @@ test-read-line:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-stream-equal(_test-stream-buffer, "ab\n")
-    # . check-ints-equal(*_test-stream-buffer->data, 61/a 62/b 0a/newline 00, msg)
+    # check-next-stream-line-equal(_test-stream-buffer, "ab", msg)
     # . . push args
     68/push  "F - test-read-line"/imm32
-    68/push  0x000a6261/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream-buffer/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "ab"/imm32
+    68/push  _test-stream-buffer/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # end

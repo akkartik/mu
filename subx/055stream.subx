@@ -5,10 +5,9 @@
 #   read : int  # index that we've read until
 #   data : (array byte)  # prefixed by length as usual
 #
-# primitives for operating on streams:
+# some primitives for operating on streams:
 #   - clear-stream (clears everything but the data length)
-#   - stream-equal? (compares stream data with a string; ignores read pointer)
-#   - rewind-reads (resets read pointer; not yet implemented)
+#   - rewind-stream (resets read pointer)
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -54,6 +53,24 @@ $clear-stream:loop:
 $clear-stream:end:
     # . restore registers
     59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+rewind-stream:  # f : (address stream) -> <void>
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    # EAX = f
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    # f->read = 0
+    c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
+$rewind-stream:end:
+    # . restore registers
     58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
