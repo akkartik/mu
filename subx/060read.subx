@@ -188,9 +188,9 @@ test-read-single:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # clear-stream(_test-stream-buffer)
+    # clear-stream(_test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -203,9 +203,9 @@ test-read-single:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # read(_test-stream, _test-stream-buffer)
+    # read(_test-stream, _test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  read/disp32
@@ -220,11 +220,11 @@ test-read-single:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-stream-equal(_test-stream-buffer, "Ab", msg)
+    # check-stream-equal(_test-tmp-stream, "Ab", msg)
     # . . push args
     68/push  "F - test-read-single"/imm32
     68/push  "Ab"/imm32
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -241,9 +241,9 @@ test-read-is-stateful:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # clear-stream(_test-stream-buffer)
+    # clear-stream(_test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -256,9 +256,9 @@ test-read-is-stateful:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # read(_test-stream, _test-stream-buffer)
+    # read(_test-stream, _test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  read/disp32
@@ -272,19 +272,19 @@ test-read-is-stateful:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # read(_test-stream, _test-stream-buffer)
+    # read(_test-stream, _test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  read/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-stream-equal(_test-stream-buffer, "CD", msg)
+    # check-stream-equal(_test-tmp-stream, "CD", msg)
     # . . push args
     68/push  "F - test-read-is-stateful"/imm32
     68/push  "CD"/imm32
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -302,9 +302,9 @@ test-read-returns-0-on-end-of-file:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-stream-buffer)
+    # . clear-stream(_test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -318,18 +318,18 @@ test-read-returns-0-on-end-of-file:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # first read gets to end-of-file
-    # . read(_test-stream, _test-stream-buffer)
+    # . read(_test-stream, _test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  read/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # second read
-    # . read(_test-stream, _test-stream-buffer)
+    # . read(_test-stream, _test-tmp-stream)
     # . . push args
-    68/push  _test-stream-buffer/imm32
+    68/push  _test-tmp-stream/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  read/disp32
@@ -349,7 +349,7 @@ test-read-returns-0-on-end-of-file:
 
 == data
 
-_test-stream-buffer:
+_test-tmp-stream:
     # current write index
     00 00 00 00
     # current read index
