@@ -34,12 +34,15 @@ if (!starts_with(segment_title, "0x")) {
   Currently_parsing_named_segment = true;
   if (!contains_key(Segment_index, segment_title)) {
     trace(99, "parse") << "new segment '" << segment_title << "'" << end();
-    if (segment_title == "code")
-      put(Segment_index, segment_title, 0);
-    else if (segment_title == "data")
-      put(Segment_index, segment_title, 1);
-    else
-      put(Segment_index, segment_title, max(2, SIZE(out.segments)));
+    if (out.segments.empty() && segment_title != "code") {
+      raise << "first segment must be 'code' but is '" << segment_title << "'\n" << end();
+      return;
+    }
+    if (SIZE(out.segments) == 1 && segment_title != "data") {
+      raise << "second segment must be 'data' but is '" << segment_title << "'\n" << end();
+      return;
+    }
+    put(Segment_index, segment_title, SIZE(out.segments));
     out.segments.push_back(segment());
   }
   else {
@@ -50,10 +53,7 @@ if (!starts_with(segment_title, "0x")) {
 
 :(before "End flush(p, lines) Special-cases")
 if (Currently_parsing_named_segment) {
-  if (p.segments.empty() || Currently_parsing_segment_index < 0) {
-    raise << "input does not start with a '==' section header\n" << end();
-    return;
-  }
+  assert(!p.segments.empty());
   trace(99, "parse") << "flushing to segment" << end();
   vector<line>& curr_segment_data = p.segments.at(Currently_parsing_segment_index).lines;
   curr_segment_data.insert(curr_segment_data.begin(), lines.begin(), lines.end());
@@ -80,6 +80,25 @@ if (Currently_parsing_named_segment) {
 +load: 0x0900005b -> 0b
 +load: 0x0900005c -> 0c
 +load: 0x0900005d -> 0d
+
+:(scenario error_on_missing_segment_header)
+% Hide_errors = true;
+05/add-to-EAX 0/imm32
++error: input does not start with a '==' section header
+
+:(scenario error_on_first_segment_not_code)
+% Hide_errors = true;
+== data
+05 00 00 00 00
++error: first segment must be 'code' but is 'data'
+
+:(scenario error_on_second_segment_not_data)
+% Hide_errors = true;
+== code
+05/add-to-EAX 0/imm32
+== bss
+05 00 00 00 00
++error: second segment must be 'data' but is 'bss'
 
 //: compute segment address
 

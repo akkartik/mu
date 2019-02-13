@@ -274,8 +274,7 @@ SubX programs map to the same ELF binaries that a conventional Linux system
 uses. Linux ELF binaries consist of a series of _segments_. In particular, they
 distinguish between code and data. Correspondingly, SubX programs consist of a
 series of segments, each starting with a header line: `==` followed by a name.
-The first segment is assumed to be for code, and the second for data. By
-convention, I name them `code` and `data`.
+The first segment must be named `code`; the second must be named `data`.
 
 Execution always begins at the start of the `code` segment.
 
