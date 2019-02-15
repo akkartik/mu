@@ -7,6 +7,7 @@
 
 # main:
     # run-tests()
+#?     e8/call test-compare-equal-strings/disp32
     e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
     # syscall(exit, Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
@@ -30,10 +31,10 @@ string-equal?:  # s : (address string), benchmark : (address string) -> EAX : bo
     # registers:
     #   i: ECX
     #   lens: EDX
-    #   currs: EAX
-    #   currb: EBX
-    #   c1: ESI
-    #   c2: EDI
+    #   currs: ESI
+    #   currb: EDI
+    #   c1: EAX
+    #   c2: EBX
     #
     # . prolog
     55/push-EBP
@@ -43,38 +44,42 @@ string-equal?:  # s : (address string), benchmark : (address string) -> EAX : bo
     52/push-EDX
     53/push-EBX
     56/push-ESI
-    # EAX = s
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    # EBX = benchmark
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+    57/push-EDI
+    # ESI = s
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # EDI = benchmark
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to EDI
     # lens/EDX = s->length
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
 $string-equal?:lengths:
     # if (lens != benchmark->length) return false
-    39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare *EBX with EDX
+    39/compare                      0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare *EDI with EDX
     75/jump-if-not-equal  $string-equal?:false/disp8
-    # var i/ECX : int = 0
-    b9/copy-to-ECX  0/imm32
-    # EBX = &b[i]
-    43/inc-EBX
-    # EAX = &s[i]
-    40/inc-EAX
+    # currs/ESI = s->data
+    81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
+    # currb/EDI = benchmark->data
+    81          0/subop/add         3/mod/direct    7/rm32/EDI    .           .             .           .           .               4/imm32           # add to EDI
+    # i/ECX = c1/EAX = c2/EBX = 0
+    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
 $string-equal?:loop:
     # if (i >= lens) return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     7d/jump-if-greater-or-equal  $string-equal?:true/disp8
-    # if b[i] != s[i] return false
-    # ESI = s[i]
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy *EAX to ESI
-    # compare b[i] with ESI
-    39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # compare *EBX with ESI
+    # c1 = *currs
+    8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/AL    .               .                 # copy byte at *ESI to AL
+    # c2 = *currb
+    8a/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at *EDI to BL
+    # if (c1 != c2) return false
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX with EBX
     75/jump-if-not-equal  $string-equal?:false/disp8
     # ++i
     41/inc-ECX
-    # ++c1
-    40/inc-EAX
-    # ++c2
-    43/inc-EBX
+    # ++currs
+    46/inc-ESI
+    # ++currb
+    47/inc-EDI
     eb/jump  $string-equal?:loop/disp8
 $string-equal?:true:
     b8/copy-to-EAX  1/imm32
@@ -83,6 +88,7 @@ $string-equal?:false:
     b8/copy-to-EAX  0/imm32
 $string-equal?:end:
     # . restore registers
+    5f/pop-to-EDI
     5e/pop-to-ESI
     5b/pop-to-EBX
     5a/pop-to-EDX
