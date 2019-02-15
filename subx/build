@@ -11,11 +11,11 @@ set -e  # stop immediately on error
 #   $ ./build --until 050
 UNTIL_LAYER=${2:-zzz}
 
-# there's two mechanisms for fast builds here:
-# - if a command is quick to run, always run it but update the result only on any change
-# - otherwise run it only if the output is 'older_than' the inputs
+# we use two mechanisms to speed up rebuilds:
+# - older_than: run a command if the output is older than any of the inputs
+# - update: if a command is quick to run, always run it but update the result only on any change
 #
-# avoid combining both mechanisms for a single file
+# avoid combining both mechanisms to generate a single file
 # otherwise you'll see spurious messages about files being updated
 # risk: a file may unnecessarily update without changes, causing unnecessary work downstream
 
