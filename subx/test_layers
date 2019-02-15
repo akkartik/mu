@@ -13,9 +13,14 @@ do
   ./build_and_test_until $f
 done
 
+# build everything one last time
+clean
+CFLAGS=$CFLAGS ./build  # build optimized by default since we'll be running it repeatedly below
+
 # add SubX files one at a time
 for f in [0-9]*.subx
 do
   echo "=== $f"
-  CFLAGS=-g ./subx translate $(../enumerate/enumerate --until $f |grep '\.subx$') -o foo  &&  ./subx run foo
+  ./subx translate $(../enumerate/enumerate --until $f |grep '\.subx$') -o foo  &&  ./subx run foo
+  echo
 done
