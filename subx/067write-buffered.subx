@@ -22,17 +22,18 @@ write-buffered:  # f : (address buffered-file), msg : (address array byte) -> <v
     #     if (f->write >= f->length)
     #       flush(f)
     #       clear-stream(f)
-    #     f->data[f->write] = *in
+    #     c = *in
+    #     f->data[f->write] = c
     #     ++f->write
     #     ++in
     #
     # registers:
-    #   ESI : in
-    #   ECX : inend
-    #   EDI : f
-    #   EDX : f->length
-    #   EBX : f->write (cached copy, need to keep in sync)
-    #   EAX : temp
+    #   in: ESI
+    #   inend: ECX
+    #   f: EDI
+    #   f->length: EDX
+    #   f->write: EBX (cached; need to keep in sync)
+    #   c: EAX
     #
     # . prolog
     55/push-EBP

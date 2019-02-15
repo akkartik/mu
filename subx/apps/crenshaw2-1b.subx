@@ -213,12 +213,11 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     # a general helper like write-byte. Maybe I should just create a local helper.
     #
     # within the loop we'll try to keep things in registers:
-    #   ESI : in
-    #   EDI : out
-    #   EAX : temp
-    #   ECX : out->write (persisted back at end)
-    #   EDX : out->length
-    #   EBX : temp2
+    #   in: ESI
+    #   out: EDI
+    #   out->write: ECX (cached copy; need to keep in sync)
+    #   out->length: EDX
+    #   temporaries: EAX, EBX
     # We can't allocate Look to a register because it gets written implicitly in
     # get-char in each iteration of the loop. (Thereby demonstrating that it's
     # not the right interface for us. But we'll keep it just to follow Crenshaw.)
