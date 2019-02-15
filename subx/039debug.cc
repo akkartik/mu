@@ -1,6 +1,6 @@
 //:: Some helpers for debugging.
 
-//: Load the 'map' file generated during 'subx --map translate' when running 'subx --map --dump run'.
+//: Load the 'map' file generated during 'subx --map translate' when running 'subx --map --trace run'.
 //: (It'll only affect the trace.)
 
 :(before "End Globals")
