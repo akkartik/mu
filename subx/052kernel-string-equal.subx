@@ -76,9 +76,9 @@ $kernel-string-equal?:loop:
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     7d/jump-if-greater-or-equal  $kernel-string-equal?:break/disp8
     # c1 = *s1
-    8a/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy byte at *EDI to lower byte of EAX
+    8a/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/AL    .               .                 # copy byte at *EDI to AL
     # c2 = *s2
-    8a/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/EBX   .               .                 # copy byte at *ESI to lower byte of EBX
+    8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
     # if (c1 == 0) return false
     3d/compare-EAX  0/imm32
     74/jump-if-equal  $kernel-string-equal?:false/disp8
@@ -94,7 +94,7 @@ $kernel-string-equal?:loop:
     eb/jump  $kernel-string-equal?:loop/disp8
 $kernel-string-equal?:break:
     # return *s1 == 0
-    8a/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy byte at *EDI to lower byte of EAX
+    8a/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/AL    .               .                 # copy byte at *EDI to AL
     3d/compare-EAX  0/imm32
     75/jump-if-not-equal  $kernel-string-equal?:false/disp8
 $kernel-string-equal?:true:

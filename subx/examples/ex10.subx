@@ -41,9 +41,9 @@ argv-equal:  # (s1, s2) : null-terminated ascii strings -> EAX : boolean
 $argv-equal:loop:
     # c1/EAX, c2/EBX = *s1, *s2
     b8/copy-to-EAX  0/imm32
-    8a/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy byte at *ECX to lower byte of EAX
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
     bb/copy-to-EBX  0/imm32
-    8a/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy byte at *EDX to lower byte of EBX
+    8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/BL    .               .                 # copy byte at *EDX to BL
     # if (c1 == 0) break
     3d/compare-EAX  0/imm32
     74/jump-if-equal  $argv-equal:break/disp8
