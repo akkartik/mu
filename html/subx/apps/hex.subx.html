@@ -88,7 +88,7 @@ if ('onhashchange' in window) {
 <span id="L25" class="LineNr">  25 </span><span class="subxComment"># main: run tests if necessary, convert stdin if not</span>
 <span id="L26" class="LineNr">  26 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L27" class="LineNr">  27 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
-<span id="L28" class="LineNr">  28 </span>    <span class="subxH1Comment"># - if argc &gt; 1 and argv[1] == &quot;test&quot; then return run_tests()</span>
+<span id="L28" class="LineNr">  28 </span>    <span class="subxH1Comment"># - if argc &gt; 1 and argv[1] == &quot;test&quot;, then return run_tests()</span>
 <span id="L29" class="LineNr">  29 </span>    <span class="subxS1Comment"># . argc &gt; 1</span>
 <span id="L30" class="LineNr">  30 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0/disp8         1/imm32           <span class="subxComment"># compare *EBP</span>
 <span id="L31" class="LineNr">  31 </span>    7e/jump-if-lesser-or-equal  $run-main/disp8
@@ -136,7 +136,7 @@ if ('onhashchange' in window) {
 <span id="L73" class="LineNr">  73 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L74" class="LineNr">  74 </span>    <span class="subxComment">#   repeatedly</span>
 <span id="L75" class="LineNr">  75 </span>    <span class="subxComment">#     EAX = convert-next-octet(in, err, ed)</span>
-<span id="L76" class="LineNr">  76 </span>    <span class="subxComment">#     if EAX == 0xffffffff break  # eof</span>
+<span id="L76" class="LineNr">  76 </span>    <span class="subxComment">#     if (EAX == 0xffffffff) break  # eof</span>
 <span id="L77" class="LineNr">  77 </span>    <span class="subxComment">#     write-byte(out, AL)</span>
 <span id="L78" class="LineNr">  78 </span>    <span class="subxComment">#   flush(out)</span>
 <span id="L79" class="LineNr">  79 </span>    <span class="subxComment">#</span>
@@ -155,7 +155,7 @@ if ('onhashchange' in window) {
 <span id="L92" class="LineNr">  92 </span>    e8/call  <a href='hex.subx.html#L130'>convert-next-octet</a>/disp32
 <span id="L93" class="LineNr">  93 </span>    <span class="subxS2Comment"># . . discard first 2 args</span>
 <span id="L94" class="LineNr">  94 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L95" class="LineNr">  95 </span>    <span class="subxComment"># if EAX == 0xffffffff break</span>
+<span id="L95" class="LineNr">  95 </span>    <span class="subxComment"># if (EAX == 0xffffffff) break</span>
 <span id="L96" class="LineNr">  96 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xffffffff/imm32  <span class="subxComment"># compare EAX</span>
 <span id="L97" class="LineNr">  97 </span>    74/jump-if-equal  $convert:loop-end/disp8
 <span id="L98" class="LineNr">  98 </span>    <span class="subxComment"># write-byte(out, AL)</span>
@@ -552,10 +552,10 @@ if ('onhashchange' in window) {
 <span id="L489" class="LineNr"> 489 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L490" class="LineNr"> 490 </span>    <span class="subxComment">#   repeatedly</span>
 <span id="L491" class="LineNr"> 491 </span>    <span class="subxComment">#     EAX = read-byte(in)</span>
-<span id="L492" class="LineNr"> 492 </span>    <span class="subxComment">#     if EAX == 0xffffffff return EAX</span>
-<span id="L493" class="LineNr"> 493 </span>    <span class="subxComment">#     if is-hex-digit?(EAX) return EAX</span>
-<span id="L494" class="LineNr"> 494 </span>    <span class="subxComment">#     if EAX == ' ' or '\t' or '\n' continue</span>
-<span id="L495" class="LineNr"> 495 </span>    <span class="subxComment">#     if EAX == '#' skip-until-newline(in)</span>
+<span id="L492" class="LineNr"> 492 </span>    <span class="subxComment">#     if (EAX == 0xffffffff) return EAX</span>
+<span id="L493" class="LineNr"> 493 </span>    <span class="subxComment">#     if (is-hex-digit?(EAX)) return EAX</span>
+<span id="L494" class="LineNr"> 494 </span>    <span class="subxComment">#     if (EAX == ' ' or '\t' or '\n') continue</span>
+<span id="L495" class="LineNr"> 495 </span>    <span class="subxComment">#     if (EAX == '#') skip-until-newline(in)</span>
 <span id="L496" class="LineNr"> 496 </span>    <span class="subxComment">#     else error-byte(ed, err, &quot;invalid byte: &quot; EAX)</span>
 <span id="L497" class="LineNr"> 497 </span>    <span class="subxComment">#</span>
 <span id="L498" class="LineNr"> 498 </span>    <span class="subxS1Comment"># . prolog</span>
@@ -573,7 +573,7 @@ if ('onhashchange' in window) {
 <span id="L510" class="LineNr"> 510 </span>    <span class="subxComment"># if (EAX == 0xffffffff) return EAX</span>
 <span id="L511" class="LineNr"> 511 </span>    3d/compare-with-EAX  0xffffffff/imm32
 <span id="L512" class="LineNr"> 512 </span>    74/jump-if-equal  $scan-next-byte:end/disp8
-<span id="L513" class="LineNr"> 513 </span>    <span class="subxComment"># if is-hex-digit?(EAX) return EAX</span>
+<span id="L513" class="LineNr"> 513 </span>    <span class="subxComment"># if (is-hex-digit?(EAX)) return EAX</span>
 <span id="L514" class="LineNr"> 514 </span>    <span class="subxS1Comment"># . save EAX for now</span>
 <span id="L515" class="LineNr"> 515 </span>    50/push-EAX
 <span id="L516" class="LineNr"> 516 </span>    <span class="subxS1Comment"># . is-hex-digit?(EAX)</span>
@@ -590,17 +590,17 @@ if ('onhashchange' in window) {
 <span id="L527" class="LineNr"> 527 </span>    <span class="subxS1Comment"># . check whether to return</span>
 <span id="L528" class="LineNr"> 528 </span>    75/jump-if-not-equal  $scan-next-byte:end/disp8
 <span id="L529" class="LineNr"> 529 </span><span class="Constant">$scan-next-byte:check1</span>:
-<span id="L530" class="LineNr"> 530 </span>    <span class="subxComment"># if EAX == ' ' continue</span>
+<span id="L530" class="LineNr"> 530 </span>    <span class="subxComment"># if (EAX == ' ') continue</span>
 <span id="L531" class="LineNr"> 531 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x20/imm32        <span class="subxComment"># compare EAX</span>
 <span id="L532" class="LineNr"> 532 </span>    74/jump-if-equal  $scan-next-byte:loop/disp8
-<span id="L533" class="LineNr"> 533 </span>    <span class="subxComment"># if EAX == '\t' continue</span>
+<span id="L533" class="LineNr"> 533 </span>    <span class="subxComment"># if (EAX == '\t') continue</span>
 <span id="L534" class="LineNr"> 534 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x9/imm32         <span class="subxComment"># compare EAX</span>
 <span id="L535" class="LineNr"> 535 </span>    74/jump-if-equal  $scan-next-byte:loop/disp8
-<span id="L536" class="LineNr"> 536 </span>    <span class="subxComment"># if EAX == '\n' continue</span>
+<span id="L536" class="LineNr"> 536 </span>    <span class="subxComment"># if (EAX == '\n') continue</span>
 <span id="L537" class="LineNr"> 537 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa/imm32         <span class="subxComment"># compare EAX</span>
 <span id="L538" class="LineNr"> 538 </span>    74/jump-if-equal  $scan-next-byte:loop/disp8
 <span id="L539" class="LineNr"> 539 </span><span class="Constant">$scan-next-byte:check2</span>:
-<span id="L540" class="LineNr"> 540 </span>    <span class="subxComment"># if EAX == '#' skip-until-newline(in)</span>
+<span id="L540" class="LineNr"> 540 </span>    <span class="subxComment"># if (EAX == '#') skip-until-newline(in)</span>
 <span id="L541" class="LineNr"> 541 </span>    3d/compare-with-EAX  0x23/imm32
 <span id="L542" class="LineNr"> 542 </span>    75/jump-if-not-equal  $scan-next-byte:check3/disp8
 <span id="L543" class="LineNr"> 543 </span>    <span class="subxS1Comment"># . skip-until-newline(in)</span>
@@ -1476,8 +1476,8 @@ if ('onhashchange' in window) {
 <span id="L1413" class="LineNr">1413 </span>    <span class="subxComment">#   push EAX</span>
 <span id="L1414" class="LineNr">1414 </span>    <span class="subxComment">#   repeatedly:</span>
 <span id="L1415" class="LineNr">1415 </span>    <span class="subxComment">#     EAX = read-byte(in)</span>
-<span id="L1416" class="LineNr">1416 </span>    <span class="subxComment">#     if EAX == 0xffffffff break</span>
-<span id="L1417" class="LineNr">1417 </span>    <span class="subxComment">#     if EAX == 0x0a break</span>
+<span id="L1416" class="LineNr">1416 </span>    <span class="subxComment">#     if (EAX == 0xffffffff) break</span>
+<span id="L1417" class="LineNr">1417 </span>    <span class="subxComment">#     if (EAX == 0x0a) break</span>
 <span id="L1418" class="LineNr">1418 </span>    <span class="subxComment">#   pop EAX</span>
 <span id="L1419" class="LineNr">1419 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L1420" class="LineNr">1420 </span>    55/push-EBP
@@ -1492,10 +1492,10 @@ if ('onhashchange' in window) {
 <span id="L1429" class="LineNr">1429 </span>    e8/call  <a href='../061read-byte.subx.html#L45'>read-byte</a>/disp32
 <span id="L1430" class="LineNr">1430 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1431" class="LineNr">1431 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L1432" class="LineNr">1432 </span>    <span class="subxS1Comment"># . if EAX == 0xffffffff break</span>
+<span id="L1432" class="LineNr">1432 </span>    <span class="subxS1Comment"># . if (EAX == 0xffffffff) break</span>
 <span id="L1433" class="LineNr">1433 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xffffffff/imm32  <span class="subxComment"># compare EAX</span>
 <span id="L1434" class="LineNr">1434 </span>    74/jump-if-equal  $skip-until-newline:end/disp8
-<span id="L1435" class="LineNr">1435 </span>    <span class="subxS1Comment"># . if EAX != 0xa/newline loop</span>
+<span id="L1435" class="LineNr">1435 </span>    <span class="subxS1Comment"># . if (EAX != 0xa/newline) loop</span>
 <span id="L1436" class="LineNr">1436 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa/imm32         <span class="subxComment"># compare EAX</span>
 <span id="L1437" class="LineNr">1437 </span>    75/jump-if-not-equal  $skip-until-newline:loop/disp8
 <span id="L1438" class="LineNr">1438 </span><span class="Constant">$skip-until-newline:end</span>:
