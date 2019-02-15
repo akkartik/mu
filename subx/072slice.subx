@@ -21,7 +21,7 @@ slice-empty?:  # s : (address slice) -> EAX : boolean
     51/push-ECX
     # ECX = s
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
-    # if s->start == s->end return true
+    # if (s->start == s->end) return true
     # . EAX = s->start
     8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
     # . compare EAX with s->end
@@ -96,6 +96,24 @@ test-slice-empty-false:
     c3/return
 
 slice-equal?:  # s : (address slice), p : (address string) -> EAX : boolean
+    # pseudocode:
+    #   currs = s->start
+    #   maxs = s->end
+    #   if (maxs - currs != p->length) return false
+    #   currp = p->data
+    #   while (currs < maxs)
+    #     if (*currs != *currp) return false
+    #     ++currs
+    #     ++currp
+    #   return true
+    #
+    # registers:
+    #   EAX : *currs
+    #   ECX : *currp
+    #   EDX : currs
+    #   EBX : currp
+    #   ESI : maxs
+    #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -106,37 +124,37 @@ slice-equal?:  # s : (address slice), p : (address string) -> EAX : boolean
     56/push-ESI
     # ESI = s
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/EDX = s->start
+    # currs/EDX = s->start
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    # max/ESI = s->end
+    # maxs/ESI = s->end
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           6/r32/ESI   4/disp8         .                 # copy *(ESI+4) to ESI
     # EBX = p
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
-    # EAX = s->end - s->start
+    # EAX = maxs - currs
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy ESI to EAX
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # subtract EDX from EAX
-    # if (EAX != p->length) return false;
+    # if (EAX != p->length) return false
     39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # compare *EBX and EAX
     75/jump-if-not-equal  $slice-equal?:false/disp8
-    # skip p->length
+    # currp/EBX = p->data
     81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
     # EAX = ECX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
 $slice-equal?:loop:
-    # if (curr >= max) return true
+    # if (currs >= maxs) return true
     39/compare                      3/mod/direct    2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # compare EDX and ESI
     7d/jump-if-greater-or-equal  $slice-equal?:true/disp8
-    # AL = *p
+    # AL = *currp
     8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/AL    .               .                 # copy byte at *EBX to AL
-    # CL = *curr
+    # CL = *currs
     8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           1/r32/CL    .               .                 # copy byte at *EDX to CL
     # if (EAX != ECX) return false
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX and ECX
     75/jump-if-not-equal  $slice-equal?:false/disp8
-    # ++p
+    # ++currp
     43/increment-EBX
-    # ++curr
+    # ++currs
     42/increment-EDX
     eb/jump $slice-equal?:loop/disp8
 $slice-equal?:false:

@@ -32,7 +32,7 @@ stream-data-equal?:  # f : (address stream), s : (address string) -> EAX : boole
     81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               0xc/imm32         # add to ESI
     # EDI = s
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to EDI
-    # if (f->write != s->length) return false;
+    # if (f->write != s->length) return false
     39/compare                      0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # compare *EDI and EAX
     75/jump-if-not-equal  $stream-data-equal?:false/disp8
     # currs/EDI = s->data
@@ -235,25 +235,25 @@ next-stream-line-equal?:  # f : (address stream), s : (address string) -> EAX : 
     # pseudocode:
     #   currf = f->read  # bound: f->write
     #   currs = 0  # bound : s->length
-    #   while true
-    #     if currf >= f->write
+    #   while true:
+    #     if (currf >= f->write)
     #       return currs >= s->length
-    #     if f[currf] == '\n'
+    #     if (f[currf] == '\n')
     #       ++currf
     #       return currs >= s->length
-    #     if currs >= s->length return false  # the current line of f still has data to match
-    #     if f[currf] != s[currs] return false
+    #     if (currs >= s->length) return false  # the current line of f still has data to match
+    #     if (f[currf] != s[currs]) return false
     #     ++currf
     #     ++currs
     #
     # collapsing the two branches that can return true:
     #   currf = f->read  # bound: f->write
     #   currs = 0  # bound : s->length
-    #   while true
-    #     if currf >= f->write break
-    #     if f[currf] == '\n' break
-    #     if currs >= s->length return false  # the current line of f still has data to match
-    #     if f[currf] != s[currs] return false
+    #   while true:
+    #     if (currf >= f->write) break
+    #     if (f[currf] == '\n') break
+    #     if (currs >= s->length) return false  # the current line of f still has data to match
+    #     if (f[currf] != s[currs]) return false
     #     ++currf
     #     ++currs
     #   ++currf  # skip '\n'
@@ -261,12 +261,12 @@ next-stream-line-equal?:  # f : (address stream), s : (address string) -> EAX : 
     # Here the final `++currf` is sometimes unnecessary (if we're already at the end of the stream)
     #
     # registers:
-    #   f : ESI
-    #   s : EDI
-    #   currf : ECX
-    #   currs : EDX
-    #   f[currf] : EAX
-    #   s[currs] : EBX
+    #   f: ESI
+    #   s: EDI
+    #   currf: ECX
+    #   currs: EDX
+    #   f[currf]: EAX
+    #   s[currs]: EBX
     #
     # . prolog
     55/push-EBP
@@ -312,7 +312,7 @@ $next-stream-line-equal?:loop:
 $next-stream-line-equal?:break:
     # ++currf
     41/increment-ECX
-    # if currs >= s->length return true
+    # if (currs >= s->length) return true
     3b/compare                      0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDX with *EDI
     7c/jump-if-lesser  $next-stream-line-equal?:false/disp8
 $next-stream-line-equal?:true:

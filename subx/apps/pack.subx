@@ -28,7 +28,7 @@
 # main: run tests if necessary, convert stdin if not
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # - if argc > 1 and argv[1] == "test" then return run_tests()
+    # - if argc > 1 and argv[1] == "test", then return run_tests()
     # . argc > 1
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
     7e/jump-if-lesser-or-equal  $run-main/disp8
@@ -88,7 +88,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #   repeatedly
     #     clear-stream(line)
     #     EAX = read-line(in, line)
-    #     if EAX == EOF break
+    #     if (EAX == EOF) break
     #     convert-instruction(line, out)
     #   flush(out)
     #
@@ -119,7 +119,7 @@ $convert:loop:
     e8/call  convert-instruction/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # if EAX == 0xffffffff break
+    # if (EAX == 0xffffffff) break
     3d/compare-with-EAX  0xffffffff/imm32
     74/jump-if-equal  $convert:break/disp8
     # convert-instruction(line, out)
@@ -200,10 +200,10 @@ $convert:end:
 convert-instruction:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   word-slice = next-word
-    #   if *word-slice->start == '#'
+    #   if (*word-slice->start == '#')
     #     write-stream-buffered(out, line)
     #     return
-    #   if starts-with(word-slice, '==')
+    #   if (starts-with(word-slice, '=='))
     #     write-stream-buffered(out, line)
     #     return
     #
@@ -599,7 +599,7 @@ next-word:  # line : (address stream byte), out : (address slice)
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ESI+4) to ECX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+ECX+12 to EAX
     89/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EDI
-    # if line->data[line->read] == '#': out->end = &line->data[line->write]), skip rest of stream and return
+    # if (line->data[line->read] == '#') out->end = &line->data[line->write]), skip rest of stream and return
     # . EAX = line->data[line->read]
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
@@ -770,8 +770,8 @@ has-metadata?:  # word : (address slice), s : (address string) -> EAX : boolean
     #   curr = twig->end
     #   while true:
     #     twig = next-token-from-slice(curr, word->end, '/')
-    #     if twig.empty() break
-    #     if slice-equal?(twig, s) return true
+    #     if (twig.empty()) break
+    #     if (slice-equal?(twig, s)) return true
     #     curr = twig->end
     #   return false
     # . prolog
@@ -813,7 +813,7 @@ $has-metadata?:loop:
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # if slice-empty?(twig) return false
+    # if (slice-empty?(twig)) return false
     # . EAX = slice-empty?(twig)
     # . . push args
     57/push-EDI
@@ -824,7 +824,7 @@ $has-metadata?:loop:
     # . if (EAX != 0) return false
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     75/compare-if-not-equal  $has-metadata?:false/disp8
-    # if slice-equal?(twig, s) return true
+    # if (slice-equal?(twig, s)) return true
     # . EAX = slice-equal?(twig, s)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
@@ -1058,7 +1058,7 @@ emit:  # out : (address buffered-file), word : (address slice), width : int
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # if !is-hex-int?(name) write-slice(out, word) and return
+    # if (!is-hex-int?(name)) write-slice(out, word) and return
     # . is-hex-int?(name)
     # . . push args
     57/push-EDI
@@ -1066,7 +1066,7 @@ emit:  # out : (address buffered-file), word : (address slice), width : int
     e8/call  is-hex-int?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if EAX == 0
+    # . if (EAX == 0)
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     75/jump-if-not-equal  $emit:hex-int/disp8
     # . write-slice(out, word)

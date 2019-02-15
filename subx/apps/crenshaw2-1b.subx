@@ -37,7 +37,7 @@
 # main: run tests if necessary, call 'compile' if not
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # - if argc > 1 and argv[1] == "test" then return run_tests()
+    # - if argc > 1 and argv[1] == "test", then return run_tests()
     # . argc > 1
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
     7e/jump-if-lesser-or-equal  $run-main/disp8
@@ -200,15 +200,15 @@ $compile:end:
 # 'in' (rest). We leave the next byte from 'in' into 'Look' on exit.
 get-num:  # in : (address buffered-file), out : (address stream), err : fd or (address stream), ed : (address exit-descriptor) -> <void>
     # pseudocode:
-    #   if !is-digit?(Look) expected(ed, err, "integer")
+    #   if (!is-digit?(Look)) expected(ed, err, "integer")
     #   do
-    #     if out->write >= out->length
+    #     if (out->write >= out->length)
     #       write(err, "Error: too many digits in number\n")
     #       stop(ed, 1)
     #     out->data[out->write] = LSB(Look)
     #     ++out->write
     #     Look = get-char(in)
-    #   while is-digit?(Look)
+    #   while (is-digit?(Look))
     # This is complicated because I don't want to hard-code the error strategy in
     # a general helper like write-byte. Maybe I should just create a local helper.
     #
@@ -226,7 +226,7 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # - if is-digit?(Look) expected(ed, err, "integer")
+    # - if (is-digit?(Look)) expected(ed, err, "integer")
     # . EAX = is-digit?(Look)
     # . . push args
     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Look/disp32     .                 # push *Look
@@ -234,7 +234,7 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     e8/call  is-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if EAX == 0
+    # . if (EAX == 0)
     3d/compare-EAX  0/imm32
     75/jump-if-not-equal  $get-num:main/disp8
     # . expected(ed, err, "integer")
@@ -265,7 +265,7 @@ $get-num:main:
     # EDX = out->length
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(EDI+8) to EDX
 $get-num:loop:
-    # if out->write >= out->length error
+    # if (out->write >= out->length) error
     39/compare                      3/mod/direct    2/rm32/EDX    .           .             .           1/r32/ECX   .               .                 # compare EDX with ECX
     7d/jump-if-lesser  $get-num:loop-stage2/disp8
     # . error(ed, err, msg)  # TODO: show full number
@@ -291,7 +291,7 @@ $get-num:loop-stage2:
     e8/call  get-char/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # if is-digit?(Look) loop
+    # if (is-digit?(Look)) loop
     # . EAX = is-digit?(Look)
     # . . push args
     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Look/disp32     .                 # push *Look
@@ -299,7 +299,7 @@ $get-num:loop-stage2:
     e8/call  is-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if EAX loop
+    # . if (EAX != 0) loop
     3d/compare-EAX  0/imm32
     0f 85/jump-if-not-equal  $get-num:loop/disp32
 $get-num:loop-end:
@@ -756,10 +756,10 @@ is-digit?:  # c : int -> EAX : boolean
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # EAX = false
     b8/copy-to-EAX  0/imm32
-    # if c < '0' return false
+    # if (c < '0') return false
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         0x30/imm32        # compare *(EBP+8)
     7c/jump-if-lesser  $is-digit?:end/disp8
-    # if c > '9' return false
+    # if (c > '9') return false
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         0x39/imm32        # compare *(EBP+8)
     7f/jump-if-greater  $is-digit?:end/disp8
     # otherwise return true

@@ -23,7 +23,7 @@ read-line:  # f : (address buffered-file), s : (address stream byte) -> eof?/EAX
     #     s->data[s->write] = AL
     #     ++f->read
     #     ++s->write
-    #     if AL == '\n' break
+    #     if (AL == '\n') break
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -65,8 +65,8 @@ $read-line:loop:
     e8/call  read/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # if f->write == 0 return true
-    # . if EAX == 0 return true
+    # if (f->write == 0) return true
+    # . if (EAX == 0) return true
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     75/jump-if-not-equal  $read-line:from-stream/disp8
     b8/copy-to-EAX  0xffffffff/imm32
@@ -81,7 +81,7 @@ $read-line:from-stream:
     41/increment-ECX
     # ++s->write
     42/increment-EDX
-    # if AL == '\n' return false
+    # if (AL == '\n') return false
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xa/imm32         # compare EAX
     75/jump-if-not-equal  $read-line:loop/disp8
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX

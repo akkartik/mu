@@ -13,18 +13,27 @@
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 
-string-equal?:  # s : string, benchmark : string -> EAX : boolean
+string-equal?:  # s : (address string), benchmark : (address string) -> EAX : boolean
     # pseudocode:
-    #   if s->length != b->length return false
-    #   for i = 0;  i < s->length;  ++i
-    #     if s[i] != b[i] return false
+    #   lens = s->length
+    #   if (lens != benchmark->length) return false
+    #   i = 0
+    #   currs = s->data
+    #   currb = benchmark->data
+    #   while (i < s->length)
+    #     c1 = *currs
+    #     c2 = *currb
+    #     if (c1 != c2) return false
+    #     ++i, ++currs, ++currb
     #   return true
+    #
     # registers:
     #   i: ECX
-    #   s->length: EDX
-    #   b->length: EBX
-    #   b[i]: EBX
-    #   s[i]: EAX
+    #   lens: EDX
+    #   currs: EAX
+    #   currb: EBX
+    #   c1: ESI
+    #   c2: EDI
     #
     # . prolog
     55/push-EBP
@@ -34,17 +43,16 @@ string-equal?:  # s : string, benchmark : string -> EAX : boolean
     52/push-EDX
     53/push-EBX
     56/push-ESI
-    # var s/EAX : (address array byte)
+    # EAX = s
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    # var benchmark/EBX : (address array byte)
+    # EBX = benchmark
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
-    # if s->length != b->length return false
-    # EDX = s->length
+    # lens/EDX = s->length
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    # compare s->length and b->length
+$string-equal?:lengths:
+    # if (lens != benchmark->length) return false
     39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare *EBX with EDX
     75/jump-if-not-equal  $string-equal?:false/disp8
-$string-equal?:lengths:
     # var i/ECX : int = 0
     b9/copy-to-ECX  0/imm32
     # EBX = &b[i]
@@ -52,7 +60,7 @@ $string-equal?:lengths:
     # EAX = &s[i]
     40/inc-EAX
 $string-equal?:loop:
-    # if i >= s->length return true
+    # if (i >= lens) return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     7d/jump-if-greater-or-equal  $string-equal?:true/disp8
     # if b[i] != s[i] return false
@@ -63,16 +71,15 @@ $string-equal?:loop:
     75/jump-if-not-equal  $string-equal?:false/disp8
     # ++i
     41/inc-ECX
+    # ++c1
     40/inc-EAX
+    # ++c2
     43/inc-EBX
-    # loop
     eb/jump  $string-equal?:loop/disp8
 $string-equal?:true:
-    # return true
     b8/copy-to-EAX  1/imm32
     eb/jump  $string-equal?:end/disp8
 $string-equal?:false:
-    # return false
     b8/copy-to-EAX  0/imm32
 $string-equal?:end:
     # . restore registers

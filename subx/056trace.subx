@@ -99,7 +99,7 @@ trace:  # t : (address trace-stream), line : string
     e8/call  _append-3/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # if EAX == 0 return
+    # if (EAX == 0) return
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EDX
     74/jump-if-equal  $trace:end/disp8
     # t->write += EAX
@@ -153,9 +153,8 @@ clear-trace-stream:  # t : (address trace-stream)
     c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         0/imm32           # copy to *(EAX+4)
     # EAX = t->data
     81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xc/imm32         # add to EAX
-    # while (true)
 $clear-trace-stream:loop:
-    # if EAX >= ECX break
+    # if (EAX >= ECX) break
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
     7d/jump-if-greater-or-equal  $clear-trace-stream:end/disp8
     # *EAX = 0
@@ -328,18 +327,20 @@ _append-4:  # out : address, outend : address, in : address, inend : address -> 
     # ECX = inend
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x14/disp8      .                 # copy *(EBP+20) to ECX
 $_append-4:loop:
-    # if ESI/in >= ECX/inend break
+    # if (in >= inend) break
     39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
     7d/jump-if-greater-or-equal  $_append-4:end/disp8
-    # if EDI/out >= EDX/outend break  (for now silently ignore filled up buffer)
+    # if (out >= outend) break  # for now silently ignore filled up buffer
     39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
     7d/jump-if-greater-or-equal  $_append-4:end/disp8
-    # copy one byte from ESI/in to EDI/out
+    # *out = *in
     8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
     88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
-    # updates
+    # ++num_bytes_appended
     40/increment-EAX
+    # ++in
     46/increment-ESI
+    # ++out
     47/increment-EDI
     eb/jump  $_append-4:loop/disp8
 $_append-4:end:

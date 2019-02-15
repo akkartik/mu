@@ -100,19 +100,20 @@ stop:  # ed : (address exit-descriptor), value : int
     # no prolog; one way or another, we're going to clobber registers
     # EAX = ed
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   4/disp8         .                 # copy *(ESP+4) to EAX
-    # exit(value) if ed->target == 0
+    # if (ed->target == 0) really exit
     81          7/subop/compare     0/mod/indirect  0/rm32/EAX    .           .             .           .           .               0/imm32           # compare *EAX
     75/jump-if-not-equal  $stop:fake/disp8
-    # syscall(exit, value)
+    # . syscall(exit, value)
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           3/r32/EBX   8/disp8         .                 # copy *(ESP+8) to EBX
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 $stop:fake:
+    # otherwise:
     # ed->value = value+1
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   8/disp8         .                 # copy *(ESP+8) to ECX
     41/inc-ECX
     89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(EAX+4)
-    # non-local jump to ed->target
+    # perform a non-local jump to ed->target
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy *EAX to ESP
 $stop:end:
     c3/return  # doesn't return to caller

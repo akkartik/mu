@@ -25,7 +25,7 @@
 # main: run tests if necessary, convert stdin if not
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # - if argc > 1 and argv[1] == "test" then return run_tests()
+    # - if argc > 1 and argv[1] == "test", then return run_tests()
     # . argc > 1
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
     7e/jump-if-lesser-or-equal  $run-main/disp8
@@ -73,7 +73,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file), err : (
     # pseudocode:
     #   repeatedly
     #     EAX = convert-next-octet(in, err, ed)
-    #     if EAX == 0xffffffff break  # eof
+    #     if (EAX == 0xffffffff) break  # eof
     #     write-byte(out, AL)
     #   flush(out)
     #
@@ -92,7 +92,7 @@ $convert:loop:
     e8/call  convert-next-octet/disp32
     # . . discard first 2 args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # if EAX == 0xffffffff break
+    # if (EAX == 0xffffffff) break
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
     74/jump-if-equal  $convert:loop-end/disp8
     # write-byte(out, AL)
@@ -489,10 +489,10 @@ scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), 
     # pseudocode:
     #   repeatedly
     #     EAX = read-byte(in)
-    #     if EAX == 0xffffffff return EAX
-    #     if is-hex-digit?(EAX) return EAX
-    #     if EAX == ' ' or '\t' or '\n' continue
-    #     if EAX == '#' skip-until-newline(in)
+    #     if (EAX == 0xffffffff) return EAX
+    #     if (is-hex-digit?(EAX)) return EAX
+    #     if (EAX == ' ' or '\t' or '\n') continue
+    #     if (EAX == '#') skip-until-newline(in)
     #     else error-byte(ed, err, "invalid byte: " EAX)
     #
     # . prolog
@@ -510,7 +510,7 @@ $scan-next-byte:loop:
     # if (EAX == 0xffffffff) return EAX
     3d/compare-with-EAX  0xffffffff/imm32
     74/jump-if-equal  $scan-next-byte:end/disp8
-    # if is-hex-digit?(EAX) return EAX
+    # if (is-hex-digit?(EAX)) return EAX
     # . save EAX for now
     50/push-EAX
     # . is-hex-digit?(EAX)
@@ -527,17 +527,17 @@ $scan-next-byte:loop:
     # . check whether to return
     75/jump-if-not-equal  $scan-next-byte:end/disp8
 $scan-next-byte:check1:
-    # if EAX == ' ' continue
+    # if (EAX == ' ') continue
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x20/imm32        # compare EAX
     74/jump-if-equal  $scan-next-byte:loop/disp8
-    # if EAX == '\t' continue
+    # if (EAX == '\t') continue
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x9/imm32         # compare EAX
     74/jump-if-equal  $scan-next-byte:loop/disp8
-    # if EAX == '\n' continue
+    # if (EAX == '\n') continue
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xa/imm32         # compare EAX
     74/jump-if-equal  $scan-next-byte:loop/disp8
 $scan-next-byte:check2:
-    # if EAX == '#' skip-until-newline(in)
+    # if (EAX == '#') skip-until-newline(in)
     3d/compare-with-EAX  0x23/imm32
     75/jump-if-not-equal  $scan-next-byte:check3/disp8
     # . skip-until-newline(in)
@@ -1413,8 +1413,8 @@ skip-until-newline:  # in : (address buffered-file) -> <void>
     #   push EAX
     #   repeatedly:
     #     EAX = read-byte(in)
-    #     if EAX == 0xffffffff break
-    #     if EAX == 0x0a break
+    #     if (EAX == 0xffffffff) break
+    #     if (EAX == 0x0a) break
     #   pop EAX
     # . prolog
     55/push-EBP
@@ -1429,10 +1429,10 @@ $skip-until-newline:loop:
     e8/call  read-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if EAX == 0xffffffff break
+    # . if (EAX == 0xffffffff) break
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
     74/jump-if-equal  $skip-until-newline:end/disp8
-    # . if EAX != 0xa/newline loop
+    # . if (EAX != 0xa/newline) loop
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xa/imm32         # compare EAX
     75/jump-if-not-equal  $skip-until-newline:loop/disp8
 $skip-until-newline:end:

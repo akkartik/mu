@@ -71,7 +71,7 @@ $is-hex-int?:loop:
     e8/call  is-hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # if EAX == false return false
+    # if (EAX == false) return false
     3d/compare-with-EAX  0/imm32
     74/jump-if-equal  $is-hex-int?:end/disp8
     # ++curr
@@ -738,7 +738,7 @@ test-hex-above-f:
 
 from-hex-char:  # in/EAX : byte -> out/EAX : num
     # no error checking; accepts argument in EAX
-    # if EAX <= '9' return EAX - '0'
+    # if (EAX <= '9') return EAX - '0'
     3d/compare-EAX  0x39/imm32/9
     7f/jump-if-greater  $from-hex-char:else/disp8
     2d/subtract-from-EAX  0x30/imm32/0
@@ -750,7 +750,7 @@ $from-hex-char:else:
 
 to-hex-char:  # in/EAX : nibble -> out/EAX : byte
     # no error checking; accepts argument in EAX
-    # if EAX <= 9 return EAX + '0'
+    # if (EAX <= 9) return EAX + '0'
     3d/compare-EAX  0x9/imm32/9
     7f/jump-if-greater  $to-hex-char:else/disp8
     05/add-to-EAX  0x30/imm32/0
