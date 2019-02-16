@@ -104,9 +104,26 @@ void replace_global_variables_in_data_segment(segment& data, const map<string, u
     for (int j = 0;  j < SIZE(l.words);  ++j) {
       const word& curr = l.words.at(j);
       if (!contains_key(address, curr.data)) {
-        if (!looks_like_hex_int(curr.data))
+        if (looks_like_hex_int(curr.data)) {
+          if (has_operand_metadata(curr, "imm32"))
+            emit_hex_bytes(new_l, curr, 4);
+          else if (has_operand_metadata(curr, "imm16"))
+            emit_hex_bytes(new_l, curr, 2);
+          else if (has_operand_metadata(curr, "imm8"))
+            emit_hex_bytes(new_l, curr, 1);
+          else if (has_operand_metadata(curr, "disp8"))
+            raise << "can't use /disp8 in a non-code segment\n" << end();
+          else if (has_operand_metadata(curr, "disp16"))
+            raise << "can't use /disp16 in a non-code segment\n" << end();
+          else if (has_operand_metadata(curr, "disp32"))
+            raise << "can't use /disp32 in a non-code segment\n" << end();
+          else
+            new_l.words.push_back(curr);
+        }
+        else {
           raise << "missing reference to global '" << curr.data << "'\n" << end();
-        new_l.words.push_back(curr);
+          new_l.words.push_back(curr);
+        }
         continue;
       }
       trace(99, "transform") << curr.data << " maps to " << HEXWORD << get(address, curr.data) << end();
@@ -191,6 +208,19 @@ y:
 +load: 0x0a000001 -> 00
 +load: 0x0a000002 -> 00
 +load: 0x0a000003 -> 0a
+$error: 0
+
+:(scenario raw_number_with_imm32_in_data_segment)
+== 0x1
+b9  x/imm32
+== 0x0a000000
+x:
+  1/imm32
+# check that we loaded 'x' with the address of 1
++load: 0x0a000000 -> 01
++load: 0x0a000001 -> 00
++load: 0x0a000002 -> 00
++load: 0x0a000003 -> 00
 $error: 0
 
 :(scenario duplicate_global_variable)
