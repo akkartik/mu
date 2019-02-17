@@ -75,9 +75,9 @@ $main:end:
 # We'll operate on each line/instruction in isolation. That way we only need to
 # allocate memory for converting a single instruction.
 #
-# To pack an entire file:
-#   read every line
-#   convert it
+# To pack an entire file, convert every segment in it
+# To convert a code segment, convert every instruction (line) until the next segment header
+# To convert a non-data segment, convert every word until the next segment header
 #
 # primary state: line
 #   stream of 512 bytes; abort if it ever overflows
@@ -89,7 +89,15 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #     clear-stream(line)
     #     EAX = read-line(in, line)
     #     if (EAX == EOF) break
-    #     convert-instruction(line, out)
+    #     word-slice = next-word(line)
+    #     if (slice-empty?(word-slice)) continue  # just whitespace
+    #     if (starts-with(word-slice, "#")) continue  # ignore comments
+    #     assert(slice-equal?(word-slice, "=="))
+    #     word-slice = next-word(line)
+    #     if (slice-equal?(word-slice, "code"))
+    #       convert-code-segment(in, out)
+    #     else
+    #       convert-data-segment(in, out)
     #   flush(out)
     #
     # . prolog
@@ -147,6 +155,30 @@ $convert:end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
+convert-code-segment:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+    # pseudocode:
+    #   var line = new-stream(512, 1)
+    #   repeatedly
+    #     clear-stream(line)
+    #     EAX = read-line(in, line)
+    #     if (EAX == EOF) break
+    #     word-slice = next-word(line)
+    #     if (slice-equal?(word-slice, "=="))
+    #       return
+    #     convert-instruction(line, out)
+
+convert-data-segment:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+    # pseudocode:
+    #   var line = new-stream(512, 1)
+    #   repeatedly
+    #     clear-stream(line)
+    #     EAX = read-line(in, line)
+    #     if (EAX == EOF) break
+    #     word-slice = next-word(line)
+    #     if (slice-equal?(word-slice, "=="))
+    #       return
+    #     convert-data-word(line, out)
 
 # - To pack an instruction, following the C++ version:
 # read first word as opcode and write-slice
