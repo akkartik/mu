@@ -294,10 +294,14 @@ You can reuse segment names:
 ```
 
 The code segment now contains the instructions of `A` as well as `C`. `C`
-comes _before_ `A`. This order allows me to split SubX programs between
-multiple _layers_. A program built with just layer 1 would start executing at
-layer 1's first instruction, while one built with layer 1 and layer 2 (in that
-order) would start executing at layer 2's first instruction.
+comes _before_ `A`. (Why this order? I'd like to organize SubX programs into
+sequences of [_layers_](http://akkartik.name/post/wart-layers) that permit
+incrementally building a subset of layers into a working program with a subset
+of functionality. This organization requires, among other things, letting each
+layer control the code that runs when the binary starts up. Letting each layer
+override the starting address would require additional syntax. Instead, I
+choose to always begin execution at the start of the code segment, but allow
+layers to prepend to segments.)
 
 Within the code segment, each line contains a comment, label or instruction.
 Comments start with a `#` and are ignored. Labels should always be the first
