@@ -303,15 +303,15 @@ Within the code segment, each line contains a comment, label or instruction.
 Comments start with a `#` and are ignored. Labels should always be the first
 word on a line, and they end with a `:`.
 
-Instructions consist of a sequence of opcode bytes and their operands. As
-mentioned above, each opcode and operand can contain _metadata_ after a `/`.
-Metadata can be either for SubX or act as a comment for the reader; SubX
-silently ignores unrecognized metadata. A single word can contain multiple
-pieces of metadata, each starting with a `/`.
+Instructions consist of a sequence of words. As mentioned above, each word can
+contain _metadata_ after a `/`. Metadata can be either required by SubX or act
+as a comment for the reader; SubX silently ignores unrecognized metadata. A
+single word can contain multiple pieces of metadata, each starting with a `/`.
 
-SubX uses metadata to express instruction encoding and get decent error
-messages. You must tag each instruction operand with the appropriate operand
-type:
+The words in an instruction consist of 1-3 opcode bytes, and different kinds
+of operands corresponding to the bitfields in an x86 instruction listed above.
+For error checking, these operands must be tagged with one of the following
+bits of metadata:
   - `mod`
   - `rm32` ("r/m" in the x86 instruction diagram above, but we can't use `/`
     in metadata tags)
@@ -321,11 +321,18 @@ type:
   - displacement: `disp8`, `disp16` or `disp32`
   - immediate: `imm8` or `imm32`
 
-You don't need to remember what order instruction operands are in,
-or pack bitfields by hand. SubX will do all that for you. If you get the types
-wrong, giving an instruction an incorrect operand or forgetting an operand,
-you should get a clear error message. Remember, don't use `subop` (sub-operand
-above) and `r32` (reg in the x86 figure above) in a single instruction.
+Different instructions (opcodes) require different operands. SubX will
+validate each instruction in your programs, and raise an error anytime you
+miss or spuriously add an operand.
+
+I recommend you order operands consistently in your programs. SubX allows
+operands in any order, but only because that's simplest to explain/implement.
+Switching order from instruction to instruction is likely to add to the
+reader's burden. Here's the order I've been using:
+
+```
+/subop  /mod /rm32  /base /index /scale  /r32  /displacement  /immediate
+```
 
 Instructions can refer to labels in displacement or immediate operands, and
 they'll obtain a value based on the address of the label: immediate operands
