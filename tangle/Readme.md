@@ -1,9 +1,9 @@
 [Literate Programming](https://en.wikipedia.org/wiki/Literate_programming)
 tool to convert Mu's layers into compilable form.
 
-Mu's tangling differ from Knuth's classic implementation. The classical
-approach starts out with labeled subsystems that are initially empty, and adds
-code to them using two major directives:
+Mu's tangling directives differ from Knuth's classic implementation. The
+classical approach starts out with labeled subsystems that are initially
+empty, and adds code to them using two major directives:
 
 ```
 <name> ≡
@@ -15,14 +15,14 @@ code to them using two major directives:
 <code>
 ```
 
-(`<code>` can span multiple lines.)
+_(`<code>` can span multiple lines.)_
 
 This approach is best suited for top-down exposition.
 
 On the other hand, Mu's tangling directives are better suited for a cleaned-up
-history of a codebase. They can tell a story of a program over multiple
-versions, within each version keeping all the code related to each new
-feature close together.
+history of a codebase. Subsystems start out with a simple skeleton of the core
+of the program. Later versions then tell a story of the evolution of the
+program, with each version colocating all the code related to new features.
 
 Read more:
 * http://akkartik.name/post/wart-layers
@@ -70,7 +70,7 @@ Delete a block of code starting with a given header and surrounded by `{` and
 :(delete{} <header>)
 ```
 
-_(Caveat: doesn't support C's `do`..`while` loops.)_
+_(Caveat: doesn't directly support C's `do`..`while` loops.)_
 
 Replace a specific line with new code:
 
