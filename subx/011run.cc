@@ -15,17 +15,13 @@ put_new(Help, "syntax",
   "Each segment starts with a header line: a '==' delimiter followed by the name of\n"
   "the segment.\n"
   "\n"
-  "Currently SubX assumes the first segment encountered contains executable code, and\n"
-  "the second contains global variables. By convention we call them 'code' and 'data'\n"
-  "respectively.\n"
-  "The first instruction executed in the resulting binary is always the first\n"
-  "instruction of the first segment.\n"
+  "The first segment contains code and should be called 'code'.\n"
+  "The second segment should be called 'data'.\n"
+  "The resulting binary starts running from the start of the code segment by default.\n"
+  "To start elsewhere in the code segment, define a special label called 'Entry'.\n"
   "\n"
   "Segments with the same name get merged together. This rule helps keep functions and\n"
   "their data close together in .subx files.\n"
-  "Later segments with the same name get their contents *prepended* to earlier ones.\n"
-  "This rule helps each .subx file to put forth a different entrypoint for the binary,\n"
-  "overriding previously loaded files.\n"
   "\n"
   "Lines consist of a series of words. Words can contain arbitrary metadata\n"
   "after a '/', but they can never contain whitespace. Metadata has no effect\n"
@@ -184,7 +180,7 @@ void flush(program& p, vector<line>& lines) {
     return;
   }
   // End flush(p, lines) Special-cases
-  trace(99, "parse") << "flushing to segment" << end();
+  trace(99, "parse") << "flushing segment" << end();
   p.segments.back().lines.swap(lines);
 }
 
@@ -228,6 +224,7 @@ typedef void (*transform_fn)(program&);
 :(before "End Globals")
 vector<transform_fn> Transform;
 
+:(code)
 void transform(program& p) {
   trace(99, "transform") << "begin" << end();
   for (int t = 0;  t < SIZE(Transform);  ++t)
@@ -267,6 +264,7 @@ void load(const program& p) {
     if (i == 0) End_of_program = addr;
   }
   EIP = p.segments.at(0).start;
+  // End Initialize EIP
   trace(99, "load") << "done" << end();
 }
 

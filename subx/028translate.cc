@@ -97,13 +97,14 @@ void write_elf_header(ostream& out, const program& p) {
   // e_version
   O(0x01); O(0x00); O(0x00); O(0x00);
   // e_entry
-  int e_entry = p.segments.at(0).start;  // convention
+  uint32_t e_entry = p.segments.at(0).start;  // convention
+  // Override e_entry
   emit(e_entry);
   // e_phoff -- immediately after ELF header
-  int e_phoff = 0x34;
+  uint32_t e_phoff = 0x34;
   emit(e_phoff);
   // e_shoff; unused
-  int dummy32 = 0;
+  uint32_t dummy32 = 0;
   emit(dummy32);
   // e_flags; unused
   emit(dummy32);

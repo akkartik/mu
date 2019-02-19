@@ -17,8 +17,6 @@
 //: Update the parser to handle non-numeric segment name.
 //:
 //: We'll also support repeated segments with non-numeric names.
-//: When we encounter a new reference to an existing segment we'll *prepend*
-//: the new data to existing data for the segment.
 
 :(before "End Globals")
 map</*name*/string, int> Segment_index;
@@ -46,7 +44,7 @@ if (!starts_with(segment_title, "0x")) {
     out.segments.push_back(segment());
   }
   else {
-    trace(99, "parse") << "prepending to segment '" << segment_title << "'" << end();
+    trace(99, "parse") << "appending to segment '" << segment_title << "'" << end();
   }
   Currently_parsing_segment_index = get(Segment_index, segment_title);
 }
@@ -54,9 +52,9 @@ if (!starts_with(segment_title, "0x")) {
 :(before "End flush(p, lines) Special-cases")
 if (Currently_parsing_named_segment) {
   assert(!p.segments.empty());
-  trace(99, "parse") << "flushing to segment" << end();
+  trace(99, "parse") << "flushing segment" << end();
   vector<line>& curr_segment_data = p.segments.at(Currently_parsing_segment_index).lines;
-  curr_segment_data.insert(curr_segment_data.begin(), lines.begin(), lines.end());
+  curr_segment_data.insert(curr_segment_data.end(), lines.begin(), lines.end());
   lines.clear();
   Currently_parsing_named_segment = false;
   Currently_parsing_segment_index = -1;
@@ -69,17 +67,19 @@ if (Currently_parsing_named_segment) {
 == code
 2d/subtract-from-EAX  0xddccbbaa/imm32
 +parse: new segment 'code'
-+parse: prepending to segment 'code'
-+load: 0x09000054 -> 2d
-+load: 0x09000055 -> aa
-+load: 0x09000056 -> bb
-+load: 0x09000057 -> cc
-+load: 0x09000058 -> dd
-+load: 0x09000059 -> 05
-+load: 0x0900005a -> 0a
-+load: 0x0900005b -> 0b
-+load: 0x0900005c -> 0c
-+load: 0x0900005d -> 0d
++parse: appending to segment 'code'
+# first segment
++load: 0x09000054 -> 05
++load: 0x09000055 -> 0a
++load: 0x09000056 -> 0b
++load: 0x09000057 -> 0c
++load: 0x09000058 -> 0d
+# second segment
++load: 0x09000059 -> 2d
++load: 0x0900005a -> aa
++load: 0x0900005b -> bb
++load: 0x0900005c -> cc
++load: 0x0900005d -> dd
 
 :(scenario error_on_missing_segment_header)
 % Hide_errors = true;

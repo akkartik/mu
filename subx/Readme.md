@@ -278,7 +278,7 @@ distinguish between code and data. Correspondingly, SubX programs consist of a
 series of segments, each starting with a header line: `==` followed by a name.
 The first segment must be named `code`; the second must be named `data`.
 
-Execution always begins at the start of the `code` segment.
+Execution begins at the start of the `code` segment by default.
 
 You can reuse segment names:
 
@@ -293,17 +293,9 @@ You can reuse segment names:
 ...C...
 ```
 
-The code segment now contains the instructions of `A` as well as `C`. `C`
-comes _before_ `A`. (Why this order? I'd like to organize SubX programs into
-sequences of [_layers_](http://akkartik.name/post/wart-layers) that permit
-incrementally building a subset of layers into a working program with a subset
-of functionality. This organization requires, among other things, letting each
-layer control the code that runs when the binary starts up. Letting each layer
-override the starting address would require additional syntax. Instead, I
-choose to always begin execution at the start of the code segment, but allow
-layers to prepend to segments.)
+The `code` segment now contains the instructions of `A` as well as `C`.
 
-Within the code segment, each line contains a comment, label or instruction.
+Within the `code` segment, each line contains a comment, label or instruction.
 Comments start with a `#` and are ignored. Labels should always be the first
 word on a line, and they end with a `:`.
 
@@ -346,11 +338,18 @@ The latter is mostly useful for `jump` and `call` instructions.
 
 Functions are defined using labels. By convention, labels internal to functions
 (that must only be jumped to) start with a `$`. Any other labels must only be
-called, never jumped to.
+called, never jumped to. All labels must be unique.
+
+A special label is `Entry`, which can be used to specify/override the entry
+point of the program. It doesn't have to be unique, and the latest definition
+will override earlier ones.
+
+(The `Entry` label, along with duplicate segment headers, allows programs to
+be built up incrementally out of multiple _layers_](http://akkartik.name/post/wart-layers).)
 
 The data segment consists of labels as before and byte values. Referring to
-data labels in either code segment instructions or data segment values (using
-the `imm32` metadata either way) yields their address.
+data labels in either `code` segment instructions or `data` segment values
+(using the `imm32` metadata either way) yields their address.
 
 Automatic tests are an important part of SubX, and there's a simple mechanism
 to provide a test harness: all functions that start with `test-` are called in

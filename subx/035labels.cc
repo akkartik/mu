@@ -19,6 +19,25 @@
 //: Later layers may add more conventions partitioning the space of names. But
 //: the above rules will remain inviolate.
 
+//: One special label: the address to start running the program at.
+
+:(scenario entry_label)
+== 0x1
+05 0x0d0c0b0a/imm32
+Entry:
+05 0x0d0c0b0a/imm32
++run: inst: 0x00000006
+-run: inst: 0x00000001
+
+:(before "End Globals")
+uint32_t Entry_address = 0;
+:(before "End Reset")
+Entry_address = 0;
+:(before "End Initialize EIP")
+if (Entry_address) EIP = Entry_address;
+:(after "Override e_entry")
+if (Entry_address) e_entry = Entry_address;
+
 :(before "End looks_like_hex_int(s) Detectors")
 if (SIZE(s) == 2) return true;
 
@@ -87,6 +106,8 @@ void rewrite_labels(program& p) {
   drop_labels(code);
   if (trace_contains_errors()) return;
   replace_labels_with_displacements(code, byte_index);
+  if (contains_key(byte_index, "Entry"))
+    Entry_address = code.start + get(byte_index, "Entry");
 }
 
 void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& byte_index) {
@@ -125,7 +146,7 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
         if (Map_file.is_open())
           Map_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << label << '\n';
-        if (contains_key(byte_index, label)) {
+        if (contains_key(byte_index, label) && label != "Entry") {
           raise << "duplicate label '" << label << "'\n" << end();
           return;
         }
