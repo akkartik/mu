@@ -468,8 +468,8 @@ if ('onhashchange' in window) {
 <span id="L405" class="LineNr">405 </span><span class="Normal">case</span> <span class="Constant">4</span>: <span class="Delimiter">{</span>  <span class="Comment">// jump to r/m32</span>
 <span id="L406" class="LineNr">406 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump to r/m32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L407" class="LineNr">407 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* arg2 = <a href='013direct_addressing.cc.html#L31'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
-<span id="L408" class="LineNr">408 </span>  <a href='010---vm.cc.html#L29'>EIP</a> = *arg2<span class="Delimiter">;</span>
-<span id="L409" class="LineNr">409 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L29'>EIP</a> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L408" class="LineNr">408 </span>  EIP = *arg2<span class="Delimiter">;</span>
+<span id="L409" class="LineNr">409 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; EIP &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L410" class="LineNr">410 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L411" class="LineNr">411 </span><span class="Delimiter">}</span>
 <span id="L412" class="LineNr">412 </span>
@@ -547,7 +547,7 @@ if ('onhashchange' in window) {
 <span id="L484" class="LineNr">484 </span>
 <span id="L485" class="LineNr">485 </span><span class="Delimiter">:(before &quot;End Mod 0 Special-cases(addr)&quot;)</span>
 <span id="L486" class="LineNr">486 </span><span class="Normal">case</span> <span class="Constant">5</span>:  <span class="Comment">// exception: mod 0b00 rm 0b101 =&gt; incoming disp32</span>
-<span id="L487" class="LineNr">487 </span>  addr = <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
+<span id="L487" class="LineNr">487 </span>  addr = <a href='011run.cc.html#L341'>next32</a><span class="Delimiter">();</span>
 <span id="L488" class="LineNr">488 </span>  <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;effective address is 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; addr &lt;&lt; <span class="Constant">&quot; (disp32)&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L489" class="LineNr">489 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L490" class="LineNr">490 </span>
@@ -622,7 +622,7 @@ if ('onhashchange' in window) {
 <span id="L559" class="LineNr">559 </span>  <span class="Comment">// End Mod 2 Special-cases(addr)</span>
 <span id="L560" class="LineNr">560 </span>  <span class="Delimiter">}</span>
 <span id="L561" class="LineNr">561 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>addr &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L562" class="LineNr">562 </span>    addr += <a href='011run.cc.html#L343'>next32</a><span class="Delimiter">();</span>
+<span id="L562" class="LineNr">562 </span>    addr += <a href='011run.cc.html#L341'>next32</a><span class="Delimiter">();</span>
 <span id="L563" class="LineNr">563 </span>    <a href='003trace.cc.html#L183'>trace</a><span class="Delimiter">(</span><span class="Constant">90</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;effective address is 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L413'>HEXWORD</a> &lt;&lt; addr &lt;&lt; <span class="Constant">&quot; (after adding disp32)&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L564" class="LineNr">564 </span>  <span class="Delimiter">}</span>
 <span id="L565" class="LineNr">565 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
