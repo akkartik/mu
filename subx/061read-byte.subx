@@ -40,8 +40,8 @@ Stdin:
 #?     cd/syscall  0x80/imm8
 
 # return next byte value in EAX, with top 3 bytes cleared.
-# On EOF, return 0xffffffff.
-read-byte:  # f : (address buffered-file) -> byte-or-eof/EAX
+# On reaching end of file, return 0xffffffff (Eof).
+read-byte:  # f : (address buffered-file) -> byte-or-Eof/EAX
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -76,7 +76,7 @@ read-byte:  # f : (address buffered-file) -> byte-or-eof/EAX
     # if (EAX == 0) return 0xffffffff
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     75/jump-if-not-equal  $read-byte:from-stream/disp8
-    b8/copy-to-EAX  0xffffffff/imm32
+    b8/copy-to-EAX  0xffffffff/imm32/Eof
     eb/jump  $read-byte:end/disp8
 $read-byte:from-stream:
     # read byte from stream
@@ -196,7 +196,7 @@ test-read-byte-multiple:
     c3/return
 
 test-read-byte-end-of-file:
-    # - call read-byte on an empty 'file', check that it returns 0xffffffff
+    # - call read-byte on an empty 'file', check that it returns Eof
     # setup
     # . clear-stream(_test-stream)
     # . . push args
@@ -224,7 +224,7 @@ test-read-byte-end-of-file:
     # check-ints-equal(EAX, 0xffffffff, msg)
     # . . push args
     68/push  "F - test-read-byte-end-of-file"/imm32
-    68/push  0xffffffff/imm32
+    68/push  0xffffffff/imm32/Eof
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32

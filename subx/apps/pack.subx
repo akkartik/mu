@@ -89,7 +89,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #   repeatedly
     #     clear-stream(line)
     #     EAX = read-line(in, line)
-    #     if (EAX == EOF) break
+    #     if (EAX == Eof) break
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) continue  # just whitespace
     #     if (starts-with(word-slice, "#")) continue  # ignore comments
@@ -128,8 +128,8 @@ $convert:loop:
     e8/call  convert-instruction/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # if (EAX == 0xffffffff) break
-    3d/compare-with-EAX  0xffffffff/imm32
+    # if (EAX == Eof) break
+    3d/compare-with-EAX  0xffffffff/imm32/Eof
     74/jump-if-equal  $convert:break/disp8
     # convert-instruction(line, out)
     # . . push args
@@ -163,7 +163,7 @@ convert-code-segment:  # in : (address buffered-file), out : (address buffered-f
     #   repeatedly
     #     clear-stream(line)
     #     EAX = read-line(in, line)
-    #     if (EAX == EOF) break
+    #     if (EAX == Eof) break
     #     word-slice = next-word(line)
     #     if (slice-equal?(word-slice, "=="))
     #       return
@@ -175,7 +175,7 @@ convert-data-segment:  # in : (address buffered-file), out : (address buffered-f
     #   repeatedly
     #     clear-stream(line)
     #     EAX = read-line(in, line)
-    #     if (EAX == EOF) break
+    #     if (EAX == Eof) break
     #     word-slice = next-word(line)
     #     if (slice-equal?(word-slice, "=="))
     #       return

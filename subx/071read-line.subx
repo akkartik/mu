@@ -59,10 +59,11 @@ $read-line:loop:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # if (f->write == 0) return true
+    # since f->read was initially 0, EAX is the same as f->write
     # . if (EAX == 0) return true
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     75/jump-if-not-equal  $read-line:from-stream/disp8
-    b8/copy-to-EAX  0xffffffff/imm32
+    b8/copy-to-EAX  0xffffffff/imm32/Eof
     eb/jump  $read-line:end/disp8
 $read-line:from-stream:
     # AL = f->data[f->read]
@@ -168,10 +169,10 @@ test-read-line:
     e8/call  read-line/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, 0/not-at-eof, msg)
+    # check-ints-equal(EAX, 0/not-at-Eof, msg)
     # . . push args
     68/push  "F - test-read-line: return value"/imm32
-    68/push  0/imm32/not-at-eof
+    68/push  0/imm32/not-at-Eof
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
@@ -189,7 +190,7 @@ test-read-line:
     # end
     c3/return
 
-test-read-line-returns-true-on-eof:
+test-read-line-returns-true-on-Eof:
     # setup
     # . clear-stream(_test-stream)
     # . . push args
@@ -223,10 +224,10 @@ test-read-line-returns-true-on-eof:
     e8/call  read-line/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, eof, msg)
+    # check-ints-equal(EAX, Eof, msg)
     # . . push args
-    68/push  "F - test-read-line-returns-true-on-eof"/imm32
-    68/push  0xffffffff/imm32/not-at-eof
+    68/push  "F - test-read-line-returns-true-on-Eof"/imm32
+    68/push  0xffffffff/imm32/Eof
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
@@ -235,7 +236,7 @@ test-read-line-returns-true-on-eof:
     # end
     c3/return
 
-test-read-line-reads-final-line-until-eof:
+test-read-line-reads-final-line-until-Eof:
     # setup
     # . clear-stream(_test-stream)
     # . . push args
@@ -277,10 +278,10 @@ test-read-line-reads-final-line-until-eof:
     e8/call  read-line/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, eof, msg)
+    # check-ints-equal(EAX, Eof, msg)
     # . . push args
-    68/push  "F - test-read-line-reads-final-line-until-eof: return value"/imm32
-    68/push  0xffffffff/imm32/not-at-eof
+    68/push  "F - test-read-line-reads-final-line-until-Eof: return value"/imm32
+    68/push  0xffffffff/imm32/Eof
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
@@ -288,7 +289,7 @@ test-read-line-reads-final-line-until-eof:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-stream-equal(_test-tmp-stream, "cd", msg)
     # . . push args
-    68/push  "F - test-read-line-reads-final-line-until-eof"/imm32
+    68/push  "F - test-read-line-reads-final-line-until-Eof"/imm32
     68/push  "cd"/imm32
     68/push  _test-tmp-stream/imm32
     # . . call

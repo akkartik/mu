@@ -74,7 +74,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file), err : (
     # pseudocode:
     #   repeatedly
     #     EAX = convert-next-octet(in, err, ed)
-    #     if (EAX == 0xffffffff) break  # eof
+    #     if (EAX == Eof) break
     #     write-byte(out, AL)
     #   flush(out)
     #
@@ -93,8 +93,8 @@ $convert:loop:
     e8/call  convert-next-octet/disp32
     # . . discard first 2 args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # if (EAX == 0xffffffff) break
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
+    # if (EAX == Eof) break
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32/Eof  # compare EAX
     74/jump-if-equal  $convert:loop-end/disp8
     # write-byte(out, AL)
     # . . push args
@@ -127,14 +127,14 @@ $convert:end:
 # on '#' skip bytes until newline
 # raise an error and abort on all other unexpected bytes
 # return in EAX an _octet_ containing the binary value of the two hex characters
-# return 0xffffffff on end of file
-convert-next-octet:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-eof/EAX
+# return Eof on reaching end of file
+convert-next-octet:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-Eof/EAX
     # pseudocode:
     #   EAX = scan-next-byte(in, err, ed)
-    #   if (EAX == 0xffffffff) return
+    #   if (EAX == Eof) return
     #   ECX = from-hex-char(EAX)
     #   EAX = scan-next-byte(in, err, ed)
-    #   if (EAX == 0xffffffff) error("partial byte found.")
+    #   if (EAX == Eof) error("partial byte found.")
     #   EAX = from-hex-char(EAX)
     #   EAX = (ECX << 4) | EAX
     #   return
@@ -153,8 +153,8 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     e8/call  scan-next-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # if (EAX == 0xffffffff) return
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
+    # if (EAX == Eof) return
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32/Eof  # compare EAX
     74/jump-if-equal  $convert-next-octet:end/disp8
     # EAX = from-hex-char(EAX)
     e8/call from-hex-char/disp32
@@ -169,8 +169,8 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     e8/call  scan-next-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # if (EAX == 0xffffffff) error(ed, err, "partial byte found.")
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
+    # if (EAX == Eof) error(ed, err, "partial byte found.")
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32/Eof  # compare EAX
     75/jump-if-not-equal  $convert-next-octet:convert/disp8
     # . error-byte(ed, err, msg, '.')  # reusing error-byte to avoid creating _yet_ another helper
     # . . push args
@@ -298,8 +298,8 @@ $test-convert-next-octet:end:
     5d/pop-to-EBP
     c3/return
 
-test-convert-next-octet-handles-eof:
-    # - check that eof returns the sentinel octet
+test-convert-next-octet-handles-Eof:
+    # - check that reaching end of file returns Eof
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -375,17 +375,17 @@ test-convert-next-octet-handles-eof:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # return if abort
     81          7/subop/compare     1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # compare *(ECX+4)
-    75/jump-if-not-equal  $test-convert-next-octet-handles-eof:end/disp8
-    # check-ints-equal(EAX, 0xffffffff, msg)
+    75/jump-if-not-equal  $test-convert-next-octet-handles-Eof:end/disp8
+    # check-ints-equal(EAX, Eof, msg)
     # . . push args
-    68/push  "F - test-convert-next-octet-handles-eof"/imm32
-    68/push  0xffffffff/imm32/eof
+    68/push  "F - test-convert-next-octet-handles-Eof"/imm32
+    68/push  0xffffffff/imm32/Eof
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-convert-next-octet-handles-eof:end:
+$test-convert-next-octet-handles-Eof:end:
     # . epilog
     # don't restore ESP from EBP; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -483,14 +483,14 @@ $test-convert-next-octet-aborts-on-single-hex-byte:end:
     c3/return
 
 # read whitespace until a hex byte, and return it
-# return 0xffffffff if file ends without finding a hex byte
+# return Eof if file ends without finding a hex byte
 # on '#' skip all bytes until newline
 # abort on any other byte
-scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-eof/EAX
+scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-Eof/EAX
     # pseudocode:
     #   repeatedly
     #     EAX = read-byte(in)
-    #     if (EAX == 0xffffffff) return EAX
+    #     if (EAX == Eof) return EAX
     #     if (is-hex-digit?(EAX)) return EAX
     #     if (EAX == ' ' or '\t' or '\n') continue
     #     if (EAX == '#') skip-until-newline(in)
@@ -508,8 +508,8 @@ $scan-next-byte:loop:
     e8/call  read-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # if (EAX == 0xffffffff) return EAX
-    3d/compare-with-EAX  0xffffffff/imm32
+    # if (EAX == Eof) return EAX
+    3d/compare-with-EAX  0xffffffff/imm32/Eof
     74/jump-if-equal  $scan-next-byte:end/disp8
     # if (is-hex-digit?(EAX)) return EAX
     # . save EAX for now
@@ -1225,7 +1225,7 @@ $test-scan-next-byte-reads-final-byte:end:
     5d/pop-to-EBP
     c3/return
 
-test-scan-next-byte-handles-eof:
+test-scan-next-byte-handles-Eof:
     # - check that the right sentinel value is returned when there's no data remaining to be read
     # This test uses exit-descriptors. Use EBP for setting up local variables.
     55/push-EBP
@@ -1292,7 +1292,7 @@ test-scan-next-byte-handles-eof:
     # check that scan-next-byte didn't abort
     # . check-ints-equal(ed->value, 0, msg)
     # . . push args
-    68/push  "F - test-scan-next-byte-handles-eof: unexpected abort"/imm32
+    68/push  "F - test-scan-next-byte-handles-Eof: unexpected abort"/imm32
     68/push  0/imm32
     # . . push ed->value
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
@@ -1302,17 +1302,17 @@ test-scan-next-byte-handles-eof:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # return if abort
     81          7/subop/compare     1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         0/imm32           # compare *(ECX+4)
-    75/jump-if-not-equal  $test-scan-next-byte-handles-eof:end/disp8
-    # check-ints-equal(EAX, 0xffffffff/eof, msg)
+    75/jump-if-not-equal  $test-scan-next-byte-handles-Eof:end/disp8
+    # check-ints-equal(EAX, Eof, msg)
     # . . push args
-    68/push  "F - test-scan-next-byte-handles-eof"/imm32
-    68/push  0xffffffff/imm32/eof
+    68/push  "F - test-scan-next-byte-handles-Eof"/imm32
+    68/push  0xffffffff/imm32/Eof
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-scan-next-byte-handles-eof:end:
+$test-scan-next-byte-handles-Eof:end:
     # . epilog
     # don't restore ESP from EBP; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -1414,7 +1414,7 @@ skip-until-newline:  # in : (address buffered-file) -> <void>
     #   push EAX
     #   repeatedly:
     #     EAX = read-byte(in)
-    #     if (EAX == 0xffffffff) break
+    #     if (EAX == Eof) break
     #     if (EAX == 0x0a) break
     #   pop EAX
     # . prolog
@@ -1430,8 +1430,8 @@ $skip-until-newline:loop:
     e8/call  read-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if (EAX == 0xffffffff) break
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32  # compare EAX
+    # . if (EAX == Eof) break
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xffffffff/imm32/Eof  # compare EAX
     74/jump-if-equal  $skip-until-newline:end/disp8
     # . if (EAX != 0xa/newline) loop
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xa/imm32         # compare EAX
@@ -1520,7 +1520,7 @@ _test-error-stream:
     # data
     00 00 00 00 00 00 00 00  # 8 bytes
 
-# a test buffered file for _test-stream
+# a test buffered file for _test-error-stream
 _test-error-buffered-file:
     # file descriptor or (address stream)
     _test-error-stream/imm32

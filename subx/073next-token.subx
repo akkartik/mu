@@ -11,7 +11,7 @@
 #?     cd/syscall  0x80/imm8
 
 # extract the next run of characters that are different from a given 'delimiter' (skipping multiple delimiters if necessary)
-# on eof return an empty interval
+# on reaching end of file, return an empty interval
 next-token:  # in : (address stream), delimiter : byte, out : (address slice)
     # . prolog
     55/push-EBP
@@ -123,7 +123,7 @@ test-next-token:
     5d/pop-to-EBP
     c3/return
 
-test-next-token-eof:
+test-next-token-Eof:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -151,7 +151,7 @@ test-next-token-eof:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-ints-equal(slice->end, slice->start, msg)
     # . . push args
-    68/push  "F - test-next-token-eof"/imm32
+    68/push  "F - test-next-token-Eof"/imm32
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
     ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
@@ -164,7 +164,7 @@ test-next-token-eof:
     c3/return
 
 # extract the next run of characters that are different from a given 'delimiter' (skipping multiple delimiters if necessary)
-# on eof return an empty interval
+# on reaching end of file, return an empty interval
 next-token-from-slice:  # start : (address byte), end : (address byte), delimiter : byte, out : (address slice) -> <void>
     # . prolog
     55/push-EBP
@@ -266,7 +266,7 @@ test-next-token-from-slice:
     5d/pop-to-EBP
     c3/return
 
-test-next-token-from-slice-eof:
+test-next-token-from-slice-Eof:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -287,7 +287,7 @@ test-next-token-from-slice-eof:
     # out should be empty
     # . check-ints-equal(out->end - out->start, 0, msg)
     # . . push args
-    68/push  "F - test-next-token-from-slice-eof"/imm32
+    68/push  "F - test-next-token-from-slice-Eof"/imm32
     68/push  0/imm32
     # . . push out->start - in->start
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EDI+4) to ECX
@@ -328,7 +328,7 @@ test-next-token-from-slice-nothing:
     # out should be empty
     # . check-ints-equal(out->end - out->start, 0, msg)
     # . . push args
-    68/push  "F - test-next-token-from-slice-eof"/imm32
+    68/push  "F - test-next-token-from-slice-Eof"/imm32
     68/push  0/imm32
     # . . push out->start - in->start
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EDI+4) to ECX
