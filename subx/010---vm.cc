@@ -297,13 +297,12 @@ void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   // Run One Instruction
   if (Dump_trace) {
-    cerr << "registers: ";
     dump_registers();
-//?     dump_stack();  // for debugging; not defined until later layer
+    // End Dump Info for Instruction
   }
   trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
   op = next();
-  if (Dump_trace) cerr << "opcode: " << HEXBYTE << NUM(op) << '\n';
+  trace(90, "run") << "opcode: " << HEXBYTE << NUM(op) << end();
   switch (op) {
   case 0xf4:  // hlt
     EIP = End_of_program;
@@ -366,11 +365,14 @@ inline uint8_t next() {
 }
 
 void dump_registers() {
+  ostringstream out;
+  out << "registers: ";
   for (int i = 0;  i < NUM_INT_REGISTERS;  ++i) {
-    if (i > 0) cerr << "; ";
-    cerr << "  " << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
+    if (i > 0) out << "; ";
+    out << "  " << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
   }
-  cerr << " -- SF: " << SF << "; ZF: " << ZF << "; OF: " << OF << '\n';
+  out << " -- SF: " << SF << "; ZF: " << ZF << "; OF: " << OF;
+  trace(90, "run") << out.str() << end();
 }
 
 //: start tracking supported opcodes

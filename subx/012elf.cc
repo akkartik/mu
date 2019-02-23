@@ -137,14 +137,17 @@ const int DATA_SEGMENT = 0x0a000000;  // keep sync'd with `Heap.limit` in alloca
 const int STACK_SEGMENT = 0x0b000000;
 const int AFTER_STACK = 0x0c000000;
 const int ARGV_DATA_SEGMENT = 0x0c000000;
+:(before "End Dump Info for Instruction")
+//? dump_stack();  // slow
 :(code)
 void dump_stack() {
-  cerr << "stack:\n";
+  ostringstream out;
+  trace(91, "run") << "stack:" << end();
   for (uint32_t a = AFTER_STACK-4;  a > Reg[ESP].u;  a -= 4)
-    cerr << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << '\n';
-  cerr << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP\n";
+    trace(91, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
+  trace(91, "run") << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP" << end();
   for (uint32_t a = Reg[ESP].u-4;  a > Reg[ESP].u-40;  a -= 4)
-    cerr << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << '\n';
+    trace(91, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
 }
 
 inline uint32_t u32_in(uint8_t* p) {
