@@ -15,7 +15,7 @@ set cpo&vim
 setlocal formatoptions-=t  " allow long lines
 setlocal formatoptions+=c  " but comments should still wrap
 
-setlocal iskeyword+=-
+setlocal iskeyword+=-,?
 
 " blue tones
 " comment colors for dark terminal: 14, 39, 27, 19
