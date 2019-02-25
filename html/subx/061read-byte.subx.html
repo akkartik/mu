@@ -103,8 +103,8 @@ if ('onhashchange' in window) {
 <span id="L40" class="LineNr"> 40 </span><span class="CommentedCode">#?     cd/syscall  0x80/imm8</span>
 <span id="L41" class="LineNr"> 41 </span>
 <span id="L42" class="LineNr"> 42 </span><span class="subxComment"># return next byte value in EAX, with top 3 bytes cleared.</span>
-<span id="L43" class="LineNr"> 43 </span><span class="subxComment"># On EOF, return 0xffffffff.</span>
-<span id="L44" class="LineNr"> 44 </span><span class="subxFunction">read-byte</span>:  <span class="subxComment"># f : (address buffered-file) -&gt; byte-or-eof/EAX</span>
+<span id="L43" class="LineNr"> 43 </span><span class="subxComment"># On reaching end of file, return 0xffffffff (Eof).</span>
+<span id="L44" class="LineNr"> 44 </span><span class="subxFunction">read-byte</span>:  <span class="subxComment"># f : (address buffered-file) -&gt; byte-or-Eof/EAX</span>
 <span id="L45" class="LineNr"> 45 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L46" class="LineNr"> 46 </span>    55/push-EBP
 <span id="L47" class="LineNr"> 47 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -139,7 +139,7 @@ if ('onhashchange' in window) {
 <span id="L76" class="LineNr"> 76 </span>    <span class="subxComment"># if (EAX == 0) return 0xffffffff</span>
 <span id="L77" class="LineNr"> 77 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32           <span class="subxComment"># compare EAX</span>
 <span id="L78" class="LineNr"> 78 </span>    75/jump-if-not-equal  $read-byte:from-stream/disp8
-<span id="L79" class="LineNr"> 79 </span>    b8/copy-to-EAX  0xffffffff/imm32
+<span id="L79" class="LineNr"> 79 </span>    b8/copy-to-EAX  0xffffffff/imm32/Eof
 <span id="L80" class="LineNr"> 80 </span>    eb/jump  $read-byte:end/disp8
 <span id="L81" class="LineNr"> 81 </span><span class="Constant">$read-byte:from-stream</span>:
 <span id="L82" class="LineNr"> 82 </span>    <span class="subxComment"># read byte from stream</span>
@@ -259,7 +259,7 @@ if ('onhashchange' in window) {
 <span id="L196" class="LineNr">196 </span>    c3/return
 <span id="L197" class="LineNr">197 </span>
 <span id="L198" class="LineNr">198 </span><span class="subxTest">test-read-byte-end-of-file</span>:
-<span id="L199" class="LineNr">199 </span>    <span class="subxH1Comment"># - call read-byte on an empty 'file', check that it returns 0xffffffff</span>
+<span id="L199" class="LineNr">199 </span>    <span class="subxH1Comment"># - call read-byte on an empty 'file', check that it returns Eof</span>
 <span id="L200" class="LineNr">200 </span>    <span class="subxComment"># setup</span>
 <span id="L201" class="LineNr">201 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L202" class="LineNr">202 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -287,7 +287,7 @@ if ('onhashchange' in window) {
 <span id="L224" class="LineNr">224 </span>    <span class="subxComment"># check-ints-equal(EAX, 0xffffffff, msg)</span>
 <span id="L225" class="LineNr">225 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L226" class="LineNr">226 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-end-of-file&quot;</span>/imm32
-<span id="L227" class="LineNr">227 </span>    68/push  0xffffffff/imm32
+<span id="L227" class="LineNr">227 </span>    68/push  0xffffffff/imm32/Eof
 <span id="L228" class="LineNr">228 </span>    50/push-EAX
 <span id="L229" class="LineNr">229 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L230" class="LineNr">230 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
