@@ -67,7 +67,7 @@ void abandon(int address, int payload_size) {
   for (int curr = address+1;  curr < address+payload_size;  ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
-  trace("abandon") << "saving " << address << " in free-list of size " << payload_size << end();
+  trace(Callstack_depth+1, "abandon") << "saving " << address << " in free-list of size " << payload_size << end();
   put(Memory, address+/*skip invalid alloc-id*/1, get_or_insert(Current_routine->free_list, payload_size));
   put(Current_routine->free_list, payload_size, address);
 }
@@ -80,9 +80,9 @@ int payload_size(reagent/*copy*/ x) {
 
 :(after "Allocate Special-cases")
 if (get_or_insert(Current_routine->free_list, size)) {
-  trace("abandon") << "picking up space from free-list of size " << size << end();
+  trace(Callstack_depth+1, "abandon") << "picking up space from free-list of size " << size << end();
   int result = get_or_insert(Current_routine->free_list, size);
-  trace("mem") << "new alloc from free list: " << result << end();
+  trace(Callstack_depth+1, "mem") << "new alloc from free list: " << result << end();
   put(Current_routine->free_list, size, get_or_insert(Memory, result+/*skip alloc id*/1));
   // clear 'deleted' tag
   put(Memory, result, 0);

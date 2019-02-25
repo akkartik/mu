@@ -403,7 +403,19 @@ c) Try running the tests:
 d) Check out [the programming environment](https://github.com/akkartik/mu/tree/master/edit#readme),
 the largest app built so far in Mu.
 
-e) Look at the `build` scripts. Mu's compilation process is itself designed to
+e) Check out the tracing infrastructure which gives you a maps-like zoomable
+UI for browsing Mu's traces:
+
+  ```shell
+  $ ./mu --trace nqueens.mu  # just an example
+  saving trace to 'last_run'
+  $ ./browse_trace/browse_trace last_run
+  # hit 'q' to exit
+  ```
+
+For more details see the [Readme](browse_trace/Readme.md).
+
+f) Look at the `build` scripts. Mu's compilation process is itself designed to
 support staged learning. Each of the scripts (`build0`, `build1`, `build2`,
 etc.) is self-contained and can compile the project by itself. Successive
 versions add new features and configurability -- and complexity -- to the

@@ -11,15 +11,15 @@ put_new(Name, "e9", "jump disp32 bytes away (jmp)");
   e9                05 00 00 00               # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: e9
 +run: jump 5
-+run: inst: 0x0000000b
--run: inst: 0x00000006
++run: 0x0000000b opcode: 05
+-run: 0x00000006 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0xe9: {  // jump disp32
   const int32_t offset = next32();
-  trace(90, "run") << "jump " << offset << end();
+  trace(Callstack_depth+1, "run") << "jump " << offset << end();
   EIP += offset;
   break;
 }
@@ -36,16 +36,16 @@ put_new(Name_0f, "84", "jump disp32 bytes away if equal, if ZF is set (jcc/jz/je
   0f 84                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 0f
 +run: jump 5
-+run: inst: 0x0000000c
--run: inst: 0x00000007
++run: 0x0000000c opcode: 05
+-run: 0x00000007 opcode: 05
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x84: {  // jump disp32 if ZF
   const int32_t offset = next32();
   if (ZF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -58,9 +58,9 @@ case 0x84: {  // jump disp32 if ZF
   0f 84                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000007
-+run: inst: 0x0000000c
++run: 0x00000001 opcode: 0f
++run: 0x00000007 opcode: 05
++run: 0x0000000c opcode: 05
 -run: jump 5
 
 //:: jump if not equal/not zero
@@ -75,16 +75,16 @@ put_new(Name_0f, "85", "jump disp32 bytes away if not equal, if ZF is not set (j
   0f 85                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 0f
 +run: jump 5
-+run: inst: 0x0000000c
--run: inst: 0x00000007
++run: 0x0000000c opcode: 05
+-run: 0x00000007 opcode: 05
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x85: {  // jump disp32 unless ZF
   const int32_t offset = next32();
   if (!ZF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -97,9 +97,9 @@ case 0x85: {  // jump disp32 unless ZF
   0f 85                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000007
-+run: inst: 0x0000000c
++run: 0x00000001 opcode: 0f
++run: 0x00000007 opcode: 05
++run: 0x0000000c opcode: 05
 -run: jump 5
 
 //:: jump if greater
@@ -116,16 +116,16 @@ put_new(Name_0f, "8f", "jump disp32 bytes away if greater, if ZF is unset and SF
   0f 8f                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 0f
 +run: jump 5
-+run: inst: 0x0000000c
--run: inst: 0x00000007
++run: 0x0000000c opcode: 05
+-run: 0x00000007 opcode: 05
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8f: {  // jump disp32 if !SF and !ZF
   const int32_t offset = next32();
   if (!ZF && SF == OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -140,9 +140,9 @@ case 0x8f: {  // jump disp32 if !SF and !ZF
   0f 8f                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000007
-+run: inst: 0x0000000c
++run: 0x00000001 opcode: 0f
++run: 0x00000007 opcode: 05
++run: 0x0000000c opcode: 05
 -run: jump 5
 
 //:: jump if greater or equal
@@ -158,16 +158,16 @@ put_new(Name_0f, "8d", "jump disp32 bytes away if greater or equal, if SF == OF 
   0f 8d                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 0f
 +run: jump 5
-+run: inst: 0x0000000c
--run: inst: 0x00000007
++run: 0x0000000c opcode: 05
+-run: 0x00000007 opcode: 05
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8d: {  // jump disp32 if !SF
   const int32_t offset = next32();
   if (SF == OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -181,9 +181,9 @@ case 0x8d: {  // jump disp32 if !SF
   0f 8d                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000007
-+run: inst: 0x0000000c
++run: 0x00000001 opcode: 0f
++run: 0x00000007 opcode: 05
++run: 0x0000000c opcode: 05
 -run: jump 5
 
 //:: jump if lesser
@@ -200,16 +200,16 @@ put_new(Name_0f, "8c", "jump disp32 bytes away if lesser, if SF != OF (jcc/jl/jn
   0f 8c                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 0f
 +run: jump 5
-+run: inst: 0x0000000c
--run: inst: 0x00000007
++run: 0x0000000c opcode: 05
+-run: 0x00000007 opcode: 05
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8c: {  // jump disp32 if SF and !ZF
   const int32_t offset = next32();
   if (SF != OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -224,9 +224,9 @@ case 0x8c: {  // jump disp32 if SF and !ZF
   0f 8c                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000007
-+run: inst: 0x0000000c
++run: 0x00000001 opcode: 0f
++run: 0x00000007 opcode: 05
++run: 0x0000000c opcode: 05
 -run: jump 5
 
 //:: jump if lesser or equal
@@ -243,10 +243,10 @@ put_new(Name_0f, "8e", "jump disp32 bytes away if lesser or equal, if ZF is set 
   0f 8e                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 0f
 +run: jump 5
-+run: inst: 0x0000000c
--run: inst: 0x00000007
++run: 0x0000000c opcode: 05
+-run: 0x00000007 opcode: 05
 
 :(scenario jle_disp32_lesser)
 % ZF = false;
@@ -257,16 +257,16 @@ put_new(Name_0f, "8e", "jump disp32 bytes away if lesser or equal, if ZF is set 
   0f 8e                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 0f
 +run: jump 5
-+run: inst: 0x0000000c
--run: inst: 0x00000007
++run: 0x0000000c opcode: 05
+-run: 0x00000007 opcode: 05
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0x8e: {  // jump disp32 if SF or ZF
   const int32_t offset = next32();
   if (ZF || SF != OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -281,7 +281,7 @@ case 0x8e: {  // jump disp32 if SF or ZF
   0f 8e                 05 00 00 00               # skip 1 instruction
   05                                  00 00 00 01
   05                                  00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000007
-+run: inst: 0x0000000c
++run: 0x00000001 opcode: 0f
++run: 0x00000007 opcode: 05
++run: 0x0000000c opcode: 05
 -run: jump 5

@@ -34,7 +34,7 @@ struct name_lt {
 :(code)
 void check_or_set_types_by_name(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- deduce types for recipe " << caller.name << end();
+  trace(101, "transform") << "--- deduce types for recipe " << caller.name << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     for (int in = 0;  in < SIZE(inst.ingredients);  ++in)
@@ -62,7 +62,7 @@ void deduce_missing_type(set<reagent, name_lt>& known_types, reagent& x, const r
   if (known_types.find(x) == known_types.end()) return;
   const reagent& exemplar = *known_types.find(x);
   x.type = new type_tree(*exemplar.type);
-  trace(9992, "transform") << x.name << " <= " << names_to_string(x.type) << end();
+  trace(102, "transform") << x.name << " <= " << names_to_string(x.type) << end();
   // spaces are special; their type includes their /names property
   if (is_mu_space(x) && !has_property(x, "names")) {
     if (!has_property(exemplar, "names")) {
@@ -82,7 +82,7 @@ void check_type(set<reagent, name_lt>& known_types, const reagent& x, const reci
     return;
   }
   if (known_types.find(x) == known_types.end()) {
-    trace(9992, "transform") << x.name << " => " << names_to_string(x.type) << end();
+    trace(102, "transform") << x.name << " => " << names_to_string(x.type) << end();
     known_types.insert(x);
   }
   if (!types_strictly_match(known_types.find(x)->type, x.type)) {

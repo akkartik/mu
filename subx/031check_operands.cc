@@ -13,7 +13,7 @@ if (trace_contains_errors()) return;
 
 :(code)
 void check_operands(const segment& code) {
-  trace(99, "transform") << "-- check operands" << end();
+  trace(3, "transform") << "-- check operands" << end();
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     check_operands(code.lines.at(i));
     if (trace_contains_errors()) return;  // stop at the first mal-formed instruction

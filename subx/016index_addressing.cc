@@ -26,22 +26,22 @@ uint32_t effective_address_from_sib(uint8_t mod) {
   uint32_t addr = 0;
   if (base != EBP || mod != 0) {
     addr = Reg[base].u;
-    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(base) << ")" << end();
+    trace(Callstack_depth+1, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(base) << ")" << end();
   }
   else {
     // base == EBP && mod == 0
     addr = next32();  // ignore base
-    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (disp32)" << end();
+    trace(Callstack_depth+1, "run") << "effective address is initially 0x" << HEXWORD << addr << " (disp32)" << end();
   }
   const uint8_t index = (sib>>3)&0x7;
   if (index == ESP) {
     // ignore index and scale
-    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << end();
+    trace(Callstack_depth+1, "run") << "effective address is 0x" << HEXWORD << addr << end();
   }
   else {
     const uint8_t scale = (1 << (sib>>6));
     addr += Reg[index].i*scale;  // treat index register as signed. Maybe base as well? But we'll always ensure it's non-negative.
-    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding " << rname(index) << "*" << NUM(scale) << ")" << end();
+    trace(Callstack_depth+1, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding " << rname(index) << "*" << NUM(scale) << ")" << end();
   }
   return addr;
 }

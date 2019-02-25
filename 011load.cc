@@ -63,13 +63,13 @@ int slurp_recipe(istream& in) {
   // End Recipe Refinements
   if (result.name.empty())
     raise << "empty result.name\n" << end();
-  trace(9991, "parse") << "--- defining " << result.name << end();
+  trace(101, "parse") << "--- defining " << result.name << end();
   if (!contains_key(Recipe_ordinal, result.name))
     put(Recipe_ordinal, result.name, Next_recipe_ordinal);
   result.ordinal = get(Recipe_ordinal, result.name);
   ++Next_recipe_ordinal;
   if (Recipe.find(get(Recipe_ordinal, result.name)) != Recipe.end()) {
-    trace(9991, "parse") << "already exists" << end();
+    trace(101, "parse") << "already exists" << end();
     if (should_check_for_redefine(result.name))
       raise << "redefining recipe " << result.name << "\n" << end();
     Recipe.erase(get(Recipe_ordinal, result.name));
@@ -90,7 +90,7 @@ void slurp_body(istream& in, recipe& result) {
   while (next_instruction(in, &curr)) {
     curr.original_string = to_original_string(curr);
     // End Rewrite Instruction(curr, recipe result)
-    trace(9992, "load") << "after rewriting: " << to_string(curr) << end();
+    trace(102, "load") << "after rewriting: " << to_string(curr) << end();
     if (!curr.is_empty()) result.steps.push_back(curr);
   }
 }
@@ -126,7 +126,7 @@ bool next_instruction(istream& in, instruction* curr) {
   if (SIZE(words) == 1 && is_label_word(words.at(0))) {
     curr->is_label = true;
     curr->label = words.at(0);
-    trace(9993, "parse") << "label: " << curr->label << end();
+    trace(103, "parse") << "label: " << curr->label << end();
     if (!has_data(in)) {
       raise << "incomplete recipe at end of file (3)\n" << end();
       return false;
@@ -151,12 +151,12 @@ bool next_instruction(istream& in, instruction* curr) {
   for (;  p != words.end();  ++p)
     curr->ingredients.push_back(reagent(*p));
 
-  trace(9993, "parse") << "instruction: " << curr->name << end();
-  trace(9993, "parse") << "  number of ingredients: " << SIZE(curr->ingredients) << end();
+  trace(103, "parse") << "instruction: " << curr->name << end();
+  trace(103, "parse") << "  number of ingredients: " << SIZE(curr->ingredients) << end();
   for (vector<reagent>::iterator p = curr->ingredients.begin();  p != curr->ingredients.end();  ++p)
-    trace(9993, "parse") << "  ingredient: " << to_string(*p) << end();
+    trace(103, "parse") << "  ingredient: " << to_string(*p) << end();
   for (vector<reagent>::iterator p = curr->products.begin();  p != curr->products.end();  ++p)
-    trace(9993, "parse") << "  product: " << to_string(*p) << end();
+    trace(103, "parse") << "  product: " << to_string(*p) << end();
   if (!has_data(in)) {
     raise << "9: unbalanced '[' for recipe\n" << end();
     return false;

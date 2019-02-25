@@ -23,7 +23,7 @@ Transform.push_back(transform_literal_strings);
 int Next_auto_global = 1;
 :(code)
 void transform_literal_strings(program& p) {
-  trace(99, "transform") << "-- move literal strings to data segment" << end();
+  trace(3, "transform") << "-- move literal strings to data segment" << end();
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
   segment data;

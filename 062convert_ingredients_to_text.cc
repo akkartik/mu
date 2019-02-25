@@ -59,7 +59,7 @@ Transform.push_back(convert_ingredients_to_text);  // idempotent
 :(code)
 void convert_ingredients_to_text(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- convert some ingredients to text in recipe " << caller.name << end();
+  trace(101, "transform") << "--- convert some ingredients to text in recipe " << caller.name << end();
   // in recipes without named locations, 'stash' is still not extensible
   if (contains_numeric_locations(caller)) return;
   convert_ingredients_to_text(caller);
@@ -100,7 +100,7 @@ void convert_ingredients_to_text(recipe& caller) {
         }
       }
     }
-    trace(9993, "transform") << to_string(inst) << end();
+    trace(103, "transform") << to_string(inst) << end();
     new_instructions.push_back(inst);
   }
   caller.steps.swap(new_instructions);
@@ -125,7 +125,7 @@ void convert_ingredient_to_text(reagent& r, vector<instruction>& out, const stri
     def.ingredients.push_back(r);
   }
   def.products.push_back(reagent(tmp_var));
-  trace(9993, "transform") << to_string(def) << end();
+  trace(103, "transform") << to_string(def) << end();
   out.push_back(def);
   r.clear();  // reclaim old memory
   r = reagent(tmp_var);

@@ -63,7 +63,7 @@ void run_current_routine() {
   while (should_continue_running(Current_routine)) {  // beware: may modify Current_routine
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index();  continue; }
-    trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
+    trace(Callstack_depth, "run") << to_string(current_instruction()) << end();
 //?     if (Foo) cerr << "run: " << to_string(current_instruction()) << '\n';
     if (get_or_insert(Memory, 0) != 0) {
       raise << "something wrote to location 0; this should never happen\n" << end();
@@ -112,6 +112,26 @@ void run_current_routine() {
   }
   stop_running_current_routine:;
 }
+
+//: Helpers for managing trace depths
+//:
+//: We're going to use trace depths primarily to segment code running at
+//: different frames of the call stack. This will make it easy for the trace
+//: browser to collapse over entire calls.
+//:
+//: The entire map of possible depths is as follows:
+//:
+//: Errors will be depth 0.
+//: Mu 'applications' will be able to use depths 1-99 as they like.
+//: Primitive statements will occupy 100 and up to Max_depth, organized by
+//: stack frames.
+:(before "End Globals")
+extern const int Initial_callstack_depth = 100;
+int Callstack_depth = Initial_callstack_depth;
+:(before "End Reset")
+Callstack_depth = Initial_callstack_depth;
+
+//: Other helpers for the VM.
 
 :(code)
 //: hook replaced in a later layer
@@ -255,7 +275,7 @@ void load_file_or_directory(string filename) {
     cerr << "no such file '" << filename << "'\n" << end();  // don't raise, just warn. just in case it's just a name for a scenario to run.
     return;
   }
-  trace(9990, "load") << "=== " << filename << end();
+  trace(2, "load") << "=== " << filename << end();
   load(fin);
   fin.close();
 }
@@ -306,7 +326,7 @@ vector<double> read_memory(reagent/*copy*/ x) {
   int size = size_of(x);
   for (int offset = 0;  offset < size;  ++offset) {
     double val = get_or_insert(Memory, x.value+offset);
-    trace("mem") << "location " << x.value+offset << " is " << no_scientific(val) << end();
+    trace(Callstack_depth+1, "mem") << "location " << x.value+offset << " is " << no_scientific(val) << end();
     result.push_back(val);
   }
   return result;
@@ -333,7 +353,7 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data) {
   // End write_memory(x) Special-cases
   for (int offset = 0;  offset < SIZE(data);  ++offset) {
     assert(x.value+offset > 0);
-    trace("mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
+    trace(Callstack_depth+1, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
 //?     if (Foo) cerr << "mem: storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << '\n';
     put(Memory, x.value+offset, data.at(offset));
   }
@@ -392,10 +412,7 @@ void run(const string& form) {
   vector<recipe_ordinal> tmp = load(form);
   transform_all();
   if (tmp.empty()) return;
-  if (trace_contains_errors()) {
-    if (Save_trace && Trace_stream) Trace_stream->save();
-    return;
-  }
+  if (trace_contains_errors()) return;
   // if a test defines main, it probably wants to start there regardless of
   // definition order
   if (contains_key(Recipe, get(Recipe_ordinal, "main")))

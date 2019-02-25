@@ -114,7 +114,7 @@ Transform.push_back(check_merge_calls);  // idempotent
 :(code)
 void check_merge_calls(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- type-check merge instructions in recipe " << caller.name << end();
+  trace(101, "transform") << "--- type-check merge instructions in recipe " << caller.name << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
     if (inst.name != "merge") continue;
@@ -145,7 +145,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
   state.data.push(merge_check_point(product, 0));
   while (true) {
     assert(!state.data.empty());
-    trace("transform") << ingredient_index << " vs " << SIZE(ingredients) << end();
+    trace(102, "transform") << ingredient_index << " vs " << SIZE(ingredients) << end();
     if (ingredient_index >= SIZE(ingredients)) {
       raise << maybe(caller.name) << "too few ingredients in '" << to_original_string(inst) << "'\n" << end();
       return;
@@ -161,7 +161,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
         if (state.data.top().container_element_index == 0 && types_coercible(container, inst.ingredients.at(ingredient_index)))
           return;
         const reagent& expected_ingredient = element_type(container.type, state.data.top().container_element_index);
-        trace("transform") << "checking container " << to_string(container) << " || " << to_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
+        trace(102, "transform") << "checking container " << to_string(container) << " || " << to_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
         // if the current element is the ingredient we expect, move on to the next element/ingredient
         if (types_coercible(expected_ingredient, ingredients.at(ingredient_index))) {
           ++ingredient_index;

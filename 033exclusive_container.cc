@@ -150,19 +150,19 @@ case MAYBE_CONVERT: {
   write_products = false;
   if (tag == static_cast<int>(get_or_insert(Memory, base_address))) {
     const reagent& variant = variant_type(base, tag);
-    trace("mem") << "storing 1 in location " << status.value << end();
+    trace(Callstack_depth+1, "mem") << "storing 1 in location " << status.value << end();
     put(Memory, status.value, 1);
     if (!is_dummy(product)) {
       // Write Memory in Successful MAYBE_CONVERT in Run
       for (int i = 0;  i < size_of(variant);  ++i) {
         double val = get_or_insert(Memory, base_address+/*skip tag*/1+i);
-        trace("mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
+        trace(Callstack_depth+1, "mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
         put(Memory, product.value+i, val);
       }
     }
   }
   else {
-    trace("mem") << "storing 0 in location " << status.value << end();
+    trace(Callstack_depth+1, "mem") << "storing 0 in location " << status.value << end();
     put(Memory, status.value, 0);
   }
   break;
@@ -305,7 +305,7 @@ $error: 0
 :(before "End check_merge_call Special-cases")
 case EXCLUSIVE_CONTAINER: {
   assert(state.data.top().container_element_index == 0);
-  trace("transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
+  trace(102, "transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
   // easy case: exact match
   if (types_strictly_match(container, inst.ingredients.at(ingredient_index)))
     return;
@@ -320,7 +320,7 @@ case EXCLUSIVE_CONTAINER: {
     return;
   }
   const reagent& variant = variant_type(container, ingredient.value);
-  trace("transform") << "tag: " << ingredient.value << end();
+  trace(102, "transform") << "tag: " << ingredient.value << end();
   // replace union with its variant
   state.data.pop();
   state.data.push(merge_check_point(variant, 0));

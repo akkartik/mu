@@ -132,11 +132,9 @@ case CALL_WITH_CONTINUATION_MARK: {
 case CALL_WITH_CONTINUATION_MARK: {
   // like call, but mark the current call as a 'base of continuation' call
   // before pushing the next one on it
-  if (Trace_stream) {
-    ++Trace_stream->callstack_depth;
-    trace("trace") << "delimited continuation; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
-    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
-  }
+  trace(Callstack_depth+1, "trace") << "delimited continuation; incrementing callstack depth to " << Callstack_depth << end();
+  ++Callstack_depth;
+  assert(Callstack_depth < Max_depth);
   instruction/*copy*/ caller_instruction = current_instruction();
   Current_routine->calls.front().continuation_mark_tag = current_instruction().ingredients.at(0).value;
   Current_routine->calls.push_front(call(ingredients.at(1).at(0)));
@@ -213,13 +211,11 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
       raise << maybe(current_recipe_name()) << "  " << get(Recipe, p->running_recipe).name << '\n' << end();
     break;
   }
-  trace("run") << "creating continuation " << Next_delimited_continuation_id << end();
+  trace(Callstack_depth+1, "run") << "creating continuation " << Next_delimited_continuation_id << end();
   put(Delimited_continuation, Next_delimited_continuation_id, delimited_continuation(Current_routine->calls.begin(), base));
   while (Current_routine->calls.begin() != base) {
-    if (Trace_stream) {
-      --Trace_stream->callstack_depth;
-      assert(Trace_stream->callstack_depth >= 0);
-    }
+    --Callstack_depth;
+    assert(Callstack_depth >= 0);
     Current_routine->calls.pop_front();
   }
   // return it as the result of the marked call
@@ -243,17 +239,15 @@ call_stack::iterator find_base_of_continuation(call_stack& c, int mark_tag) {
 if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   // copy multiple calls on to current call stack
   assert(scalar(ingredients.at(0)));
-  trace("run") << "calling continuation " << ingredients.at(0).at(0) << end();
+  trace(Callstack_depth+1, "run") << "calling continuation " << ingredients.at(0).at(0) << end();
   if (!contains_key(Delimited_continuation, ingredients.at(0).at(0)))
     raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
   const call_stack& new_frames = get(Delimited_continuation, ingredients.at(0).at(0)).frames;
   for (call_stack::const_reverse_iterator p = new_frames.rbegin(); p != new_frames.rend(); ++p)
     Current_routine->calls.push_front(*p);
-  if (Trace_stream) {
-    Trace_stream->callstack_depth += SIZE(new_frames);
-    trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
-    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
-  }
+  trace(Callstack_depth+1, "trace") << "calling delimited continuation; growing callstack depth to " << Callstack_depth+SIZE(new_frames) << end();
+  Callstack_depth += SIZE(new_frames);
+  assert(Callstack_depth < Max_depth);
   // no call housekeeping; continuations don't support next-ingredient
   copy(/*drop continuation*/++ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
   break;  // record results of resuming 'return-continuation-until-mark' instruction

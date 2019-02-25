@@ -89,13 +89,13 @@ case WAIT_FOR_RESET_THEN_SET: {
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_RESET_THEN_SET: {
   int loc = static_cast<int>(ingredients.at(0).at(0));
-  trace(9998, "run") << "wait: *" << loc << " = " << get_or_insert(Memory, loc) << end();
+  trace(Callstack_depth+1, "run") << "wait: *" << loc << " = " << get_or_insert(Memory, loc) << end();
   if (get_or_insert(Memory, loc) == 0) {
-    trace(9998, "run") << "location " << loc << " is already 0; setting" << end();
+    trace(Callstack_depth+1, "run") << "location " << loc << " is already 0; setting" << end();
     put(Memory, loc, 1);
     break;
   }
-  trace(9998, "run") << "waiting for location " << loc << " to reset" << end();
+  trace(Callstack_depth+1, "run") << "waiting for location " << loc << " to reset" << end();
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc;
   break;
@@ -121,7 +121,7 @@ case RESET: {
 case RESET: {
   int loc = static_cast<int>(ingredients.at(0).at(0));
   put(Memory, loc, 0);
-  trace(9998, "run") << "reset: *" << loc << " = " << get_or_insert(Memory, loc) << end();
+  trace(Callstack_depth+1, "run") << "reset: *" << loc << " = " << get_or_insert(Memory, loc) << end();
   break;
 }
 
@@ -132,7 +132,7 @@ for (int i = 0;  i < SIZE(Routines);  ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   int loc = Routines.at(i)->waiting_on_location;
   if (loc && get_or_insert(Memory, loc) == 0) {
-    trace("schedule") << "waking up routine " << Routines.at(i)->id << end();
+    trace(100, "schedule") << "waking up routine " << Routines.at(i)->id << end();
     put(Memory, loc, 1);
     Routines.at(i)->state = RUNNING;
     Routines.at(i)->waiting_on_location = 0;
@@ -212,7 +212,7 @@ case GET_LOCATION: {
   int result = base_address;
   for (int i = 0;  i < offset;  ++i)
     result += size_of(element_type(base.type, i));
-  trace(9998, "run") << "address to copy is " << result << end();
+  trace(Callstack_depth+1, "run") << "address to copy is " << result << end();
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -338,7 +338,7 @@ case WAIT_FOR_ROUTINE: {
   }
   Current_routine->state = WAITING;
   Current_routine->waiting_on_routine = ingredients.at(0).at(0);
-  trace(9998, "run") << "waiting for routine " << ingredients.at(0).at(0) << end();
+  trace(Callstack_depth+1, "run") << "waiting for routine " << ingredients.at(0).at(0) << end();
   break;
 }
 
@@ -356,7 +356,7 @@ for (int i = 0;  i < SIZE(Routines);  ++i) {
     const routine* waitee = Routines.at(j);
     if (waitee->id == id && waitee->state != RUNNING && waitee->state != WAITING) {
       // routine is COMPLETED or DISCONTINUED
-      trace("schedule") << "waking up routine " << waiter->id << end();
+      trace(100, "schedule") << "waking up routine " << waiter->id << end();
       waiter->state = RUNNING;
       waiter->waiting_on_routine = 0;
     }
@@ -500,7 +500,7 @@ case WAIT_FOR_ROUTINE_TO_BLOCK: {
   }
   Current_routine->state = WAITING;
   Current_routine->waiting_on_routine_to_block = ingredients.at(0).at(0);
-  trace(9998, "run") << "waiting for routine " << ingredients.at(0).at(0) << " to block" << end();
+  trace(Callstack_depth+1, "run") << "waiting for routine " << ingredients.at(0).at(0) << " to block" << end();
   break;
 }
 
@@ -516,7 +516,7 @@ for (int i = 0;  i < SIZE(Routines);  ++i) {
     const routine* waitee = Routines.at(j);
     if (waitee->id != id) continue;
     if (waitee->state != RUNNING || waitee->blocked) {
-      trace("schedule") << "waking up routine " << waiter->id << " because routine " << waitee->id << " is blocked" << end();
+      trace(100, "schedule") << "waking up routine " << waiter->id << " because routine " << waitee->id << " is blocked" << end();
       waiter->state = RUNNING;
       waiter->waiting_on_routine_to_block = 0;
     }

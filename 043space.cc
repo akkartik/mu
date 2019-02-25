@@ -264,7 +264,7 @@ void check_default_space(const recipe_ordinal r) {
   // End check_default_space Special-cases
   // assume recipes with only numeric addresses know what they're doing (usually tests)
   if (!contains_non_special_name(r)) return;
-  trace(9991, "transform") << "--- check that recipe " << caller.name << " sets default-space" << end();
+  trace(101, "transform") << "--- check that recipe " << caller.name << " sets default-space" << end();
   if (caller.steps.empty()) return;
   if (!starts_by_setting_default_space(caller))
     raise << caller.name << " does not seem to start with 'local-scope' or 'default-space'\n" << end();

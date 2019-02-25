@@ -23,7 +23,7 @@ uint8_t* effective_byte_address(uint8_t modrm) {
   uint8_t rm = modrm & 0x7;
   if (mod == 3) {
     // select an 8-bit register
-    trace(90, "run") << "r/m8 is " << rname_8bit(rm) << end();
+    trace(Callstack_depth+1, "run") << "r/m8 is " << rname_8bit(rm) << end();
     return reg_8bit(rm);
   }
   // the rest is as usual
@@ -58,12 +58,12 @@ f0 cc bb aa
 case 0x88: {  // copy r8 to r/m8
   const uint8_t modrm = next();
   const uint8_t rsrc = (modrm>>3)&0x7;
-  trace(90, "run") << "copy " << rname_8bit(rsrc) << " to r8/m8-at-r32" << end();
+  trace(Callstack_depth+1, "run") << "copy " << rname_8bit(rsrc) << " to r8/m8-at-r32" << end();
   // use unsigned to zero-extend 8-bit value to 32 bits
   uint8_t* dest = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
   const uint8_t* src = reg_8bit(rsrc);
   *dest = *src;
-  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
   break;
 }
 
@@ -91,14 +91,14 @@ ab ff ff ff  # 0xab with more data in following bytes
 case 0x8a: {  // copy r/m8 to r8
   const uint8_t modrm = next();
   const uint8_t rdest = (modrm>>3)&0x7;
-  trace(90, "run") << "copy r8/m8-at-r32 to " << rname_8bit(rdest) << end();
+  trace(Callstack_depth+1, "run") << "copy r8/m8-at-r32 to " << rname_8bit(rdest) << end();
   // use unsigned to zero-extend 8-bit value to 32 bits
   const uint8_t* src = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
   uint8_t* dest = reg_8bit(rdest);
-  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*src) << end();
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*src) << end();
   *dest = *src;
   const uint8_t rdest_32bit = rdest & 0x3;
-  trace(90, "run") << rname(rdest_32bit) << " now contains 0x" << HEXWORD << Reg[rdest_32bit].u << end();
+  trace(Callstack_depth+1, "run") << rname(rdest_32bit) << " now contains 0x" << HEXWORD << Reg[rdest_32bit].u << end();
   break;
 }
 
@@ -137,8 +137,8 @@ f0 cc bb aa
 case 0xc6: {  // copy imm8 to r/m8
   const uint8_t modrm = next();
   const uint8_t src = next();
-  trace(90, "run") << "copy imm8 to r8/m8-at-r32" << end();
-  trace(90, "run") << "imm8 is 0x" << HEXWORD << src << end();
+  trace(Callstack_depth+1, "run") << "copy imm8 to r8/m8-at-r32" << end();
+  trace(Callstack_depth+1, "run") << "imm8 is 0x" << HEXWORD << src << end();
   const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   if (subop != 0) {
     cerr << "unrecognized subop for opcode c6: " << NUM(subop) << " (only 0/copy currently implemented)\n";
@@ -147,6 +147,6 @@ case 0xc6: {  // copy imm8 to r/m8
   // use unsigned to zero-extend 8-bit value to 32 bits
   uint8_t* dest = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
   *dest = src;
-  trace(90, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
   break;
 }

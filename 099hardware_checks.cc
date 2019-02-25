@@ -35,7 +35,7 @@ void check_for_misuse_of_real_hardware(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   if (caller.name == "main") return;
   if (starts_with(caller.name, "scenario_")) return;
-  trace(9991, "transform") << "--- check if recipe " << caller.name << " has any dependency-injection mistakes" << end();
+  trace(101, "transform") << "--- check if recipe " << caller.name << " has any dependency-injection mistakes" << end();
   for (int index = 0;  index < SIZE(caller.steps);  ++index) {
     const instruction& inst = caller.steps.at(index);
     if (is_primitive(inst.operation)) continue;

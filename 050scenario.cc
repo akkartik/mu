@@ -225,7 +225,6 @@ void run_mu_scenario(const scenario& s) {
   if (!Hide_errors && trace_contains_errors() && !Scenario_testing_scenario)
     Passed = false;
   if (not_already_inside_test && Trace_stream) {
-    if (Save_trace) Trace_stream->save();
     delete Trace_stream;
     Trace_stream = NULL;
   }
@@ -423,7 +422,7 @@ void check_memory(const string& s) {
     double value = to_double(rhs);
     if (contains_key(locations_checked, address))
       raise << maybe(current_recipe_name()) << "duplicate expectation for location '" << address << "'\n" << end();
-    trace("run") << "checking location " << address << end();
+    trace(Callstack_depth+1, "run") << "checking location " << address << end();
     if (get_or_insert(Memory, address) != value) {
       if (!Hide_errors) cerr << '\n';
       raise << "F - " << maybe(current_recipe_name()) << "expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
@@ -469,7 +468,7 @@ void check_type(const string& lhs, istream& in) {
 }
 
 void check_mu_text(int start, const string& literal) {
-  trace("run") << "checking text length at " << start << end();
+  trace(Callstack_depth+1, "run") << "checking text length at " << start << end();
   int array_length = static_cast<int>(get_or_insert(Memory, start));
   if (array_length != SIZE(literal)) {
     if (!Hide_errors) cerr << '\n';
@@ -479,7 +478,7 @@ void check_mu_text(int start, const string& literal) {
   }
   int curr = start+1;  // now skip length
   for (int i = 0;  i < SIZE(literal);  ++i) {
-    trace("run") << "checking location " << curr+i << end();
+    trace(Callstack_depth+1, "run") << "checking location " << curr+i << end();
     if (get_or_insert(Memory, curr+i) != literal.at(i)) {
       if (!Hide_errors) cerr << '\n';
       raise << "F - " << maybe(current_recipe_name()) << "expected location " << (curr+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, curr+i)) << '\n' << end();
@@ -620,16 +619,18 @@ void check_trace(const string& expected) {
 vector<trace_line> parse_trace(const string& expected) {
   vector<string> buf = split(expected, "\n");
   vector<trace_line> result;
+  const string separator = ": ";
   for (int i = 0;  i < SIZE(buf);  ++i) {
     buf.at(i) = trim(buf.at(i));
     if (buf.at(i).empty()) continue;
-    int delim = buf.at(i).find(": ");
+    int delim = buf.at(i).find(separator);
     if (delim == -1) {
       raise << maybe(current_recipe_name()) << "lines in 'trace-should-contain' should be of the form <label>: <contents>. Both parts are required.\n" << end();
       result.clear();
       return result;
     }
-    result.push_back(trace_line(trim(buf.at(i).substr(0, delim)),  trim(buf.at(i).substr(delim+2))));
+    result.push_back(trace_line(/*contents*/  trim(buf.at(i).substr(delim+SIZE(separator)        )),
+                                /*label*/     trim(buf.at(i).substr(0,                      delim))));
   }
   return result;
 }

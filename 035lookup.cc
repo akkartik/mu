@@ -88,7 +88,7 @@ void lookup_memory(reagent& x) {
 void lookup_memory_core(reagent& x, bool check_for_null) {
   double address = x.value + /*skip alloc id in address*/1;
   double new_value = get_or_insert(Memory, address);
-  trace("mem") << "location " << address << " contains " << no_scientific(new_value) << end();
+  trace(Callstack_depth+1, "mem") << "location " << address << " contains " << no_scientific(new_value) << end();
   // check for null
   if (check_for_null && new_value == 0) {
     if (Current_routine) {

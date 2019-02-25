@@ -37,19 +37,17 @@ case RETURN: {
 :(before "End Primitive Recipe Implementations")
 case RETURN: {
   // Begin Return
-  if (Trace_stream) {
-    trace("trace") << current_instruction().name << ": decrementing callstack depth from " << Trace_stream->callstack_depth << end();
-    --Trace_stream->callstack_depth;
-    if (Trace_stream->callstack_depth < 0) {
-      Current_routine->calls.clear();
-      goto stop_running_current_routine;
-    }
+  trace(Callstack_depth+1, "trace") << current_instruction().name << ": decrementing callstack depth from " << Callstack_depth << end();
+  --Callstack_depth;
+  if (Callstack_depth < 0) {
+    Current_routine->calls.clear();
+    goto stop_running_current_routine;
   }
   Current_routine->calls.pop_front();
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
   for (int i = 0;  i < SIZE(ingredients);  ++i)
-    trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
+    trace(Callstack_depth+1, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
   // make return products available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
   // End Return

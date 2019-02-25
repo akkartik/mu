@@ -26,8 +26,8 @@
 05 0x0d0c0b0a/imm32
 Entry:
 05 0x0d0c0b0a/imm32
-+run: inst: 0x00000006
--run: inst: 0x00000001
++run: 0x00000006 opcode: 05
+-run: 0x00000001 opcode: 05
 
 :(before "End Globals")
 uint32_t Entry_address = 0;
@@ -97,7 +97,7 @@ loop:
 Transform.push_back(rewrite_labels);
 :(code)
 void rewrite_labels(program& p) {
-  trace(99, "transform") << "-- rewrite labels" << end();
+  trace(3, "transform") << "-- rewrite labels" << end();
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
   map<string, int32_t> byte_index;  // values are unsigned, but we're going to do subtractions on them so they need to fit in 31 bits

@@ -24,7 +24,7 @@ has_header = false;
 
 :(before "End Recipe Refinements")
 if (in.peek() != '[') {
-  trace("parse") << "recipe has a header; parsing" << end();
+  trace(101, "parse") << "recipe has a header; parsing" << end();
   load_recipe_header(in, result);
 }
 
@@ -42,7 +42,7 @@ void load_recipe_header(istream& in, recipe& result) {
       raise << "recipe " << result.name << " should say '->' and not '<-'\n" << end();
     if (s == "->") break;
     result.ingredients.push_back(reagent(s));
-    trace("parse") << "header ingredient: " << result.ingredients.back().original_string << end();
+    trace(101, "parse") << "header ingredient: " << result.ingredients.back().original_string << end();
     skip_whitespace_but_not_newline(in);
   }
   while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
@@ -53,7 +53,7 @@ void load_recipe_header(istream& in, recipe& result) {
       return;
     }
     result.products.push_back(reagent(s));
-    trace("parse") << "header product: " << result.products.back().original_string << end();
+    trace(101, "parse") << "header product: " << result.products.back().original_string << end();
     skip_whitespace_but_not_newline(in);
   }
   // End Load Recipe Header(result)
@@ -149,7 +149,7 @@ if (!result.has_header) {
   }
 }
 if (result.has_header) {
-  trace("parse") << "recipe " << result.name << " has a header" << end();
+  trace(101, "parse") << "recipe " << result.name << " has a header" << end();
 }
 
 //: Support type abbreviations in headers.
@@ -288,7 +288,7 @@ Transform.push_back(check_calls_against_header);  // idempotent
 :(code)
 void check_calls_against_header(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- type-check calls inside recipe " << caller.name << end();
+  trace(101, "transform") << "--- type-check calls inside recipe " << caller.name << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
     if (is_primitive(inst.operation)) continue;
@@ -332,7 +332,7 @@ Transform.push_back(check_return_instructions_against_header);  // idempotent
 void check_return_instructions_against_header(const recipe_ordinal r) {
   const recipe& caller_recipe = get(Recipe, r);
   if (!caller_recipe.has_header) return;
-  trace(9991, "transform") << "--- checking return instructions against header for " << caller_recipe.name << end();
+  trace(101, "transform") << "--- checking return instructions against header for " << caller_recipe.name << end();
   for (int i = 0;  i < SIZE(caller_recipe.steps);  ++i) {
     const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply" && inst.name != "return") continue;
@@ -403,7 +403,7 @@ Transform.push_back(check_header_ingredients);  // idempotent
 void check_header_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   caller_recipe.ingredient_index.clear();
-  trace(9991, "transform") << "--- checking return instructions against header for " << caller_recipe.name << end();
+  trace(101, "transform") << "--- checking return instructions against header for " << caller_recipe.name << end();
   for (int i = 0;  i < SIZE(caller_recipe.ingredients);  ++i) {
     if (caller_recipe.ingredients.at(i).type == NULL)
       raise << maybe(caller_recipe.name) << "ingredient '" << caller_recipe.ingredients.at(i).name << "' has no type\n" << end();
@@ -435,37 +435,37 @@ Transform.push_back(deduce_types_from_header);  // idempotent
 void deduce_types_from_header(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   if (caller_recipe.products.empty()) return;
-  trace(9991, "transform") << "--- deduce types from header for " << caller_recipe.name << end();
+  trace(101, "transform") << "--- deduce types from header for " << caller_recipe.name << end();
   map<string, const type_tree*> header_type;
   for (int i = 0;  i < SIZE(caller_recipe.ingredients);  ++i) {
     if (!caller_recipe.ingredients.at(i).type) continue;  // error handled elsewhere
     put(header_type, caller_recipe.ingredients.at(i).name, caller_recipe.ingredients.at(i).type);
-    trace(9993, "transform") << "type of " << caller_recipe.ingredients.at(i).name << " is " << names_to_string(caller_recipe.ingredients.at(i).type) << end();
+    trace(103, "transform") << "type of " << caller_recipe.ingredients.at(i).name << " is " << names_to_string(caller_recipe.ingredients.at(i).type) << end();
   }
   for (int i = 0;  i < SIZE(caller_recipe.products);  ++i) {
     if (!caller_recipe.products.at(i).type) continue;  // error handled elsewhere
     put(header_type, caller_recipe.products.at(i).name, caller_recipe.products.at(i).type);
-    trace(9993, "transform") << "type of " << caller_recipe.products.at(i).name << " is " << names_to_string(caller_recipe.products.at(i).type) << end();
+    trace(103, "transform") << "type of " << caller_recipe.products.at(i).name << " is " << names_to_string(caller_recipe.products.at(i).type) << end();
   }
   for (int i = 0;  i < SIZE(caller_recipe.steps);  ++i) {
     instruction& inst = caller_recipe.steps.at(i);
-    trace(9992, "transform") << "instruction: " << to_string(inst) << end();
+    trace(102, "transform") << "instruction: " << to_string(inst) << end();
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
       if (inst.ingredients.at(i).type) continue;
       if (header_type.find(inst.ingredients.at(i).name) == header_type.end())
         continue;
       if (!contains_key(header_type, inst.ingredients.at(i).name)) continue;  // error handled elsewhere
       inst.ingredients.at(i).type = new type_tree(*get(header_type, inst.ingredients.at(i).name));
-      trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << names_to_string(inst.ingredients.at(i).type) << end();
+      trace(103, "transform") << "type of " << inst.ingredients.at(i).name << " is " << names_to_string(inst.ingredients.at(i).type) << end();
     }
     for (int i = 0;  i < SIZE(inst.products);  ++i) {
-      trace(9993, "transform") << "  product: " << to_string(inst.products.at(i)) << end();
+      trace(103, "transform") << "  product: " << to_string(inst.products.at(i)) << end();
       if (inst.products.at(i).type) continue;
       if (header_type.find(inst.products.at(i).name) == header_type.end())
         continue;
       if (!contains_key(header_type, inst.products.at(i).name)) continue;  // error handled elsewhere
       inst.products.at(i).type = new type_tree(*get(header_type, inst.products.at(i).name));
-      trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << names_to_string(inst.products.at(i).type) << end();
+      trace(103, "transform") << "type of " << inst.products.at(i).name << " is " << names_to_string(inst.products.at(i).type) << end();
     }
   }
 }
@@ -491,7 +491,7 @@ Transform.push_back(fill_in_return_ingredients);  // idempotent
 :(code)
 void fill_in_return_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
-  trace(9991, "transform") << "--- fill in return ingredients from header for recipe " << caller_recipe.name << end();
+  trace(101, "transform") << "--- fill in return ingredients from header for recipe " << caller_recipe.name << end();
   if (!caller_recipe.has_header) return;
   for (int i = 0;  i < SIZE(caller_recipe.steps);  ++i) {
     instruction& inst = caller_recipe.steps.at(i);
@@ -624,7 +624,7 @@ Transform.push_back(check_recipe_header_constraints);
 void check_recipe_header_constraints(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   if (caller.name != "main") return;
-  trace(9992, "transform") << "check recipe header constraints for recipe " << caller.name << end();
+  trace(102, "transform") << "check recipe header constraints for recipe " << caller.name << end();
   if (!caller.has_header) return;
   reagent/*local*/ expected_ingredient("x:address:array:character");
   for (int i = 0; i < SIZE(caller.ingredients); ++i) {

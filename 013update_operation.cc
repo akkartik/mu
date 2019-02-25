@@ -6,7 +6,7 @@ Transform.push_back(update_instruction_operations);  // idempotent
 
 :(code)
 void update_instruction_operations(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- compute instruction operations for recipe " << get(Recipe, r).name << end();
+  trace(101, "transform") << "--- compute instruction operations for recipe " << get(Recipe, r).name << end();
   recipe& caller = get(Recipe, r);
 //?   cerr << "--- compute instruction operations for recipe " << caller.name << '\n';
   for (int index = 0;  index < SIZE(caller.steps);  ++index) {

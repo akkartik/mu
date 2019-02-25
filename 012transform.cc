@@ -44,7 +44,7 @@ void initialize_transforms() {
 }
 
 void transform_all() {
-  trace(9990, "transform") << "=== transform_all()" << end();
+  trace(100, "transform") << "=== transform_all()" << end();
   // Begin transform_all
   for (int t = 0;  t < SIZE(Transform);  ++t) {
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin();  p != Recipe.end();  ++p) {
@@ -72,7 +72,7 @@ int Num_calls_to_transform_all = 0;
 
 :(code)
 void parse_int_reagents() {
-  trace(9991, "transform") << "--- parsing any uninitialized reagents as integers" << end();
+  trace(101, "transform") << "--- parsing any uninitialized reagents as integers" << end();
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin();  p != Recipe.end();  ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;

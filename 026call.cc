@@ -60,11 +60,9 @@ struct routine {
 };
 :(code)
 routine::routine(recipe_ordinal r) {
-  if (Trace_stream) {
-    ++Trace_stream->callstack_depth;
-    trace("trace") << "new routine; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
-    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
-  }
+  ++Callstack_depth;
+  trace(Callstack_depth+1, "trace") << "new routine; incrementing callstack depth to " << Callstack_depth << end();
+  assert(Callstack_depth < Max_depth);
   calls.push_front(call(r));
   // End routine Constructor
 }
@@ -151,11 +149,9 @@ if (!contains_key(Recipe, inst.operation)) {
 default: {
   if (contains_key(Recipe, current_instruction().operation)) {  // error already raised in Checks above
     // not a primitive; look up the book of recipes
-    if (Trace_stream) {
-      ++Trace_stream->callstack_depth;
-      trace("trace") << "incrementing callstack depth to " << Trace_stream->callstack_depth << end();
-      assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
-    }
+    ++Callstack_depth;
+    trace(Callstack_depth+1, "trace") << "incrementing callstack depth to " << Callstack_depth << end();
+    assert(Callstack_depth < Max_depth);
     const call& caller_frame = current_call();
     Current_routine->calls.push_front(call(to_instruction(caller_frame).operation));
     finish_call_housekeeping(to_instruction(caller_frame), ingredients);
@@ -202,11 +198,9 @@ const vector<instruction>& routine::steps() const {
 // it, and the one below that, and so on
 while (current_step_index() >= SIZE(Current_routine->steps())) {
   // Falling Through End Of Recipe
-  if (Trace_stream) {
-    trace("trace") << "fall-through: exiting " << current_recipe_name() << "; decrementing callstack depth from " << Trace_stream->callstack_depth << end();
-    --Trace_stream->callstack_depth;
-    assert(Trace_stream->callstack_depth >= 0);
-  }
+  trace(Callstack_depth+1, "trace") << "fall-through: exiting " << current_recipe_name() << "; decrementing callstack depth from " << Callstack_depth << end();
+  --Callstack_depth;
+  assert(Callstack_depth >= 0);
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
   // Complete Call Fallthrough

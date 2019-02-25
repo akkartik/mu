@@ -344,7 +344,7 @@ void check_immutable_ingredients(const recipe_ordinal r) {
   //   b) we never call 'put' or 'put-index' on it, and
   //   c) any non-primitive recipe calls in the body aren't returning it as a product
   const recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- check mutability of ingredients in recipe " << caller.name << end();
+  trace(101, "transform") << "--- check mutability of ingredients in recipe " << caller.name << end();
   if (!caller.has_header) return;  // skip check for old-style recipes calling next-ingredient directly
   for (int i = 0;  i < SIZE(caller.ingredients);  ++i) {
     const reagent& current_ingredient = caller.ingredients.at(i);

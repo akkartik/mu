@@ -33,7 +33,7 @@ case JUMP: {
 case JUMP: {
   assert(current_instruction().ingredients.at(0).initialized);
   current_step_index() += ingredients.at(0).at(0)+1;
-  trace(9998, "run") << "jumping to instruction " << current_step_index() << end();
+  trace(Callstack_depth+1, "run") << "jumping to instruction " << current_step_index() << end();
   // skip rest of this instruction
   write_products = false;
   fall_through_to_next_instruction = false;
@@ -91,11 +91,11 @@ case JUMP_IF: {
 case JUMP_IF: {
   assert(current_instruction().ingredients.at(1).initialized);
   if (!scalar_ingredient(ingredients, 0)) {
-    trace(9998, "run") << "jump-if fell through" << end();
+    trace(Callstack_depth+1, "run") << "jump-if fell through" << end();
     break;
   }
   current_step_index() += ingredients.at(1).at(0)+1;
-  trace(9998, "run") << "jumping to instruction " << current_step_index() << end();
+  trace(Callstack_depth+1, "run") << "jumping to instruction " << current_step_index() << end();
   // skip rest of this instruction
   write_products = false;
   fall_through_to_next_instruction = false;
@@ -162,11 +162,11 @@ case JUMP_UNLESS: {
 case JUMP_UNLESS: {
   assert(current_instruction().ingredients.at(1).initialized);
   if (scalar_ingredient(ingredients, 0)) {
-    trace(9998, "run") << "jump-unless fell through" << end();
+    trace(Callstack_depth+1, "run") << "jump-unless fell through" << end();
     break;
   }
   current_step_index() += ingredients.at(1).at(0)+1;
-  trace(9998, "run") << "jumping to instruction " << current_step_index() << end();
+  trace(Callstack_depth+1, "run") << "jumping to instruction " << current_step_index() << end();
   // skip rest of this instruction
   write_products = false;
   fall_through_to_next_instruction = false;

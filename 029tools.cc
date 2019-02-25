@@ -169,20 +169,6 @@ case _CLEAR_TRACE: {
   break;
 }
 
-:(before "End Primitive Recipe Declarations")
-_SAVE_TRACE,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "$save-trace", _SAVE_TRACE);
-:(before "End Primitive Recipe Checks")
-case _SAVE_TRACE: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case _SAVE_TRACE: {
-  if (Save_trace) Trace_stream->save();
-  break;
-}
-
 //:: 'cheating' by using the host system
 
 :(before "End Primitive Recipe Declarations")
@@ -197,7 +183,7 @@ case _PRINT: {
 case _PRINT: {
   for (int i = 0;  i < SIZE(ingredients);  ++i) {
     if (is_literal(current_instruction().ingredients.at(i))) {
-      trace(9998, "run") << "$print: " << current_instruction().ingredients.at(i).name << end();
+      trace(Callstack_depth+1, "run") << "$print: " << current_instruction().ingredients.at(i).name << end();
       if (!has_property(current_instruction().ingredients.at(i), "newline")) {
         cout << current_instruction().ingredients.at(i).name;
       }
@@ -210,7 +196,7 @@ case _PRINT: {
     // End $print Special-cases
     else {
       for (int j = 0;  j < SIZE(ingredients.at(i));  ++j) {
-        trace(9998, "run") << "$print: " << ingredients.at(i).at(j) << end();
+        trace(Callstack_depth+1, "run") << "$print: " << ingredients.at(i).at(j) << end();
         if (j > 0) cout << " ";
         cout << no_scientific(ingredients.at(i).at(j));
       }

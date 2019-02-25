@@ -79,11 +79,9 @@ case CALL: {
 :(before "End Primitive Recipe Implementations")
 case CALL: {
   // Begin Call
-  if (Trace_stream) {
-    ++Trace_stream->callstack_depth;
-    trace("trace") << "indirect 'call': incrementing callstack depth to " << Trace_stream->callstack_depth << end();
-    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
-  }
+  trace(Callstack_depth+1, "trace") << "indirect 'call': incrementing callstack depth to " << Callstack_depth << end();
+  ++Callstack_depth;
+  assert(Callstack_depth < Max_depth);
   if (!ingredients.at(0).at(0)) {
     raise << maybe(current_recipe_name()) << "tried to call empty recipe in '" << to_string(current_instruction()) << "'" << end();
     break;
@@ -224,7 +222,7 @@ void resolve_indirect_ambiguous_call(const recipe_ordinal r, int index, instruct
 Transform.push_back(check_indirect_calls_against_header);  // idempotent
 :(code)
 void check_indirect_calls_against_header(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- type-check 'call' instructions inside recipe " << get(Recipe, r).name << end();
+  trace(101, "transform") << "--- type-check 'call' instructions inside recipe " << get(Recipe, r).name << end();
   const recipe& caller = get(Recipe, r);
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);

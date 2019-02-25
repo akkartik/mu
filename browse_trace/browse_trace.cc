@@ -1,105 +1,113 @@
-//: A debugging helper that lets you zoom in/out on a trace.
-//: Warning: this tool has zero automated tests.
-//:
-//: To try it out, first create an example trace:
-//:   mu --trace nqueens.mu
-//: Then to browse the trace, which was stored in a file called 'last_run':
-//:   mu browse-trace last_run
-//:
-//: You should now find yourself in a UI showing a subsequence of lines from
-//: the trace, each line starting with a numeric depth, and ending with a
-//: parenthetical count of trace lines hidden after it with greater depths.
-//:
-//: For example, this line:
-//:   2 app: line1 (30)
-//: indicates that it was logged with depth 2, and that 30 following lines
-//: have been hidden at a depth greater than 2.
-//:
-//: As an experiment, hidden counts of 1000 or more are in red to highlight
-//: where you might be particularly interested in expanding.
-//:
-//: The UI provides the following hotkeys:
-//:
-//:   `q` or `ctrl-c`: Quit.
-//:
-//:   `Enter`: 'Zoom into' this line. Expand some or all of the hidden lines
-//:   at the next higher level, updating parenthetical counts of hidden lines.
-//:
-//:   `Backspace`: 'Zoom out' on a line after zooming in, collapsing expanded
-//:   lines below by some series of <Enter> commands.
-//:
-//:   `j` or `down-arrow`: Move/scroll cursor down one line.
-//:   `k` or `up-arrow`: Move/scroll cursor up one line.
-//:   `J` or `ctrl-f` or `page-down`: Scroll cursor down one page.
-//:   `K` or `ctrl-b` or `page-up`: Scroll cursor up one page.
-//:   `h` or `left-arrow`: Scroll cursor left one character.
-//:   `l` or `right-arrow`: Scroll cursor right one character.
-//:   `H`: Scroll cursor left one screen-width.
-//:   `L`: Scroll cursor right one screen-width.
-//:
-//:   `g` or `home`: Move cursor to start of trace.
-//:   `G` or `end`: Move cursor to end of trace.
-//:
-//:   `t`: Move cursor to top line on screen.
-//:   `c`: Move cursor to center line on screen.
-//:   `b`: Move cursor to bottom line on screen.
-//:   `T`: Scroll line at cursor to top of screen.
-//:
-//:   `/`: Search forward for a pattern.
-//:   '?': Search backward for a pattern.
-//:   `n`: Repeat the previous '/' or '?'.
-//:   `N`: Repeat the previous '/' or '?' in the opposite direction.
-//:
-//:   After hitting `/`, a small editor on the bottom-most line supports the
-//:   following hotkeys:
-//:     ascii characters: add the key to the pattern.
-//:     `Enter`: search for the pattern.
-//:     `Esc` or `ctrl-c`: cancel the current search, setting the screen back
-//:       to its state before the search.
-//:     `left-arrow`: move cursor left.
-//:     `right-arrow`: move cursor right.
-//:     `ctrl-a` or `home`: move cursor to start of search pattern.
-//:     `ctrl-e` or `end`: move cursor to end of search pattern.
-//:     `ctrl-u`: clear search pattern before cursor
-//:     `ctrl-k`: clear search pattern at and after cursor
+// Warning: zero automated tests
 
-:(before "End Primitive Recipe Declarations")
-_BROWSE_TRACE,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "$browse-trace", _BROWSE_TRACE);
-:(before "End Primitive Recipe Checks")
-case _BROWSE_TRACE: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case _BROWSE_TRACE: {
-  start_trace_browser();
-  break;
-}
+// Includes
+#include "../termbox/termbox.h"
 
-//: browse a trace loaded from a file
-:(after "Commandline Parsing")
-if (argc == 3 && is_equal(argv[1], "browse-trace")) {
-  load_trace(argv[2]);
-  start_trace_browser();
-  return 0;
+#include <stdlib.h>
+#define SIZE(X) (assert((X).size() < (1LL<<(sizeof(int)*8-2))), static_cast<int>((X).size()))
+
+#include <assert.h>
+#include <iostream>
+using std::istream;
+using std::ostream;
+using std::iostream;
+using std::cin;
+using std::cout;
+using std::cerr;
+#include <iomanip>
+#include <string.h>
+#include <string>
+using std::string;
+#include <vector>
+using std::vector;
+#include <set>
+using std::set;
+#include <sstream>
+using std::ostringstream;
+#include <fstream>
+using std::ifstream;
+using std::ofstream;
+#include <map>
+using std::map;
+#include <utility>
+using std::pair;
+// End Includes
+
+// Types
+struct trace_line {
+  string contents;
+  string label;
+  int depth;  // 0 is 'sea level'; positive integers are progressively 'deeper' and lower level
+  trace_line(string c, string l, int d) {
+    contents = c;
+    label = l;
+    depth = d;
+  }
+};
+
+struct trace_stream {
+  vector<trace_line> past_lines;
+};
+
+enum search_direction { FORWARD, BACKWARD };
+// End Types
+
+// Function prototypes are auto-generated in the 'build*' scripts; define your
+// functions in any order. Just be sure to declare each function header all on
+// one line, ending with the '{'. Our auto-generation scripts are too minimal
+// and simple-minded to handle anything else.
+#include "function_list"  // by convention, files ending with '_list' are auto-generated
+
+// from http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map
+template<typename T> typename T::mapped_type& get(T& map, typename T::key_type const& key) {
+  typename T::iterator iter(map.find(key));
+  assert(iter != map.end());
+  return iter->second;
+}
+template<typename T> typename T::mapped_type const& get(const T& map, typename T::key_type const& key) {
+  typename T::const_iterator iter(map.find(key));
+  assert(iter != map.end());
+  return iter->second;
+}
+template<typename T> typename T::mapped_type const& put(T& map, typename T::key_type const& key, typename T::mapped_type const& value) {
+  // map[key] requires mapped_type to have a zero-arg (default) constructor
+  map.insert(std::make_pair(key, value)).first->second = value;
+  return value;
+}
+template<typename T> bool contains_key(T& map, typename T::key_type const& key) {
+  return map.find(key) != map.end();
+}
+template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::key_type const& key) {
+  return map[key];
 }
 
-:(before "End Globals")
+// Globals
+trace_stream* Trace_stream = NULL;
+
+ofstream Trace_file;
+int Display_row = 0;
+int Display_column = 0;
 set<int> Visible;
 int Top_of_screen = 0;
 int Left_of_screen = 0;
 int Last_printed_row = 0;
 map<int, int> Trace_index;  // screen row -> trace index
-string Current_search_pattern = "";
-:(before "End Types")
-enum search_direction { FORWARD, BACKWARD };
-:(before "End Globals")
-search_direction Current_search_direction = FORWARD;
 
-:(code)
-void start_trace_browser() {
-  if (!Trace_stream) return;
+string Current_search_pattern = "";
+search_direction Current_search_direction = FORWARD;
+// End Globals
+
+bool has_data(istream& in) {
+  return in && !in.eof();
+}
+
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    cerr << "Usage: browse_trace <trace file>\n";
+    return 1;
+  }
+  load_trace(argv[1]);
+  if (!Trace_stream) return 1;
   cerr << "computing min depth to display\n";
   int min_depth = 9999;
   for (int i = 0;  i < SIZE(Trace_stream->past_lines);  ++i) {
@@ -266,6 +274,7 @@ void start_trace_browser() {
     }
   }
   tb_shutdown();
+  return 0;
 }
 
 bool start_search_editor(search_direction dir) {
@@ -514,7 +523,7 @@ void load_trace(const char* filename) {
     if (*--label.end() == ':') label.erase(--label.end());
     string line;
     getline(tin, line);
-    Trace_stream->past_lines.push_back(trace_line(depth, label, line));
+    Trace_stream->past_lines.push_back(trace_line(line, label, depth));
   }
   cerr << "lines read: " << Trace_stream->past_lines.size() << '\n';
 }
@@ -525,4 +534,13 @@ int read_key() {
     tb_poll_event(&event);
   } while (event.type != TB_EVENT_KEY);
   return event.key ? event.key : event.ch;
+}
+
+void skip_whitespace_but_not_newline(istream& in) {
+  while (true) {
+    if (!has_data(in)) break;
+    else if (in.peek() == '\n') break;
+    else if (isspace(in.peek())) in.get();
+    else break;
+  }
 }

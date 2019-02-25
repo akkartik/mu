@@ -18,7 +18,7 @@
 case 0:  // indirect addressing
   switch (rm) {
   default:  // address in register
-    trace(90, "run") << "effective address is 0x" << HEXWORD << Reg[rm].u << " (" << rname(rm) << ")" << end();
+    trace(Callstack_depth+1, "run") << "effective address is 0x" << HEXWORD << Reg[rm].u << " (" << rname(rm) << ")" << end();
     addr = Reg[rm].u;
     break;
   // End Mod 0 Special-cases(addr)
@@ -47,7 +47,7 @@ put_new(Name, "03", "add rm32 to r32 (add)");
 case 0x03: {  // add r/m32 to r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "add r/m32 to " << rname(arg1) << end();
+  trace(Callstack_depth+1, "run") << "add r/m32 to " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(+, Reg[arg1].i, *arg2);
   break;
@@ -90,7 +90,7 @@ put_new(Name, "2b", "subtract rm32 from r32 (sub)");
 case 0x2b: {  // subtract r/m32 from r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "subtract r/m32 from " << rname(arg1) << end();
+  trace(Callstack_depth+1, "run") << "subtract r/m32 from " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(-, Reg[arg1].i, *arg2);
   break;
@@ -133,7 +133,7 @@ ff 00 00 00  # 0xff
 case 0x23: {  // and r/m32 with r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "and r/m32 with " << rname(arg1) << end();
+  trace(Callstack_depth+1, "run") << "and r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(&, Reg[arg1].u, *arg2);
   break;
@@ -176,7 +176,7 @@ put_new(Name, "0b", "r32 = bitwise OR of r32 with rm32 (or)");
 case 0x0b: {  // or r/m32 with r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "or r/m32 with " << rname(arg1) << end();
+  trace(Callstack_depth+1, "run") << "or r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
@@ -219,7 +219,7 @@ put_new(Name, "33", "r32 = bitwise XOR of r32 with rm32 (xor)");
 case 0x33: {  // xor r/m32 with r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "xor r/m32 with " << rname(arg1) << end();
+  trace(Callstack_depth+1, "run") << "xor r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
@@ -303,7 +303,7 @@ put_new(Name, "3b", "compare: set SF if r32 < rm32 (cmp)");
 case 0x3b: {  // set SF if r32 < r/m32
   const uint8_t modrm = next();
   const uint8_t reg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "compare r/m32 with " << rname(reg1) << end();
+  trace(Callstack_depth+1, "run") << "compare r/m32 with " << rname(reg1) << end();
   const int32_t arg1 = Reg[reg1].i;
   const int32_t* arg2 = effective_address(modrm);
   const int32_t tmp1 = arg1 - *arg2;
@@ -311,7 +311,7 @@ case 0x3b: {  // set SF if r32 < r/m32
   ZF = (tmp1 == 0);
   int64_t tmp2 = arg1 - *arg2;
   OF = (tmp1 != tmp2);
-  trace(90, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
   break;
 }
 
@@ -375,10 +375,10 @@ af 00 00 00  # 0xaf
 case 0x8b: {  // copy r32 to r/m32
   const uint8_t modrm = next();
   const uint8_t rdest = (modrm>>3)&0x7;
-  trace(90, "run") << "copy r/m32 to " << rname(rdest) << end();
+  trace(Callstack_depth+1, "run") << "copy r/m32 to " << rname(rdest) << end();
   const int32_t* src = effective_address(modrm);
   Reg[rdest].i = *src;
-  trace(90, "run") << "storing 0x" << HEXWORD << *src << end();
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *src << end();
   break;
 }
 
@@ -394,19 +394,19 @@ case 0x8b: {  // copy r32 to r/m32
   05                              00 00 00 02
 == 0x2000  # data segment
 08 00 00 00  # 8
-+run: inst: 0x00000001
++run: 0x00000001 opcode: ff
 +run: jump to r/m32
 +run: effective address is 0x00002000 (EAX)
 +run: jumping to 0x00000008
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Op ff Subops")
 case 4: {  // jump to r/m32
-  trace(90, "run") << "jump to r/m32" << end();
+  trace(Callstack_depth+1, "run") << "jump to r/m32" << end();
   const int32_t* arg2 = effective_address(modrm);
   EIP = *arg2;
-  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  trace(Callstack_depth+1, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   break;
 }
 
@@ -428,7 +428,7 @@ af 00 00 00  # 0xaf
 
 :(before "End Op ff Subops")
 case 6: {  // push r/m32 to stack
-  trace(90, "run") << "push r/m32" << end();
+  trace(Callstack_depth+1, "run") << "push r/m32" << end();
   const int32_t* val = effective_address(modrm);
   push(*val);
   break;
@@ -459,7 +459,7 @@ case 0x8f: {  // pop stack into r/m32
   const uint8_t subop = (modrm>>3)&0x7;
   switch (subop) {
     case 0: {
-      trace(90, "run") << "pop into r/m32" << end();
+      trace(Callstack_depth+1, "run") << "pop into r/m32" << end();
       int32_t* dest = effective_address(modrm);
       *dest = pop();
       break;
@@ -485,7 +485,7 @@ case 0x8f: {  // pop stack into r/m32
 :(before "End Mod 0 Special-cases(addr)")
 case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
   addr = next32();
-  trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (disp32)" << end();
+  trace(Callstack_depth+1, "run") << "effective address is 0x" << HEXWORD << addr << " (disp32)" << end();
   break;
 
 //:
@@ -509,13 +509,13 @@ case 1:  // indirect + disp8 addressing
   switch (rm) {
   default:
     addr = Reg[rm].u;
-    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(rm) << ")" << end();
+    trace(Callstack_depth+1, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(rm) << ")" << end();
     break;
   // End Mod 1 Special-cases(addr)
   }
   if (addr > 0) {
     addr += static_cast<int8_t>(next());
-    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding disp8)" << end();
+    trace(Callstack_depth+1, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding disp8)" << end();
   }
   break;
 
@@ -554,13 +554,13 @@ case 2:  // indirect + disp32 addressing
   switch (rm) {
   default:
     addr = Reg[rm].u;
-    trace(90, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(rm) << ")" << end();
+    trace(Callstack_depth+1, "run") << "effective address is initially 0x" << HEXWORD << addr << " (" << rname(rm) << ")" << end();
     break;
   // End Mod 2 Special-cases(addr)
   }
   if (addr > 0) {
     addr += next32();
-    trace(90, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding disp32)" << end();
+    trace(Callstack_depth+1, "run") << "effective address is 0x" << HEXWORD << addr << " (after adding disp32)" << end();
   }
   break;
 
@@ -596,7 +596,7 @@ put_new(Name, "8d", "copy address in rm32 into r32 (lea)");
 case 0x8d: {  // copy address of m32 to r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
-  trace(90, "run") << "copy address into " << rname(arg1) << end();
+  trace(Callstack_depth+1, "run") << "copy address into " << rname(arg1) << end();
   Reg[arg1].u = effective_address_number(modrm);
   break;
 }

@@ -50,7 +50,7 @@ void load_type_abbreviations(istream& in) {
     raise << "'type' conflict: '" << new_type_name << "' defined as both '" << names_to_string_without_quotes(get(Type_abbreviations, new_type_name)) << "' and '" << old << "'\n" << end();
     return;
   }
-  trace(9990, "type") << "alias " << new_type_name << " = " << old << end();
+  trace(100, "type") << "alias " << new_type_name << " = " << old << end();
   type_tree* old_type = new_type_tree(old);
   put(Type_abbreviations, new_type_name, old_type);
 }
@@ -168,17 +168,17 @@ void expand_type_abbreviations(const recipe_ordinal r) {
 }
 
 void expand_type_abbreviations(const recipe& caller) {
-  trace(9991, "transform") << "--- expand type abbreviations in recipe '" << caller.name << "'" << end();
+  trace(101, "transform") << "--- expand type abbreviations in recipe '" << caller.name << "'" << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
-    trace(9991, "transform") << "instruction '" << to_original_string(inst) << end();
+    trace(102, "transform") << "instruction '" << to_original_string(inst) << end();
     for (long int i = 0;  i < SIZE(inst.ingredients);  ++i) {
       expand_type_abbreviations(inst.ingredients.at(i).type);
-      trace(9992, "transform") << "ingredient type after expanding abbreviations: " << names_to_string(inst.ingredients.at(i).type) << end();
+      trace(102, "transform") << "ingredient type after expanding abbreviations: " << names_to_string(inst.ingredients.at(i).type) << end();
     }
     for (long int i = 0;  i < SIZE(inst.products);  ++i) {
       expand_type_abbreviations(inst.products.at(i).type);
-      trace(9992, "transform") << "product type after expanding abbreviations: " << names_to_string(inst.products.at(i).type) << end();
+      trace(102, "transform") << "product type after expanding abbreviations: " << names_to_string(inst.products.at(i).type) << end();
     }
   }
   // End Expand Type Abbreviations(caller)

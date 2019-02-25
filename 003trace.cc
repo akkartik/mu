@@ -13,30 +13,31 @@
 //: longer valid. In both cases you end up having to reorganize code as well as
 //: tests, an error-prone activity.
 //:
-//: In response, this layer introduces the notion of *domain-driven* testing.
-//: We focus on the domain of inputs the whole program needs to handle rather
-//: than the correctness of individual functions. All tests invoke the program
-//: in a single way: by calling run() with some input. As the program operates
-//: on the input, it traces out a list of _facts_ deduced about the domain:
+//: In response, this layer introduces the notion of domain-driven *white-box*
+//: testing. We focus on the domain of inputs the whole program needs to
+//: handle rather than the correctness of individual functions. All white-box
+//: tests (we call them 'scenarios') invoke the program in a single way: by
+//: calling run() with some input. As the program operates on the input, it
+//: traces out a list of _facts_ deduced about the domain:
 //:   trace("label") << "fact 1: " << val;
 //:
-//: Tests can now check these facts:
+//: Scenarios can now check these facts:
 //:   :(scenario foo)
 //:   34  # call run() with this input
 //:   +label: fact 1: 34  # 'run' should have deduced this fact
 //:   -label: fact 1: 35  # the trace should not contain such a fact
 //:
 //: Since we never call anything but the run() function directly, we never have
-//: to rewrite the tests when we reorganize the internals of the program. We
+//: to rewrite the scenarios when we reorganize the internals of the program. We
 //: just have to make sure our rewrite deduces the same facts about the domain,
 //: and that's something we're going to have to do anyway.
 //:
 //: To avoid the combinatorial explosion of integration tests, each layer
-//: mainly logs facts to the trace with a common *label*. All tests in a layer
-//: tend to check facts with this label. Validating the facts logged with a
-//: specific label is like calling functions of that layer directly.
+//: mainly logs facts to the trace with a common *label*. All scenarios in a
+//: layer tend to check facts with this label. Validating the facts logged
+//: with a specific label is like calling functions of that layer directly.
 //:
-//: To build robust tests, trace facts about your domain rather than details of
+//: To build robust scenarios, trace facts about your domain rather than details of
 //: how you computed them.
 //:
 //: More details: http://akkartik.name/blog/tracing-tests
@@ -44,159 +45,188 @@
 //: ---
 //:
 //: Between layers and domain-driven testing, programming starts to look like a
-//: fundamentally different activity. Instead of a) superficial, b) local rules
-//: on c) code [like say http://blog.bbv.ch/2013/06/05/clean-code-cheat-sheet],
-//: we allow programmers to engage with the a) deep, b) global structure of the
-//: c) domain. If you can systematically track discontinuities in the domain,
-//: you don't care if the code used gotos as long as it passed the tests. If
-//: tests become more robust to run it becomes easier to try out radically
-//: different implementations for the same program. If code is super-easy to
-//: rewrite, it becomes less important what indentation style it uses, or that
-//: the objects are appropriately encapsulated, or that the functions are
-//: referentially transparent.
+//: fundamentally different activity. Instead of focusing on a) superficial,
+//: b) local rules on c) code [like say http://blog.bbv.ch/2013/06/05/clean-code-cheat-sheet],
+//: we allow programmers to engage with the a) deep, b) global structure of
+//: the c) domain. If you can systematically track discontinuities in the
+//: domain, you don't care if the code used gotos as long as it passed all
+//: scenarios. If scenarios become more robust to run, it becomes easier to
+//: try out radically different implementations for the same program. If code
+//: is super-easy to rewrite, it becomes less important what indentation style
+//: it uses, or that the objects are appropriately encapsulated, or that the
+//: functions are referentially transparent.
 //:
 //: Instead of plumbing, programming becomes building and gradually refining a
-//: map of the environment the program must operate under. Whether a program is
-//: 'correct' at a given point in time is a red herring; what matters is
-//: avoiding regression by monotonically nailing down the more 'eventful' parts
-//: of the terrain. It helps readers new and old, and rewards curiosity, to
-//: organize large programs in self-similar hierarchies of example scenarios
+//: map of the environment the program must operate under. Whether a program
+//: is 'correct' at a given point in time is a red herring; what matters is
+//: avoiding regression by monotonically nailing down the more 'eventful'
+//: parts of the terrain. It helps readers new and old, and rewards curiosity,
+//: to organize large programs in self-similar hierarchies of example scenarios
 //: colocated with the code that makes them work.
 //:
 //:   "Programming properly should be regarded as an activity by which
 //:   programmers form a mental model, rather than as production of a program."
 //:   -- Peter Naur (http://alistair.cockburn.us/ASD+book+extract%3A+%22Naur,+Ehn,+Musashi%22)
 
-:(before "End Types")
-struct trace_line {
-  int depth;  // optional field just to help browse traces later
-  string label;
-  string contents;
-  trace_line(string l, string c) :depth(0), label(l), contents(c) {}
-  trace_line(int d, string l, string c) :depth(d), label(l), contents(c) {}
-};
+//:: == Core data structures
 
-//: Support for tracing an entire run.
-//: Traces can have a lot of overhead, so only turn them on when asked.
-:(before "End Commandline Options(*arg)")
-else if (is_equal(*arg, "--trace")) {
-  Save_trace = true;
-}
-:(before "End Commandline Parsing")
-if (Save_trace) {
-  cerr << "initializing trace\n";
-  Trace_stream = new trace_stream;
-}
-:(code)
-void cleanup_main() {
-  if (!Trace_stream) return;
-  if (Save_trace)
-    Trace_stream->save();
-  delete Trace_stream;
-  Trace_stream = NULL;
-}
-:(before "End One-time Setup")
-atexit(cleanup_main);
+:(before "End Globals")
+trace_stream* Trace_stream = NULL;
 
 :(before "End Types")
-// Pre-define some global constants that trace_stream needs to know about.
-// Since they're in the Types section, they'll be included in any cleaved
-// compilation units. So no extern linkage.
-const int Max_depth = 9999;
-const int Error_depth = 0;  // definitely always print errors
-const int App_depth = 2;  // temporarily where all Mu code will trace to
-
 struct trace_stream {
   vector<trace_line> past_lines;
-  // accumulator for current line
-  ostringstream* curr_stream;
-  string curr_label;
-  int curr_depth;
-  int callstack_depth;
-  int collect_depth;
-  ofstream null_stream;  // never opens a file, so writes silently fail
-  trace_stream() :curr_stream(NULL), curr_depth(Max_depth), callstack_depth(0), collect_depth(Max_depth) {}
-  ~trace_stream() { if (curr_stream) delete curr_stream; }
+  // End trace_stream Fields
 
-  ostream& stream(string label) {
-    return stream(Max_depth, label);
+  trace_stream() {
+    // End trace_stream Constructor
   }
-
-  ostream& stream(int depth, string label) {
-    if (depth > collect_depth) return null_stream;
-    curr_stream = new ostringstream;
-    curr_label = label;
-    curr_depth = depth;
-    return *curr_stream;
+  ~trace_stream() {
+    // End trace_stream Destructor
   }
-
-  void save() {
-    cerr << "saving trace to 'last_run'\n";
-    ofstream fout("last_run");
-    fout << readable_contents("");
-    fout.close();
-  }
-
-  // be sure to call this before messing with curr_stream or curr_label
-  void newline();
-  // useful for debugging
-  string readable_contents(string label);  // empty label = show everything
+  // End trace_stream Methods
 };
 
+//:: == Adding to the trace
+
+//: Top-level method is trace() which can be used like an ostream. Usage:
+//:   trace(depth, label) << ... << end();
+//: Don't forget the 'end()' to actually append to the trace.
+:(before "End Includes")
+// No brackets around the expansion so that it prints nothing if Trace_stream
+// isn't initialized.
+#define trace(...)  !Trace_stream ? cerr : Trace_stream->stream(__VA_ARGS__)
+
+:(before "End trace_stream Fields")
+// accumulator for current trace_line
+ostringstream* curr_stream;
+string curr_label;
+int curr_depth;
+// other stuff
+int collect_depth;  // avoid tracing lower levels for speed
+ofstream null_stream;  // never opened, so writes to it silently fail
+
+//: Some constants.
+:(before "struct trace_stream")  // include constants in all cleaved compilation units
+const int Max_depth = 9999;
+// Most important traces are printed to the screen by default
+const int Error_depth = 0;
+:(before "End Globals")
+int Hide_errors = false;  // if set, don't print errors to screen
+:(before "End trace_stream Constructor")
+curr_stream = NULL;
+curr_depth = Max_depth;
+collect_depth = Max_depth;
+:(before "End Reset")
+Hide_errors = false;
+
+:(before "struct trace_stream")
+struct trace_line {
+  string contents;
+  string label;
+  int depth;  // 0 is 'sea level'; positive integers are progressively 'deeper' and lower level
+  trace_line(string c, string l) {
+    contents = c;
+    label = l;
+    depth = 0;
+  }
+  trace_line(string c, string l, int d) {
+    contents = c;
+    label = l;
+    depth = d;
+  }
+};
+
+//: Starting a new trace line.
+:(before "End trace_stream Methods")
+ostream& stream(string label) {
+  return stream(Max_depth, label);
+}
+
+ostream& stream(int depth, string label) {
+  if (depth > collect_depth) return null_stream;
+  curr_stream = new ostringstream;
+  curr_label = label;
+  curr_depth = depth;
+  return *curr_stream;
+}
+
+//: End of a trace line; append it to the trace.
+:(before "End Types")
+struct end {};
+:(code)
+ostream& operator<<(ostream& os, end /*unused*/) {
+  if (Trace_stream) Trace_stream->newline();
+  return os;
+}
+
+:(before "End trace_stream Methods")
+void newline();
 :(code)
 void trace_stream::newline() {
   if (!curr_stream) return;
   string curr_contents = curr_stream->str();
   if (!curr_contents.empty()) {
-    past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
-    if ((!Hide_errors && curr_label == "error")
-        || Dump_trace
-        || (!Dump_label.empty() && curr_label == Dump_label))
-      cerr << curr_label << ": " << curr_contents << '\n';
+    past_lines.push_back(trace_line(curr_contents, trim(curr_label), curr_depth));  // preserve indent in contents
+    // maybe incrementally dump trace
+    trace_line& t = past_lines.back();
+    if (!Hide_errors && curr_depth == Error_depth) {
+      cerr       << std::setw(4) << t.depth << ' ' << t.label << ": " << t.contents << '\n';
+    }
+    // End trace Commit
   }
+
+  // clean up
   delete curr_stream;
   curr_stream = NULL;
   curr_label.clear();
   curr_depth = Max_depth;
 }
 
-string trace_stream::readable_contents(string label) {
-  ostringstream output;
-  label = trim(label);
-  for (vector<trace_line>::iterator p = past_lines.begin();  p != past_lines.end();  ++p)
-    if (label.empty() || label == p->label)
-      output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
-  return output.str();
-}
-
-:(before "End Globals")
-trace_stream* Trace_stream = NULL;
-int Trace_errors = 0;  // used only when Trace_stream is NULL
-
-:(before "End Globals")
-bool Hide_errors = false;  // if set, don't print even error trace lines to screen
-bool Dump_trace = false;  // if set, print trace lines to screen
-string Dump_label = "";  // if set, print trace lines matching a single label to screen
-:(before "End Reset")
-Hide_errors = false;
-Dump_trace = false;  // toggle this to print traces to screen as they are emitted
-Dump_label = "";
+//:: == Initializing the trace in scenarios
 
 :(before "End Includes")
-#define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
+#define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
+:(before "End Test Setup")
+START_TRACING_UNTIL_END_OF_SCOPE
 
-// Top-level helper. IMPORTANT: can't nest
-#define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
+//: Trace_stream is a resource, lease_tracer uses RAII to manage it.
+:(before "End Types")
+struct lease_tracer {
+  lease_tracer();
+  ~lease_tracer();
+};
+:(code)
+lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
+lease_tracer::~lease_tracer() {
+  delete Trace_stream;
+  Trace_stream = NULL;
+}
 
-// Just for debugging; 'git log' should never show any calls to 'dbg'.
-#define dbg trace(0, "a")
-#define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
+//:: == Errors using traces
 
-// Errors are a special layer.
+:(before "End Includes")
 #define raise  (!Trace_stream ? (scroll_to_bottom_and_close_console(),++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+
+:(before "End Globals")
+int Trace_errors = 0;  // used only when Trace_stream is NULL
+
+// Fail scenarios that displayed (unexpected) errors.
+// Expected errors should always be hidden and silently checked for.
+:(before "End Test Teardown")
+if (Passed && !Hide_errors && trace_contains_errors()) {
+  Passed = false;
+}
+:(code)
+bool trace_contains_errors() {
+  return Trace_errors > 0 || trace_count("error") > 0;
+}
+
+:(before "End Includes")
 // If we aren't yet sure how to deal with some corner case, use assert_for_now
 // to indicate that it isn't an inviolable invariant.
 #define assert_for_now assert
+#define raise_for_now raise
 
 //: Automatically close the console in some situations.
 :(before "End One-time Setup")
@@ -209,57 +239,30 @@ void scroll_to_bottom_and_close_console() {
   cout << "\r\n";
   tb_shutdown();
 }
-
-// Inside tests, fail any tests that displayed (unexpected) errors.
-// Expected errors in tests should always be hidden and silently checked for.
-:(before "End Test Teardown")
-if (Passed && !Hide_errors && trace_contains_errors()) {
-  Passed = false;
-}
-:(code)
-bool trace_contains_errors() {
-  return Trace_errors > 0 || trace_count("error") > 0;
-}
-
-:(before "End Types")
-struct end {};
-:(code)
-ostream& operator<<(ostream& os, end /*unused*/) {
-  if (Trace_stream) Trace_stream->newline();
-  return os;
-}
-
-:(before "End Globals")
-bool Save_trace = false;  // if set, write out trace to disk
-
-// Trace_stream is a resource, lease_tracer uses RAII to manage it.
-:(before "End Types")
-struct lease_tracer {
-  lease_tracer();
-  ~lease_tracer();
-};
-:(code)
-lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
-lease_tracer::~lease_tracer() {
-  if (Save_trace) Trace_stream->save();
-  delete Trace_stream, Trace_stream = NULL;
-}
 :(before "End Includes")
-#define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
-:(before "End Test Setup")
-START_TRACING_UNTIL_END_OF_SCOPE
+#include "termbox/termbox.h"
+
+//:: == Other assertions on traces
+//: Primitives:
+//:   - CHECK_TRACE_CONTENTS(lines)
+//:     Assert that the trace contains the given lines (separated by newlines)
+//:     in order. There can be other intervening lines between them.
+//:   - CHECK_TRACE_DOESNT_CONTAIN(line)
+//:   - CHECK_TRACE_DOESNT_CONTAIN(label, contents)
+//:     Assert that the trace doesn't contain the given (single) line.
+//:   - CHECK_TRACE_COUNT(label, count)
+//:     Assert that the trace contains exactly 'count' lines with the given
+//:     'label'.
+//:   - CHECK_TRACE_CONTAINS_ERRORS()
+//:   - CHECK_TRACE_DOESNT_CONTAIN_ERRORS()
+//:   - trace_count_prefix(label, prefix)
+//:     Count the number of trace lines with the given 'label' that start with
+//:     the given 'prefix'.
 
 :(before "End Includes")
 #define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
-#define CHECK_TRACE_CONTAINS_ERRORS()  CHECK(trace_contains_errors())
-#define CHECK_TRACE_DOESNT_CONTAIN_ERRORS() \
-  if (Passed && trace_contains_errors()) { \
-    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
-    DUMP("error"); \
-    Passed = false; \
-    return; \
-  }
+#define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))
 
 #define CHECK_TRACE_COUNT(label, count) \
   if (Passed && trace_count(label) != (count)) { \
@@ -270,7 +273,17 @@ START_TRACING_UNTIL_END_OF_SCOPE
     return;  /* Currently we stop at the very first failure. */ \
   }
 
-#define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))
+#define CHECK_TRACE_CONTAINS_ERRORS()  CHECK(trace_contains_errors())
+#define CHECK_TRACE_DOESNT_CONTAIN_ERRORS() \
+  if (Passed && trace_contains_errors()) { \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
+    DUMP("error"); \
+    Passed = false; \
+    return; \
+  }
+
+// Allow scenarios to ignore trace lines generated during setup.
+#define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream
 
 :(code)
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {
@@ -305,25 +318,13 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   return false;
 }
 
-void split_label_contents(const string& s, string* label, string* contents) {
-  static const string delim(": ");
-  size_t pos = s.find(delim);
-  if (pos == string::npos) {
-    *label = "";
-    *contents = trim(s);
+bool trace_doesnt_contain(string expected) {
+  vector<string> tmp = split_first(expected, ": ");
+  if (SIZE(tmp) == 1) {
+    raise << expected << ": missing label or contents in trace line\n" << end();
+    assert(false);
   }
-  else {
-    *label = trim(s.substr(0, pos));
-    *contents = trim(s.substr(pos+SIZE(delim)));
-  }
-}
-
-bool line_exists_anywhere(const string& label, const string& contents) {
-  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
-    if (label != p->label) continue;
-    if (contents == trim(p->contents)) return true;
-  }
-  return false;
+  return trace_count(tmp.at(0), tmp.at(1)) == 0;
 }
 
 int trace_count(string label) {
@@ -354,17 +355,25 @@ int trace_count_prefix(string label, string prefix) {
   return result;
 }
 
-bool trace_doesnt_contain(string label, string line) {
-  return trace_count(label, line) == 0;
+void split_label_contents(const string& s, string* label, string* contents) {
+  static const string delim(": ");
+  size_t pos = s.find(delim);
+  if (pos == string::npos) {
+    *label = "";
+    *contents = trim(s);
+  }
+  else {
+    *label = trim(s.substr(0, pos));
+    *contents = trim(s.substr(pos+SIZE(delim)));
+  }
 }
 
-bool trace_doesnt_contain(string expected) {
-  vector<string> tmp = split_first(expected, ": ");
-  if (SIZE(tmp) == 1) {
-    raise << expected << ": missing label or contents in trace line\n" << end();
-    assert(false);
+bool line_exists_anywhere(const string& label, const string& contents) {
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
+    if (label != p->label) continue;
+    if (contents == trim(p->contents)) return true;
   }
-  return trace_doesnt_contain(tmp.at(0), tmp.at(1));
+  return false;
 }
 
 vector<string> split(string s, string delim) {
@@ -391,6 +400,54 @@ vector<string> split_first(string s, string delim) {
   return result;
 }
 
+//:: == Helpers for debugging using traces
+
+:(before "End Includes")
+// To debug why a scenario is failing, dump its trace using '?'.
+#define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
+
+// To add temporary prints to the trace, use 'dbg'.
+// `git log` should never show any calls to 'dbg'.
+#define dbg trace(0, "a")
+
+//: Dump the entire trace to file where it can be browsed offline.
+//: Dump the trace as it happens; that way you get something even if the
+//: program crashes.
+
+:(before "End Globals")
+ofstream Trace_file;
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--trace")) {
+  Trace_stream = new trace_stream;
+  cerr << "saving trace to 'last_run'\n";
+  Trace_file.open("last_run");
+}
+:(before "End trace Commit")
+if (Trace_file) {
+  Trace_file << std::setw(4) << t.depth << ' ' << t.label << ": " << t.contents << '\n';
+}
+:(before "End One-time Setup")
+atexit(cleanup_main);
+:(code)
+void cleanup_main() {
+  if (Trace_file) Trace_file.close();
+  // End cleanup_main
+}
+
+:(before "End trace_stream Methods")
+string readable_contents(string label) {
+  string trim(const string& s);  // prototype
+  ostringstream output;
+  label = trim(label);
+  for (vector<trace_line>::iterator p = past_lines.begin();  p != past_lines.end();  ++p)
+    if (label.empty() || label == p->label)
+      output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
+  return output.str();
+}
+
+//: Miscellaneous helpers.
+
+:(code)
 string trim(const string& s) {
   string::const_iterator first = s.begin();
   while (first != s.end() && isspace(*first))
@@ -419,19 +476,3 @@ using std::ostringstream;
 #include <fstream>
 using std::ifstream;
 using std::ofstream;
-
-#include "termbox/termbox.h"
-
-:(before "End Globals")
-//: In future layers we'll use the depth field as follows:
-//:
-//: Errors will be depth 0.
-//: Mu 'applications' will be able to use depths 1-100 as they like.
-//: Primitive statements will occupy 101-9989
-extern const int Initial_callstack_depth = 101;
-extern const int Max_callstack_depth = 9989;
-//: Finally, details of primitive Mu statements will occupy depth 9990-9999
-//: (more on that later as well)
-//:
-//: This framework should help us hide some details at each level, mixing
-//: static ideas like layers with the dynamic notion of call-stack depth.

@@ -27,7 +27,7 @@ check_operand_bounds(code);
 if (trace_contains_errors()) return;
 :(code)
 void check_operand_bounds(const segment& code) {
-  trace(99, "transform") << "-- check operand bounds" << end();
+  trace(3, "transform") << "-- check operand bounds" << end();
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     const line& inst = code.lines.at(i);
     for (int j = first_operand(inst);  j < SIZE(inst.words);  ++j)

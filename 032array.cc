@@ -57,10 +57,10 @@ case CREATE_ARRAY: {
     array_length_from_type = array_length_from_type->left;
   int array_length = to_integer(array_length_from_type->name);
   // initialize array length, so that size_of will work
-  trace("mem") << "storing " << array_length << " in location " << base_address << end();
+  trace(Callstack_depth+1, "mem") << "storing " << array_length << " in location " << base_address << end();
   put(Memory, base_address, array_length);  // in array elements
   int size = size_of(product);  // in locations
-  trace(9998, "run") << "creating array from " << size << " locations" << end();
+  trace(Callstack_depth+1, "run") << "creating array from " << size << " locations" << end();
   // initialize array
   for (int i = 1;  i <= size_of(product);  ++i)
     put(Memory, base_address+i, 0);
@@ -274,7 +274,7 @@ case INDEX: {
   reagent/*copy*/ base = current_instruction().ingredients.at(0);
   // Update INDEX base in Run
   int base_address = base.value;
-  trace(9998, "run") << "base address is " << base_address << end();
+  trace(Callstack_depth+1, "run") << "base address is " << base_address << end();
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
@@ -288,8 +288,8 @@ case INDEX: {
   }
   reagent/*local*/ element(copy_array_element(base.type));
   element.set_value(base_address + /*skip length*/1 + index_val.at(0)*size_of(element.type));
-  trace(9998, "run") << "address to copy is " << element.value << end();
-  trace(9998, "run") << "its type is " << to_string(element.type) << end();
+  trace(Callstack_depth+1, "run") << "address to copy is " << element.value << end();
+  trace(Callstack_depth+1, "run") << "its type is " << to_string(element.type) << end();
   // Read element
   products.push_back(read_memory(element));
   break;
@@ -451,14 +451,14 @@ case PUT_INDEX: {
     break;
   }
   int address = base_address + /*skip length*/1 + index_val.at(0)*size_of(array_element(base.type));
-  trace(9998, "run") << "address to copy to is " << address << end();
+  trace(Callstack_depth+1, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire array
   write_products = false;
   vector<double> value = read_memory(current_instruction().ingredients.at(2));
   // Write Memory in PUT_INDEX in Run
   for (int i = 0;  i < SIZE(value);  ++i) {
-    trace("mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
+    trace(Callstack_depth+1, "mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
     put(Memory, address+i, value.at(i));
   }
   break;

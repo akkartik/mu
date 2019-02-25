@@ -42,7 +42,7 @@ Transform.push_back(collect_surrounding_spaces);  // idempotent
 
 :(code)
 void collect_surrounding_spaces(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << end();
+  trace(101, "transform") << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << end();
   for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.is_label) continue;
@@ -69,7 +69,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         raise << "recipe '" << get(Recipe, r).name << "' can have only one 'surrounding' recipe but has '" << get(Recipe, get(Surrounding_space, r)).name << "' and '" << surrounding_recipe_name << "'\n" << end();
         continue;
       }
-      trace(9993, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();
+      trace(103, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();
       if (!contains_key(Recipe_ordinal, surrounding_recipe_name)) {
         raise << "can't find recipe providing surrounding space for '" << get(Recipe, r).name << "'; looking for '" << surrounding_recipe_name << "'\n" << end();
         continue;

@@ -208,24 +208,24 @@ void construct_resources_object(const map<string, string>& contents) {
   for (map<string, string>::const_iterator p = contents.begin();  p != contents.end();  ++p) {
     ++curr;  // skip alloc id of resource.name
     put(Memory, curr, new_mu_text(p->first));
-    trace("mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
+    trace(Callstack_depth+1, "mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
     ++curr;
     ++curr;  // skip alloc id of resource.contents
     put(Memory, curr, new_mu_text(p->second));
-    trace("mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
+    trace(Callstack_depth+1, "mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
     ++curr;
   }
   curr = resources_data_address + /*skip alloc id of resources.data*/1;
   put(Memory, curr, SIZE(contents));  // array length
-  trace("mem") << "storing resources size " << get(Memory, curr) << " in location " << curr << end();
+  trace(Callstack_depth+1, "mem") << "storing resources size " << get(Memory, curr) << " in location " << curr << end();
   // wrap the resources data in a 'resources' object
   int resources_address = allocate(size_of_resources());
   curr = resources_address+/*alloc id*/1+/*offset of 'data' element*/1+/*skip alloc id of 'data' element*/1;
   put(Memory, curr, resources_data_address);
-  trace("mem") << "storing resources data address " << resources_data_address << " in location " << curr << end();
+  trace(Callstack_depth+1, "mem") << "storing resources data address " << resources_data_address << " in location " << curr << end();
   // save in product
   put(Memory, RESOURCES+/*skip alloc id*/1, resources_address);
-  trace("mem") << "storing resources address " << resources_address << " in location " << RESOURCES << end();
+  trace(Callstack_depth+1, "mem") << "storing resources address " << resources_address << " in location " << RESOURCES << end();
 }
 
 int size_of_resources() {

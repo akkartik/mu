@@ -31,7 +31,7 @@ Currently_parsing_segment_index = -1;
 if (!starts_with(segment_title, "0x")) {
   Currently_parsing_named_segment = true;
   if (!contains_key(Segment_index, segment_title)) {
-    trace(99, "parse") << "new segment '" << segment_title << "'" << end();
+    trace(3, "parse") << "new segment '" << segment_title << "'" << end();
     if (out.segments.empty() && segment_title != "code") {
       raise << "first segment must be 'code' but is '" << segment_title << "'\n" << end();
       return;
@@ -44,7 +44,7 @@ if (!starts_with(segment_title, "0x")) {
     out.segments.push_back(segment());
   }
   else {
-    trace(99, "parse") << "appending to segment '" << segment_title << "'" << end();
+    trace(3, "parse") << "appending to segment '" << segment_title << "'" << end();
   }
   Currently_parsing_segment_index = get(Segment_index, segment_title);
 }
@@ -52,7 +52,7 @@ if (!starts_with(segment_title, "0x")) {
 :(before "End flush(p, lines) Special-cases")
 if (Currently_parsing_named_segment) {
   assert(!p.segments.empty());
-  trace(99, "parse") << "flushing segment" << end();
+  trace(3, "parse") << "flushing segment" << end();
   vector<line>& curr_segment_data = p.segments.at(Currently_parsing_segment_index).lines;
   curr_segment_data.insert(curr_segment_data.end(), lines.begin(), lines.end());
   lines.clear();
@@ -107,7 +107,7 @@ Transform.push_back(compute_segment_starts);
 
 :(code)
 void compute_segment_starts(program& p) {
-  trace(99, "transform") << "-- compute segment addresses" << end();
+  trace(3, "transform") << "-- compute segment addresses" << end();
   uint32_t p_offset = /*size of ehdr*/0x34 + SIZE(p.segments)*0x20/*size of each phdr*/;
   for (size_t i = 0;  i < p.segments.size();  ++i) {
     segment& curr = p.segments.at(i);

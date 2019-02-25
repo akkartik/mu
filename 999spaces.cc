@@ -25,12 +25,10 @@ assert(Next_recipe_ordinal == 1000);
 
 //:: Depths for tracing
 //:
-//: 0 - unused
-//: 1-100 - app-level trace statements in Mu
-//: 101-9989 - call-stack statements (mostly label run)
-assert(Initial_callstack_depth == 101);
-assert(Max_callstack_depth == 9989);
-//: 9990-9999 - intra-instruction lines (mostly label mem)
+//: 0 - errors
+//: 1-99 - app-level trace statements in Mu
+//: 100-9999 - call-stack statements (mostly label run)
+assert(Initial_callstack_depth == 100);
 
 //:: Summary of transforms and their dependencies
 //: begin transforms

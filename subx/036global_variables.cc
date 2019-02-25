@@ -18,7 +18,7 @@ x:
 Transform.push_back(rewrite_global_variables);
 :(code)
 void rewrite_global_variables(program& p) {
-  trace(99, "transform") << "-- rewrite global variables" << end();
+  trace(3, "transform") << "-- rewrite global variables" << end();
   // Begin rewrite_global_variables
   map<string, uint32_t> address;
   compute_addresses_for_global_variables(p, address);

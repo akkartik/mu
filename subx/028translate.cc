@@ -34,6 +34,7 @@ if (is_equal(argv[1], "translate")) {
       output_filename = argv[i];
     }
     else {
+      trace(2, "parse") << argv[i] << end();
       ifstream fin(argv[i]);
       if (!fin) {
         cerr << "could not open " << argv[i] << '\n';
@@ -53,8 +54,10 @@ if (is_equal(argv[1], "translate")) {
     cerr << "must provide a filename to write to using '-o'\n";
     exit(1);
   }
+  trace(2, "transform") << "begin" << end();
   transform(p);
   if (trace_contains_errors()) return 1;
+  trace(2, "translate") << "begin" << end();
   save_elf(p, output_filename);
   if (trace_contains_errors()) {
     unlink(output_filename.c_str());

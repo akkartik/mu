@@ -22,7 +22,7 @@ void load_map(const string& map_filename) {
 
 :(after "Run One Instruction")
 if (contains_key(Symbol_name, EIP))
-  trace(90, "run") << "== label " << get(Symbol_name, EIP) << end();
+  trace(Callstack_depth, "run") << "== label " << get(Symbol_name, EIP) << end();
 
 //: If a label starts with '$watch-', make a note of the effective address
 //: computed by the next instruction. Start dumping out its contents to the

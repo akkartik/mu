@@ -39,15 +39,15 @@ void transform_braces(const recipe_ordinal r) {
   const bool OPEN = false, CLOSE = true;
   // use signed integer for step index because we'll be doing arithmetic on it
   list<pair<bool/*OPEN/CLOSE*/, /*step*/int> > braces;
-  trace(9991, "transform") << "--- transform braces for recipe " << get(Recipe, r).name << end();
+  trace(101, "transform") << "--- transform braces for recipe " << get(Recipe, r).name << end();
   for (int index = 0;  index < SIZE(get(Recipe, r).steps);  ++index) {
     const instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.label == "{") {
-      trace(9993, "transform") << maybe(get(Recipe, r).name) << "push (open, " << index << ")" << end();
+      trace(103, "transform") << maybe(get(Recipe, r).name) << "push (open, " << index << ")" << end();
       braces.push_back(pair<bool,int>(OPEN, index));
     }
     if (inst.label == "}") {
-      trace(9993, "transform") << "push (close, " << index << ")" << end();
+      trace(103, "transform") << "push (close, " << index << ")" << end();
       braces.push_back(pair<bool,int>(CLOSE, index));
     }
   }
@@ -73,7 +73,7 @@ void transform_braces(const recipe_ordinal r) {
          && inst.name != "break"
          && inst.name != "break-if"
          && inst.name != "break-unless") {
-      trace(9992, "transform") << inst.name << " ..." << end();
+      trace(102, "transform") << inst.name << " ..." << end();
       continue;
     }
     // check for errors
@@ -101,14 +101,14 @@ void transform_braces(const recipe_ordinal r) {
     if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
       // conditional branches check arg 1
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        trace(9992, "transform") << inst.name << ' ' << inst.ingredients.at(1).name << ":offset" << end();
+        trace(102, "transform") << inst.name << ' ' << inst.ingredients.at(1).name << ":offset" << end();
         continue;
       }
     }
     else {
       // unconditional branches check arg 0
       if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
-        trace(9992, "transform") << "jump " << inst.ingredients.at(0).name << ":offset" << end();
+        trace(102, "transform") << "jump " << inst.ingredients.at(0).name << ":offset" << end();
         continue;
       }
     }
@@ -124,9 +124,9 @@ void transform_braces(const recipe_ordinal r) {
     inst.ingredients.push_back(target);
     // log computed target
     if (inst.name == "jump")
-      trace(9992, "transform") << "jump " << no_scientific(target.value) << ":offset" << end();
+      trace(102, "transform") << "jump " << no_scientific(target.value) << ":offset" << end();
     else
-      trace(9992, "transform") << inst.name << ' ' << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
+      trace(102, "transform") << inst.name << ' ' << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
   }
 }
 

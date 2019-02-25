@@ -17,11 +17,12 @@ put_new(Name, "e8", "call disp32 (call)");
 :(before "End Single-Byte Opcodes")
 case 0xe8: {  // call disp32 relative to next EIP
   const int32_t offset = next32();
-  trace(90, "run") << "call imm32 0x" << HEXWORD << offset << end();
+  ++Callstack_depth;
+  trace(Callstack_depth+1, "run") << "call imm32 0x" << HEXWORD << offset << end();
 //?   cerr << "push: EIP: " << EIP << " => " << Reg[ESP].u << '\n';
   push(EIP);
   EIP += offset;
-  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  trace(Callstack_depth+1, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   break;
 }
 
@@ -42,11 +43,12 @@ case 0xe8: {  // call disp32 relative to next EIP
 
 :(before "End Op ff Subops")
 case 2: {  // call function pointer at r/m32
-  trace(90, "run") << "call to r/m32" << end();
+  trace(Callstack_depth+1, "run") << "call to r/m32" << end();
   const int32_t* offset = effective_address(modrm);
   push(EIP);
   EIP += *offset;
-  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  trace(Callstack_depth+1, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  ++Callstack_depth;
   break;
 }
 
@@ -83,8 +85,9 @@ put_new(Name, "c3", "return from most recent unfinished call (ret)");
 
 :(before "End Single-Byte Opcodes")
 case 0xc3: {  // return from a call
-  trace(90, "run") << "return" << end();
+  trace(Callstack_depth+1, "run") << "return" << end();
+  --Callstack_depth;
   EIP = pop();
-  trace(90, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+  trace(Callstack_depth+1, "run") << "jumping to 0x" << HEXWORD << EIP << end();
   break;
 }

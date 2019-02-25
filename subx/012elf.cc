@@ -6,6 +6,7 @@
 assert(argc > 1);
 if (is_equal(argv[1], "run")) {
   START_TRACING_UNTIL_END_OF_SCOPE;
+  trace(2, "run") << "=== Starting to run" << end();
   assert(argc > 2);
   reset();
   cerr << std::hex;
@@ -88,8 +89,8 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
 
 void push(uint32_t val) {
   Reg[ESP].u -= 4;
-  trace(90, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
-  trace(90, "run") << "pushing value 0x" << HEXWORD << val << end();
+  trace(Callstack_depth+1, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(Callstack_depth+1, "run") << "pushing value 0x" << HEXWORD << val << end();
   write_mem_u32(Reg[ESP].u, val);
 }
 
@@ -142,12 +143,12 @@ const int ARGV_DATA_SEGMENT = 0x0c000000;
 :(code)
 void dump_stack() {
   ostringstream out;
-  trace(91, "run") << "stack:" << end();
+  trace(Callstack_depth+1, "run") << "stack:" << end();
   for (uint32_t a = AFTER_STACK-4;  a > Reg[ESP].u;  a -= 4)
-    trace(91, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
-  trace(91, "run") << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP" << end();
+    trace(Callstack_depth+1, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
+  trace(Callstack_depth+1, "run") << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP" << end();
   for (uint32_t a = Reg[ESP].u-4;  a > Reg[ESP].u-40;  a -= 4)
-    trace(91, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
+    trace(Callstack_depth+1, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
 }
 
 inline uint32_t u32_in(uint8_t* p) {

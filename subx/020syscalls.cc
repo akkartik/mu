@@ -3,7 +3,7 @@ put_new(Name, "cd", "software interrupt (int)");
 
 :(before "End Single-Byte Opcodes")
 case 0xcd: {  // int imm8 (software interrupt)
-  trace(90, "run") << "syscall" << end();
+  trace(Callstack_depth+1, "run") << "syscall" << end();
   uint8_t code = next();
   if (code != 0x80) {
     raise << "Unimplemented interrupt code " << HEXBYTE << code << '\n' << end();
@@ -21,67 +21,67 @@ void process_int80() {
     exit(/*exit code*/Reg[EBX].u);
     break;
   case 3:
-    trace(91, "run") << "read: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
+    trace(Callstack_depth+1, "run") << "read: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
     Reg[EAX].i = read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
-    trace(91, "run") << "result: " << Reg[EAX].i << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 4:
-    trace(91, "run") << "write: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
-    trace(91, "run") << Reg[ECX].u << " => " << mem_addr_string(Reg[ECX].u, Reg[EDX].u) << end();
+    trace(Callstack_depth+1, "run") << "write: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
+    trace(Callstack_depth+1, "run") << Reg[ECX].u << " => " << mem_addr_string(Reg[ECX].u, Reg[EDX].u) << end();
     Reg[EAX].i = write(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
-    trace(91, "run") << "result: " << Reg[EAX].i << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 5: {
     check_flags(ECX);
     check_mode(EDX);
-    trace(91, "run") << "open: " << Reg[EBX].u << ' ' << Reg[ECX].u << end();
-    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
+    trace(Callstack_depth+1, "run") << "open: " << Reg[EBX].u << ' ' << Reg[ECX].u << end();
+    trace(Callstack_depth+1, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
     Reg[EAX].i = open(/*filename*/mem_addr_kernel_string(Reg[EBX].u), /*flags*/Reg[ECX].u, /*mode*/0640);
-    trace(91, "run") << "result: " << Reg[EAX].i << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   }
   case 6:
-    trace(91, "run") << "close: " << Reg[EBX].u << end();
+    trace(Callstack_depth+1, "run") << "close: " << Reg[EBX].u << end();
     Reg[EAX].i = close(/*file descriptor*/Reg[EBX].u);
-    trace(91, "run") << "result: " << Reg[EAX].i << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 8:
     check_mode(ECX);
-    trace(91, "run") << "creat: " << Reg[EBX].u << end();
-    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
+    trace(Callstack_depth+1, "run") << "creat: " << Reg[EBX].u << end();
+    trace(Callstack_depth+1, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
     Reg[EAX].i = creat(/*filename*/mem_addr_kernel_string(Reg[EBX].u), /*mode*/0640);
-    trace(91, "run") << "result: " << Reg[EAX].i << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 10:
-    trace(91, "run") << "unlink: " << Reg[EBX].u << end();
-    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
+    trace(Callstack_depth+1, "run") << "unlink: " << Reg[EBX].u << end();
+    trace(Callstack_depth+1, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
     Reg[EAX].i = unlink(/*filename*/mem_addr_kernel_string(Reg[EBX].u));
-    trace(91, "run") << "result: " << Reg[EAX].i << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 38:
-    trace(91, "run") << "rename: " << Reg[EBX].u << " -> " << Reg[ECX].u << end();
-    trace(91, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
-    trace(91, "run") << Reg[ECX].u << " => " << mem_addr_kernel_string(Reg[ECX].u) << end();
+    trace(Callstack_depth+1, "run") << "rename: " << Reg[EBX].u << " -> " << Reg[ECX].u << end();
+    trace(Callstack_depth+1, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
+    trace(Callstack_depth+1, "run") << Reg[ECX].u << " => " << mem_addr_kernel_string(Reg[ECX].u) << end();
     Reg[EAX].i = rename(/*old filename*/mem_addr_kernel_string(Reg[EBX].u), /*new filename*/mem_addr_kernel_string(Reg[ECX].u));
-    trace(91, "run") << "result: " << Reg[EAX].i << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
     break;
   case 45:  // brk: modify size of data segment
-    trace(91, "run") << "grow data segment to " << Reg[EBX].u << end();
+    trace(Callstack_depth+1, "run") << "grow data segment to " << Reg[EBX].u << end();
     grow_data_segment(/*new end address*/Reg[EBX].u);
     break;
   case 90:  // mmap: allocate memory outside existing segment allocations
-    trace(91, "run") << "mmap: allocate new segment" << end();
+    trace(Callstack_depth+1, "run") << "mmap: allocate new segment" << end();
     // Ignore most arguments for now: address hint, protection flags, sharing flags, fd, offset.
     // We only support anonymous maps.
     Reg[EAX].u = new_segment(/*length*/read_mem_u32(Reg[EBX].u+0x4));
-    trace(91, "run") << "result: " << Reg[EAX].u << end();
+    trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].u << end();
     break;
   default:
     raise << HEXWORD << EIP << ": unimplemented syscall " << Reg[EAX].u << '\n' << end();

@@ -91,6 +91,7 @@ Most_recent_products = "";
 :(before "End Globals")
 trace_stream* Save_trace_stream = NULL;
 string Save_trace_file;
+int Save_callstack_depth = 0;
 :(code)
 // reads a string, tries to call it as code (treating it as a test), saving
 // all errors.
@@ -127,9 +128,9 @@ bool run_interactive(int address) {
   // now call 'sandbox' which will run 'interactive' in a separate routine,
   // and wait for it
   if (Save_trace_stream) {
-    ++Save_trace_stream->callstack_depth;
-    trace(9999, "trace") << "run-sandboxed: incrementing callstack depth to " << Save_trace_stream->callstack_depth << end();
-    assert(Save_trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
+    ++Save_callstack_depth;
+    trace(Save_callstack_depth+1, "trace") << "run-sandboxed: incrementing callstack depth to " << Save_callstack_depth << end();
+    assert(Save_callstack_depth < Max_depth);
   }
   Current_routine->calls.push_front(call(get(Recipe_ordinal, "sandbox")));
   return true;
@@ -149,6 +150,9 @@ map<string, type_tree*> Type_abbreviations_snapshot_stash;
 vector<scenario> Scenarios_snapshot_stash;
 set<string> Scenario_names_snapshot_stash;
 
+:(before "End Types")  //: include in all cleaved compilation units
+const int App_depth = 1;  // where all Mu code will trace to by default
+
 :(code)
 void run_code_begin(bool should_stash_snapshots) {
   // stuff to undo later, in run_code_end()
@@ -159,6 +163,7 @@ void run_code_begin(bool should_stash_snapshots) {
   if (should_stash_snapshots)
     stash_snapshots();
   Save_trace_stream = Trace_stream;
+  Save_callstack_depth = Callstack_depth;
   Trace_stream = new trace_stream;
   Trace_stream->collect_depth = App_depth;
 }
@@ -175,6 +180,7 @@ void run_code_end() {
   Trace_stream = Save_trace_stream;
   Save_trace_stream = NULL;
   Save_trace_file.clear();
+  Save_callstack_depth = 0;
   Recipe.erase(get(Recipe_ordinal, "interactive"));  // keep past sandboxes from inserting errors
   if (!Recipe_snapshot_stash.empty())
     unstash_snapshots();

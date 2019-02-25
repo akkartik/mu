@@ -156,7 +156,7 @@ void pack_operands(program& p) {
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
   // Pack Operands(segment code)
-  trace(99, "transform") << "-- pack operands" << end();
+  trace(3, "transform") << "-- pack operands" << end();
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
     if (all_hex_bytes(inst)) continue;

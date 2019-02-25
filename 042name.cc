@@ -36,7 +36,7 @@ Name = Name_snapshot;
 :(code)
 void transform_names(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- transform names for recipe " << caller.name << end();
+  trace(101, "transform") << "--- transform names for recipe " << caller.name << end();
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, int>& names = Name[r];
@@ -78,7 +78,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(product)) names_used = true;
       if (is_integer(product.name)) continue;
       if (names.find(product.name) == names.end()) {
-        trace(9993, "name") << "assign " << product.name << " " << curr_idx << end();
+        trace(103, "name") << "assign " << product.name << " " << curr_idx << end();
         names[product.name] = curr_idx;
         curr_idx += size_of(product);
       }
@@ -282,7 +282,7 @@ if (inst.name == "get" || inst.name == "get-location" || inst.name == "put") {
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_offset(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
-      trace(9993, "name") << "element " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
+      trace(103, "name") << "element " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
     }
   }
 }
@@ -330,7 +330,7 @@ if (inst.name == "maybe-convert") {
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_offset(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
-      trace(9993, "name") << "variant " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
+      trace(103, "name") << "variant " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
     }
   }
 }

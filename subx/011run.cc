@@ -127,7 +127,6 @@ struct word {
 :(code)
 void parse(istream& fin, program& out) {
   vector<line> l;
-  trace(99, "parse") << "begin" << end();
   while (has_data(fin)) {
     string line_data;
     line curr;
@@ -151,7 +150,7 @@ void parse(istream& fin, program& out) {
           s.start = parse_int(segment_title);
           sanity_check_program_segment(out, s.start);
           if (trace_contains_errors()) continue;
-          trace(99, "parse") << "new segment from 0x" << HEXWORD << s.start << end();
+          trace(3, "parse") << "new segment from 0x" << HEXWORD << s.start << end();
           out.segments.push_back(s);
         }
         // End Segment Parsing Special-cases(segment_title)
@@ -226,16 +225,13 @@ vector<transform_fn> Transform;
 
 :(code)
 void transform(program& p) {
-  trace(99, "transform") << "begin" << end();
   for (int t = 0;  t < SIZE(Transform);  ++t)
     (*Transform.at(t))(p);
-  trace(99, "transform") << "done" << end();
 }
 
 //:: load
 
 void load(const program& p) {
-  trace(99, "load") << "begin" << end();
   if (p.segments.empty()) {
     raise << "no code to run\n" << end();
     return;
@@ -265,7 +261,6 @@ void load(const program& p) {
   }
   EIP = p.segments.at(0).start;
   // End Initialize EIP
-  trace(99, "load") << "done" << end();
 }
 
 uint8_t hex_byte(const string& s) {
@@ -331,7 +326,7 @@ put_new(Name, "05", "add imm32 to EAX (add)");
 :(before "End Single-Byte Opcodes")
 case 0x05: {  // add imm32 to EAX
   int32_t arg2 = next32();
-  trace(90, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
+  trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
   BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
   break;
 }

@@ -215,7 +215,7 @@ Transform.push_back(transform_new_to_allocate);  // idempotent
 
 :(code)
 void transform_new_to_allocate(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << end();
+  trace(101, "transform") << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << end();
   for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     // Convert 'new' To 'allocate'
@@ -224,7 +224,7 @@ void transform_new_to_allocate(const recipe_ordinal r) {
       inst.operation = ALLOCATE;
       type_tree* type = new_type_tree(inst.ingredients.at(0).name);
       inst.ingredients.at(0).set_value(size_of(type));
-      trace(9992, "new") << "size of '" << inst.ingredients.at(0).name << "' is " << inst.ingredients.at(0).value << end();
+      trace(102, "new") << "size of '" << inst.ingredients.at(0).name << "' is " << inst.ingredients.at(0).value << end();
       delete type;
     }
   }
@@ -245,7 +245,7 @@ int alloc, alloc_max;
 alloc = Memory_allocated_until;
 Memory_allocated_until += Initial_memory_per_routine;
 alloc_max = Memory_allocated_until;
-trace("new") << "routine allocated memory from " << alloc << " to " << alloc_max << end();
+trace(Callstack_depth+1, "new") << "routine allocated memory from " << alloc << " to " << alloc_max << end();
 
 :(before "End Primitive Recipe Declarations")
 ALLOCATE,
@@ -259,16 +259,16 @@ case ALLOCATE: {
   Next_alloc_id++;
   if (SIZE(ingredients) > 1) {
     // array allocation
-    trace("mem") << "array length is " << ingredients.at(1).at(0) << end();
+    trace(Callstack_depth+1, "mem") << "array length is " << ingredients.at(1).at(0) << end();
     size = /*space for length*/1 + size*ingredients.at(1).at(0);
   }
   int result = allocate(size);
   // initialize alloc-id in payload
-  trace("mem") << "storing alloc-id " << alloc_id << " in location " << result << end();
+  trace(Callstack_depth+1, "mem") << "storing alloc-id " << alloc_id << " in location " << result << end();
   put(Memory, result, alloc_id);
   if (SIZE(current_instruction().ingredients) > 1) {
     // initialize array length
-    trace("mem") << "storing array length " << ingredients.at(1).at(0) << " in location " << result+/*skip alloc id*/1 << end();
+    trace(Callstack_depth+1, "mem") << "storing array length " << ingredients.at(1).at(0) << " in location " << result+/*skip alloc id*/1 << end();
     put(Memory, result+/*skip alloc id*/1, ingredients.at(1).at(0));
   }
   products.resize(1);
@@ -280,7 +280,7 @@ case ALLOCATE: {
 int allocate(int size) {
   // include space for alloc id
   ++size;
-  trace("mem") << "allocating size " << size << end();
+  trace(Callstack_depth+1, "mem") << "allocating size " << size << end();
 //?   Total_alloc += size;
 //?   ++Num_alloc;
   // Allocate Special-cases
@@ -288,10 +288,10 @@ int allocate(int size) {
   // really crappy at the moment
   ensure_space(size);
   const int result = Current_routine->alloc;
-  trace("mem") << "new alloc: " << result << end();
+  trace(Callstack_depth+1, "mem") << "new alloc: " << result << end();
   // initialize allocated space
   for (int address = result;  address < result+size;  ++address) {
-    trace("mem") << "storing 0 in location " << address << end();
+    trace(Callstack_depth+1, "mem") << "storing 0 in location " << address << end();
     put(Memory, address, 0);
   }
   Current_routine->alloc += size;
@@ -325,7 +325,7 @@ void ensure_space(int size) {
     Current_routine->alloc = Memory_allocated_until;
     Memory_allocated_until += Initial_memory_per_routine;
     Current_routine->alloc_max = Memory_allocated_until;
-    trace("new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max << end();
+    trace(Callstack_depth+1, "new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max << end();
   }
 }
 

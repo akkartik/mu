@@ -198,11 +198,11 @@ case GET: {
   int src = base_address;
   for (int i = 0; i < offset; ++i)
     src += size_of(element_type(base.type, i));
-  trace(9998, "run") << "address to copy is " << src << end();
+  trace(Callstack_depth+1, "run") << "address to copy is " << src << end();
   //: use base.type rather than base_type because later layers will introduce compound types
   reagent/*copy*/ element = element_type(base.type, offset);
   element.set_value(src);
-  trace(9998, "run") << "its type is " << names_to_string(element.type) << end();
+  trace(Callstack_depth+1, "run") << "its type is " << names_to_string(element.type) << end();
   // Read element
   products.push_back(read_memory(element));
   break;
@@ -355,13 +355,13 @@ case PUT: {
   int address = base_address;
   for (int i = 0; i < offset; ++i)
     address += size_of(element_type(base.type, i));
-  trace(9998, "run") << "address to copy to is " << address << end();
+  trace(Callstack_depth+1, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire container
   // Write Memory in PUT in Run
   write_products = false;
   for (int i = 0;  i < SIZE(ingredients.at(2));  ++i) {
-    trace("mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
+    trace(Callstack_depth+1, "mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
     put(Memory, address+i, ingredients.at(2).at(i));
   }
   break;
@@ -452,12 +452,12 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     return;
   }
   // End container Name Refinements
-  trace(9991, "parse") << "--- defining " << command << ' ' << name << end();
+  trace(101, "parse") << "--- defining " << command << ' ' << name << end();
   if (!contains_key(Type_ordinal, name)
       || get(Type_ordinal, name) == 0) {
     put(Type_ordinal, name, Next_type_ordinal++);
   }
-  trace("parse") << "type number: " << get(Type_ordinal, name) << end();
+  trace(102, "parse") << "type number: " << get(Type_ordinal, name) << end();
   skip_bracket(in, "'"+command+"' must begin with '['");
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
   if (info.Num_calls_to_transform_all_at_first_definition == -1) {
@@ -492,7 +492,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     info.elements.push_back(reagent(element));
     expand_type_abbreviations(info.elements.back().type);  // todo: use abbreviation before declaration
     replace_unknown_types_with_unique_ordinals(info.elements.back().type, info);
-    trace(9993, "parse") << "  element: " << to_string(info.elements.back()) << end();
+    trace(103, "parse") << "  element: " << to_string(info.elements.back()) << end();
     // End Load Container Element Definition
   }
 }
@@ -602,7 +602,7 @@ Transform.push_back(check_or_set_invalid_types);  // idempotent
 :(code)
 void check_or_set_invalid_types(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- check for invalid types in recipe " << caller.name << end();
+  trace(101, "transform") << "--- check for invalid types in recipe " << caller.name << end();
   for (int index = 0;  index < SIZE(caller.steps);  ++index) {
     instruction& inst = caller.steps.at(index);
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i)

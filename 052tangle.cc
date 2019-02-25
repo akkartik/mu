@@ -90,7 +90,7 @@ void insert_fragments(const recipe_ordinal r) {
 }
 
 void insert_fragments(recipe& r) {
-  trace(9991, "transform") << "--- insert fragments into recipe " << r.name << end();
+  trace(101, "transform") << "--- insert fragments into recipe " << r.name << end();
   bool made_progress = true;
   int pass = 0;
   while (made_progress) {
@@ -111,12 +111,12 @@ void insert_fragments(recipe& r) {
       // ok to use contains_key even though Before_fragments uses [],
       // because appending an empty recipe is a noop
       if (contains_key(Before_fragments, inst.label)) {
-        trace(9992, "transform") << "insert fragments before label " << inst.label << end();
+        trace(102, "transform") << "insert fragments before label " << inst.label << end();
         append_fragment(result, Before_fragments[inst.label].steps, prefix.str());
       }
       result.push_back(inst);
       if (contains_key(After_fragments, inst.label)) {
-        trace(9992, "transform") << "insert fragments after label " << inst.label << end();
+        trace(102, "transform") << "insert fragments after label " << inst.label << end();
         append_fragment(result, After_fragments[inst.label].steps, prefix.str());
       }
     }

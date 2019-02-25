@@ -26,13 +26,13 @@ test-foo:  # offset 7
   c3/return
 
 # check that code in test-foo ran (implicitly called by run-tests)
-+run: inst: 0x00000007
++run: 0x00000007 opcode: 01
 
 :(code)
 void create_test_function(program& p) {
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);
-  trace(99, "transform") << "-- create 'run-tests'" << end();
+  trace(3, "transform") << "-- create 'run-tests'" << end();
   vector<line> new_insts;
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);

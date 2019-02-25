@@ -132,7 +132,7 @@ if (!info.type_ingredient_names.empty()) continue;
 
 :(before "End container Name Refinements")
 if (name.find(':') != string::npos) {
-  trace("parse") << "container has type ingredients; parsing" << end();
+  trace(101, "parse") << "container has type ingredients; parsing" << end();
   if (!read_type_ingredients(name, command)) {
     // error; skip rest of the container definition and continue
     slurp_balanced_bracket(in);

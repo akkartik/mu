@@ -92,7 +92,7 @@ SF = ZF = OF = false;
   /* arg1 and arg2 must be signed */ \
   int64_t tmp = arg1 op arg2; \
   arg1 = arg1 op arg2; \
-  trace(90, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
   SF = (arg1 < 0); \
   ZF = (arg1 == 0); \
   OF = (arg1 != tmp); \
@@ -103,7 +103,7 @@ SF = ZF = OF = false;
 #define BINARY_BITWISE_OP(op, arg1, arg2) { \
   /* arg1 and arg2 must be unsigned */ \
   arg1 = arg1 op arg2; \
-  trace(90, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
   SF = (arg1 >> 31); \
   ZF = (arg1 == 0); \
   OF = false; \
@@ -296,13 +296,13 @@ inline bool already_allocated(uint32_t addr) {
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   // Run One Instruction
-  if (Dump_trace) {
+  if (Trace_file) {
     dump_registers();
     // End Dump Info for Instruction
   }
-  trace(90, "run") << "inst: 0x" << HEXWORD << EIP << end();
+  uint32_t inst_start_address = EIP;
   op = next();
-  trace(90, "run") << "opcode: " << HEXBYTE << NUM(op) << end();
+  trace(Callstack_depth, "run") << "0x" << HEXWORD << inst_start_address << " opcode: " << HEXBYTE << NUM(op) << (op == 0xe8 ? "/call" : "") << end();
   switch (op) {
   case 0xf4:  // hlt
     EIP = End_of_program;
@@ -372,7 +372,7 @@ void dump_registers() {
     out << "  " << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
   }
   out << " -- SF: " << SF << "; ZF: " << ZF << "; OF: " << OF;
-  trace(90, "run") << out.str() << end();
+  trace(Callstack_depth+1, "run") << out.str() << end();
 }
 
 //: start tracking supported opcodes
@@ -408,6 +408,24 @@ if (key == "opcodes") {
 }
 :(before "End Help Contents")
 cerr << "  opcodes\n";
+
+//: Helpers for managing trace depths
+//:
+//: We're going to use trace depths primarily to segment code running at
+//: different frames of the call stack. This will make it easy for the trace
+//: browser to collapse over entire calls.
+//:
+//: Errors will be at depth 0.
+//: Warnings will be at depth 1.
+//: SubX instructions will occupy depth 2 and up to Max_depth, organized by
+//: stack frames. Each instruction's internal details will be one level deeper
+//: than its 'main' depth. So 'call' instruction details will be at the same
+//: depth as the instructions of the function it calls.
+:(before "End Globals")
+extern const int Initial_callstack_depth = 2;
+int Callstack_depth = Initial_callstack_depth;
+:(before "End Reset")
+Callstack_depth = Initial_callstack_depth;
 
 :(before "End Includes")
 #include <iomanip>

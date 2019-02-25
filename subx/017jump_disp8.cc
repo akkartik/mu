@@ -11,15 +11,15 @@ put_new(Name, "eb", "jump disp8 bytes away (jmp)");
   eb                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: eb
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0xeb: {  // jump rel8
   int8_t offset = static_cast<int>(next());
-  trace(90, "run") << "jump " << NUM(offset) << end();
+  trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
   EIP += offset;
   break;
 }
@@ -36,16 +36,16 @@ put_new(Name, "74", "jump disp8 bytes away if equal, if ZF is set (jcc/jz/je)");
   74                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 74
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0x74: {  // jump rel8 if ZF
   const int8_t offset = static_cast<int>(next());
   if (ZF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -58,9 +58,9 @@ case 0x74: {  // jump rel8 if ZF
   74                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000003
-+run: inst: 0x00000008
++run: 0x00000001 opcode: 74
++run: 0x00000003 opcode: 05
++run: 0x00000008 opcode: 05
 -run: jump 5
 
 //:: jump if not equal/not zero
@@ -75,16 +75,16 @@ put_new(Name, "75", "jump disp8 bytes away if not equal, if ZF is not set (jcc/j
   75                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 75
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0x75: {  // jump rel8 unless ZF
   const int8_t offset = static_cast<int>(next());
   if (!ZF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -97,9 +97,9 @@ case 0x75: {  // jump rel8 unless ZF
   75                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000003
-+run: inst: 0x00000008
++run: 0x00000001 opcode: 75
++run: 0x00000003 opcode: 05
++run: 0x00000008 opcode: 05
 -run: jump 5
 
 //:: jump if greater
@@ -116,16 +116,16 @@ put_new(Name, "7f", "jump disp8 bytes away if greater, if ZF is unset and SF == 
   7f                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 7f
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0x7f: {  // jump rel8 if !SF and !ZF
   const int8_t offset = static_cast<int>(next());
   if (!ZF && SF == OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -140,9 +140,9 @@ case 0x7f: {  // jump rel8 if !SF and !ZF
   7f                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000003
-+run: inst: 0x00000008
++run: 0x00000001 opcode: 7f
++run: 0x00000003 opcode: 05
++run: 0x00000008 opcode: 05
 -run: jump 5
 
 //:: jump if greater or equal
@@ -158,16 +158,16 @@ put_new(Name, "7d", "jump disp8 bytes away if greater or equal, if SF == OF (jcc
   7d                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 7d
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0x7d: {  // jump rel8 if !SF
   const int8_t offset = static_cast<int>(next());
   if (SF == OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -181,9 +181,9 @@ case 0x7d: {  // jump rel8 if !SF
   7d                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000003
-+run: inst: 0x00000008
++run: 0x00000001 opcode: 7d
++run: 0x00000003 opcode: 05
++run: 0x00000008 opcode: 05
 -run: jump 5
 
 //:: jump if lesser
@@ -200,16 +200,16 @@ put_new(Name, "7c", "jump disp8 bytes away if lesser, if SF != OF (jcc/jl/jnge)"
   7c                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 7c
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0x7c: {  // jump rel8 if SF and !ZF
   const int8_t offset = static_cast<int>(next());
   if (SF != OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -224,9 +224,9 @@ case 0x7c: {  // jump rel8 if SF and !ZF
   7c                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000003
-+run: inst: 0x00000008
++run: 0x00000001 opcode: 7c
++run: 0x00000003 opcode: 05
++run: 0x00000008 opcode: 05
 -run: jump 5
 
 //:: jump if lesser or equal
@@ -243,10 +243,10 @@ put_new(Name, "7e", "jump disp8 bytes away if lesser or equal, if ZF is set or S
   7e                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 7e
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(scenario jle_rel8_lesser)
 % ZF = false;
@@ -257,16 +257,16 @@ put_new(Name, "7e", "jump disp8 bytes away if lesser or equal, if ZF is set or S
   7e                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
++run: 0x00000001 opcode: 7e
 +run: jump 5
-+run: inst: 0x00000008
--run: inst: 0x00000003
++run: 0x00000008 opcode: 05
+-run: 0x00000003 opcode: 05
 
 :(before "End Single-Byte Opcodes")
 case 0x7e: {  // jump rel8 if SF or ZF
   const int8_t offset = static_cast<int>(next());
   if (ZF || SF != OF) {
-    trace(90, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
   break;
@@ -281,7 +281,7 @@ case 0x7e: {  // jump rel8 if SF or ZF
   7e                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
-+run: inst: 0x00000001
-+run: inst: 0x00000003
-+run: inst: 0x00000008
++run: 0x00000001 opcode: 7e
++run: 0x00000003 opcode: 05
++run: 0x00000008 opcode: 05
 -run: jump 5

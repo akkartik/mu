@@ -13,7 +13,7 @@ Transform.push_back(check_instruction);  // idempotent
 
 :(code)
 void check_instruction(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- perform checks for recipe " << get(Recipe, r).name << end();
+  trace(101, "transform") << "--- perform checks for recipe " << get(Recipe, r).name << end();
   map<string, vector<type_ordinal> > metadata;
   for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);

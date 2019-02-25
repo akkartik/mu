@@ -55,7 +55,7 @@ size_t hash_mu_scalar(size_t h, const reagent& r) {
 
 size_t hash_mu_address(size_t h, reagent& r) {
   if (r.value == 0) return 0;
-  trace("mem") << "location " << r.value << " is " << no_scientific(get_or_insert(Memory, r.value)) << end();
+  trace(Callstack_depth+1, "mem") << "location " << r.value << " is " << no_scientific(get_or_insert(Memory, r.value)) << end();
   r.set_value(get_or_insert(Memory, r.value));
   drop_from_type(r, "address");
   return hash(h, r);
