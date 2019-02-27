@@ -415,6 +415,9 @@ ofstream Trace_file;
 else if (is_equal(*arg, "--trace")) {
   cerr << "saving trace to 'last_run'\n";
   Trace_file.open("last_run");
+  // Add a dummy line up top; otherwise the `browse_trace` tool currently has
+  // no way to expand any lines above an error.
+  Trace_file << "   0 dummy: start\n";
 }
 :(before "End trace Commit")
 if (Trace_file) {
