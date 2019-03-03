@@ -163,7 +163,7 @@ void run_code_begin(bool should_stash_snapshots) {
   Save_callstack_depth = Callstack_depth;
   Callstack_depth = Initial_callstack_depth;
   Trace_stream = new trace_stream;
-  Trace_stream->collect_depth = App_depth;
+  Trace_stream->collect_depth = Save_trace_stream->collect_depth;
 }
 
 void run_code_end() {

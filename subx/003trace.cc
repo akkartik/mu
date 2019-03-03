@@ -109,22 +109,10 @@ ofstream null_stream;  // never opened, so writes to it silently fail
 //: Some constants.
 :(before "struct trace_stream")  // include constants in all cleaved compilation units
 const int Max_depth = 9999;
-// Most important traces are printed to the screen by default
-const int Error_depth = 0;
-const int Warn_depth = 1;
-:(before "End Globals")
-int Hide_errors = false;  // if set, don't print errors or warnings to screen
-int Hide_warnings = false;  // if set, don't print warnings to screen
 :(before "End trace_stream Constructor")
 curr_stream = NULL;
 curr_depth = Max_depth;
 collect_depth = Max_depth;
-:(before "End Reset")
-Hide_errors = false;
-Hide_warnings = false;
-//: Never dump warnings in scenarios
-:(before "End Test Setup")
-Hide_warnings = true;
 
 :(before "struct trace_stream")
 struct trace_line {
@@ -177,8 +165,7 @@ void trace_stream::newline() {
     past_lines.push_back(trace_line(curr_contents, trim(curr_label), curr_depth));  // preserve indent in contents
     // maybe incrementally dump trace
     trace_line& t = past_lines.back();
-    if ((!Hide_errors && curr_depth == Error_depth)
-        || (!Hide_warnings && !Hide_errors && curr_depth == Warn_depth)) {
+    if (should_incrementally_print_trace()) {
       cerr       << std::setw(4) << t.depth << ' ' << t.label << ": " << t.contents << '\n';
     }
     // End trace Commit
@@ -216,6 +203,29 @@ lease_tracer::~lease_tracer() {
 :(before "End Includes")
 #define raise  (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
 #define warn (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Warn_depth, "warn"))
+
+//: Print errors and warnings to the screen by default.
+:(before "struct trace_stream")  // include constants in all cleaved compilation units
+const int Error_depth = 0;
+const int Warn_depth = 1;
+:(before "End Globals")
+int Hide_errors = false;  // if set, don't print errors or warnings to screen
+int Hide_warnings = false;  // if set, don't print warnings to screen
+:(before "End Reset")
+Hide_errors = false;
+Hide_warnings = false;
+//: Never dump warnings in scenarios
+:(before "End Test Setup")
+Hide_warnings = true;
+:(code)
+bool trace_stream::should_incrementally_print_trace() {
+  if (!Hide_errors && curr_depth == Error_depth) return true;
+  if (!Hide_warnings && !Hide_errors && curr_depth == Warn_depth) return true;
+  // End Incremental Trace Print Conditions
+  return false;
+}
+:(before "End trace_stream Methods")
+bool should_incrementally_print_trace();
 
 :(before "End Globals")
 int Trace_errors = 0;  // used only when Trace_stream is NULL
@@ -441,6 +451,18 @@ string readable_contents(string label) {
       output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
   return output.str();
 }
+
+//: Print traces to the screen as they happen.
+//: Particularly useful when juggling multiple trace streams, like when
+//: debugging sandboxes.
+:(before "End Globals")
+bool Dump_trace = false;
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--dump")) {
+  Dump_trace = true;
+}
+:(before "End Incremental Trace Print Conditions")
+if (Dump_trace) return true;
 
 //: Miscellaneous helpers.
 
