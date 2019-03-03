@@ -41,6 +41,9 @@ case TRACE: {
 
 //: simpler limited version of 'trace'
 
+:(before "End Types")  //: include in all cleaved compilation units
+const int App_depth = 1;  // where all Mu code will trace to by default
+
 :(before "End Primitive Recipe Declarations")
 STASH,
 :(before "End Primitive Recipe Numbers")
@@ -56,7 +59,7 @@ case STASH: {
     if (i) out << ' ';
     out << inspect(current_instruction().ingredients.at(i), ingredients.at(i));
   }
-  trace(2, "app") << out.str() << end();
+  trace(App_depth, "app") << out.str() << end();
   break;
 }
 

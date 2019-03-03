@@ -150,9 +150,6 @@ map<string, type_tree*> Type_abbreviations_snapshot_stash;
 vector<scenario> Scenarios_snapshot_stash;
 set<string> Scenario_names_snapshot_stash;
 
-:(before "End Types")  //: include in all cleaved compilation units
-const int App_depth = 1;  // where all Mu code will trace to by default
-
 :(code)
 void run_code_begin(bool should_stash_snapshots) {
   // stuff to undo later, in run_code_end()
@@ -164,6 +161,7 @@ void run_code_begin(bool should_stash_snapshots) {
     stash_snapshots();
   Save_trace_stream = Trace_stream;
   Save_callstack_depth = Callstack_depth;
+  Callstack_depth = Initial_callstack_depth;
   Trace_stream = new trace_stream;
   Trace_stream->collect_depth = App_depth;
 }
@@ -178,6 +176,7 @@ void run_code_end() {
 //?   fout.close();
   delete Trace_stream;
   Trace_stream = Save_trace_stream;
+  Callstack_depth = Save_callstack_depth;
   Save_trace_stream = NULL;
   Save_trace_file.clear();
   Save_callstack_depth = 0;
