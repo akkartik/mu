@@ -145,10 +145,10 @@ void dump_stack() {
   ostringstream out;
   trace(Callstack_depth+1, "run") << "stack:" << end();
   for (uint32_t a = AFTER_STACK-4;  a > Reg[ESP].u;  a -= 4)
-    trace(Callstack_depth+1, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
-  trace(Callstack_depth+1, "run") << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP" << end();
+    trace(Callstack_depth+2, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
+  trace(Callstack_depth+2, "run") << "  0x" << HEXWORD << Reg[ESP].u << " => 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << "  <=== ESP" << end();
   for (uint32_t a = Reg[ESP].u-4;  a > Reg[ESP].u-40;  a -= 4)
-    trace(Callstack_depth+1, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
+    trace(Callstack_depth+2, "run") << "  0x" << HEXWORD << a << " => 0x" << HEXWORD << read_mem_u32(a) << end();
 }
 
 inline uint32_t u32_in(uint8_t* p) {

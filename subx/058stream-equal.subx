@@ -24,8 +24,9 @@ stream-data-equal?:  # f : (address stream), s : (address string) -> EAX : boole
     57/push-EDI
     # ESI = f
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # max/EDX = f->data + f->write
+    # EAX = f->write
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
+    # max/EDX = f->data + f->write
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           2/r32/EDX   0xc/disp8       .                 # copy ESI+EAX+12 to EDX
     # currf/ESI = f->data
     81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               0xc/imm32         # add to ESI
