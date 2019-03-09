@@ -16,11 +16,13 @@ fi
 # subx_bin is up to date.
 export CFLAGS=-g
 
-if [[ $1 == 'ex'* ]]
-then
-  ./subx translate examples/$1.subx -o examples/`echo $1 |sed 's/\..*//'`
-  exit $?
-fi
-
-./subx translate *.subx apps/$1.subx  -o apps/`echo $1 |sed 's/\..*//'`
-exit $?
+case $1 in
+  ex*)
+    ./subx translate examples/$1.subx -o examples/`echo $1 |sed 's/\..*//'`
+    exit $?
+    ;;
+  *)
+    ./subx translate *.subx apps/$1.subx  -o apps/`echo $1 |sed 's/\..*//'`
+    exit $?
+    ;;
+esac
