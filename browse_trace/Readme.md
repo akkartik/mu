@@ -76,3 +76,11 @@ following hotkeys:
 * `ctrl-e` or `end`: move cursor to end of search pattern.
 * `ctrl-u`: clear search pattern before cursor
 * `ctrl-k`: clear search pattern at and after cursor
+
+## wish list
+
+* Simple regular expression search: `.` and `*`.
+* Expand into lower depths as necessary when searching.
+* Zoom out everything.
+* Zoom out lines around the cursor to the highest (or specified) depth.
+  Maybe a number followed by `]`?
