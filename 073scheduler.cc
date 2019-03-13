@@ -133,6 +133,7 @@ void run_main(int argc, char* argv[]) {
   Current_routine = main_routine;
   for (int i = 1;  i < argc;  ++i) {
     vector<double> arg;
+    arg.push_back(/*alloc id*/0);
     arg.push_back(new_mu_text(argv[i]));
     assert(get(Memory, arg.back()) == 0);
     current_call().ingredient_atoms.push_back(arg);
