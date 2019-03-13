@@ -8,30 +8,33 @@
 :(before "End initialize_transform_rewrite_literal_string_to_text()")
 recipes_taking_literal_strings.insert("assume-console");
 
-:(scenarios run_mu_scenario)
-:(scenario keyboard_in_scenario)
-scenario keyboard-in-scenario [
-  assume-console [
-    type [abc]
-  ]
-  run [
-    1:char, 2:bool <- read-key console
-    3:char, 4:bool <- read-key console
-    5:char, 6:bool <- read-key console
-    7:char, 8:bool, 9:bool <- read-key console
-  ]
-  memory-should-contain [
-    1 <- 97  # 'a'
-    2 <- 1
-    3 <- 98  # 'b'
-    4 <- 1
-    5 <- 99  # 'c'
-    6 <- 1
-    7 <- 0  # unset
-    8 <- 1
-    9 <- 1  # end of test events
-  ]
-]
+:(code)
+void test_keyboard_in_scenario() {
+  run_mu_scenario(
+      "scenario keyboard-in-scenario [\n"
+      "  assume-console [\n"
+      "    type [abc]\n"
+      "  ]\n"
+      "  run [\n"
+      "    1:char, 2:bool <- read-key console\n"
+      "    3:char, 4:bool <- read-key console\n"
+      "    5:char, 6:bool <- read-key console\n"
+      "    7:char, 8:bool, 9:bool <- read-key console\n"
+      "  ]\n"
+      "  memory-should-contain [\n"
+      "    1 <- 97\n"  // 'a'
+      "    2 <- 1\n"
+      "    3 <- 98\n"  // 'b'
+      "    4 <- 1\n"
+      "    5 <- 99\n"  // 'c'
+      "    6 <- 1\n"
+      "    7 <- 0\n"  // unset
+      "    8 <- 1\n"
+      "    9 <- 1\n"  // end of test events
+      "  ]\n"
+      "]\n"
+  );
+}
 
 :(before "End Scenario Globals")
 extern const int CONSOLE = next_predefined_global_for_scenarios(/*size_of(address:console)*/2);
@@ -198,54 +201,57 @@ void initialize_special_name(reagent& r) {
   // End Initialize Type Of Special Name In Scenario(r)
 }
 
-:(scenario events_in_scenario)
-scenario events-in-scenario [
-  assume-console [
-    type [abc]
-    left-click 0, 1
-    press up-arrow
-    type [d]
-  ]
-  run [
-    # 3 keyboard events; each event occupies 4 locations
-    1:event <- read-event console
-    5:event <- read-event console
-    9:event <- read-event console
-    # mouse click
-    13:event <- read-event console
-    # non-character keycode
-    17:event <- read-event console
-    # final keyboard event
-    21:event <- read-event console
-  ]
-  memory-should-contain [
-    1 <- 0  # 'text'
-    2 <- 97  # 'a'
-    3 <- 0  # unused
-    4 <- 0  # unused
-    5 <- 0  # 'text'
-    6 <- 98  # 'b'
-    7 <- 0  # unused
-    8 <- 0  # unused
-    9 <- 0  # 'text'
-    10 <- 99  # 'c'
-    11 <- 0  # unused
-    12 <- 0  # unused
-    13 <- 2  # 'mouse'
-    14 <- 65513  # mouse click
-    15 <- 0  # row
-    16 <- 1  # column
-    17 <- 1  # 'keycode'
-    18 <- 65517  # up arrow
-    19 <- 0  # unused
-    20 <- 0  # unused
-    21 <- 0  # 'text'
-    22 <- 100  # 'd'
-    23 <- 0  # unused
-    24 <- 0  # unused
-    25 <- 0
-  ]
-]
+void test_events_in_scenario() {
+  run_mu_scenario(
+      "scenario events-in-scenario [\n"
+      "  assume-console [\n"
+      "    type [abc]\n"
+      "    left-click 0, 1\n"
+      "    press up-arrow\n"
+      "    type [d]\n"
+      "  ]\n"
+      "  run [\n"
+           // 3 keyboard events; each event occupies 4 locations
+      "    1:event <- read-event console\n"
+      "    5:event <- read-event console\n"
+      "    9:event <- read-event console\n"
+           // mouse click
+      "    13:event <- read-event console\n"
+           // non-character keycode
+      "    17:event <- read-event console\n"
+           // final keyboard event
+      "    21:event <- read-event console\n"
+      "  ]\n"
+      "  memory-should-contain [\n"
+      "    1 <- 0\n"  // 'text'
+      "    2 <- 97\n"  // 'a'
+      "    3 <- 0\n"  // unused
+      "    4 <- 0\n"  // unused
+      "    5 <- 0\n"  // 'text'
+      "    6 <- 98\n"  // 'b'
+      "    7 <- 0\n"  // unused
+      "    8 <- 0\n"  // unused
+      "    9 <- 0\n"  // 'text'
+      "    10 <- 99\n"  // 'c'
+      "    11 <- 0\n"  // unused
+      "    12 <- 0\n"  // unused
+      "    13 <- 2\n"  // 'mouse'
+      "    14 <- 65513\n"  // mouse click
+      "    15 <- 0\n"  // row
+      "    16 <- 1\n"  // column
+      "    17 <- 1\n"  // 'keycode'
+      "    18 <- 65517\n"  // up arrow
+      "    19 <- 0\n"  // unused
+      "    20 <- 0\n"  // unused
+      "    21 <- 0\n"  // 'text'
+      "    22 <- 100\n"  // 'd'
+      "    23 <- 0\n"  // unused
+      "    24 <- 0\n"  // unused
+      "    25 <- 0\n"
+      "  ]\n"
+      "]\n"
+  );
+}
 
 //: Deal with special keys and unmatched brackets by allowing each test to
 //: independently choose the unicode symbol to denote them.

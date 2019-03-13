@@ -16,28 +16,26 @@
 //: In response, this layer introduces the notion of domain-driven *white-box*
 //: testing. We focus on the domain of inputs the whole program needs to
 //: handle rather than the correctness of individual functions. All white-box
-//: tests (we call them 'scenarios') invoke the program in a single way: by
-//: calling run() with some input. As the program operates on the input, it
-//: traces out a list of _facts_ deduced about the domain:
+//: tests invoke the program in a single way: by calling run() with some
+//: input. As the program operates on the input, it traces out a list of
+//: _facts_ deduced about the domain:
 //:   trace("label") << "fact 1: " << val;
 //:
-//: Scenarios can now check these facts:
-//:   :(scenario foo)
-//:   34  # call run() with this input
-//:   +label: fact 1: 34  # 'run' should have deduced this fact
-//:   -label: fact 1: 35  # the trace should not contain such a fact
+//: Tests can now check for these facts in the trace:
+//:   CHECK_TRACE_CONTENTS("label", "fact 1: 34\n"
+//:                                 "fact 2: 35\n");
 //:
 //: Since we never call anything but the run() function directly, we never have
-//: to rewrite the scenarios when we reorganize the internals of the program. We
+//: to rewrite the tests when we reorganize the internals of the program. We
 //: just have to make sure our rewrite deduces the same facts about the domain,
 //: and that's something we're going to have to do anyway.
 //:
 //: To avoid the combinatorial explosion of integration tests, each layer
-//: mainly logs facts to the trace with a common *label*. All scenarios in a
-//: layer tend to check facts with this label. Validating the facts logged
-//: with a specific label is like calling functions of that layer directly.
+//: mainly logs facts to the trace with a common *label*. All tests in a layer
+//: tend to check facts with this label. Validating the facts logged with a
+//: specific label is like calling functions of that layer directly.
 //:
-//: To build robust scenarios, trace facts about your domain rather than details of
+//: To build robust tests, trace facts about your domain rather than details of
 //: how you computed them.
 //:
 //: More details: http://akkartik.name/blog/tracing-tests
@@ -50,10 +48,10 @@
 //: we allow programmers to engage with the a) deep, b) global structure of
 //: the c) domain. If you can systematically track discontinuities in the
 //: domain, you don't care if the code used gotos as long as it passed all
-//: scenarios. If scenarios become more robust to run, it becomes easier to
-//: try out radically different implementations for the same program. If code
-//: is super-easy to rewrite, it becomes less important what indentation style
-//: it uses, or that the objects are appropriately encapsulated, or that the
+//: tests. If tests become more robust to run, it becomes easier to try out
+//: radically different implementations for the same program. If code is
+//: super-easy to rewrite, it becomes less important what indentation style it
+//: uses, or that the objects are appropriately encapsulated, or that the
 //: functions are referentially transparent.
 //:
 //: Instead of plumbing, programming becomes building and gradually refining a
@@ -61,7 +59,7 @@
 //: is 'correct' at a given point in time is a red herring; what matters is
 //: avoiding regression by monotonically nailing down the more 'eventful'
 //: parts of the terrain. It helps readers new and old, and rewards curiosity,
-//: to organize large programs in self-similar hierarchies of example scenarios
+//: to organize large programs in self-similar hierarchies of example tests
 //: colocated with the code that makes them work.
 //:
 //:   "Programming properly should be regarded as an activity by which
@@ -178,7 +176,7 @@ void trace_stream::newline() {
   curr_depth = Max_depth;
 }
 
-//:: == Initializing the trace in scenarios
+//:: == Initializing the trace in tests
 
 :(before "End Includes")
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
@@ -214,7 +212,7 @@ int Hide_warnings = false;  // if set, don't print warnings to screen
 :(before "End Reset")
 Hide_errors = false;
 Hide_warnings = false;
-//: Never dump warnings in scenarios
+//: Never dump warnings in tests
 :(before "End Test Setup")
 Hide_warnings = true;
 :(code)
@@ -230,7 +228,7 @@ bool should_incrementally_print_trace();
 :(before "End Globals")
 int Trace_errors = 0;  // used only when Trace_stream is NULL
 
-// Fail scenarios that displayed (unexpected) errors.
+// Fail tests that displayed (unexpected) errors.
 // Expected errors should always be hidden and silently checked for.
 :(before "End Test Teardown")
 if (Passed && !Hide_errors && trace_contains_errors()) {
@@ -287,14 +285,14 @@ bool trace_contains_errors() {
     return; \
   }
 
-// Allow scenarios to ignore trace lines generated during setup.
+// Allow tests to ignore trace lines generated during setup.
 #define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream
 
 :(code)
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {
   if (!Passed) return false;
   if (!Trace_stream) return false;
-  vector<string> expected_lines = split(expected, "");
+  vector<string> expected_lines = split(expected, "\n");
   int curr_expected_line = 0;
   while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
@@ -408,7 +406,7 @@ vector<string> split_first(string s, string delim) {
 //:: == Helpers for debugging using traces
 
 :(before "End Includes")
-// To debug why a scenario is failing, dump its trace using '?'.
+// To debug why a test is failing, dump its trace using '?'.
 #define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
 
 // To add temporary prints to the trace, use 'dbg'.

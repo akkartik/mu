@@ -6,12 +6,17 @@
 //: Create containers containing addresses to arrays instead.
 
 //: You can create arrays using 'create-array'.
-:(scenario create_array)
-def main [
-  # create an array occupying locations 1 (for the size) and 2-4 (for the elements)
-  1:array:num:3 <- create-array
-]
-+run: creating array from 4 locations
+void test_create_array() {
+  run(
+      "def main [\n"
+      // create an array occupying locations 1 (for the size) and 2-4 (for the elements)
+      "  1:array:num:3 <- create-array\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: creating array from 4 locations\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 CREATE_ARRAY,
@@ -69,34 +74,45 @@ case CREATE_ARRAY: {
   break;
 }
 
-:(scenario copy_array)
-# Arrays can be copied around with a single instruction just like numbers,
-# no matter how large they are.
-# You don't need to pass the size around, since each array variable stores its
-# size in memory at run-time. We'll call a variable with an explicit size a
-# 'static' array, and one without a 'dynamic' array since it can contain
-# arrays of many different sizes.
-def main [
-  1:array:num:3 <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  5:array:num <- copy 1:array:num:3
-]
-+mem: storing 3 in location 5
-+mem: storing 14 in location 6
-+mem: storing 15 in location 7
-+mem: storing 16 in location 8
+:(code)
+// Arrays can be copied around with a single instruction just like numbers,
+// no matter how large they are.
+// You don't need to pass the size around, since each array variable stores its
+// size in memory at run-time. We'll call a variable with an explicit size a
+// 'static' array, and one without a 'dynamic' array since it can contain
+// arrays of many different sizes.
+void test_copy_array() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  2:num <- copy 14\n"
+      "  3:num <- copy 15\n"
+      "  4:num <- copy 16\n"
+      "  5:array:num <- copy 1:array:num:3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 5\n"
+      "mem: storing 14 in location 6\n"
+      "mem: storing 15 in location 7\n"
+      "mem: storing 16 in location 8\n"
+  );
+}
 
-:(scenario stash_array)
-def main [
-  1:array:num:3 <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  stash [foo:], 1:array:num:3
-]
-+app: foo: 3 14 15 16
+void test_stash_array() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  2:num <- copy 14\n"
+      "  3:num <- copy 15\n"
+      "  4:num <- copy 16\n"
+      "  stash [foo:], 1:array:num:3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: foo: 3 14 15 16\n"
+  );
+}
 
 :(before "End types_coercible Special-cases")
 if (is_mu_array(from) && is_mu_array(to))
@@ -133,23 +149,33 @@ if (x.type && !x.type->atom && x.type->left->value == Array_type_ordinal) return
 //: arrays are disallowed inside containers unless their length is fixed in
 //: advance
 
-:(scenario container_permits_static_array_element)
-container foo [
-  x:array:num:3
-]
-$error: 0
+:(code)
+void test_container_permits_static_array_element() {
+  run(
+      "container foo [\n"
+      "  x:array:num:3\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 :(before "End insert_container Special-cases")
 else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
   type->value = 0;
 }
 
-:(scenario container_disallows_dynamic_array_element)
-% Hide_errors = true;
-container foo [
-  x:array:num
-]
-+error: container 'foo' cannot determine size of element 'x'
+:(code)
+void test_container_disallows_dynamic_array_element() {
+  Hide_errors = true;
+  run(
+      "container foo [\n"
+      "  x:array:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: container 'foo' cannot determine size of element 'x'\n"
+  );
+}
 
 :(before "End Load Container Element Definition")
 {
@@ -178,64 +204,86 @@ if (current_call().running_step_index < SIZE(get(Recipe, current_call().running_
   return false;
 }
 
-:(scenario merge_static_array_into_container)
-container foo [
-  x:num
-  y:array:num:3
-]
-def main [
-  1:array:num:3 <- create-array
-  10:foo <- merge 34, 1:array:num:3
-]
-# no errors
+:(code)
+void test_merge_static_array_into_container() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:array:num:3\n"
+      "]\n"
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  10:foo <- merge 34, 1:array:num:3\n"
+      "]\n"
+  );
+  // no errors
+}
 
-:(scenario code_inside_container)
-% Hide_errors = true;
-container card [
-  rank:num <- next-ingredient
-]
-def foo [
-  1:card <- merge 3
-  2:num <- get 1:card rank:offset
-]
-# shouldn't die
+void test_code_inside_container() {
+  Hide_errors = true;
+  run(
+      "container card [\n"
+      "  rank:num <- next-ingredient\n"
+      "]\n"
+      "def foo [\n"
+      "  1:card <- merge 3\n"
+      "  2:num <- get 1:card rank:offset\n"
+      "]\n"
+  );
+  // shouldn't die
+}
 
 //:: To access elements of an array, use 'index'
 
-:(scenario index)
-def main [
-  1:array:num:3 <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  10:num <- index 1:array:num:3, 0/index  # the index must be a non-negative whole number
-]
-+mem: storing 14 in location 10
+void test_index() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  2:num <- copy 14\n"
+      "  3:num <- copy 15\n"
+      "  4:num <- copy 16\n"
+      "  10:num <- index 1:array:num:3, 0/index\n"  // the index must be a non-negative whole number
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 14 in location 10\n"
+  );
+}
 
-:(scenario index_compound_element)
-def main [
-  {1: (array (address number) 3)} <- create-array
-  # skip alloc id
-  3:num <- copy 14
-  # skip alloc id
-  5:num <- copy 15
-  # skip alloc id
-  7:num <- copy 16
-  10:address:num <- index {1: (array (address number) 3)}, 0
-]
-# skip alloc id
-+mem: storing 14 in location 11
+void test_index_compound_element() {
+  run(
+      "def main [\n"
+      "  {1: (array (address number) 3)} <- create-array\n"
+      // skip alloc id
+      "  3:num <- copy 14\n"
+      // skip alloc id
+      "  5:num <- copy 15\n"
+      // skip alloc id
+      "  7:num <- copy 16\n"
+      "  10:address:num <- index {1: (array (address number) 3)}, 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // skip alloc id
+      "mem: storing 14 in location 11\n"
+  );
+}
 
-:(scenario index_direct_offset)
-def main [
-  1:array:num:3 <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  10:num <- copy 0
-  20:num <- index 1:array:num, 10:num
-]
-+mem: storing 14 in location 20
+void test_index_direct_offset() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  2:num <- copy 14\n"
+      "  3:num <- copy 15\n"
+      "  4:num <- copy 16\n"
+      "  10:num <- copy 0\n"
+      "  20:num <- index 1:array:num, 10:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 14 in location 20\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 INDEX,
@@ -344,58 +392,86 @@ void test_array_length_static() {
   CHECK_EQ(array_length(x), 3);
 }
 
-:(scenario index_truncates)
-def main [
-  1:array:num:3 <- create-array
-  2:num <- copy 14
-  3:num <- copy 15
-  4:num <- copy 16
-  10:num <- index 1:array:num:3, 1.5  # non-whole number
-]
-# fraction is truncated away
-+mem: storing 15 in location 10
+void test_index_truncates() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  2:num <- copy 14\n"
+      "  3:num <- copy 15\n"
+      "  4:num <- copy 16\n"
+      "  10:num <- index 1:array:num:3, 1.5\n"  // non-whole number
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // fraction is truncated away
+      "mem: storing 15 in location 10\n"
+  );
+}
 
-:(scenario index_out_of_bounds)
-% Hide_errors = true;
-def main [
-  1:array:point:3 <- create-array
-  index 1:array:point:3, 4  # less than size of array in locations, but larger than its length in elements
-]
-+error: main: invalid index 4 in 'index 1:array:point:3, 4'
+void test_index_out_of_bounds() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:array:point:3 <- create-array\n"
+      "  index 1:array:point:3, 4\n"  // less than size of array in locations, but larger than its length in elements
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid index 4 in 'index 1:array:point:3, 4'\n"
+  );
+}
 
-:(scenario index_out_of_bounds_2)
-% Hide_errors = true;
-def main [
-  1:array:num:3 <- create-array
-  index 1:array:num, -1
-]
-+error: main: invalid index -1 in 'index 1:array:num, -1'
+void test_index_out_of_bounds_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  index 1:array:num, -1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid index -1 in 'index 1:array:num, -1'\n"
+  );
+}
 
-:(scenario index_product_type_mismatch)
-% Hide_errors = true;
-def main [
-  1:array:point:3 <- create-array
-  10:num <- index 1:array:point, 0
-]
-+error: main: 'index' on '1:array:point' can't be saved in '10:num'; type should be 'point'
+void test_index_product_type_mismatch() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:array:point:3 <- create-array\n"
+      "  10:num <- index 1:array:point, 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'index' on '1:array:point' can't be saved in '10:num'; type should be 'point'\n"
+  );
+}
 
 //: we might want to call 'index' without saving the results, say in a sandbox
 
-:(scenario index_without_product)
-def main [
-  1:array:num:3 <- create-array
-  index 1:array:num:3, 0
-]
-# just don't die
+void test_index_without_product() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  index 1:array:num:3, 0\n"
+      "]\n"
+  );
+  // just don't die
+}
 
 //:: To write to elements of arrays, use 'put'.
 
-:(scenario put_index)
-def main [
-  1:array:num:3 <- create-array
-  1:array:num <- put-index 1:array:num, 1, 34
-]
-+mem: storing 34 in location 3
+void test_put_index() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  1:array:num <- put-index 1:array:num, 1, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 3\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 PUT_INDEX,
@@ -464,40 +540,61 @@ case PUT_INDEX: {
   break;
 }
 
-:(scenario put_index_out_of_bounds)
-% Hide_errors = true;
-def main [
-  1:array:point:3 <- create-array
-  8:point <- merge 34, 35
-  1:array:point <- put-index 1:array:point, 4, 8:point  # '4' is less than size of array in locations, but larger than its length in elements
-]
-+error: main: invalid index 4 in '1:array:point <- put-index 1:array:point, 4, 8:point'
+:(code)
+void test_put_index_out_of_bounds() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:array:point:3 <- create-array\n"
+      "  8:point <- merge 34, 35\n"
+      "  1:array:point <- put-index 1:array:point, 4, 8:point\n"  // '4' is less than size of array in locations, but larger than its length in elements
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid index 4 in '1:array:point <- put-index 1:array:point, 4, 8:point'\n"
+  );
+}
 
-:(scenario put_index_out_of_bounds_2)
-% Hide_errors = true;
-def main [
-  1:array:point:3 <- create-array
-  10:point <- merge 34, 35
-  1:array:point <- put-index 1:array:point, -1, 10:point
-]
-+error: main: invalid index -1 in '1:array:point <- put-index 1:array:point, -1, 10:point'
+void test_put_index_out_of_bounds_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:array:point:3 <- create-array\n"
+      "  10:point <- merge 34, 35\n"
+      "  1:array:point <- put-index 1:array:point, -1, 10:point\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid index -1 in '1:array:point <- put-index 1:array:point, -1, 10:point'\n"
+  );
+}
 
-:(scenario put_index_product_error)
-% Hide_errors = true;
-def main [
-  1:array:num:3 <- create-array
-  4:array:num:3 <- put-index 1:array:num:3, 0, 34
-]
-+error: main: product of 'put-index' must be first ingredient '1:array:num:3', but got '4:array:num:3'
+void test_put_index_product_error() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  4:array:num:3 <- put-index 1:array:num:3, 0, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product of 'put-index' must be first ingredient '1:array:num:3', but got '4:array:num:3'\n"
+  );
+}
 
 //:: compute the length of an array
 
-:(scenario array_length)
-def main [
-  1:array:num:3 <- create-array
-  10:num <- length 1:array:num
-]
-+mem: storing 3 in location 10
+void test_array_length() {
+  run(
+      "def main [\n"
+      "  1:array:num:3 <- create-array\n"
+      "  10:num <- length 1:array:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 10\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 LENGTH,

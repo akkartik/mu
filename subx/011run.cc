@@ -34,46 +34,53 @@ put_new(Help, "syntax",
 :(before "End Help Contents")
 cerr << "  syntax\n";
 
-:(scenario add_imm32_to_eax)
-# At the lowest level, SubX programs are a series of hex bytes, each
-# (variable-length) instruction on one line.
-#
-# Later we'll make things nicer using macros. But you'll always be able to
-# insert hex bytes out of instructions.
-#
-# As you can see, comments start with '#' and are ignored.
-
-# Segment headers start with '==', specifying the hex address where they
-# begin. There's usually one code segment and one data segment. We assume the
-# code segment always comes first. Later when we emit ELF binaries we'll add
-# directives for the operating system to ensure that the code segment can't be
-# written to, and the data segment can't be executed as code.
-== 0x1
-
-# We don't show it here, but all lines can have metadata after a ':'.
-# All words can have metadata after a '/'. No spaces allowed in word metadata, of course.
-# Metadata doesn't directly form instructions, but some macros may look at it.
-# Unrecognized metadata never causes errors, so you can also use it for
-# documentation.
-
-# Within the code segment, x86 instructions consist of the following parts (see cheatsheet.pdf):
-#   opcode        ModR/M                    SIB                   displacement    immediate
-#   instruction   mod, reg, Reg/Mem bits    scale, index, base
-#   1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-    05            .                         .                     .               0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
-# (The single periods are just to help the eye track long gaps between
-# columns, and are otherwise ignored.)
-
-# This program, when run, causes the following events in the trace:
-+load: 0x00000001 -> 05
-+load: 0x00000002 -> 0a
-+load: 0x00000003 -> 0b
-+load: 0x00000004 -> 0c
-+load: 0x00000005 -> 0d
-+run: add imm32 0x0d0c0b0a to reg EAX
-+run: storing 0x0d0c0b0a
-
 :(code)
+void test_add_imm32_to_eax() {
+  // At the lowest level, SubX programs are a series of hex bytes, each
+  // (variable-length) instruction on one line.
+  run(
+      // Comments start with '#' and are ignored.
+      "# comment\n"
+      // Segment headers start with '==' and a name or starting hex address.
+      // There's usually one code and one data segment. The code segment
+      // always comes first.
+      "== 0x1\n"  // code segment
+
+      // After the header, each segment consists of lines, and each line
+      // consists of words separated by whitespace.
+      //
+      // All words can have metadata after a '/'. No spaces allowed in
+      // metadata, of course.
+      // Unrecognized metadata never causes errors, so you can use it for
+      // documentation.
+      //
+      // Within the code segment in particular, x86 instructions consist of
+      // some number of the following parts and sub-parts (see the Readme and
+      // cheatsheet.pdf for details):
+      //   opcodes: 1-3 bytes
+      //   ModR/M byte
+      //   SIB byte
+      //   displacement: 0/1/2/4 bytes
+      //   immediate: 0/1/2/4 bytes
+      // opcode        ModR/M                    SIB                   displacement    immediate
+      // instruction   mod, reg, Reg/Mem bits    scale, index, base
+      // 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
+      "  05            .                         .                     .               0a 0b 0c 0d\n"  // add 0x0d0c0b0a to EAX
+      // The periods are just to help the eye track long gaps between columns,
+      // and are otherwise ignored.
+  );
+  // This program, when run, causes the following events in the trace:
+  CHECK_TRACE_CONTENTS(
+      "load: 0x00000001 -> 05\n"
+      "load: 0x00000002 -> 0a\n"
+      "load: 0x00000003 -> 0b\n"
+      "load: 0x00000004 -> 0c\n"
+      "load: 0x00000005 -> 0d\n"
+      "run: add imm32 0x0d0c0b0a to reg EAX\n"
+      "run: storing 0x0d0c0b0a\n"
+  );
+}
+
 // top-level helper for scenarios: parse the input, transform any macros, load
 // the final hex bytes into memory, run it
 void run(const string& text_bytes) {
@@ -207,14 +214,18 @@ void parse(const string& text_bytes) {
   parse(in, p);
 }
 
-:(scenarios parse)
-:(scenario detect_duplicate_segments)
-% Hide_errors = true;
-== 0xee
-ab
-== 0xee
-cd
-+error: can't have multiple segments starting at address 0x000000ee
+void test_detect_duplicate_segments() {
+  Hide_errors = true;
+  parse(
+      "== 0xee\n"
+      "ab\n"
+      "== 0xee\n"
+      "cd\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: can't have multiple segments starting at address 0x000000ee\n"
+  );
+}
 
 //:: transform
 
@@ -278,37 +289,56 @@ uint8_t hex_byte(const string& s) {
   return static_cast<uint8_t>(result);
 }
 
-:(scenarios parse_and_load)
-:(scenario number_too_large)
-% Hide_errors = true;
-== 0x1
-05 cab
-+error: token 'cab' is not a hex byte
+void test_number_too_large() {
+  Hide_errors = true;
+  parse_and_load(
+      "== 0x1\n"
+      "05 cab\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: token 'cab' is not a hex byte\n"
+  );
+}
 
-:(scenario invalid_hex)
-% Hide_errors = true;
-== 0x1
-05 cx
-+error: token 'cx' is not a hex byte
+void test_invalid_hex() {
+  Hide_errors = true;
+  parse_and_load(
+      "== 0x1\n"
+      "05 cx\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: token 'cx' is not a hex byte\n"
+  );
+}
 
-:(scenario negative_number)
-== 0x1
-05 -12
-$error: 0
+void test_negative_number() {
+  parse_and_load(
+      "== 0x1\n"
+      "05 -12\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario negative_number_too_small)
-% Hide_errors = true;
-== 0x1
-05 -12345
-+error: token '-12345' is not a hex byte
+void test_negative_number_too_small() {
+  Hide_errors = true;
+  parse_and_load(
+      "== 0x1\n"
+      "05 -12345\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: token '-12345' is not a hex byte\n"
+  );
+}
 
-:(scenario hex_prefix)
-== 0x1
-0x05 -0x12
-$error: 0
+void test_hex_prefix() {
+  parse_and_load(
+      "== 0x1\n"
+      "0x05 -0x12\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //: helper for tests
-:(code)
 void parse_and_load(const string& text_bytes) {
   program p;
   istringstream in(text_bytes);
@@ -343,7 +373,6 @@ int32_t next32() {
 
 //:: helpers
 
-:(code)
 string to_string(const word& w) {
   ostringstream out;
   out << w.data;

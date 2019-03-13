@@ -1,55 +1,79 @@
 //: make some recipes more friendly by trying to auto-convert their ingredients to text
 
-:(scenarios transform)
-:(scenario rewrite_stashes_to_text)
-def main [
-  local-scope
-  n:num <- copy 34
-  stash n
-]
-+transform: {stash_2_0: ("address" "array" "character")} <- to-text-line {n: "number"}
-+transform: stash {stash_2_0: ("address" "array" "character")}
+void test_rewrite_stashes_to_text() {
+  transform(
+      "def main [\n"
+      "  local-scope\n"
+      "  n:num <- copy 34\n"
+      "  stash n\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: {stash_2_0: (\"address\" \"array\" \"character\")} <- to-text-line {n: \"number\"}\n"
+      "transform: stash {stash_2_0: (\"address\" \"array\" \"character\")}\n"
+  );
+}
 
-:(scenario rewrite_traces_to_text)
-def main [
-  local-scope
-  n:num <- copy 34
-  trace 2, [app], n
-]
-+transform: {trace_2_2: ("address" "array" "character")} <- to-text-line {n: "number"}
-+transform: trace {2: "literal"}, {"app": "literal-string"}, {trace_2_2: ("address" "array" "character")}
+void test_rewrite_traces_to_text() {
+  transform(
+      "def main [\n"
+      "  local-scope\n"
+      "  n:num <- copy 34\n"
+      "  trace 2, [app], n\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: {trace_2_2: (\"address\" \"array\" \"character\")} <- to-text-line {n: \"number\"}\n"
+      "transform: trace {2: \"literal\"}, {\"app\": \"literal-string\"}, {trace_2_2: (\"address\" \"array\" \"character\")}\n"
+  );
+}
 
 //: special case: rewrite attempts to stash contents of most arrays to avoid
 //: passing addresses around
 
-:(scenario rewrite_stashes_of_arrays)
-def main [
-  local-scope
-  n:&:@:num <- new number:type, 3
-  stash *n
-]
-+transform: {stash_2_0: ("address" "array" "character")} <- array-to-text-line {n: ("address" "array" "number")}
-+transform: stash {stash_2_0: ("address" "array" "character")}
+void test_rewrite_stashes_of_arrays() {
+  transform(
+      "def main [\n"
+      "  local-scope\n"
+      "  n:&:@:num <- new number:type, 3\n"
+      "  stash *n\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: {stash_2_0: (\"address\" \"array\" \"character\")} <- array-to-text-line {n: (\"address\" \"array\" \"number\")}\n"
+      "transform: stash {stash_2_0: (\"address\" \"array\" \"character\")}\n"
+  );
+}
 
-:(scenario ignore_stashes_of_static_arrays)
-def main [
-  local-scope
-  n:@:num:3 <- create-array
-  stash n
-]
-+transform: stash {n: ("array" "number" "3")}
+void test_ignore_stashes_of_static_arrays() {
+  transform(
+      "def main [\n"
+      "  local-scope\n"
+      "  n:@:num:3 <- create-array\n"
+      "  stash n\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: stash {n: (\"array\" \"number\" \"3\")}\n"
+  );
+}
 
-:(scenario rewrite_stashes_of_recipe_header_products)
-container foo [
-  x:num
-]
-def bar -> x:foo [
-  local-scope
-  load-ingredients
-  x <- merge 34
-  stash x
-]
-+transform: stash {stash_2_0: ("address" "array" "character")}
+void test_rewrite_stashes_of_recipe_header_products() {
+  transform(
+      "container foo [\n"
+      "  x:num\n"
+      "]\n"
+      "def bar -> x:foo [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  x <- merge 34\n"
+      "  stash x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: stash {stash_2_0: (\"address\" \"array\" \"character\")}\n"
+  );
+}
 
 //: misplaced; should be in instruction inserting/deleting transforms, but has
 //: prerequisites: deduce_types_from_header and check_or_set_types_by_name
@@ -152,29 +176,37 @@ name_before_rewrite.clear();
 :(before "End next_instruction(curr)")
 curr->name_before_rewrite = curr->name;
 
-:(scenarios run)
-:(scenario append_other_types_to_text)
-def main [
-  local-scope
-  n:num <- copy 11
-  c:char <- copy 111/o
-  a:text <- append [abc], 10, n, c
-  expected:text <- new [abc1011o]
-  10:bool/raw <- equal a, expected
-]
+:(code)
+void test_append_other_types_to_text() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  n:num <- copy 11\n"
+      "  c:char <- copy 111/o\n"
+      "  a:text <- append [abc], 10, n, c\n"
+      "  expected:text <- new [abc1011o]\n"
+      "  10:bool/raw <- equal a, expected\n"
+      "]\n"
+  );
+}
 
 //: Make sure that the new system is strictly better than just the 'stash'
 //: primitive by itself.
 
-:(scenario rewrite_stash_continues_to_fall_back_to_default_implementation)
-# type without a to-text implementation
-container foo [
-  x:num
-  y:num
-]
-def main [
-  local-scope
-  x:foo <- merge 34, 35
-  stash x
-]
-+app: 34 35
+void test_rewrite_stash_continues_to_fall_back_to_default_implementation() {
+  run(
+      // type without a to-text implementation
+      "container foo [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  local-scope\n"
+      "  x:foo <- merge 34, 35\n"
+      "  stash x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: 34 35\n"
+  );
+}

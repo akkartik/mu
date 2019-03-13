@@ -2,17 +2,22 @@
 //: number and types of the ingredients and products. Allows us to use nice
 //: names like 'print' or 'length' in many mutually extensible ways.
 
-:(scenario static_dispatch)
-def main [
-  7:num/raw <- test 3
-]
-def test a:num -> z:num [
-  z <- copy 1
-]
-def test a:num, b:num -> z:num [
-  z <- copy 2
-]
-+mem: storing 1 in location 7
+void test_static_dispatch() {
+  run(
+      "def main [\n"
+      "  7:num/raw <- test 3\n"
+      "]\n"
+      "def test a:num -> z:num [\n"
+      "  z <- copy 1\n"
+      "]\n"
+      "def test a:num, b:num -> z:num [\n"
+      "  z <- copy 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 7\n"
+  );
+}
 
 //: When loading recipes, accumulate variants if headers don't collide, and
 //: flag an error if headers collide.
@@ -120,17 +125,22 @@ string next_unused_recipe_name(const string& recipe_name) {
 //: Once all the recipes are loaded, transform their bodies to replace each
 //: call with the most suitable variant.
 
-:(scenario static_dispatch_picks_most_similar_variant)
-def main [
-  7:num/raw <- test 3, 4, 5
-]
-def test a:num -> z:num [
-  z <- copy 1
-]
-def test a:num, b:num -> z:num [
-  z <- copy 2
-]
-+mem: storing 2 in location 7
+void test_static_dispatch_picks_most_similar_variant() {
+  run(
+      "def main [\n"
+      "  7:num/raw <- test 3, 4, 5\n"
+      "]\n"
+      "def test a:num -> z:num [\n"
+      "  z <- copy 1\n"
+      "]\n"
+      "def test a:num, b:num -> z:num [\n"
+      "  z <- copy 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 7\n"
+  );
+}
 
 //: support recipe headers in a previous transform to fill in missing types
 :(before "End check_or_set_invalid_types")
@@ -343,144 +353,189 @@ bool next_stash(const call& c, instruction* stash_inst) {
   return false;
 }
 
-:(scenario static_dispatch_disabled_in_recipe_without_variants)
-def main [
-  1:num <- test 3
-]
-def test [
-  2:num <- next-ingredient  # ensure no header
-  return 34
-]
-+mem: storing 34 in location 1
+void test_static_dispatch_disabled_in_recipe_without_variants() {
+  run(
+      "def main [\n"
+      "  1:num <- test 3\n"
+      "]\n"
+      "def test [\n"
+      "  2:num <- next-ingredient  # ensure no header\n"
+      "  return 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario static_dispatch_disabled_on_headerless_definition)
-% Hide_errors = true;
-def test a:num -> z:num [
-  z <- copy 1
-]
-def test [
-  return 34
-]
-+error: redefining recipe test
+void test_static_dispatch_disabled_on_headerless_definition() {
+  Hide_errors = true;
+  run(
+      "def test a:num -> z:num [\n"
+      "  z <- copy 1\n"
+      "]\n"
+      "def test [\n"
+      "  return 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: redefining recipe test\n"
+  );
+}
 
-:(scenario static_dispatch_disabled_on_headerless_definition_2)
-% Hide_errors = true;
-def test [
-  return 34
-]
-def test a:num -> z:num [
-  z <- copy 1
-]
-+error: redefining recipe test
+void test_static_dispatch_disabled_on_headerless_definition_2() {
+  Hide_errors = true;
+  run(
+      "def test [\n"
+      "  return 34\n"
+      "]\n"
+      "def test a:num -> z:num [\n"
+      "  z <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: redefining recipe test\n"
+  );
+}
 
-:(scenario static_dispatch_on_primitive_names)
-def main [
-  1:num <- copy 34
-  2:num <- copy 34
-  3:bool <- equal 1:num, 2:num
-  4:bool <- copy false
-  5:bool <- copy false
-  6:bool <- equal 4:bool, 5:bool
-]
-# temporarily hardcode number equality to always fail
-def equal x:num, y:num -> z:bool [
-  local-scope
-  load-ingredients
-  z <- copy false
-]
-# comparing numbers used overload
-+mem: storing 0 in location 3
-# comparing booleans continues to use primitive
-+mem: storing 1 in location 6
+void test_static_dispatch_on_primitive_names() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 34\n"
+      "  3:bool <- equal 1:num, 2:num\n"
+      "  4:bool <- copy false\n"
+      "  5:bool <- copy false\n"
+      "  6:bool <- equal 4:bool, 5:bool\n"
+      "]\n"
+      // temporarily hardcode number equality to always fail
+      "def equal x:num, y:num -> z:bool [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- copy false\n"
+      "]\n"
+      "# comparing numbers used overload\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // comparing numbers used overload
+      "mem: storing 0 in location 3\n"
+      // comparing booleans continues to use primitive
+      "mem: storing 1 in location 6\n"
+  );
+}
 
-:(scenario static_dispatch_works_with_dummy_results_for_containers)
-def main [
-  _ <- test 3, 4
-]
-def test a:num -> z:point [
-  local-scope
-  load-ingredients
-  z <- merge a, 0
-]
-def test a:num, b:num -> z:point [
-  local-scope
-  load-ingredients
-  z <- merge a, b
-]
-$error: 0
+void test_static_dispatch_works_with_dummy_results_for_containers() {
+  run(
+      "def main [\n"
+      "  _ <- test 3, 4\n"
+      "]\n"
+      "def test a:num -> z:point [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- merge a, 0\n"
+      "]\n"
+      "def test a:num, b:num -> z:point [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- merge a, b\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)
-def main [
-  x:&:foo <- new foo:type
-  test x
-]
-container foo [
-  x:num
-]
-def test a:&:foo -> z:num [
-  local-scope
-  load-ingredients
-  z:num <- get *a, x:offset
-]
-$error: 0
+void test_static_dispatch_works_with_compound_type_containing_container_defined_after_first_use() {
+  run(
+      "def main [\n"
+      "  x:&:foo <- new foo:type\n"
+      "  test x\n"
+      "]\n"
+      "container foo [\n"
+      "  x:num\n"
+      "]\n"
+      "def test a:&:foo -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z:num <- get *a, x:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)
-def main [
-  x:&:foo <- new foo:type
-  test x
-]
-def test a:&:foo -> z:num [
-  local-scope
-  load-ingredients
-  z:num <- get *a, x:offset
-]
-container foo [
-  x:num
-]
-$error: 0
+void test_static_dispatch_works_with_compound_type_containing_container_defined_after_second_use() {
+  run(
+      "def main [\n"
+      "  x:&:foo <- new foo:type\n"
+      "  test x\n"
+      "]\n"
+      "def test a:&:foo -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z:num <- get *a, x:offset\n"
+      "]\n"
+      "container foo [\n"
+      "  x:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario static_dispatch_on_non_literal_character_ignores_variant_with_numbers)
-% Hide_errors = true;
-def main [
-  local-scope
-  x:char <- copy 10/newline
-  1:num/raw <- foo x
-]
-def foo x:num -> y:num [
-  load-ingredients
-  return 34
-]
-+error: main: ingredient 0 has the wrong type at '1:num/raw <- foo x'
--mem: storing 34 in location 1
+void test_static_dispatch_on_non_literal_character_ignores_variant_with_numbers() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  x:char <- copy 10/newline\n"
+      "  1:num/raw <- foo x\n"
+      "]\n"
+      "def foo x:num -> y:num [\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: ingredient 0 has the wrong type at '1:num/raw <- foo x'\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 34 in location 1");
+}
 
-:(scenario static_dispatch_dispatches_literal_to_character)
-def main [
-  1:num/raw <- foo 97
-]
-def foo x:char -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-# character variant is preferred
-+mem: storing 34 in location 1
+void test_static_dispatch_dispatches_literal_to_character() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- foo 97\n"
+      "]\n"
+      "def foo x:char -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "# character variant is preferred\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario static_dispatch_dispatches_literal_to_number_if_at_all_possible)
-def main [
-  1:num/raw <- foo 97
-]
-def foo x:char -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo x:num -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-# number variant is preferred
-+mem: storing 35 in location 1
+void test_static_dispatch_dispatches_literal_to_number_if_at_all_possible() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- foo 97\n"
+      "]\n"
+      "def foo x:char -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "def foo x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // number variant is preferred
+      "mem: storing 35 in location 1\n"
+  );
+}
 
 :(replace{} "string header_label(const recipe_ordinal r)")
 string header_label(const recipe_ordinal r) {
@@ -509,95 +564,120 @@ string original_header_label(const recipe& caller) {
   return out.str();
 }
 
-:(scenario reload_variant_retains_other_variants)
-def main [
-  1:num <- copy 34
-  2:num <- foo 1:num
-]
-def foo x:num -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo x:&:num -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-def! foo x:&:num -> y:num [
-  local-scope
-  load-ingredients
-  return 36
-]
-+mem: storing 34 in location 2
-$error: 0
+void test_reload_variant_retains_other_variants() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- foo 1:num\n"
+      "]\n"
+      "def foo x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "def foo x:&:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+      "def! foo x:&:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 36\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 2\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario dispatch_errors_come_after_unknown_name_errors)
-% Hide_errors = true;
-def main [
-  y:num <- foo x
-]
-def foo a:num -> b:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo a:bool -> b:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-+error: main: missing type for 'x' in 'y:num <- foo x'
-+error: main: failed to find a matching call for 'y:num <- foo x'
+void test_dispatch_errors_come_after_unknown_name_errors() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  y:num <- foo x\n"
+      "]\n"
+      "def foo a:num -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "def foo a:bool -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: missing type for 'x' in 'y:num <- foo x'\n"
+      "error: main: failed to find a matching call for 'y:num <- foo x'\n"
+  );
+}
 
-:(scenario override_methods_with_type_abbreviations)
-def main [
-  local-scope
-  s:text <- new [abc]
-  1:num/raw <- foo s
-]
-def foo a:address:array:character -> result:number [
-  return 34
-]
-# identical to previous variant once you take type abbreviations into account
-def! foo a:text -> result:num [
-  return 35
-]
-+mem: storing 35 in location 1
+void test_override_methods_with_type_abbreviations() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  s:text <- new [abc]\n"
+      "  1:num/raw <- foo s\n"
+      "]\n"
+      "def foo a:address:array:character -> result:number [\n"
+      "  return 34\n"
+      "]\n"
+      // identical to previous variant once you take type abbreviations into account
+      "def! foo a:text -> result:num [\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 35 in location 1\n"
+  );
+}
 
-:(scenario ignore_static_dispatch_in_type_errors_without_overloading)
-% Hide_errors = true;
-def main [
-  local-scope
-  x:&:num <- copy 0
-  foo x
-]
-def foo x:&:char [
-  local-scope
-  load-ingredients
-]
-+error: main: types don't match in call for 'foo x'
-+error:   which tries to call 'recipe foo x:&:char'
+void test_ignore_static_dispatch_in_type_errors_without_overloading() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  x:&:num <- copy 0\n"
+      "  foo x\n"
+      "]\n"
+      "def foo x:&:char [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: types don't match in call for 'foo x'\n"
+      "error:   which tries to call 'recipe foo x:&:char'\n"
+  );
+}
 
-:(scenario show_available_variants_in_dispatch_errors)
-% Hide_errors = true;
-def main [
-  local-scope
-  x:&:num <- copy 0
-  foo x
-]
-def foo x:&:char [
-  local-scope
-  load-ingredients
-]
-def foo x:&:bool [
-  local-scope
-  load-ingredients
-]
-+error: main: failed to find a matching call for 'foo x'
-+error:   available variants are:
-+error:     recipe foo x:&:char
-+error:     recipe foo x:&:bool
+void test_show_available_variants_in_dispatch_errors() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  x:&:num <- copy 0\n"
+      "  foo x\n"
+      "]\n"
+      "def foo x:&:char [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "]\n"
+      "def foo x:&:bool [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: failed to find a matching call for 'foo x'\n"
+      "error:   available variants are:\n"
+      "error:     recipe foo x:&:char\n"
+      "error:     recipe foo x:&:bool\n"
+  );
+}
 
 :(before "End Includes")
 using std::abs;

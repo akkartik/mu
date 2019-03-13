@@ -1,13 +1,18 @@
 //: Jump primitives
 
-:(scenario jump_can_skip_instructions)
-def main [
-  jump 1:offset
-  1:num <- copy 1
-]
-+run: jump {1: "offset"}
--run: {1: "number"} <- copy {1: "literal"}
--mem: storing 1 in location 1
+void test_jump_can_skip_instructions() {
+  run(
+      "def main [\n"
+      "  jump 1:offset\n"
+      "  1:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: jump {1: \"offset\"}\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: {1: \"number\"} <- copy {1: \"literal\"}");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 1 in location 1");
+}
 
 :(before "End Primitive Recipe Declarations")
 JUMP,
@@ -44,23 +49,34 @@ case JUMP: {
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "offset", 0);
 
-:(scenario jump_backward)
-def main [
-  jump 1:offset  # 0 -+
-  jump 3:offset  #    |   +-+ 1
-                 #   \/  /\ |
-  jump -2:offset #  2 +-->+ |
-]                #         \/ 3
-+run: jump {1: "offset"}
-+run: jump {-2: "offset"}
-+run: jump {3: "offset"}
+:(code)
+void test_jump_backward() {
+  run(
+      "def main [\n"
+      "  jump 1:offset\n"  // 0 -+
+      "  jump 3:offset\n"  //    |   +-+ 1
+                           //   \/  /\ |
+      "  jump -2:offset\n" //  2 +-->+ |
+      "]\n"                //         \/ 3
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: jump {1: \"offset\"}\n"
+      "run: jump {-2: \"offset\"}\n"
+      "run: jump {3: \"offset\"}\n"
+  );
+}
 
-:(scenario jump_takes_no_products)
-% Hide_errors = true;
-def main [
-  1:num <- jump 1
-]
-+error: main: 'jump' instructions write no products
+void test_jump_takes_no_products() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- jump 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'jump' instructions write no products\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 JUMP_IF,
@@ -102,36 +118,52 @@ case JUMP_IF: {
   break;
 }
 
-:(scenario jump_if)
-def main [
-  jump-if 999, 1:offset
-  123:num <- copy 1
-]
-+run: jump-if {999: "literal"}, {1: "offset"}
-+run: jumping to instruction 2
--run: {123: "number"} <- copy {1: "literal"}
--mem: storing 1 in location 123
+:(code)
+void test_jump_if() {
+  run(
+      "def main [\n"
+      "  jump-if 999, 1:offset\n"
+      "  123:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: jump-if {999: \"literal\"}, {1: \"offset\"}\n"
+      "run: jumping to instruction 2\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: {123: \"number\"} <- copy {1: \"literal\"}");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 1 in location 123");
+}
 
-:(scenario jump_if_fallthrough)
-def main [
-  jump-if 0, 1:offset
-  123:num <- copy 1
-]
-+run: jump-if {0: "literal"}, {1: "offset"}
-+run: jump-if fell through
-+run: {123: "number"} <- copy {1: "literal"}
-+mem: storing 1 in location 123
+void test_jump_if_fallthrough() {
+  run(
+      "def main [\n"
+      "  jump-if 0, 1:offset\n"
+      "  123:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: jump-if {0: \"literal\"}, {1: \"offset\"}\n"
+      "run: jump-if fell through\n"
+      "run: {123: \"number\"} <- copy {1: \"literal\"}\n"
+      "mem: storing 1 in location 123\n"
+  );
+}
 
-:(scenario jump_if_on_address)
-def main [
-  10:num/alloc-id, 11:num <- copy 0, 999
-  jump-if 10:&:number, 1:offset
-  123:num <- copy 1
-]
-+run: jump-if {10: ("address" "number")}, {1: "offset"}
-+run: jumping to instruction 3
--run: {123: "number"} <- copy {1: "literal"}
--mem: storing 1 in location 123
+void test_jump_if_on_address() {
+  run(
+      "def main [\n"
+      "  10:num/alloc-id, 11:num <- copy 0, 999\n"
+      "  jump-if 10:&:number, 1:offset\n"
+      "  123:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: jump-if {10: (\"address\" \"number\")}, {1: \"offset\"}\n"
+      "run: jumping to instruction 3\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: {123: \"number\"} <- copy {1: \"literal\"}");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 1 in location 123");
+}
 
 :(before "End Primitive Recipe Declarations")
 JUMP_UNLESS,
@@ -173,22 +205,33 @@ case JUMP_UNLESS: {
   break;
 }
 
-:(scenario jump_unless)
-def main [
-  jump-unless 0, 1:offset
-  123:num <- copy 1
-]
-+run: jump-unless {0: "literal"}, {1: "offset"}
-+run: jumping to instruction 2
--run: {123: "number"} <- copy {1: "literal"}
--mem: storing 1 in location 123
+:(code)
+void test_jump_unless() {
+  run(
+      "def main [\n"
+      "  jump-unless 0, 1:offset\n"
+      "  123:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: jump-unless {0: \"literal\"}, {1: \"offset\"}\n"
+      "run: jumping to instruction 2\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: {123: \"number\"} <- copy {1: \"literal\"}");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 1 in location 123");
+}
 
-:(scenario jump_unless_fallthrough)
-def main [
-  jump-unless 999, 1:offset
-  123:num <- copy 1
-]
-+run: jump-unless {999: "literal"}, {1: "offset"}
-+run: jump-unless fell through
-+run: {123: "number"} <- copy {1: "literal"}
-+mem: storing 1 in location 123
+void test_jump_unless_fallthrough() {
+  run(
+      "def main [\n"
+      "  jump-unless 999, 1:offset\n"
+      "  123:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: jump-unless {999: \"literal\"}, {1: \"offset\"}\n"
+      "run: jump-unless fell through\n"
+      "run: {123: \"number\"} <- copy {1: \"literal\"}\n"
+      "mem: storing 1 in location 123\n"
+  );
+}

@@ -38,31 +38,51 @@ double scalar_ingredient(const vector<vector<double> >& ingredients, int i) {
   return ingredients.at(i).at(0);
 }
 
-:(scenario and)
-def main [
-  1:bool <- copy true
-  2:bool <- copy false
-  3:bool <- and 1:bool, 2:bool
-]
-+mem: storing 0 in location 3
+void test_and() {
+  run(
+      "def main [\n"
+      "  1:bool <- copy true\n"
+      "  2:bool <- copy false\n"
+      "  3:bool <- and 1:bool, 2:bool\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 3\n"
+  );
+}
 
-:(scenario and_2)
-def main [
-  1:bool <- and true, true
-]
-+mem: storing 1 in location 1
+void test_and_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- and true, true\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario and_multiple)
-def main [
-  1:bool <- and true, true, false
-]
-+mem: storing 0 in location 1
+void test_and_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool <- and true, true, false\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
-:(scenario and_multiple_2)
-def main [
-  1:bool <- and true, true, true
-]
-+mem: storing 1 in location 1
+void test_and_multiple_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- and true, true, true\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 OR,
@@ -96,31 +116,52 @@ case OR: {
   break;
 }
 
-:(scenario or)
-def main [
-  1:bool <- copy true
-  2:bool <- copy false
-  3:bool <- or 1:bool, 2:bool
-]
-+mem: storing 1 in location 3
+:(code)
+void test_or() {
+  run(
+      "def main [\n"
+      "  1:bool <- copy true\n"
+      "  2:bool <- copy false\n"
+      "  3:bool <- or 1:bool, 2:bool\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario or_2)
-def main [
-  1:bool <- or false, false
-]
-+mem: storing 0 in location 1
+void test_or_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- or false, false\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
-:(scenario or_multiple)
-def main [
-  1:bool <- or false, false, false
-]
-+mem: storing 0 in location 1
+void test_or_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool <- or false, false, false\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
-:(scenario or_multiple_2)
-def main [
-  1:bool <- or false, false, true
-]
-+mem: storing 1 in location 1
+void test_or_multiple_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- or false, false, true\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 NOT,
@@ -156,17 +197,28 @@ case NOT: {
   break;
 }
 
-:(scenario not)
-def main [
-  1:bool <- copy true
-  2:bool <- not 1:bool
-]
-+mem: storing 0 in location 2
+:(code)
+void test_not() {
+  run(
+      "def main [\n"
+      "  1:bool <- copy true\n"
+      "  2:bool <- not 1:bool\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 2\n"
+  );
+}
 
-:(scenario not_multiple)
-def main [
-  1:bool, 2:bool, 3:bool <- not true, false, true
-]
-+mem: storing 0 in location 1
-+mem: storing 1 in location 2
-+mem: storing 0 in location 3
+void test_not_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool, 2:bool, 3:bool <- not true, false, true\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+      "mem: storing 1 in location 2\n"
+      "mem: storing 0 in location 3\n"
+  );
+}

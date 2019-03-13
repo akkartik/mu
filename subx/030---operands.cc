@@ -27,12 +27,18 @@ put_new(Help, "instructions",
 :(before "End Help Contents")
 cerr << "  instructions\n";
 
-:(scenario pack_immediate_constants)
-== 0x1
-bb  0x2a/imm32
-+transform: packing instruction 'bb 0x2a/imm32'
-+transform: instruction after packing: 'bb 2a 00 00 00'
-+run: copy imm32 0x0000002a to EBX
+:(code)
+void test_pack_immediate_constants() {
+  run(
+      "== 0x1\n"  // code segment
+      "bb  0x2a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'bb 0x2a/imm32'\n"
+      "transform: instruction after packing: 'bb 2a 00 00 00'\n"
+      "run: copy imm32 0x0000002a to EBX\n"
+  );
+}
 
 //: complete set of valid operand types
 
@@ -310,23 +316,31 @@ void test_preserve_metadata_when_emitting_single_byte() {
   CHECK_EQ(out.words.at(0).original, "f0/foo");
 }
 
-:(scenario pack_disp8)
-== 0x1
-74 2/disp8  # jump 2 bytes away if ZF is set
-+transform: packing instruction '74 2/disp8'
-+transform: instruction after packing: '74 02'
+:(code)
+void test_pack_disp8() {
+  run(
+      "== 0x1\n"  // code segment
+      "74 2/disp8\n"  // jump 2 bytes away if ZF is set
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction '74 2/disp8'\n"
+      "transform: instruction after packing: '74 02'\n"
+  );
+}
 
-:(scenarios transform)
-:(scenario pack_disp8_negative)
-== 0x1
-# running this will cause an infinite loop
-74 -1/disp8  # jump 1 byte before if ZF is set
-+transform: packing instruction '74 -1/disp8'
-+transform: instruction after packing: '74 ff'
-:(scenarios run)
+void test_pack_disp8_negative() {
+  transform(
+      "== 0x1\n"  // code segment
+      // running this will cause an infinite loop
+      "74 -1/disp8\n"  // jump 1 byte before if ZF is set
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction '74 -1/disp8'\n"
+      "transform: instruction after packing: '74 ff'\n"
+  );
+}
 
 //: helper for scenario
-:(code)
 void transform(const string& text_bytes) {
   program p;
   istringstream in(text_bytes);
@@ -335,47 +349,69 @@ void transform(const string& text_bytes) {
   transform(p);
 }
 
-:(scenario pack_modrm_imm32)
-== 0x1
-# instruction                     effective address                                                   operand     displacement    immediate
-# op          subop               mod             rm32          base        index         scale       r32
-# 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-  81          0/add/subop         3/mod/direct    3/ebx/rm32                                                                      1/imm32           # add 1 to EBX
-+transform: packing instruction '81 0/add/subop 3/mod/direct 3/ebx/rm32 1/imm32'
-+transform: instruction after packing: '81 c3 01 00 00 00'
+void test_pack_modrm_imm32() {
+  run(
+      "== 0x1\n"  // code segment
+      // instruction                     effective address                                                   operand     displacement    immediate\n"
+      // op          subop               mod             rm32          base        index         scale       r32\n"
+      // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
+      "  81          0/add/subop         3/mod/direct    3/ebx/rm32                                                                      1/imm32      \n"  // add 1 to EBX
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction '81 0/add/subop 3/mod/direct 3/ebx/rm32 1/imm32'\n"
+      "transform: instruction after packing: '81 c3 01 00 00 00'\n"
+  );
+}
 
-:(scenario pack_imm32_large)
-== 0x1
-b9  0x080490a7/imm32
-+transform: packing instruction 'b9 0x080490a7/imm32'
-+transform: instruction after packing: 'b9 a7 90 04 08'
+void test_pack_imm32_large() {
+  run(
+      "== 0x1\n"  // code segment
+      "b9  0x080490a7/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'b9 0x080490a7/imm32'\n"
+      "transform: instruction after packing: 'b9 a7 90 04 08'\n"
+  );
+}
 
-:(scenario pack_immediate_constants_hex)
-== 0x1
-b9  0x2a/imm32
-+transform: packing instruction 'b9 0x2a/imm32'
-+transform: instruction after packing: 'b9 2a 00 00 00'
-+run: copy imm32 0x0000002a to ECX
+void test_pack_immediate_constants_hex() {
+  run(
+      "== 0x1\n"  // code segment
+      "b9  0x2a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'b9 0x2a/imm32'\n"
+      "transform: instruction after packing: 'b9 2a 00 00 00'\n"
+      "run: copy imm32 0x0000002a to ECX\n"
+  );
+}
 
-:(scenarios transform)
-:(scenario pack_silently_ignores_non_hex)
-% Hide_errors = true;
-== 0x1
-b9  foo/imm32
-+transform: packing instruction 'b9 foo/imm32'
-# no change (we're just not printing metadata to the trace)
-+transform: instruction after packing: 'b9 foo'
-:(scenarios run)
+void test_pack_silently_ignores_non_hex() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"  // code segment
+      "b9  foo/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'b9 foo/imm32'\n"
+      // no change (we're just not printing metadata to the trace)
+      "transform: instruction after packing: 'b9 foo'\n"
+  );
+}
 
-:(scenario pack_flags_bad_hex)
-% Hide_errors = true;
-== 0x1
-b9  0xfoo/imm32
-+error: not a number: 0xfoo
+void test_pack_flags_bad_hex() {
+  Hide_errors = true;
+  run(
+      "== 0x1\n"  // code segment
+      "b9  0xfoo/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: not a number: 0xfoo\n"
+  );
+}
 
 //:: helpers
 
-:(code)
 bool all_hex_bytes(const line& inst) {
   for (int i = 0;  i < SIZE(inst.words);  ++i)
     if (!is_hex_byte(inst.words.at(i)))
@@ -444,7 +480,6 @@ bool looks_like_hex_int(const string& s) {
   return false;
 }
 
-:(code)
 string to_string(const line& inst) {
   ostringstream out;
   for (int i = 0;  i < SIZE(inst.words);  ++i) {

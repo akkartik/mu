@@ -19,29 +19,6 @@ function! HighlightTangledFile()
 
   highlight Special ctermfg=160
 
-  " Our C++ files can have Mu code in scenarios, so highlight Mu comments like
-  " regular comments.
-  syntax match muComment /#.*$/
-  highlight link muComment Comment
-  syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
-  syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
-  set comments+=n:#
-  " Some other bare-bones Mu highlighting.
-  syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
-  syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
-  syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
-  syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
-  syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
-  syntax match muLiteral % true\(\/[^ ]*\)\?\| false\(\/[^ ]*\)\?%  " literals will never be the first word in an instruction
-  syntax match muLiteral % null\(\/[^ ]*\)\?%
-  highlight link muLiteral Constant
-  syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
-  " common keywords
-  syntax match muRecipe "^recipe\>\|^recipe!\>\|^def\>\|^def!\>\|^before\>\|^after\>\| -> " | highlight muRecipe ctermfg=208
-  syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
-  syntax match muPendingScenario "^pending-scenario\>" | highlight link muPendingScenario SpecialChar
-  syntax match muData "^type\>\|^container\>\|^exclusive-container\>" | highlight muData ctermfg=226
-
   syntax match subxString %"[^"]*"% | highlight link subxString Constant
   " match globals but not registers like 'EAX'
   syntax match subxGlobal %\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar

@@ -40,19 +40,25 @@ uint8_t* reg_8bit(uint8_t rm) {
 :(before "End Initialize Op Names")
 put_new(Name, "88", "copy r8 to r8/m8-at-r32");
 
-:(scenario copy_r8_to_mem_at_r32)
-% Reg[EBX].i = 0x224488ab;
-% Reg[EAX].i = 0x2000;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  88  18                                      # copy BL to the byte at *EAX
-# ModR/M in binary: 00 (indirect mode) 011 (src BL) 000 (dest EAX)
-== 0x2000
-f0 cc bb aa
-+run: copy BL to r8/m8-at-r32
-+run: effective address is 0x00002000 (EAX)
-+run: storing 0xab
-% CHECK_EQ(0xaabbccab, read_mem_u32(0x2000));
+:(code)
+void test_copy_r8_to_mem_at_r32() {
+  Reg[EBX].i = 0x224488ab;
+  Reg[EAX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  88     18                                      \n"  // copy BL to the byte at *EAX
+      // ModR/M in binary: 00 (indirect mode) 011 (src BL) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "f0 cc bb aa\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy BL to r8/m8-at-r32\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: storing 0xab\n"
+  );
+  CHECK_EQ(0xaabbccab, read_mem_u32(0x2000));
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x88: {  // copy r8 to r/m8
@@ -72,20 +78,26 @@ case 0x88: {  // copy r8 to r/m8
 :(before "End Initialize Op Names")
 put_new(Name, "8a", "copy r8/m8-at-r32 to r8");
 
-:(scenario copy_mem_at_r32_to_r8)
-% Reg[EBX].i = 0xaabbcc0f;  // one nibble each of lowest byte set to all 0s and all 1s, to maximize value of this test
-% Reg[EAX].i = 0x2000;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  8a  18                                      # copy just the byte at *EAX to BL
-# ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)
-== 0x2000  # data segment
-ab ff ff ff  # 0xab with more data in following bytes
-+run: copy r8/m8-at-r32 to BL
-+run: effective address is 0x00002000 (EAX)
-+run: storing 0xab
-# remaining bytes of EBX are *not* cleared
-+run: EBX now contains 0xaabbccab
+:(code)
+void test_copy_mem_at_r32_to_r8() {
+  Reg[EBX].i = 0xaabbcc0f;  // one nibble each of lowest byte set to all 0s and all 1s, to maximize value of this test
+  Reg[EAX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  8a     18                                      \n"  // copy just the byte at *EAX to BL
+      // ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)
+      "== 0x2000\n"  // data segment
+      "ab ff ff ff\n"  // 0xab with more data in following bytes
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy r8/m8-at-r32 to BL\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: storing 0xab\n"
+      // remaining bytes of EBX are *not* cleared
+      "run: EBX now contains 0xaabbccab\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x8a: {  // copy r/m8 to r8
@@ -102,36 +114,48 @@ case 0x8a: {  // copy r/m8 to r8
   break;
 }
 
-:(scenario cannot_copy_byte_to_ESP_EBP_ESI_EDI)
-% Reg[ESI].u = 0xaabbccdd;
-% Reg[EBX].u = 0x11223344;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  8a  f3                                      # copy just the byte at *EBX to 8-bit register '6'
-# ModR/M in binary: 11 (direct mode) 110 (dest 8-bit 'register 6') 011 (src EBX)
-# ensure 8-bit register '6' is DH, not ESI
-+run: copy r8/m8-at-r32 to DH
-+run: storing 0x44
-# ensure ESI is unchanged
-% CHECK_EQ(Reg[ESI].u, 0xaabbccdd);
+:(code)
+void test_cannot_copy_byte_to_ESP_EBP_ESI_EDI() {
+  Reg[ESI].u = 0xaabbccdd;
+  Reg[EBX].u = 0x11223344;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  8a     f3                                      \n"  // copy just the byte at *EBX to 8-bit register '6'
+      // ModR/M in binary: 11 (direct mode) 110 (dest 8-bit 'register 6') 011 (src EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      // ensure 8-bit register '6' is DH, not ESI
+      "run: copy r8/m8-at-r32 to DH\n"
+      "run: storing 0x44\n"
+  );
+  // ensure ESI is unchanged
+  CHECK_EQ(Reg[ESI].u, 0xaabbccdd);
+}
 
 //:
 
 :(before "End Initialize Op Names")
 put_new(Name, "c6", "copy imm8 to r8/m8-at-r32 (mov)");
 
-:(scenario copy_imm8_to_mem_at_r32)
-% Reg[EAX].i = 0x2000;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c6  00                          dd          # copy to the byte at *EAX
-# ModR/M in binary: 00 (indirect mode) 000 (unused) 000 (dest EAX)
-== 0x2000
-f0 cc bb aa
-+run: copy imm8 to r8/m8-at-r32
-+run: effective address is 0x00002000 (EAX)
-+run: storing 0xdd
-% CHECK_EQ(0xaabbccdd, read_mem_u32(0x2000));
+:(code)
+void test_copy_imm8_to_mem_at_r32() {
+  Reg[EAX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c6     00                          dd          \n"  // copy to the byte at *EAX
+      // ModR/M in binary: 00 (indirect mode) 000 (unused) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "f0 cc bb aa\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy imm8 to r8/m8-at-r32\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: storing 0xdd\n"
+  );
+  CHECK_EQ(0xaabbccdd, read_mem_u32(0x2000));
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xc6: {  // copy imm8 to r/m8

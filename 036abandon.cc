@@ -1,16 +1,21 @@
 //: Reclaiming memory when it's no longer used.
 
-:(scenario new_reclaim)
-def main [
-  10:&:num <- new number:type
-  20:num <- deaddress 10:&:num
-  abandon 10:&:num
-  30:&:num <- new number:type  # must be same size as abandoned memory to reuse
-  40:num <- deaddress 30:&:num
-  50:bool <- equal 20:num, 40:num
-]
-# both allocations should have returned the same address
-+mem: storing 1 in location 50
+void test_new_reclaim() {
+  run(
+      "def main [\n"
+      "  10:&:num <- new number:type\n"
+      "  20:num <- deaddress 10:&:num\n"
+      "  abandon 10:&:num\n"
+      "  30:&:num <- new number:type\n"  // must be same size as abandoned memory to reuse
+      "  40:num <- deaddress 30:&:num\n"
+      "  50:bool <- equal 20:num, 40:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // both allocations should have returned the same address
+      "mem: storing 1 in location 50\n"
+  );
+}
 
 //: When abandoning addresses we'll save them to a 'free list', segregated by size.
 
@@ -97,36 +102,52 @@ if (get_or_insert(Current_routine->free_list, size)) {
   return result;
 }
 
-:(scenario new_differing_size_no_reclaim)
-def main [
-  1:&:num <- new number:type
-  2:num <- deaddress 1:&:num
-  abandon 1:&:num
-  3:&:@:num <- new number:type, 2  # different size
-  4:num <- deaddress 3:&:@:num
-  5:bool <- equal 2:num, 4:num
-]
-# no reuse
-+mem: storing 0 in location 5
+:(code)
+void test_new_differing_size_no_reclaim() {
+  run(
+      "def main [\n"
+      "  1:&:num <- new number:type\n"
+      "  2:num <- deaddress 1:&:num\n"
+      "  abandon 1:&:num\n"
+      "  3:&:@:num <- new number:type, 2\n"  // different size
+      "  4:num <- deaddress 3:&:@:num\n"
+      "  5:bool <- equal 2:num, 4:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // no reuse
+      "mem: storing 0 in location 5\n"
+  );
+}
 
-:(scenario new_reclaim_array)
-def main [
-  10:&:@:num <- new number:type, 2
-  20:num <- deaddress 10:&:@:num
-  abandon 10:&:@:num
-  30:&:@:num <- new number:type, 2  # same size
-  40:num <- deaddress 30:&:@:num
-  50:bool <- equal 20:num, 40:num
-]
-# both calls to new returned identical addresses
-+mem: storing 1 in location 50
+void test_new_reclaim_array() {
+  run(
+      "def main [\n"
+      "  10:&:@:num <- new number:type, 2\n"
+      "  20:num <- deaddress 10:&:@:num\n"
+      "  abandon 10:&:@:num\n"
+      "  30:&:@:num <- new number:type, 2\n"  // same size
+      "  40:num <- deaddress 30:&:@:num\n"
+      "  50:bool <- equal 20:num, 40:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // both calls to new returned identical addresses
+      "mem: storing 1 in location 50\n"
+  );
+}
 
-:(scenario lookup_of_abandoned_address_raises_error)
-% Hide_errors = true;
-def main [
-  1:&:num <- new num:type
-  3:&:num <- copy 1:&:num
-  abandon 1:&:num
-  5:num/raw <- copy *3:&:num
-]
-+error: main: address is already abandoned in '5:num/raw <- copy *3:&:num'
+void test_lookup_of_abandoned_address_raises_error() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:&:num <- new num:type\n"
+      "  3:&:num <- copy 1:&:num\n"
+      "  abandon 1:&:num\n"
+      "  5:num/raw <- copy *3:&:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: address is already abandoned in '5:num/raw <- copy *3:&:num'\n"
+  );
+}

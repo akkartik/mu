@@ -3,24 +3,29 @@
 //: basic technique for orchestrating the order in which different routines
 //: operate.
 
-:(scenario wait_for_location)
-def f1 [
-  10:num <- copy 34
-  start-running f2
-  20:location <- copy 10/unsafe
-  wait-for-reset-then-set 20:location
-  # wait for f2 to run and reset location 1
-  30:num <- copy 10:num
-]
-def f2 [
-  10:location <- copy 0/unsafe
-]
-+schedule: f1
-+run: waiting for location 10 to reset
-+schedule: f2
-+schedule: waking up routine 1
-+schedule: f1
-+mem: storing 1 in location 30
+void test_wait_for_location() {
+  run(
+      "def f1 [\n"
+      "  10:num <- copy 34\n"
+      "  start-running f2\n"
+      "  20:location <- copy 10/unsafe\n"
+      "  wait-for-reset-then-set 20:location\n"
+         // wait for f2 to run and reset location 1
+      "  30:num <- copy 10:num\n"
+      "]\n"
+      "def f2 [\n"
+      "  10:location <- copy 0/unsafe\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+      "run: waiting for location 10 to reset\n"
+      "schedule: f2\n"
+      "schedule: waking up routine 1\n"
+      "schedule: f1\n"
+      "mem: storing 1 in location 30\n"
+  );
+}
 
 //: define the new state that all routines can be in
 
@@ -58,14 +63,19 @@ void dump_waiting_routines() {
   }
 }
 
-:(scenario wait_for_location_can_deadlock)
-% Hide_errors = true;
-def main [
-  10:num <- copy 1
-  20:location <- copy 10/unsafe
-  wait-for-reset-then-set 20:location
-]
-+error: deadlock!
+void test_wait_for_location_can_deadlock() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  10:num <- copy 1\n"
+      "  20:location <- copy 10/unsafe\n"
+      "  wait-for-reset-then-set 20:location\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: deadlock!\n"
+  );
+}
 
 //: Primitive recipe to put routines in that state.
 //: This primitive is also known elsewhere as compare-and-set (CAS). Used to
@@ -143,13 +153,19 @@ for (int i = 0;  i < SIZE(Routines);  ++i) {
 //: Only supports elements immediately inside containers; no arrays or
 //: containers within containers yet.
 
-:(scenario get_location)
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  15:location <- get-location 12:point, 1:offset
-]
-+mem: storing 13 in location 15
+:(code)
+void test_get_location() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  15:location <- get-location 12:point, 1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 13 in location 15\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 GET_LOCATION,
@@ -226,87 +242,117 @@ bool is_mu_location(reagent/*copy*/ x) {
   return x.type->value == get(Type_ordinal, "location");
 }
 
-:(scenario get_location_out_of_bounds)
-% Hide_errors = true;
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  14:num <- copy 36
-  get-location 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
-]
-+error: main: invalid offset 2 for 'point-number'
+void test_get_location_out_of_bounds() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  get-location 12:point-number/raw, 2:offset\n"  // point-number occupies 3 locations but has only 2 fields; out of bounds
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid offset 2 for 'point-number'\n"
+  );
+}
 
-:(scenario get_location_out_of_bounds_2)
-% Hide_errors = true;
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  14:num <- copy 36
-  get-location 12:point-number/raw, -1:offset
-]
-+error: main: invalid offset -1 for 'point-number'
+void test_get_location_out_of_bounds_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  get-location 12:point-number/raw, -1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid offset -1 for 'point-number'\n"
+  );
+}
 
-:(scenario get_location_product_type_mismatch)
-% Hide_errors = true;
-container boolbool [
-  x:bool
-  y:bool
-]
-def main [
-  12:bool <- copy 1
-  13:bool <- copy 0
-  15:bool <- get-location 12:boolbool, 1:offset
-]
-+error: main: 'get-location 12:boolbool, 1:offset' should write to type location but '15' has type 'boolean'
+void test_get_location_product_type_mismatch() {
+  Hide_errors = true;
+  run(
+      "container boolbool [\n"
+      "  x:bool\n"
+      "  y:bool\n"
+      "]\n"
+      "def main [\n"
+      "  12:bool <- copy 1\n"
+      "  13:bool <- copy 0\n"
+      "  15:bool <- get-location 12:boolbool, 1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'get-location 12:boolbool, 1:offset' should write to type location but '15' has type 'boolean'\n"
+  );
+}
 
-:(scenario get_location_indirect)
-# 'get-location' can read from container address
-def main [
-  1:num/alloc-id, 2:num <- copy 0, 10
-  10:num/alloc-id, 11:num/x, 12:num/y <- copy 0, 34, 35
-  20:location <- get-location 1:&:point/lookup, 0:offset
-]
-+mem: storing 11 in location 20
+void test_get_location_indirect() {
+  // 'get-location' can read from container address
+  run(
+      "def main [\n"
+      "  1:num/alloc-id, 2:num <- copy 0, 10\n"
+      "  10:num/alloc-id, 11:num/x, 12:num/y <- copy 0, 34, 35\n"
+      "  20:location <- get-location 1:&:point/lookup, 0:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 11 in location 20\n"
+  );
+}
 
-:(scenario get_location_indirect_2)
-def main [
-  1:num/alloc-id, 2:num <- copy 0, 10
-  10:num/alloc-id, 11:num/x, 12:num/y <- copy 0, 34, 35
-  4:num/alloc-id, 5:num <- copy 0, 20
-  4:&:location/lookup <- get-location 1:&:point/lookup, 0:offset
-]
-+mem: storing 11 in location 21
+void test_get_location_indirect_2() {
+  run(
+      "def main [\n"
+      "  1:num/alloc-id, 2:num <- copy 0, 10\n"
+      "  10:num/alloc-id, 11:num/x, 12:num/y <- copy 0, 34, 35\n"
+      "  4:num/alloc-id, 5:num <- copy 0, 20\n"
+      "  4:&:location/lookup <- get-location 1:&:point/lookup, 0:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 11 in location 21\n"
+  );
+}
 
 //: allow waiting on a routine to complete
 
-:(scenario wait_for_routine)
-def f1 [
-  # add a few routines to run
-  1:num/routine <- start-running f2
-  2:num/routine <- start-running f3
-  wait-for-routine 1:num/routine
-  # now wait for f2 to *complete* and modify location 13 before using its value
-  20:num <- copy 13:num
-]
-def f2 [
-  10:num <- copy 0  # just padding
-  switch  # simulate a block; routine f1 shouldn't restart at this point
-  13:num <- copy 34
-]
-def f3 [
-  # padding routine just to help simulate the block in f2 using 'switch'
-  11:num <- copy 0
-  12:num <- copy 0
-]
-+schedule: f1
-+run: waiting for routine 2
-+schedule: f2
-+schedule: f3
-+schedule: f2
-+schedule: waking up routine 1
-+schedule: f1
-# if we got the synchronization wrong we'd be storing 0 in location 20
-+mem: storing 34 in location 20
+void test_wait_for_routine() {
+  run(
+      "def f1 [\n"
+         // add a few routines to run
+      "  1:num/routine <- start-running f2\n"
+      "  2:num/routine <- start-running f3\n"
+      "  wait-for-routine 1:num/routine\n"
+         // now wait for f2 to *complete* and modify location 13 before using its value
+      "  20:num <- copy 13:num\n"
+      "]\n"
+      "def f2 [\n"
+      "  10:num <- copy 0\n"  // just padding
+      "  switch\n"  // simulate a block; routine f1 shouldn't restart at this point
+      "  13:num <- copy 34\n"
+      "]\n"
+      "def f3 [\n"
+         // padding routine just to help simulate the block in f2 using 'switch'
+      "  11:num <- copy 0\n"
+      "  12:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+      "run: waiting for routine 2\n"
+      "schedule: f2\n"
+      "schedule: f3\n"
+      "schedule: f2\n"
+      "schedule: waking up routine 1\n"
+      "schedule: f1\n"
+      // if we got the synchronization wrong we'd be storing 0 in location 20
+      "mem: storing 34 in location 20\n"
+  );
+}
 
 :(before "End routine Fields")
 // only if state == WAITING
@@ -379,21 +425,27 @@ case SWITCH: {
   goto stop_running_current_routine;
 }
 
-:(scenario switch_preempts_current_routine)
-def f1 [
-  start-running f2
-  1:num <- copy 34
-  switch
-  3:num <- copy 36
-]
-def f2 [
-  2:num <- copy 35
-]
-+mem: storing 34 in location 1
-# context switch
-+mem: storing 35 in location 2
-# back to original thread
-+mem: storing 36 in location 3
+:(code)
+void test_switch_preempts_current_routine() {
+  run(
+      "def f1 [\n"
+      "  start-running f2\n"
+      "  1:num <- copy 34\n"
+      "  switch\n"
+      "  3:num <- copy 36\n"
+      "]\n"
+      "def f2 [\n"
+      "  2:num <- copy 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+      // context switch
+      "mem: storing 35 in location 2\n"
+      // back to original thread
+      "mem: storing 36 in location 3\n"
+  );
+}
 
 //:: helpers for manipulating routines in tests
 //:
@@ -452,23 +504,29 @@ case CURRENT_ROUTINE_IS_UNBLOCKED: {
 //: also allow waiting on a routine to block
 //: (just for tests; use wait_for_routine above wherever possible)
 
-:(scenario wait_for_routine_to_block)
-def f1 [
-  1:num/routine <- start-running f2
-  wait-for-routine-to-block 1:num/routine
-  # now wait for f2 to run and modify location 10 before using its value
-  11:num <- copy 10:num
-]
-def f2 [
-  10:num <- copy 34
-]
-+schedule: f1
-+run: waiting for routine 2 to block
-+schedule: f2
-+schedule: waking up routine 1 because routine 2 is blocked
-+schedule: f1
-# if we got the synchronization wrong we'd be storing 0 in location 11
-+mem: storing 34 in location 11
+:(code)
+void test_wait_for_routine_to_block() {
+  run(
+      "def f1 [\n"
+      "  1:num/routine <- start-running f2\n"
+      "  wait-for-routine-to-block 1:num/routine\n"
+         // now wait for f2 to run and modify location 10 before using its value
+      "  11:num <- copy 10:num\n"
+      "]\n"
+      "def f2 [\n"
+      "  10:num <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+      "run: waiting for routine 2 to block\n"
+      "schedule: f2\n"
+      "schedule: waking up routine 1 because routine 2 is blocked\n"
+      "schedule: f1\n"
+      // if we got the synchronization wrong we'd be storing 0 in location 11
+      "mem: storing 34 in location 11\n"
+  );
+}
 
 :(before "End routine Fields")
 // only if state == WAITING
@@ -555,43 +613,52 @@ case RESTART: {
   break;
 }
 
-:(scenario cannot_restart_completed_routine)
-% Scheduling_interval = 1;
-def main [
-  local-scope
-  r:num/routine-id <- start-running f
-  x:num <- copy 0  # wait for f to be scheduled
-  # r is COMPLETED by this point
-  restart r  # should have no effect
-  x:num <- copy 0  # give f time to be scheduled (though it shouldn't be)
-]
-def f [
-  1:num/raw <- copy 1
-]
-# shouldn't crash
+:(code)
+void test_cannot_restart_completed_routine() {
+  Scheduling_interval = 1;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  r:num/routine-id <- start-running f\n"
+      "  x:num <- copy 0\n"  // wait for f to be scheduled
+      // r is COMPLETED by this point
+      "  restart r\n"  // should have no effect
+      "  x:num <- copy 0\n"  // give f time to be scheduled (though it shouldn't be)
+      "]\n"
+      "def f [\n"
+      "  1:num/raw <- copy 1\n"
+      "]\n"
+  );
+  // shouldn't crash
+}
 
-:(scenario restart_blocked_routine)
-% Scheduling_interval = 1;
-def main [
-  local-scope
-  r:num/routine-id <- start-running f
-  wait-for-routine-to-block r  # get past the block in f below
-  restart r
-  wait-for-routine-to-block r  # should run f to completion
-]
-# function with one block
-def f [
-  current-routine-is-blocked
-  # 8 instructions of padding, many more than 'main' above
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-  1:num <- add 1:num, 1
-]
-# make sure all of f ran
-+mem: storing 8 in location 1
+void test_restart_blocked_routine() {
+  Scheduling_interval = 1;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  r:num/routine-id <- start-running f\n"
+      "  wait-for-routine-to-block r\n"  // get past the block in f below
+      "  restart r\n"
+      "  wait-for-routine-to-block r\n"  // should run f to completion
+      "]\n"
+      // function with one block
+      "def f [\n"
+      "  current-routine-is-blocked\n"
+         // 8 instructions of padding, many more than 'main' above
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "  1:num <- add 1:num, 1\n"
+      "]\n"
+  );
+  // make sure all of f ran
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 8 in location 1\n"
+  );
+}

@@ -1,17 +1,22 @@
 //: Advanced notation for the common/easy case where a recipe takes some fixed
 //: number of ingredients and yields some fixed number of products.
 
-:(scenario recipe_with_header)
-def main [
-  1:num/raw <- add2 3, 5
-]
-def add2 x:num, y:num -> z:num [
-  local-scope
-  load-ingredients
-  z:num <- add x, y
-  return z
-]
-+mem: storing 8 in location 1
+void test_recipe_with_header() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 x:num, y:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z:num <- add x, y\n"
+      "  return z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 8 in location 1\n"
+  );
+}
 
 //: When loading recipes save any header.
 
@@ -59,63 +64,93 @@ void load_recipe_header(istream& in, recipe& result) {
   // End Load Recipe Header(result)
 }
 
-:(scenario recipe_handles_stray_comma)
-def main [
-  1:num/raw <- add2 3, 5
-]
-def add2 x:num, y:num -> z:num, [
-  local-scope
-  load-ingredients
-  z:num <- add x, y
-  return z
-]
-+mem: storing 8 in location 1
+void test_recipe_handles_stray_comma() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 x:num, y:num -> z:num, [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z:num <- add x, y\n"
+      "  return z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 8 in location 1\n"
+  );
+}
 
-:(scenario recipe_handles_stray_comma_2)
-def main [
-  foo
-]
-def foo, [
-  1:num/raw <- add 2, 2
-]
-def bar [
-  1:num/raw <- add 2, 3
-]
-+mem: storing 4 in location 1
+void test_recipe_handles_stray_comma_2() {
+  run(
+      "def main [\n"
+      "  foo\n"
+      "]\n"
+      "def foo, [\n"
+      "  1:num/raw <- add 2, 2\n"
+      "]\n"
+      "def bar [\n"
+      "  1:num/raw <- add 2, 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 1\n"
+  );
+}
 
-:(scenario recipe_handles_wrong_arrow)
-% Hide_errors = true;
-def foo a:num <- b:num [
-]
-+error: recipe foo should say '->' and not '<-'
+void test_recipe_handles_wrong_arrow() {
+  Hide_errors = true;
+  run(
+      "def foo a:num <- b:num [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: recipe foo should say '->' and not '<-'\n"
+  );
+}
 
-:(scenario recipe_handles_missing_bracket)
-% Hide_errors = true;
-def main
-]
-+error: main: recipe body must begin with '['
+void test_recipe_handles_missing_bracket() {
+  Hide_errors = true;
+  run(
+      "def main\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: recipe body must begin with '['\n"
+  );
+}
 
-:(scenario recipe_handles_missing_bracket_2)
-% Hide_errors = true;
-def main
-  local-scope
-  {
-  }
-]
-# doesn't overflow line when reading header
--parse: header ingredient: local-scope
-+error: main: recipe body must begin with '['
+void test_recipe_handles_missing_bracket_2() {
+  Hide_errors = true;
+  run(
+      "def main\n"
+      "  local-scope\n"
+      "  {\n"
+      "  }\n"
+      "]\n"
+  );
+  // doesn't overflow line when reading header
+  CHECK_TRACE_DOESNT_CONTAIN("parse: header ingredient: local-scope");
+  CHECK_TRACE_CONTENTS(
+      "error: main: recipe body must begin with '['\n"
+  );
+}
 
-:(scenario recipe_handles_missing_bracket_3)
-% Hide_errors = true;
-def main  # comment
-  local-scope
-  {
-  }
-]
-# doesn't overflow line when reading header
--parse: header ingredient: local-scope
-+error: main: recipe body must begin with '['
+void test_recipe_handles_missing_bracket_3() {
+  Hide_errors = true;
+  run(
+      "def main  # comment\n"
+      "  local-scope\n"
+      "  {\n"
+      "  }\n"
+      "]\n"
+  );
+  // doesn't overflow line when reading header
+  CHECK_TRACE_DOESNT_CONTAIN("parse: header ingredient: local-scope");
+  CHECK_TRACE_CONTENTS(
+      "error: main: recipe body must begin with '['\n"
+  );
+}
 
 :(after "Begin debug_string(recipe x)")
 out << "ingredients:\n";
@@ -127,11 +162,17 @@ for (int i = 0;  i < SIZE(x.products);  ++i)
 
 //: If a recipe never mentions any ingredients or products, assume it has a header.
 
-:(scenario recipe_without_ingredients_or_products_has_header)
-def test [
-  1:num <- copy 34
-]
-+parse: recipe test has a header
+:(code)
+void test_recipe_without_ingredients_or_products_has_header() {
+  run(
+      "def test [\n"
+      "  1:num <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: recipe test has a header\n"
+  );
+}
 
 :(before "End Recipe Body(result)")
 if (!result.has_header) {
@@ -154,18 +195,24 @@ if (result.has_header) {
 
 //: Support type abbreviations in headers.
 
-:(scenario type_abbreviations_in_recipe_headers)
-def main [
-  local-scope
-  a:text <- foo
-  1:char/raw <- index *a, 0
-]
-def foo -> a:text [  # 'text' is an abbreviation
-  local-scope
-  load-ingredients
-  a <- new [abc]
-]
-+mem: storing 97 in location 1
+:(code)
+void test_type_abbreviations_in_recipe_headers() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  a:text <- foo\n"
+      "  1:char/raw <- index *a, 0\n"
+      "]\n"
+      "def foo -> a:text [  # 'text' is an abbreviation\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  a <- new [abc]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 97 in location 1\n"
+  );
+}
 
 :(before "End Expand Type Abbreviations(caller)")
 for (long int i = 0;  i < SIZE(caller.ingredients);  ++i)
@@ -221,28 +268,39 @@ case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
 }
 
 //: more useful error messages if someone forgets 'load-ingredients'
-
-:(scenario load_ingredients_missing_error)
-% Hide_errors = true;
-def foo a:num [
-  local-scope
-  b:num <- add a:num, 1
-]
-+error: foo: tried to read ingredient 'a' in 'b:num <- add a:num, 1' but it hasn't been written to yet
-+error:   did you forget 'load-ingredients'?
+:(code)
+void test_load_ingredients_missing_error() {
+  Hide_errors = true;
+  run(
+      "def foo a:num [\n"
+      "  local-scope\n"
+      "  b:num <- add a:num, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: tried to read ingredient 'a' in 'b:num <- add a:num, 1' but it hasn't been written to yet\n"
+      "error:   did you forget 'load-ingredients'?\n"
+  );
+}
 
 :(after "use-before-set Error")
 if (is_present_in_ingredients(caller, ingredient.name))
   raise << "  did you forget 'load-ingredients'?\n" << end();
 
-:(scenario load_ingredients_missing_error_2)
-% Hide_errors = true;
-def foo a:num [
-  local-scope
-  b:num <- add a, 1
-]
-+error: foo: missing type for 'a' in 'b:num <- add a, 1'
-+error:   did you forget 'load-ingredients'?
+:(code)
+void test_load_ingredients_missing_error_2() {
+  Hide_errors = true;
+  run(
+      "def foo a:num [\n"
+      "  local-scope\n"
+      "  b:num <- add a, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: missing type for 'a' in 'b:num <- add a, 1'\n"
+      "error:   did you forget 'load-ingredients'?\n"
+  );
+}
 
 :(after "missing-type Error 1")
 if (is_present_in_ingredients(get(Recipe, get(Recipe_ordinal, recipe_name)), x.name))
@@ -259,29 +317,39 @@ bool is_present_in_ingredients(const recipe& callee, const string& ingredient_na
 
 //:: Check all calls against headers.
 
-:(scenario show_clear_error_on_bad_call)
-% Hide_errors = true;
-def main [
-  1:num <- foo 34
-]
-def foo x:point -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-+error: main: ingredient 0 has the wrong type at '1:num <- foo 34'
+void test_show_clear_error_on_bad_call() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- foo 34\n"
+      "]\n"
+      "def foo x:point -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: ingredient 0 has the wrong type at '1:num <- foo 34'\n"
+  );
+}
 
-:(scenario show_clear_error_on_bad_call_2)
-% Hide_errors = true;
-def main [
-  1:point <- foo 34
-]
-def foo x:num -> y:num [
-  local-scope
-  load-ingredients
-  return x
-]
-+error: main: product 0 has the wrong type at '1:point <- foo 34'
+void test_show_clear_error_on_bad_call_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:point <- foo 34\n"
+      "]\n"
+      "def foo x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product 0 has the wrong type at '1:point <- foo 34'\n"
+  );
+}
 
 :(after "Transform.push_back(check_instruction)")
 Transform.push_back(check_calls_against_header);  // idempotent
@@ -314,16 +382,20 @@ void check_calls_against_header(const recipe_ordinal r) {
 
 //:: Check types going in and out of all recipes with headers.
 
-:(scenarios transform)
-:(scenario recipe_headers_are_checked)
-% Hide_errors = true;
-def add2 x:num, y:num -> z:num [
-  local-scope
-  load-ingredients
-  z:&:num <- copy 0/unsafe
-  return z
-]
-+error: add2: replied with the wrong type at 'return z'
+void test_recipe_headers_are_checked() {
+  Hide_errors = true;
+  transform(
+      "def add2 x:num, y:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z:&:num <- copy 0/unsafe\n"
+      "  return z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: add2: replied with the wrong type at 'return z'\n"
+  );
+}
 
 :(before "End Checks")
 Transform.push_back(check_return_instructions_against_header);  // idempotent
@@ -347,51 +419,76 @@ void check_return_instructions_against_header(const recipe_ordinal r) {
   }
 }
 
-:(scenario recipe_headers_are_checked_2)
-% Hide_errors = true;
-def add2 x:num, y:num [
-  local-scope
-  load-ingredients
-  z:&:num <- copy 0/unsafe
-  return z
-]
-+error: add2: replied with the wrong number of products at 'return z'
+void test_recipe_headers_are_checked_2() {
+  Hide_errors = true;
+  transform(
+      "def add2 x:num, y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z:&:num <- copy 0/unsafe\n"
+      "  return z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: add2: replied with the wrong number of products at 'return z'\n"
+  );
+}
 
-:(scenario recipe_headers_are_checked_against_pre_transformed_instructions)
-% Hide_errors = true;
-def foo -> x:num [
-  local-scope
-  x:num <- copy 0
-  z:bool <- copy false
-  return-if z, z
-]
-+error: foo: replied with the wrong type at 'return-if z, z'
+void test_recipe_headers_are_checked_against_pre_transformed_instructions() {
+  Hide_errors = true;
+  transform(
+      "def foo -> x:num [\n"
+      "  local-scope\n"
+      "  x:num <- copy 0\n"
+      "  z:bool <- copy false\n"
+      "  return-if z, z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: replied with the wrong type at 'return-if z, z'\n"
+  );
+}
 
-:(scenario recipe_headers_check_for_duplicate_names)
-% Hide_errors = true;
-def foo x:num, x:num -> z:num [
-  local-scope
-  load-ingredients
-  return z
-]
-+error: foo: 'x' can't repeat in the ingredients
+void test_recipe_headers_check_for_duplicate_names() {
+  Hide_errors = true;
+  transform(
+      "def foo x:num, x:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: 'x' can't repeat in the ingredients\n"
+  );
+}
 
-:(scenario recipe_headers_check_for_duplicate_names_2)
-% Hide_errors = true;
-def foo x:num, x:num [  # no result
-  local-scope
-  load-ingredients
-]
-+error: foo: 'x' can't repeat in the ingredients
+void test_recipe_headers_check_for_duplicate_names_2() {
+  Hide_errors = true;
+  transform(
+      "def foo x:num, x:num [  # no result\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: 'x' can't repeat in the ingredients\n"
+  );
+}
 
-:(scenario recipe_headers_check_for_missing_types)
-% Hide_errors = true;
-def main [
-  foo 0
-]
-def foo a [  # no type for 'a'
-]
-+error: foo: ingredient 'a' has no type
+void test_recipe_headers_check_for_missing_types() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  foo 0\n"
+      "]\n"
+      "def foo a [\n"  // no type for 'a'
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: ingredient 'a' has no type\n"
+  );
+}
 
 :(before "End recipe Fields")
 map<string, int> ingredient_index;
@@ -415,18 +512,22 @@ void check_header_ingredients(const recipe_ordinal r) {
 
 //: Deduce types from the header if possible.
 
-:(scenarios run)
-:(scenario deduce_instruction_types_from_recipe_header)
-def main [
-  1:num/raw <- add2 3, 5
-]
-def add2 x:num, y:num -> z:num [
-  local-scope
-  load-ingredients
-  z <- add x, y  # no type for z
-  return z
-]
-+mem: storing 8 in location 1
+void test_deduce_instruction_types_from_recipe_header() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 x:num, y:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- add x, y  # no type for z\n"
+      "  return z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 8 in location 1\n"
+  );
+}
 
 :(after "Begin Type Modifying Transforms")
 Transform.push_back(deduce_types_from_header);  // idempotent
@@ -473,17 +574,22 @@ void deduce_types_from_header(const recipe_ordinal r) {
 //: One final convenience: no need to say what to return if the information is
 //: in the header.
 
-:(scenario return_based_on_header)
-def main [
-  1:num/raw <- add2 3, 5
-]
-def add2 x:num, y:num -> z:num [
-  local-scope
-  load-ingredients
-  z <- add x, y
-  return
-]
-+mem: storing 8 in location 1
+void test_return_based_on_header() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 x:num, y:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- add x, y\n"
+      "  return\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 8 in location 1\n"
+  );
+}
 
 :(after "Transform.push_back(check_header_ingredients)")
 Transform.push_back(fill_in_return_ingredients);  // idempotent
@@ -526,97 +632,142 @@ void add_header_products(instruction& inst, const recipe& caller_recipe) {
   }
 }
 
-:(scenario explicit_return_ignores_header)
-def main [
-  1:num/raw, 2:num/raw <- add2 3, 5
-]
-def add2 a:num, b:num -> y:num, z:num [
-  local-scope
-  load-ingredients
-  y <- add a, b
-  z <- subtract a, b
-  return a, z
-]
-+mem: storing 3 in location 1
-+mem: storing -2 in location 2
+void test_explicit_return_ignores_header() {
+  run(
+      "def main [\n"
+      "  1:num/raw, 2:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 a:num, b:num -> y:num, z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- add a, b\n"
+      "  z <- subtract a, b\n"
+      "  return a, z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 1\n"
+      "mem: storing -2 in location 2\n"
+  );
+}
 
-:(scenario return_on_fallthrough_based_on_header)
-def main [
-  1:num/raw <- add2 3, 5
-]
-def add2 x:num, y:num -> z:num [
-  local-scope
-  load-ingredients
-  z <- add x, y
-]
-+transform: instruction: return {z: "number"}
-+mem: storing 8 in location 1
+void test_return_on_fallthrough_based_on_header() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 x:num, y:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- add x, y\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: instruction: return {z: \"number\"}\n"
+      "mem: storing 8 in location 1\n"
+  );
+}
 
-:(scenario return_on_fallthrough_already_exists)
-def main [
-  1:num/raw <- add2 3, 5
-]
-def add2 x:num, y:num -> z:num [
-  local-scope
-  load-ingredients
-  z <- add x, y  # no type for z
-  return z
-]
-+transform: instruction: return {z: ()}
--transform: instruction: return z:num
-+mem: storing 8 in location 1
+void test_return_on_fallthrough_already_exists() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 x:num, y:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- add x, y  # no type for z\n"
+      "  return z\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: instruction: return {z: ()}\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("transform: instruction: return z:num");
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 8 in location 1\n"
+  );
+}
 
-:(scenario return_causes_error_in_empty_recipe)
-% Hide_errors = true;
-def foo -> x:num [
-]
-+error: foo: tried to read ingredient 'x' in 'return x:num' but it hasn't been written to yet
+void test_return_causes_error_in_empty_recipe() {
+  Hide_errors = true;
+  run(
+      "def foo -> x:num [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: tried to read ingredient 'x' in 'return x:num' but it hasn't been written to yet\n"
+  );
+}
 
-:(scenario return_after_conditional_return_based_on_header)
-def main [
-  1:num/raw <- add2 3, 5
-]
-def add2 x:num, y:num -> z:num [
-  local-scope
-  load-ingredients
-  z <- add x, y  # no type for z
-  return-if false, 34
-]
-+mem: storing 8 in location 1
+void test_return_after_conditional_return_based_on_header() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- add2 3, 5\n"
+      "]\n"
+      "def add2 x:num, y:num -> z:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  z <- add x, y\n"  // no type for z
+      "  return-if false, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 8 in location 1\n"
+  );
+}
 
-:(scenario recipe_headers_perform_same_ingredient_check)
-% Hide_errors = true;
-def main [
-  1:num <- copy 34
-  2:num <- copy 34
-  3:num <- add2 1:num, 2:num
-]
-def add2 x:num, y:num -> x:num [
-  local-scope
-  load-ingredients
-]
-+error: main: '3:num <- add2 1:num, 2:num' should write to '1:num' rather than '3:num'
+void test_recipe_headers_perform_same_ingredient_check() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 34\n"
+      "  3:num <- add2 1:num, 2:num\n"
+      "]\n"
+      "def add2 x:num, y:num -> x:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: '3:num <- add2 1:num, 2:num' should write to '1:num' rather than '3:num'\n"
+  );
+}
 
 //: One special-case is recipe 'main'. Make sure it's only ever taking in text
 //: ingredients, and returning a single number.
 
-:(scenario recipe_header_ingredients_constrained_for_main)
-% Hide_errors = true;
-def main x:num [
-]
-+error: ingredients of recipe 'main' must all be text (address:array:character)
-
-:(scenario recipe_header_products_constrained_for_main)
-% Hide_errors = true;
-def main -> x:text [
-]
-+error: recipe 'main' must return at most a single product, a number
-
-:(scenario recipe_header_products_constrained_for_main_2)
-% Hide_errors = true;
-def main -> x:num, y:num [
-]
-+error: recipe 'main' must return at most a single product, a number
+void test_recipe_header_ingredients_constrained_for_main() {
+  Hide_errors = true;
+  run(
+      "def main x:num [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: ingredients of recipe 'main' must all be text (address:array:character)\n"
+  );
+}
+void test_recipe_header_products_constrained_for_main() {
+  Hide_errors = true;
+  run(
+      "def main -> x:text [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: recipe 'main' must return at most a single product, a number\n"
+  );
+}
+void test_recipe_header_products_constrained_for_main_2() {
+  Hide_errors = true;
+  run(
+      "def main -> x:num, y:num [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: recipe 'main' must return at most a single product, a number\n"
+  );
+}
 
 :(after "Transform.push_back(expand_type_abbreviations)")
 Transform.push_back(check_recipe_header_constraints);

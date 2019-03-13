@@ -3,13 +3,18 @@
 //: This layer will transparently move them to the global segment (assumed to
 //: always be the second segment).
 
-:(scenario transform_literal_string)
-== code
-b8/copy  "test"/imm32
-== data  # need to manually create this for now
-+transform: -- move literal strings to data segment
-+transform: adding global variable '__subx_global_1' containing "test"
-+transform: instruction after transform: 'b8 __subx_global_1'
+void test_transform_literal_string() {
+  run(
+      "== code\n"
+      "b8/copy  \"test\"/imm32\n"
+      "== data\n"  // need to manually create the segment for now
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: -- move literal strings to data segment\n"
+      "transform: adding global variable '__subx_global_1' containing \"test\"\n"
+      "transform: instruction after transform: 'b8 __subx_global_1'\n"
+  );
+}
 
 //: We don't rely on any transforms running in previous layers, but this layer
 //: knows about labels and global variables and will emit them for previous
@@ -70,14 +75,18 @@ void add_global_to_data_segment(const string& name, const word& value, segment& 
 //: Within strings, whitespace is significant. So we need to redo our instruction
 //: parsing.
 
-:(scenarios parse_instruction_character_by_character)
-:(scenario instruction_with_string_literal)
-a "abc  def" z  # two spaces inside string
-+parse2: word: a
-+parse2: word: "abc  def"
-+parse2: word: z
-# no other words
-$parse2: 3
+void test_instruction_with_string_literal() {
+  parse_instruction_character_by_character(
+      "a \"abc  def\" z\n"  // two spaces inside string
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: a\n"
+      "parse2: word: \"abc  def\"\n"
+      "parse2: word: z\n"
+  );
+  // no other words
+  CHECK_TRACE_COUNT("parse2", 3);
+}
 
 :(before "End Line Parsing Special-cases(line_data -> l)")
 if (line_data.find('"') != string::npos) {  // can cause false-positives, but we can handle them
@@ -168,68 +177,113 @@ void parse_instruction_character_by_character(const string& line_data) {
   parse_instruction_character_by_character(line_data, out);
 }
 
-:(scenario parse2_comment_token_in_middle)
-a . z
-+parse2: word: a
-+parse2: word: z
--parse2: word: .
-# no other words
-$parse2: 2
+void test_parse2_comment_token_in_middle() {
+  parse_instruction_character_by_character(
+      "a . z\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: a\n"
+      "parse2: word: z\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("parse2: word: .");
+  // no other words
+  CHECK_TRACE_COUNT("parse2", 2);
+}
 
-:(scenario parse2_word_starting_with_dot)
-a .b c
-+parse2: word: a
-+parse2: word: .b
-+parse2: word: c
+void test_parse2_word_starting_with_dot() {
+  parse_instruction_character_by_character(
+      "a .b c\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: a\n"
+      "parse2: word: .b\n"
+      "parse2: word: c\n"
+  );
+}
 
-:(scenario parse2_comment_token_at_start)
-. a b
-+parse2: word: a
-+parse2: word: b
--parse2: word: .
+void test_parse2_comment_token_at_start() {
+  parse_instruction_character_by_character(
+      ". a b\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: a\n"
+      "parse2: word: b\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("parse2: word: .");
+}
 
-:(scenario parse2_comment_token_at_end)
-a b .
-+parse2: word: a
-+parse2: word: b
--parse2: word: .
+void test_parse2_comment_token_at_end() {
+  parse_instruction_character_by_character(
+      "a b .\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: a\n"
+      "parse2: word: b\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("parse2: word: .");
+}
 
-:(scenario parse2_word_starting_with_dot_at_start)
-.a b c
-+parse2: word: .a
-+parse2: word: b
-+parse2: word: c
+void test_parse2_word_starting_with_dot_at_start() {
+  parse_instruction_character_by_character(
+      ".a b c\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: .a\n"
+      "parse2: word: b\n"
+      "parse2: word: c\n"
+  );
+}
 
-:(scenario parse2_metadata)
-.a b/c d
-+parse2: word: .a
-+parse2: word: b /c
-+parse2: word: d
+void test_parse2_metadata() {
+  parse_instruction_character_by_character(
+      ".a b/c d\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: .a\n"
+      "parse2: word: b /c\n"
+      "parse2: word: d\n"
+  );
+}
 
-:(scenario parse2_string_with_metadata)
-a "bc  def"/disp32 g
-+parse2: word: a
-+parse2: word: "bc  def" /disp32
-+parse2: word: g
+void test_parse2_string_with_metadata() {
+  parse_instruction_character_by_character(
+      "a \"bc  def\"/disp32 g\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: a\n"
+      "parse2: word: \"bc  def\" /disp32\n"
+      "parse2: word: g\n"
+  );
+}
 
-:(scenario parse2_string_with_metadata_at_end)
-a "bc  def"/disp32
-+parse2: word: a
-+parse2: word: "bc  def" /disp32
+void test_parse2_string_with_metadata_at_end() {
+  parse_instruction_character_by_character(
+      "a \"bc  def\"/disp32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: a\n"
+      "parse2: word: \"bc  def\" /disp32\n"
+  );
+}
 
-:(code)
 void test_parse2_string_with_metadata_at_end_of_line_without_newline() {
   parse_instruction_character_by_character(
       "68/push \"test\"/f"  // no newline, which is how calls from parse() will look
   );
   CHECK_TRACE_CONTENTS(
-      "parse2: word: 68 /push"
-      "parse2: word: \"test\" /f"
+      "parse2: word: 68 /push\n"
+      "parse2: word: \"test\" /f\n"
   );
 }
 
 //: Make sure slashes inside strings don't trigger adding stuff from inside the
 //: string to metadata.
-:(scenario parse2_string_containing_slashes)
-a "bc/def"/disp32
-+parse2: word: "bc/def" /disp32
+
+void test_parse2_string_containing_slashes() {
+  parse_instruction_character_by_character(
+      "a \"bc/def\"/disp32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: \"bc/def\" /disp32\n"
+  );
+}

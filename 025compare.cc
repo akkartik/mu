@@ -46,37 +46,58 @@ case EQUAL: {
   break;
 }
 
-:(scenario equal)
-def main [
-  1:num <- copy 34
-  2:num <- copy 33
-  3:bool <- equal 1:num, 2:num
-]
-+mem: location 1 is 34
-+mem: location 2 is 33
-+mem: storing 0 in location 3
+:(code)
+void test_equal() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: location 1 is 34\n"
+      "mem: location 2 is 33\n"
+      "mem: storing 0 in location 3\n"
+  );
+}
 
-:(scenario equal_2)
-def main [
-  1:num <- copy 34
-  2:num <- copy 34
-  3:bool <- equal 1:num, 2:num
-]
-+mem: location 1 is 34
-+mem: location 2 is 34
-+mem: storing 1 in location 3
+void test_equal_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 34\n"
+      "  3:bool <- equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: location 1 is 34\n"
+      "mem: location 2 is 34\n"
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario equal_multiple)
-def main [
-  1:bool <- equal 34, 34, 34
-]
-+mem: storing 1 in location 1
+void test_equal_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool <- equal 34, 34, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario equal_multiple_2)
-def main [
-  1:bool <- equal 34, 34, 35
-]
-+mem: storing 0 in location 1
+void test_equal_multiple_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- equal 34, 34, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 NOT_EQUAL,
@@ -116,25 +137,36 @@ case NOT_EQUAL: {
   break;
 }
 
-:(scenario not_equal)
-def main [
-  1:num <- copy 34
-  2:num <- copy 33
-  3:bool <- not-equal 1:num, 2:num
-]
-+mem: location 1 is 34
-+mem: location 2 is 33
-+mem: storing 1 in location 3
+:(code)
+void test_not_equal() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- not-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: location 1 is 34\n"
+      "mem: location 2 is 33\n"
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario not_equal_2)
-def main [
-  1:num <- copy 34
-  2:num <- copy 34
-  3:bool <- not-equal 1:num, 2:num
-]
-+mem: location 1 is 34
-+mem: location 2 is 34
-+mem: storing 0 in location 3
+void test_not_equal_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 34\n"
+      "  3:bool <- not-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: location 1 is 34\n"
+      "mem: location 2 is 34\n"
+      "mem: storing 0 in location 3\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 GREATER_THAN,
@@ -175,33 +207,54 @@ case GREATER_THAN: {
   break;
 }
 
-:(scenario greater_than)
-def main [
-  1:num <- copy 34
-  2:num <- copy 33
-  3:bool <- greater-than 1:num, 2:num
-]
-+mem: storing 1 in location 3
+:(code)
+void test_greater_than() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- greater-than 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario greater_than_2)
-def main [
-  1:num <- copy 34
-  2:num <- copy 34
-  3:bool <- greater-than 1:num, 2:num
-]
-+mem: storing 0 in location 3
+void test_greater_than_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 34\n"
+      "  3:bool <- greater-than 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 3\n"
+  );
+}
 
-:(scenario greater_than_multiple)
-def main [
-  1:bool <- greater-than 36, 35, 34
-]
-+mem: storing 1 in location 1
+void test_greater_than_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool <- greater-than 36, 35, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario greater_than_multiple_2)
-def main [
-  1:bool <- greater-than 36, 35, 35
-]
-+mem: storing 0 in location 1
+void test_greater_than_multiple_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- greater-than 36, 35, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 LESSER_THAN,
@@ -242,34 +295,54 @@ case LESSER_THAN: {
   break;
 }
 
-:(scenario lesser_than)
-def main [
-  1:num <- copy 32
-  2:num <- copy 33
-  3:bool <- lesser-than 1:num, 2:num
-]
-+mem: storing 1 in location 3
+:(code)
+void test_lesser_than() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 32\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- lesser-than 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario lesser_than_2)
-def main [
-  1:num <- copy 34
-  2:num <- copy 33
-  3:bool <- lesser-than 1:num, 2:num
-]
-+mem: storing 0 in location 3
+void test_lesser_than_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- lesser-than 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 3\n"
+  );
+}
 
-:(scenario lesser_than_multiple)
-def main [
-  1:bool <- lesser-than 34, 35, 36
-]
-+mem: storing 1 in location 1
+void test_lesser_than_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool <- lesser-than 34, 35, 36\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario lesser_than_multiple_2)
-def main [
-  1:bool <- lesser-than 34, 35, 35
-]
-+mem: storing 0 in location 1
-
+void test_lesser_than_multiple_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- lesser-than 34, 35, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 :(before "End Primitive Recipe Declarations")
 GREATER_OR_EQUAL,
 :(before "End Primitive Recipe Numbers")
@@ -309,41 +382,67 @@ case GREATER_OR_EQUAL: {
   break;
 }
 
-:(scenario greater_or_equal)
-def main [
-  1:num <- copy 34
-  2:num <- copy 33
-  3:bool <- greater-or-equal 1:num, 2:num
-]
-+mem: storing 1 in location 3
+:(code)
+void test_greater_or_equal() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- greater-or-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario greater_or_equal_2)
-def main [
-  1:num <- copy 34
-  2:num <- copy 34
-  3:bool <- greater-or-equal 1:num, 2:num
-]
-+mem: storing 1 in location 3
+void test_greater_or_equal_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 34\n"
+      "  3:bool <- greater-or-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario greater_or_equal_3)
-def main [
-  1:num <- copy 34
-  2:num <- copy 35
-  3:bool <- greater-or-equal 1:num, 2:num
-]
-+mem: storing 0 in location 3
+void test_greater_or_equal_3() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 35\n"
+      "  3:bool <- greater-or-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 3\n"
+  );
+}
 
-:(scenario greater_or_equal_multiple)
-def main [
-  1:bool <- greater-or-equal 36, 35, 35
-]
-+mem: storing 1 in location 1
+void test_greater_or_equal_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool <- greater-or-equal 36, 35, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario greater_or_equal_multiple_2)
-def main [
-  1:bool <- greater-or-equal 36, 35, 36
-]
-+mem: storing 0 in location 1
+void test_greater_or_equal_multiple_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- greater-or-equal 36, 35, 36\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 LESSER_OR_EQUAL,
@@ -384,41 +483,67 @@ case LESSER_OR_EQUAL: {
   break;
 }
 
-:(scenario lesser_or_equal)
-def main [
-  1:num <- copy 32
-  2:num <- copy 33
-  3:bool <- lesser-or-equal 1:num, 2:num
-]
-+mem: storing 1 in location 3
+:(code)
+void test_lesser_or_equal() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 32\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- lesser-or-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario lesser_or_equal_2)
-def main [
-  1:num <- copy 33
-  2:num <- copy 33
-  3:bool <- lesser-or-equal 1:num, 2:num
-]
-+mem: storing 1 in location 3
+void test_lesser_or_equal_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 33\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- lesser-or-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario lesser_or_equal_3)
-def main [
-  1:num <- copy 34
-  2:num <- copy 33
-  3:bool <- lesser-or-equal 1:num, 2:num
-]
-+mem: storing 0 in location 3
+void test_lesser_or_equal_3() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 33\n"
+      "  3:bool <- lesser-or-equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 3\n"
+  );
+}
 
-:(scenario lesser_or_equal_multiple)
-def main [
-  1:bool <- lesser-or-equal 34, 35, 35
-]
-+mem: storing 1 in location 1
+void test_lesser_or_equal_multiple() {
+  run(
+      "def main [\n"
+      "  1:bool <- lesser-or-equal 34, 35, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario lesser_or_equal_multiple_2)
-def main [
-  1:bool <- lesser-or-equal 34, 35, 34
-]
-+mem: storing 0 in location 1
+void test_lesser_or_equal_multiple_2() {
+  run(
+      "def main [\n"
+      "  1:bool <- lesser-or-equal 34, 35, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 MAX,

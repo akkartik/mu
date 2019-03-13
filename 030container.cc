@@ -15,22 +15,34 @@ get(Type, point).elements.push_back(reagent("y:number"));
 //: Tests in this layer often explicitly set up memory before reading it as a
 //: container. Don't do this in general. I'm tagging such cases with /unsafe;
 //: they'll be exceptions to later checks.
-:(scenario copy_multiple_locations)
-def main [
-  1:num <- copy 34
-  2:num <- copy 35
-  3:point <- copy 1:point/unsafe
-]
-+mem: storing 34 in location 3
-+mem: storing 35 in location 4
+
+:(code)
+void test_copy_multiple_locations() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 35\n"
+      "  3:point <- copy 1:point/unsafe\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 3\n"
+      "mem: storing 35 in location 4\n"
+  );
+}
 
 //: trying to copy to a differently-typed destination will fail
-:(scenario copy_checks_size)
-% Hide_errors = true;
-def main [
-  2:point <- copy 1:num
-]
-+error: main: can't copy '1:num' to '2:point'; types don't match
+void test_copy_checks_size() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  2:point <- copy 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't copy '1:num' to '2:point'; types don't match\n"
+  );
+}
 
 :(before "End Mu Types Initialization")
 // A more complex example container, containing another container as one of
@@ -42,55 +54,76 @@ get(Type, point_number).name = "point-number";
 get(Type, point_number).elements.push_back(reagent("xy:point"));
 get(Type, point_number).elements.push_back(reagent("z:number"));
 
-:(scenario copy_handles_nested_container_elements)
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  14:num <- copy 36
-  15:point-number <- copy 12:point-number/unsafe
-]
-+mem: storing 36 in location 17
+:(code)
+void test_copy_handles_nested_container_elements() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  15:point-number <- copy 12:point-number/unsafe\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 36 in location 17\n"
+  );
+}
 
 //: products of recipes can include containers
-:(scenario return_container)
-def main [
-  3:point <- f 2
-]
-def f [
-  12:num <- next-ingredient
-  13:num <- copy 35
-  return 12:point/raw
-]
-+run: result 0 is [2, 35]
-+mem: storing 2 in location 3
-+mem: storing 35 in location 4
+void test_return_container() {
+  run(
+      "def main [\n"
+      "  3:point <- f 2\n"
+      "]\n"
+      "def f [\n"
+      "  12:num <- next-ingredient\n"
+      "  13:num <- copy 35\n"
+      "  return 12:point/raw\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: result 0 is [2, 35]\n"
+      "mem: storing 2 in location 3\n"
+      "mem: storing 35 in location 4\n"
+  );
+}
 
 //: Containers can be checked for equality with a single instruction just like
 //: numbers, no matter how large they are.
 
-:(scenario compare_multiple_locations)
-def main [
-  1:num <- copy 34  # first
-  2:num <- copy 35
-  3:num <- copy 36
-  4:num <- copy 34  # second
-  5:num <- copy 35
-  6:num <- copy 36
-  7:bool <- equal 1:point-number/raw, 4:point-number/unsafe
-]
-+mem: storing 1 in location 7
+void test_compare_multiple_locations() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"  // first
+      "  2:num <- copy 35\n"
+      "  3:num <- copy 36\n"
+      "  4:num <- copy 34\n"  // second
+      "  5:num <- copy 35\n"
+      "  6:num <- copy 36\n"
+      "  7:bool <- equal 1:point-number/raw, 4:point-number/unsafe\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 7\n"
+  );
+}
 
-:(scenario compare_multiple_locations_2)
-def main [
-  1:num <- copy 34  # first
-  2:num <- copy 35
-  3:num <- copy 36
-  4:num <- copy 34  # second
-  5:num <- copy 35
-  6:num <- copy 37  # different
-  7:bool <- equal 1:point-number/raw, 4:point-number/unsafe
-]
-+mem: storing 0 in location 7
+void test_compare_multiple_locations_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"  // first
+      "  2:num <- copy 35\n"
+      "  3:num <- copy 36\n"
+      "  4:num <- copy 34\n"  // second
+      "  5:num <- copy 35\n"
+      "  6:num <- copy 37\n"  // different
+      "  7:bool <- equal 1:point-number/raw, 4:point-number/unsafe\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 7\n"
+  );
+}
 
 :(before "End size_of(type) Special-cases")
 if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
@@ -114,26 +147,37 @@ if (t.kind == CONTAINER) {
   return result;
 }
 
-:(scenario stash_container)
-def main [
-  1:num <- copy 34  # first
-  2:num <- copy 35
-  3:num <- copy 36
-  stash [foo:], 1:point-number/raw
-]
-+app: foo: 34 35 36
+:(code)
+void test_stash_container() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"  // first
+      "  2:num <- copy 35\n"
+      "  3:num <- copy 36\n"
+      "  stash [foo:], 1:point-number/raw\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: foo: 34 35 36\n"
+  );
+}
 
 //:: To access elements of a container, use 'get'
 //: 'get' takes a 'base' container and an 'offset' into it and returns the
 //: appropriate element of the container value.
 
-:(scenario get)
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  15:num <- get 12:point/raw, 1:offset  # unsafe
-]
-+mem: storing 35 in location 15
+void test_get() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  15:num <- get 12:point/raw, 1:offset\n"  // unsafe
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 35 in location 15\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 GET,
@@ -223,66 +267,94 @@ const reagent element_type(const type_tree* type, int offset_value) {
   return element;
 }
 
-:(scenario get_handles_nested_container_elements)
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  14:num <- copy 36
-  15:num <- get 12:point-number/raw, 1:offset  # unsafe
-]
-+mem: storing 36 in location 15
+void test_get_handles_nested_container_elements() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  15:num <- get 12:point-number/raw, 1:offset\n"  // unsafe
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 36 in location 15\n"
+  );
+}
 
-:(scenario get_out_of_bounds)
-% Hide_errors = true;
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  14:num <- copy 36
-  get 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
-]
-+error: main: invalid offset '2' for 'point-number'
+void test_get_out_of_bounds() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  get 12:point-number/raw, 2:offset\n"  // point-number occupies 3 locations but has only 2 fields; out of bounds
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid offset '2' for 'point-number'\n"
+  );
+}
 
-:(scenario get_out_of_bounds_2)
-% Hide_errors = true;
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  14:num <- copy 36
-  get 12:point-number/raw, -1:offset
-]
-+error: main: invalid offset '-1' for 'point-number'
+void test_get_out_of_bounds_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  get 12:point-number/raw, -1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: invalid offset '-1' for 'point-number'\n"
+  );
+}
 
-:(scenario get_product_type_mismatch)
-% Hide_errors = true;
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  14:num <- copy 36
-  15:&:num <- get 12:point-number/raw, 1:offset
-]
-+error: main: 'get 12:point-number/raw, 1:offset' should write to number but '15' has type (address number)
+void test_get_product_type_mismatch() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  15:&:num <- get 12:point-number/raw, 1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'get 12:point-number/raw, 1:offset' should write to number but '15' has type (address number)\n"
+  );
+}
 
 //: we might want to call 'get' without saving the results, say in a sandbox
 
-:(scenario get_without_product)
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  get 12:point/raw, 1:offset  # unsafe
-]
-# just don't die
+void test_get_without_product() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  get 12:point/raw, 1:offset\n"  // unsafe
+      "]\n"
+  );
+  // just don't die
+}
 
 //:: To write to elements of containers, use 'put'.
 
-:(scenario put)
-def main [
-  12:num <- copy 34
-  13:num <- copy 35
-  $clear-trace
-  12:point <- put 12:point, 1:offset, 36
-]
-+mem: storing 36 in location 13
--mem: storing 34 in location 12
+void test_put() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 34\n"
+      "  13:num <- copy 35\n"
+      "  $clear-trace\n"
+      "  12:point <- put 12:point, 1:offset, 36\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 36 in location 13"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 34 in location 12");
+}
 
 :(before "End Primitive Recipe Declarations")
 PUT,
@@ -367,67 +439,85 @@ case PUT: {
   break;
 }
 
-:(scenario put_product_error)
-% Hide_errors = true;
-def main [
-  local-scope
-  load-ingredients
-  1:point <- merge 34, 35
-  3:point <- put 1:point, x:offset, 36
-]
-+error: main: product of 'put' must be first ingredient '1:point', but got '3:point'
+:(code)
+void test_put_product_error() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  1:point <- merge 34, 35\n"
+      "  3:point <- put 1:point, x:offset, 36\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product of 'put' must be first ingredient '1:point', but got '3:point'\n"
+  );
+}
 
 //:: Allow containers to be defined in Mu code.
 
-:(scenarios load)
-:(scenario container)
-container foo [
-  x:num
-  y:num
-]
-+parse: --- defining container foo
-+parse: element: {x: "number"}
-+parse: element: {y: "number"}
+void test_container() {
+  load(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: --- defining container foo\n"
+      "parse: element: {x: \"number\"}\n"
+      "parse: element: {y: \"number\"}\n"
+  );
+}
 
-:(scenario container_use_before_definition)
-container foo [
-  x:num
-  y:bar
-]
-container bar [
-  x:num
-  y:num
-]
-+parse: --- defining container foo
-+parse: type number: 1000
-+parse:   element: {x: "number"}
-# todo: brittle
-# type bar is unknown at this point, but we assign it a number
-+parse:   element: {y: "bar"}
-# later type bar geon
-+parse: --- defining container bar
-+parse: type number: 1001
-+parse:   element: {x: "number"}
-+parse:   element: {y: "number"}
+void test_container_use_before_definition() {
+  load(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: --- defining container foo\n"
+      "parse: type number: 1000\n"
+      "parse:   element: {x: \"number\"}\n"
+      // todo: brittle
+      // type bar is unknown at this point, but we assign it a number
+      "parse:   element: {y: \"bar\"}\n"
+      // later type bar gets a definition
+      "parse: --- defining container bar\n"
+      "parse: type number: 1001\n"
+      "parse:   element: {x: \"number\"}\n"
+      "parse:   element: {y: \"number\"}\n"
+  );
+}
 
 //: if a container is defined again, the new fields add to the original definition
-:(scenarios run)
-:(scenario container_extend)
-container foo [
-  x:num
-]
-# add to previous definition
-container foo [
-  y:num
-]
-def main [
-  1:num <- copy 34
-  2:num <- copy 35
-  3:num <- get 1:foo, 0:offset
-  4:num <- get 1:foo, 1:offset
-]
-+mem: storing 34 in location 3
-+mem: storing 35 in location 4
+void test_container_extend() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "]\n"
+      "container foo [\n"  // add to previous definition
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 35\n"
+      "  3:num <- get 1:foo, 0:offset\n"
+      "  4:num <- get 1:foo, 1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 3\n"
+      "mem: storing 35 in location 4\n"
+  );
+}
 
 :(before "End Command Handlers")
 else if (command == "container") {
@@ -521,25 +611,35 @@ void skip_bracket(istream& in, string message) {
     raise << message << '\n' << end();
 }
 
-:(scenario multi_word_line_in_container_declaration)
-% Hide_errors = true;
-container foo [
-  x:num y:num
-]
-+error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.
+void test_multi_word_line_in_container_declaration() {
+  Hide_errors = true;
+  run(
+      "container foo [\n"
+      "  x:num y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.\n"
+  );
+}
 
 //: support type abbreviations in container definitions
 
-:(scenario type_abbreviations_in_containers)
-type foo = number
-container bar [
-  x:foo
-]
-def main [
-  1:num <- copy 34
-  2:foo <- get 1:bar/unsafe, 0:offset
-]
-+mem: storing 34 in location 2
+void test_type_abbreviations_in_containers() {
+  run(
+      "type foo = number\n"
+      "container bar [\n"
+      "  x:foo\n"
+      "]\n"
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:foo <- get 1:bar/unsafe, 0:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 2\n"
+  );
+}
 
 :(after "Transform.push_back(expand_type_abbreviations)")
 Transform.push_back(expand_type_abbreviations_in_containers);  // idempotent
@@ -579,22 +679,29 @@ void test_error_on_transform_all_between_container_definition_and_extension() {
 //:: Allow container definitions anywhere in the codebase, but complain if you
 //:: can't find a definition at the end.
 
-:(scenario run_complains_on_unknown_types)
-% Hide_errors = true;
-def main [
-  # integer is not a type
-  1:integer <- copy 0
-]
-+error: main: unknown type integer in '1:integer <- copy 0'
+void test_run_complains_on_unknown_types() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:integer <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: unknown type integer in '1:integer <- copy 0'\n"
+  );
+}
 
-:(scenario run_allows_type_definition_after_use)
-def main [
-  1:bar <- copy 0/unsafe
-]
-container bar [
-  x:num
-]
-$error: 0
+void test_run_allows_type_definition_after_use() {
+  run(
+      "def main [\n"
+      "  1:bar <- copy 0/unsafe\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 :(before "End Type Modifying Transforms")
 Transform.push_back(check_or_set_invalid_types);  // idempotent
@@ -636,29 +743,41 @@ void check_or_set_invalid_types(type_tree* type, const string& location_for_erro
   }
 }
 
-:(scenario container_unknown_field)
-% Hide_errors = true;
-container foo [
-  x:num
-  y:bar
-]
-+error: foo: unknown type in y
+void test_container_unknown_field() {
+  Hide_errors = true;
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: unknown type in y\n"
+  );
+}
 
-:(scenario read_container_with_bracket_in_comment)
-container foo [
-  x:num
-  # ']' in comment
-  y:num
-]
-+parse: --- defining container foo
-+parse: element: {x: "number"}
-+parse: element: {y: "number"}
-
-:(scenario container_with_compound_field_type)
-container foo [
-  {x: (address array (address array character))}
-]
-$error: 0
+void test_read_container_with_bracket_in_comment() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  # ']' in comment\n"
+      "  y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: --- defining container foo\n"
+      "parse: element: {x: \"number\"}\n"
+      "parse: element: {y: \"number\"}\n"
+  );
+}
+void test_container_with_compound_field_type() {
+  run(
+      "container foo [\n"
+      "  {x: (address array (address array character))}\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 :(before "End transform_all")
 check_container_field_types();

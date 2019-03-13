@@ -4,23 +4,34 @@
 :(before "End Mu Types Initialization")
 put(Type_abbreviations, "text", new_type_tree("&:@:character"));
 
-:(scenario new_string)
-def main [
-  10:text <- new [abc def]
-  20:char <- index *10:text, 5
-]
-# number code for 'e'
-+mem: storing 101 in location 20
+:(code)
+void test_new_string() {
+  run(
+      "def main [\n"
+      "  10:text <- new [abc def]\n"
+      "  20:char <- index *10:text, 5\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // number code for 'e'
+      "mem: storing 101 in location 20\n"
+  );
+}
 
-:(scenario new_string_handles_unicode)
-def main [
-  10:text <- new [a«c]
-  20:num <- length *10:text
-  21:char <- index *10:text, 1
-]
-+mem: storing 3 in location 20
-# unicode for '«'
-+mem: storing 171 in location 21
+void test_new_string_handles_unicode() {
+  run(
+      "def main [\n"
+      "  10:text <- new [a«c]\n"
+      "  20:num <- length *10:text\n"
+      "  21:char <- index *10:text, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 20\n"
+      // unicode for '«'
+      "mem: storing 171 in location 21\n"
+  );
+}
 
 :(before "End NEW Check Special-cases")
 if (is_literal_text(inst.ingredients.at(0))) break;
@@ -64,21 +75,31 @@ int new_mu_text(const string& contents) {
 
 //: a new kind of typo
 
-:(scenario literal_text_without_instruction)
-% Hide_errors = true;
-def main [
-  [abc]
-]
-+error: main: instruction '[abc]' has no recipe in '[abc]'
+void test_literal_text_without_instruction() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  [abc]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: instruction '[abc]' has no recipe in '[abc]'\n"
+  );
+}
 
 //: stash recognizes texts
 
-:(scenario stash_text)
-def main [
-  1:text <- new [abc]
-  stash [foo:], 1:text
-]
-+app: foo: abc
+void test_stash_text() {
+  run(
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  stash [foo:], 1:text\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: foo: abc\n"
+  );
+}
 
 :(before "End inspect Special-cases(r, data)")
 if (is_mu_text(r)) {
@@ -90,40 +111,62 @@ else if (is_mu_text(current_instruction().ingredients.at(i))) {
   cout << read_mu_text(ingredients.at(i).at(/*skip alloc id*/1));
 }
 
-:(scenario unicode_text)
-def main [
-  1:text <- new [♠]
-  stash [foo:], 1:text
-]
-+app: foo: ♠
+:(code)
+void test_unicode_text() {
+  run(
+      "def main [\n"
+      "  1:text <- new [♠]\n"
+      "  stash [foo:], 1:text\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: foo: ♠\n"
+  );
+}
 
-:(scenario stash_space_after_text)
-def main [
-  1:text <- new [abc]
-  stash 1:text, [foo]
-]
-+app: abc foo
+void test_stash_space_after_text() {
+  run(
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  stash 1:text, [foo]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: abc foo\n"
+  );
+}
 
-:(scenario stash_text_as_array)
-def main [
-  1:text <- new [abc]
-  stash *1:text
-]
-+app: 3 97 98 99
+void test_stash_text_as_array() {
+  run(
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  stash *1:text\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: 3 97 98 99\n"
+  );
+}
 
 //: fixes way more than just stash
 :(before "End Preprocess is_mu_text(reagent x)")
 if (!canonize_type(x)) return false;
 
 //: Allocate more to routine when initializing a literal text
-:(scenario new_text_overflow)
-% Initial_memory_per_routine = 3;
-def main [
-  10:&:num/raw <- new number:type
-  20:text/raw <- new [a]  # not enough room in initial page, if you take the array length into account
-]
-+new: routine allocated memory from 1000 to 1003
-+new: routine allocated memory from 1003 to 1006
+:(code)
+void test_new_text_overflow() {
+  Initial_memory_per_routine = 3;
+  run(
+      "def main [\n"
+      "  10:&:num/raw <- new number:type\n"
+      "  20:text/raw <- new [a]\n"  // not enough room in initial page, if you take the array length into account
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "new: routine allocated memory from 1000 to 1003\n"
+      "new: routine allocated memory from 1003 to 1006\n"
+  );
+}
 
 //: helpers
 :(code)
@@ -157,20 +200,30 @@ string read_mu_characters(int start, int length) {
 
 //: assert: perform sanity checks at runtime
 
-:(scenario assert_literal)
-% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
-def main [
-  assert 0, [this is an assert in Mu]
-]
-+error: this is an assert in Mu
+void test_assert_literal() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  assert 0, [this is an assert in Mu]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: this is an assert in Mu\n"
+  );
+}
 
-:(scenario assert)
-% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
-def main [
-  1:text <- new [this is an assert in Mu]
-  assert 0, 1:text
-]
-+error: this is an assert in Mu
+void test_assert() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:text <- new [this is an assert in Mu]\n"
+      "  assert 0, 1:text\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: this is an assert in Mu\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 ASSERT,

@@ -2,73 +2,78 @@
 //: Instruction 'assume-resources' implicitly creates a variable called
 //: 'resources' that is accessible to later instructions in the scenario.
 
-:(scenarios run_mu_scenario)
-:(scenario simple_filesystem)
-scenario simple-filesystem [
-  local-scope
-  assume-resources [
-    # file 'a' containing two lines of data
-    [a] <- [
-      |a bc|
-      |de f|
-    ]
-    # directory 'b' containing two files, 'c' and 'd'
-    [b/c] <- []
-    [b/d] <- [
-      |xyz|
-    ]
-  ]
-  data:&:@:resource <- get *resources, data:offset
-  file1:resource <- index *data, 0
-  file1-name:text <- get file1, name:offset
-  10:@:char/raw <- copy *file1-name
-  file1-contents:text <- get file1, contents:offset
-  100:@:char/raw <- copy *file1-contents
-  file2:resource <- index *data, 1
-  file2-name:text <- get file2, name:offset
-  30:@:char/raw <- copy *file2-name
-  file2-contents:text <- get file2, contents:offset
-  40:@:char/raw <- copy *file2-contents
-  file3:resource <- index *data, 2
-  file3-name:text <- get file3, name:offset
-  50:@:char/raw <- copy *file3-name
-  file3-contents:text <- get file3, contents:offset
-  60:@:char/raw <- copy *file3-contents
-  memory-should-contain [
-    10:array:character <- [a]
-    100:array:character <- [a bc
-de f
-]
-    30:array:character <- [b/c]
-    40:array:character <- []
-    50:array:character <- [b/d]
-    60:array:character <- [xyz
-]
-  ]
-]
+void test_simple_filesystem() {
+  run_mu_scenario(
+      "scenario simple-filesystem [\n"
+      "  local-scope\n"
+      "  assume-resources [\n"
+           // file 'a' containing two lines of data
+      "    [a] <- [\n"
+      "      |a bc|\n"
+      "      |de f|\n"
+      "    ]\n"
+           // directory 'b' containing two files, 'c' and 'd'
+      "    [b/c] <- []\n"
+      "    [b/d] <- [\n"
+      "      |xyz|\n"
+      "    ]\n"
+      "  ]\n"
+      "  data:&:@:resource <- get *resources, data:offset\n"
+      "  file1:resource <- index *data, 0\n"
+      "  file1-name:text <- get file1, name:offset\n"
+      "  10:@:char/raw <- copy *file1-name\n"
+      "  file1-contents:text <- get file1, contents:offset\n"
+      "  100:@:char/raw <- copy *file1-contents\n"
+      "  file2:resource <- index *data, 1\n"
+      "  file2-name:text <- get file2, name:offset\n"
+      "  30:@:char/raw <- copy *file2-name\n"
+      "  file2-contents:text <- get file2, contents:offset\n"
+      "  40:@:char/raw <- copy *file2-contents\n"
+      "  file3:resource <- index *data, 2\n"
+      "  file3-name:text <- get file3, name:offset\n"
+      "  50:@:char/raw <- copy *file3-name\n"
+      "  file3-contents:text <- get file3, contents:offset\n"
+      "  60:@:char/raw <- copy *file3-contents\n"
+      "  memory-should-contain [\n"
+      "    10:array:character <- [a]\n"
+      "    100:array:character <- [a bc\n"
+      "de f\n"
+      "]\n"
+      "    30:array:character <- [b/c]\n"
+      "    40:array:character <- []\n"
+      "    50:array:character <- [b/d]\n"
+      "    60:array:character <- [xyz\n"
+      "]\n"
+      "  ]\n"
+      "]\n"
+  );
+}
 
-:(scenario escaping_file_contents)
-scenario escaping-file-contents [
-  local-scope
-  assume-resources [
-    # file 'a' containing a '|'
-    # need to escape '\' once for each block
-    [a] <- [
-      |x\\\\|yz|
-    ]
-  ]
-  data:&:@:resource <- get *resources, data:offset
-  file1:resource <- index *data, 0
-  file1-name:text <- get file1, name:offset
-  10:@:char/raw <- copy *file1-name
-  file1-contents:text <- get file1, contents:offset
-  20:@:char/raw <- copy *file1-contents
-  memory-should-contain [
-    10:array:character <- [a]
-    20:array:character <- [x|yz
-]
-  ]
-]
+void test_escaping_file_contents() {
+  run_mu_scenario(
+      "scenario escaping-file-contents [\n"
+      "  local-scope\n"
+      "  assume-resources [\n"
+           // file 'a' containing a '|'
+           // need to escape '\\' once for each block
+      "    [a] <- [\n"
+      "      |x\\\\\\\\|yz|\n"
+      "    ]\n"
+      "  ]\n"
+      "  data:&:@:resource <- get *resources, data:offset\n"
+      "  file1:resource <- index *data, 0\n"
+      "  file1-name:text <- get file1, name:offset\n"
+      "  10:@:char/raw <- copy *file1-name\n"
+      "  file1-contents:text <- get file1, contents:offset\n"
+      "  20:@:char/raw <- copy *file1-contents\n"
+      "  memory-should-contain [\n"
+      "    10:array:character <- [a]\n"
+      "    20:array:character <- [x|yz\n"
+      "]\n"
+      "  ]\n"
+      "]\n"
+  );
+}
 
 :(before "End Globals")
 extern const int RESOURCES = next_predefined_global_for_scenarios(/*size_of(address:resources)*/2);

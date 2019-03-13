@@ -1,19 +1,24 @@
 //: Run a second routine concurrently using 'start-running', without any
 //: guarantees on how the operations in each are interleaved with each other.
 
-:(scenario scheduler)
-def f1 [
-  start-running f2
-  # wait for f2 to run
-  {
-    jump-unless 1:num, -1
-  }
-]
-def f2 [
-  1:num <- copy 1
-]
-+schedule: f1
-+schedule: f2
+void test_scheduler() {
+  run(
+      "def f1 [\n"
+      "  start-running f2\n"
+         // wait for f2 to run
+      "  {\n"
+      "    jump-unless 1:num, -1\n"
+      "  }\n"
+      "]\n"
+      "def f2 [\n"
+      "  1:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+      "schedule: f2\n"
+  );
+}
 
 //: first, add a deadline to run(routine)
 :(before "End Globals")
@@ -189,63 +194,84 @@ case START_RUNNING: {
   break;
 }
 
-:(scenario scheduler_runs_single_routine)
-% Scheduling_interval = 1;
-def f1 [
-  1:num <- copy 0
-  2:num <- copy 0
-]
-+schedule: f1
-+run: {1: "number"} <- copy {0: "literal"}
-+schedule: f1
-+run: {2: "number"} <- copy {0: "literal"}
+:(code)
+void test_scheduler_runs_single_routine() {
+  Scheduling_interval = 1;
+  run(
+      "def f1 [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+      "run: {1: \"number\"} <- copy {0: \"literal\"}\n"
+      "schedule: f1\n"
+      "run: {2: \"number\"} <- copy {0: \"literal\"}\n"
+  );
+}
 
-:(scenario scheduler_interleaves_routines)
-% Scheduling_interval = 1;
-def f1 [
-  start-running f2
-  1:num <- copy 0
-  2:num <- copy 0
-]
-def f2 [
-  3:num <- copy 0
-  4:num <- copy 0
-]
-+schedule: f1
-+run: start-running {f2: "recipe-literal"}
-+schedule: f2
-+run: {3: "number"} <- copy {0: "literal"}
-+schedule: f1
-+run: {1: "number"} <- copy {0: "literal"}
-+schedule: f2
-+run: {4: "number"} <- copy {0: "literal"}
-+schedule: f1
-+run: {2: "number"} <- copy {0: "literal"}
+void test_scheduler_interleaves_routines() {
+  Scheduling_interval = 1;
+  run(
+      "def f1 [\n"
+      "  start-running f2\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+      "def f2 [\n"
+      "  3:num <- copy 0\n"
+      "  4:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+      "run: start-running {f2: \"recipe-literal\"}\n"
+      "schedule: f2\n"
+      "run: {3: \"number\"} <- copy {0: \"literal\"}\n"
+      "schedule: f1\n"
+      "run: {1: \"number\"} <- copy {0: \"literal\"}\n"
+      "schedule: f2\n"
+      "run: {4: \"number\"} <- copy {0: \"literal\"}\n"
+      "schedule: f1\n"
+      "run: {2: \"number\"} <- copy {0: \"literal\"}\n"
+  );
+}
 
-:(scenario start_running_takes_ingredients)
-def f1 [
-  start-running f2, 3
-  # wait for f2 to run
-  {
-    jump-unless 1:num, -1
-  }
-]
-def f2 [
-  1:num <- next-ingredient
-  2:num <- add 1:num, 1
-]
-+mem: storing 4 in location 2
+void test_start_running_takes_ingredients() {
+  run(
+      "def f1 [\n"
+      "  start-running f2, 3\n"
+         // wait for f2 to run
+      "  {\n"
+      "    jump-unless 1:num, -1\n"
+      "  }\n"
+      "]\n"
+      "def f2 [\n"
+      "  1:num <- next-ingredient\n"
+      "  2:num <- add 1:num, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 2\n"
+  );
+}
 
 //: type-checking for 'start-running'
 
-:(scenario start_running_checks_types)
-% Hide_errors = true;
-def f1 [
-  start-running f2, 3
-]
-def f2 n:&:num [
-]
-+error: f1: ingredient 0 has the wrong type at 'start-running f2, 3'
+void test_start_running_checks_types() {
+  Hide_errors = true;
+  run(
+      "def f1 [\n"
+      "  start-running f2, 3\n"
+      "]\n"
+      "def f2 n:&:num [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: f1: ingredient 0 has the wrong type at 'start-running f2, 3'\n"
+  );
+}
 
 // 'start-running' only uses the ingredients of the callee, not its products
 :(before "End is_indirect_call_with_ingredients Special-cases")
@@ -253,63 +279,90 @@ if (r == START_RUNNING) return true;
 
 //: back to testing 'start-running'
 
-:(scenario start_running_returns_routine_id)
-def f1 [
-  1:num <- start-running f2
-]
-def f2 [
-  12:num <- copy 44
-]
-+mem: storing 2 in location 1
+:(code)
+void test_start_running_returns_routine_id() {
+  run(
+      "def f1 [\n"
+      "  1:num <- start-running f2\n"
+      "]\n"
+      "def f2 [\n"
+      "  12:num <- copy 44\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
-//: this scenario will require some careful setup in escaped C++
-//: (straining our tangle capabilities to near-breaking point)
-:(scenario scheduler_skips_completed_routines)
-% recipe_ordinal f1 = load("recipe f1 [\n1:num <- copy 0\n]\n").front();
-% recipe_ordinal f2 = load("recipe f2 [\n2:num <- copy 0\n]\n").front();
-% Routines.push_back(new routine(f1));  // f1 meant to run
-% Routines.push_back(new routine(f2));
-% Routines.back()->state = COMPLETED;  // f2 not meant to run
-# must have at least one routine without escaping
-def f3 [
-  3:num <- copy 0
-]
-# by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order
-+schedule: f1
-+mem: storing 0 in location 1
--schedule: f2
--mem: storing 0 in location 2
-+schedule: f3
-+mem: storing 0 in location 3
+//: this scenario requires some careful setup
+void test_scheduler_skips_completed_routines() {
+  recipe_ordinal f1 = load(
+      "recipe f1 [\n"
+      "  1:num <- copy 0\n"
+      "]\n").front();
+  recipe_ordinal f2 = load(
+      "recipe f2 [\n"
+      "  2:num <- copy 0\n"
+      "]\n").front();
+  Routines.push_back(new routine(f1));  // f1 meant to run
+  Routines.push_back(new routine(f2));
+  Routines.back()->state = COMPLETED;  // f2 not meant to run
+  run(
+      "def f3 [\n"
+      "  3:num <- copy 0\n"
+      "]\n"
+  );
+  // f1 and f3 can run in any order
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+      "mem: storing 0 in location 1\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("schedule: f2");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 0 in location 2");
+  CHECK_TRACE_CONTENTS(
+      "schedule: f3\n"
+      "mem: storing 0 in location 3\n"
+  );
+}
 
-:(scenario scheduler_starts_at_middle_of_routines)
-% Routines.push_back(new routine(COPY));
-% Routines.back()->state = COMPLETED;
-def f1 [
-  1:num <- copy 0
-  2:num <- copy 0
-]
-+schedule: f1
--run: idle
+void test_scheduler_starts_at_middle_of_routines() {
+  Routines.push_back(new routine(COPY));
+  Routines.back()->state = COMPLETED;
+  run(
+      "def f1 [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "schedule: f1\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: idle");
+}
 
 //:: Errors in a routine cause it to terminate.
 
-:(scenario scheduler_terminates_routines_after_errors)
-% Hide_errors = true;
-% Scheduling_interval = 2;
-def f1 [
-  start-running f2
-  1:num <- copy 0
-  2:num <- copy 0
-]
-def f2 [
-  # divide by 0 twice
-  3:num <- divide-with-remainder 4, 0
-  4:num <- divide-with-remainder 4, 0
-]
-# f2 should stop after first divide by 0
-+error: f2: divide by zero in '3:num <- divide-with-remainder 4, 0'
--error: f2: divide by zero in '4:num <- divide-with-remainder 4, 0'
+void test_scheduler_terminates_routines_after_errors() {
+  Hide_errors = true;
+  Scheduling_interval = 2;
+  run(
+      "def f1 [\n"
+      "  start-running f2\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+      "def f2 [\n"
+         // divide by 0 twice
+      "  3:num <- divide-with-remainder 4, 0\n"
+      "  4:num <- divide-with-remainder 4, 0\n"
+      "]\n"
+  );
+  // f2 should stop after first divide by 0
+  CHECK_TRACE_CONTENTS(
+      "error: f2: divide by zero in '3:num <- divide-with-remainder 4, 0'\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: f2: divide by zero in '4:num <- divide-with-remainder 4, 0'");
+}
 
 :(after "operator<<(ostream& os, end /*unused*/)")
   if (Trace_stream && Trace_stream->curr_label == "error" && Current_routine) {
@@ -318,15 +371,20 @@ def f2 [
 
 //:: Routines are marked completed when their parent completes.
 
-:(scenario scheduler_kills_orphans)
-def main [
-  start-running f1
-  # f1 never actually runs because its parent completes without waiting for it
-]
-def f1 [
-  1:num <- copy 0
-]
--schedule: f1
+:(code)
+void test_scheduler_kills_orphans() {
+  run(
+      "def main [\n"
+      "  start-running f1\n"
+         // f1 never actually runs because its parent completes without
+         // waiting for it
+      "]\n"
+      "def f1 [\n"
+      "  1:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("schedule: f1");
+}
 
 :(before "End Scheduler Cleanup")
 for (int i = 0;  i < SIZE(Routines);  ++i) {
@@ -349,20 +407,26 @@ bool has_completed_parent(int routine_index) {
 
 //:: 'routine-state' can tell if a given routine id is running
 
-:(scenario routine_state_test)
-% Scheduling_interval = 2;
-def f1 [
-  1:num/child-id <- start-running f2
-  12:num <- copy 0  # race condition since we don't care about location 12
-  # thanks to Scheduling_interval, f2's one instruction runs in between here and completes
-  2:num/state <- routine-state 1:num/child-id
-]
-def f2 [
-  12:num <- copy 0
-  # trying to run a second instruction marks routine as completed
-]
-# recipe f2 should be in state COMPLETED
-+mem: storing 1 in location 2
+void test_routine_state_test() {
+  Scheduling_interval = 2;
+  run(
+      "def f1 [\n"
+      "  1:num/child-id <- start-running f2\n"
+      "  12:num <- copy 0\n"  // race condition since we don't care about location 12
+         // thanks to Scheduling_interval, f2's one instruction runs in
+         // between here and completes
+      "  2:num/state <- routine-state 1:num/child-id\n"
+      "]\n"
+      "def f2 [\n"
+      "  12:num <- copy 0\n"
+         // trying to run a second instruction marks routine as completed
+      "]\n"
+  );
+  // routine f2 should be in state COMPLETED
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 2\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 ROUTINE_STATE,
@@ -443,22 +507,28 @@ case _DUMP_ROUTINES: {
 
 //: support for stopping routines after some number of cycles
 
-:(scenario routine_discontinues_past_limit)
-% Scheduling_interval = 2;
-def f1 [
-  1:num/child-id <- start-running f2
-  limit-time 1:num/child-id, 10
-  # padding loop just to make sure f2 has time to completed
-  2:num <- copy 20
-  2:num <- subtract 2:num, 1
-  jump-if 2:num, -2:offset
-]
-def f2 [
-  jump -1:offset  # run forever
-  $print [should never get here], 10/newline
-]
-# f2 terminates
-+schedule: discontinuing routine 2
+:(code)
+void test_routine_discontinues_past_limit() {
+  Scheduling_interval = 2;
+  run(
+      "def f1 [\n"
+      "  1:num/child-id <- start-running f2\n"
+      "  limit-time 1:num/child-id, 10\n"
+         // padding loop just to make sure f2 has time to complete
+      "  2:num <- copy 20\n"
+      "  2:num <- subtract 2:num, 1\n"
+      "  jump-if 2:num, -2:offset\n"
+      "]\n"
+      "def f2 [\n"
+      "  jump -1:offset\n"  // run forever
+      "  $print [should never get here], 10/newline\n"
+      "]\n"
+  );
+  // f2 terminates
+  CHECK_TRACE_CONTENTS(
+      "schedule: discontinuing routine 2\n"
+  );
+}
 
 :(before "End routine States")
 DISCONTINUED,
@@ -564,59 +634,75 @@ case NUMBER_OF_INSTRUCTIONS: {
   break;
 }
 
-:(scenario number_of_instructions)
-def f1 [
-  10:num/child-id <- start-running f2
-  {
-    loop-unless 20:num
-  }
-  11:num <- number-of-instructions 10:num
-]
-def f2 [
-  # 2 instructions worth of work
-  1:num <- copy 34
-  20:num <- copy 1
-]
-# f2 runs an extra instruction for the implicit return added by the
-# fill_in_return_ingredients transform
-+mem: storing 3 in location 11
+:(code)
+void test_number_of_instructions() {
+  run(
+      "def f1 [\n"
+      "  10:num/child-id <- start-running f2\n"
+      "  {\n"
+      "    loop-unless 20:num\n"
+      "  }\n"
+      "  11:num <- number-of-instructions 10:num\n"
+      "]\n"
+      "def f2 [\n"
+         // 2 instructions worth of work
+      "  1:num <- copy 34\n"
+      "  20:num <- copy 1\n"
+      "]\n"
+  );
+  // f2 runs an extra instruction for the implicit 'return' added by the
+  // fill_in_return_ingredients transform
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 11\n"
+  );
+}
 
-:(scenario number_of_instructions_across_multiple_scheduling_intervals)
-% Scheduling_interval = 1;
-def f1 [
-  10:num/child-id <- start-running f2
-  {
-    loop-unless 20:num
-  }
-  11:num <- number-of-instructions 10:num
-]
-def f2 [
-  # 4 instructions worth of work
-  1:num <- copy 34
-  2:num <- copy 1
-  2:num <- copy 3
-  20:num <- copy 1
-]
-# f2 runs an extra instruction for the implicit return added by the
-# fill_in_return_ingredients transform
-+mem: storing 5 in location 11
+void test_number_of_instructions_across_multiple_scheduling_intervals() {
+  Scheduling_interval = 1;
+  run(
+      "def f1 [\n"
+      "  10:num/child-id <- start-running f2\n"
+      "  {\n"
+      "    loop-unless 20:num\n"
+      "  }\n"
+      "  11:num <- number-of-instructions 10:num\n"
+      "]\n"
+      "def f2 [\n"
+         // 4 instructions worth of work
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 1\n"
+      "  2:num <- copy 3\n"
+      "  20:num <- copy 1\n"
+      "]\n"
+  );
+  // f2 runs an extra instruction for the implicit 'return' added by the
+  // fill_in_return_ingredients transform
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 5 in location 11\n"
+  );
+}
 
 //:: make sure that each routine gets a different alloc to start
 
-:(scenario new_concurrent)
-def f1 [
-  start-running f2
-  1:&:num/raw <- new number:type
-  # wait for f2 to complete
-  {
-    loop-unless 4:num/raw
-  }
-]
-def f2 [
-  2:&:num/raw <- new number:type
-  # hack: assumes scheduler implementation
-  3:bool/raw <- equal 1:&:num/raw, 2:&:num/raw
-  # signal f2 complete
-  4:num/raw <- copy 1
-]
-+mem: storing 0 in location 3
+void test_new_concurrent() {
+  run(
+      "def f1 [\n"
+      "  start-running f2\n"
+      "  1:&:num/raw <- new number:type\n"
+         // wait for f2 to complete
+      "  {\n"
+      "    loop-unless 4:num/raw\n"
+      "  }\n"
+      "]\n"
+      "def f2 [\n"
+      "  2:&:num/raw <- new number:type\n"
+         // hack: assumes scheduler implementation
+      "  3:bool/raw <- equal 1:&:num/raw, 2:&:num/raw\n"
+         // signal f2 complete
+      "  4:num/raw <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 3\n"
+  );
+}

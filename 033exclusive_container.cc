@@ -18,17 +18,25 @@ get(Type, tmp).elements.push_back(reagent("p:point"));
 //: Tests in this layer often explicitly set up memory before reading it as a
 //: container. Don't do this in general. I'm tagging such cases with /unsafe;
 //: they'll be exceptions to later checks.
-:(scenario copy_exclusive_container)
-# Copying exclusive containers copies all their contents and an extra location for the tag.
-def main [
-  1:num <- copy 1  # 'point' variant
-  2:num <- copy 34
-  3:num <- copy 35
-  4:number-or-point <- copy 1:number-or-point/unsafe
-]
-+mem: storing 1 in location 4
-+mem: storing 34 in location 5
-+mem: storing 35 in location 6
+
+:(code)
+void test_copy_exclusive_container() {
+  run(
+      // Copying exclusive containers copies all their contents, and an extra
+      // location for the tag.
+      "def main [\n"
+      "  1:num <- copy 1\n"  // 'point' variant
+      "  2:num <- copy 34\n"
+      "  3:num <- copy 35\n"
+      "  4:number-or-point <- copy 1:number-or-point/unsafe\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 4\n"
+      "mem: storing 34 in location 5\n"
+      "mem: storing 35 in location 6\n"
+  );
+}
 
 :(before "End size_of(type) Special-cases")
 if (t.kind == EXCLUSIVE_CONTAINER) {
@@ -55,29 +63,41 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "variant", 0);
 
-:(scenario maybe_convert)
-def main [
-  12:num <- copy 1
-  13:num <- copy 35
-  14:num <- copy 36
-  20:point, 22:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant
-]
-# boolean
-+mem: storing 1 in location 22
-# point
-+mem: storing 35 in location 20
-+mem: storing 36 in location 21
+:(code)
+void test_maybe_convert() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 1\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  20:point, 22:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // boolean
+      "mem: storing 1 in location 22\n"
+      // point
+      "mem: storing 35 in location 20\n"
+      "mem: storing 36 in location 21\n"
+  );
+}
 
-:(scenario maybe_convert_fail)
-def main [
-  12:num <- copy 1
-  13:num <- copy 35
-  14:num <- copy 36
-  20:num, 21:bool <- maybe-convert 12:number-or-point/unsafe, 0:variant
-]
-# boolean
-+mem: storing 0 in location 21
-# number: no write
+void test_maybe_convert_fail() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 1\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  20:num, 21:bool <- maybe-convert 12:number-or-point/unsafe, 0:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // boolean
+      "mem: storing 0 in location 21\n"
+      // number: no write
+  );
+}
+
 
 :(before "End Primitive Recipe Declarations")
 MAYBE_CONVERT,
@@ -185,35 +205,48 @@ const reagent variant_type(const type_tree* type, int tag) {
   return element;
 }
 
-:(scenario maybe_convert_product_type_mismatch)
-% Hide_errors = true;
-def main [
-  12:num <- copy 1
-  13:num <- copy 35
-  14:num <- copy 36
-  20:num, 21:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant
-]
-+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but '20' has type number
+void test_maybe_convert_product_type_mismatch() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  12:num <- copy 1\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  20:num, 21:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but '20' has type number\n"
+  );
+}
 
-:(scenario maybe_convert_dummy_product)
-def main [
-  12:num <- copy 1
-  13:num <- copy 35
-  14:num <- copy 36
-  _, 21:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant
-]
-$error: 0
+void test_maybe_convert_dummy_product() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 1\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  _, 21:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //:: Allow exclusive containers to be defined in Mu code.
 
-:(scenario exclusive_container)
-exclusive-container foo [
-  x:num
-  y:num
-]
-+parse: --- defining exclusive-container foo
-+parse: element: {x: "number"}
-+parse: element: {y: "number"}
+void test_exclusive_container() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: --- defining exclusive-container foo\n"
+      "parse: element: {x: \"number\"}\n"
+      "parse: element: {y: \"number\"}\n"
+  );
+}
 
 :(before "End Command Handlers")
 else if (command == "exclusive-container") {
@@ -223,84 +256,113 @@ else if (command == "exclusive-container") {
 //: arrays are disallowed inside exclusive containers unless their length is
 //: fixed in advance
 
-:(scenario exclusive_container_contains_array)
-exclusive-container foo [
-  x:@:num:3
-]
-$error: 0
+:(code)
+void test_exclusive_container_contains_array() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:@:num:3\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario exclusive_container_disallows_dynamic_array_element)
-% Hide_errors = true;
-exclusive-container foo [
-  x:@:num
-]
-+error: container 'foo' cannot determine size of element 'x'
+void test_exclusive_container_disallows_dynamic_array_element() {
+  Hide_errors = true;
+  run(
+      "exclusive-container foo [\n"
+      "  x:@:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: container 'foo' cannot determine size of element 'x'\n"
+  );
+}
 
 //:: To construct exclusive containers out of variant types, use 'merge'.
-:(scenario lift_to_exclusive_container)
-exclusive-container foo [
-  x:num
-  y:num
-]
-def main [
-  1:num <- copy 34
-  2:foo <- merge 0/x, 1:num  # tag must be a literal when merging exclusive containers
-  4:foo <- merge 1/y, 1:num
-]
-+mem: storing 0 in location 2
-+mem: storing 34 in location 3
-+mem: storing 1 in location 4
-+mem: storing 34 in location 5
+void test_lift_to_exclusive_container() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:foo <- merge 0/x, 1:num\n"  // tag must be a literal when merging exclusive containers
+      "  4:foo <- merge 1/y, 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 2\n"
+      "mem: storing 34 in location 3\n"
+      "mem: storing 1 in location 4\n"
+      "mem: storing 34 in location 5\n"
+  );
+}
 
 //: type-checking for 'merge' on exclusive containers
 
-:(scenario merge_handles_exclusive_container)
-exclusive-container foo [
-  x:num
-  y:bar
-]
-container bar [
-  z:num
-]
-def main [
-  1:foo <- merge 0/x, 34
-]
-+mem: storing 0 in location 1
-+mem: storing 34 in location 2
-$error: 0
+void test_merge_handles_exclusive_container() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  z:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 0/x, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+      "mem: storing 34 in location 2\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_requires_literal_tag_for_exclusive_container)
-% Hide_errors = true;
-exclusive-container foo [
-  x:num
-  y:bar
-]
-container bar [
-  z:num
-]
-def main [
-  1:num <- copy 0
-  2:foo <- merge 1:num, 34
-]
-+error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo' in '2:foo <- merge 1:num, 34'
+void test_merge_requires_literal_tag_for_exclusive_container() {
+  Hide_errors = true;
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  z:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:foo <- merge 1:num, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo' in '2:foo <- merge 1:num, 34'\n"
+  );
+}
 
-:(scenario merge_handles_exclusive_container_inside_exclusive_container)
-exclusive-container foo [
-  x:num
-  y:bar
-]
-exclusive-container bar [
-  a:num
-  b:num
-]
-def main [
-  1:num <- copy 0
-  2:bar <- merge 0/a, 34
-  4:foo <- merge 1/y, 2:bar
-]
-+mem: storing 0 in location 5
-+mem: storing 34 in location 6
-$error: 0
+void test_merge_handles_exclusive_container_inside_exclusive_container() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "exclusive-container bar [\n"
+      "  a:num\n"
+      "  b:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:bar <- merge 0/a, 34\n"
+      "  4:foo <- merge 1/y, 2:bar\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 5\n"
+      "mem: storing 34 in location 6\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 :(before "End check_merge_call Special-cases")
 case EXCLUSIVE_CONTAINER: {
@@ -328,98 +390,125 @@ case EXCLUSIVE_CONTAINER: {
   break;
 }
 
-:(scenario merge_check_container_containing_exclusive_container)
-container foo [
-  x:num
-  y:bar
-]
-exclusive-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo <- merge 23, 1/y, 34
-]
-+mem: storing 23 in location 1
-+mem: storing 1 in location 2
-+mem: storing 34 in location 3
-$error: 0
+:(code)
+void test_merge_check_container_containing_exclusive_container() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "exclusive-container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 23, 1/y, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 23 in location 1\n"
+      "mem: storing 1 in location 2\n"
+      "mem: storing 34 in location 3\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_container_containing_exclusive_container_2)
-% Hide_errors = true;
-container foo [
-  x:num
-  y:bar
-]
-exclusive-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo <- merge 23, 1/y, 34, 35
-]
-+error: main: too many ingredients in '1:foo <- merge 23, 1/y, 34, 35'
+void test_merge_check_container_containing_exclusive_container_2() {
+  Hide_errors = true;
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "exclusive-container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 23, 1/y, 34, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too many ingredients in '1:foo <- merge 23, 1/y, 34, 35'\n"
+  );
+}
 
-:(scenario merge_check_exclusive_container_containing_container)
-exclusive-container foo [
-  x:num
-  y:bar
-]
-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo <- merge 1/y, 23, 34
-]
-+mem: storing 1 in location 1
-+mem: storing 23 in location 2
-+mem: storing 34 in location 3
-$error: 0
+void test_merge_check_exclusive_container_containing_container() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 1/y, 23, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+      "mem: storing 23 in location 2\n"
+      "mem: storing 34 in location 3\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_exclusive_container_containing_container_2)
-exclusive-container foo [
-  x:num
-  y:bar
-]
-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo <- merge 0/x, 23
-]
-$error: 0
+void test_merge_check_exclusive_container_containing_container_2() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 0/x, 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_exclusive_container_containing_container_3)
-% Hide_errors = true;
-exclusive-container foo [
-  x:num
-  y:bar
-]
-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo <- merge 1/y, 23
-]
-+error: main: too few ingredients in '1:foo <- merge 1/y, 23'
+void test_merge_check_exclusive_container_containing_container_3() {
+  Hide_errors = true;
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 1/y, 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too few ingredients in '1:foo <- merge 1/y, 23'\n"
+  );
+}
 
-:(scenario merge_check_exclusive_container_containing_container_4)
-exclusive-container foo [
-  x:num
-  y:bar
-]
-container bar [
-  a:num
-  b:num
-]
-def main [
-  1:bar <- merge 23, 24
-  3:foo <- merge 1/y, 1:bar
-]
-$error: 0
+void test_merge_check_exclusive_container_containing_container_4() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:num\n"
+      "  y:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  a:num\n"
+      "  b:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:bar <- merge 23, 24\n"
+      "  3:foo <- merge 1/y, 1:bar\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //: Since the different variants of an exclusive-container might have
 //: different sizes, relax the size mismatch check for 'merge' instructions.
@@ -436,24 +525,30 @@ if (current_step_index() < SIZE(Current_routine->steps())
     return size_of(x) < SIZE(data);
 }
 
-:(scenario merge_exclusive_container_with_mismatched_sizes)
-container foo [
-  x:num
-  y:num
-]
-exclusive-container bar [
-  x:num
-  y:foo
-]
-def main [
-  1:num <- copy 34
-  2:num <- copy 35
-  3:bar <- merge 0/x, 1:num
-  6:bar <- merge 1/foo, 1:num, 2:num
-]
-+mem: storing 0 in location 3
-+mem: storing 34 in location 4
-# bar is always 3 large so location 5 is skipped
-+mem: storing 1 in location 6
-+mem: storing 34 in location 7
-+mem: storing 35 in location 8
+:(code)
+void test_merge_exclusive_container_with_mismatched_sizes() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "exclusive-container bar [\n"
+      "  x:num\n"
+      "  y:foo\n"
+      "]\n"
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- copy 35\n"
+      "  3:bar <- merge 0/x, 1:num\n"
+      "  6:bar <- merge 1/foo, 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 3\n"
+      "mem: storing 34 in location 4\n"
+      // bar is always 3 large so location 5 is skipped
+      "mem: storing 1 in location 6\n"
+      "mem: storing 34 in location 7\n"
+      "mem: storing 35 in location 8\n"
+  );
+}

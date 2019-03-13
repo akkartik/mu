@@ -3,16 +3,22 @@
 :(before "End Initialize Op Names")
 put_new(Name, "01", "add r32 to rm32 (add)");
 
-:(scenario add_r32_to_r32)
-% Reg[EAX].i = 0x10;
-% Reg[EBX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  01  d8                                      # add EBX to EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: add EBX to r/m32
-+run: r/m32 is EAX
-+run: storing 0x00000011
+:(code)
+void test_add_r32_to_r32() {
+  Reg[EAX].i = 0x10;
+  Reg[EBX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  01     d8                                    \n" // add EBX to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add EBX to r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0x00000011\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x01: {  // add r32 to r/m32
@@ -79,16 +85,22 @@ string rname(uint8_t r) {
 :(before "End Initialize Op Names")
 put_new(Name, "29", "subtract r32 from rm32 (sub)");
 
-:(scenario subtract_r32_from_r32)
-% Reg[EAX].i = 10;
-% Reg[EBX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  29  d8                                      # subtract EBX from EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: subtract EBX from r/m32
-+run: r/m32 is EAX
-+run: storing 0x00000009
+:(code)
+void test_subtract_r32_from_r32() {
+  Reg[EAX].i = 10;
+  Reg[EBX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  29     d8                                    \n"  // subtract EBX from EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract EBX from r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0x00000009\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x29: {  // subtract r32 from r/m32
@@ -105,17 +117,23 @@ case 0x29: {  // subtract r32 from r/m32
 :(before "End Initialize Op Names")
 put_new(Name, "f7", "negate/multiply rm32 (with EAX if necessary) depending on subop (neg/mul)");
 
-:(scenario multiply_eax_by_r32)
-% Reg[EAX].i = 4;
-% Reg[ECX].i = 3;
-== 0x1
-# op      ModR/M  SIB   displacement  immediate
-  f7      e1                                      # multiply EAX by ECX
-# ModR/M in binary: 11 (direct mode) 100 (subop mul) 001 (src ECX)
-+run: operate on r/m32
-+run: r/m32 is ECX
-+run: subop: multiply EAX by r/m32
-+run: storing 0x0000000c
+:(code)
+void test_multiply_eax_by_r32() {
+  Reg[EAX].i = 4;
+  Reg[ECX].i = 3;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7     e1                                    \n"  // multiply EAX by ECX
+      // ModR/M in binary: 11 (direct mode) 100 (subop mul) 001 (src ECX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is ECX\n"
+      "run: subop: multiply EAX by r/m32\n"
+      "run: storing 0x0000000c\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xf7: {
@@ -146,16 +164,22 @@ case 0xf7: {
 :(before "End Initialize Op Names")
 put_new(Name_0f, "af", "multiply rm32 into r32 (imul)");
 
-:(scenario multiply_r32_into_r32)
-% Reg[EAX].i = 4;
-% Reg[EBX].i = 2;
-== 0x1
-# op      ModR/M  SIB   displacement  immediate
-  0f af   d8                                      # subtract EBX into EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: multiply r/m32 into EBX
-+run: r/m32 is EAX
-+run: storing 0x00000008
+:(code)
+void test_multiply_r32_into_r32() {
+  Reg[EAX].i = 4;
+  Reg[EBX].i = 2;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  0f af  d8                                    \n"  // subtract EBX into EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: multiply r/m32 into EBX\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0x00000008\n"
+  );
+}
 
 :(before "End Two-Byte Opcodes Starting With 0f")
 case 0xaf: {  // multiply r32 into r/m32
@@ -169,16 +193,22 @@ case 0xaf: {  // multiply r32 into r/m32
 
 //:: negate
 
-:(scenario negate_r32)
-% Reg[EBX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  f7  db                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: negate
-+run: storing 0xffffffff
+:(code)
+void test_negate_r32() {
+  Reg[EBX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7 db                                        \n"  // negate EBX
+      // ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: negate\n"
+      "run: storing 0xffffffff\n"
+  );
+}
 
 :(before "End Op f7 Subops")
 case 3: {  // negate r/m32
@@ -199,33 +229,46 @@ case 3: {  // negate r/m32
   break;
 }
 
-:(scenario negate_can_overflow)  // in exactly one situation
-% Reg[EBX].i = 0x80000000;  // INT_MIN
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  f7  db                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: negate
-+run: overflow
+:(code)
+// negate can overflow in exactly one situation
+void test_negate_can_overflow() {
+  Reg[EBX].i = 0x80000000;  // INT_MIN
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7 db                                        \n"  // negate EBX
+      // ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: negate\n"
+      "run: overflow\n"
+  );
+}
 
 //:: shift left
 
 :(before "End Initialize Op Names")
 put_new(Name, "d3", "shift rm32 by CL bits depending on subop (sal/sar/shl/shr)");
 
-:(scenario shift_left_r32_with_cl)
-% Reg[EBX].i = 13;
-% Reg[ECX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  d3  e3                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 100 (subop shift left) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift left by CL bits
-+run: storing 0x0000001a
+:(code)
+void test_shift_left_r32_with_cl() {
+  Reg[EBX].i = 13;
+  Reg[ECX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  d3     e3                                    \n"  // shift EBX left by CL bits
+      // ModR/M in binary: 11 (direct mode) 100 (subop shift left) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift left by CL bits\n"
+      "run: storing 0x0000001a\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xd3: {
@@ -259,17 +302,23 @@ case 0xd3: {
 
 //:: shift right arithmetic
 
-:(scenario shift_right_arithmetic_r32_with_cl)
-% Reg[EBX].i = 26;
-% Reg[ECX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  d3  fb                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while preserving sign
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_arithmetic_r32_with_cl() {
+  Reg[EBX].i = 26;
+  Reg[ECX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  d3     fb                                    \n"  // shift EBX right by CL bits, while preserving sign
+      // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while preserving sign\n"
+      "run: storing 0x0000000d\n"
+  );
+}
 
 :(before "End Op d3 Subops")
 case 7: {  // shift right r/m32 by CL, preserving sign
@@ -284,45 +333,63 @@ case 7: {  // shift right r/m32 by CL, preserving sign
   break;
 }
 
-:(scenario shift_right_arithmetic_odd_r32_with_cl)
-% Reg[EBX].i = 27;
-% Reg[ECX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  d3  fb                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while preserving sign
-# result: 13
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_arithmetic_odd_r32_with_cl() {
+  Reg[EBX].i = 27;
+  Reg[ECX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  d3     fb                                    \n"  // shift EBX right by CL bits, while preserving sign
+      // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while preserving sign\n"
+      // result: 13
+      "run: storing 0x0000000d\n"
+  );
+}
 
-:(scenario shift_right_arithmetic_negative_r32_with_cl)
-% Reg[EBX].i = 0xfffffffd;  // -3
-% Reg[ECX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  d3  fb                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while preserving sign
-# result: -2
-+run: storing 0xfffffffe
+void test_shift_right_arithmetic_negative_r32_with_cl() {
+  Reg[EBX].i = 0xfffffffd;  // -3
+  Reg[ECX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  d3     fb                                    \n"  // shift EBX right by CL bits, while preserving sign
+      // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while preserving sign\n"
+      // result: -2
+      "run: storing 0xfffffffe\n"
+  );
+}
 
 //:: shift right logical
 
-:(scenario shift_right_logical_r32_with_cl)
-% Reg[EBX].i = 26;
-% Reg[ECX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  d3  eb                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while padding zeroes
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_logical_r32_with_cl() {
+  Reg[EBX].i = 26;
+  Reg[ECX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  d3     eb                                    \n"  // shift EBX right by CL bits, while padding zeroes
+      // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while padding zeroes\n"
+      // result: 13
+      "run: storing 0x0000000d\n"
+  );
+}
 
 :(before "End Op d3 Subops")
 case 5: {  // shift right r/m32 by CL, preserving sign
@@ -343,46 +410,63 @@ case 5: {  // shift right r/m32 by CL, preserving sign
   break;
 }
 
-:(scenario shift_right_logical_odd_r32_with_cl)
-% Reg[EBX].i = 27;
-% Reg[ECX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  d3  eb                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while padding zeroes
-# result: 13
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_logical_odd_r32_with_cl() {
+  Reg[EBX].i = 27;
+  Reg[ECX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  d3     eb                                    \n"  // shift EBX right by CL bits, while padding zeroes
+      // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while padding zeroes\n"
+      // result: 13
+      "run: storing 0x0000000d\n"
+  );
+}
 
-:(scenario shift_right_logical_negative_r32_with_cl)
-% Reg[EBX].i = 0xfffffffd;
-% Reg[ECX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  d3  eb                                      # negate EBX
-# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while padding zeroes
-+run: storing 0x7ffffffe
+void test_shift_right_logical_negative_r32_with_cl() {
+  Reg[EBX].i = 0xfffffffd;
+  Reg[ECX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  d3     eb                                    \n"  // shift EBX right by CL bits, while padding zeroes
+      // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while padding zeroes\n"
+      "run: storing 0x7ffffffe\n"
+  );
+}
 
 //:: and
 
 :(before "End Initialize Op Names")
 put_new(Name, "21", "rm32 = bitwise AND of r32 with rm32 (and)");
 
-:(scenario and_r32_with_r32)
-% Reg[EAX].i = 0x0a0b0c0d;
-% Reg[EBX].i = 0x000000ff;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  21  d8                                      # and EBX with destination EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: and EBX with r/m32
-+run: r/m32 is EAX
-+run: storing 0x0000000d
+:(code)
+void test_and_r32_with_r32() {
+  Reg[EAX].i = 0x0a0b0c0d;
+  Reg[EBX].i = 0x000000ff;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  21     d8                                    \n"  // and EBX with destination EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: and EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0x0000000d\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x21: {  // and r32 with r/m32
@@ -399,16 +483,22 @@ case 0x21: {  // and r32 with r/m32
 :(before "End Initialize Op Names")
 put_new(Name, "09", "rm32 = bitwise OR of r32 with rm32 (or)");
 
-:(scenario or_r32_with_r32)
-% Reg[EAX].i = 0x0a0b0c0d;
-% Reg[EBX].i = 0xa0b0c0d0;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  09  d8                                      # or EBX with destination EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: or EBX with r/m32
-+run: r/m32 is EAX
-+run: storing 0xaabbccdd
+:(code)
+void test_or_r32_with_r32() {
+  Reg[EAX].i = 0x0a0b0c0d;
+  Reg[EBX].i = 0xa0b0c0d0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  09     d8                                    \n"  // or EBX with destination EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: or EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0xaabbccdd\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x09: {  // or r32 with r/m32
@@ -425,16 +515,22 @@ case 0x09: {  // or r32 with r/m32
 :(before "End Initialize Op Names")
 put_new(Name, "31", "rm32 = bitwise XOR of r32 with rm32 (xor)");
 
-:(scenario xor_r32_with_r32)
-% Reg[EAX].i = 0x0a0b0c0d;
-% Reg[EBX].i = 0xaabbc0d0;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  31  d8                                      # xor EBX with destination EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: xor EBX with r/m32
-+run: r/m32 is EAX
-+run: storing 0xa0b0ccdd
+:(code)
+void test_xor_r32_with_r32() {
+  Reg[EAX].i = 0x0a0b0c0d;
+  Reg[EBX].i = 0xaabbc0d0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  31     d8                                    \n"  // xor EBX with destination EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: xor EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0xa0b0ccdd\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x31: {  // xor r32 with r/m32
@@ -448,16 +544,22 @@ case 0x31: {  // xor r32 with r/m32
 
 //:: not
 
-:(scenario not_r32)
-% Reg[EBX].i = 0x0f0f00ff;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  f7  d3                                      # not EBX
-# ModR/M in binary: 11 (direct mode) 010 (subop not) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: not
-+run: storing 0xf0f0ff00
+:(code)
+void test_not_r32() {
+  Reg[EBX].i = 0x0f0f00ff;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7     d3                                    \n"  // not EBX
+      // ModR/M in binary: 11 (direct mode) 010 (subop not) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: not\n"
+      "run: storing 0xf0f0ff00\n"
+  );
+}
 
 :(before "End Op f7 Subops")
 case 2: {  // not r/m32
@@ -475,16 +577,22 @@ case 2: {  // not r/m32
 :(before "End Initialize Op Names")
 put_new(Name, "39", "compare: set SF if rm32 < r32 (cmp)");
 
-:(scenario compare_r32_with_r32_greater)
-% Reg[EAX].i = 0x0a0b0c0d;
-% Reg[EBX].i = 0x0a0b0c07;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  39  d8                                      # compare EBX with EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: compare EBX with r/m32
-+run: r/m32 is EAX
-+run: SF=0; ZF=0; OF=0
+:(code)
+void test_compare_r32_with_r32_greater() {
+  Reg[EAX].i = 0x0a0b0c0d;
+  Reg[EBX].i = 0x0a0b0c07;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  39     d8                                    \n"  // compare EBX with EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: SF=0; ZF=0; OF=0\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x39: {  // set SF if r/m32 < r32
@@ -502,42 +610,59 @@ case 0x39: {  // set SF if r/m32 < r32
   break;
 }
 
-:(scenario compare_r32_with_r32_lesser)
-% Reg[EAX].i = 0x0a0b0c07;
-% Reg[EBX].i = 0x0a0b0c0d;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  39  d8                                      # compare EBX with EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: compare EBX with r/m32
-+run: r/m32 is EAX
-+run: SF=1; ZF=0; OF=0
+:(code)
+void test_compare_r32_with_r32_lesser() {
+  Reg[EAX].i = 0x0a0b0c07;
+  Reg[EBX].i = 0x0a0b0c0d;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  39     d8                                    \n"  // compare EBX with EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: SF=1; ZF=0; OF=0\n"
+  );
+}
 
-:(scenario compare_r32_with_r32_equal)
-% Reg[EAX].i = 0x0a0b0c0d;
-% Reg[EBX].i = 0x0a0b0c0d;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  39  d8                                      # compare EBX with EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: compare EBX with r/m32
-+run: r/m32 is EAX
-+run: SF=0; ZF=1; OF=0
+void test_compare_r32_with_r32_equal() {
+  Reg[EAX].i = 0x0a0b0c0d;
+  Reg[EBX].i = 0x0a0b0c0d;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  39     d8                                    \n"  // compare EBX with EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: SF=0; ZF=1; OF=0\n"
+  );
+}
 
 //:: copy (mov)
 
 :(before "End Initialize Op Names")
 put_new(Name, "89", "copy r32 to rm32 (mov)");
 
-:(scenario copy_r32_to_r32)
-% Reg[EBX].i = 0xaf;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  89  d8                                      # copy EBX to EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: copy EBX to r/m32
-+run: r/m32 is EAX
-+run: storing 0x000000af
+:(code)
+void test_copy_r32_to_r32() {
+  Reg[EBX].i = 0xaf;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  89     d8                                    \n"  // copy EBX to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy EBX to r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0x000000af\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x89: {  // copy r32 to r/m32
@@ -555,17 +680,23 @@ case 0x89: {  // copy r32 to r/m32
 :(before "End Initialize Op Names")
 put_new(Name, "87", "swap the contents of r32 and rm32 (xchg)");
 
-:(scenario xchg_r32_with_r32)
-% Reg[EBX].i = 0xaf;
-% Reg[EAX].i = 0x2e;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  87  d8                                      # exchange EBX with EAX
-# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-+run: exchange EBX with r/m32
-+run: r/m32 is EAX
-+run: storing 0x000000af in r/m32
-+run: storing 0x0000002e in EBX
+:(code)
+void test_xchg_r32_with_r32() {
+  Reg[EBX].i = 0xaf;
+  Reg[EAX].i = 0x2e;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  87     d8                                    \n"  // exchange EBX with EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: exchange EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0x000000af in r/m32\n"
+      "run: storing 0x0000002e in EBX\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x87: {  // exchange r32 with r/m32
@@ -593,13 +724,19 @@ put_new(Name, "45", "increment EBP (inc)");
 put_new(Name, "46", "increment ESI (inc)");
 put_new(Name, "47", "increment EDI (inc)");
 
-:(scenario increment_r32)
-% Reg[ECX].u = 0x1f;
-== 0x1  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  41                                          # increment ECX
-+run: increment ECX
-+run: storing value 0x00000020
+:(code)
+void test_increment_r32() {
+  Reg[ECX].u = 0x1f;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  41                                           \n"  // increment ECX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: increment ECX\n"
+      "run: storing value 0x00000020\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x40:
@@ -620,15 +757,21 @@ case 0x47: {  // increment r32
 :(before "End Initialize Op Names")
 put_new(Name, "ff", "increment/decrement/jump/push/call rm32 based on subop (inc/dec/jmp/push/call)");
 
-:(scenario increment_rm32)
-% Reg[EAX].u = 0x20;
-== 0x1  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  ff  c0                                      # increment EAX
-# ModR/M in binary: 11 (direct mode) 000 (subop inc) 000 (EAX)
-+run: increment r/m32
-+run: r/m32 is EAX
-+run: storing value 0x00000021
+:(code)
+void test_increment_rm32() {
+  Reg[EAX].u = 0x20;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  ff     c0                                    \n"  // increment EAX
+      // ModR/M in binary: 11 (direct mode) 000 (subop inc) 000 (EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: increment r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing value 0x00000021\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xff: {
@@ -663,13 +806,19 @@ put_new(Name, "4d", "decrement EBP (dec)");
 put_new(Name, "4e", "decrement ESI (dec)");
 put_new(Name, "4f", "decrement EDI (dec)");
 
-:(scenario decrement_r32)
-% Reg[ECX].u = 0x1f;
-== 0x1  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  49                                          # decrement ECX
-+run: decrement ECX
-+run: storing value 0x0000001e
+:(code)
+void test_decrement_r32() {
+  Reg[ECX].u = 0x1f;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  49                                           \n"  // decrement ECX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: decrement ECX\n"
+      "run: storing value 0x0000001e\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x48:
@@ -687,15 +836,21 @@ case 0x4f: {  // decrement r32
   break;
 }
 
-:(scenario decrement_rm32)
-% Reg[EAX].u = 0x20;
-== 0x1  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  ff  c8                                      # decrement EAX
-# ModR/M in binary: 11 (direct mode) 001 (subop inc) 000 (EAX)
-+run: decrement r/m32
-+run: r/m32 is EAX
-+run: storing value 0x0000001f
+:(code)
+void test_decrement_rm32() {
+  Reg[EAX].u = 0x20;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  ff     c8                                    \n"  // decrement EAX
+      // ModR/M in binary: 11 (direct mode) 001 (subop inc) 000 (EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: decrement r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing value 0x0000001f\n"
+  );
+}
 
 :(before "End Op ff Subops")
 case 1: {  // decrement r/m32
@@ -718,15 +873,21 @@ put_new(Name, "55", "push EBP to stack (push)");
 put_new(Name, "56", "push ESI to stack (push)");
 put_new(Name, "57", "push EDI to stack (push)");
 
-:(scenario push_r32)
-% Reg[ESP].u = 0x64;
-% Reg[EBX].i = 0x0000000a;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  53                                          # push EBX to stack
-+run: push EBX
-+run: decrementing ESP to 0x00000060
-+run: pushing value 0x0000000a
+:(code)
+void test_push_r32() {
+  Reg[ESP].u = 0x64;
+  Reg[EBX].i = 0x0000000a;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  53                                           \n"  // push EBX to stack
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: push EBX\n"
+      "run: decrementing ESP to 0x00000060\n"
+      "run: pushing value 0x0000000a\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x50:
@@ -756,18 +917,24 @@ put_new(Name, "5d", "pop top of stack to EBP (pop)");
 put_new(Name, "5e", "pop top of stack to ESI (pop)");
 put_new(Name, "5f", "pop top of stack to EDI (pop)");
 
-:(scenario pop_r32)
-% Reg[ESP].u = 0x02000000;
-% Mem.push_back(vma(0x02000000));  // manually allocate memory
-% write_mem_i32(0x02000000, 0x0000000a);  // ..before this write
-== 0x1  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  5b                                          # pop stack to EBX
-== 0x2000  # data segment
-0a 00 00 00  # 0x0a
-+run: pop into EBX
-+run: popping value 0x0000000a
-+run: incrementing ESP to 0x02000004
+:(code)
+void test_pop_r32() {
+  Reg[ESP].u = 0x02000000;
+  Mem.push_back(vma(0x02000000));  // manually allocate memory
+  write_mem_i32(0x02000000, 0x0000000a);  // ..before this write
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  5b                                           \n"  // pop stack to EBX
+      "== 0x2000\n"  // data segment
+      "0a 00 00 00\n"  // 0x0000000a
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: pop into EBX\n"
+      "run: popping value 0x0000000a\n"
+      "run: incrementing ESP to 0x02000004\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x58:

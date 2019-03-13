@@ -42,7 +42,9 @@ void test_trace_orders_across_layers() {
   trace("test layer 1") << "foo" << end();
   trace("test layer 2") << "bar" << end();
   trace("test layer 1") << "qux" << end();
-  CHECK_TRACE_CONTENTS("test layer 1: footest layer 2: bartest layer 1: qux");
+  CHECK_TRACE_CONTENTS("test layer 1: foo\n"
+                       "test layer 2: bar\n"
+                       "test layer 1: qux\n");
 }
 
 void test_trace_supports_count() {

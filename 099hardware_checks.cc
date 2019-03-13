@@ -54,10 +54,14 @@ void check_for_misuse_of_real_hardware(const recipe_ordinal r) {
   }
 }
 
-:(scenarios transform)
-:(scenario warn_on_using_real_screen_directly_in_non_main_recipe)
-% Hide_errors = true;
-def foo [
-  print 0, 34
-]
-+error: foo: 'print 0, 34': only 'main' can pass 0 into a (address screen)
+void test_warn_on_using_real_screen_directly_in_non_main_recipe() {
+  Hide_errors = true;
+  transform(
+      "def foo [\n"
+      "  print 0, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: 'print 0, 34': only 'main' can pass 0 into a (address screen)\n"
+  );
+}

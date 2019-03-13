@@ -10,12 +10,16 @@
 // For now you can't use the simpler 'colon-based' representation inside type
 // trees. Once you start typing parens, keep on typing parens.
 
-:(scenarios load)
-:(scenario dilated_reagent_with_nested_brackets)
-def main [
-  {1: number, foo: (bar (baz quux))} <- copy 34
-]
-+parse:   product: {1: "number", "foo": ("bar" ("baz" "quux"))}
+void test_dilated_reagent_with_nested_brackets() {
+  load(
+      "def main [\n"
+      "  {1: number, foo: (bar (baz quux))} <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   product: {1: \"number\", \"foo\": (\"bar\" (\"baz\" \"quux\"))}\n"
+  );
+}
 
 :(before "End Parsing Dilated Reagent Property(value)")
 value = parse_string_tree(value);
@@ -81,26 +85,40 @@ string_tree* parse_string_tree(istream& in) {
   return result;
 }
 
-:(scenario dilated_reagent_with_type_tree)
-% Hide_errors = true;  // 'map' isn't defined yet
-def main [
-  {1: (foo (address array character) (bar number))} <- copy 34
-]
-# just to avoid errors
-container foo [
-]
-container bar [
-]
-+parse:   product: {1: ("foo" ("address" "array" "character") ("bar" "number"))}
+void test_dilated_reagent_with_type_tree() {
+  Hide_errors = true;  // 'map' isn't defined yet
+  load(
+      "def main [\n"
+      "  {1: (foo (address array character) (bar number))} <- copy 34\n"
+      "]\n"
+      "container foo [\n"
+      "]\n"
+      "container bar [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   product: {1: (\"foo\" (\"address\" \"array\" \"character\") (\"bar\" \"number\"))}\n"
+  );
+}
 
-:(scenario dilated_empty_tree)
-def main [
-  {1: number, foo: ()} <- copy 34
-]
-+parse:   product: {1: "number", "foo": ()}
+void test_dilated_empty_tree() {
+  load(
+      "def main [\n"
+      "  {1: number, foo: ()} <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   product: {1: \"number\", \"foo\": ()}\n"
+  );
+}
 
-:(scenario dilated_singleton_tree)
-def main [
-  {1: number, foo: (bar)} <- copy 34
-]
-+parse:   product: {1: "number", "foo": ("bar")}
+void test_dilated_singleton_tree() {
+  load(
+      "def main [\n"
+      "  {1: number, foo: (bar)} <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   product: {1: \"number\", \"foo\": (\"bar\")}\n"
+  );
+}

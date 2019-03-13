@@ -6,13 +6,18 @@
 //: every single time. You can't use the same name with multiple types in a
 //: single recipe.
 
-:(scenario transform_fails_on_reusing_name_with_different_type)
-% Hide_errors = true;
-def main [
-  x:num <- copy 1
-  x:bool <- copy 1
-]
-+error: main: 'x' used with multiple types
+void test_transform_fails_on_reusing_name_with_different_type() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  x:num <- copy 1\n"
+      "  x:bool <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'x' used with multiple types\n"
+  );
+}
 
 //: we need surrounding-space info for type-checking variables in other spaces
 :(after "Transform.push_back(collect_surrounding_spaces)")
@@ -110,101 +115,151 @@ recipe_ordinal owning_recipe(const reagent& x, recipe_ordinal r) {
   return r;
 }
 
-:(scenario transform_fills_in_missing_types)
-def main [
-  x:num <- copy 11
-  y:num <- add x, 1
-]
-# x is in location 2, y in location 3
-+mem: storing 12 in location 3
+void test_transform_fills_in_missing_types() {
+  run(
+      "def main [\n"
+      "  x:num <- copy 11\n"
+      "  y:num <- add x, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // x is in location 2, y in location 3
+      "mem: storing 12 in location 3\n"
+  );
+}
 
-:(scenario transform_fills_in_missing_types_in_product)
-def main [
-  x:num <- copy 11
-  x <- copy 12
-]
-# x is in location 2
-+mem: storing 12 in location 2
+void test_transform_fills_in_missing_types_in_product() {
+  run(
+      "def main [\n"
+      "  x:num <- copy 11\n"
+      "  x <- copy 12\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // x is in location 2
+      "mem: storing 12 in location 2\n"
+  );
+}
 
-:(scenario transform_fills_in_missing_types_in_product_and_ingredient)
-def main [
-  x:num <- copy 11
-  x <- add x, 1
-]
-# x is in location 2
-+mem: storing 12 in location 2
+void test_transform_fills_in_missing_types_in_product_and_ingredient() {
+  run(
+      "def main [\n"
+      "  x:num <- copy 11\n"
+      "  x <- add x, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // x is in location 2
+      "mem: storing 12 in location 2\n"
+  );
+}
 
-:(scenario transform_fills_in_missing_label_type)
-def main [
-  jump +target
-  1:num <- copy 0
-  +target
-]
--mem: storing 0 in location 1
+void test_transform_fills_in_missing_label_type() {
+  run(
+      "def main [\n"
+      "  jump +target\n"
+      "  1:num <- copy 0\n"
+      "  +target\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 0 in location 1");
+}
 
-:(scenario transform_fails_on_missing_types_in_first_mention)
-% Hide_errors = true;
-def main [
-  x <- copy 1
-  x:num <- copy 2
-]
-+error: main: missing type for 'x' in 'x <- copy 1'
+void test_transform_fails_on_missing_types_in_first_mention() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  x <- copy 1\n"
+      "  x:num <- copy 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: missing type for 'x' in 'x <- copy 1'\n"
+  );
+}
 
-:(scenario transform_fails_on_wrong_type_for_label)
-% Hide_errors = true;
-def main [
-  +foo:num <- copy 34
-]
-+error: main: non-label '+foo' must begin with a letter
+void test_transform_fails_on_wrong_type_for_label() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  +foo:num <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: non-label '+foo' must begin with a letter\n"
+  );
+}
 
-:(scenario typo_in_address_type_fails)
-% Hide_errors = true;
-def main [
-  y:&:charcter <- new character:type
-  *y <- copy 67
-]
-+error: main: unknown type charcter in 'y:&:charcter <- new character:type'
+void test_typo_in_address_type_fails() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  y:&:charcter <- new character:type\n"
+      "  *y <- copy 67\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: unknown type charcter in 'y:&:charcter <- new character:type'\n"
+  );
+}
 
-:(scenario array_type_without_size_fails)
-% Hide_errors = true;
-def main [
-  x:@:num <- merge 2, 12, 13
-]
-+error: main can't determine the size of array variable 'x'. Either allocate it separately and make the type of 'x' an address, or specify the length of the array in the type of 'x'.
+void test_array_type_without_size_fails() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  x:@:num <- merge 2, 12, 13\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main can't determine the size of array variable 'x'. Either allocate it separately and make the type of 'x' an address, or specify the length of the array in the type of 'x'.\n"
+  );
+}
 
-:(scenarios transform)
-:(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)
-def foo [  # dummy
-]
-def main [
-  local-scope
-  0:space/names:foo <- copy null  # specify surrounding space
-  x:bool <- copy true
-  x:num/space:1 <- copy 34
-  x/space:1 <- copy 35
-]
-$error: 0
+void test_transform_checks_types_of_identical_reagents_in_multiple_spaces() {
+  transform(
+      "def foo [\n"  // dummy function for names
+      "]\n"
+      "def main [\n"
+      "  local-scope\n"
+      "  0:space/names:foo <- copy null\n"  // specify surrounding space
+      "  x:bool <- copy true\n"
+      "  x:num/space:1 <- copy 34\n"
+      "  x/space:1 <- copy 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario transform_handles_empty_reagents)
-% Hide_errors = true;
-def main [
-  add *
-]
-+error: illegal name '*'
-# no crash
+void test_transform_handles_empty_reagents() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  add *\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: illegal name '*'\n"
+  );
+  // no crash
+}
 
-:(scenario transform_checks_types_in_surrounding_spaces)
-% Hide_errors = true;
-# 'x' is a bool in foo's space
-def foo [
-  local-scope
-  x:bool <- copy false
-  return default-space/names:foo
-]
-# try to read 'x' as a num in foo's space
-def main [
-  local-scope
-  0:space/names:foo <- foo
-  x:num/space:1 <- copy 34
-]
-error: foo: 'x' used with multiple types
+void test_transform_checks_types_in_surrounding_spaces() {
+  Hide_errors = true;
+  transform(
+      // 'x' is a bool in foo's space
+      "def foo [\n"
+      "  local-scope\n"
+      "  x:bool <- copy false\n"
+      "  return default-space/names:foo\n"
+      "]\n"
+      // try to read 'x' as a num in foo's space
+      "def main [\n"
+      "  local-scope\n"
+      "  0:space/names:foo <- foo\n"
+      "  x:num/space:1 <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: 'x' used with multiple types\n"
+  );
+}

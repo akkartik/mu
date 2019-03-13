@@ -1,11 +1,15 @@
 //: Support literal non-integers.
 
-:(scenarios load)
-:(scenario noninteger_literal)
-def main [
-  1:number <- copy 3.14159
-]
-+parse:   ingredient: {3.14159: "literal-fractional-number"}
+void test_noninteger_literal() {
+  load(
+      "def main [\n"
+      "  1:number <- copy 3.14159\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {3.14159: \"literal-fractional-number\"}\n"
+  );
+}
 
 :(after "Parsing reagent(string s)")
 if (is_noninteger(s)) {

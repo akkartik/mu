@@ -2,21 +2,31 @@
 //: locations. In Mu, a transform called 'transform_names' provides this
 //: convenience.
 
-:(scenario transform_names)
-def main [
-  x:num <- copy 0
-]
-+name: assign x 2
-+mem: storing 0 in location 2
+void test_transform_names() {
+  run(
+      "def main [\n"
+      "  x:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: assign x 2\n"
+      "mem: storing 0 in location 2\n"
+  );
+}
 
-:(scenarios transform)
-:(scenario transform_names_fails_on_use_before_define)
-% Hide_errors = true;
-def main [
-  x:num <- copy y:num
-]
-+error: main: tried to read ingredient 'y' in 'x:num <- copy y:num' but it hasn't been written to yet
-# todo: detect conditional defines
+void test_transform_names_fails_on_use_before_define() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  x:num <- copy y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: tried to read ingredient 'y' in 'x:num <- copy y:num' but it hasn't been written to yet\n"
+  );
+}
+
+// todo: detect conditional defines
 
 :(after "End Type Modifying Transforms")
 Transform.push_back(transform_names);  // idempotent
@@ -180,71 +190,105 @@ bool is_raw(const reagent& r) {
   return has_property(r, "raw");
 }
 
-:(scenario transform_names_supports_containers)
-def main [
-  x:point <- merge 34, 35
-  y:num <- copy 3
-]
-+name: assign x 2
-# skip location 2 because x occupies two locations
-+name: assign y 4
+void test_transform_names_supports_containers() {
+  transform(
+      "def main [\n"
+      "  x:point <- merge 34, 35\n"
+      "  y:num <- copy 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: assign x 2\n"
+      // skip location 3 because x occupies two locations
+      "name: assign y 4\n"
+  );
+}
 
-:(scenario transform_names_supports_static_arrays)
-def main [
-  x:@:num:3 <- create-array
-  y:num <- copy 3
-]
-+name: assign x 2
-# skip locations 2, 3, 4 because x occupies four locations
-+name: assign y 6
+void test_transform_names_supports_static_arrays() {
+  transform(
+      "def main [\n"
+      "  x:@:num:3 <- create-array\n"
+      "  y:num <- copy 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: assign x 2\n"
+      // skip locations 3, 4, 5 because x occupies four locations
+      "name: assign y 6\n"
+  );
+}
 
-:(scenario transform_names_passes_dummy)
-# _ is just a dummy result that never gets consumed
-def main [
-  _, x:num <- copy 0, 1
-]
-+name: assign x 2
--name: assign _ 2
+void test_transform_names_passes_dummy() {
+  transform(
+      "def main [\n"
+      // _ is just a dummy result that never gets consumed
+      "  _, x:num <- copy 0, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: assign x 2\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("name: assign _ 2");
+}
 
 //: an escape hatch to suppress name conversion that we'll use later
-:(scenarios run)
-:(scenario transform_names_passes_raw)
-% Hide_errors = true;
-def main [
-  x:num/raw <- copy 0
-]
--name: assign x 2
-+error: can't write to location 0 in 'x:num/raw <- copy 0'
+void test_transform_names_passes_raw() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  x:num/raw <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("name: assign x 2");
+  CHECK_TRACE_CONTENTS(
+      "error: can't write to location 0 in 'x:num/raw <- copy 0'\n"
+  );
+}
 
-:(scenarios transform)
-:(scenario transform_names_fails_when_mixing_names_and_numeric_locations)
-% Hide_errors = true;
-def main [
-  x:num <- copy 1:num
-]
-+error: main: mixing variable names and numeric addresses
+void test_transform_names_fails_when_mixing_names_and_numeric_locations() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  x:num <- copy 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: mixing variable names and numeric addresses\n"
+  );
+}
 
-:(scenario transform_names_fails_when_mixing_names_and_numeric_locations_2)
-% Hide_errors = true;
-def main [
-  x:num <- copy 1
-  1:num <- copy x:num
-]
-+error: main: mixing variable names and numeric addresses
+void test_transform_names_fails_when_mixing_names_and_numeric_locations_2() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  x:num <- copy 1\n"
+      "  1:num <- copy x:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: mixing variable names and numeric addresses\n"
+  );
+}
 
-:(scenario transform_names_does_not_fail_when_mixing_names_and_raw_locations)
-def main [
-  x:num <- copy 1:num/raw
-]
--error: main: mixing variable names and numeric addresses
-$error: 0
+void test_transform_names_does_not_fail_when_mixing_names_and_raw_locations() {
+  transform(
+      "def main [\n"
+      "  x:num <- copy 1:num/raw\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: main: mixing variable names and numeric addresses");
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario transform_names_does_not_fail_when_mixing_names_and_literals)
-def main [
-  x:num <- copy 1
-]
--error: main: mixing variable names and numeric addresses
-$error: 0
+void test_transform_names_does_not_fail_when_mixing_names_and_literals() {
+  transform(
+      "def main [\n"
+      "  x:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: main: mixing variable names and numeric addresses");
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //:: Support element names for containers in 'get' and 'get-location' and 'put'.
 //: (get-location is implemented later)
@@ -258,14 +302,20 @@ else {
   offset_value = offset.value;
 }
 
-:(scenario transform_names_transforms_container_elements)
-def main [
-  p:&:point <- copy null
-  a:num <- get *p:&:point, y:offset
-  b:num <- get *p:&:point, x:offset
-]
-+name: element y of type point is at offset 1
-+name: element x of type point is at offset 0
+:(code)
+void test_transform_names_transforms_container_elements() {
+  transform(
+      "def main [\n"
+      "  p:&:point <- copy null\n"
+      "  a:num <- get *p:&:point, y:offset\n"
+      "  b:num <- get *p:&:point, x:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: element y of type point is at offset 1\n"
+      "name: element x of type point is at offset 0\n"
+  );
+}
 
 :(before "End transform_names(inst) Special-cases")
 // replace element names of containers with offsets
@@ -287,35 +337,50 @@ if (inst.name == "get" || inst.name == "get-location" || inst.name == "put") {
   }
 }
 
-:(scenario missing_type_in_get)
-% Hide_errors = true;
-def main [
-  get a, x:offset
-]
-+error: main: missing type for 'a' in 'get a, x:offset'
+:(code)
+void test_missing_type_in_get() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  get a, x:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: missing type for 'a' in 'get a, x:offset'\n"
+  );
+}
 
-:(scenario transform_names_handles_containers)
-def main [
-  a:point <- merge 0, 0
-  b:num <- copy 0
-]
-+name: assign a 2
-+name: assign b 4
+void test_transform_names_handles_containers() {
+  transform(
+      "def main [\n"
+      "  a:point <- merge 0, 0\n"
+      "  b:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: assign a 2\n"
+      "name: assign b 4\n"
+  );
+}
 
 //:: Support variant names for exclusive containers in 'maybe-convert'.
 
-:(scenarios run)
-:(scenario transform_names_handles_exclusive_containers)
-def main [
-  12:num <- copy 1
-  13:num <- copy 35
-  14:num <- copy 36
-  20:point, 22:bool <- maybe-convert 12:number-or-point/unsafe, p:variant
-]
-+name: variant p of type number-or-point has tag 1
-+mem: storing 1 in location 22
-+mem: storing 35 in location 20
-+mem: storing 36 in location 21
+void test_transform_names_handles_exclusive_containers() {
+  run(
+      "def main [\n"
+      "  12:num <- copy 1\n"
+      "  13:num <- copy 35\n"
+      "  14:num <- copy 36\n"
+      "  20:point, 22:bool <- maybe-convert 12:number-or-point/unsafe, p:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: variant p of type number-or-point has tag 1\n"
+      "mem: storing 1 in location 22\n"
+      "mem: storing 35 in location 20\n"
+      "mem: storing 36 in location 21\n"
+  );
+}
 
 :(before "End transform_names(inst) Special-cases")
 // convert variant names of exclusive containers
@@ -335,9 +400,15 @@ if (inst.name == "maybe-convert") {
   }
 }
 
-:(scenario missing_type_in_maybe_convert)
-% Hide_errors = true;
-def main [
-  maybe-convert a, x:variant
-]
-+error: main: missing type for 'a' in 'maybe-convert a, x:variant'
+:(code)
+void test_missing_type_in_maybe_convert() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  maybe-convert a, x:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: missing type for 'a' in 'maybe-convert a, x:variant'\n"
+  );
+}

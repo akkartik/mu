@@ -3,66 +3,92 @@
 //: The tests in this layer use unsafe operations so as to stay decoupled from
 //: 'new'.
 
-:(scenario copy_indirect)
-def main [
-  # skip alloc id for 10:&:num
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 94
-  # Treat locations 10 and 11 as an address to look up, pointing at the
-  # payload in locations 20 and 21.
-  30:num <- copy 10:&:num/lookup
-]
-+mem: storing 94 in location 30
+void test_copy_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:num
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 94\n"
+      // Treat locations 10 and 11 as an address to look up, pointing at the
+      // payload in locations 20 and 21.
+      "  30:num <- copy 10:&:num/lookup\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 94 in location 30\n"
+  );
+}
 
 :(before "End Preprocess read_memory(x)")
 canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
 //: 'lookup' property
-:(scenario store_indirect)
-def main [
-  # skip alloc id for 10:&:num
-  11:num <- copy 10
-  10:&:num/lookup <- copy 94
-]
-+mem: storing 94 in location 11
+:(code)
+void test_store_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:num
+      "  11:num <- copy 10\n"
+      "  10:&:num/lookup <- copy 94\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 94 in location 11\n"
+  );
+}
 
 :(before "End Preprocess write_memory(x, data)")
 canonize(x);
 
 //: writes to address 0 always loudly fail
-:(scenario store_to_0_fails)
-% Hide_errors = true;
-def main [
-  10:&:num <- copy null
-  10:&:num/lookup <- copy 94
-]
--mem: storing 94 in location 0
-+error: main: tried to lookup 0 in '10:&:num/lookup <- copy 94'
+:(code)
+void test_store_to_0_fails() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  10:&:num <- copy null\n"
+      "  10:&:num/lookup <- copy 94\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 94 in location 0");
+  CHECK_TRACE_CONTENTS(
+      "error: main: tried to lookup 0 in '10:&:num/lookup <- copy 94'\n"
+  );
+}
 
 //: attempts to /lookup address 0 always loudly fail
-:(scenario lookup_0_fails)
-% Hide_errors = true;
-def main [
-  10:&:num <- copy null
-  20:num <- copy 10:&:num/lookup
-]
-+error: main: tried to lookup 0 in '20:num <- copy 10:&:num/lookup'
+void test_lookup_0_fails() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  10:&:num <- copy null\n"
+      "  20:num <- copy 10:&:num/lookup\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: tried to lookup 0 in '20:num <- copy 10:&:num/lookup'\n"
+  );
+}
 
-:(scenario lookup_0_dumps_callstack)
-% Hide_errors = true;
-def main [
-  foo null
-]
-def foo [
-  10:&:num <- next-input
-  20:num <- copy 10:&:num/lookup
-]
-+error: foo: tried to lookup 0 in '20:num <- copy 10:&:num/lookup'
-+error:   called from main: foo null
+void test_lookup_0_dumps_callstack() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  foo null\n"
+      "]\n"
+      "def foo [\n"
+      "  10:&:num <- next-input\n"
+      "  20:num <- copy 10:&:num/lookup\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: tried to lookup 0 in '20:num <- copy 10:&:num/lookup'\n"
+      "error:   called from main: foo null\n"
+  );
+}
 
-:(code)
 void canonize(reagent& x) {
   if (is_literal(x)) return;
   // Begin canonize(x) Lookups
@@ -174,40 +200,55 @@ void drop_one_lookup(reagent& r) {
 //: Most instructions don't require fixup if they use the 'ingredients' and
 //: 'products' variables in run_current_routine().
 
-:(scenario get_indirect)
-def main [
-  # skip alloc id for 10:&:point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 94
-  22:num <- copy 95
-  30:num <- get 10:&:point/lookup, 0:offset
-]
-+mem: storing 94 in location 30
+void test_get_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:point
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 94\n"
+      "  22:num <- copy 95\n"
+      "  30:num <- get 10:&:point/lookup, 0:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 94 in location 30\n"
+  );
+}
 
-:(scenario get_indirect2)
-def main [
-  # skip alloc id for 10:&:point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 94
-  22:num <- copy 95
-  # skip alloc id for destination
-  31:num <- copy 40
-  30:&:num/lookup <- get 10:&:point/lookup, 0:offset
-]
-+mem: storing 94 in location 41
+void test_get_indirect2() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:point
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 94\n"
+      "  22:num <- copy 95\n"
+      // skip alloc id for destination
+      "  31:num <- copy 40\n"
+      "  30:&:num/lookup <- get 10:&:point/lookup, 0:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 94 in location 41\n"
+  );
+}
 
-:(scenario include_nonlookup_properties)
-def main [
-  # skip alloc id for 10:&:point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 94
-  22:num <- copy 95
-  30:num <- get 10:&:point/lookup/foo, 0:offset
-]
-+mem: storing 94 in location 30
+void test_include_nonlookup_properties() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:point
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 94\n"
+      "  22:num <- copy 95\n"
+      "  30:num <- get 10:&:point/lookup/foo, 0:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 94 in location 30\n"
+  );
+}
 
 :(after "Update GET base in Check")
 if (!canonize_type(base)) break;
@@ -216,16 +257,22 @@ if (!canonize_type(product)) break;
 :(after "Update GET base in Run")
 canonize(base);
 
-:(scenario put_indirect)
-def main [
-  # skip alloc id for 10:&:point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 94
-  22:num <- copy 95
-  10:&:point/lookup <- put 10:&:point/lookup, 0:offset, 96
-]
-+mem: storing 96 in location 21
+:(code)
+void test_put_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:point
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 94\n"
+      "  22:num <- copy 95\n"
+      "  10:&:point/lookup <- put 10:&:point/lookup, 0:offset, 96\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 96 in location 21\n"
+  );
+}
 
 :(after "Update PUT base in Check")
 if (!canonize_type(base)) break;
@@ -234,17 +281,21 @@ if (!canonize_type(offset)) break;
 :(after "Update PUT base in Run")
 canonize(base);
 
-:(scenario put_product_error_with_lookup)
-% Hide_errors = true;
-def main [
-  # skip alloc id for 10:&:point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 94
-  22:num <- copy 95
-  10:&:point <- put 10:&:point/lookup, x:offset, 96
-]
-+error: main: product of 'put' must be first ingredient '10:&:point/lookup', but got '10:&:point'
+:(code)
+void test_put_product_error_with_lookup() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  11:num <- copy 20\n"
+      "  21:num <- copy 94\n"
+      "  22:num <- copy 95\n"
+      "  10:&:point <- put 10:&:point/lookup, x:offset, 96\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product of 'put' must be first ingredient '10:&:point/lookup', but got '10:&:point'\n"
+  );
+}
 
 :(before "End PUT Product Checks")
 reagent/*copy*/ p = inst.products.at(0);
@@ -256,57 +307,80 @@ if (!types_strictly_match(p, i)) {
   break;
 }
 
-:(scenario new_error)
-% Hide_errors = true;
-def main [
-  1:num/raw <- new num:type
-]
-+error: main: product of 'new' has incorrect type: '1:num/raw <- new num:type'
+:(code)
+void test_new_error() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num/raw <- new num:type\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product of 'new' has incorrect type: '1:num/raw <- new num:type'\n"
+  );
+}
 
 :(after "Update NEW product in Check")
 canonize_type(product);
 
-:(scenario copy_array_indirect)
-def main [
-  # skip alloc id for 10:&:@:num
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 3  # array length
-  22:num <- copy 94
-  23:num <- copy 95
-  24:num <- copy 96
-  30:@:num <- copy 10:&:@:num/lookup
-]
-+mem: storing 3 in location 30
-+mem: storing 94 in location 31
-+mem: storing 95 in location 32
-+mem: storing 96 in location 33
+:(code)
+void test_copy_array_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:@:num
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 3\n"  // array length
+      "  22:num <- copy 94\n"
+      "  23:num <- copy 95\n"
+      "  24:num <- copy 96\n"
+      "  30:@:num <- copy 10:&:@:num/lookup\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 30\n"
+      "mem: storing 94 in location 31\n"
+      "mem: storing 95 in location 32\n"
+      "mem: storing 96 in location 33\n"
+  );
+}
 
-:(scenario create_array_indirect)
-def main [
-  # skip alloc id for 10:&:@:num:3
-  11:num <- copy 3000
-  10:&:array:num:3/lookup <- create-array
-]
-+mem: storing 3 in location 3001
+void test_create_array_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:@:num:3
+      "  11:num <- copy 3000\n"
+      "  10:&:array:num:3/lookup <- create-array\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 3001\n"
+  );
+}
 
 :(after "Update CREATE_ARRAY product in Check")
 if (!canonize_type(product)) break;
 :(after "Update CREATE_ARRAY product in Run")
 canonize(product);
 
-:(scenario index_indirect)
-def main [
-  # skip alloc id for 10:&:@:num
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 3  # array length
-  22:num <- copy 94
-  23:num <- copy 95
-  24:num <- copy 96
-  30:num <- index 10:&:@:num/lookup, 1
-]
-+mem: storing 95 in location 30
+:(code)
+void test_index_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:@:num
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 3\n"  // array length
+      "  22:num <- copy 94\n"
+      "  23:num <- copy 95\n"
+      "  24:num <- copy 96\n"
+      "  30:num <- index 10:&:@:num/lookup, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 95 in location 30\n"
+  );
+}
 
 :(before "Update INDEX base in Check")
 if (!canonize_type(base)) break;
@@ -320,46 +394,60 @@ canonize(base);
 :(before "Update INDEX index in Run")
 canonize(index);
 
-:(scenario put_index_indirect)
-def main [
-  # skip alloc id for 10:&:@:num
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 3  # array length
-  22:num <- copy 94
-  23:num <- copy 95
-  24:num <- copy 96
-  10:&:@:num/lookup <- put-index 10:&:@:num/lookup, 1, 97
-]
-+mem: storing 97 in location 23
+:(code)
+void test_put_index_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:@:num
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 3\n"  // array length
+      "  22:num <- copy 94\n"
+      "  23:num <- copy 95\n"
+      "  24:num <- copy 96\n"
+      "  10:&:@:num/lookup <- put-index 10:&:@:num/lookup, 1, 97\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 97 in location 23\n"
+  );
+}
 
-:(scenario put_index_indirect_2)
-def main [
-  10:num <- copy 3  # array length
-  11:num <- copy 94
-  12:num <- copy 95
-  13:num <- copy 96
-  # skip alloc id for address
-  21:num <- copy 30
-  # skip alloc id for payload
-  31:num <- copy 1  # index
-  10:@:num <- put-index 10:@:num, 20:&:num/lookup, 97
-]
-+mem: storing 97 in location 12
+void test_put_index_indirect_2() {
+  run(
+      "def main [\n"
+      "  10:num <- copy 3\n"  // array length
+      "  11:num <- copy 94\n"
+      "  12:num <- copy 95\n"
+      "  13:num <- copy 96\n"
+      // skip alloc id for address
+      "  21:num <- copy 30\n"
+      // skip alloc id for payload
+      "  31:num <- copy 1\n"  // index
+      "  10:@:num <- put-index 10:@:num, 20:&:num/lookup, 97\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 97 in location 12\n"
+  );
+}
 
-:(scenario put_index_product_error_with_lookup)
-% Hide_errors = true;
-def main [
-  # skip alloc id for 10:&:@:num
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 3  # array length
-  22:num <- copy 94
-  23:num <- copy 95
-  24:num <- copy 96
-  10:&:@:num <- put-index 10:&:@:num/lookup, 1, 34
-]
-+error: main: product of 'put-index' must be first ingredient '10:&:@:num/lookup', but got '10:&:@:num'
+void test_put_index_product_error_with_lookup() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  11:num <- copy 20\n"
+      "  21:num <- copy 3\n"  // array length
+      "  22:num <- copy 94\n"
+      "  23:num <- copy 95\n"
+      "  24:num <- copy 96\n"
+      "  10:&:@:num <- put-index 10:&:@:num/lookup, 1, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product of 'put-index' must be first ingredient '10:&:@:num/lookup', but got '10:&:@:num'\n"
+  );
+}
 
 :(before "End PUT_INDEX Product Checks")
 reagent/*copy*/ p = inst.products.at(0);
@@ -371,16 +459,22 @@ if (!types_strictly_match(p, i)) {
   break;
 }
 
-:(scenario dilated_reagent_in_static_array)
-def main [
-  {1: (array (& num) 3)} <- create-array
-  10:&:num <- new num:type
-  {1: (array (& num) 3)} <- put-index {1: (array (& num) 3)}, 0, 10:&:num
-  *10:&:num <- copy 94
-  20:num <- copy *10:&:num
-]
-+run: creating array from 7 locations
-+mem: storing 94 in location 20
+:(code)
+void test_dilated_reagent_in_static_array() {
+  run(
+      "def main [\n"
+      "  {1: (array (& num) 3)} <- create-array\n"
+      "  10:&:num <- new num:type\n"
+      "  {1: (array (& num) 3)} <- put-index {1: (array (& num) 3)}, 0, 10:&:num\n"
+      "  *10:&:num <- copy 94\n"
+      "  20:num <- copy *10:&:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: creating array from 7 locations\n"
+      "mem: storing 94 in location 20\n"
+  );
+}
 
 :(before "Update PUT_INDEX base in Check")
 if (!canonize_type(base)) break;
@@ -394,60 +488,82 @@ canonize(base);
 :(before "Update PUT_INDEX index in Run")
 canonize(index);
 
-:(scenario length_indirect)
-def main [
-  # skip alloc id for 10:&:@:num
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 3  # array length
-  22:num <- copy 94
-  23:num <- copy 95
-  24:num <- copy 96
-  30:num <- length 10:&:array:num/lookup
-]
-+mem: storing 3 in location 30
+:(code)
+void test_length_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:@:num
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 3\n"  // array length
+      "  22:num <- copy 94\n"
+      "  23:num <- copy 95\n"
+      "  24:num <- copy 96\n"
+      "  30:num <- length 10:&:array:num/lookup\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 30\n"
+  );
+}
 
 :(before "Update LENGTH array in Check")
 if (!canonize_type(array)) break;
 :(before "Update LENGTH array in Run")
 canonize(array);
 
-:(scenario maybe_convert_indirect)
-def main [
-  # skip alloc id for 10:&:number-or-point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:number-or-point <- merge 0/number, 94
-  30:num, 31:bool <- maybe-convert 10:&:number-or-point/lookup, i:variant
-]
-+mem: storing 1 in location 31
-+mem: storing 94 in location 30
+:(code)
+void test_maybe_convert_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:number-or-point
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:number-or-point <- merge 0/number, 94\n"
+      "  30:num, 31:bool <- maybe-convert 10:&:number-or-point/lookup, i:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 31\n"
+      "mem: storing 94 in location 30\n"
+  );
+}
 
-:(scenario maybe_convert_indirect_2)
-def main [
-  # skip alloc id for 10:&:number-or-point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:number-or-point <- merge 0/number, 94
-  # skip alloc id for 30:&:num
-  31:num <- copy 40
-  30:&:num/lookup, 50:bool <- maybe-convert 10:&:number-or-point/lookup, i:variant
-]
-+mem: storing 1 in location 50
-+mem: storing 94 in location 41
+void test_maybe_convert_indirect_2() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:number-or-point
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:number-or-point <- merge 0/number, 94\n"
+      // skip alloc id for 30:&:num
+      "  31:num <- copy 40\n"
+      "  30:&:num/lookup, 50:bool <- maybe-convert 10:&:number-or-point/lookup, i:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 50\n"
+      "mem: storing 94 in location 41\n"
+  );
+}
 
-:(scenario maybe_convert_indirect_3)
-def main [
-  # skip alloc id for 10:&:number-or-point
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:number-or-point <- merge 0/number, 94
-  # skip alloc id for 30:&:bool
-  31:num <- copy 40
-  50:num, 30:&:bool/lookup <- maybe-convert 10:&:number-or-point/lookup, i:variant
-]
-+mem: storing 1 in location 41
-+mem: storing 94 in location 50
+void test_maybe_convert_indirect_3() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:number-or-point
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:number-or-point <- merge 0/number, 94\n"
+      // skip alloc id for 30:&:bool
+      "  31:num <- copy 40\n"
+      "  50:num, 30:&:bool/lookup <- maybe-convert 10:&:number-or-point/lookup, i:variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 41\n"
+      "mem: storing 94 in location 50\n"
+  );
+}
 
 :(before "Update MAYBE_CONVERT base in Check")
 if (!canonize_type(base)) break;
@@ -463,31 +579,43 @@ canonize(product);
 :(before "Update MAYBE_CONVERT status in Run")
 canonize(status);
 
-:(scenario merge_exclusive_container_indirect)
-def main [
-  # skip alloc id for 10:&:number-or-point
-  11:num <- copy 20
-  10:&:number-or-point/lookup <- merge 0/number, 34
-]
-# skip alloc id
-+mem: storing 0 in location 21
-+mem: storing 34 in location 22
+:(code)
+void test_merge_exclusive_container_indirect() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:number-or-point
+      "  11:num <- copy 20\n"
+      "  10:&:number-or-point/lookup <- merge 0/number, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // skip alloc id
+      "mem: storing 0 in location 21\n"
+      "mem: storing 34 in location 22\n"
+  );
+}
 
 :(before "Update size_mismatch Check for MERGE(x)
 canonize(x);
 
 //: abbreviation for '/lookup': a prefix '*'
 
-:(scenario lookup_abbreviation)
-def main [
-  # skip alloc id for 10:&:num
-  11:num <- copy 20
-  # skip alloc id for payload
-  21:num <- copy 94
-  30:num <- copy *10:&:num
-]
-+parse: ingredient: {10: ("&" "num"), "lookup": ()}
-+mem: storing 94 in location 30
+:(code)
+void test_lookup_abbreviation() {
+  run(
+      "def main [\n"
+      // skip alloc id for 10:&:num
+      "  11:num <- copy 20\n"
+      // skip alloc id for payload
+      "  21:num <- copy 94\n"
+      "  30:num <- copy *10:&:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: ingredient: {10: (\"&\" \"num\"), \"lookup\": ()}\n"
+      "mem: storing 94 in location 30\n"
+  );
+}
 
 :(before "End Parsing reagent")
 {

@@ -52,37 +52,54 @@ Next_alloc_id = 0;
 
 //: todo: give 'new' a custodian ingredient. Following malloc/free is a temporary hack.
 
-:(scenario new)
-# call 'new' two times with identical types without modifying the results; you
-# should get back different results
-def main [
-  10:&:num <- new num:type
-  12:&:num <- new num:type
-  20:bool <- equal 10:&:num, 12:&:num
-]
-+mem: storing 1000 in location 11
-+mem: storing 0 in location 20
+:(code)
+void test_new() {
+  run(
+      // call 'new' two times with identical types without modifying the
+      // results; you should get back different results
+      "def main [\n"
+      "  10:&:num <- new num:type\n"
+      "  12:&:num <- new num:type\n"
+      "  20:bool <- equal 10:&:num, 12:&:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1000 in location 11\n"
+      "mem: storing 0 in location 20\n"
+  );
+}
 
-:(scenario new_array)
-# call 'new' with a second ingredient to allocate an array of some type rather than a single copy
-def main [
-  10:&:@:num <- new num:type, 5
-  12:&:num <- new num:type
-  20:num/alloc2, 21:num/alloc1 <- deaddress 10:&:@:num, 12:&:num
-  30:num <- subtract 21:num/alloc2, 20:num/alloc1
-]
-+run: {10: ("address" "array" "number")} <- new {num: "type"}, {5: "literal"}
-+mem: array length is 5
-# skip alloc id in allocation
-+mem: storing 1000 in location 11
-# don't forget the extra locations for alloc id and array length
-+mem: storing 7 in location 30
+void test_new_array() {
+  run(
+      // call 'new' with a second ingredient to allocate an array of some type
+      // rather than a single copy
+      "def main [\n"
+      "  10:&:@:num <- new num:type, 5\n"
+      "  12:&:num <- new num:type\n"
+      "  20:num/alloc2, 21:num/alloc1 <- deaddress 10:&:@:num, 12:&:num\n"
+      "  30:num <- subtract 21:num/alloc2, 20:num/alloc1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {10: (\"address\" \"array\" \"number\")} <- new {num: \"type\"}, {5: \"literal\"}\n"
+      "mem: array length is 5\n"
+      // skip alloc id in allocation
+      "mem: storing 1000 in location 11\n"
+      // don't forget the extra locations for alloc id and array length
+      "mem: storing 7 in location 30\n"
+  );
+}
 
-:(scenario dilated_reagent_with_new)
-def main [
-  10:&:&:num <- new {(& num): type}
-]
-+new: size of '(& num)' is 2
+void test_dilated_reagent_with_new() {
+  run(
+      "def main [\n"
+      "  10:&:&:num <- new {(& num): type}\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "new: size of '(& num)' is 2\n"
+  );
+}
 
 //: 'new' takes a weird 'type' as its first ingredient; don't error on it
 :(before "End Mu Types Initialization")
@@ -123,6 +140,7 @@ case NEW: {
   }
   break;
 }
+
 :(code)
 bool product_of_new_is_valid(const instruction& inst) {
   reagent/*copy*/ product = inst.products.at(0);
@@ -160,38 +178,59 @@ void drop_from_type(reagent& r, string expected_type) {
   delete tmp;
 }
 
-:(scenario new_returns_incorrect_type)
-% Hide_errors = true;
-def main [
-  1:bool <- new num:type
-]
-+error: main: product of 'new' has incorrect type: '1:bool <- new num:type'
+void test_new_returns_incorrect_type() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:bool <- new num:type\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product of 'new' has incorrect type: '1:bool <- new num:type'\n"
+  );
+}
 
-:(scenario new_discerns_singleton_list_from_atom_container)
-% Hide_errors = true;
-def main [
-  1:&:num <- new {(num): type}  # should be '{num: type}'
-]
-+error: main: product of 'new' has incorrect type: '1:&:num <- new {(num): type}'
+void test_new_discerns_singleton_list_from_atom_container() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:&:num <- new {(num): type}\n"  // should be '{num: type}'
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: product of 'new' has incorrect type: '1:&:num <- new {(num): type}'\n"
+  );
+}
 
-:(scenario new_with_type_abbreviation)
-def main [
-  1:&:num <- new num:type
-]
-$error: 0
+void test_new_with_type_abbreviation() {
+  run(
+      "def main [\n"
+      "  1:&:num <- new num:type\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario new_with_type_abbreviation_inside_compound)
-def main [
-  {1: (address address number), raw: ()} <- new {(& num): type}
-]
-$error: 0
+void test_new_with_type_abbreviation_inside_compound() {
+  run(
+      "def main [\n"
+      "  {1: (address address number), raw: ()} <- new {(& num): type}\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario equal_result_of_new_with_null)
-def main [
-  1:&:num <- new num:type
-  10:bool <- equal 1:&:num, null
-]
-+mem: storing 0 in location 10
+void test_equal_result_of_new_with_null() {
+  run(
+      "def main [\n"
+      "  1:&:num <- new num:type\n"
+      "  10:bool <- equal 1:&:num, null\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 10\n"
+  );
+}
 
 //: To implement 'new', a Mu transform turns all 'new' instructions into
 //: 'allocate' instructions that precompute the amount of memory they want to
@@ -329,79 +368,114 @@ void ensure_space(int size) {
   }
 }
 
-:(scenario new_initializes)
-% Memory_allocated_until = 10;
-% put(Memory, Memory_allocated_until, 1);
-def main [
-  1:&:num <- new num:type
-]
-+mem: storing 0 in location 10
-+mem: storing 0 in location 11
-+mem: storing 10 in location 2
+void test_new_initializes() {
+  Memory_allocated_until = 10;
+  put(Memory, Memory_allocated_until, 1);
+  run(
+      "def main [\n"
+      "  1:&:num <- new num:type\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 10\n"
+      "mem: storing 0 in location 11\n"
+      "mem: storing 10 in location 2\n"
+  );
+}
 
-:(scenario new_initializes_alloc_id)
-% Memory_allocated_until = 10;
-% put(Memory, Memory_allocated_until, 1);
-% Next_alloc_id = 23;
-def main [
-  1:&:num <- new num:type
-]
-# initialize memory
-+mem: storing 0 in location 10
-+mem: storing 0 in location 11
-# alloc-id in payload
-+mem: storing alloc-id 23 in location 10
-# alloc-id in address
-+mem: storing 23 in location 1
+void test_new_initializes_alloc_id() {
+  Memory_allocated_until = 10;
+  put(Memory, Memory_allocated_until, 1);
+  Next_alloc_id = 23;
+  run(
+      "def main [\n"
+      "  1:&:num <- new num:type\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // initialize memory
+      "mem: storing 0 in location 10\n"
+      "mem: storing 0 in location 11\n"
+      // alloc-id in payload
+      "mem: storing alloc-id 23 in location 10\n"
+      // alloc-id in address
+      "mem: storing 23 in location 1\n"
+  );
+}
 
-:(scenario new_size)
-def main [
-  10:&:num <- new num:type
-  12:&:num <- new num:type
-  20:num/alloc1, 21:num/alloc2 <- deaddress 10:&:num, 12:&:num
-  30:num <- subtract 21:num/alloc2, 20:num/alloc1
-]
-# size of number + alloc id
-+mem: storing 2 in location 30
+void test_new_size() {
+  run(
+      "def main [\n"
+      "  10:&:num <- new num:type\n"
+      "  12:&:num <- new num:type\n"
+      "  20:num/alloc1, 21:num/alloc2 <- deaddress 10:&:num, 12:&:num\n"
+      "  30:num <- subtract 21:num/alloc2, 20:num/alloc1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // size of number + alloc id
+      "mem: storing 2 in location 30\n"
+  );
+}
 
-:(scenario new_array_size)
-def main [
-  10:&:@:num <- new num:type, 5
-  12:&:num <- new num:type
-  20:num/alloc1, 21:num/alloc2 <- deaddress 10:&:num, 12:&:num
-  30:num <- subtract 21:num/alloc2, 20:num/alloc1
-]
-# 5 locations for array contents + array length + alloc id
-+mem: storing 7 in location 30
+void test_new_array_size() {
+  run(
+      "def main [\n"
+      "  10:&:@:num <- new num:type, 5\n"
+      "  12:&:num <- new num:type\n"
+      "  20:num/alloc1, 21:num/alloc2 <- deaddress 10:&:num, 12:&:num\n"
+      "  30:num <- subtract 21:num/alloc2, 20:num/alloc1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // 5 locations for array contents + array length + alloc id
+      "mem: storing 7 in location 30\n"
+  );
+}
 
-:(scenario new_empty_array)
-def main [
-  10:&:@:num <- new num:type, 0
-  12:&:num <- new num:type
-  20:num/alloc1, 21:num/alloc2 <- deaddress 10:&:@:num, 12:&:num
-  30:num <- subtract 21:num/alloc2, 20:num/alloc1
-]
-+run: {10: ("address" "array" "number")} <- new {num: "type"}, {0: "literal"}
-+mem: array length is 0
-# one location for array length
-+mem: storing 2 in location 30
+void test_new_empty_array() {
+  run(
+      "def main [\n"
+      "  10:&:@:num <- new num:type, 0\n"
+      "  12:&:num <- new num:type\n"
+      "  20:num/alloc1, 21:num/alloc2 <- deaddress 10:&:@:num, 12:&:num\n"
+      "  30:num <- subtract 21:num/alloc2, 20:num/alloc1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {10: (\"address\" \"array\" \"number\")} <- new {num: \"type\"}, {0: \"literal\"}\n"
+      "mem: array length is 0\n"
+      // one location for array length and one for alloc id
+      "mem: storing 2 in location 30\n"
+  );
+}
 
 //: If a routine runs out of its initial allocation, it should allocate more.
-:(scenario new_overflow)
-% Initial_memory_per_routine = 3;  // barely enough room for point allocation below
-def main [
-  10:&:num <- new num:type
-  12:&:point <- new point:type  # not enough room in initial page
-]
-+new: routine allocated memory from 1000 to 1003
-+new: routine allocated memory from 1003 to 1006
+void test_new_overflow() {
+  Initial_memory_per_routine = 3;  // barely enough room for point allocation below
+  run(
+      "def main [\n"
+      "  10:&:num <- new num:type\n"
+      "  12:&:point <- new point:type\n"  // not enough room in initial page
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "new: routine allocated memory from 1000 to 1003\n"
+      "new: routine allocated memory from 1003 to 1006\n"
+  );
+}
 
-:(scenario new_without_ingredient)
-% Hide_errors = true;
-def main [
-  1:&:num <- new  # missing ingredient
-]
-+error: main: 'new' requires one or two ingredients, but got '1:&:num <- new'
+void test_new_without_ingredient() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:&:num <- new\n"  // missing ingredient
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'new' requires one or two ingredients, but got '1:&:num <- new'\n"
+  );
+}
 
 //: a little helper: convert address to number
 

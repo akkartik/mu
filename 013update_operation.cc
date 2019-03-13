@@ -27,10 +27,14 @@ string maybe(string recipe_name) {
   return recipe_name + ": ";
 }
 
-:(scenarios transform)
-:(scenario missing_arrow)
-% Hide_errors = true;
-def main [
-  1:number , copy 0  # typo: ',' instead of '<-'
-]
-+error: main: instruction '1:number' has no recipe in '1:number copy, 0'
+void test_missing_arrow() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  1:number , copy 0\n"  // typo: ',' instead of '<-'
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: instruction '1:number' has no recipe in '1:number copy, 0'\n"
+  );
+}

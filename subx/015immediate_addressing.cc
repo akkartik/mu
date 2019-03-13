@@ -3,17 +3,23 @@
 :(before "End Initialize Op Names")
 put_new(Name, "81", "combine rm32 with imm32 based on subop (add/sub/and/or/xor/cmp)");
 
-:(scenario add_imm32_to_r32)
-% Reg[EBX].i = 1;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  c3                          0a 0b 0c 0d  # add 0x0d0c0b0a to EBX
-# ModR/M in binary: 11 (direct mode) 000 (add imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x0d0c0b0a
-+run: subop add
-+run: storing 0x0d0c0b0b
+:(code)
+void test_add_imm32_to_r32() {
+  Reg[EBX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     c3                          0a 0b 0c 0d\n"  // add 0x0d0c0b0a to EBX
+      // ModR/M in binary: 11 (direct mode) 000 (add imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop add\n"
+      "run: storing 0x0d0c0b0b\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x81: {  // combine imm32 with r/m32
@@ -38,32 +44,44 @@ case 0x81: {  // combine imm32 with r/m32
 
 //:
 
-:(scenario add_imm32_to_mem_at_r32)
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  03                          0a 0b 0c 0d  # add 0x0d0c0b0a to *EBX
-# ModR/M in binary: 00 (indirect mode) 000 (add imm32) 011 (dest EBX)
-== 0x2000  # data segment
-01 00 00 00  # 1
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x0d0c0b0a
-+run: subop add
-+run: storing 0x0d0c0b0b
+:(code)
+void test_add_imm32_to_mem_at_r32() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     03                          0a 0b 0c 0d \n"  // add 0x0d0c0b0a to *EBX
+      // ModR/M in binary: 00 (indirect mode) 000 (add imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "01 00 00 00\n"  // 0x00000001
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop add\n"
+      "run: storing 0x0d0c0b0b\n"
+  );
+}
 
 //:: subtract
 
 :(before "End Initialize Op Names")
 put_new(Name, "2d", "subtract imm32 from EAX (sub)");
 
-:(scenario subtract_imm32_from_eax)
-% Reg[EAX].i = 0x0d0c0baa;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  2d                              0a 0b 0c 0d  # subtract 0x0d0c0b0a from EAX
-+run: subtract imm32 0x0d0c0b0a from EAX
-+run: storing 0x000000a0
+:(code)
+void test_subtract_imm32_from_eax() {
+  Reg[EAX].i = 0x0d0c0baa;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  2d                                 0a 0b 0c 0d \n"  // subtract 0x0d0c0b0a from EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract imm32 0x0d0c0b0a from EAX\n"
+      "run: storing 0x000000a0\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x2d: {  // subtract imm32 from EAX
@@ -75,19 +93,25 @@ case 0x2d: {  // subtract imm32 from EAX
 
 //:
 
-:(scenario subtract_imm32_from_mem_at_r32)
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  2b                          01 00 00 00  # subtract 1 from *EBX
-# ModR/M in binary: 00 (indirect mode) 101 (subtract imm32) 011 (dest EBX)
-== 0x2000  # data segment
-0a 00 00 00  # 10
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x00000001
-+run: subop subtract
-+run: storing 0x00000009
+:(code)
+void test_subtract_imm32_from_mem_at_r32() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     2b                          01 00 00 00 \n"  // subtract 1 from *EBX
+      // ModR/M in binary: 00 (indirect mode) 101 (subtract imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "0a 00 00 00\n"  // 0x0000000a
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x00000001\n"
+      "run: subop subtract\n"
+      "run: storing 0x00000009\n"
+  );
+}
 
 :(before "End Op 81 Subops")
 case 5: {
@@ -98,33 +122,45 @@ case 5: {
 
 //:
 
-:(scenario subtract_imm32_from_r32)
-% Reg[EBX].i = 10;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  eb                          01 00 00 00  # subtract 1 from EBX
-# ModR/M in binary: 11 (direct mode) 101 (subtract imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x00000001
-+run: subop subtract
-+run: storing 0x00000009
+:(code)
+void test_subtract_imm32_from_r32() {
+  Reg[EBX].i = 10;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     eb                          01 00 00 00 \n"  // subtract 1 from EBX
+      // ModR/M in binary: 11 (direct mode) 101 (subtract imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x00000001\n"
+      "run: subop subtract\n"
+      "run: storing 0x00000009\n"
+  );
+}
 
 //:: shift left
 
 :(before "End Initialize Op Names")
 put_new(Name, "c1", "shift rm32 by imm8 bits depending on subop (sal/sar/shl/shr)");
 
-:(scenario shift_left_r32_with_imm8)
-% Reg[EBX].i = 13;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c1  e3                          01          # negate EBX
-# ModR/M in binary: 11 (direct mode) 100 (subop shift left) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift left by CL bits
-+run: storing 0x0000001a
+:(code)
+void test_shift_left_r32_with_imm8() {
+  Reg[EBX].i = 13;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c1     e3                          01          \n"  // shift EBX left by 1 bit
+      // ModR/M in binary: 11 (direct mode) 100 (subop shift left) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift left by CL bits\n"
+      "run: storing 0x0000001a\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xc1: {
@@ -158,16 +194,22 @@ case 0xc1: {
 
 //:: shift right arithmetic
 
-:(scenario shift_right_arithmetic_r32_with_imm8)
-% Reg[EBX].i = 26;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c1  fb                          01          # negate EBX
-# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while preserving sign
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_arithmetic_r32_with_imm8() {
+  Reg[EBX].i = 26;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c1     fb                          01          \n"  // shift EBX right by 1 bit
+      // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while preserving sign\n"
+      "run: storing 0x0000000d\n"
+  );
+}
 
 :(before "End Op c1 Subops")
 case 7: {  // shift right r/m32 by CL, preserving sign
@@ -182,42 +224,60 @@ case 7: {  // shift right r/m32 by CL, preserving sign
   break;
 }
 
-:(scenario shift_right_arithmetic_odd_r32_with_imm8)
-% Reg[EBX].i = 27;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c1  fb                          01          # negate EBX
-# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while preserving sign
-# result: 13
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_arithmetic_odd_r32_with_imm8() {
+  Reg[EBX].i = 27;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c1     fb                          01          \n"  // shift EBX right by 1 bit
+      // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while preserving sign\n"
+      // result: 13
+      "run: storing 0x0000000d\n"
+  );
+}
 
-:(scenario shift_right_arithmetic_negative_r32_with_imm8)
-% Reg[EBX].i = 0xfffffffd;  // -3
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c1  fb                          01          # negate EBX
-# ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while preserving sign
-# result: -2
-+run: storing 0xfffffffe
+:(code)
+void test_shift_right_arithmetic_negative_r32_with_imm8() {
+  Reg[EBX].i = 0xfffffffd;  // -3
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c1     fb                          01          \n"  // shift EBX right by 1 bit, while preserving sign
+      // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while preserving sign\n"
+      // result: -2
+      "run: storing 0xfffffffe\n"
+  );
+}
 
 //:: shift right logical
 
-:(scenario shift_right_logical_r32_with_imm8)
-% Reg[EBX].i = 26;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c1  eb                          01          # negate EBX
-# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while padding zeroes
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_logical_r32_with_imm8() {
+  Reg[EBX].i = 26;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c1     eb                          01          \n"  // shift EBX right by 1 bit, while padding zeroes
+      // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while padding zeroes\n"
+      "run: storing 0x0000000d\n"
+  );
+}
 
 :(before "End Op c1 Subops")
 case 5: {  // shift right r/m32 by CL, preserving sign
@@ -238,41 +298,58 @@ case 5: {  // shift right r/m32 by CL, preserving sign
   break;
 }
 
-:(scenario shift_right_logical_odd_r32_with_imm8)
-% Reg[EBX].i = 27;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c1  eb                          01          # negate EBX
-# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while padding zeroes
-# result: 13
-+run: storing 0x0000000d
+:(code)
+void test_shift_right_logical_odd_r32_with_imm8() {
+  Reg[EBX].i = 27;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c1     eb                          01          \n"  // shift EBX right by 1 bit, while padding zeroes
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while padding zeroes\n"
+      // result: 13
+      "run: storing 0x0000000d\n"
+  );
+}
 
-:(scenario shift_right_logical_negative_r32_with_imm8)
-% Reg[EBX].i = 0xfffffffd;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c1  eb                          01          # negate EBX
-# ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
-+run: operate on r/m32
-+run: r/m32 is EBX
-+run: subop: shift right by CL bits, while padding zeroes
-+run: storing 0x7ffffffe
+:(code)
+void test_shift_right_logical_negative_r32_with_imm8() {
+  Reg[EBX].i = 0xfffffffd;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c1     eb                          01          \n"  // shift EBX right by 1 bit, while padding zeroes
+      // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: subop: shift right by CL bits, while padding zeroes\n"
+      "run: storing 0x7ffffffe\n"
+  );
+}
 
 //:: and
 
 :(before "End Initialize Op Names")
 put_new(Name, "25", "EAX = bitwise AND of imm32 with EAX (and)");
 
-:(scenario and_imm32_with_eax)
-% Reg[EAX].i = 0xff;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  25                              0a 0b 0c 0d  # and 0x0d0c0b0a with EAX
-+run: and imm32 0x0d0c0b0a with EAX
-+run: storing 0x0000000a
+:(code)
+void test_and_imm32_with_eax() {
+  Reg[EAX].i = 0xff;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  25                                 0a 0b 0c 0d \n"  // and 0x0d0c0b0a with EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: and imm32 0x0d0c0b0a with EAX\n"
+      "run: storing 0x0000000a\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x25: {  // and imm32 with EAX
@@ -284,19 +361,25 @@ case 0x25: {  // and imm32 with EAX
 
 //:
 
-:(scenario and_imm32_with_mem_at_r32)
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  23                          0a 0b 0c 0d  # and 0x0d0c0b0a with *EBX
-# ModR/M in binary: 00 (indirect mode) 100 (and imm32) 011 (dest EBX)
-== 0x2000  # data segment
-ff 00 00 00  # 0xff
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x0d0c0b0a
-+run: subop and
-+run: storing 0x0000000a
+:(code)
+void test_and_imm32_with_mem_at_r32() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     23                          0a 0b 0c 0d \n"  // and 0x0d0c0b0a with *EBX
+      // ModR/M in binary: 00 (indirect mode) 100 (and imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "ff 00 00 00\n"  // 0x000000ff
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop and\n"
+      "run: storing 0x0000000a\n"
+  );
+}
 
 :(before "End Op 81 Subops")
 case 4: {
@@ -307,30 +390,42 @@ case 4: {
 
 //:
 
-:(scenario and_imm32_with_r32)
-% Reg[EBX].i = 0xff;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  e3                          0a 0b 0c 0d  # and 0x0d0c0b0a with EBX
-# ModR/M in binary: 11 (direct mode) 100 (and imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x0d0c0b0a
-+run: subop and
-+run: storing 0x0000000a
+:(code)
+void test_and_imm32_with_r32() {
+  Reg[EBX].i = 0xff;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     e3                          0a 0b 0c 0d \n"  // and 0x0d0c0b0a with EBX
+      // ModR/M in binary: 11 (direct mode) 100 (and imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop and\n"
+      "run: storing 0x0000000a\n"
+  );
+}
 
 //:: or
 
 :(before "End Initialize Op Names")
 put_new(Name, "0d", "EAX = bitwise OR of imm32 with EAX (or)");
 
-:(scenario or_imm32_with_eax)
-% Reg[EAX].i = 0xd0c0b0a0;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  0d                              0a 0b 0c 0d  # or 0x0d0c0b0a with EAX
-+run: or imm32 0x0d0c0b0a with EAX
-+run: storing 0xddccbbaa
+:(code)
+void test_or_imm32_with_eax() {
+  Reg[EAX].i = 0xd0c0b0a0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  0d                                 0a 0b 0c 0d \n"  // or 0x0d0c0b0a with EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: or imm32 0x0d0c0b0a with EAX\n"
+      "run: storing 0xddccbbaa\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x0d: {  // or imm32 with EAX
@@ -342,19 +437,25 @@ case 0x0d: {  // or imm32 with EAX
 
 //:
 
-:(scenario or_imm32_with_mem_at_r32)
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  0b                          0a 0b 0c 0d  # or 0x0d0c0b0a with *EBX
-# ModR/M in binary: 00 (indirect mode) 001 (or imm32) 011 (dest EBX)
-== 0x2000  # data segment
-a0 b0 c0 d0  # 0xd0c0b0a0
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x0d0c0b0a
-+run: subop or
-+run: storing 0xddccbbaa
+:(code)
+void test_or_imm32_with_mem_at_r32() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     0b                          0a 0b 0c 0d \n"  // or 0x0d0c0b0a with *EBX
+      // ModR/M in binary: 00 (indirect mode) 001 (or imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "a0 b0 c0 d0\n"  // 0xd0c0b0a0
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop or\n"
+      "run: storing 0xddccbbaa\n"
+  );
+}
 
 :(before "End Op 81 Subops")
 case 1: {
@@ -363,30 +464,42 @@ case 1: {
   break;
 }
 
-:(scenario or_imm32_with_r32)
-% Reg[EBX].i = 0xd0c0b0a0;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  cb                          0a 0b 0c 0d  # or 0x0d0c0b0a with EBX
-# ModR/M in binary: 11 (direct mode) 001 (or imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x0d0c0b0a
-+run: subop or
-+run: storing 0xddccbbaa
+:(code)
+void test_or_imm32_with_r32() {
+  Reg[EBX].i = 0xd0c0b0a0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     cb                          0a 0b 0c 0d \n"  // or 0x0d0c0b0a with EBX
+      // ModR/M in binary: 11 (direct mode) 001 (or imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop or\n"
+      "run: storing 0xddccbbaa\n"
+  );
+}
 
 //:: xor
 
 :(before "End Initialize Op Names")
 put_new(Name, "35", "EAX = bitwise XOR of imm32 with EAX (xor)");
 
-:(scenario xor_imm32_with_eax)
-% Reg[EAX].i = 0xddccb0a0;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  35                              0a 0b 0c 0d  # xor 0x0d0c0b0a with EAX
-+run: xor imm32 0x0d0c0b0a with EAX
-+run: storing 0xd0c0bbaa
+:(code)
+void test_xor_imm32_with_eax() {
+  Reg[EAX].i = 0xddccb0a0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  35                                 0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: xor imm32 0x0d0c0b0a with EAX\n"
+      "run: storing 0xd0c0bbaa\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x35: {  // xor imm32 with EAX
@@ -398,19 +511,25 @@ case 0x35: {  // xor imm32 with EAX
 
 //:
 
-:(scenario xor_imm32_with_mem_at_r32)
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  33                          0a 0b 0c 0d  # xor 0x0d0c0b0a with *EBX
-# ModR/M in binary: 00 (indirect mode) 110 (xor imm32) 011 (dest EBX)
-== 0x2000  # data segment
-a0 b0 c0 d0  # 0xd0c0b0a0
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x0d0c0b0a
-+run: subop xor
-+run: storing 0xddccbbaa
+:(code)
+void test_xor_imm32_with_mem_at_r32() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     33                          0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with *EBX
+      // ModR/M in binary: 00 (indirect mode) 110 (xor imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "a0 b0 c0 d0\n"  // 0xd0c0b0a0
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop xor\n"
+      "run: storing 0xddccbbaa\n"
+  );
+}
 
 :(before "End Op 81 Subops")
 case 6: {
@@ -419,30 +538,42 @@ case 6: {
   break;
 }
 
-:(scenario xor_imm32_with_r32)
-% Reg[EBX].i = 0xd0c0b0a0;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  f3                          0a 0b 0c 0d  # xor 0x0d0c0b0a with EBX
-# ModR/M in binary: 11 (direct mode) 110 (xor imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x0d0c0b0a
-+run: subop xor
-+run: storing 0xddccbbaa
+:(code)
+void test_xor_imm32_with_r32() {
+  Reg[EBX].i = 0xd0c0b0a0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     f3                          0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with EBX
+      // ModR/M in binary: 11 (direct mode) 110 (xor imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: subop xor\n"
+      "run: storing 0xddccbbaa\n"
+  );
+}
 
 //:: compare (cmp)
 
 :(before "End Initialize Op Names")
 put_new(Name, "3d", "compare: set SF if EAX < imm32 (cmp)");
 
-:(scenario compare_imm32_with_eax_greater)
-% Reg[EAX].i = 0x0d0c0b0a;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  3d                              07 0b 0c 0d  # compare 0x0d0c0b07 with EAX
-+run: compare EAX and imm32 0x0d0c0b07
-+run: SF=0; ZF=0; OF=0
+:(code)
+void test_compare_imm32_with_eax_greater() {
+  Reg[EAX].i = 0x0d0c0b0a;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 07 0b 0c 0d \n"  // compare 0x0d0c0b07 with EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX and imm32 0x0d0c0b07\n"
+      "run: SF=0; ZF=0; OF=0\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x3d: {  // compare EAX with imm32
@@ -458,34 +589,52 @@ case 0x3d: {  // compare EAX with imm32
   break;
 }
 
-:(scenario compare_imm32_with_eax_lesser)
-% Reg[EAX].i = 0x0d0c0b07;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  3d                              0a 0b 0c 0d  # compare 0x0d0c0b0a with EAX
-+run: compare EAX and imm32 0x0d0c0b0a
-+run: SF=1; ZF=0; OF=0
+:(code)
+void test_compare_imm32_with_eax_lesser() {
+  Reg[EAX].i = 0x0d0c0b07;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX and imm32 0x0d0c0b0a\n"
+      "run: SF=1; ZF=0; OF=0\n"
+  );
+}
 
-:(scenario compare_imm32_with_eax_equal)
-% Reg[EAX].i = 0x0d0c0b0a;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  3d                              0a 0b 0c 0d  # compare 0x0d0c0b0a with EAX
-+run: compare EAX and imm32 0x0d0c0b0a
-+run: SF=0; ZF=1; OF=0
+:(code)
+void test_compare_imm32_with_eax_equal() {
+  Reg[EAX].i = 0x0d0c0b0a;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX and imm32 0x0d0c0b0a\n"
+      "run: SF=0; ZF=1; OF=0\n"
+  );
+}
 
 //:
 
-:(scenario compare_imm32_with_r32_greater)
-% Reg[EBX].i = 0x0d0c0b0a;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  fb                          07 0b 0c 0d  # compare 0x0d0c0b07 with EBX
-# ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x0d0c0b07
-+run: SF=0; ZF=0; OF=0
+:(code)
+void test_compare_imm32_with_r32_greater() {
+  Reg[EBX].i = 0x0d0c0b0a;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     fb                          07 0b 0c 0d \n"  // compare 0x0d0c0b07 with EBX
+      // ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x0d0c0b07\n"
+      "run: SF=0; ZF=0; OF=0\n"
+  );
+}
 
 :(before "End Op 81 Subops")
 case 7: {
@@ -499,67 +648,97 @@ case 7: {
   break;
 }
 
-:(scenario compare_imm32_with_r32_lesser)
-% Reg[EBX].i = 0x0d0c0b07;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
-# ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x0d0c0b0a
-+run: SF=1; ZF=0; OF=0
+:(code)
+void test_compare_imm32_with_r32_lesser() {
+  Reg[EBX].i = 0x0d0c0b07;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     fb                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EBX
+      // ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: SF=1; ZF=0; OF=0\n"
+  );
+}
 
-:(scenario compare_imm32_with_r32_equal)
-% Reg[EBX].i = 0x0d0c0b0a;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
-# ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 with r/m32
-+run: r/m32 is EBX
-+run: imm32 is 0x0d0c0b0a
-+run: SF=0; ZF=1; OF=0
+:(code)
+void test_compare_imm32_with_r32_equal() {
+  Reg[EBX].i = 0x0d0c0b0a;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     fb                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EBX
+      // ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: SF=0; ZF=1; OF=0\n"
+  );
+}
 
-:(scenario compare_imm32_with_mem_at_r32_greater)
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  3b                          07 0b 0c 0d  # compare 0x0d0c0b07 with *EBX
-# ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
-== 0x2000  # data segment
-0a 0b 0c 0d  # 0x0d0c0b0a
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x0d0c0b07
-+run: SF=0; ZF=0; OF=0
+:(code)
+void test_compare_imm32_with_mem_at_r32_greater() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     3b                          07 0b 0c 0d \n"  // compare 0x0d0c0b07 with *EBX
+      // ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "0a 0b 0c 0d\n"  // 0x0d0c0b0a
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x0d0c0b07\n"
+      "run: SF=0; ZF=0; OF=0\n"
+  );
+}
 
-:(scenario compare_imm32_with_mem_at_r32_lesser)
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
-# ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
-== 0x2000  # data segment
-07 0b 0c 0d  # 0x0d0c0b07
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x0d0c0b0a
-+run: SF=1; ZF=0; OF=0
+:(code)
+void test_compare_imm32_with_mem_at_r32_lesser() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     3b                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EBX
+      // ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "07 0b 0c 0d\n"  // 0x0d0c0b07
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: SF=1; ZF=0; OF=0\n"
+  );
+}
 
-:(scenario compare_imm32_with_mem_at_r32_equal)
-% Reg[EBX].i = 0x0d0c0b0a;
-% Reg[EBX].i = 0x2000;
-== 0x01  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
-# ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
-== 0x2000  # data segment
-0a 0b 0c 0d  # 0x0d0c0b0a
-+run: combine imm32 with r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: imm32 is 0x0d0c0b0a
-+run: SF=0; ZF=1; OF=0
+:(code)
+void test_compare_imm32_with_mem_at_r32_equal() {
+  Reg[EBX].i = 0x0d0c0b0a;
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     3b                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EBX
+      // ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "0a 0b 0c 0d\n"  // 0x0d0c0b0a
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+      "run: SF=0; ZF=1; OF=0\n"
+  );
+}
 
 //:: copy (mov)
 
@@ -573,11 +752,17 @@ put_new(Name, "bd", "copy imm32 to EBP (mov)");
 put_new(Name, "be", "copy imm32 to ESI (mov)");
 put_new(Name, "bf", "copy imm32 to EDI (mov)");
 
-:(scenario copy_imm32_to_r32)
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  bb                              0a 0b 0c 0d  # copy 0x0d0c0b0a to EBX
-+run: copy imm32 0x0d0c0b0a to EBX
+:(code)
+void test_copy_imm32_to_r32() {
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  bb                                 0a 0b 0c 0d \n"  // copy 0x0d0c0b0a to EBX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy imm32 0x0d0c0b0a to EBX\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xb8:
@@ -600,15 +785,21 @@ case 0xbf: {  // copy imm32 to r32
 :(before "End Initialize Op Names")
 put_new(Name, "c7", "copy imm32 to rm32 (mov)");
 
-:(scenario copy_imm32_to_mem_at_r32)
-% Reg[EBX].i = 0x60;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  c7  03                          0a 0b 0c 0d  # copy 0x0d0c0b0a to *EBX
-# ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
-+run: copy imm32 to r/m32
-+run: effective address is 0x00000060 (EBX)
-+run: imm32 is 0x0d0c0b0a
+:(code)
+void test_copy_imm32_to_mem_at_r32() {
+  Reg[EBX].i = 0x60;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c7     03                          0a 0b 0c 0d \n"  // copy 0x0d0c0b0a to *EBX
+      // ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy imm32 to r/m32\n"
+      "run: effective address is 0x00000060 (EBX)\n"
+      "run: imm32 is 0x0d0c0b0a\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xc7: {  // copy imm32 to r32
@@ -631,14 +822,20 @@ case 0xc7: {  // copy imm32 to r32
 :(before "End Initialize Op Names")
 put_new(Name, "68", "push imm32 to stack (push)");
 
-:(scenario push_imm32)
-% Reg[ESP].u = 0x14;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  68                              af 00 00 00  # push *EAX to stack
-+run: push imm32 0x000000af
-+run: ESP is now 0x00000010
-+run: contents at ESP: 0x000000af
+:(code)
+void test_push_imm32() {
+  Reg[ESP].u = 0x14;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  68                                 af 00 00 00 \n"  // push *EAX to stack
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: push imm32 0x000000af\n"
+      "run: ESP is now 0x00000010\n"
+      "run: contents at ESP: 0x000000af\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0x68: {

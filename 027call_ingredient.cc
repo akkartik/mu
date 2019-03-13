@@ -1,24 +1,34 @@
 //: Calls can take ingredients just like primitives. To access a recipe's
 //: ingredients, use 'next-ingredient'.
 
-:(scenario next_ingredient)
-def main [
-  f 2
-]
-def f [
-  12:num <- next-ingredient
-  13:num <- add 1, 12:num
-]
-+mem: storing 3 in location 13
+void test_next_ingredient() {
+  run(
+      "def main [\n"
+      "  f 2\n"
+      "]\n"
+      "def f [\n"
+      "  12:num <- next-ingredient\n"
+      "  13:num <- add 1, 12:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 13\n"
+  );
+}
 
-:(scenario next_ingredient_missing)
-def main [
-  f
-]
-def f [
-  _, 12:num <- next-ingredient
-]
-+mem: storing 0 in location 12
+void test_next_ingredient_missing() {
+  run(
+      "def main [\n"
+      "  f\n"
+      "]\n"
+      "def f [\n"
+      "  _, 12:num <- next-ingredient\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 12\n"
+  );
+}
 
 :(before "End call Fields")
 vector<vector<double> > ingredient_atoms;
@@ -84,30 +94,41 @@ case NEXT_INGREDIENT: {
   break;
 }
 
-:(scenario next_ingredient_fail_on_missing)
-% Hide_errors = true;
-def main [
-  f
-]
-def f [
-  11:num <- next-ingredient
-]
-+error: f: no ingredient to save in '11:num'
+:(code)
+void test_next_ingredient_fail_on_missing() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  f\n"
+      "]\n"
+      "def f [\n"
+      "  11:num <- next-ingredient\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: f: no ingredient to save in '11:num'\n"
+  );
+}
 
-:(scenario rewind_ingredients)
-def main [
-  f 2
-]
-def f [
-  12:num <- next-ingredient  # consume ingredient
-  _, 1:bool <- next-ingredient  # will not find any ingredients
-  rewind-ingredients
-  13:num, 2:bool <- next-ingredient  # will find ingredient again
-]
-+mem: storing 2 in location 12
-+mem: storing 0 in location 1
-+mem: storing 2 in location 13
-+mem: storing 1 in location 2
+void test_rewind_ingredients() {
+  run(
+      "def main [\n"
+      "  f 2\n"
+      "]\n"
+      "def f [\n"
+      "  12:num <- next-ingredient\n"  // consume ingredient
+      "  _, 1:bool <- next-ingredient\n"  // will not find any ingredients
+      "  rewind-ingredients\n"
+      "  13:num, 2:bool <- next-ingredient\n"  // will find ingredient again
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 12\n"
+      "mem: storing 0 in location 1\n"
+      "mem: storing 2 in location 13\n"
+      "mem: storing 1 in location 2\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 REWIND_INGREDIENTS,
@@ -126,16 +147,22 @@ case REWIND_INGREDIENTS: {
 
 //: another primitive: 'ingredient' for random access
 
-:(scenario ingredient)
-def main [
-  f 1, 2
-]
-def f [
-  12:num <- ingredient 1  # consume second ingredient first
-  13:num, 1:bool <- next-ingredient  # next-ingredient tries to scan past that
-]
-+mem: storing 2 in location 12
-+mem: storing 0 in location 1
+:(code)
+void test_ingredient() {
+  run(
+      "def main [\n"
+      "  f 1, 2\n"
+      "]\n"
+      "def f [\n"
+      "  12:num <- ingredient 1\n"  // consume second ingredient first
+      "  13:num, 1:bool <- next-ingredient\n"  // next-ingredient tries to scan past that
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 12\n"
+      "mem: storing 0 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 INGREDIENT,

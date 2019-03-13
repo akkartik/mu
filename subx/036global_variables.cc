@@ -6,13 +6,19 @@
 //:
 //: This layer has much the same structure as rewriting labels.
 
-:(scenario global_variable)
-== code
-b9  x/imm32
-== data
-x:
-  00 00 00 00
-+transform: global variable 'x' is at address 0x0a000079
+:(code)
+void test_global_variable() {
+  run(
+      "== code\n"
+      "b9  x/imm32\n"
+      "== data\n"
+      "x:\n"
+      "  00 00 00 00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: global variable 'x' is at address 0x0a000079\n"
+  );
+}
 
 :(before "End Level-2 Transforms")
 Transform.push_back(rewrite_global_variables);
@@ -173,83 +179,112 @@ bool has_metadata(const word& w, const string& m) {
   return false;
 }
 
-:(scenario global_variable_disallowed_in_jump)
-% Hide_errors = true;
-== code
-eb/jump  x/disp8
-== data
-x:
-  00 00 00 00
-+error: 'eb/jump x/disp8': can't refer to global variable 'x'
-# sub-optimal error message; should be
-#? +error: can't jump to data (variable 'x')
+void test_global_variable_disallowed_in_jump() {
+  Hide_errors = true;
+  run(
+      "== code\n"
+      "eb/jump  x/disp8\n"
+      "== data\n"
+      "x:\n"
+      "  00 00 00 00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: 'eb/jump x/disp8': can't refer to global variable 'x'\n"
+      // sub-optimal error message; should be
+//?       "error: can't jump to data (variable 'x')\n"
+  );
+}
 
-:(scenario global_variable_disallowed_in_call)
-% Hide_errors = true;
-== code
-e8/call  x/disp32
-== data
-x:
-  00 00 00 00
-+error: 'e8/call x/disp32': can't refer to global variable 'x'
-# sub-optimal error message; should be
-#? +error: can't call to the data segment ('x')
+void test_global_variable_disallowed_in_call() {
+  Hide_errors = true;
+  run(
+      "== code\n"
+      "e8/call  x/disp32\n"
+      "== data\n"
+      "x:\n"
+      "  00 00 00 00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: 'e8/call x/disp32': can't refer to global variable 'x'\n"
+      // sub-optimal error message; should be
+//?       "error: can't call to the data segment ('x')\n"
+  );
+}
 
-:(scenario global_variable_in_data_segment)
-== 0x1
-b9  x/imm32
-== 0x0a000000
-x:
-  y/imm32
-y:
-  00 00 00 00
-# check that we loaded 'x' with the address of 'y'
-+load: 0x0a000000 -> 04
-+load: 0x0a000001 -> 00
-+load: 0x0a000002 -> 00
-+load: 0x0a000003 -> 0a
-$error: 0
+void test_global_variable_in_data_segment() {
+  run(
+      "== 0x1\n"
+      "b9  x/imm32\n"
+      "== 0x0a000000\n"
+      "x:\n"
+      "  y/imm32\n"
+      "y:\n"
+      "  00 00 00 00\n"
+  );
+  // check that we loaded 'x' with the address of 'y'
+  CHECK_TRACE_CONTENTS(
+      "load: 0x0a000000 -> 04\n"
+      "load: 0x0a000001 -> 00\n"
+      "load: 0x0a000002 -> 00\n"
+      "load: 0x0a000003 -> 0a\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario raw_number_with_imm32_in_data_segment)
-== 0x1
-b9  x/imm32
-== 0x0a000000
-x:
-  1/imm32
-# check that we loaded 'x' with the address of 1
-+load: 0x0a000000 -> 01
-+load: 0x0a000001 -> 00
-+load: 0x0a000002 -> 00
-+load: 0x0a000003 -> 00
-$error: 0
+void test_raw_number_with_imm32_in_data_segment() {
+  run(
+      "== 0x1\n"
+      "b9  x/imm32\n"
+      "== 0x0a000000\n"
+      "x:\n"
+      "  1/imm32\n"
+  );
+  // check that we loaded 'x' with the address of 1
+  CHECK_TRACE_CONTENTS(
+      "load: 0x0a000000 -> 01\n"
+      "load: 0x0a000001 -> 00\n"
+      "load: 0x0a000002 -> 00\n"
+      "load: 0x0a000003 -> 00\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario duplicate_global_variable)
-% Hide_errors = true;
-== 0x1
-40/increment-EAX
-== 0x0a000000
-x:
-x:
-  00
-+error: duplicate global 'x'
+void test_duplicate_global_variable() {
+  Hide_errors = true;
+  run(
+      "== 0x1\n"
+      "40/increment-EAX\n"
+      "== 0x0a000000\n"
+      "x:\n"
+      "x:\n"
+      "  00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: duplicate global 'x'\n"
+  );
+}
 
-:(scenario global_variable_disp32_with_modrm)
-== code
-8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX x/disp32
-== data
-x:
-  00 00 00 00
-$error: 0
+void test_global_variable_disp32_with_modrm() {
+  run(
+      "== code\n"
+      "8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX x/disp32\n"
+      "== data\n"
+      "x:\n"
+      "  00 00 00 00\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenarios transform)
-:(scenario global_variable_disp32_with_call)
-== code
-foo:
-  e8/call bar/disp32
-bar:
-$error: 0
+void test_global_variable_disp32_with_call() {
+  transform(
+      "== code\n"
+      "foo:\n"
+      "  e8/call bar/disp32\n"
+      "bar:\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(code)
 string to_full_string(const line& in) {
   ostringstream out;
   for (int i = 0;  i < SIZE(in.words);  ++i) {

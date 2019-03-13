@@ -1,10 +1,15 @@
 //: Allow Mu programs to log facts just like we've been doing in C++ so far.
 
-:(scenario trace)
-def main [
-  trace 1, [foo], [this is a trace in Mu]
-]
-+foo: this is a trace in Mu
+void test_trace() {
+  run(
+      "def main [\n"
+      "  trace 1, [foo], [this is a trace in Mu]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "foo: this is a trace in Mu\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 TRACE,
@@ -63,24 +68,40 @@ case STASH: {
   break;
 }
 
-:(scenario stash_literal_string)
-def main [
-  stash [foo]
-]
-+app: foo
+:(code)
+void test_stash_literal_string() {
+  run(
+      "def main [\n"
+      "  stash [foo]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: foo\n"
+  );
+}
 
-:(scenario stash_literal_number)
-def main [
-  stash [foo:], 4
-]
-+app: foo: 4
+void test_stash_literal_number() {
+  run(
+      "def main [\n"
+      "  stash [foo:], 4\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: foo: 4\n"
+  );
+}
 
-:(scenario stash_number)
-def main [
-  1:num <- copy 34
-  stash [foo:], 1:num
-]
-+app: foo: 34
+void test_stash_number() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  stash [foo:], 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: foo: 34\n"
+  );
+}
 
 :(code)
 string inspect(const reagent& r, const vector<double>& data) {

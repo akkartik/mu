@@ -28,18 +28,21 @@ void test_trace_check_treats_empty_layers_as_wildcards() {
 void test_trace_check_multiple_lines_at_once() {
   trace("test layer 1") << "foo";
   trace("test layer 2") << "bar";
-  CHECK_TRACE_CONTENTS("", "foobar");
+  CHECK_TRACE_CONTENTS("", "foo\n"
+                           "bar\n");
 }
 
 void test_trace_check_always_finds_empty_lines2() {
-  CHECK_TRACE_CONTENTS("test layer 1", "");
+  CHECK_TRACE_CONTENTS("test layer 1", "\n\n\n");
 }
 
 void test_trace_orders_across_layers() {
   trace("test layer 1") << "foo";
   trace("test layer 2") << "bar";
   trace("test layer 1") << "qux";
-  CHECK_TRACE_CONTENTS("", "foobarqux");
+  CHECK_TRACE_CONTENTS("", "foo\n"
+                           "bar\n"
+                           "qux\n");
 }
 
 void test_trace_supports_count() {

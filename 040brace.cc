@@ -19,17 +19,21 @@
 //: benefits of the control-flow primitives we're used to in other languages,
 //: like 'if', 'while', 'for', etc.
 
-:(scenarios transform)
-:(scenario brace_conversion)
-def main [
-  {
-    break
-    1:num <- copy 0
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: jump 1:offset
-+transform: copy ...
+void test_brace_conversion() {
+  transform(
+      "def main [\n"
+      "  {\n"
+      "    break\n"
+      "    1:num <- copy 0\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: jump 1:offset\n"
+      "transform: copy ...\n"
+  );
+}
 
 :(before "End Instruction Modifying Transforms")
 Transform.push_back(transform_braces);  // idempotent
@@ -143,244 +147,332 @@ int matching_brace(int index, const list<pair<bool, int> >& braces, recipe_ordin
   return SIZE(get(Recipe, r).steps);  // exit current routine
 }
 
-:(scenario loop)
-def main [
-  1:num <- copy 0
-  2:num <- copy 0
-  {
-    3:num <- copy 0
-    loop
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: copy ...
-+transform: copy ...
-+transform: jump -2:offset
+void test_loop() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  {\n"
+      "    3:num <- copy 0\n"
+      "    loop\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: copy ...\n"
+      "transform: copy ...\n"
+      "transform: jump -2:offset\n"
+  );
+}
 
-:(scenario break_empty_block)
-def main [
-  1:num <- copy 0
-  {
-    break
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: jump 0:offset
+void test_break_empty_block() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  {\n"
+      "    break\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: jump 0:offset\n"
+  );
+}
 
-:(scenario break_cascading)
-def main [
-  1:num <- copy 0
-  {
-    break
-  }
-  {
-    break
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: jump 0:offset
-+transform: jump 0:offset
+void test_break_cascading() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  {\n"
+      "    break\n"
+      "  }\n"
+      "  {\n"
+      "    break\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: jump 0:offset\n"
+      "transform: jump 0:offset\n"
+  );
+}
 
-:(scenario break_cascading_2)
-def main [
-  1:num <- copy 0
-  2:num <- copy 0
-  {
-    break
-    3:num <- copy 0
-  }
-  {
-    break
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: copy ...
-+transform: jump 1:offset
-+transform: copy ...
-+transform: jump 0:offset
+void test_break_cascading_2() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  {\n"
+      "    break\n"
+      "    3:num <- copy 0\n"
+      "  }\n"
+      "  {\n"
+      "    break\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: copy ...\n"
+      "transform: jump 1:offset\n"
+      "transform: copy ...\n"
+      "transform: jump 0:offset\n"
+  );
+}
 
-:(scenario break_if)
-def main [
-  1:num <- copy 0
-  2:num <- copy 0
-  {
-    break-if 2:num
-    3:num <- copy 0
-  }
-  {
-    break
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: copy ...
-+transform: jump-if 2, 1:offset
-+transform: copy ...
-+transform: jump 0:offset
+void test_break_if() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  {\n"
+      "    break-if 2:num\n"
+      "    3:num <- copy 0\n"
+      "  }\n"
+      "  {\n"
+      "    break\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: copy ...\n"
+      "transform: jump-if 2, 1:offset\n"
+      "transform: copy ...\n"
+      "transform: jump 0:offset\n"
+  );
+}
 
-:(scenario break_nested)
-def main [
-  1:num <- copy 0
-  {
-    2:num <- copy 0
-    break
-    {
-      3:num <- copy 0
-    }
-    4:num <- copy 0
-  }
-]
-+transform: jump 4:offset
+void test_break_nested() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  {\n"
+      "    2:num <- copy 0\n"
+      "    break\n"
+      "    {\n"
+      "      3:num <- copy 0\n"
+      "    }\n"
+      "    4:num <- copy 0\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: jump 4:offset\n"
+  );
+}
 
-:(scenario break_nested_degenerate)
-def main [
-  1:num <- copy 0
-  {
-    2:num <- copy 0
-    break
-    {
-    }
-    4:num <- copy 0
-  }
-]
-+transform: jump 3:offset
+void test_break_nested_degenerate() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  {\n"
+      "    2:num <- copy 0\n"
+      "    break\n"
+      "    {\n"
+      "    }\n"
+      "    4:num <- copy 0\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: jump 3:offset\n"
+  );
+}
 
-:(scenario break_nested_degenerate_2)
-def main [
-  1:num <- copy 0
-  {
-    2:num <- copy 0
-    break
-    {
-    }
-  }
-]
-+transform: jump 2:offset
+void test_break_nested_degenerate_2() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  {\n"
+      "    2:num <- copy 0\n"
+      "    break\n"
+      "    {\n"
+      "    }\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: jump 2:offset\n"
+  );
+}
 
-:(scenario break_label)
-% Hide_errors = true;
-def main [
-  1:num <- copy 0
-  {
-    break +foo:offset
-  }
-]
-+transform: jump +foo:offset
+void test_break_label() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  {\n"
+      "    break +foo:offset\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: jump +foo:offset\n"
+  );
+}
 
-:(scenario break_unless)
-def main [
-  1:num <- copy 0
-  2:num <- copy 0
-  {
-    break-unless 2:num
-    3:num <- copy 0
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: copy ...
-+transform: jump-unless 2, 1:offset
-+transform: copy ...
+void test_break_unless() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  {\n"
+      "    break-unless 2:num\n"
+      "    3:num <- copy 0\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: copy ...\n"
+      "transform: jump-unless 2, 1:offset\n"
+      "transform: copy ...\n"
+  );
+}
 
-:(scenario loop_unless)
-def main [
-  1:num <- copy 0
-  2:num <- copy 0
-  {
-    loop-unless 2:num
-    3:num <- copy 0
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: copy ...
-+transform: jump-unless 2, -1:offset
-+transform: copy ...
+void test_loop_unless() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  {\n"
+      "    loop-unless 2:num\n"
+      "    3:num <- copy 0\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: copy ...\n"
+      "transform: jump-unless 2, -1:offset\n"
+      "transform: copy ...\n"
+  );
+}
 
-:(scenario loop_nested)
-def main [
-  1:num <- copy 0
-  {
-    2:num <- copy 0
-    {
-      3:num <- copy 0
-    }
-    loop-if 4:bool
-    5:num <- copy 0
-  }
-]
-+transform: --- transform braces for recipe main
-+transform: jump-if 4, -5:offset
+void test_loop_nested() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  {\n"
+      "    2:num <- copy 0\n"
+      "    {\n"
+      "      3:num <- copy 0\n"
+      "    }\n"
+      "    loop-if 4:bool\n"
+      "    5:num <- copy 0\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: jump-if 4, -5:offset\n"
+  );
+}
 
-:(scenario loop_label)
-def main [
-  1:num <- copy 0
-  +foo
-  2:num <- copy 0
-]
-+transform: --- transform braces for recipe main
-+transform: copy ...
-+transform: copy ...
+void test_loop_label() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  +foo\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- transform braces for recipe main\n"
+      "transform: copy ...\n"
+      "transform: copy ...\n"
+  );
+}
 
 //: test how things actually run
-:(scenarios run)
-:(scenario brace_conversion_and_run)
-def test-factorial [
-  1:num <- copy 5
-  2:num <- copy 1
-  {
-    3:bool <- equal 1:num, 1
-    break-if 3:bool
-#    $print 1:num
-    2:num <- multiply 2:num, 1:num
-    1:num <- subtract 1:num, 1
-    loop
-  }
-  4:num <- copy 2:num  # trigger a read
-]
-+mem: location 2 is 120
+void test_brace_conversion_and_run() {
+  run(
+      "def test-factorial [\n"
+      "  1:num <- copy 5\n"
+      "  2:num <- copy 1\n"
+      "  {\n"
+      "    3:bool <- equal 1:num, 1\n"
+      "    break-if 3:bool\n"
+      "    2:num <- multiply 2:num, 1:num\n"
+      "    1:num <- subtract 1:num, 1\n"
+      "    loop\n"
+      "  }\n"
+      "  4:num <- copy 2:num\n"  // trigger a read
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: location 2 is 120\n"
+  );
+}
 
-:(scenario break_outside_braces_fails)
-% Hide_errors = true;
-def main [
-  break
-]
-+error: main: 'break' needs a '{' before
+void test_break_outside_braces_fails() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  break\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'break' needs a '{' before\n"
+  );
+}
 
-:(scenario break_conditional_without_ingredient_fails)
-% Hide_errors = true;
-def main [
-  {
-    break-if
-  }
-]
-+error: main: 'break-if' expects 1 or 2 ingredients, but got none
+void test_break_conditional_without_ingredient_fails() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  {\n"
+      "    break-if\n"
+      "  }\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'break-if' expects 1 or 2 ingredients, but got none\n"
+  );
+}
 
 //: Using break we can now implement conditional returns.
 
-:(scenario return_if)
-def main [
-  1:num <- test1
-]
-def test1 [
-  return-if 0, 34
-  return 35
-]
-+mem: storing 35 in location 1
+void test_return_if() {
+  run(
+      "def main [\n"
+      "  1:num <- test1\n"
+      "]\n"
+      "def test1 [\n"
+      "  return-if 0, 34\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 35 in location 1\n"
+  );
+}
 
-:(scenario return_if_2)
-def main [
-  1:num <- test1
-]
-def test1 [
-  return-if 1, 34
-  return 35
-]
-+mem: storing 34 in location 1
+void test_return_if_2() {
+  run(
+      "def main [\n"
+      "  1:num <- test1\n"
+      "]\n"
+      "def test1 [\n"
+      "  return-if 1, 34\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite 'return-if a, b, c, ...' to

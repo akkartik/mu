@@ -43,48 +43,76 @@ void check_instruction(const recipe_ordinal r) {
   }
 }
 
-:(scenario copy_checks_reagent_count)
-% Hide_errors = true;
-def main [
-  1:num, 2:num <- copy 34
-]
-+error: main: too many products in '1:num, 2:num <- copy 34'
+void test_copy_checks_reagent_count() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too many products in '1:num, 2:num <- copy 34'\n"
+  );
+}
 
-:(scenario write_scalar_to_array_disallowed)
-% Hide_errors = true;
-def main [
-  1:array:num <- copy 34
-]
-+error: main: can't copy '34' to '1:array:num'; types don't match
+void test_write_scalar_to_array_disallowed() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:array:num <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't copy '34' to '1:array:num'; types don't match\n"
+  );
+}
 
-:(scenario write_scalar_to_array_disallowed_2)
-% Hide_errors = true;
-def main [
-  1:num, 2:array:num <- copy 34, 35
-]
-+error: main: can't copy '35' to '2:array:num'; types don't match
+void test_write_scalar_to_array_disallowed_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num, 2:array:num <- copy 34, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't copy '35' to '2:array:num'; types don't match\n"
+  );
+}
 
-:(scenario write_scalar_to_address_disallowed)
-% Hide_errors = true;
-def main [
-  1:&:num <- copy 34
-]
-+error: main: can't copy '34' to '1:&:num'; types don't match
+void test_write_scalar_to_address_disallowed() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:&:num <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't copy '34' to '1:&:num'; types don't match\n"
+  );
+}
 
-:(scenario write_address_to_character_disallowed)
-% Hide_errors = true;
-def main [
-  1:&:num <- copy 12/unsafe
-  2:char <- copy 1:&:num
-]
-+error: main: can't copy '1:&:num' to '2:char'; types don't match
+void test_write_address_to_character_disallowed() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:&:num <- copy 12/unsafe\n"
+      "  2:char <- copy 1:&:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't copy '1:&:num' to '2:char'; types don't match\n"
+  );
+}
 
-:(scenario write_number_to_character_allowed)
-def main [
-  1:num <- copy 97
-  2:char <- copy 1:num
-]
-$error: 0
+void test_write_number_to_character_allowed() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 97\n"
+      "  2:char <- copy 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 :(code)
 // types_match with some leniency

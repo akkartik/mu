@@ -1,10 +1,15 @@
 //:: Check that the different operands of an instruction aren't too large for their bitfields.
 
-:(scenario check_bitfield_sizes)
-% Hide_errors = true;
-== 0x1
-01/add 4/mod 3/rm32 1/r32  # add ECX to EBX
-+error: '4/mod' too large to fit in bitfield mod
+void test_check_bitfield_sizes() {
+  Hide_errors = true;
+  run(
+      "== 0x1\n"  // code segment
+      "01/add 4/mod 3/rm32 1/r32\n"  // add ECX to EBX
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: '4/mod' too large to fit in bitfield mod\n"
+  );
+}
 
 :(before "End Globals")
 map<string, uint32_t> Operand_bound;

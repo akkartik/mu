@@ -34,39 +34,65 @@ case ADD: {
   break;
 }
 
-:(scenario add_literal)
-def main [
-  1:num <- add 23, 34
-]
-+mem: storing 57 in location 1
+:(code)
+void test_add_literal() {
+  run(
+      "def main [\n"
+      "  1:num <- add 23, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 57 in location 1\n"
+  );
+}
 
-:(scenario add)
-def main [
-  1:num <- copy 23
-  2:num <- copy 34
-  3:num <- add 1:num, 2:num
-]
-+mem: storing 57 in location 3
+void test_add() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 23\n"
+      "  2:num <- copy 34\n"
+      "  3:num <- add 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 57 in location 3\n"
+  );
+}
 
-:(scenario add_multiple)
-def main [
-  1:num <- add 3, 4, 5
-]
-+mem: storing 12 in location 1
+void test_add_multiple() {
+  run(
+      "def main [\n"
+      "  1:num <- add 3, 4, 5\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 12 in location 1\n"
+  );
+}
 
-:(scenario add_checks_type)
-% Hide_errors = true;
-def main [
-  1:num <- add 2:bool, 1
-]
-+error: main: 'add' requires number ingredients, but got '2:bool'
+void test_add_checks_type() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- add 2:bool, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'add' requires number ingredients, but got '2:bool'\n"
+  );
+}
 
-:(scenario add_checks_return_type)
-% Hide_errors = true;
-def main [
-  1:&:num <- add 2, 2
-]
-+error: main: 'add' should yield a number, but got '1:&:num'
+void test_add_checks_return_type() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:&:num <- add 2, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'add' should yield a number, but got '1:&:num'\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 SUBTRACT,
@@ -104,25 +130,41 @@ case SUBTRACT: {
   break;
 }
 
-:(scenario subtract_literal)
-def main [
-  1:num <- subtract 5, 2
-]
-+mem: storing 3 in location 1
+:(code)
+void test_subtract_literal() {
+  run(
+      "def main [\n"
+      "  1:num <- subtract 5, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 1\n"
+  );
+}
 
-:(scenario subtract)
-def main [
-  1:num <- copy 23
-  2:num <- copy 34
-  3:num <- subtract 1:num, 2:num
-]
-+mem: storing -11 in location 3
+void test_subtract() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 23\n"
+      "  2:num <- copy 34\n"
+      "  3:num <- subtract 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing -11 in location 3\n"
+  );
+}
 
-:(scenario subtract_multiple)
-def main [
-  1:num <- subtract 6, 3, 2
-]
-+mem: storing 1 in location 1
+void test_subtract_multiple() {
+  run(
+      "def main [\n"
+      "  1:num <- subtract 6, 3, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 MULTIPLY,
@@ -157,25 +199,41 @@ case MULTIPLY: {
   break;
 }
 
-:(scenario multiply_literal)
-def main [
-  1:num <- multiply 2, 3
-]
-+mem: storing 6 in location 1
+:(code)
+void test_multiply_literal() {
+  run(
+      "def main [\n"
+      "  1:num <- multiply 2, 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 6 in location 1\n"
+  );
+}
 
-:(scenario multiply)
-def main [
-  1:num <- copy 4
-  2:num <- copy 6
-  3:num <- multiply 1:num, 2:num
-]
-+mem: storing 24 in location 3
+void test_multiply() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 4\n"
+      "  2:num <- copy 6\n"
+      "  3:num <- multiply 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 24 in location 3\n"
+  );
+}
 
-:(scenario multiply_multiple)
-def main [
-  1:num <- multiply 2, 3, 4
-]
-+mem: storing 24 in location 1
+void test_multiply_multiple() {
+  run(
+      "def main [\n"
+      "  1:num <- multiply 2, 3, 4\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 24 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 DIVIDE,
@@ -213,25 +271,41 @@ case DIVIDE: {
   break;
 }
 
-:(scenario divide_literal)
-def main [
-  1:num <- divide 8, 2
-]
-+mem: storing 4 in location 1
+:(code)
+void test_divide_literal() {
+  run(
+      "def main [\n"
+      "  1:num <- divide 8, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 1\n"
+  );
+}
 
-:(scenario divide)
-def main [
-  1:num <- copy 27
-  2:num <- copy 3
-  3:num <- divide 1:num, 2:num
-]
-+mem: storing 9 in location 3
+void test_divide() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 27\n"
+      "  2:num <- copy 3\n"
+      "  3:num <- divide 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 9 in location 3\n"
+  );
+}
 
-:(scenario divide_multiple)
-def main [
-  1:num <- divide 12, 3, 2
-]
-+mem: storing 2 in location 1
+void test_divide_multiple() {
+  run(
+      "def main [\n"
+      "  1:num <- divide 12, 3, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
 //: Integer division
 
@@ -281,41 +355,67 @@ case DIVIDE_WITH_REMAINDER: {
   break;
 }
 
-:(scenario divide_with_remainder_literal)
-def main [
-  1:num, 2:num <- divide-with-remainder 9, 2
-]
-+mem: storing 4 in location 1
-+mem: storing 1 in location 2
+:(code)
+void test_divide_with_remainder_literal() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- divide-with-remainder 9, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 1\n"
+      "mem: storing 1 in location 2\n"
+  );
+}
 
-:(scenario divide_with_remainder)
-def main [
-  1:num <- copy 27
-  2:num <- copy 11
-  3:num, 4:num <- divide-with-remainder 1:num, 2:num
-]
-+mem: storing 2 in location 3
-+mem: storing 5 in location 4
+void test_divide_with_remainder() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 27\n"
+      "  2:num <- copy 11\n"
+      "  3:num, 4:num <- divide-with-remainder 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 3\n"
+      "mem: storing 5 in location 4\n"
+  );
+}
 
-:(scenario divide_with_decimal_point)
-def main [
-  1:num <- divide 5, 2
-]
-+mem: storing 2.5 in location 1
+void test_divide_with_decimal_point() {
+  run(
+      "def main [\n"
+      "  1:num <- divide 5, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2.5 in location 1\n"
+  );
+}
 
-:(scenario divide_by_zero)
-def main [
-  1:num <- divide 4, 0
-]
-+mem: storing inf in location 1
+void test_divide_by_zero() {
+  run(
+      "def main [\n"
+      "  1:num <- divide 4, 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing inf in location 1\n"
+  );
+}
 
-:(scenario divide_by_zero_2)
-% Hide_errors = true;
-def main [
-  1:num <- divide-with-remainder 4, 0
-]
-# integer division can't return floating-point infinity
-+error: main: divide by zero in '1:num <- divide-with-remainder 4, 0'
+void test_divide_by_zero_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- divide-with-remainder 4, 0\n"
+      "]\n"
+  );
+  // integer division can't return floating-point infinity
+  CHECK_TRACE_CONTENTS(
+      "error: main: divide by zero in '1:num <- divide-with-remainder 4, 0'\n"
+  );
+}
 
 //: Bitwise shifts
 
@@ -358,37 +458,63 @@ case SHIFT_LEFT: {
   break;
 }
 
-:(scenario shift_left_by_zero)
-def main [
-  1:num <- shift-left 1, 0
-]
-+mem: storing 1 in location 1
+:(code)
+void test_shift_left_by_zero() {
+  run(
+      "def main [\n"
+      "  1:num <- shift-left 1, 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario shift_left_1)
-def main [
-  1:num <- shift-left 1, 4
-]
-+mem: storing 16 in location 1
+void test_shift_left_1() {
+  run(
+      "def main [\n"
+      "  1:num <- shift-left 1, 4\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 16 in location 1\n"
+  );
+}
 
-:(scenario shift_left_2)
-def main [
-  1:num <- shift-left 3, 2
-]
-+mem: storing 12 in location 1
+void test_shift_left_2() {
+  run(
+      "def main [\n"
+      "  1:num <- shift-left 3, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 12 in location 1\n"
+  );
+}
 
-:(scenario shift_left_by_negative)
-% Hide_errors = true;
-def main [
-  1:num <- shift-left 3, -1
-]
-+error: main: second ingredient can't be negative in '1:num <- shift-left 3, -1'
+void test_shift_left_by_negative() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- shift-left 3, -1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: second ingredient can't be negative in '1:num <- shift-left 3, -1'\n"
+  );
+}
 
-:(scenario shift_left_ignores_fractional_part)
-def main [
-  1:num <- divide 3, 2
-  2:num <- shift-left 1:num, 1
-]
-+mem: storing 2 in location 2
+void test_shift_left_ignores_fractional_part() {
+  run(
+      "def main [\n"
+      "  1:num <- divide 3, 2\n"
+      "  2:num <- shift-left 1:num, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 2\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 SHIFT_RIGHT,
@@ -429,37 +555,63 @@ case SHIFT_RIGHT: {
   break;
 }
 
-:(scenario shift_right_by_zero)
-def main [
-  1:num <- shift-right 1, 0
-]
-+mem: storing 1 in location 1
+:(code)
+void test_shift_right_by_zero() {
+  run(
+      "def main [\n"
+      "  1:num <- shift-right 1, 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario shift_right_1)
-def main [
-  1:num <- shift-right 1024, 1
-]
-+mem: storing 512 in location 1
+void test_shift_right_1() {
+  run(
+      "def main [\n"
+      "  1:num <- shift-right 1024, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 512 in location 1\n"
+  );
+}
 
-:(scenario shift_right_2)
-def main [
-  1:num <- shift-right 3, 1
-]
-+mem: storing 1 in location 1
+void test_shift_right_2() {
+  run(
+      "def main [\n"
+      "  1:num <- shift-right 3, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+  );
+}
 
-:(scenario shift_right_by_negative)
-% Hide_errors = true;
-def main [
-  1:num <- shift-right 4, -1
-]
-+error: main: second ingredient can't be negative in '1:num <- shift-right 4, -1'
+void test_shift_right_by_negative() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- shift-right 4, -1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: second ingredient can't be negative in '1:num <- shift-right 4, -1'\n"
+  );
+}
 
-:(scenario shift_right_ignores_fractional_part)
-def main [
-  1:num <- divide 3, 2
-  2:num <- shift-right 1:num, 1
-]
-+mem: storing 0 in location 2
+void test_shift_right_ignores_fractional_part() {
+  run(
+      "def main [\n"
+      "  1:num <- divide 3, 2\n"
+      "  2:num <- shift-right 1:num, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 2\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 AND_BITS,
@@ -495,29 +647,50 @@ case AND_BITS: {
   break;
 }
 
-:(scenario and_bits_1)
-def main [
-  1:num <- and-bits 8, 3
-]
-+mem: storing 0 in location 1
+:(code)
+void test_and_bits_1() {
+  run(
+      "def main [\n"
+      "  1:num <- and-bits 8, 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
-:(scenario and_bits_2)
-def main [
-  1:num <- and-bits 3, 2
-]
-+mem: storing 2 in location 1
+void test_and_bits_2() {
+  run(
+      "def main [\n"
+      "  1:num <- and-bits 3, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
-:(scenario and_bits_3)
-def main [
-  1:num <- and-bits 14, 3
-]
-+mem: storing 2 in location 1
+void test_and_bits_3() {
+  run(
+      "def main [\n"
+      "  1:num <- and-bits 14, 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
-:(scenario and_bits_negative)
-def main [
-  1:num <- and-bits -3, 4
-]
-+mem: storing 4 in location 1
+void test_and_bits_negative() {
+  run(
+      "def main [\n"
+      "  1:num <- and-bits -3, 4\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 OR_BITS,
@@ -553,23 +726,39 @@ case OR_BITS: {
   break;
 }
 
-:(scenario or_bits_1)
-def main [
-  1:num <- or-bits 3, 8
-]
-+mem: storing 11 in location 1
+:(code)
+void test_or_bits_1() {
+  run(
+      "def main [\n"
+      "  1:num <- or-bits 3, 8\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 11 in location 1\n"
+  );
+}
 
-:(scenario or_bits_2)
-def main [
-  1:num <- or-bits 3, 10
-]
-+mem: storing 11 in location 1
+void test_or_bits_2() {
+  run(
+      "def main [\n"
+      "  1:num <- or-bits 3, 10\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 11 in location 1\n"
+  );
+}
 
-:(scenario or_bits_3)
-def main [
-  1:num <- or-bits 4, 6
-]
-+mem: storing 6 in location 1
+void test_or_bits_3() {
+  run(
+      "def main [\n"
+      "  1:num <- or-bits 4, 6\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 6 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 XOR_BITS,
@@ -605,23 +794,39 @@ case XOR_BITS: {
   break;
 }
 
-:(scenario xor_bits_1)
-def main [
-  1:num <- xor-bits 3, 8
-]
-+mem: storing 11 in location 1
+:(code)
+void test_xor_bits_1() {
+  run(
+      "def main [\n"
+      "  1:num <- xor-bits 3, 8\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 11 in location 1\n"
+  );
+}
 
-:(scenario xor_bits_2)
-def main [
-  1:num <- xor-bits 3, 10
-]
-+mem: storing 9 in location 1
+void test_xor_bits_2() {
+  run(
+      "def main [\n"
+      "  1:num <- xor-bits 3, 10\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 9 in location 1\n"
+  );
+}
 
-:(scenario xor_bits_3)
-def main [
-  1:num <- xor-bits 4, 6
-]
-+mem: storing 2 in location 1
+void test_xor_bits_3() {
+  run(
+      "def main [\n"
+      "  1:num <- xor-bits 4, 6\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 FLIP_BITS,
@@ -656,29 +861,50 @@ case FLIP_BITS: {
   break;
 }
 
-:(scenario flip_bits_zero)
-def main [
-  1:num <- flip-bits 0
-]
-+mem: storing -1 in location 1
+:(code)
+void test_flip_bits_zero() {
+  run(
+      "def main [\n"
+      "  1:num <- flip-bits 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing -1 in location 1\n"
+  );
+}
 
-:(scenario flip_bits_negative)
-def main [
-  1:num <- flip-bits -1
-]
-+mem: storing 0 in location 1
+void test_flip_bits_negative() {
+  run(
+      "def main [\n"
+      "  1:num <- flip-bits -1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+}
 
-:(scenario flip_bits_1)
-def main [
-  1:num <- flip-bits 3
-]
-+mem: storing -4 in location 1
+void test_flip_bits_1() {
+  run(
+      "def main [\n"
+      "  1:num <- flip-bits 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing -4 in location 1\n"
+  );
+}
 
-:(scenario flip_bits_2)
-def main [
-  1:num <- flip-bits 12
-]
-+mem: storing -13 in location 1
+void test_flip_bits_2() {
+  run(
+      "def main [\n"
+      "  1:num <- flip-bits 12\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing -13 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 ROUND,
@@ -703,23 +929,39 @@ case ROUND: {
   break;
 }
 
-:(scenario round_to_nearest_integer)
-def main [
-  1:num <- round 12.2
-]
-+mem: storing 12 in location 1
+:(code)
+void test_round_to_nearest_integer() {
+  run(
+      "def main [\n"
+      "  1:num <- round 12.2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 12 in location 1\n"
+  );
+}
 
-:(scenario round_halves_toward_zero)
-def main [
-  1:num <- round 12.5
-]
-+mem: storing 12 in location 1
+void test_round_halves_toward_zero() {
+  run(
+      "def main [\n"
+      "  1:num <- round 12.5\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 12 in location 1\n"
+  );
+}
 
-:(scenario round_halves_toward_zero_2)
-def main [
-  1:num <- round -12.5
-]
-+mem: storing -12 in location 1
+void test_round_halves_toward_zero_2() {
+  run(
+      "def main [\n"
+      "  1:num <- round -12.5\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing -12 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 TRUNCATE,
@@ -744,17 +986,28 @@ case TRUNCATE: {
   break;
 }
 
-:(scenario truncate_to_nearest_integer)
-def main [
-  1:num <- truncate 12.2
-]
-+mem: storing 12 in location 1
+:(code)
+void test_truncate_to_nearest_integer() {
+  run(
+      "def main [\n"
+      "  1:num <- truncate 12.2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 12 in location 1\n"
+  );
+}
 
-:(scenario truncate_negative)
-def main [
-  1:num <- truncate -12.2
-]
-+mem: storing -12 in location 1
+void test_truncate_negative() {
+  run(
+      "def main [\n"
+      "  1:num <- truncate -12.2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing -12 in location 1\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 SQUARE_ROOT,

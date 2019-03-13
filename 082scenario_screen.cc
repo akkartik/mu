@@ -9,127 +9,146 @@
 recipes_taking_literal_strings.insert("screen-should-contain");
 recipes_taking_literal_strings.insert("screen-should-contain-in-color");
 
-:(scenarios run_mu_scenario)
-:(scenario screen_in_scenario)
-scenario screen-in-scenario [
-  local-scope
-  assume-screen 5/width, 3/height
-  run [
-    a:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, a
-  ]
-  screen-should-contain [
-  #  01234
-    .a    .
-    .     .
-    .     .
-  ]
-]
-# checks are inside scenario
+:(code)
+void test_screen_in_scenario() {
+  run_mu_scenario(
+      "scenario screen-in-scenario [\n"
+      "  local-scope\n"
+      "  assume-screen 5/width, 3/height\n"
+      "  run [\n"
+      "    a:char <- copy 97/a\n"
+      "    screen:&:screen <- print screen:&:screen, a\n"
+      "  ]\n"
+      "  screen-should-contain [\n"
+      //    01234
+      "    .a    .\n"
+      "    .     .\n"
+      "    .     .\n"
+      "  ]\n"
+      "]\n"
+  );
+  // checks are inside scenario
+}
 
-:(scenario screen_in_scenario_unicode)
-# screen-should-contain can check unicode characters in the fake screen
-scenario screen-in-scenario-unicode [
-  local-scope
-  assume-screen 5/width, 3/height
-  run [
-    lambda:char <- copy 955/greek-small-lambda
-    screen:&:screen <- print screen:&:screen, lambda
-    a:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, a
-  ]
-  screen-should-contain [
-  #  01234
-    .λa   .
-    .     .
-    .     .
-  ]
-]
-# checks are inside scenario
+void test_screen_in_scenario_unicode() {
+  // screen-should-contain can check unicode characters in the fake screen\n"
+  run_mu_scenario(
+      "scenario screen-in-scenario-unicode [\n"
+      "  local-scope\n"
+      "  assume-screen 5/width, 3/height\n"
+      "  run [\n"
+      "    lambda:char <- copy 955/greek-small-lambda\n"
+      "    screen:&:screen <- print screen:&:screen, lambda\n"
+      "    a:char <- copy 97/a\n"
+      "    screen:&:screen <- print screen:&:screen, a\n"
+      "  ]\n"
+      "  screen-should-contain [\n"
+      //    01234
+      "    .λa   .\n"
+      "    .     .\n"
+      "    .     .\n"
+      "  ]\n"
+      "]\n"
+  );
+  // checks are inside scenario
+}
 
-:(scenario screen_in_scenario_color)
-scenario screen-in-scenario-color [
-  local-scope
-  assume-screen 5/width, 3/height
-  run [
-    lambda:char <- copy 955/greek-small-lambda
-    screen:&:screen <- print screen:&:screen, lambda, 1/red
-    a:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, a, 7/white
-  ]
-  # screen-should-contain shows everything
-  screen-should-contain [
-  #  01234
-    .λa   .
-    .     .
-    .     .
-  ]
-  # screen-should-contain-in-color filters out everything except the given
-  # color, all you see is the 'a' in white.
-  screen-should-contain-in-color 7/white, [
-  #  01234
-    . a   .
-    .     .
-    .     .
-  ]
-  # ..and the λ in red.
-  screen-should-contain-in-color 1/red, [
-  #  01234
-    .λ    .
-    .     .
-    .     .
-  ]
-]
-# checks are inside scenario
+void test_screen_in_scenario_color() {
+  run_mu_scenario(
+      "scenario screen-in-scenario-color [\n"
+      "  local-scope\n"
+      "  assume-screen 5/width, 3/height\n"
+      "  run [\n"
+      "    lambda:char <- copy 955/greek-small-lambda\n"
+      "    screen:&:screen <- print screen:&:screen, lambda, 1/red\n"
+      "    a:char <- copy 97/a\n"
+      "    screen:&:screen <- print screen:&:screen, a, 7/white\n"
+      "  ]\n"
+         // screen-should-contain shows everything
+      "  screen-should-contain [\n"
+      //    01234
+      "    .λa   .\n"
+      "    .     .\n"
+      "    .     .\n"
+      "  ]\n"
+         // screen-should-contain-in-color filters out everything except the
+         // given color, all you see is the 'a' in white.
+      "  screen-should-contain-in-color 7/white, [\n"
+      //    01234
+      "    . a   .\n"
+      "    .     .\n"
+      "    .     .\n"
+      "  ]\n"
+         // ..and the λ in red.
+      "  screen-should-contain-in-color 1/red, [\n"
+      //    01234
+      "    .λ    .\n"
+      "    .     .\n"
+      "    .     .\n"
+      "  ]\n"
+      "]\n"
+  );
+  // checks are inside scenario
+}
 
-:(scenario screen_in_scenario_error)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-scenario screen-in-scenario-error [
-  local-scope
-  assume-screen 5/width, 3/height
-  run [
-    a:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, a
-  ]
-  screen-should-contain [
-  #  01234
-    .b    .
-    .     .
-    .     .
-  ]
-]
-+error: F - screen-in-scenario-error: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
+void test_screen_in_scenario_error() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run_mu_scenario(
+      "scenario screen-in-scenario-error [\n"
+      "  local-scope\n"
+      "  assume-screen 5/width, 3/height\n"
+      "  run [\n"
+      "    a:char <- copy 97/a\n"
+      "    screen:&:screen <- print screen:&:screen, a\n"
+      "  ]\n"
+      "  screen-should-contain [\n"
+      //    01234
+      "    .b    .\n"
+      "    .     .\n"
+      "    .     .\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - screen-in-scenario-error: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')\n"
+  );
+}
 
-:(scenario screen_in_scenario_color_error)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-# screen-should-contain can check unicode characters in the fake screen
-scenario screen-in-scenario-color-error [
-  local-scope
-  assume-screen 5/width, 3/height
-  run [
-    a:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, a, 1/red
-  ]
-  screen-should-contain-in-color 2/green, [
-  #  01234
-    .a    .
-    .     .
-    .     .
-  ]
-]
-+error: F - screen-in-scenario-color-error: expected screen location (0, 0) to contain 'a' in color 2 instead of 1
+void test_screen_in_scenario_color_error() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run_mu_scenario(
+      "scenario screen-in-scenario-color-error [\n"
+      "  local-scope\n"
+      "  assume-screen 5/width, 3/height\n"
+      "  run [\n"
+      "    a:char <- copy 97/a\n"
+      "    screen:&:screen <- print screen:&:screen, a, 1/red\n"
+      "  ]\n"
+      "  screen-should-contain-in-color 2/green, [\n"
+      //    01234
+      "    .a    .\n"
+      "    .     .\n"
+      "    .     .\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - screen-in-scenario-color-error: expected screen location (0, 0) to contain 'a' in color 2 instead of 1\n"
+  );
+}
 
-:(scenarios run)
-:(scenario convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations)
-% Scenario_testing_scenario = true;
-def main [
-  screen:num <- copy 1:num
-]
--error: mixing variable names and numeric addresses in main
-$error: 0
-:(scenarios run_mu_scenario)
+void test_convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations() {
+  Scenario_testing_scenario = true;
+  run(
+      "def main [\n"
+      "  screen:num <- copy 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: mixing variable names and numeric addresses in main");
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //: It's easier to implement assume-screen and other similar scenario-only
 //: primitives if they always write to a fixed location. So we'll assign a
@@ -179,12 +198,18 @@ if (curr.name == "assume-screen") {
   }
 }
 
-:(scenario assume_screen_shows_up_in_errors)
-% Hide_errors = true;
-scenario assume-screen-shows-up-in-errors [
-  assume-screen width, 5
-]
-+error: assume-screen-shows-up-in-errors: missing type for 'width' in 'assume-screen width, 5'
+:(code)
+void test_assume_screen_shows_up_in_errors() {
+  Hide_errors = true;
+  run_mu_scenario(
+      "scenario assume-screen-shows-up-in-errors [\n"
+      "  assume-screen width, 5\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: assume-screen-shows-up-in-errors: missing type for 'width' in 'assume-screen width, 5'\n"
+  );
+}
 
 //: screen-should-contain is a regular instruction
 :(before "End Primitive Recipe Declarations")

@@ -69,7 +69,7 @@ struct lease_tracer {
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, string expected) {  // empty layer == everything
-  vector<string> expected_lines = split(expected, "");
+  vector<string> expected_lines = split(expected, "\n");
   size_t curr_expected_line = 0;
   while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
     ++curr_expected_line;

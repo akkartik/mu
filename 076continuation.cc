@@ -67,50 +67,57 @@ if (r.type->atom && r.type->name == "continuation") {
   return result_header;
 }
 
-:(scenario delimited_continuation)
-recipe main [
-  1:continuation <- call-with-continuation-mark 233/mark, f, 77  # 77 is an argument to f
-  2:num <- copy 5
-  {
-    2:num <- call 1:continuation, 2:num  # jump to 'return-continuation-until-mark' below
-    3:bool <- greater-or-equal 2:num, 8
-    break-if 3:bool
-    loop
-  }
-]
-recipe f [
-  11:num <- next-ingredient
-  12:num <- g 11:num
-  return 12:num
-]
-recipe g [
-  21:num <- next-ingredient
-  22:num <- return-continuation-until-mark 233/mark
-  23:num <- add 22:num, 1
-  return 23:num
-]
-# first call of 'g' executes the part before return-continuation-until-mark
-+mem: storing 77 in location 21
-+run: {2: "number"} <- copy {5: "literal"}
-+mem: storing 5 in location 2
-# calls of the continuation execute the part after return-continuation-until-mark
-+run: {2: "number"} <- call {1: "continuation"}, {2: "number"}
-+mem: storing 5 in location 22
-+mem: storing 6 in location 2
-+run: {2: "number"} <- call {1: "continuation"}, {2: "number"}
-+mem: storing 6 in location 22
-+mem: storing 7 in location 2
-+run: {2: "number"} <- call {1: "continuation"}, {2: "number"}
-+mem: storing 7 in location 22
-+mem: storing 8 in location 2
-# first call of 'g' does not execute the part after return-continuation-until-mark
--mem: storing 77 in location 22
-# calls of the continuation don't execute the part before return-continuation-until-mark
--mem: storing 5 in location 21
--mem: storing 6 in location 21
--mem: storing 7 in location 21
-# termination
--mem: storing 9 in location 2
+:(code)
+void test_delimited_continuation() {
+  run(
+      "recipe main [\n"
+      "  1:continuation <- call-with-continuation-mark 233/mark, f, 77\n"  // 77 is an argument to f
+      "  2:num <- copy 5\n"
+      "  {\n"
+      "    2:num <- call 1:continuation, 2:num\n"  // jump to 'return-continuation-until-mark' below
+      "    3:bool <- greater-or-equal 2:num, 8\n"
+      "    break-if 3:bool\n"
+      "    loop\n"
+      "  }\n"
+      "]\n"
+      "recipe f [\n"
+      "  11:num <- next-ingredient\n"
+      "  12:num <- g 11:num\n"
+      "  return 12:num\n"
+      "]\n"
+      "recipe g [\n"
+      "  21:num <- next-ingredient\n"
+      "  22:num <- return-continuation-until-mark 233/mark\n"
+      "  23:num <- add 22:num, 1\n"
+      "  return 23:num\n"
+      "]\n"
+  );
+  // first call of 'g' executes the part before return-continuation-until-mark
+  CHECK_TRACE_CONTENTS(
+      // first call of 'g' executes the part before return-continuation-until-mark
+      "mem: storing 77 in location 21\n"
+      "run: {2: \"number\"} <- copy {5: \"literal\"}\n"
+      "mem: storing 5 in location 2\n"
+      // calls of the continuation execute the part after return-continuation-until-mark
+      "run: {2: \"number\"} <- call {1: \"continuation\"}, {2: \"number\"}\n"
+      "mem: storing 5 in location 22\n"
+      "mem: storing 6 in location 2\n"
+      "run: {2: \"number\"} <- call {1: \"continuation\"}, {2: \"number\"}\n"
+      "mem: storing 6 in location 22\n"
+      "mem: storing 7 in location 2\n"
+      "run: {2: \"number\"} <- call {1: \"continuation\"}, {2: \"number\"}\n"
+      "mem: storing 7 in location 22\n"
+      "mem: storing 8 in location 2\n"
+  );
+  // first call of 'g' does not execute the part after return-continuation-until-mark
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 77 in location 22");
+  // calls of the continuation don't execute the part before return-continuation-until-mark
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 5 in location 21");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 6 in location 21");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 7 in location 21");
+  // termination
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 9 in location 2");
+}
 
 :(before "End call Fields")
 int continuation_mark_tag;
@@ -148,24 +155,35 @@ case CALL_WITH_CONTINUATION_MARK: {
   continue;
 }
 
-:(scenario next_ingredient_inside_continuation)
-recipe main [
-  call-with-continuation-mark 233/mark, f, true
-]
-recipe f [
-  10:bool <- next-input
-]
-+mem: storing 1 in location 10
+:(code)
+void test_next_ingredient_inside_continuation() {
+  run(
+      "recipe main [\n"
+      "  call-with-continuation-mark 233/mark, f, true\n"
+      "]\n"
+      "recipe f [\n"
+      "  10:bool <- next-input\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 10\n"
+  );
+}
 
-:(scenario delimited_continuation_out_of_recipe_variable)
-recipe main [
-  x:recipe <- copy f
-  call-with-continuation-mark 233/mark, x, true
-]
-recipe f [
-  10:bool <- next-input
-]
-+mem: storing 1 in location 10
+void test_delimited_continuation_out_of_recipe_variable() {
+  run(
+      "recipe main [\n"
+      "  x:recipe <- copy f\n"
+      "  call-with-continuation-mark 233/mark, x, true\n"
+      "]\n"
+      "recipe f [\n"
+      "  10:bool <- next-input\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 10\n"
+  );
+}
 
 //: save the slice of current call stack until the 'call-with-continuation-mark'
 //: call, and return it as the result.
@@ -253,53 +271,69 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   break;  // record results of resuming 'return-continuation-until-mark' instruction
 }
 
-:(scenario continuations_can_return_values)
-def main [
-  local-scope
-  k:continuation, 1:num/raw <- call-with-continuation-mark 233/mark, f
-]
-def f [
-  local-scope
-  g
-]
-def g [
-  local-scope
-  return-continuation-until-mark 233/mark, 34
-  stash [continuation called]
-]
-+mem: storing 34 in location 1
+:(code)
+void test_continuations_can_return_values() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  k:continuation, 1:num/raw <- call-with-continuation-mark 233/mark, f\n"
+      "]\n"
+      "def f [\n"
+      "  local-scope\n"
+      "  g\n"
+      "]\n"
+      "def g [\n"
+      "  local-scope\n"
+      "  return-continuation-until-mark 233/mark, 34\n"
+      "  stash [continuation called]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario continuations_continue_to_matching_mark)
-def main [
-  local-scope
-  k:continuation, 1:num/raw <- call-with-continuation-mark 233/mark, f
-  add 1, 1
-]
-def f [
-  local-scope
-  k2:continuation <- call-with-continuation-mark 234/mark, g
-  add 2, 2
-]
-def g [
-  local-scope
-  return-continuation-until-mark 233/mark, 34
-  stash [continuation called]
-]
-+run: add {1: "literal"}, {1: "literal"}
--run: add {2: "literal"}, {2: "literal"}
+void test_continuations_continue_to_matching_mark() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  k:continuation, 1:num/raw <- call-with-continuation-mark 233/mark, f\n"
+      "  add 1, 1\n"
+      "]\n"
+      "def f [\n"
+      "  local-scope\n"
+      "  k2:continuation <- call-with-continuation-mark 234/mark, g\n"
+      "  add 2, 2\n"
+      "]\n"
+      "def g [\n"
+      "  local-scope\n"
+      "  return-continuation-until-mark 233/mark, 34\n"
+      "  stash [continuation called]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add {1: \"literal\"}, {1: \"literal\"}\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: add {2: \"literal\"}, {2: \"literal\"}");
+}
 
 //: Allow shape-shifting recipes to return continuations.
 
-:(scenario call_shape_shifting_recipe_with_continuation_mark)
-def main [
-  1:num <- call-with-continuation-mark 233/mark, f, 34
-]
-def f x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 1
+void test_call_shape_shifting_recipe_with_continuation_mark() {
+  run(
+      "def main [\n"
+      "  1:num <- call-with-continuation-mark 233/mark, f, 34\n"
+      "]\n"
+      "def f x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
 if (inst.name == "call-with-continuation-mark") {
@@ -321,31 +355,39 @@ void resolve_indirect_continuation_call(const recipe_ordinal r, int index, instr
   inst.ingredients.at(/*skip mark*/1).set_value(get(Recipe_ordinal, inst2.name));
 }
 
-:(scenario call_shape_shifting_recipe_with_continuation_mark_and_no_outputs)
-def main [
-  1:continuation <- call-with-continuation-mark 233/mark, f, 34
-]
-def f x:_elem [
-  local-scope
-  load-ingredients
-  return-continuation-until-mark 233/mark
-]
-$error: 0
+void test_call_shape_shifting_recipe_with_continuation_mark_and_no_outputs() {
+  run(
+      "def main [\n"
+      "  1:continuation <- call-with-continuation-mark 233/mark, f, 34\n"
+      "]\n"
+      "def f x:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return-continuation-until-mark 233/mark\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario continuation1)
-def main [
-  local-scope
-  k:continuation <- call-with-continuation-mark 233/mark, create-yielder
-  10:num/raw <- call k
-]
-def create-yielder -> n:num [
-  local-scope
-  load-inputs
-  return-continuation-until-mark 233/mark
-  return 1
-]
-+mem: storing 1 in location 10
-$error: 0
+void test_continuation1() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  k:continuation <- call-with-continuation-mark 233/mark, create-yielder\n"
+      "  10:num/raw <- call k\n"
+      "]\n"
+      "def create-yielder -> n:num [\n"
+      "  local-scope\n"
+      "  load-inputs\n"
+      "  return-continuation-until-mark 233/mark\n"
+      "  return 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 10\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 :(code)
 bool is_mu_continuation(reagent/*copy*/ x) {

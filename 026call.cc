@@ -1,33 +1,41 @@
 //: So far the recipes we define can't run each other. Let's fix that.
 
-:(scenario calling_recipe)
-def main [
-  f
-]
-def f [
-  3:num <- add 2, 2
-]
-+mem: storing 4 in location 3
+void test_calling_recipe() {
+  run(
+      "def main [\n"
+      "  f\n"
+      "]\n"
+      "def f [\n"
+      "  3:num <- add 2, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 3\n"
+  );
+}
 
-:(scenario return_on_fallthrough)
-def main [
-  f
-  1:num <- copy 0
-  2:num <- copy 0
-  3:num <- copy 0
-]
-def f [
-  4:num <- copy 0
-  5:num <- copy 0
-]
-+run: f
-# running f
-+run: {4: "number"} <- copy {0: "literal"}
-+run: {5: "number"} <- copy {0: "literal"}
-# back out to main
-+run: {1: "number"} <- copy {0: "literal"}
-+run: {2: "number"} <- copy {0: "literal"}
-+run: {3: "number"} <- copy {0: "literal"}
+void test_return_on_fallthrough() {
+  run(
+      "def main [\n"
+      "  f\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  3:num <- copy 0\n"
+      "]\n"
+      "def f [\n"
+      "  4:num <- copy 0\n"
+      "  5:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: f\n"
+      "run: {4: \"number\"} <- copy {0: \"literal\"}\n"
+      "run: {5: \"number\"} <- copy {0: \"literal\"}\n"
+      "run: {1: \"number\"} <- copy {0: \"literal\"}\n"
+      "run: {2: \"number\"} <- copy {0: \"literal\"}\n"
+      "run: {3: \"number\"} <- copy {0: \"literal\"}\n"
+  );
+}
 
 :(before "struct routine {")
 // Everytime a recipe runs another, we interrupt it and start running the new
@@ -166,19 +174,29 @@ void finish_call_housekeeping(const instruction& call_instruction, const vector<
   // End Call Housekeeping
 }
 
-:(scenario calling_undefined_recipe_fails)
-% Hide_errors = true;
-def main [
-  foo
-]
-+error: main: undefined operation in 'foo'
+void test_calling_undefined_recipe_fails() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  foo\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: undefined operation in 'foo'\n"
+  );
+}
 
-:(scenario calling_undefined_recipe_handles_missing_result)
-% Hide_errors = true;
-def main [
-  x:num <- foo
-]
-+error: main: undefined operation in 'x:num <- foo'
+void test_calling_undefined_recipe_handles_missing_result() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  x:num <- foo\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: undefined operation in 'x:num <- foo'\n"
+  );
+}
 
 //:: finally, we need to fix the termination conditions for the run loop
 

@@ -2,32 +2,47 @@
 //: grouped by brackets. We'll use this ability in the next layer, when we
 //: generalize types from lists to trees of properties.
 
-:(scenarios load)
-:(scenario dilated_reagent)
-def main [
-  {1: number, foo: bar} <- copy 34
-]
-+parse:   product: {1: "number", "foo": "bar"}
+void test_dilated_reagent() {
+  load(
+      "def main [\n"
+      "  {1: number, foo: bar} <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   product: {1: \"number\", \"foo\": \"bar\"}\n"
+  );
+}
 
-:(scenario load_trailing_space_after_curly_bracket)
-def main [
-  # line below has a space at the end
-  { 
-]
-# successfully parsed
+void test_load_trailing_space_after_curly_bracket() {
+  load(
+      "def main [\n"
+      "  # line below has a space at the end\n"
+      "  { \n"
+      "]\n"
+      "# successfully parsed\n"
+  );
+}
 
-:(scenario dilated_reagent_with_comment)
-def main [
-  {1: number, foo: bar} <- copy 34  # test comment
-]
-+parse:   product: {1: "number", "foo": "bar"}
-$error: 0
+void test_dilated_reagent_with_comment() {
+  load(
+      "def main [\n"
+      "  {1: number, foo: bar} <- copy 34  # test comment\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   product: {1: \"number\", \"foo\": \"bar\"}\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario dilated_reagent_with_comment_immediately_following)
-def main [
-  1:number <- copy {34: literal}  # test comment
-]
-$error: 0
+void test_dilated_reagent_with_comment_immediately_following() {
+  load(
+      "def main [\n"
+      "  1:number <- copy {34: literal}  # test comment\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //: First augment next_word to group balanced brackets together.
 

@@ -14,21 +14,24 @@
 Transform.push_back(create_test_function);
 // End Level-4 Transforms
 
-:(scenario run_test)
-% Reg[ESP].u = 0x100;
-== 0x1
-main:
-  e8/call run-tests/disp32  # 5 bytes
-  f4/halt                   # 1 byte
-
-test-foo:  # offset 7
-  01 d8  # just some unique instruction: add EBX to EAX
-  c3/return
-
-# check that code in test-foo ran (implicitly called by run-tests)
-+run: 0x00000007 opcode: 01
-
 :(code)
+void test_run_test() {
+  Reg[ESP].u = 0x100;
+  run(
+      "== 0x1\n"  // code segment
+      "main:\n"
+      "  e8/call run-tests/disp32\n"  // 5 bytes
+      "  f4/halt\n"                   // 1 byte
+      "test-foo:\n"  // offset 7
+      "  01 d8\n"  // just some unique instruction: add EBX to EAX
+      "  c3/return\n"
+  );
+  // check that code in test-foo ran (implicitly called by run-tests)
+  CHECK_TRACE_CONTENTS(
+      "run: 0x00000007 opcode: 01\n"
+  );
+}
+
 void create_test_function(program& p) {
   if (p.segments.empty()) return;
   segment& code = p.segments.at(0);

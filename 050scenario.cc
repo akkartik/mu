@@ -3,53 +3,62 @@
 
 //: We avoid raw numeric locations in Mu -- except in scenarios, where they're
 //: handy to check the values of specific variables
-:(scenarios run_mu_scenario)
-:(scenario scenario_block)
-scenario foo [
-  run [
-    1:num <- copy 13
-  ]
-  memory-should-contain [
-    1 <- 13
-  ]
-]
-# checks are inside scenario
 
-:(scenario scenario_multiple_blocks)
-scenario foo [
-  run [
-    1:num <- copy 13
-  ]
-  memory-should-contain [
-    1 <- 13
-  ]
-  run [
-    2:num <- copy 13
-  ]
-  memory-should-contain [
-    1 <- 13
-    2 <- 13
-  ]
-]
-# checks are inside scenario
+void test_scenario_block() {
+  run_mu_scenario(
+      "scenario foo [\n"
+      "  run [\n"
+      "    1:num <- copy 13\n"
+      "  ]\n"
+      "  memory-should-contain [\n"
+      "    1 <- 13\n"
+      "  ]\n"
+      "]\n"
+  );
+  // checks are inside scenario
+}
 
-:(scenario scenario_check_memory_and_trace)
-scenario foo [
-  run [
-    1:num <- copy 13
-    trace 1, [a], [a b c]
-  ]
-  memory-should-contain [
-    1 <- 13
-  ]
-  trace-should-contain [
-    a: a b c
-  ]
-  trace-should-not-contain [
-    a: x y z
-  ]
-]
-# checks are inside scenario
+void test_scenario_multiple_blocks() {
+  run_mu_scenario(
+      "scenario foo [\n"
+      "  run [\n"
+      "    1:num <- copy 13\n"
+      "  ]\n"
+      "  memory-should-contain [\n"
+      "    1 <- 13\n"
+      "  ]\n"
+      "  run [\n"
+      "    2:num <- copy 13\n"
+      "  ]\n"
+      "  memory-should-contain [\n"
+      "    1 <- 13\n"
+      "    2 <- 13\n"
+      "  ]\n"
+      "]\n"
+  );
+  // checks are inside scenario
+}
+
+void test_scenario_check_memory_and_trace() {
+  run_mu_scenario(
+      "scenario foo [\n"
+      "  run [\n"
+      "    1:num <- copy 13\n"
+      "    trace 1, [a], [a b c]\n"
+      "  ]\n"
+      "  memory-should-contain [\n"
+      "    1 <- 13\n"
+      "  ]\n"
+      "  trace-should-contain [\n"
+      "    a: a b c\n"
+      "  ]\n"
+      "  trace-should-not-contain [\n"
+      "    a: x y z\n"
+      "  ]\n"
+      "]\n"
+  );
+  // checks are inside scenario
+}
 
 //:: Core data structure
 
@@ -123,29 +132,43 @@ scenario parse_scenario(istream& in) {
   return result;
 }
 
-:(scenario read_scenario_with_bracket_in_comment)
-scenario foo [
-  # ']' in comment
-  1:num <- copy 0
-]
-+run: {1: "number"} <- copy {0: "literal"}
+void test_read_scenario_with_bracket_in_comment() {
+  run_mu_scenario(
+      "scenario foo [\n"
+      "  # ']' in comment\n"
+      "  1:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {1: \"number\"} <- copy {0: \"literal\"}\n"
+  );
+}
 
-:(scenario read_scenario_with_bracket_in_comment_in_nested_string)
-scenario foo [
-  1:text <- new [# not a comment]
-]
-+run: {1: ("address" "array" "character")} <- new {"# not a comment": "literal-string"}
+void test_read_scenario_with_bracket_in_comment_in_nested_string() {
+  run_mu_scenario(
+      "scenario foo [\n"
+      "  1:text <- new [# not a comment]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {1: (\"address\" \"array\" \"character\")} <- new {\"# not a comment\": \"literal-string\"}\n"
+  );
+}
 
-:(scenarios run)
-:(scenario duplicate_scenarios)
-% Hide_errors = true;
-scenario foo [
-  1:num <- copy 0
-]
-scenario foo [
-  2:num <- copy 0
-]
-+error: duplicate scenario name: 'foo'
+void test_duplicate_scenarios() {
+  Hide_errors = true;
+  run(
+      "scenario foo [\n"
+      "  1:num <- copy 0\n"
+      "]\n"
+      "scenario foo [\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: duplicate scenario name: 'foo'\n"
+  );
+}
 
 //:: Run scenarios when we run './mu test'.
 //: Treat the text of the scenario as a regular series of instructions.
@@ -261,7 +284,7 @@ void maybe_make_raw(reagent& r, const recipe& caller) {
   // End maybe_make_raw
 }
 
-//: Test.
+//: Test with some setup.
 :(before "End is_special_name Special-cases")
 if (s == "__maybe_make_raw_test__") return true;
 :(before "End Special Scenario Variable Names(r)")
@@ -284,33 +307,45 @@ void test_maybe_make_raw() {
 
 //: Watch out for redefinitions of scenario routines. We should never ever be
 //: doing that, regardless of anything else.
-:(scenario forbid_redefining_scenario_even_if_forced)
-% Hide_errors = true;
-% Disable_redefine_checks = true;
-def scenario-foo [
-  1:num <- copy 34
-]
-def scenario-foo [
-  1:num <- copy 35
-]
-+error: redefining recipe scenario-foo
 
-:(scenario scenario_containing_parse_error)
-% Hide_errors = true;
-scenario foo [
-  memory-should-contain [
-    1 <- 0
-  # missing ']'
-]
-# no crash
+void test_forbid_redefining_scenario_even_if_forced() {
+  Hide_errors = true;
+  Disable_redefine_checks = true;
+  run(
+      "def scenario-foo [\n"
+      "  1:num <- copy 34\n"
+      "]\n"
+      "def scenario-foo [\n"
+      "  1:num <- copy 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: redefining recipe scenario-foo\n"
+  );
+}
 
-:(scenario scenario_containing_transform_error)
-% Hide_errors = true;
-def main [
-  local-scope
-  add x, 1
-]
-# no crash
+void test_scenario_containing_parse_error() {
+  Hide_errors = true;
+  run(
+      "scenario foo [\n"
+      "  memory-should-contain [\n"
+      "    1 <- 0\n"
+         // missing ']'
+      "]\n"
+  );
+  // no crash
+}
+
+void test_scenario_containing_transform_error() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  add x, 1\n"
+      "]\n"
+  );
+  // no crash
+}
 
 :(after "bool should_check_for_redefine(const string& recipe_name)")
   if (recipe_name.find("scenario-") == 0) return true;
@@ -322,13 +357,19 @@ def main [
 //: 'run' is a purely lexical convenience to separate the code actually being
 //: tested from any setup
 
-:(scenario run)
-def main [
-  run [
-    1:num <- copy 13
-  ]
-]
-+mem: storing 13 in location 1
+:(code)
+void test_run() {
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    1:num <- copy 13\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 13 in location 1\n"
+  );
+}
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 if (curr.name == "run") {
@@ -339,17 +380,23 @@ if (curr.name == "run") {
   curr.clear();
 }
 
-:(scenario run_multiple)
-def main [
-  run [
-    1:num <- copy 13
-  ]
-  run [
-    2:num <- copy 13
-  ]
-]
-+mem: storing 13 in location 1
-+mem: storing 13 in location 2
+:(code)
+void test_run_multiple() {
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    1:num <- copy 13\n"
+      "  ]\n"
+      "  run [\n"
+      "    2:num <- copy 13\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 13 in location 1\n"
+      "mem: storing 13 in location 2\n"
+  );
+}
 
 //: 'memory-should-contain' raises errors if specific locations aren't as expected
 //: Also includes some special support for checking Mu texts.
@@ -359,16 +406,22 @@ bool Scenario_testing_scenario = false;
 :(before "End Reset")
 Scenario_testing_scenario = false;
 
-:(scenario memory_check)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  memory-should-contain [
-    1 <- 13
-  ]
-]
-+run: checking location 1
-+error: F - main: expected location '1' to contain 13 but saw 0
+:(code)
+void test_memory_check() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  memory-should-contain [\n"
+      "    1 <- 13\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: checking location 1\n"
+      "error: F - main: expected location '1' to contain 13 but saw 0\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 MEMORY_SHOULD_CONTAIN,
@@ -488,95 +541,129 @@ void check_mu_text(int start, const string& literal) {
   }
 }
 
-:(scenario memory_check_multiple)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  memory-should-contain [
-    1 <- 0
-    1 <- 0
-  ]
-]
-+error: main: duplicate expectation for location '1'
+void test_memory_check_multiple() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  memory-should-contain [\n"
+      "    1 <- 0\n"
+      "    1 <- 0\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: duplicate expectation for location '1'\n"
+  );
+}
 
-:(scenario memory_check_mu_text_length)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  1:num <- copy 3
-  2:num <- copy 97  # 'a'
-  3:num <- copy 98  # 'b'
-  4:num <- copy 99  # 'c'
-  memory-should-contain [
-    1:array:character <- [ab]
-  ]
-]
-+error: F - main: expected location '1' to contain length 2 of text [ab] but saw 3 (for text [abc])
+void test_memory_check_mu_text_length() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- copy 3\n"
+      "  2:num <- copy 97  # 'a'\n"
+      "  3:num <- copy 98  # 'b'\n"
+      "  4:num <- copy 99  # 'c'\n"
+      "  memory-should-contain [\n"
+      "    1:array:character <- [ab]\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - main: expected location '1' to contain length 2 of text [ab] but saw 3 (for text [abc])\n"
+  );
+}
 
-:(scenario memory_check_mu_text)
-def main [
-  1:num <- copy 3
-  2:num <- copy 97  # 'a'
-  3:num <- copy 98  # 'b'
-  4:num <- copy 99  # 'c'
-  memory-should-contain [
-    1:array:character <- [abc]
-  ]
-]
-+run: checking text length at 1
-+run: checking location 2
-+run: checking location 3
-+run: checking location 4
+void test_memory_check_mu_text() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 3\n"
+      "  2:num <- copy 97\n"  // 'a'
+      "  3:num <- copy 98\n"  // 'b'
+      "  4:num <- copy 99\n"  // 'c'
+      "  memory-should-contain [\n"
+      "    1:array:character <- [abc]\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: checking text length at 1\n"
+      "run: checking location 2\n"
+      "run: checking location 3\n"
+      "run: checking location 4\n"
+  );
+}
 
-:(scenario memory_invalid_string_check)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  memory-should-contain [
-    1 <- [abc]
-  ]
-]
-+error: F - main: location '1' can't contain non-number [abc]
+void test_memory_invalid_string_check() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  memory-should-contain [\n"
+      "    1 <- [abc]\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - main: location '1' can't contain non-number [abc]\n"
+  );
+}
 
-:(scenario memory_invalid_string_check2)
-% Hide_errors = true;
-def main [
-  1:num <- copy 3
-  2:num <- copy 97  # 'a'
-  3:num <- copy 98  # 'b'
-  4:num <- copy 99  # 'c'
-  memory-should-contain [
-    1:array:character <- 0
-  ]
-]
-+error: main: array:character types inside 'memory-should-contain' can only be compared with text literals surrounded by [], not '0'
+void test_memory_invalid_string_check2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- copy 3\n"
+      "  2:num <- copy 97\n"  // 'a'
+      "  3:num <- copy 98\n"  // 'b'
+      "  4:num <- copy 99\n"  // 'c'
+      "  memory-should-contain [\n"
+      "    1:array:character <- 0\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: array:character types inside 'memory-should-contain' can only be compared with text literals surrounded by [], not '0'\n"
+  );
+}
 
-:(scenario memory_check_with_comment)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  memory-should-contain [
-    1 <- 34  # comment
-  ]
-]
--error: location 1 can't contain non-number 34  # comment
-# but there'll be an error signalled by memory-should-contain
+void test_memory_check_with_comment() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  memory-should-contain [\n"
+      "    1 <- 34  # comment\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: location 1 can't contain non-number 34  # comment");
+  // but there'll be an error signalled by memory-should-contain
+}
 
 //: 'trace-should-contain' is like the '+' lines in our scenarios so far
-// Like runs of contiguous '+' lines, order is important. The trace checks
-// that the lines are present *and* in the specified sequence. (There can be
-// other lines in between.)
+//: Like runs of contiguous '+' lines, order is important. The trace checks
+//: that the lines are present *and* in the specified sequence. (There can be
+//: other lines in between.)
 
-:(scenario trace_check_fails)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  trace-should-contain [
-    a: b
-    a: d
-  ]
-]
-+error: F - main: missing [b] in trace with label 'a'
+void test_trace_check_fails() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+         // nothing added to the trace
+      "  trace-should-contain [\n"
+      "    a: b\n"
+      "    a: d\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - main: missing [b] in trace with label 'a'\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_CONTAIN,
@@ -635,49 +722,62 @@ vector<trace_line> parse_trace(const string& expected) {
   return result;
 }
 
-:(scenario trace_check_fails_in_nonfirst_line)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  run [
-    trace 1, [a], [b]
-  ]
-  trace-should-contain [
-    a: b
-    a: d
-  ]
-]
-+error: F - main: missing [d] in trace with label 'a'
+void test_trace_check_fails_in_nonfirst_line() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    trace 1, [a], [b]\n"
+      "  ]\n"
+      "  trace-should-contain [\n"
+      "    a: b\n"
+      "    a: d\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - main: missing [d] in trace with label 'a'\n"
+  );
+}
 
-:(scenario trace_check_passes_silently)
-% Scenario_testing_scenario = true;
-def main [
-  run [
-    trace 1, [a], [b]
-  ]
-  trace-should-contain [
-    a: b
-  ]
-]
--error: missing [b] in trace with label 'a'
-$error: 0
+void test_trace_check_passes_silently() {
+  Scenario_testing_scenario = true;
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    trace 1, [a], [b]\n"
+      "  ]\n"
+      "  trace-should-contain [\n"
+      "    a: b\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: missing [b] in trace with label 'a'");
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-//: 'trace-should-not-contain' is like the '-' lines in our scenarios so far
-//: Each trace line is separately checked for absense. Order is *not*
-//: important, so you can't say things like "B should not exist after A."
+//: 'trace-should-not-contain' checks each line in its argument for absence.
+//: Order is *not* important, so you can't say things like "B should not exist
+//: after A."
 
-:(scenario trace_negative_check_fails)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  run [
-    trace 1, [a], [b]
-  ]
-  trace-should-not-contain [
-    a: b
-  ]
-]
-+error: F - main: unexpected [b] in trace with label 'a'
+void test_trace_negative_check_fails() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    trace 1, [a], [b]\n"
+      "  ]\n"
+      "  trace-should-not-contain [\n"
+      "    a: b\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - main: unexpected [b] in trace with label 'a'\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_NOT_CONTAIN,
@@ -710,38 +810,49 @@ bool check_trace_missing(const string& in) {
   return true;
 }
 
-:(scenario trace_negative_check_passes_silently)
-% Scenario_testing_scenario = true;
-def main [
-  trace-should-not-contain [
-    a: b
-  ]
-]
--error: unexpected [b] in trace with label 'a'
-$error: 0
+void test_trace_negative_check_passes_silently() {
+  Scenario_testing_scenario = true;
+  run(
+      "def main [\n"
+      "  trace-should-not-contain [\n"
+      "    a: b\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: unexpected [b] in trace with label 'a'");
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario trace_negative_check_fails_on_any_unexpected_line)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  run [
-    trace 1, [a], [d]
-  ]
-  trace-should-not-contain [
-    a: b
-    a: d
-  ]
-]
-+error: F - main: unexpected [d] in trace with label 'a'
+void test_trace_negative_check_fails_on_any_unexpected_line() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    trace 1, [a], [d]\n"
+      "  ]\n"
+      "  trace-should-not-contain [\n"
+      "    a: b\n"
+      "    a: d\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - main: unexpected [d] in trace with label 'a'\n"
+  );
+}
 
-:(scenario trace_count_check)
-def main [
-  run [
-    trace 1, [a], [foo]
-  ]
-  check-trace-count-for-label 1, [a]
-]
-# checks are inside scenario
+void test_trace_count_check() {
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    trace 1, [a], [foo]\n"
+      "  ]\n"
+      "  check-trace-count-for-label 1, [a]\n"
+      "]\n"
+  );
+  // checks are inside scenario
+}
 
 :(before "End Primitive Recipe Declarations")
 CHECK_TRACE_COUNT_FOR_LABEL,
@@ -854,16 +965,22 @@ case CHECK_TRACE_COUNT_FOR_LABEL_LESSER_THAN: {
   break;
 }
 
-:(scenario trace_count_check_2)
-% Scenario_testing_scenario = true;
-% Hide_errors = true;
-def main [
-  run [
-    trace 1, [a], [foo]
-  ]
-  check-trace-count-for-label 2, [a]
-]
-+error: F - main: expected 2 lines in trace with label 'a' in trace
+:(code)
+void test_trace_count_check_2() {
+  Scenario_testing_scenario = true;
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  run [\n"
+      "    trace 1, [a], [foo]\n"
+      "  ]\n"
+      "  check-trace-count-for-label 2, [a]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: F - main: expected 2 lines in trace with label 'a' in trace\n"
+  );
+}
 
 //: Minor detail: ignore 'system' calls in scenarios, since anything we do
 //: with them is by definition impossible to test through Mu.
@@ -872,11 +989,17 @@ def main [
 
 //:: Warn if people use '_' manually in recipe names. They're reserved for internal use.
 
-:(scenario recipe_name_with_underscore)
-% Hide_errors = true;
-def foo_bar [
-]
-+error: foo_bar: don't create recipes with '_' in the name
+:(code)
+void test_recipe_name_with_underscore() {
+  Hide_errors = true;
+  run(
+      "def foo_bar [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo_bar: don't create recipes with '_' in the name\n"
+  );
+}
 
 :(before "End recipe Fields")
 bool is_autogenerated;

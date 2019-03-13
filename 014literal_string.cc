@@ -6,18 +6,27 @@
 //: imagine that 'recipe' might one day itself be defined in Mu, doing its own
 //: parsing.
 
-:(scenarios load)
-:(scenario string_literal)
-def main [
-  1:address:array:character <- copy [abc def]
-]
-+parse:   ingredient: {"abc def": "literal-string"}
+void test_string_literal() {
+  load(
+      "def main [\n"
+      "  1:address:array:character <- copy [abc def]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"abc def\": \"literal-string\"}\n"
+  );
+}
 
-:(scenario string_literal_with_colons)
-def main [
-  1:address:array:character <- copy [abc:def/ghi]
-]
-+parse:   ingredient: {"abc:def/ghi": "literal-string"}
+void test_string_literal_with_colons() {
+  load(
+      "def main [\n"
+      "  1:address:array:character <- copy [abc:def/ghi]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"abc:def/ghi\": \"literal-string\"}\n"
+  );
+}
 
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "literal-string", 0);
@@ -167,59 +176,99 @@ void slurp_one_past_backslashes(istream& in, ostream& out) {
   }
 }
 
-:(scenario string_literal_nested)
-def main [
-  1:address:array:character <- copy [abc [def]]
-]
-+parse:   ingredient: {"abc [def]": "literal-string"}
+void test_string_literal_nested() {
+  load(
+      "def main [\n"
+      "  1:address:array:character <- copy [abc [def]]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"abc [def]\": \"literal-string\"}\n"
+  );
+}
 
-:(scenario string_literal_escaped)
-def main [
-  1:address:array:character <- copy [abc \[def]
-]
-+parse:   ingredient: {"abc [def": "literal-string"}
+void test_string_literal_escaped() {
+  load(
+      "def main [\n"
+      "  1:address:array:character <- copy [abc \\[def]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"abc [def\": \"literal-string\"}\n"
+  );
+}
 
-:(scenario string_literal_escaped_twice)
-def main [
-  1:address:array:character <- copy [
-abc \\[def]
-]
-+parse:   ingredient: {"\nabc \[def": "literal-string"}
+void test_string_literal_escaped_twice() {
+  load(
+      "def main [\n"
+      "  1:address:array:character <- copy [\n"
+      "abc \\\\[def]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"\\nabc \\[def\": \"literal-string\"}\n"
+  );
+}
 
-:(scenario string_literal_and_comment)
-def main [
-  1:address:array:character <- copy [abc]  # comment
-]
-+parse: --- defining main
-+parse: instruction: copy
-+parse:   number of ingredients: 1
-+parse:   ingredient: {"abc": "literal-string"}
-+parse:   product: {1: ("address" "array" "character")}
+void test_string_literal_and_comment() {
+  load(
+      "def main [\n"
+      "  1:address:array:character <- copy [abc]  # comment\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: --- defining main\n"
+      "parse: instruction: copy\n"
+      "parse:   number of ingredients: 1\n"
+      "parse:   ingredient: {\"abc\": \"literal-string\"}\n"
+      "parse:   product: {1: (\"address\" \"array\" \"character\")}\n"
+  );
+}
 
-:(scenario string_literal_escapes_newlines_in_trace)
-def main [
-  copy [abc
-def]
-]
-+parse:   ingredient: {"abc\ndef": "literal-string"}
+void test_string_literal_escapes_newlines_in_trace() {
+  load(
+      "def main [\n"
+      "  copy [abc\n"
+      "def]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"abc\\ndef\": \"literal-string\"}\n"
+  );
+}
 
-:(scenario string_literal_can_skip_past_comments)
-def main [
-  copy [
-    # ']' inside comment
-    bar
-  ]
-]
-+parse:   ingredient: {"\n    # ']' inside comment\n    bar\n  ": "literal-string"}
+void test_string_literal_can_skip_past_comments() {
+  load(
+      "def main [\n"
+      "  copy [\n"
+      "    # ']' inside comment\n"
+      "    bar\n"
+      "  ]\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"\\n    # ']' inside comment\\n    bar\\n  \": \"literal-string\"}\n"
+  );
+}
 
-:(scenario string_literal_empty)
-def main [
-  copy []
-]
-+parse:   ingredient: {"": "literal-string"}
+void test_string_literal_empty() {
+  load(
+      "def main [\n"
+      "  copy []\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {\"\": \"literal-string\"}\n"
+  );
+}
 
-:(scenario multiple_unfinished_recipes)
-% Hide_errors = true;
-def f1 [
-def f2 [
-+error: unbalanced '['
+void test_multiple_unfinished_recipes() {
+  Hide_errors = true;
+  load(
+      "def f1 [\n"
+      "def f2 [\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: unbalanced '['\n"
+  );
+}

@@ -100,7 +100,6 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
 
   // first slurp all lines until next directive
   list<Line> hunk;
-  bool end_of_scenario_input = false;
   {
     string curr_line;
     while (!in.eof()) {
@@ -115,22 +114,6 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
         ++line_number;
         continue;
       }
-      if (cmd == "scenario") {
-        // ignore mu comments in scenarios, but only after the end of input
-        if (!starts_with(curr_line, "#") && !is_input(curr_line)) {
-          // remaining lines are checks
-          end_of_scenario_input = true;
-        }
-        else if (end_of_scenario_input && starts_with(curr_line, "#")) {
-          ++line_number;
-          continue;
-        }
-        if (trim(curr_line).empty()) {
-          // ignore empty lines in scenarios, whether in input of after
-          ++line_number;
-          continue;
-        }
-      }
       hunk.push_back(Line(curr_line, filename, line_number));
       ++line_number;
     }
@@ -138,21 +121,6 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
 
   if (cmd == "code") {
     out.insert(out.end(), hunk.begin(), hunk.end());
-    return;
-  }
-
-  if (cmd == "scenarios") {
-    Toplevel = next_tangle_token(directive_stream);
-    return;
-  }
-
-  if (cmd == "scenario") {
-    list<Line> result;
-    string name = next_tangle_token(directive_stream);
-    emit_test(name, hunk, result);
-//?     cerr << out.size() << " " << result.size() << '\n';
-    out.insert(out.end(), result.begin(), result.end());
-//?     cerr << out.size() << " " << result.size() << '\n';
     return;
   }
 
@@ -291,111 +259,6 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
   return curr;
 }
 
-// A scenario is one or more sessions separated by calls to CLEAR_TRACE ('===')
-//   A session is:
-//     one or more lines of escaped setup in C/C++ ('%')
-//   followed by one or more lines of input,
-//   followed optionally by (in order):
-//     one or more lines expected in trace in order ('+') and one or more lines trace shouldn't include ('-')
-//     one or more lines expressing counts of specific layers emitted in trace ('$')
-//     a directive to print the trace just for debugging ('?')
-// Remember to update is_input below if you add to this format.
-//
-// Allowing interleaving of '+' and '-' lines is a kludgy way to indicate that
-// two sets of trace lines can occur in any order. We should come up with a
-// better way to specify order-independence.
-void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
-  result.push_back(Line("void test_"+name+"() {", front(lines).filename, front(lines).line_number-1));  // use line number of directive
-//?   result.push_back("cerr << \""+name+"\\n\";");  // debug: uncomment this to print scenario names as you run them
-  while (!lines.empty()) {
-    while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
-      result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
-      lines.pop_front();
-    }
-    if (lines.empty()) break;
-    emit_input_lines(lines, result);
-    emit_expected_in_trace(lines, result);
-    while (!lines.empty() && !front(lines).contents.empty() && front(lines).contents.at(0) == '-') {
-      result.push_back(expected_not_in_trace(front(lines)));
-      lines.pop_front();
-    }
-    if (!lines.empty() && front(lines).contents.at(0) == '$') {
-      const string& in = front(lines).contents;
-      size_t pos = in.find(": ");
-      string layer = in.substr(1, pos-1);
-      string count = in.substr(pos+2);
-      result.push_back(Line("  CHECK_TRACE_COUNT(\""+layer+"\", "+count+");", front(lines)));
-      lines.pop_front();
-    }
-    if (!lines.empty() && front(lines).contents == "===") {
-      result.push_back(Line("  CLEAR_TRACE;", front(lines)));
-      lines.pop_front();
-    }
-    if (!lines.empty() && front(lines).contents == "?") {
-      result.push_back(Line("  DUMP(\"\");", front(lines)));
-      lines.pop_front();
-    }
-  }
-  result.push_back(Line("}"));
-}
-
-bool is_input(const string& line) {
-  if (line.empty()) return true;
-  return line != "===" && line.find_first_of("+-$?%") != 0;
-}
-
-void emit_input_lines(list<Line>& hunk, list<Line>& out) {
-  assert(!hunk.empty());
-  if (!is_input(front(hunk).contents)) return;
-  Line curr_out;
-  curr_out.line_number = hunk.front().line_number;
-  curr_out.filename = hunk.front().filename;
-  curr_out.contents = "  "+Toplevel+"(";
-  out.push_back(curr_out);
-  for (/*nada*/;  !hunk.empty() && is_input(front(hunk).contents);  hunk.pop_front()) {
-    Line curr_out;
-    curr_out.line_number = front(hunk).line_number;
-    curr_out.filename = front(hunk).filename;
-    curr_out.contents = "      \""+escape(front(hunk).contents+'')+"\"";
-    out.push_back(curr_out);
-  }
-  curr_out.line_number = out.back().line_number;
-  curr_out.filename = out.back().filename;
-  curr_out.contents = "  );";
-  out.push_back(curr_out);
-}
-
-// pull lines starting with '+' out of 'hunk', and append translated lines to 'out'
-void emit_expected_in_trace(list<Line>& hunk, list<Line>& out) {
-  if (hunk.empty()) return;
-  if (front(hunk).contents.empty()) return;
-  if (front(hunk).contents.at(0) != '+') return;
-  Line curr_out;
-  curr_out.line_number = front(hunk).line_number;
-  curr_out.filename = front(hunk).filename;
-  curr_out.contents = "  CHECK_TRACE_CONTENTS(";
-  out.push_back(curr_out);
-  for (/*nada*/;  !hunk.empty() && front(hunk).contents.at(0) == '+';  hunk.pop_front()) {
-    Line curr_out;
-    curr_out.line_number = front(hunk).line_number;
-    curr_out.filename = front(hunk).filename;
-    curr_out.contents = "      \""+escape(front(hunk).contents.substr(1))+"\"";
-    out.push_back(curr_out);
-  }
-  curr_out.line_number = out.back().line_number;
-  curr_out.filename = out.back().filename;
-  curr_out.contents = "  );";
-  out.push_back(curr_out);
-}
-
-Line expected_not_in_trace(const Line& line) {
-  Line result;
-  result.line_number = line.line_number;
-  result.filename = line.filename;
-  result.contents = "  CHECK_TRACE_DOESNT_CONTAIN(\""+escape(line.contents.substr(1))+"\");";
-  return result;
-}
-
 list<Line>::iterator find_substr(list<Line>& in, const string& pat) {
   for (list<Line>::iterator p = in.begin(); p != in.end(); ++p)
     if (p->contents.find(pat) != string::npos)
@@ -428,18 +291,6 @@ string replace_all(string s, const string& a, const string& b) {
   for (size_t pos = s.find(a); pos != string::npos; pos = s.find(a, pos+b.size()))
     s = s.replace(pos, a.size(), b);
   return s;
-}
-
-bool any_line_starts_with(const list<Line>& lines, const string& pat) {
-  for (list<Line>::const_iterator p = lines.begin(); p != lines.end(); ++p)
-    if (starts_with(p->contents, pat)) return true;
-  return false;
-}
-
-bool any_non_input_line(const list<Line>& lines) {
-  for (list<Line>::const_iterator p = lines.begin(); p != lines.end(); ++p)
-    if (!is_input(p->contents)) return true;
-  return false;
 }
 
 // does s start with pat, after skipping whitespace?

@@ -2,16 +2,21 @@
 //: also like to make the recipe a variable, pass recipes to "higher-order"
 //: recipes, return recipes from recipes and so on.
 
-:(scenario call_literal_recipe)
-def main [
-  1:num <- call f, 34
-]
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 1
+void test_call_literal_recipe() {
+  run(
+      "def main [\n"
+      "  1:num <- call f, 34\n"
+      "]\n"
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "recipe-literal", 0);
@@ -51,14 +56,19 @@ bool is_matching_non_recipe_literal(const reagent& x, const string& name) {
 
 //: It's confusing to use variable names that are also recipe names. Always
 //: assume variable types override recipe literals.
-:(scenario error_on_recipe_literal_used_as_a_variable)
-% Hide_errors = true;
-def main [
-  local-scope
-  a:bool <- equal break 0
-  break:bool <- copy 0
-]
-+error: main: missing type for 'break' in 'a:bool <- equal break, 0'
+void test_error_on_recipe_literal_used_as_a_variable() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  a:bool <- equal break 0\n"
+      "  break:bool <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: missing type for 'break' in 'a:bool <- equal break, 0'\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 CALL,
@@ -99,103 +109,139 @@ case CALL: {
   break;
 }
 
-:(scenario call_variable)
-def main [
-  {1: (recipe number -> number)} <- copy f
-  2:num <- call {1: (recipe number -> number)}, 34
-]
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 2
+:(code)
+void test_call_variable() {
+  run(
+      "def main [\n"
+      "  {1: (recipe number -> number)} <- copy f\n"
+      "  2:num <- call {1: (recipe number -> number)}, 34\n"
+      "]\n"
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 2\n"
+  );
+}
 
-:(scenario call_literal_recipe_repeatedly)
-def main [
-  1:num <- call f, 34
-  1:num <- call f, 35
-]
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 1
-+mem: storing 35 in location 1
+void test_call_literal_recipe_repeatedly() {
+  run(
+      "def main [\n"
+      "  1:num <- call f, 34\n"
+      "  1:num <- call f, 35\n"
+      "]\n"
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+      "mem: storing 35 in location 1\n"
+  );
+}
 
-:(scenario call_shape_shifting_recipe)
-def main [
-  1:num <- call f, 34
-]
-def f x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 1
+void test_call_shape_shifting_recipe() {
+  run(
+      "def main [\n"
+      "  1:num <- call f, 34\n"
+      "]\n"
+      "def f x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario call_shape_shifting_recipe_inside_shape_shifting_recipe)
-def main [
-  1:num <- f 34
-]
-def f x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- call g x
-]
-def g x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 1
+void test_call_shape_shifting_recipe_inside_shape_shifting_recipe() {
+  run(
+      "def main [\n"
+      "  1:num <- f 34\n"
+      "]\n"
+      "def f x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- call g x\n"
+      "]\n"
+      "def g x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario call_shape_shifting_recipe_repeatedly_inside_shape_shifting_recipe)
-def main [
-  1:num <- f 34
-]
-def f x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- call g x
-  y <- call g x
-]
-def g x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 1
+void test_call_shape_shifting_recipe_repeatedly_inside_shape_shifting_recipe() {
+  run(
+      "def main [\n"
+      "  1:num <- f 34\n"
+      "]\n"
+      "def f x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- call g x\n"
+      "  y <- call g x\n"
+      "]\n"
+      "def g x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 //:: check types for 'call' instructions
 
-:(scenario call_check_literal_recipe)
-% Hide_errors = true;
-def main [
-  1:num <- call f, 34
-]
-def f x:point -> y:point [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+error: main: ingredient 0 has the wrong type at '1:num <- call f, 34'
-+error: main: product 0 has the wrong type at '1:num <- call f, 34'
+void test_call_check_literal_recipe() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- call f, 34\n"
+      "]\n"
+      "def f x:point -> y:point [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: ingredient 0 has the wrong type at '1:num <- call f, 34'\n"
+      "error: main: product 0 has the wrong type at '1:num <- call f, 34'\n"
+  );
+}
 
-:(scenario call_check_variable_recipe)
-% Hide_errors = true;
-def main [
-  {1: (recipe point -> point)} <- copy f
-  2:num <- call {1: (recipe point -> point)}, 34
-]
-def f x:point -> y:point [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+error: main: ingredient 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
-+error: main: product 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
+void test_call_check_variable_recipe() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  {1: (recipe point -> point)} <- copy f\n"
+      "  2:num <- call {1: (recipe point -> point)}, 34\n"
+      "]\n"
+      "def f x:point -> y:point [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: ingredient 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'\n"
+      "error: main: product 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'\n"
+  );
+}
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
 if (inst.name == "call" && !inst.ingredients.empty() && is_recipe_literal(inst.ingredients.at(0))) {
@@ -339,31 +385,41 @@ bool is_mu_recipe(const reagent& r) {
   return r.type->left->atom && r.type->left->name == "recipe";
 }
 
-:(scenario copy_typecheck_recipe_variable)
-% Hide_errors = true;
-def main [
-  3:num <- copy 34  # abc def
-  {1: (recipe number -> number)} <- copy f  # store literal in a matching variable
-  {2: (recipe boolean -> boolean)} <- copy {1: (recipe number -> number)}  # mismatch between recipe variables
-]
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+error: main: can't copy '{1: (recipe number -> number)}' to '{2: (recipe boolean -> boolean)}'; types don't match
+void test_copy_typecheck_recipe_variable() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  3:num <- copy 34\n"
+      "  {1: (recipe number -> number)} <- copy f\n"  // store literal in a matching variable
+      "  {2: (recipe boolean -> boolean)} <- copy {1: (recipe number -> number)}\n"  // mismatch between recipe variables
+      "]\n"
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't copy '{1: (recipe number -> number)}' to '{2: (recipe boolean -> boolean)}'; types don't match\n"
+  );
+}
 
-:(scenario copy_typecheck_recipe_variable_2)
-% Hide_errors = true;
-def main [
-  {1: (recipe number -> number)} <- copy f  # mismatch with a recipe literal
-]
-def f x:bool -> y:bool [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+error: main: can't copy 'f' to '{1: (recipe number -> number)}'; types don't match
+void test_copy_typecheck_recipe_variable_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  {1: (recipe number -> number)} <- copy f\n"  // mismatch with a recipe literal
+      "]\n"
+      "def f x:bool -> y:bool [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't copy 'f' to '{1: (recipe number -> number)}'; types don't match\n"
+  );
+}
 
 :(before "End Matching Types For Literal(to)")
 if (is_mu_recipe(to)) {
@@ -384,33 +440,42 @@ if (is_mu_recipe(to)) {
   return true;
 }
 
-:(scenario call_variable_compound_ingredient)
-def main [
-  {1: (recipe (address number) -> number)} <- copy f
-  2:&:num <- copy null
-  3:num <- call {1: (recipe (address number) -> number)}, 2:&:num
-]
-def f x:&:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- deaddress x
-]
-$error: 0
+:(code)
+void test_call_variable_compound_ingredient() {
+  run(
+      "def main [\n"
+      "  {1: (recipe (address number) -> number)} <- copy f\n"
+      "  2:&:num <- copy null\n"
+      "  3:num <- call {1: (recipe (address number) -> number)}, 2:&:num\n"
+      "]\n"
+      "def f x:&:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- deaddress x\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //: make sure we don't accidentally break on a recipe literal
-:(scenario jump_forbidden_on_recipe_literals)
-% Hide_errors = true;
-def foo [
-  local-scope
-]
-def main [
-  local-scope
-  {
-    break-if foo
-  }
-]
-# error should be as if foo is not a recipe
-+error: main: missing type for 'foo' in 'break-if foo'
+void test_jump_forbidden_on_recipe_literals() {
+  Hide_errors = true;
+  run(
+      "def foo [\n"
+      "  local-scope\n"
+      "]\n"
+      "def main [\n"
+      "  local-scope\n"
+      "  {\n"
+      "    break-if foo\n"
+      "  }\n"
+      "]\n"
+  );
+  // error should be as if foo is not a recipe
+  CHECK_TRACE_CONTENTS(
+      "error: main: missing type for 'foo' in 'break-if foo'\n"
+  );
+}
 
 :(before "End JUMP_IF Checks")
 check_for_recipe_literals(inst, get(Recipe, r));
@@ -427,14 +492,19 @@ void check_for_recipe_literals(const instruction& inst, const recipe& caller) {
   }
 }
 
-:(scenario load_ingredients_missing_error_3)
-% Hide_errors = true;
-def foo {f: (recipe num -> num)} [
-  local-scope
-  b:num <- call f, 1
-]
-+error: foo: missing type for 'f' in 'b:num <- call f, 1'
-+error:   did you forget 'load-ingredients'?
+void test_load_ingredients_missing_error_3() {
+  Hide_errors = true;
+  run(
+      "def foo {f: (recipe num -> num)} [\n"
+      "  local-scope\n"
+      "  b:num <- call f, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: missing type for 'f' in 'b:num <- call f, 1'\n"
+      "error:   did you forget 'load-ingredients'?\n"
+  );
+}
 
 :(before "End Mu Types Initialization")
 put(Type_abbreviations, "function", new_type_tree("recipe"));
@@ -442,38 +512,49 @@ put(Type_abbreviations, "fn", new_type_tree("recipe"));
 
 //: copying functions to variables
 
-:(scenario copy_recipe_to_variable)
-def main [
-  {1: (fn number -> number)} <- copy f
-  2:num <- call {1: (function number -> number)}, 34
-]
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 34 in location 2
+:(code)
+void test_copy_recipe_to_variable() {
+  run(
+      "def main [\n"
+      "  {1: (fn number -> number)} <- copy f\n"
+      "  2:num <- call {1: (function number -> number)}, 34\n"
+      "]\n"
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 2\n"
+  );
+}
 
-:(scenario copy_overloaded_recipe_to_variable)
-def main [
-  local-scope
-  {x: (fn num -> num)} <- copy f
-  1:num/raw <- call x, 34
-]
-# variant f
-def f x:bool -> y:bool [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-# variant f_2
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-# x contains f_2
-+mem: storing 34 in location 1
+void test_copy_overloaded_recipe_to_variable() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  {x: (fn num -> num)} <- copy f\n"
+      "  1:num/raw <- call x, 34\n"
+      "]\n"
+      // variant f
+      "def f x:bool -> y:bool [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+      // variant f_2
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  // x contains f_2
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
 if (inst.name == "copy") {
@@ -508,46 +589,56 @@ void construct_fake_call(const reagent& recipe_var, instruction& out) {
     out.products.push_back(copy(stem->left));
 }
 
-:(scenario copy_shape_shifting_recipe_to_variable)
-def main [
-  local-scope
-  {x: (fn num -> num)} <- copy f
-  1:num/raw <- call x, 34
-]
-def f x:_elem -> y:_elem [
-  local-scope
-  load-inputs
-  y <- copy x
-]
-+mem: storing 34 in location 1
+void test_copy_shape_shifting_recipe_to_variable() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  {x: (fn num -> num)} <- copy f\n"
+      "  1:num/raw <- call x, 34\n"
+      "]\n"
+      "def f x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-inputs\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 //: passing function literals to (higher-order) functions
 
-:(scenario pass_overloaded_recipe_literal_to_ingredient)
-# like copy_overloaded_recipe_to_variable except we bind 'x' in the course of
-# a 'call' rather than 'copy'
-def main [
-  1:num <- g f
-]
-def g {x: (fn num -> num)} -> result:num [
-  local-scope
-  load-ingredients
-  result <- call x, 34
-]
-# variant f
-def f x:bool -> y:bool [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-# variant f_2
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-# x contains f_2
-+mem: storing 34 in location 1
+void test_pass_overloaded_recipe_literal_to_ingredient() {
+  run(
+      // like test_copy_overloaded_recipe_to_variable, except we bind 'x' in
+      // the course of a 'call' rather than 'copy'
+      "def main [\n"
+      "  1:num <- g f\n"
+      "]\n"
+      "def g {x: (fn num -> num)} -> result:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- call x, 34\n"
+      "]\n"
+      // variant f
+      "def f x:bool -> y:bool [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+      // variant f_2
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  // x contains f_2
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 :(after "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
 for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
@@ -570,30 +661,36 @@ for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
   }
 }
 
-:(scenario return_overloaded_recipe_literal_to_caller)
-def main [
-  local-scope
-  {x: (fn num -> num)} <- g
-  1:num/raw <- call x, 34
-]
-def g -> {x: (fn num -> num)} [
-  local-scope
-  return f
-]
-# variant f
-def f x:bool -> y:bool [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-# variant f_2
-def f x:num -> y:num [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-# x contains f_2
-+mem: storing 34 in location 1
+:(code)
+void test_return_overloaded_recipe_literal_to_caller() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  {x: (fn num -> num)} <- g\n"
+      "  1:num/raw <- call x, 34\n"
+      "]\n"
+      "def g -> {x: (fn num -> num)} [\n"
+      "  local-scope\n"
+      "  return f\n"
+      "]\n"
+      // variant f
+      "def f x:bool -> y:bool [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+      // variant f_2
+      "def f x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  // x contains f_2
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
 if (inst.name == "return" || inst.name == "reply") {

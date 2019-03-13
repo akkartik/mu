@@ -1,15 +1,20 @@
 //: allow using literal strings anywhere that will accept immutable strings
 
-:(scenario passing_literals_to_recipes)
-def main [
-  1:num/raw <- foo [abc]
-]
-def foo x:text -> n:num [
-  local-scope
-  load-ingredients
-  n <- length *x
-]
-+mem: storing 3 in location 1
+void test_passing_literals_to_recipes() {
+  run(
+      "def main [\n"
+      "  1:num/raw <- foo [abc]\n"
+      "]\n"
+      "def foo x:text -> n:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  n <- length *x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 1\n"
+  );
+}
 
 :(before "End Instruction Inserting/Deleting Transforms")
 initialize_transform_rewrite_literal_string_to_text();

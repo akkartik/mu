@@ -12,28 +12,43 @@
 //: does nothing, and COPY, which can copy numbers from one memory location to
 //: another. Later layers will add more primitives.
 
-:(scenario copy_literal)
-def main [
-  1:num <- copy 23
-]
-+run: {1: "number"} <- copy {23: "literal"}
-+mem: storing 23 in location 1
+void test_copy_literal() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {1: \"number\"} <- copy {23: \"literal\"}\n"
+      "mem: storing 23 in location 1\n"
+  );
+}
 
-:(scenario copy)
-def main [
-  1:num <- copy 23
-  2:num <- copy 1:num
-]
-+run: {2: "number"} <- copy {1: "number"}
-+mem: location 1 is 23
-+mem: storing 23 in location 2
+void test_copy() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 23\n"
+      "  2:num <- copy 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {2: \"number\"} <- copy {1: \"number\"}\n"
+      "mem: location 1 is 23\n"
+      "mem: storing 23 in location 2\n"
+  );
+}
 
-:(scenario copy_multiple)
-def main [
-  1:num, 2:num <- copy 23, 24
-]
-+mem: storing 23 in location 1
-+mem: storing 24 in location 2
+void test_copy_multiple() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- copy 23, 24\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 23 in location 1\n"
+      "mem: storing 24 in location 2\n"
+  );
+}
 
 :(before "End Types")
 // Book-keeping while running a recipe.
@@ -258,13 +273,13 @@ if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, g
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
 }
+
 :(code)
 void run_main(int argc, char* argv[]) {
   recipe_ordinal r = get(Recipe_ordinal, "main");
   if (r) run(r);
 }
 
-:(code)
 void load_file_or_directory(string filename) {
   if (is_directory(filename)) {
     load_all(filename);
@@ -272,7 +287,7 @@ void load_file_or_directory(string filename) {
   }
   ifstream fin(filename.c_str());
   if (!fin) {
-    cerr << "no such file '" << filename << "'\n" << end();  // don't raise, just warn. just in case it's just a name for a scenario to run.
+    cerr << "no such file '" << filename << "'\n" << end();  // don't raise, just warn. just in case it's just a name for a test to run.
     return;
   }
   trace(2, "load") << "=== " << filename << end();
@@ -421,60 +436,96 @@ void run(const string& form) {
     run(tmp.front());
 }
 
-:(scenario run_label)
-def main [
-  +foo
-  1:num <- copy 23
-  2:num <- copy 1:num
-]
-+run: {1: "number"} <- copy {23: "literal"}
-+run: {2: "number"} <- copy {1: "number"}
--run: +foo
+void test_run_label() {
+  run(
+      "def main [\n"
+      "  +foo\n"
+      "  1:num <- copy 23\n"
+      "  2:num <- copy 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {1: \"number\"} <- copy {23: \"literal\"}\n"
+      "run: {2: \"number\"} <- copy {1: \"number\"}\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: +foo");
+}
 
-:(scenario run_dummy)
-def main [
-  _ <- copy 0
-]
-+run: _ <- copy {0: "literal"}
+void test_run_dummy() {
+  run(
+      "def main [\n"
+      "  _ <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: _ <- copy {0: \"literal\"}\n"
+  );
+}
 
-:(scenario run_null)
-def main [
-  1:&:num <- copy null
-]
+void test_run_null() {
+  run(
+      "def main [\n"
+      "  1:&:num <- copy null\n"
+      "]\n"
+  );
+}
 
-:(scenario write_to_0_disallowed)
-% Hide_errors = true;
-def main [
-  0:num <- copy 34
-]
--mem: storing 34 in location 0
+void test_write_to_0_disallowed() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  0:num <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 34 in location 0");
+}
 
 //: Mu is robust to various combinations of commas and spaces. You just have
 //: to put spaces around the '<-'.
 
-:(scenario comma_without_space)
-def main [
-  1:num, 2:num <- copy 2,2
-]
-+mem: storing 2 in location 1
+void test_comma_without_space() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- copy 2,2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
-:(scenario space_without_comma)
-def main [
-  1:num, 2:num <- copy 2 2
-]
-+mem: storing 2 in location 1
+void test_space_without_comma() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- copy 2 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
-:(scenario comma_before_space)
-def main [
-  1:num, 2:num <- copy 2, 2
-]
-+mem: storing 2 in location 1
+void test_comma_before_space() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- copy 2, 2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
-:(scenario comma_after_space)
-def main [
-  1:num, 2:num <- copy 2 ,2
-]
-+mem: storing 2 in location 1
+void test_comma_after_space() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- copy 2 ,2\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2 in location 1\n"
+  );
+}
 
 //:: Counters for trying to understand where Mu programs are spending their
 //:: time.

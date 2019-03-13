@@ -123,207 +123,267 @@ size_t hash_iter(size_t h, size_t input) {
   return h;
 }
 
-:(scenario hash_container_checks_all_elements)
-container foo [
-  x:num
-  y:char
-]
-def main [
-  1:foo <- merge 34, 97/a
-  3:num <- hash 1:foo
-  return-unless 3:num
-  4:foo <- merge 34, 98/a
-  6:num <- hash 4:foo
-  return-unless 6:num
-  7:bool <- equal 3:num, 6:num
-]
-# hash on containers includes all elements
-+mem: storing 0 in location 7
+void test_hash_container_checks_all_elements() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:char\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 34, 97/a\n"
+      "  3:num <- hash 1:foo\n"
+      "  return-unless 3:num\n"
+      "  4:foo <- merge 34, 98/a\n"
+      "  6:num <- hash 4:foo\n"
+      "  return-unless 6:num\n"
+      "  7:bool <- equal 3:num, 6:num\n"
+      "]\n"
+  );
+  // hash on containers includes all elements
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 7\n"
+  );
+}
 
-:(scenario hash_exclusive_container_checks_all_elements)
-exclusive-container foo [
-  x:bar
-  y:num
-]
-container bar [
-  a:num
-  b:num
-]
-def main [
-  1:foo <- merge 0/x, 34, 35
-  4:num <- hash 1:foo
-  return-unless 4:num
-  5:foo <- merge 0/x, 34, 36
-  8:num <- hash 5:foo
-  return-unless 8:num
-  9:bool <- equal 4:num, 8:num
-]
-# hash on containers includes all elements
-+mem: storing 0 in location 9
+void test_hash_exclusive_container_checks_all_elements() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:bar\n"
+      "  y:num\n"
+      "]\n"
+      "container bar [\n"
+      "  a:num\n"
+      "  b:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 0/x, 34, 35\n"
+      "  4:num <- hash 1:foo\n"
+      "  return-unless 4:num\n"
+      "  5:foo <- merge 0/x, 34, 36\n"
+      "  8:num <- hash 5:foo\n"
+      "  return-unless 8:num\n"
+      "  9:bool <- equal 4:num, 8:num\n"
+      "]\n"
+  );
+  // hash on containers includes all elements
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 9\n"
+  );
+}
 
-:(scenario hash_can_ignore_container_elements)
-container foo [
-  x:num
-  y:char/ignore-for-hash
-]
-def main [
-  1:foo <- merge 34, 97/a
-  3:num <- hash 1:foo
-  return-unless 3:num
-  4:foo <- merge 34, 98/a
-  6:num <- hash 4:foo
-  return-unless 6:num
-  7:bool <- equal 3:num, 6:num
-]
-# hashes match even though y is different
-+mem: storing 1 in location 7
+void test_hash_can_ignore_container_elements() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:char/ignore-for-hash\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 34, 97/a\n"
+      "  3:num <- hash 1:foo\n"
+      "  return-unless 3:num\n"
+      "  4:foo <- merge 34, 98/a\n"
+      "  6:num <- hash 4:foo\n"
+      "  return-unless 6:num\n"
+      "  7:bool <- equal 3:num, 6:num\n"
+      "]\n"
+  );
+  // hashes match even though y is different
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 7\n"
+  );
+}
 
 //: These properties aren't necessary for hash, they just test that the
 //: current implementation works like we think it does.
 
-:(scenario hash_of_zero_address)
-def main [
-  1:&:num <- copy null
-  2:num <- hash 1:&:num
-]
-+mem: storing 0 in location 2
+void test_hash_of_zero_address() {
+  run(
+      "def main [\n"
+      "  1:&:num <- copy null\n"
+      "  2:num <- hash 1:&:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 2\n"
+  );
+}
 
 //: This is probably too aggressive, but we need some way to avoid depending
 //: on the precise bit pattern of a floating-point number.
-:(scenario hash_of_numbers_ignores_fractional_part)
-def main [
-  1:num <- hash 1.5
-  2:num <- hash 1
-  3:bool <- equal 1:num, 2:num
-]
-+mem: storing 1 in location 3
+void test_hash_of_numbers_ignores_fractional_part() {
+  run(
+      "def main [\n"
+      "  1:num <- hash 1.5\n"
+      "  2:num <- hash 1\n"
+      "  3:bool <- equal 1:num, 2:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 3\n"
+  );
+}
 
-:(scenario hash_of_array_same_as_string)
-def main [
-  10:num <- copy 3
-  11:num <- copy 97
-  12:num <- copy 98
-  13:num <- copy 99
-  2:num <- hash 10:@:num/unsafe
-  return-unless 2:num
-  3:text <- new [abc]
-  4:num <- hash 3:text
-  return-unless 4:num
-  5:bool <- equal 2:num, 4:num
-]
-+mem: storing 1 in location 5
+void test_hash_of_array_same_as_string() {
+  run(
+      "def main [\n"
+      "  10:num <- copy 3\n"
+      "  11:num <- copy 97\n"
+      "  12:num <- copy 98\n"
+      "  13:num <- copy 99\n"
+      "  2:num <- hash 10:@:num/unsafe\n"
+      "  return-unless 2:num\n"
+      "  3:text <- new [abc]\n"
+      "  4:num <- hash 3:text\n"
+      "  return-unless 4:num\n"
+      "  5:bool <- equal 2:num, 4:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 5\n"
+  );
+}
 
-:(scenario hash_ignores_address_value)
-def main [
-  1:&:num <- new number:type
-  *1:&:num <- copy 34
-  2:num <- hash 1:&:num
-  3:&:num <- new number:type
-  *3:&:num <- copy 34
-  4:num <- hash 3:&:num
-  5:bool <- equal 2:num, 4:num
-]
-# different addresses hash to the same result as long as the values the point to do so
-+mem: storing 1 in location 5
+void test_hash_ignores_address_value() {
+  run(
+      "def main [\n"
+      "  1:&:num <- new number:type\n"
+      "  *1:&:num <- copy 34\n"
+      "  2:num <- hash 1:&:num\n"
+      "  3:&:num <- new number:type\n"
+      "  *3:&:num <- copy 34\n"
+      "  4:num <- hash 3:&:num\n"
+      "  5:bool <- equal 2:num, 4:num\n"
+      "]\n"
+  );
+  // different addresses hash to the same result as long as the values the point to do so
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 5\n"
+  );
+}
 
-:(scenario hash_container_depends_only_on_elements)
-container foo [
-  x:num
-  y:char
-]
-container bar [
-  x:num
-  y:char
-]
-def main [
-  1:foo <- merge 34, 97/a
-  3:num <- hash 1:foo
-  return-unless 3:num
-  4:bar <- merge 34, 97/a
-  6:num <- hash 4:bar
-  return-unless 6:num
-  7:bool <- equal 3:num, 6:num
-]
-# containers with identical elements return identical hashes
-+mem: storing 1 in location 7
+void test_hash_container_depends_only_on_elements() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:char\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:char\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 34, 97/a\n"
+      "  3:num <- hash 1:foo\n"
+      "  return-unless 3:num\n"
+      "  4:bar <- merge 34, 97/a\n"
+      "  6:num <- hash 4:bar\n"
+      "  return-unless 6:num\n"
+      "  7:bool <- equal 3:num, 6:num\n"
+      "]\n"
+  );
+  // containers with identical elements return identical hashes
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 7\n"
+  );
+}
 
-:(scenario hash_container_depends_only_on_elements_2)
-container foo [
-  x:num
-  y:char
-  z:&:num
-]
-def main [
-  1:&:num <- new number:type
-  *1:&:num <- copy 34
-  2:foo <- merge 34, 97/a, 1:&:num
-  5:num <- hash 2:foo
-  return-unless 5:num
-  6:&:num <- new number:type
-  *6:&:num <- copy 34
-  7:foo <- merge 34, 97/a, 6:&:num
-  10:num <- hash 7:foo
-  return-unless 10:num
-  11:bool <- equal 5:num, 10:num
-]
-# containers with identical 'leaf' elements return identical hashes
-+mem: storing 1 in location 11
+void test_hash_container_depends_only_on_elements_2() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:char\n"
+      "  z:&:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:&:num <- new number:type\n"
+      "  *1:&:num <- copy 34\n"
+      "  2:foo <- merge 34, 97/a, 1:&:num\n"
+      "  5:num <- hash 2:foo\n"
+      "  return-unless 5:num\n"
+      "  6:&:num <- new number:type\n"
+      "  *6:&:num <- copy 34\n"
+      "  7:foo <- merge 34, 97/a, 6:&:num\n"
+      "  10:num <- hash 7:foo\n"
+      "  return-unless 10:num\n"
+      "  11:bool <- equal 5:num, 10:num\n"
+      "]\n"
+  );
+  // containers with identical 'leaf' elements return identical hashes
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 11\n"
+  );
+}
 
-:(scenario hash_container_depends_only_on_elements_3)
-container foo [
-  x:num
-  y:char
-  z:bar
-]
-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo <- merge 34, 97/a, 47, 48
-  6:num <- hash 1:foo
-  return-unless 6:num
-  7:foo <- merge 34, 97/a, 47, 48
-  12:num <- hash 7:foo
-  return-unless 12:num
-  13:bool <- equal 6:num, 12:num
-]
-# containers with identical 'leaf' elements return identical hashes
-+mem: storing 1 in location 13
+void test_hash_container_depends_only_on_elements_3() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:char\n"
+      "  z:bar\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 34, 97/a, 47, 48\n"
+      "  6:num <- hash 1:foo\n"
+      "  return-unless 6:num\n"
+      "  7:foo <- merge 34, 97/a, 47, 48\n"
+      "  12:num <- hash 7:foo\n"
+      "  return-unless 12:num\n"
+      "  13:bool <- equal 6:num, 12:num\n"
+      "]\n"
+  );
+  // containers with identical 'leaf' elements return identical hashes
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 13\n"
+  );
+}
 
-:(scenario hash_exclusive_container_ignores_tag)
-exclusive-container foo [
-  x:bar
-  y:num
-]
-container bar [
-  a:num
-  b:num
-]
-def main [
-  1:foo <- merge 0/x, 34, 35
-  4:num <- hash 1:foo
-  return-unless 4:num
-  5:bar <- merge 34, 35
-  7:num <- hash 5:bar
-  return-unless 7:num
-  8:bool <- equal 4:num, 7:num
-]
-# hash on containers includes all elements
-+mem: storing 1 in location 8
+void test_hash_exclusive_container_ignores_tag() {
+  run(
+      "exclusive-container foo [\n"
+      "  x:bar\n"
+      "  y:num\n"
+      "]\n"
+      "container bar [\n"
+      "  a:num\n"
+      "  b:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 0/x, 34, 35\n"
+      "  4:num <- hash 1:foo\n"
+      "  return-unless 4:num\n"
+      "  5:bar <- merge 34, 35\n"
+      "  7:num <- hash 5:bar\n"
+      "  return-unless 7:num\n"
+      "  8:bool <- equal 4:num, 7:num\n"
+      "]\n"
+  );
+  // hash on containers includes all elements
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 8\n"
+  );
+}
 
 //: An older version that supported only strings.
 //: Hash functions are subtle and easy to get wrong, so we keep the old
 //: version around and check that the new one is consistent with it.
 
-:(scenario hash_matches_old_version)
-def main [
-  1:text <- new [abc]
-  3:num <- hash 1:text
-  4:num <- hash_old 1:text
-  5:bool <- equal 3:num, 4:num
-]
-+mem: storing 1 in location 5
+void test_hash_matches_old_version() {
+  run(
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  3:num <- hash 1:text\n"
+      "  4:num <- hash_old 1:text\n"
+      "  5:bool <- equal 3:num, 4:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 5\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 HASH_OLD,

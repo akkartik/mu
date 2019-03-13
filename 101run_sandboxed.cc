@@ -1,24 +1,34 @@
 //: Helper for various programming environments: run arbitrary Mu code and
 //: return some result in text form.
 
-:(scenario run_interactive_code)
-def main [
-  1:num <- copy 0  # reserve space for the sandbox
-  10:text <- new [1:num/raw <- copy 34]
-#?   $print 10:num [|] 11:num [: ] 1000:num [|] *10:text [ (] 10:text [)] 10/newline
-  run-sandboxed 10:text
-  20:num <- copy 1:num
-]
-+mem: storing 34 in location 20
+void test_run_interactive_code() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"  // reserve space for the sandbox
+      "  10:text <- new [1:num/raw <- copy 34]\n"
+//?       "  $print 10:num [|] 11:num [: ] 1000:num [|] *10:text [ (] 10:text [)] 10/newline\n"
+      "  run-sandboxed 10:text\n"
+      "  20:num <- copy 1:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 20\n"
+  );
+}
 
-:(scenario run_interactive_empty)
-def main [
-  10:text <- copy null
-  20:text <- run-sandboxed 10:text
-]
-# result is null
-+mem: storing 0 in location 20
-+mem: storing 0 in location 21
+void test_run_interactive_empty() {
+  run(
+      "def main [\n"
+      "  10:text <- copy null\n"
+      "  20:text <- run-sandboxed 10:text\n"
+      "]\n"
+  );
+  // result is null
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 20\n"
+      "mem: storing 0 in location 21\n"
+  );
+}
 
 //: As the name suggests, 'run-sandboxed' will prevent certain operations that
 //: regular Mu code can perform.
@@ -251,14 +261,20 @@ load(string(
 :(before "End maybe(recipe_name) Special-cases")
 if (recipe_name == "interactive") return "";
 
-:(scenario run_interactive_comments)
-def main [
-  1:text <- new [# ab
-add 2, 2]
-  2:text <- run-sandboxed 1:text
-  3:@:char <- copy *2:text
-]
-+mem: storing 52 in location 4
+:(code)
+void test_run_interactive_comments() {
+  run(
+      "def main [\n"
+      "  1:text <- new [# ab\n"
+      "add 2, 2]\n"
+      "  2:text <- run-sandboxed 1:text\n"
+      "  3:@:char <- copy *2:text\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 52 in location 4\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 _START_TRACKING_PRODUCTS,
@@ -351,111 +367,147 @@ case _CLEANUP_RUN_SANDBOXED: {
   break;
 }
 
-:(scenario "run_interactive_converts_result_to_text")
-def main [
-  # try to interactively add 2 and 2
-  10:text <- new [add 2, 2]
-  20:text <- run-sandboxed 10:text
-  30:@:char <- copy *20:text
-]
-# first letter in the output should be '4' in unicode
-+mem: storing 52 in location 31
+:(code)
+void test_run_interactive_converts_result_to_text() {
+  // try to interactively add 2 and 2
+  run(
+      "def main [\n"
+      "  10:text <- new [add 2, 2]\n"
+      "  20:text <- run-sandboxed 10:text\n"
+      "  30:@:char <- copy *20:text\n"
+      "]\n"
+  );
+  // first letter in the output should be '4' in utf-8
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 52 in location 31\n"
+  );
+}
 
-:(scenario "run_interactive_ignores_products_in_nested_functions")
-def main [
-  10:text <- new [foo]
-  20:text <- run-sandboxed 10:text
-  30:@:char <- copy *20:text
-]
-def foo [
-  40:num <- copy 1234
-  {
-    break
-    reply 5678
-  }
-]
-# no product should have been tracked
-+mem: storing 0 in location 30
+void test_run_interactive_ignores_products_in_nested_functions() {
+  run(
+      "def main [\n"
+      "  10:text <- new [foo]\n"
+      "  20:text <- run-sandboxed 10:text\n"
+      "  30:@:char <- copy *20:text\n"
+      "]\n"
+      "def foo [\n"
+      "  40:num <- copy 1234\n"
+      "  {\n"
+      "    break\n"
+      "    reply 5678\n"
+      "  }\n"
+      "]\n"
+  );
+  // no product should have been tracked
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 30\n"
+  );
+}
 
-:(scenario "run_interactive_ignores_products_in_previous_instructions")
-def main [
-  10:text <- new [
-    add 1, 1  # generates a product
-    foo]  # no products
-  20:text <- run-sandboxed 10:text
-  30:@:char <- copy *20:text
-]
-def foo [
-  40:num <- copy 1234
-  {
-    break
-    reply 5678
-  }
-]
-# no product should have been tracked
-+mem: storing 0 in location 30
+void test_run_interactive_ignores_products_in_previous_instructions() {
+  run(
+      "def main [\n"
+      "  10:text <- new [\n"
+      "    add 1, 1\n"  // generates a product
+      "    foo]\n"  // no products
+      "  20:text <- run-sandboxed 10:text\n"
+      "  30:@:char <- copy *20:text\n"
+      "]\n"
+      "def foo [\n"
+      "  40:num <- copy 1234\n"
+      "  {\n"
+      "    break\n"
+      "    reply 5678\n"
+      "  }\n"
+      "]\n"
+  );
+  // no product should have been tracked
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 30\n"
+  );
+}
 
-:(scenario "run_interactive_remembers_products_before_final_label")
-def main [
-  10:text <- new [
-    add 1, 1  # generates a product
-    +foo]  # no products
-  20:text <- run-sandboxed 10:text
-  30:@:char <- copy *20:text
-]
-def foo [
-  40:num <- copy 1234
-  {
-    break
-    reply 5678
-  }
-]
-# product tracked
-+mem: storing 50 in location 31
+void test_run_interactive_remembers_products_before_final_label() {
+  run(
+      "def main [\n"
+      "  10:text <- new [\n"
+      "    add 1, 1\n"  // generates a product
+      "    +foo]\n"  // no products
+      "  20:text <- run-sandboxed 10:text\n"
+      "  30:@:char <- copy *20:text\n"
+      "]\n"
+      "def foo [\n"
+      "  40:num <- copy 1234\n"
+      "  {\n"
+      "    break\n"
+      "    reply 5678\n"
+      "  }\n"
+      "]\n"
+  );
+  // product tracked
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 50 in location 31\n"
+  );
+}
 
-:(scenario "run_interactive_returns_text")
-def main [
-  # try to interactively add 2 and 2
-  1:text <- new [
-    x:text <- new [a]
-    y:text <- new [b]
-    z:text <- append x:text, y:text
-  ]
-  10:text <- run-sandboxed 1:text
-#?   $print 10:text 10/newline
-  20:@:char <- copy *10:text
-]
-# output contains "ab"
-+mem: storing 97 in location 21
-+mem: storing 98 in location 22
+void test_run_interactive_returns_text() {
+  // try to interactively add 2 and 2
+  run(
+      "def main [\n"
+      "  1:text <- new [\n"
+      "    x:text <- new [a]\n"
+      "    y:text <- new [b]\n"
+      "    z:text <- append x:text, y:text\n"
+      "  ]\n"
+      "  10:text <- run-sandboxed 1:text\n"
+//?       "  $print 10:text 10/newline\n"
+      "  20:@:char <- copy *10:text\n"
+      "]\n"
+  );
+  // output contains "ab"
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 97 in location 21\n"
+      "mem: storing 98 in location 22\n"
+  );
+}
 
-:(scenario "run_interactive_returns_errors")
-def main [
-  # run a command that generates an error
-  10:text <- new [x:num <- copy 34
-get x:num, foo:offset]
-  20:text, 30:text <- run-sandboxed 10:text
-  40:@:char <- copy *30:text
-]
-# error should be "unknown element foo in container number"
-+mem: storing 117 in location 41
-+mem: storing 110 in location 42
-+mem: storing 107 in location 43
-+mem: storing 110 in location 44
-# ...
+void test_run_interactive_returns_errors() {
+  run(
+      "def main [\n"
+         // run a command that generates an error
+      "  10:text <- new [x:num <- copy 34\n"
+      "get x:num, foo:offset]\n"
+      "  20:text, 30:text <- run-sandboxed 10:text\n"
+      "  40:@:char <- copy *30:text\n"
+      "]\n"
+  );
+  // error should be "unknown element foo in container number"
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 117 in location 41\n"
+      "mem: storing 110 in location 42\n"
+      "mem: storing 107 in location 43\n"
+      "mem: storing 110 in location 44\n"
+      // ...
+  );
+}
 
-:(scenario run_interactive_with_comment)
-def main [
-  # 2 instructions, with a comment after the first
-  10:text <- new [a:num <- copy 0  # abc
-b:num <- copy 0
-]
-  20:text, 30:text <- run-sandboxed 10:text
-]
-# no errors
-# skip alloc id
-+mem: storing 0 in location 30
-+mem: storing 0 in location 31
+void test_run_interactive_with_comment() {
+  run(
+      "def main [\n"
+         // 2 instructions, with a comment after the first
+      "  10:text <- new [a:num <- copy 0  # abc\n"
+      "b:num <- copy 0\n"
+      "]\n"
+      "  20:text, 30:text <- run-sandboxed 10:text\n"
+      "]\n"
+  );
+  // no errors
+  // skip alloc id
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 30\n"
+      "mem: storing 0 in location 31\n"
+  );
+}
 
 :(after "Running One Instruction")
 if (Track_most_recent_products && SIZE(Current_routine->calls) == Call_depth_to_track_most_recent_products_at
@@ -594,49 +646,66 @@ case RELOAD: {
   break;
 }
 
-:(scenario reload_loads_function_definitions)
-def main [
-  local-scope
-  x:text <- new [recipe foo [
-    1:num/raw <- copy 34
-  ]]
-  reload x
-  run-sandboxed [foo]
-  2:num/raw <- copy 1:num/raw
-]
-+mem: storing 34 in location 2
+:(code)
+void test_reload_loads_function_definitions() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  x:text <- new [recipe foo [\n"
+      "    1:num/raw <- copy 34\n"
+      "  ]]\n"
+      "  reload x\n"
+      "  run-sandboxed [foo]\n"
+      "  2:num/raw <- copy 1:num/raw\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 2\n"
+  );
+}
 
-:(scenario reload_continues_past_error)
-def main [
-  local-scope
-  x:text <- new [recipe foo [
-    get 1234:num, foo:offset
-  ]]
-  reload x
-  1:num/raw <- copy 34
-]
-+mem: storing 34 in location 1
+void test_reload_continues_past_error() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  x:text <- new [recipe foo [\n"
+      "    get 1234:num, foo:offset\n"
+      "  ]]\n"
+      "  reload x\n"
+      "  1:num/raw <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario reload_can_repeatedly_load_container_definitions)
-# define a container and try to create it (merge requires knowing container size)
-def main [
-  local-scope
-  x:text <- new [
-    container foo [
-      x:num
-      y:num
-    ]
-    recipe bar [
-      local-scope
-      x:foo <- merge 34, 35
-    ]
-  ]
-  # save warning addresses in locations of type 'number' to avoid spurious changes to them due to 'abandon'
-  10:text/raw <- reload x
-  20:text/raw <- reload x
-]
-# no errors on either load
-+mem: storing 0 in location 10
-+mem: storing 0 in location 11
-+mem: storing 0 in location 20
-+mem: storing 0 in location 21
+void test_reload_can_repeatedly_load_container_definitions() {
+  // define a container and try to create it (merge requires knowing container size)
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  x:text <- new [\n"
+      "    container foo [\n"
+      "      x:num\n"
+      "      y:num\n"
+      "    ]\n"
+      "    recipe bar [\n"
+      "      local-scope\n"
+      "      x:foo <- merge 34, 35\n"
+      "    ]\n"
+      "  ]\n"
+         // save warning addresses in locations of type 'number' to avoid
+         // spurious changes to them due to 'abandon'
+      "  10:text/raw <- reload x\n"
+      "  20:text/raw <- reload x\n"
+      "]\n"
+  );
+  // no errors on either load
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 10\n"
+      "mem: storing 0 in location 11\n"
+      "mem: storing 0 in location 20\n"
+      "mem: storing 0 in location 21\n"
+  );
+}

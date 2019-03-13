@@ -21,13 +21,18 @@
 
 //: One special label: the address to start running the program at.
 
-:(scenario entry_label)
-== 0x1
-05 0x0d0c0b0a/imm32
-Entry:
-05 0x0d0c0b0a/imm32
-+run: 0x00000006 opcode: 05
--run: 0x00000001 opcode: 05
+void test_entry_label() {
+  run(
+      "== 0x1\n"  // code segment
+      "05 0x0d0c0b0a/imm32\n"
+      "Entry:\n"
+      "05 0x0d0c0b0a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: 0x00000006 opcode: 05\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("run: 0x00000001 opcode: 05");
+}
 
 :(before "End Globals")
 uint32_t Entry_address = 0;
@@ -41,33 +46,47 @@ if (Entry_address) e_entry = Entry_address;
 :(before "End looks_like_hex_int(s) Detectors")
 if (SIZE(s) == 2) return true;
 
-:(scenarios transform)
-:(scenario pack_immediate_ignores_single_byte_nondigit_operand)
-% Hide_errors = true;
-== 0x1
-b9/copy  a/imm32
-+transform: packing instruction 'b9/copy a/imm32'
-# no change (we're just not printing metadata to the trace)
-+transform: instruction after packing: 'b9 a'
+:(code)
+void test_pack_immediate_ignores_single_byte_nondigit_operand() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"  // code segment
+      "b9/copy  a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'b9/copy a/imm32'\n"
+      // no change (we're just not printing metadata to the trace)
+      "transform: instruction after packing: 'b9 a'\n"
+  );
+}
 
-:(scenario pack_immediate_ignores_3_hex_digit_operand)
-% Hide_errors = true;
-== 0x1
-b9/copy  aaa/imm32
-+transform: packing instruction 'b9/copy aaa/imm32'
-# no change (we're just not printing metadata to the trace)
-+transform: instruction after packing: 'b9 aaa'
+void test_pack_immediate_ignores_3_hex_digit_operand() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"  // code segment
+      "b9/copy  aaa/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'b9/copy aaa/imm32'\n"
+      // no change (we're just not printing metadata to the trace)
+      "transform: instruction after packing: 'b9 aaa'\n"
+  );
+}
 
-:(scenario pack_immediate_ignores_non_hex_operand)
-% Hide_errors = true;
-== 0x1
-b9/copy xxx/imm32
-+transform: packing instruction 'b9/copy xxx/imm32'
-# no change (we're just not printing metadata to the trace)
-+transform: instruction after packing: 'b9 xxx'
+void test_pack_immediate_ignores_non_hex_operand() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"  // code segment
+      "b9/copy xxx/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: packing instruction 'b9/copy xxx/imm32'\n"
+      // no change (we're just not printing metadata to the trace)
+      "transform: instruction after packing: 'b9 xxx'\n"
+  );
+}
 
 //: a helper we'll find handy later
-:(code)
 void check_valid_name(const string& s) {
   if (s.empty()) {
     raise << "empty name!\n" << end();
@@ -87,11 +106,16 @@ void check_valid_name(const string& s) {
 
 //: Now that that's done, let's start using names as labels.
 
-:(scenario map_label)
-== 0x1
-loop:
-  05  0x0d0c0b0a/imm32
-+transform: label 'loop' is at address 1
+void test_map_label() {
+  transform(
+      "== 0x1\n"  // code segment
+      "loop:\n"
+      "  05  0x0d0c0b0a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: label 'loop' is at address 1\n"
+  );
+}
 
 :(before "End Level-2 Transforms")
 Transform.push_back(rewrite_labels);
@@ -241,67 +265,97 @@ string drop_last(const string& s) {
 //: However, you can absolutely have multiple labels map to the same address,
 //: as long as they're on separate lines.
 
-:(scenario multiple_labels_at)
-== 0x1
-# address 1
-loop:
- $loop2:
-# address 1 (labels take up no space)
-    05  0x0d0c0b0a/imm32
-# address 6
-    eb  $loop2/disp8
-# address 8
-    eb  $loop3/disp8
-# address 0xa
- $loop3:
-+transform: label 'loop' is at address 1
-+transform: label '$loop2' is at address 1
-+transform: label '$loop3' is at address a
-# first jump is to -7
-+transform: instruction after transform: 'eb f9'
-# second jump is to 0 (fall through)
-+transform: instruction after transform: 'eb 00'
+void test_multiple_labels_at() {
+  transform(
+      "== 0x1\n"  // code segment
+      // address 1
+      "loop:\n"
+      " $loop2:\n"
+      // address 1 (labels take up no space)
+      "    05  0x0d0c0b0a/imm32\n"
+      // address 6
+      "    eb  $loop2/disp8\n"
+      // address 8
+      "    eb  $loop3/disp8\n"
+      // address 0xa
+      " $loop3:\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: label 'loop' is at address 1\n"
+      "transform: label '$loop2' is at address 1\n"
+      "transform: label '$loop3' is at address a\n"
+      // first jump is to -7
+      "transform: instruction after transform: 'eb f9'\n"
+      // second jump is to 0 (fall through)
+      "transform: instruction after transform: 'eb 00'\n"
+  );
+}
 
-:(scenario duplicate_label)
-% Hide_errors = true;
-== 0x1
-loop:
-loop:
-    05  0x0d0c0b0a/imm32
-+error: duplicate label 'loop'
+void test_duplicate_label() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"
+      "loop:\n"
+      "loop:\n"
+      "    05  0x0d0c0b0a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: duplicate label 'loop'\n"
+  );
+}
 
-:(scenario label_too_short)
-% Hide_errors = true;
-== 0x1
-xz:
-  05  0x0d0c0b0a/imm32
-+error: 'xz' is two characters long which can look like raw hex bytes at a glance; use a different name
+void test_label_too_short() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"
+      "xz:\n"
+      "  05  0x0d0c0b0a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: 'xz' is two characters long which can look like raw hex bytes at a glance; use a different name\n"
+  );
+}
 
-:(scenario label_hex)
-% Hide_errors = true;
-== 0x1
-0xab:
-  05  0x0d0c0b0a/imm32
-+error: '0xab' looks like a hex number; use a different name
+void test_label_hex() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"
+      "0xab:\n"
+      "  05  0x0d0c0b0a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: '0xab' looks like a hex number; use a different name\n"
+  );
+}
 
-:(scenario label_negative_hex)
-% Hide_errors = true;
-== 0x1
- -a:  # indent to avoid looking like a trace_should_not_contain command for this scenario
-    05  0x0d0c0b0a/imm32
-+error: '-a' starts with '-', which can be confused with a negative number; use a different name
+void test_label_negative_hex() {
+  Hide_errors = true;
+  transform(
+      "== 0x1\n"
+      "-a:\n"
+      "    05  0x0d0c0b0a/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: '-a' starts with '-', which can be confused with a negative number; use a different name\n"
+  );
+}
 
 //: now that we have labels, we need to adjust segment size computation to
 //: ignore them.
 
-:(scenario segment_size_ignores_labels)
-== code  # 0x09000074
-  05/add  0x0d0c0b0a/imm32  # 5 bytes
-foo:                      # 0 bytes
-== data  # 0x0a000079
-bar:
-  00
-+transform: segment 1 begins at address 0x0a000079
+void test_segment_size_ignores_labels() {
+  transform(
+      "== code\n"  // 0x09000074
+      "  05/add  0x0d0c0b0a/imm32\n"  // 5 bytes
+      "foo:\n"                        // 0 bytes
+      "== data\n"  // 0x0a000079
+      "bar:\n"
+      "  00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: segment 1 begins at address 0x0a000079\n"
+  );
+}
 
 :(before "End size_of(word w) Special-cases")
 else if (is_label(w))

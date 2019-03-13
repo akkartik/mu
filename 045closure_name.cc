@@ -6,28 +6,33 @@
 //: todo: warn on default-space abuse. default-space for one recipe should
 //: never come from another, otherwise memory will be corrupted.
 
-:(scenario closure)
-def main [
-  default-space:space <- new location:type, 30
-  2:space/names:new-counter <- new-counter
-  10:num/raw <- increment-counter 2:space/names:new-counter
-  11:num/raw <- increment-counter 2:space/names:new-counter
-]
-def new-counter [
-  default-space:space <- new location:type, 30
-  x:num <- copy 23
-  y:num <- copy 13  # variable that will be incremented
-  return default-space:space
-]
-def increment-counter [
-  default-space:space <- new location:type, 30
-  0:space/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
-  y:num/space:1 <- add y:num/space:1, 1  # increment
-  y:num <- copy 234  # dummy
-  return y:num/space:1
-]
-+name: lexically surrounding space for recipe increment-counter comes from new-counter
-+mem: storing 15 in location 11
+void test_closure() {
+  run(
+      "def main [\n"
+      "  default-space:space <- new location:type, 30\n"
+      "  2:space/names:new-counter <- new-counter\n"
+      "  10:num/raw <- increment-counter 2:space/names:new-counter\n"
+      "  11:num/raw <- increment-counter 2:space/names:new-counter\n"
+      "]\n"
+      "def new-counter [\n"
+      "  default-space:space <- new location:type, 30\n"
+      "  x:num <- copy 23\n"
+      "  y:num <- copy 13\n"  // variable that will be incremented
+      "  return default-space:space\n"
+      "]\n"
+      "def increment-counter [\n"
+      "  default-space:space <- new location:type, 30\n"
+      "  0:space/names:new-counter <- next-ingredient\n"  // outer space must be created by 'new-counter' above
+      "  y:num/space:1 <- add y:num/space:1, 1\n"  // increment
+      "  y:num <- copy 234\n"  // dummy
+      "  return y:num/space:1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: lexically surrounding space for recipe increment-counter comes from new-counter\n"
+      "mem: storing 15 in location 11\n"
+  );
+}
 
 //: To make this work, compute the recipe that provides names for the
 //: surrounding space of each recipe.
@@ -142,44 +147,58 @@ bool already_transformed(const reagent& r, const map<string, int>& names) {
   return contains_key(names, r.name);
 }
 
-:(scenario missing_surrounding_space)
-% Hide_errors = true;
-def f [
-  local-scope
-  x:num/space:1 <- copy 34
-]
-+error: don't know surrounding recipe of 'f'
-+error: f: can't find a place to store 'x'
+:(code)
+void test_missing_surrounding_space() {
+  Hide_errors = true;
+  run(
+      "def f [\n"
+      "  local-scope\n"
+      "  x:num/space:1 <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: don't know surrounding recipe of 'f'\n"
+      "error: f: can't find a place to store 'x'\n"
+  );
+}
 
 //: extra test for try_reclaim_locals() from previous layers
-:(scenario local_scope_ignores_nonlocal_spaces)
-def new-scope [
-  local-scope
-  x:&:num <- new number:type
-  *x:&:num <- copy 34
-  return default-space:space
-]
-def use-scope [
-  local-scope
-  outer:space/names:new-scope <- next-ingredient
-  0:space/names:new-scope <- copy outer:space
-  return *x:&:num/space:1
-]
-def main [
-  1:space/raw <- new-scope
-  3:num/raw <- use-scope 1:space/raw
-]
-+mem: storing 34 in location 3
+void test_local_scope_ignores_nonlocal_spaces() {
+  run(
+      "def new-scope [\n"
+      "  local-scope\n"
+      "  x:&:num <- new number:type\n"
+      "  *x:&:num <- copy 34\n"
+      "  return default-space:space\n"
+      "]\n"
+      "def use-scope [\n"
+      "  local-scope\n"
+      "  outer:space/names:new-scope <- next-ingredient\n"
+      "  0:space/names:new-scope <- copy outer:space\n"
+      "  return *x:&:num/space:1\n"
+      "]\n"
+      "def main [\n"
+      "  1:space/raw <- new-scope\n"
+      "  3:num/raw <- use-scope 1:space/raw\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 3\n"
+  );
+}
 
-:(scenario recursive_transform_names)
-def foo [
-  local-scope
-  x:num <- copy 0
-  return default-space:space/names:foo
-]
-def main [
-  local-scope
-  0:space/names:foo <- foo
-  x:num/space:1 <- copy 34
-]
-$error: 0
+void test_recursive_transform_names() {
+  run(
+      "def foo [\n"
+      "  local-scope\n"
+      "  x:num <- copy 0\n"
+      "  return default-space:space/names:foo\n"
+      "]\n"
+      "def main [\n"
+      "  local-scope\n"
+      "  0:space/names:foo <- foo\n"
+      "  x:num/space:1 <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}

@@ -1,17 +1,21 @@
 //: A few literal constants.
 
-:(scenarios load)  // use 'load' instead of 'run' in all scenarios in this layer
-
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "literal-boolean", 0);
 
 //: 'true'
 
-:(scenario true)
-def main [
-  1:boolean <- copy true
-]
-+parse:   ingredient: {true: "literal-boolean"}
+:(code)
+void test_true() {
+  load(
+      "def main [\n"
+      "  1:boolean <- copy true\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {true: \"literal-boolean\"}\n"
+  );
+}
 
 :(before "End Parsing reagent")
 if (name == "true") {
@@ -25,11 +29,17 @@ if (name == "true") {
 
 //: 'false'
 
-:(scenario false)
-def main [
-  1:boolean <- copy false
-]
-+parse:   ingredient: {false: "literal-boolean"}
+:(code)
+void test_false() {
+  load(
+      "def main [\n"
+      "  1:boolean <- copy false\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {false: \"literal-boolean\"}\n"
+  );
+}
 
 :(before "End Parsing reagent")
 if (name == "false") {
@@ -46,11 +56,17 @@ if (name == "false") {
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "literal-address", 0);
 
-:(scenario null)
-def main [
-  1:address:number <- copy null
-]
-+parse:   ingredient: {null: "literal-address"}
+:(code)
+void test_null() {
+  load(
+      "def main [\n"
+      "  1:address:number <- copy null\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   ingredient: {null: \"literal-address\"}\n"
+  );
+}
 
 :(before "End Parsing reagent")
 if (name == "null") {

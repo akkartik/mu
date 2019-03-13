@@ -1,28 +1,38 @@
 //: Calls can also generate products, using 'reply' or 'return'.
 
-:(scenario return)
-def main [
-  1:num, 2:num <- f 34
-]
-def f [
-  12:num <- next-ingredient
-  13:num <- add 1, 12:num
-  return 12:num, 13:num
-]
-+mem: storing 34 in location 1
-+mem: storing 35 in location 2
+void test_return() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- f 34\n"
+      "]\n"
+      "def f [\n"
+      "  12:num <- next-ingredient\n"
+      "  13:num <- add 1, 12:num\n"
+      "  return 12:num, 13:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+      "mem: storing 35 in location 2\n"
+  );
+}
 
-:(scenario reply)
-def main [
-  1:num, 2:num <- f 34
-]
-def f [
-  12:num <- next-ingredient
-  13:num <- add 1, 12:num
-  reply 12:num, 13:num
-]
-+mem: storing 34 in location 1
-+mem: storing 35 in location 2
+void test_reply() {
+  run(
+      "def main [\n"
+      "  1:num, 2:num <- f 34\n"
+      "]\n"
+      "def f [\n"
+      "  12:num <- next-ingredient\n"
+      "  13:num <- add 1, 12:num\n"
+      "  reply 12:num, 13:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+      "mem: storing 35 in location 2\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 RETURN,
@@ -114,18 +124,23 @@ bool is_primitive(recipe_ordinal r) {
   return r < MAX_PRIMITIVE_RECIPES;
 }
 
-:(scenario return_type_mismatch)
-% Hide_errors = true;
-def main [
-  3:num <- f 2
-]
-def f [
-  12:num <- next-ingredient
-  13:num <- copy 35
-  14:point <- copy 12:point/raw
-  return 14:point
-]
-+error: f: return ingredient '14:point' can't be saved in '3:num'
+void test_return_type_mismatch() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  3:num <- f 2\n"
+      "]\n"
+      "def f [\n"
+      "  12:num <- next-ingredient\n"
+      "  13:num <- copy 35\n"
+      "  14:point <- copy 12:point/raw\n"
+      "  return 14:point\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: f: return ingredient '14:point' can't be saved in '3:num'\n"
+  );
+}
 
 //: In Mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
@@ -134,30 +149,37 @@ def f [
 //: 'ingredient-products' (sometimes called in-out parameters in other
 //: languages).
 
-:(scenario return_same_as_ingredient)
-% Hide_errors = true;
-def main [
-  1:num <- copy 0
-  2:num <- test1 1:num  # call with different ingredient and product
-]
-def test1 [
-  10:num <- next-ingredient
-  return 10:num/same-as-ingredient:0
-]
-+error: main: '2:num <- test1 1:num' should write to '1:num' rather than '2:num'
+void test_return_same_as_ingredient() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  2:num <- test1 1:num  # call with different ingredient and product\n"
+      "]\n"
+      "def test1 [\n"
+      "  10:num <- next-ingredient\n"
+      "  return 10:num/same-as-ingredient:0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: '2:num <- test1 1:num' should write to '1:num' rather than '2:num'\n"
+  );
+}
 
-:(scenario return_same_as_ingredient_dummy)
-def main [
-  1:num <- copy 0
-  _ <- test1 1:num  # call with different ingredient and product
-]
-def test1 [
-  10:num <- next-ingredient
-  return 10:num/same-as-ingredient:0
-]
-$error: 0
+void test_return_same_as_ingredient_dummy() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  _ <- test1 1:num  # call with different ingredient and product\n"
+      "]\n"
+      "def test1 [\n"
+      "  10:num <- next-ingredient\n"
+      "  return 10:num/same-as-ingredient:0\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(code)
 string to_string(const vector<double>& in) {
   if (in.empty()) return "[]";
   ostringstream out;

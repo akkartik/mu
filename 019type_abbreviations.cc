@@ -1,12 +1,16 @@
 //: For convenience, allow Mu types to be abbreviated.
 
-:(scenarios transform)
-:(scenario type_abbreviations)
-type foo = number
-def main [
-  a:foo <- copy 34
-]
-+transform: product type after expanding abbreviations: "number"
+void test_type_abbreviations() {
+  transform(
+      "type foo = number\n"
+      "def main [\n"
+      "  a:foo <- copy 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: product type after expanding abbreviations: \"number\"\n"
+  );
+}
 
 :(before "End Globals")
 map<string, type_tree*> Type_abbreviations, Type_abbreviations_snapshot;
@@ -69,33 +73,58 @@ string_tree* parse_string_list(const string& s) {
   return parse_property_list(in);
 }
 
-:(scenario type_error1)
-% Hide_errors = true;
-type foo
-+error: incomplete 'type' statement 'type foo'
+void test_type_error1() {
+  Hide_errors = true;
+  transform(
+      "type foo\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: incomplete 'type' statement 'type foo'\n"
+  );
+}
 
-:(scenario type_error2)
-% Hide_errors = true;
-type foo =
-+error: incomplete 'type' statement 'type foo ='
+void test_type_error2() {
+  Hide_errors = true;
+  transform(
+      "type foo =\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: incomplete 'type' statement 'type foo ='\n"
+  );
+}
 
-:(scenario type_error3)
-% Hide_errors = true;
-type foo bar baz
-+error: 'type' statements must be of the form 'type <new type name> = <type expression>' but got 'type foo bar'
+void test_type_error3() {
+  Hide_errors = true;
+  transform(
+      "type foo bar baz\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: 'type' statements must be of the form 'type <new type name> = <type expression>' but got 'type foo bar'\n"
+  );
+}
 
-:(scenario type_conflict_error)
-% Hide_errors = true;
-type foo = bar
-type foo = baz
-+error: 'type' conflict: 'foo' defined as both 'bar' and 'baz'
+void test_type_conflict_error() {
+  Hide_errors = true;
+  transform(
+      "type foo = bar\n"
+      "type foo = baz\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: 'type' conflict: 'foo' defined as both 'bar' and 'baz'\n"
+  );
+}
 
-:(scenario type_abbreviation_for_compound)
-type foo = address:number
-def main [
-  1:foo <- copy null
-]
-+transform: product type after expanding abbreviations: ("address" "number")
+void test_type_abbreviation_for_compound() {
+  transform(
+      "type foo = address:number\n"
+      "def main [\n"
+      "  1:foo <- copy null\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: product type after expanding abbreviations: (\"address\" \"number\")\n"
+  );
+}
 
 //: cleaning up type abbreviations between tests and before exiting
 
@@ -129,33 +158,44 @@ put(Type_abbreviations, "num", new_type_tree("number"));
 put(Type_abbreviations, "bool", new_type_tree("boolean"));
 put(Type_abbreviations, "char", new_type_tree("character"));
 
-:(scenario use_type_abbreviations_when_declaring_type_abbreviations)
-type foo = &:num
-def main [
-  1:foo <- copy null
-]
-+transform: product type after expanding abbreviations: ("address" "number")
+:(code)
+void test_use_type_abbreviations_when_declaring_type_abbreviations() {
+  transform(
+      "type foo = &:num\n"
+      "def main [\n"
+      "  1:foo <- copy null\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: product type after expanding abbreviations: (\"address\" \"number\")\n"
+  );
+}
 
 //:: Expand type aliases before running.
 //: We'll do this in a transform so that we don't need to define abbreviations
 //: before we use them.
 
-:(scenario abbreviations_for_address_and_array)
-def main [
-  f 1:&:num  # abbreviation for 'address:number'
-  f 2:@:num  # abbreviation for 'array:number'
-  f 3:&:@:num  # combining '&' and '@'
-  f 4:&:&:@:&:@:num  # ..any number of times
-  f {5: (array (& num) 3)}  # support for dilated reagents and more complex parse trees
-]
-def f [
-]
-+transform: --- expand type abbreviations in recipe 'main'
-+transform: ingredient type after expanding abbreviations: ("address" "number")
-+transform: ingredient type after expanding abbreviations: ("array" "number")
-+transform: ingredient type after expanding abbreviations: ("address" "array" "number")
-+transform: ingredient type after expanding abbreviations: ("address" "address" "array" "address" "array" "number")
-+transform: ingredient type after expanding abbreviations: ("array" ("address" "number") "3")
+void test_abbreviations_for_address_and_array() {
+  transform(
+      "def main [\n"
+      "  f 1:&:num\n"  // abbreviation for 'address:number'
+      "  f 2:@:num\n"  // abbreviation for 'array:number'
+      "  f 3:&:@:num\n"  // combining '&' and '@'
+      "  f 4:&:&:@:&:@:num\n"  // ..any number of times
+      "  f {5: (array (& num) 3)}\n"  // support for dilated reagents and more complex parse trees
+      "]\n"
+      "def f [\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: --- expand type abbreviations in recipe 'main'\n"
+      "transform: ingredient type after expanding abbreviations: (\"address\" \"number\")\n"
+      "transform: ingredient type after expanding abbreviations: (\"array\" \"number\")\n"
+      "transform: ingredient type after expanding abbreviations: (\"address\" \"array\" \"number\")\n"
+      "transform: ingredient type after expanding abbreviations: (\"address\" \"address\" \"array\" \"address\" \"array\" \"number\")\n"
+      "transform: ingredient type after expanding abbreviations: (\"array\" (\"address\" \"number\") \"3\")\n"
+  );
+}
 
 :(before "Transform.push_back(update_instruction_operations)")
 Transform.push_back(expand_type_abbreviations);  // idempotent

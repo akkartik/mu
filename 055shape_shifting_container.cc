@@ -24,93 +24,122 @@ const type_tree* get_base_type(const type_tree* t) {
   return result;
 }
 
-:(scenario ill_formed_container)
-% Hide_errors = true;
-def main [
-  {1: ((foo) num)} <- copy 0
-]
-# no crash
+:(code)
+void test_ill_formed_container() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  {1: ((foo) num)} <- copy 0\n"
+      "]\n"
+  );
+  // no crash
+}
 
 //: update size_of to handle non-atom container types
 
-:(scenario size_of_shape_shifting_container)
-container foo:_t [
-  x:_t
-  y:num
-]
-def main [
-  1:foo:num <- merge 12, 13
-  3:foo:point <- merge 14, 15, 16
-]
-+mem: storing 12 in location 1
-+mem: storing 13 in location 2
-+mem: storing 14 in location 3
-+mem: storing 15 in location 4
-+mem: storing 16 in location 5
+void test_size_of_shape_shifting_container() {
+  run(
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:num <- merge 12, 13\n"
+      "  3:foo:point <- merge 14, 15, 16\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 12 in location 1\n"
+      "mem: storing 13 in location 2\n"
+      "mem: storing 14 in location 3\n"
+      "mem: storing 15 in location 4\n"
+      "mem: storing 16 in location 5\n"
+  );
+}
+void test_size_of_shape_shifting_container_2() {
+  run(
+      // multiple type ingredients
+      "container foo:_a:_b [\n"
+      "  x:_a\n"
+      "  y:_b\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:num:bool <- merge 34, true\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
+void test_size_of_shape_shifting_container_3() {
+  run(
+      "container foo:_a:_b [\n"
+      "  x:_a\n"
+      "  y:_b\n"
+      "]\n"
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+         // compound types for type ingredients
+      "  {3: (foo number (address array character))} <- merge 34/x, 1:text/y\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario size_of_shape_shifting_container_2)
-# multiple type ingredients
-container foo:_a:_b [
-  x:_a
-  y:_b
-]
-def main [
-  1:foo:num:bool <- merge 34, true
-]
-$error: 0
+void test_size_of_shape_shifting_container_4() {
+  run(
+      "container foo:_a:_b [\n"
+      "  x:_a\n"
+      "  y:_b\n"
+      "]\n"
+      "container bar:_a:_b [\n"
+         // dilated element
+      "  {data: (foo _a (address _b))}\n"
+      "]\n"
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  3:bar:num:@:char <- merge 34/x, 1:text/y\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario size_of_shape_shifting_container_3)
-container foo:_a:_b [
-  x:_a
-  y:_b
-]
-def main [
-  1:text <- new [abc]
-  # compound types for type ingredients
-  {3: (foo number (address array character))} <- merge 34/x, 1:text/y
-]
-$error: 0
+void test_shape_shifting_container_extend() {
+  run(
+      "container foo:_a [\n"
+      "  x:_a\n"
+      "]\n"
+      "container foo:_a [\n"
+      "  y:_a\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario size_of_shape_shifting_container_4)
-container foo:_a:_b [
-  x:_a
-  y:_b
-]
-container bar:_a:_b [
-  # dilated element
-  {data: (foo _a (address _b))}
-]
-def main [
-  1:text <- new [abc]
-  3:bar:num:@:char <- merge 34/x, 1:text/y
-]
-$error: 0
+void test_shape_shifting_container_extend_error() {
+  Hide_errors = true;
+  run(
+      "container foo:_a [\n"
+      "  x:_a\n"
+      "]\n"
+      "container foo:_b [\n"
+      "  y:_b\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: headers of container 'foo' must use identical type ingredients\n"
+  );
+}
 
-:(scenario shape_shifting_container_extend)
-container foo:_a [
-  x:_a
-]
-container foo:_a [
-  y:_a
-]
-$error: 0
-
-:(scenario shape_shifting_container_extend_error)
-% Hide_errors = true;
-container foo:_a [
-  x:_a
-]
-container foo:_b [
-  y:_b
-]
-+error: headers of container 'foo' must use identical type ingredients
-
-:(scenario type_ingredient_must_start_with_underscore)
-% Hide_errors = true;
-container foo:t [
-  x:num
-]
-+error: foo: type ingredient 't' must begin with an underscore
+void test_type_ingredient_must_start_with_underscore() {
+  Hide_errors = true;
+  run(
+      "container foo:t [\n"
+      "  x:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: type ingredient 't' must begin with an underscore\n"
+  );
+}
 
 :(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
@@ -212,97 +241,129 @@ if (type->value >= START_TYPE_INGREDIENTS
     && (type->value - START_TYPE_INGREDIENTS) < SIZE(get(Type, type->value).type_ingredient_names))
   return;
 
-:(scenario size_of_shape_shifting_exclusive_container)
-exclusive-container foo:_t [
-  x:_t
-  y:num
-]
-def main [
-  1:foo:num <- merge 0/x, 34
-  3:foo:point <- merge 0/x, 15, 16
-  6:foo:point <- merge 1/y, 23
-]
-+run: {1: ("foo" "number")} <- merge {0: "literal", "x": ()}, {34: "literal"}
-+mem: storing 0 in location 1
-+mem: storing 34 in location 2
-+run: {3: ("foo" "point")} <- merge {0: "literal", "x": ()}, {15: "literal"}, {16: "literal"}
-+mem: storing 0 in location 3
-+mem: storing 15 in location 4
-+mem: storing 16 in location 5
-+run: {6: ("foo" "point")} <- merge {1: "literal", "y": ()}, {23: "literal"}
-+mem: storing 1 in location 6
-+mem: storing 23 in location 7
-+run: return
-# no other stores
-% CHECK_EQ(trace_count_prefix("mem", "storing"), 7);
+:(code)
+void test_size_of_shape_shifting_exclusive_container() {
+  run(
+      "exclusive-container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:num <- merge 0/x, 34\n"
+      "  3:foo:point <- merge 0/x, 15, 16\n"
+      "  6:foo:point <- merge 1/y, 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: {1: (\"foo\" \"number\")} <- merge {0: \"literal\", \"x\": ()}, {34: \"literal\"}\n"
+      "mem: storing 0 in location 1\n"
+      "mem: storing 34 in location 2\n"
+      "run: {3: (\"foo\" \"point\")} <- merge {0: \"literal\", \"x\": ()}, {15: \"literal\"}, {16: \"literal\"}\n"
+      "mem: storing 0 in location 3\n"
+      "mem: storing 15 in location 4\n"
+      "mem: storing 16 in location 5\n"
+      "run: {6: (\"foo\" \"point\")} <- merge {1: \"literal\", \"y\": ()}, {23: \"literal\"}\n"
+      "mem: storing 1 in location 6\n"
+      "mem: storing 23 in location 7\n"
+      "run: return\n"
+  );
+  // no other stores
+  CHECK_EQ(trace_count_prefix("mem", "storing"), 7);
+}
 
 :(before "End variant_type Special-cases")
 if (contains_type_ingredient(element))
   replace_type_ingredients(element.type, type->right, info, " while computing variant type of exclusive-container");
 
-:(scenario get_on_shape_shifting_container)
-container foo:_t [
-  x:_t
-  y:num
-]
-def main [
-  1:foo:point <- merge 14, 15, 16
-  4:num <- get 1:foo:point, y:offset
-]
-+mem: storing 16 in location 4
+:(code)
+void test_get_on_shape_shifting_container() {
+  run(
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:point <- merge 14, 15, 16\n"
+      "  4:num <- get 1:foo:point, y:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 16 in location 4\n"
+  );
+}
 
-:(scenario get_on_shape_shifting_container_2)
-container foo:_t [
-  x:_t
-  y:num
-]
-def main [
-  1:foo:point <- merge 14, 15, 16
-  4:point <- get 1:foo:point, x:offset
-]
-+mem: storing 14 in location 4
-+mem: storing 15 in location 5
+void test_get_on_shape_shifting_container_2() {
+  run(
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:point <- merge 14, 15, 16\n"
+      "  4:point <- get 1:foo:point, x:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 14 in location 4\n"
+      "mem: storing 15 in location 5\n"
+  );
+}
 
-:(scenario get_on_shape_shifting_container_3)
-container foo:_t [
-  x:_t
-  y:num
-]
-def main [
-  1:num/alloc-id, 2:num <- copy 0, 34
-  3:foo:&:point <- merge 1:&:point, 48
-  6:&:point <- get 1:foo:&:point, x:offset
-]
-+mem: storing 0 in location 6
-+mem: storing 34 in location 7
+void test_get_on_shape_shifting_container_3() {
+  run(
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:num/alloc-id, 2:num <- copy 0, 34\n"
+      "  3:foo:&:point <- merge 1:&:point, 48\n"
+      "  6:&:point <- get 1:foo:&:point, x:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 6\n"
+      "mem: storing 34 in location 7\n"
+  );
+}
 
-:(scenario get_on_shape_shifting_container_inside_container)
-container foo:_t [
-  x:_t
-  y:num
-]
-container bar [
-  x:foo:point
-  y:num
-]
-def main [
-  1:bar <- merge 14, 15, 16, 17
-  5:num <- get 1:bar, 1:offset
-]
-+mem: storing 17 in location 5
+void test_get_on_shape_shifting_container_inside_container() {
+  run(
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "container bar [\n"
+      "  x:foo:point\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:bar <- merge 14, 15, 16, 17\n"
+      "  5:num <- get 1:bar, 1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 17 in location 5\n"
+  );
+}
 
-:(scenario get_on_complex_shape_shifting_container)
-container foo:_a:_b [
-  x:_a
-  y:_b
-]
-def main [
-  1:text <- new [abc]
-  {3: (foo number (address array character))} <- merge 34/x, 1:text/y
-  6:text <- get {3: (foo number (address array character))}, y:offset
-  8:bool <- equal 1:text, 6:text
-]
-+mem: storing 1 in location 8
+void test_get_on_complex_shape_shifting_container() {
+  run(
+      "container foo:_a:_b [\n"
+      "  x:_a\n"
+      "  y:_b\n"
+      "]\n"
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  {3: (foo number (address array character))} <- merge 34/x, 1:text/y\n"
+      "  6:text <- get {3: (foo number (address array character))}, y:offset\n"
+      "  8:bool <- equal 1:text, 6:text\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 8\n"
+  );
+}
 
 :(before "End element_type Special-cases")
 replace_type_ingredients(element, type, info, " while computing element type of container");
@@ -341,20 +402,25 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
   return result+1;
 }
 
-:(scenario complex_shape_shifting_exclusive_container)
-exclusive-container foo:_a [
-  x:_a
-  y:num
-]
-def main [
-  1:text <- new [abc]
-  3:foo:point <- merge 0/variant, 34/xx, 35/xy
-  10:point, 20:bool <- maybe-convert 3:foo:point, 0/variant
-]
-+mem: storing 1 in location 20
-+mem: storing 35 in location 11
-
 :(code)
+void test_complex_shape_shifting_exclusive_container() {
+  run(
+      "exclusive-container foo:_a [\n"
+      "  x:_a\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  3:foo:point <- merge 0/variant, 34/xx, 35/xy\n"
+      "  10:point, 20:bool <- maybe-convert 3:foo:point, 0/variant\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 20\n"
+      "mem: storing 35 in location 11\n"
+  );
+}
+
 bool contains_type_ingredient(const reagent& x) {
   return contains_type_ingredient(x.type);
 }
@@ -560,114 +626,148 @@ bool has_nth_type(const type_tree* base, int n) {
   return has_nth_type(base->right, n-1);
 }
 
-:(scenario get_on_shape_shifting_container_error)
-% Hide_errors = true;
-container foo:_t [
-  x:_t
-  y:num
-]
-def main [
-  1:foo:point <- merge 14, 15, 16
-  10:num <- get 1:foo, 1:offset
-]
-# todo: improve error message
-+error: illegal type "foo" seems to be missing a type ingredient or three while computing element type of container
+void test_get_on_shape_shifting_container_error() {
+  Hide_errors = true;
+  run(
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:point <- merge 14, 15, 16\n"
+      "  10:num <- get 1:foo, 1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: illegal type \"foo\" seems to be missing a type ingredient or three while computing element type of container\n"
+  );
+  // todo: improve error message
+}
 
-:(scenario typos_in_container_definitions)
-% Hide_errors = true;
-container foo:_t [
-  x:adress:_t  # typo
-]
-def main [
-  local-scope
-  x:address:foo:num <- new {(foo num): type}
-]
-# no crash
+void test_typos_in_container_definitions() {
+  Hide_errors = true;
+  run(
+      "container foo:_t [\n"
+      "  x:adress:_t  # typo\n"
+      "]\n"
+      "def main [\n"
+      "  local-scope\n"
+      "  x:address:foo:num <- new {(foo num): type}\n"
+      "]\n"
+  );
+  // no crash
+}
 
-:(scenario typos_in_recipes)
-% Hide_errors = true;
-def foo [
-  local-scope
-  x:adress:array:number <- copy null  # typo
-]
-# shouldn't crash
+void test_typos_in_recipes() {
+  Hide_errors = true;
+  run(
+      "def foo [\n"
+      "  local-scope\n"
+      "  x:adress:array:number <- copy null  # typo\n"
+      "]\n"
+  );
+  // shouldn't crash
+}
 
 //:: 'merge' on shape-shifting containers
 
-:(scenario merge_check_shape_shifting_container_containing_exclusive_container)
-container foo:_elem [
-  x:num
-  y:_elem
-]
-exclusive-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo:bar <- merge 23, 1/y, 34
-]
-+mem: storing 23 in location 1
-+mem: storing 1 in location 2
-+mem: storing 34 in location 3
-$error: 0
+void test_merge_check_shape_shifting_container_containing_exclusive_container() {
+  run(
+      "container foo:_elem [\n"
+      "  x:num\n"
+      "  y:_elem\n"
+      "]\n"
+      "exclusive-container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:bar <- merge 23, 1/y, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 23 in location 1\n"
+      "mem: storing 1 in location 2\n"
+      "mem: storing 34 in location 3\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_shape_shifting_container_containing_exclusive_container_2)
-% Hide_errors = true;
-container foo:_elem [
-  x:num
-  y:_elem
-]
-exclusive-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo:bar <- merge 23, 1/y, 34, 35
-]
-+error: main: too many ingredients in '1:foo:bar <- merge 23, 1/y, 34, 35'
+void test_merge_check_shape_shifting_container_containing_exclusive_container_2() {
+  Hide_errors = true;
+  run(
+      "container foo:_elem [\n"
+      "  x:num\n"
+      "  y:_elem\n"
+      "]\n"
+      "exclusive-container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:bar <- merge 23, 1/y, 34, 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too many ingredients in '1:foo:bar <- merge 23, 1/y, 34, 35'\n"
+  );
+}
 
-:(scenario merge_check_shape_shifting_exclusive_container_containing_container)
-exclusive-container foo:_elem [
-  x:num
-  y:_elem
-]
-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo:bar <- merge 1/y, 23, 34
-]
-+mem: storing 1 in location 1
-+mem: storing 23 in location 2
-+mem: storing 34 in location 3
-$error: 0
+void test_merge_check_shape_shifting_exclusive_container_containing_container() {
+  run(
+      "exclusive-container foo:_elem [\n"
+      "  x:num\n"
+      "  y:_elem\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:bar <- merge 1/y, 23, 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1 in location 1\n"
+      "mem: storing 23 in location 2\n"
+      "mem: storing 34 in location 3\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_shape_shifting_exclusive_container_containing_container_2)
-exclusive-container foo:_elem [
-  x:num
-  y:_elem
-]
-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo:bar <- merge 0/x, 23
-]
-$error: 0
+void test_merge_check_shape_shifting_exclusive_container_containing_container_2() {
+  run(
+      "exclusive-container foo:_elem [\n"
+      "  x:num\n"
+      "  y:_elem\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:bar <- merge 0/x, 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_shape_shifting_exclusive_container_containing_container_3)
-% Hide_errors = true;
-exclusive-container foo:_elem [
-  x:num
-  y:_elem
-]
-container bar [
-  x:num
-  y:num
-]
-def main [
-  1:foo:bar <- merge 1/y, 23
-]
-+error: main: too few ingredients in '1:foo:bar <- merge 1/y, 23'
+void test_merge_check_shape_shifting_exclusive_container_containing_container_3() {
+  Hide_errors = true;
+  run(
+      "exclusive-container foo:_elem [\n"
+      "  x:num\n"
+      "  y:_elem\n"
+      "]\n"
+      "container bar [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo:bar <- merge 1/y, 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too few ingredients in '1:foo:bar <- merge 1/y, 23'\n"
+  );
+}

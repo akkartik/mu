@@ -3,16 +3,22 @@
 :(before "End Initialize Op Names")
 put_new(Name, "e8", "call disp32 (call)");
 
-:(scenario call_disp32)
-% Reg[ESP].u = 0x64;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  e8                              a0 00 00 00  # call function offset at 0x000000a0
-  # next EIP is 6
-+run: call imm32 0x000000a0
-+run: decrementing ESP to 0x00000060
-+run: pushing value 0x00000006
-+run: jumping to 0x000000a6
+:(code)
+void test_call_disp32() {
+  Reg[ESP].u = 0x64;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  e8                                 a0 00 00 00 \n"  // call function offset at 0x000000a0
+      // next EIP is 6
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: call imm32 0x000000a0\n"
+      "run: decrementing ESP to 0x00000060\n"
+      "run: pushing value 0x00000006\n"
+      "run: jumping to 0x000000a6\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xe8: {  // call disp32 relative to next EIP
@@ -28,18 +34,24 @@ case 0xe8: {  // call disp32 relative to next EIP
 
 //:
 
-:(scenario call_r32)
-% Reg[ESP].u = 0x64;
-% Reg[EBX].u = 0x000000a0;
-== 0x1
-# op  ModR/M  SIB   displacement  immediate
-  ff  d3                                       # call function offset at EBX
-  # next EIP is 3
-+run: call to r/m32
-+run: r/m32 is EBX
-+run: decrementing ESP to 0x00000060
-+run: pushing value 0x00000003
-+run: jumping to 0x000000a3
+:(code)
+void test_call_r32() {
+  Reg[ESP].u = 0x64;
+  Reg[EBX].u = 0x000000a0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  ff     d3                                      \n"  // call function offset at EBX
+      // next EIP is 3
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: call to r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: decrementing ESP to 0x00000060\n"
+      "run: pushing value 0x00000003\n"
+      "run: jumping to 0x000000a3\n"
+  );
+}
 
 :(before "End Op ff Subops")
 case 2: {  // call function pointer at r/m32
@@ -52,36 +64,48 @@ case 2: {  // call function pointer at r/m32
   break;
 }
 
-:(scenario call_mem_at_r32)
-% Reg[ESP].u = 0x64;
-% Reg[EBX].u = 0x2000;
-== 0x1  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  ff  13                                       # call function offset at *EBX
-  # next EIP is 3
-== 0x2000  # data segment
-a0 00 00 00  # 0xa0
-+run: call to r/m32
-+run: effective address is 0x00002000 (EBX)
-+run: decrementing ESP to 0x00000060
-+run: pushing value 0x00000003
-+run: jumping to 0x000000a3
+:(code)
+void test_call_mem_at_r32() {
+  Reg[ESP].u = 0x64;
+  Reg[EBX].u = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  ff     13                                      \n"  // call function offset at *EBX
+      // next EIP is 3
+      "== 0x2000\n"  // data segment
+      "a0 00 00 00\n"  // 0x000000a0
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: call to r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: decrementing ESP to 0x00000060\n"
+      "run: pushing value 0x00000003\n"
+      "run: jumping to 0x000000a3\n"
+  );
+}
 
 //:: ret
 
 :(before "End Initialize Op Names")
 put_new(Name, "c3", "return from most recent unfinished call (ret)");
 
-:(scenario ret)
-% Reg[ESP].u = 0x2000;
-== 0x1  # code segment
-# op  ModR/M  SIB   displacement  immediate
-  c3
-== 0x2000  # data segment
-10 00 00 00  # 0x10
-+run: return
-+run: popping value 0x00000010
-+run: jumping to 0x00000010
+:(code)
+void test_ret() {
+  Reg[ESP].u = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  c3                                           \n"  // return
+      "== 0x2000\n"  // data segment
+      "10 00 00 00\n"  // 0x00000010
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: return\n"
+      "run: popping value 0x00000010\n"
+      "run: jumping to 0x00000010\n"
+  );
+}
 
 :(before "End Single-Byte Opcodes")
 case 0xc3: {  // return from a call

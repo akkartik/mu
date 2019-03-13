@@ -3,16 +3,19 @@
 //: The process of running Mu code:
 //:   load -> transform -> run
 
-:(scenarios load)  // use 'load' instead of 'run' in all scenarios in this layer
-:(scenario first_recipe)
-def main [
-  1:number <- copy 23
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
+void test_first_recipe() {
+  load(
+      "def main [\n"
+      "  1:number <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+  );
+}
 
-:(code)
 vector<recipe_ordinal> load(string form) {
   istringstream in(form);
   in >> std::noskipws;
@@ -237,123 +240,183 @@ void skip_comment(istream& in) {
   }
 }
 
-:(scenario recipe_instead_of_def)
-recipe main [
-  1:number <- copy 23
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
+void test_recipe_instead_of_def() {
+  load(
+      "recipe main [\n"
+      "  1:number <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+  );
+}
 
-:(scenario parse_comment_outside_recipe)
-# this comment will be dropped by the tangler, so we need a dummy recipe to stop that
-def f1 [
-]
-# this comment will go through to 'load'
-def main [
-  1:number <- copy 23
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
+void test_parse_comment_outside_recipe() {
+  load(
+      "# comment\n"
+      "def main [\n"
+      "  1:number <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+  );
+}
 
-:(scenario parse_comment_amongst_instruction)
-def main [
-  # comment
-  1:number <- copy 23
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
+void test_parse_comment_amongst_instruction() {
+  load(
+      "def main [\n"
+      "  # comment\n"
+      "  1:number <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+  );
+}
 
-:(scenario parse_comment_amongst_instruction_2)
-def main [
-  # comment
-  1:number <- copy 23
-  # comment
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
+void test_parse_comment_amongst_instruction_2() {
+  load(
+      "def main [\n"
+      "  # comment\n"
+      "  1:number <- copy 23\n"
+      "  # comment\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+  );
+}
 
-:(scenario parse_comment_amongst_instruction_3)
-def main [
-  1:number <- copy 23
-  # comment
-  2:number <- copy 23
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {2: "number"}
+void test_parse_comment_amongst_instruction_3() {
+  load(
+      "def main [\n"
+      "  1:number <- copy 23\n"
+      "  # comment\n"
+      "  2:number <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {2: \"number\"}\n"
+  );
+}
 
-:(scenario parse_comment_after_instruction)
-def main [
-  1:number <- copy 23  # comment
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
+void test_parse_comment_after_instruction() {
+  load(
+      "def main [\n"
+      "  1:number <- copy 23  # comment\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+  );
+}
 
-:(scenario parse_label)
-def main [
-  +foo
-]
-+parse: label: +foo
+void test_parse_label() {
+  load(
+      "def main [\n"
+      "  +foo\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: label: +foo\n"
+  );
+}
 
-:(scenario parse_dollar_as_recipe_name)
-def main [
-  $foo
-]
-+parse: instruction: $foo
+void test_parse_dollar_as_recipe_name() {
+  load(
+      "def main [\n"
+      "  $foo\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: $foo\n"
+  );
+}
 
-:(scenario parse_multiple_properties)
-def main [
-  1:number <- copy 23/foo:bar:baz
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal", "foo": ("bar" "baz")}
-+parse:   product: {1: "number"}
+void test_parse_multiple_properties() {
+  load(
+      "def main [\n"
+      "  1:number <- copy 23/foo:bar:baz\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\", \"foo\": (\"bar\" \"baz\")}\n"
+      "parse:   product: {1: \"number\"}\n"
+  );
+}
 
-:(scenario parse_multiple_products)
-def main [
-  1:number, 2:number <- copy 23
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   product: {1: "number"}
-+parse:   product: {2: "number"}
+void test_parse_multiple_products() {
+  load(
+      "def main [\n"
+      "  1:number, 2:number <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+      "parse:   product: {2: \"number\"}\n"
+  );
+}
 
-:(scenario parse_multiple_ingredients)
-def main [
-  1:number, 2:number <- copy 23, 4:number
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   ingredient: {4: "number"}
-+parse:   product: {1: "number"}
-+parse:   product: {2: "number"}
+void test_parse_multiple_ingredients() {
+  load(
+      "def main [\n"
+      "  1:number, 2:number <- copy 23, 4:number\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   ingredient: {4: \"number\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+      "parse:   product: {2: \"number\"}\n"
+  );
+}
 
-:(scenario parse_multiple_types)
-def main [
-  1:number, 2:address:number <- copy 23, 4:number
-]
-+parse: instruction: copy
-+parse:   ingredient: {23: "literal"}
-+parse:   ingredient: {4: "number"}
-+parse:   product: {1: "number"}
-+parse:   product: {2: ("address" "number")}
+void test_parse_multiple_types() {
+  load(
+      "def main [\n"
+      "  1:number, 2:address:number <- copy 23, 4:number\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: instruction: copy\n"
+      "parse:   ingredient: {23: \"literal\"}\n"
+      "parse:   ingredient: {4: \"number\"}\n"
+      "parse:   product: {1: \"number\"}\n"
+      "parse:   product: {2: (\"address\" \"number\")}\n"
+  );
+}
 
-:(scenario parse_properties)
-def main [
-  1:address:number/lookup <- copy 23
-]
-+parse:   product: {1: ("address" "number"), "lookup": ()}
+void test_parse_properties() {
+  load(
+      "def main [\n"
+      "  1:address:number/lookup <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse:   product: {1: (\"address\" \"number\"), \"lookup\": ()}\n"
+  );
+}
 
-//: this test we can't represent with a scenario
-:(code)
 void test_parse_comment_terminated_by_eof() {
   load("recipe main [\n"
        "  a:number <- copy 34\n"
@@ -362,12 +425,17 @@ void test_parse_comment_terminated_by_eof() {
   cerr << ".";  // termination = success
 }
 
-:(scenario warn_on_missing_space_before_bracket)
-% Hide_errors = true;
-def main[
-  1:number <- copy 23
-]
-+error: insert a space before '[' in 'main['
+void test_warn_on_missing_space_before_bracket() {
+  Hide_errors = true;
+  load(
+      "def main[\n"
+      "  1:number <- copy 23\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: insert a space before '[' in 'main['\n"
+  );
+}
 
 //: Warn if a recipe gets redefined, because large codebases can accidentally
 //: step on their own toes. But there'll be many occasions later where
@@ -382,27 +450,34 @@ bool should_check_for_redefine(const string& recipe_name) {
   return true;
 }
 
-:(scenario forbid_redefining_recipes)
-% Hide_errors = true;
-def main [
-  1:number <- copy 23
-]
-def main [
-  1:number <- copy 24
-]
-+error: redefining recipe main
+void test_forbid_redefining_recipes() {
+  Hide_errors = true;
+  load(
+      "def main [\n"
+      "  1:number <- copy 23\n"
+      "]\n"
+      "def main [\n"
+      "  1:number <- copy 24\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: redefining recipe main\n"
+  );
+}
 
-:(scenario permit_forcibly_redefining_recipes)
-def main [
-  1:number <- copy 23
-]
-def! main [
-  1:number <- copy 24
-]
--error: redefining recipe main
-$error: 0
+void test_permit_forcibly_redefining_recipes() {
+  load(
+      "def main [\n"
+      "  1:number <- copy 23\n"
+      "]\n"
+      "def! main [\n"
+      "  1:number <- copy 24\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("error: redefining recipe main");
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(code)
 // for debugging
 void show_rest_of_stream(istream& in) {
   cerr << '^';

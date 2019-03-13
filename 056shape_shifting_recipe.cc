@@ -1,24 +1,29 @@
 //:: Like container definitions, recipes too can contain type parameters.
 
-:(scenario shape_shifting_recipe)
-def main [
-  10:point <- merge 14, 15
-  12:point <- foo 10:point
-]
-# non-matching variant
-def foo a:num -> result:num [
-  local-scope
-  load-ingredients
-  result <- copy 34
-]
-# matching shape-shifting variant
-def foo a:_t -> result:_t [
-  local-scope
-  load-ingredients
-  result <- copy a
-]
-+mem: storing 14 in location 12
-+mem: storing 15 in location 13
+void test_shape_shifting_recipe() {
+  run(
+      "def main [\n"
+      "  10:point <- merge 14, 15\n"
+      "  12:point <- foo 10:point\n"
+      "]\n"
+      // non-matching variant
+      "def foo a:num -> result:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- copy 34\n"
+      "]\n"
+      // matching shape-shifting variant
+      "def foo a:_t -> result:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- copy a\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 14 in location 12\n"
+      "mem: storing 15 in location 13\n"
+  );
+}
 
 //: Before anything else, disable transforms for shape-shifting recipes and
 //: make sure we never try to actually run a shape-shifting recipe. We should
@@ -536,138 +541,171 @@ void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
   }
 }
 
-:(scenario shape_shifting_recipe_2)
-def main [
-  10:point <- merge 14, 15
-  12:point <- foo 10:point
-]
-# non-matching shape-shifting variant
-def foo a:_t, b:_t -> result:num [
-  local-scope
-  load-ingredients
-  result <- copy 34
-]
-# matching shape-shifting variant
-def foo a:_t -> result:_t [
-  local-scope
-  load-ingredients
-  result <- copy a
-]
-+mem: storing 14 in location 12
-+mem: storing 15 in location 13
+void test_shape_shifting_recipe_2() {
+  run(
+      "def main [\n"
+      "  10:point <- merge 14, 15\n"
+      "  12:point <- foo 10:point\n"
+      "]\n"
+      // non-matching shape-shifting variant
+      "def foo a:_t, b:_t -> result:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- copy 34\n"
+      "]\n"
+      // matching shape-shifting variant
+      "def foo a:_t -> result:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- copy a\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 14 in location 12\n"
+      "mem: storing 15 in location 13\n"
+  );
+}
 
-:(scenario shape_shifting_recipe_nonroot)
-def main [
-  10:foo:point <- merge 14, 15, 16
-  20:point <- bar 10:foo:point
-]
-# shape-shifting recipe with type ingredient following some other type
-def bar a:foo:_t -> result:_t [
-  local-scope
-  load-ingredients
-  result <- get a, x:offset
-]
-container foo:_t [
-  x:_t
-  y:num
-]
-+mem: storing 14 in location 20
-+mem: storing 15 in location 21
+void test_shape_shifting_recipe_nonroot() {
+  run(
+      "def main [\n"
+      "  10:foo:point <- merge 14, 15, 16\n"
+      "  20:point <- bar 10:foo:point\n"
+      "]\n"
+      // shape-shifting recipe with type ingredient following some other type
+      "def bar a:foo:_t -> result:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- get a, x:offset\n"
+      "]\n"
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 14 in location 20\n"
+      "mem: storing 15 in location 21\n"
+  );
+}
 
-:(scenario shape_shifting_recipe_nested)
-container c:_a:_b [
-  a:_a
-  b:_b
-]
-def main [
-  s:text <- new [abc]
-  {x: (c (address array character) number)} <- merge s, 34
-  foo x
-]
-def foo x:c:_bar:_baz [
-  local-scope
-  load-ingredients
-]
-# no errors
+void test_shape_shifting_recipe_nested() {
+  run(
+      "container c:_a:_b [\n"
+      "  a:_a\n"
+      "  b:_b\n"
+      "]\n"
+      "def main [\n"
+      "  s:text <- new [abc]\n"
+      "  {x: (c (address array character) number)} <- merge s, 34\n"
+      "  foo x\n"
+      "]\n"
+      "def foo x:c:_bar:_baz [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "]\n"
+  );
+  // no errors
+}
 
-:(scenario shape_shifting_recipe_type_deduction_ignores_offsets)
-def main [
-  10:foo:point <- merge 14, 15, 16
-  20:point <- bar 10:foo:point
-]
-def bar a:foo:_t -> result:_t [
-  local-scope
-  load-ingredients
-  x:num <- copy 1
-  result <- get a, x:offset  # shouldn't collide with other variable
-]
-container foo:_t [
-  x:_t
-  y:num
-]
-+mem: storing 14 in location 20
-+mem: storing 15 in location 21
+void test_shape_shifting_recipe_type_deduction_ignores_offsets() {
+  run(
+      "def main [\n"
+      "  10:foo:point <- merge 14, 15, 16\n"
+      "  20:point <- bar 10:foo:point\n"
+      "]\n"
+      "def bar a:foo:_t -> result:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  x:num <- copy 1\n"
+      "  result <- get a, x:offset  # shouldn't collide with other variable\n"
+      "]\n"
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 14 in location 20\n"
+      "mem: storing 15 in location 21\n"
+  );
+}
 
-:(scenario shape_shifting_recipe_empty)
-def main [
-  foo 1
-]
-# shape-shifting recipe with no body
-def foo a:_t [
-]
-# shouldn't crash
+void test_shape_shifting_recipe_empty() {
+  run(
+      "def main [\n"
+      "  foo 1\n"
+      "]\n"
+      // shape-shifting recipe with no body
+      "def foo a:_t [\n"
+      "]\n"
+  );
+  // shouldn't crash
+}
 
-:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)
-def main [
-  1:&:foo:point <- bar 3
-  11:foo:point <- copy *1:&:foo:point
-]
-container foo:_t [
-  x:_t
-  y:num
-]
-def bar x:num -> result:&:foo:_t [
-  local-scope
-  load-ingredients
-  # new refers to _t in its ingredient *value*
-  result <- new {(foo _t) : type}
-]
-+mem: storing 0 in location 11
-+mem: storing 0 in location 12
-+mem: storing 0 in location 13
+void test_shape_shifting_recipe_handles_shape_shifting_new_ingredient() {
+  run(
+      "def main [\n"
+      "  1:&:foo:point <- bar 3\n"
+      "  11:foo:point <- copy *1:&:foo:point\n"
+      "]\n"
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+      "def bar x:num -> result:&:foo:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+         // new refers to _t in its ingredient *value*
+      "  result <- new {(foo _t) : type}\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 11\n"
+      "mem: storing 0 in location 12\n"
+      "mem: storing 0 in location 13\n"
+  );
+}
 
-:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient_2)
-def main [
-  1:&:foo:point <- bar 3
-  11:foo:point <- copy *1:&:foo:point
-]
-def bar x:num -> result:&:foo:_t [
-  local-scope
-  load-ingredients
-  # new refers to _t in its ingredient *value*
-  result <- new {(foo _t) : type}
-]
-# container defined after use
-container foo:_t [
-  x:_t
-  y:num
-]
-+mem: storing 0 in location 11
-+mem: storing 0 in location 12
-+mem: storing 0 in location 13
+void test_shape_shifting_recipe_handles_shape_shifting_new_ingredient_2() {
+  run(
+      "def main [\n"
+      "  1:&:foo:point <- bar 3\n"
+      "  11:foo:point <- copy *1:&:foo:point\n"
+      "]\n"
+      "def bar x:num -> result:&:foo:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+         // new refers to _t in its ingredient *value*
+      "  result <- new {(foo _t) : type}\n"
+      "]\n"
+      // container defined after use
+      "container foo:_t [\n"
+      "  x:_t\n"
+      "  y:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 11\n"
+      "mem: storing 0 in location 12\n"
+      "mem: storing 0 in location 13\n"
+  );
+}
 
-:(scenario shape_shifting_recipe_called_with_dummy)
-def main [
-  _ <- bar 34
-]
-def bar x:_t -> result:&:_t [
-  local-scope
-  load-ingredients
-  result <- copy null
-]
-$error: 0
+void test_shape_shifting_recipe_called_with_dummy() {
+  run(
+      "def main [\n"
+      "  _ <- bar 34\n"
+      "]\n"
+      "def bar x:_t -> result:&:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- copy null\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(code)
 // this one needs a little more fine-grained control
 void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
   // if you specialize a shape-shifting recipe that allocates a type-ingredient..
@@ -695,460 +733,575 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
 }
 
 //: specializing a type ingredient with a compound type
-:(scenario shape_shifting_recipe_supports_compound_types)
-def main [
-  1:&:point <- new point:type
-  *1:&:point <- put *1:&:point, y:offset, 34
-  3:&:point <- bar 1:&:point  # specialize _t to address:point
-  5:point <- copy *3:&:point
-]
-def bar a:_t -> result:_t [
-  local-scope
-  load-ingredients
-  result <- copy a
-]
-+mem: storing 34 in location 6
+void test_shape_shifting_recipe_supports_compound_types() {
+  run(
+      "def main [\n"
+      "  1:&:point <- new point:type\n"
+      "  *1:&:point <- put *1:&:point, y:offset, 34\n"
+      "  3:&:point <- bar 1:&:point  # specialize _t to address:point\n"
+      "  5:point <- copy *3:&:point\n"
+      "]\n"
+      "def bar a:_t -> result:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- copy a\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 6\n"
+  );
+}
 
 //: specializing a type ingredient with a compound type -- while *inside* another compound type
-:(scenario shape_shifting_recipe_supports_compound_types_2)
-container foo:_t [
-  value:_t
-]
-def bar x:&:foo:_t -> result:_t [
-  local-scope
-  load-ingredients
-  result <- get *x, value:offset
-]
-def main [
-  1:&:foo:&:point <- new {(foo address point): type}
-  2:&:point <- bar 1:&:foo:&:point
-]
-# no errors; call to 'bar' successfully specialized
+void test_shape_shifting_recipe_supports_compound_types_2() {
+  run(
+      "container foo:_t [\n"
+      "  value:_t\n"
+      "]\n"
+      "def bar x:&:foo:_t -> result:_t [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  result <- get *x, value:offset\n"
+      "]\n"
+      "def main [\n"
+      "  1:&:foo:&:point <- new {(foo address point): type}\n"
+      "  2:&:point <- bar 1:&:foo:&:point\n"
+      "]\n"
+  );
+  // no errors; call to 'bar' successfully specialized
+}
 
-:(scenario shape_shifting_recipe_error)
-% Hide_errors = true;
-def main [
-  a:num <- copy 3
-  b:&:num <- foo a
-]
-def foo a:_t -> b:_t [
-  load-ingredients
-  b <- copy a
-]
-+error: main: no call found for 'b:&:num <- foo a'
+void test_shape_shifting_recipe_error() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  a:num <- copy 3\n"
+      "  b:&:num <- foo a\n"
+      "]\n"
+      "def foo a:_t -> b:_t [\n"
+      "  load-ingredients\n"
+      "  b <- copy a\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: no call found for 'b:&:num <- foo a'\n"
+  );
+}
 
-:(scenario specialize_inside_recipe_without_header)
-def main [
-  foo 3
-]
-def foo [
-  local-scope
-  x:num <- next-ingredient  # ensure no header
-  1:num/raw <- bar x  # call a shape-shifting recipe
-]
-def bar x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- add x, 1
-]
-+mem: storing 4 in location 1
+void test_specialize_inside_recipe_without_header() {
+  run(
+      "def main [\n"
+      "  foo 3\n"
+      "]\n"
+      "def foo [\n"
+      "  local-scope\n"
+      "  x:num <- next-ingredient  # ensure no header\n"
+      "  1:num/raw <- bar x  # call a shape-shifting recipe\n"
+      "]\n"
+      "def bar x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- add x, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 1\n"
+  );
+}
 
-:(scenario specialize_with_literal)
-def main [
-  local-scope
-  # permit literal to map to number
-  1:num/raw <- foo 3
-]
-def foo x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- add x, 1
-]
-+mem: storing 4 in location 1
+void test_specialize_with_literal() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+         // permit literal to map to number
+      "  1:num/raw <- foo 3\n"
+      "]\n"
+      "def foo x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- add x, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 1\n"
+  );
+}
 
-:(scenario specialize_with_literal_2)
-def main [
-  local-scope
-  # permit literal to map to character
-  1:char/raw <- foo 3
-]
-def foo x:_elem -> y:_elem [
-  local-scope
-  load-ingredients
-  y <- add x, 1
-]
-+mem: storing 4 in location 1
+void test_specialize_with_literal_2() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+         // permit literal to map to character
+      "  1:char/raw <- foo 3\n"
+      "]\n"
+      "def foo x:_elem -> y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- add x, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 4 in location 1\n"
+  );
+}
 
-:(scenario specialize_with_literal_3)
-def main [
-  local-scope
-  # permit '0' to map to address to shape-shifting type-ingredient
-  1:&:char/raw <- foo null
-]
-def foo x:&:_elem -> y:&:_elem [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+mem: storing 0 in location 1
-$error: 0
+void test_specialize_with_literal_3() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+         // permit '0' to map to address to shape-shifting type-ingredient
+      "  1:&:char/raw <- foo null\n"
+      "]\n"
+      "def foo x:&:_elem -> y:&:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario specialize_with_literal_4)
-% Hide_errors = true;
-def main [
-  local-scope
-  # ambiguous call: what's the type of its ingredient?!
-  foo 0
-]
-def foo x:&:_elem -> y:&:_elem [
-  local-scope
-  load-ingredients
-  y <- copy x
-]
-+error: main: instruction 'foo' has no valid specialization
+void test_specialize_with_literal_4() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  local-scope\n"
+         // ambiguous call: what's the type of its ingredient?!
+      "  foo 0\n"
+      "]\n"
+      "def foo x:&:_elem -> y:&:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  y <- copy x\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: instruction 'foo' has no valid specialization\n"
+  );
+}
 
-:(scenario specialize_with_literal_5)
-def main [
-  foo 3, 4  # recipe mapping two variables to literals
-]
-def foo x:_elem, y:_elem [
-  local-scope
-  load-ingredients
-  1:num/raw <- add x, y
-]
-+mem: storing 7 in location 1
+void test_specialize_with_literal_5() {
+  run(
+      "def main [\n"
+      "  foo 3, 4\n"  // recipe mapping two variables to literals
+      "]\n"
+      "def foo x:_elem, y:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  1:num/raw <- add x, y\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 7 in location 1\n"
+  );
+}
 
-:(scenario multiple_shape_shifting_variants)
-# try to call two different shape-shifting recipes with the same name
-def main [
-  e1:d1:num <- merge 3
-  e2:d2:num <- merge 4, 5
-  1:num/raw <- foo e1
-  2:num/raw <- foo e2
-]
-# the two shape-shifting definitions
-def foo a:d1:_elem -> b:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo a:d2:_elem -> b:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-# the shape-shifting containers they use
-container d1:_elem [
-  x:_elem
-]
-container d2:_elem [
-  x:num
-  y:_elem
-]
-+mem: storing 34 in location 1
-+mem: storing 35 in location 2
+void test_multiple_shape_shifting_variants() {
+  run(
+      // try to call two different shape-shifting recipes with the same name
+      "def main [\n"
+      "  e1:d1:num <- merge 3\n"
+      "  e2:d2:num <- merge 4, 5\n"
+      "  1:num/raw <- foo e1\n"
+      "  2:num/raw <- foo e2\n"
+      "]\n"
+      // the two shape-shifting definitions
+      "def foo a:d1:_elem -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "def foo a:d2:_elem -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+      // the shape-shifting containers they use
+      "container d1:_elem [\n"
+      "  x:_elem\n"
+      "]\n"
+      "container d2:_elem [\n"
+      "  x:num\n"
+      "  y:_elem\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+      "mem: storing 35 in location 2\n"
+  );
+}
 
-:(scenario multiple_shape_shifting_variants_2)
-# static dispatch between shape-shifting variants, _including pointer lookups_
-def main [
-  e1:d1:num <- merge 3
-  e2:&:d2:num <- new {(d2 number): type}
-  1:num/raw <- foo e1
-  2:num/raw <- foo *e2  # different from previous scenario
-]
-def foo a:d1:_elem -> b:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo a:d2:_elem -> b:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-container d1:_elem [
-  x:_elem
-]
-container d2:_elem [
-  x:num
-  y:_elem
-]
-+mem: storing 34 in location 1
-+mem: storing 35 in location 2
+void test_multiple_shape_shifting_variants_2() {
+  run(
+      // static dispatch between shape-shifting variants, _including pointer lookups_
+      "def main [\n"
+      "  e1:d1:num <- merge 3\n"
+      "  e2:&:d2:num <- new {(d2 number): type}\n"
+      "  1:num/raw <- foo e1\n"
+      "  2:num/raw <- foo *e2\n"  // different from previous scenario
+      "]\n"
+      "def foo a:d1:_elem -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "def foo a:d2:_elem -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+      "container d1:_elem [\n"
+      "  x:_elem\n"
+      "]\n"
+      "container d2:_elem [\n"
+      "  x:num\n"
+      "  y:_elem\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+      "mem: storing 35 in location 2\n"
+  );
+}
 
-:(scenario missing_type_in_shape_shifting_recipe)
-% Hide_errors = true;
-def main [
-  a:d1:num <- merge 3
-  foo a
-]
-def foo a:d1:_elem -> b:num [
-  local-scope
-  load-ingredients
-  copy e  # no such variable
-  return 34
-]
-container d1:_elem [
-  x:_elem
-]
-+error: foo: unknown type for 'e' in 'copy e' (check the name for typos)
-+error: specializing foo: missing type for 'e'
-# and it doesn't crash
+void test_missing_type_in_shape_shifting_recipe() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  a:d1:num <- merge 3\n"
+      "  foo a\n"
+      "]\n"
+      "def foo a:d1:_elem -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  copy e\n"  // no such variable
+      "  return 34\n"
+      "]\n"
+      "container d1:_elem [\n"
+      "  x:_elem\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: unknown type for 'e' in 'copy e' (check the name for typos)\n"
+      "error: specializing foo: missing type for 'e'\n"
+  );
+  // and it doesn't crash
+}
 
-:(scenario missing_type_in_shape_shifting_recipe_2)
-% Hide_errors = true;
-def main [
-  a:d1:num <- merge 3
-  foo a
-]
-def foo a:d1:_elem -> b:num [
-  local-scope
-  load-ingredients
-  get e, x:offset  # unknown variable in a 'get', which does some extra checking
-  return 34
-]
-container d1:_elem [
-  x:_elem
-]
-+error: foo: unknown type for 'e' in 'get e, x:offset' (check the name for typos)
-+error: specializing foo: missing type for 'e'
-# and it doesn't crash
+void test_missing_type_in_shape_shifting_recipe_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  a:d1:num <- merge 3\n"
+      "  foo a\n"
+      "]\n"
+      "def foo a:d1:_elem -> b:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  get e, x:offset\n"  // unknown variable in a 'get', which does some extra checking
+      "  return 34\n"
+      "]\n"
+      "container d1:_elem [\n"
+      "  x:_elem\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: foo: unknown type for 'e' in 'get e, x:offset' (check the name for typos)\n"
+      "error: specializing foo: missing type for 'e'\n"
+  );
+  // and it doesn't crash
+}
 
-:(scenarios transform)
-:(scenario specialize_recursive_shape_shifting_recipe)
-def main [
-  1:num <- copy 34
-  2:num <- foo 1:num
-]
-def foo x:_elem -> y:num [
-  local-scope
-  load-ingredients
-  {
-    break
-    y:num <- foo x
-  }
-  return y
-]
-+transform: new specialization: foo_2
-# transform terminates
+void test_specialize_recursive_shape_shifting_recipe() {
+  transform(
+      "def main [\n"
+      "  1:num <- copy 34\n"
+      "  2:num <- foo 1:num\n"
+      "]\n"
+      "def foo x:_elem -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  {\n"
+      "    break\n"
+      "    y:num <- foo x\n"
+      "  }\n"
+      "  return y\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: new specialization: foo_2\n"
+  );
+  // transform terminates
+}
 
-:(scenarios run)
-:(scenario specialize_most_similar_variant)
-def main [
-  1:&:num <- new number:type
-  10:num <- foo 1:&:num
-]
-def foo x:_elem -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo x:&:_elem -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-+mem: storing 35 in location 10
+void test_specialize_most_similar_variant() {
+  run(
+      "def main [\n"
+      "  1:&:num <- new number:type\n"
+      "  10:num <- foo 1:&:num\n"
+      "]\n"
+      "def foo x:_elem -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "def foo x:&:_elem -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 35 in location 10\n"
+  );
+}
 
-:(scenario specialize_most_similar_variant_2)
-# version with headers padded with lots of unrelated concrete types
-def main [
-  1:num <- copy 23
-  2:&:@:num <- copy null
-  4:num <- foo 2:&:@:num, 1:num
-]
-# variant with concrete type
-def foo dummy:&:@:num, x:num -> y:num, dummy:&:@:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-# shape-shifting variant
-def foo dummy:&:@:num, x:_elem -> y:num, dummy:&:@:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-# prefer the concrete variant
-+mem: storing 34 in location 4
+void test_specialize_most_similar_variant_2() {
+  run(
+      // version with headers padded with lots of unrelated concrete types
+      "def main [\n"
+      "  1:num <- copy 23\n"
+      "  2:&:@:num <- copy null\n"
+      "  4:num <- foo 2:&:@:num, 1:num\n"
+      "]\n"
+      // variant with concrete type
+      "def foo dummy:&:@:num, x:num -> y:num, dummy:&:@:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      // shape-shifting variant
+      "def foo dummy:&:@:num, x:_elem -> y:num, dummy:&:@:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  // prefer the concrete variant
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 4\n"
+  );
+}
 
-:(scenario specialize_most_similar_variant_3)
-def main [
-  1:text <- new [abc]
-  foo 1:text
-]
-def foo x:text [
-  10:num <- copy 34
-]
-def foo x:&:_elem [
-  10:num <- copy 35
-]
-# make sure the more precise version was used
-+mem: storing 34 in location 10
+void test_specialize_most_similar_variant_3() {
+  run(
+      "def main [\n"
+      "  1:text <- new [abc]\n"
+      "  foo 1:text\n"
+      "]\n"
+      "def foo x:text [\n"
+      "  10:num <- copy 34\n"
+      "]\n"
+      "def foo x:&:_elem [\n"
+      "  10:num <- copy 35\n"
+      "]\n"
+  );
+  // make sure the more precise version was used
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 10\n"
+  );
+}
 
-:(scenario specialize_literal_as_number)
-def main [
-  1:num <- foo 23
-]
-def foo x:_elem -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-def foo x:char -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-+mem: storing 34 in location 1
+void test_specialize_literal_as_number() {
+  run(
+      "def main [\n"
+      "  1:num <- foo 23\n"
+      "]\n"
+      "def foo x:_elem -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      "def foo x:char -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario specialize_literal_as_number_2)
-# version calling with literal
-def main [
-  1:num <- foo 0
-]
-# variant with concrete type
-def foo x:num -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-# shape-shifting variant
-def foo x:&:_elem -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-# prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant
-+mem: storing 34 in location 1
+void test_specialize_literal_as_number_2() {
+  run(
+      // version calling with literal
+      "def main [\n"
+      "  1:num <- foo 0\n"
+      "]\n"
+      // variant with concrete type
+      "def foo x:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      // shape-shifting variant
+      "def foo x:&:_elem -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  // prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario specialize_literal_as_address)
-def main [
-  1:num <- foo null
-]
-# variant with concrete address type
-def foo x:&:num -> y:num [
-  local-scope
-  load-ingredients
-  return 34
-]
-# shape-shifting variant
-def foo x:&:_elem -> y:num [
-  local-scope
-  load-ingredients
-  return 35
-]
-# prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant
-+mem: storing 34 in location 1
+void test_specialize_literal_as_address() {
+  run(
+      "def main [\n"
+      "  1:num <- foo null\n"
+      "]\n"
+      // variant with concrete address type
+      "def foo x:&:num -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 34\n"
+      "]\n"
+      // shape-shifting variant
+      "def foo x:&:_elem -> y:num [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  return 35\n"
+      "]\n"
+  );
+  // prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 34 in location 1\n"
+  );
+}
 
-:(scenario missing_type_during_specialization)
-% Hide_errors = true;
-# define a shape-shifting recipe
-def foo a:_elem [
-]
-# define a container with field 'z'
-container foo2 [
-  z:num
-]
-def main [
-  local-scope
-  x:foo2 <- merge 34
-  y:num <- get x, z:offse  # typo in 'offset'
-  # define a variable with the same name 'z'
-  z:num <- copy 34
-  # trigger specialization of the shape-shifting recipe
-  foo z
-]
-# shouldn't crash
+void test_missing_type_during_specialization() {
+  Hide_errors = true;
+  run(
+      // define a shape-shifting recipe
+      "def foo a:_elem [\n"
+      "]\n"
+      // define a container with field 'z'
+      "container foo2 [\n"
+      "  z:num\n"
+      "]\n"
+      "def main [\n"
+      "  local-scope\n"
+      "  x:foo2 <- merge 34\n"
+      "  y:num <- get x, z:offse  # typo in 'offset'\n"
+         // define a variable with the same name 'z'
+      "  z:num <- copy 34\n"
+      "  foo z\n"
+      "]\n"
+  );
+  // shouldn't crash
+}
 
-:(scenario missing_type_during_specialization2)
-% Hide_errors = true;
-# define a shape-shifting recipe
-def foo a:_elem [
-]
-# define a container with field 'z'
-container foo2 [
-  z:num
-]
-def main [
-  local-scope
-  x:foo2 <- merge 34
-  y:num <- get x, z:offse  # typo in 'offset'
-  # define a variable with the same name 'z'
-  z:&:num <- copy 34
-  # trigger specialization of the shape-shifting recipe
-  foo *z
-]
-# shouldn't crash
+void test_missing_type_during_specialization2() {
+  Hide_errors = true;
+  run(
+      // define a shape-shifting recipe
+      "def foo a:_elem [\n"
+      "]\n"
+      // define a container with field 'z'
+      "container foo2 [\n"
+      "  z:num\n"
+      "]\n"
+      "def main [\n"
+      "  local-scope\n"
+      "  x:foo2 <- merge 34\n"
+      "  y:num <- get x, z:offse  # typo in 'offset'\n"
+         // define a variable with the same name 'z'
+      "  z:&:num <- copy 34\n"
+         // trigger specialization of the shape-shifting recipe
+      "  foo *z\n"
+      "]\n"
+  );
+  // shouldn't crash
+}
 
-:(scenario tangle_shape_shifting_recipe)
-# shape-shifting recipe
-def foo a:_elem [
-  local-scope
-  load-ingredients
-  <label1>
-]
-# tangle some code that refers to the type ingredient
-after <label1> [
-  b:_elem <- copy a
-]
-# trigger specialization
-def main [
-  local-scope
-  foo 34
-]
-$error: 0
+void test_tangle_shape_shifting_recipe() {
+  run(
+      // shape-shifting recipe
+      "def foo a:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  <label1>\n"
+      "]\n"
+      // tangle some code that refers to the type ingredient
+      "after <label1> [\n"
+      "  b:_elem <- copy a\n"
+      "]\n"
+      // trigger specialization
+      "def main [\n"
+      "  local-scope\n"
+      "  foo 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario tangle_shape_shifting_recipe_with_type_abbreviation)
-# shape-shifting recipe
-def foo a:_elem [
-  local-scope
-  load-ingredients
-  <label1>
-]
-# tangle some code that refers to the type ingredient
-after <label1> [
-  b:bool <- copy false  # type abbreviation
-]
-# trigger specialization
-def main [
-  local-scope
-  foo 34
-]
-$error: 0
+void test_tangle_shape_shifting_recipe_with_type_abbreviation() {
+  run(
+      // shape-shifting recipe
+      "def foo a:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  <label1>\n"
+      "]\n"
+      // tangle some code that refers to the type ingredient
+      "after <label1> [\n"
+      "  b:bool <- copy false\n"  // type abbreviation
+      "]\n"
+      // trigger specialization
+      "def main [\n"
+      "  local-scope\n"
+      "  foo 34\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario shape_shifting_recipe_coexists_with_primitive)
-# recipe overloading a primitive with a generic type
-def add a:&:foo:_elem [
-  assert 0, [should not get here]
-]
-def main [
-  # call primitive add with literal 0
-  add 0, 0
-]
-$error: 0
+void test_shape_shifting_recipe_coexists_with_primitive() {
+  run(
+      // recipe overloading a primitive with a generic type
+      "def add a:&:foo:_elem [\n"
+      "  assert 0, [should not get here]\n"
+      "]\n"
+      "def main [\n"
+         // call primitive add with literal 0
+      "  add 0, 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario specialization_heuristic_test_1)
-# modeled on the 'buffer' container in text.mu
-container foo_buffer:_elem [
-  x:num
-]
-def main [
-  append 1:&:foo_buffer:char/raw, 2:text/raw
-]
-def append buf:&:foo_buffer:_elem, x:_elem -> buf:&:foo_buffer:_elem [
-  local-scope
-  load-ingredients
-  stash 34
-]
-def append buf:&:foo_buffer:char, x:_elem -> buf:&:foo_buffer:char [
-  local-scope
-  load-ingredients
-  stash 35
-]
-def append buf:&:foo_buffer:_elem, x:&:@:_elem -> buf:&:foo_buffer:_elem [
-  local-scope
-  load-ingredients
-  stash 36
-]
-+app: 36
+void test_specialization_heuristic_test_1() {
+  run(
+      // modeled on the 'buffer' container in text.mu
+      "container foo_buffer:_elem [\n"
+      "  x:num\n"
+      "]\n"
+      "def main [\n"
+      "  append 1:&:foo_buffer:char/raw, 2:text/raw\n"
+      "]\n"
+      "def append buf:&:foo_buffer:_elem, x:_elem -> buf:&:foo_buffer:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  stash 34\n"
+      "]\n"
+      "def append buf:&:foo_buffer:char, x:_elem -> buf:&:foo_buffer:char [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  stash 35\n"
+      "]\n"
+      "def append buf:&:foo_buffer:_elem, x:&:@:_elem -> buf:&:foo_buffer:_elem [\n"
+      "  local-scope\n"
+      "  load-ingredients\n"
+      "  stash 36\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "app: 36\n"
+  );
+}

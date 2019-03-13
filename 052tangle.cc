@@ -14,20 +14,25 @@ bool is_waypoint(string label) {
   return *label.begin() == '<' && *label.rbegin() == '>';
 }
 
-:(scenario tangle_before)
-def main [
-  1:num <- copy 0
-  <label1>
-  3:num <- copy 0
-]
-before <label1> [
-  2:num <- copy 0
-]
-+mem: storing 0 in location 1
-+mem: storing 0 in location 2
-+mem: storing 0 in location 3
-# nothing else
-$mem: 3
+void test_tangle_before() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  <label1>\n"
+      "  3:num <- copy 0\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+      "mem: storing 0 in location 2\n"
+      "mem: storing 0 in location 3\n"
+  );
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 3);
+}
 
 //: while loading recipes, load before/after fragments
 
@@ -175,273 +180,328 @@ void check_insert_fragments() {
   }
 }
 
-:(scenario tangle_before_and_after)
-def main [
-  1:num <- copy 0
-  <label1>
-  4:num <- copy 0
-]
-before <label1> [
-  2:num <- copy 0
-]
-after <label1> [
-  3:num <- copy 0
-]
-+mem: storing 0 in location 1
-+mem: storing 0 in location 2
-# label1
-+mem: storing 0 in location 3
-+mem: storing 0 in location 4
-# nothing else
-$mem: 4
+void test_tangle_before_and_after() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  <label1>\n"
+      "  4:num <- copy 0\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+      "after <label1> [\n"
+      "  3:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+      "mem: storing 0 in location 2\n"
+      // label1
+      "mem: storing 0 in location 3\n"
+      "mem: storing 0 in location 4\n"
+  );
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 4);
+}
 
-:(scenario tangle_ignores_jump_target)
-% Hide_errors = true;
-def main [
-  1:num <- copy 0
-  +label1
-  4:num <- copy 0
-]
-before +label1 [
-  2:num <- copy 0
-]
-+error: can't tangle before non-waypoint +label1
+void test_tangle_ignores_jump_target() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  +label1\n"
+      "  4:num <- copy 0\n"
+      "]\n"
+      "before +label1 [\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: can't tangle before non-waypoint +label1\n"
+  );
+}
 
-:(scenario tangle_keeps_labels_separate)
-def main [
-  1:num <- copy 0
-  <label1>
-  <label2>
-  6:num <- copy 0
-]
-before <label1> [
-  2:num <- copy 0
-]
-after <label1> [
-  3:num <- copy 0
-]
-before <label2> [
-  4:num <- copy 0
-]
-after <label2> [
-  5:num <- copy 0
-]
-+mem: storing 0 in location 1
-+mem: storing 0 in location 2
-# label1
-+mem: storing 0 in location 3
-# 'after' fragments for earlier label always go before 'before' fragments for later label
-+mem: storing 0 in location 4
-# label2
-+mem: storing 0 in location 5
-+mem: storing 0 in location 6
-# nothing else
-$mem: 6
+void test_tangle_keeps_labels_separate() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  <label1>\n"
+      "  <label2>\n"
+      "  6:num <- copy 0\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+      "after <label1> [\n"
+      "  3:num <- copy 0\n"
+      "]\n"
+      "before <label2> [\n"
+      "  4:num <- copy 0\n"
+      "]\n"
+      "after <label2> [\n"
+      "  5:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+      "mem: storing 0 in location 2\n"
+      // label1
+      "mem: storing 0 in location 3\n"
+      // 'after' fragments for earlier label always go before 'before'
+      // fragments for later label
+      "mem: storing 0 in location 4\n"
+      // label2
+      "mem: storing 0 in location 5\n"
+      "mem: storing 0 in location 6\n"
+  );
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 6);
+}
 
-:(scenario tangle_stacks_multiple_fragments)
-def main [
-  1:num <- copy 0
-  <label1>
-  6:num <- copy 0
-]
-before <label1> [
-  2:num <- copy 0
-]
-after <label1> [
-  3:num <- copy 0
-]
-before <label1> [
-  4:num <- copy 0
-]
-after <label1> [
-  5:num <- copy 0
-]
-+mem: storing 0 in location 1
-# 'before' fragments stack in order
-+mem: storing 0 in location 2
-+mem: storing 0 in location 4
-# label1
-# 'after' fragments stack in reverse order
-+mem: storing 0 in location 5
-+mem: storing 0 in location 3
-+mem: storing 0 in location 6
-# nothing else
-$mem: 6
+void test_tangle_stacks_multiple_fragments() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  <label1>\n"
+      "  6:num <- copy 0\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+      "after <label1> [\n"
+      "  3:num <- copy 0\n"
+      "]\n"
+      "before <label1> [\n"
+      "  4:num <- copy 0\n"
+      "]\n"
+      "after <label1> [\n"
+      "  5:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+      // 'before' fragments stack in order
+      "mem: storing 0 in location 2\n"
+      "mem: storing 0 in location 4\n"
+      // label1
+      // 'after' fragments stack in reverse order
+      "mem: storing 0 in location 5\n"
+      "mem: storing 0 in location 3\n"
+      "mem: storing 0 in location 6\n"
+  );
+  // nothing
+  CHECK_TRACE_COUNT("mem", 6);
+}
 
-:(scenario tangle_supports_fragments_with_multiple_instructions)
-def main [
-  1:num <- copy 0
-  <label1>
-  6:num <- copy 0
-]
-before <label1> [
-  2:num <- copy 0
-  3:num <- copy 0
-]
-after <label1> [
-  4:num <- copy 0
-  5:num <- copy 0
-]
-+mem: storing 0 in location 1
-+mem: storing 0 in location 2
-+mem: storing 0 in location 3
-# label1
-+mem: storing 0 in location 4
-+mem: storing 0 in location 5
-+mem: storing 0 in location 6
-# nothing else
-$mem: 6
+void test_tangle_supports_fragments_with_multiple_instructions() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 0\n"
+      "  <label1>\n"
+      "  6:num <- copy 0\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 0\n"
+      "  3:num <- copy 0\n"
+      "]\n"
+      "after <label1> [\n"
+      "  4:num <- copy 0\n"
+      "  5:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 1\n"
+      "mem: storing 0 in location 2\n"
+      "mem: storing 0 in location 3\n"
+      // label1
+      "mem: storing 0 in location 4\n"
+      "mem: storing 0 in location 5\n"
+      "mem: storing 0 in location 6\n"
+  );
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 6);
+}
 
-:(scenario tangle_tangles_into_all_labels_with_same_name)
-def main [
-  1:num <- copy 10
-  <label1>
-  4:num <- copy 10
-  recipe2
-]
-def recipe2 [
-  1:num <- copy 11
-  <label1>
-  4:num <- copy 11
-]
-before <label1> [
-  2:num <- copy 12
-]
-after <label1> [
-  3:num <- copy 12
-]
-+mem: storing 10 in location 1
-+mem: storing 12 in location 2
-# label1
-+mem: storing 12 in location 3
-+mem: storing 10 in location 4
-# recipe2
-+mem: storing 11 in location 1
-+mem: storing 12 in location 2
-# label1
-+mem: storing 12 in location 3
-+mem: storing 11 in location 4
-# nothing else
-$mem: 8
+void test_tangle_tangles_into_all_labels_with_same_name() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 10\n"
+      "  <label1>\n"
+      "  4:num <- copy 10\n"
+      "  recipe2\n"
+      "]\n"
+      "def recipe2 [\n"
+      "  1:num <- copy 11\n"
+      "  <label1>\n"
+      "  4:num <- copy 11\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 12\n"
+      "]\n"
+      "after <label1> [\n"
+      "  3:num <- copy 12\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 10 in location 1\n"
+      "mem: storing 12 in location 2\n"
+      // label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 10 in location 4\n"
+      // recipe2
+      "mem: storing 11 in location 1\n"
+      "mem: storing 12 in location 2\n"
+      // label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 11 in location 4\n"
+  );
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 8);
+}
 
-:(scenario tangle_tangles_into_all_labels_with_same_name_2)
-def main [
-  1:num <- copy 10
-  <label1>
-  <label1>
-  4:num <- copy 10
-]
-before <label1> [
-  2:num <- copy 12
-]
-after <label1> [
-  3:num <- copy 12
-]
-+mem: storing 10 in location 1
-+mem: storing 12 in location 2
-# label1
-+mem: storing 12 in location 3
-+mem: storing 12 in location 2
-# label1
-+mem: storing 12 in location 3
-+mem: storing 10 in location 4
-# nothing else
-$mem: 6
+void test_tangle_tangles_into_all_labels_with_same_name_2() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 10\n"
+      "  <label1>\n"
+      "  <label1>\n"
+      "  4:num <- copy 10\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 12\n"
+      "]\n"
+      "after <label1> [\n"
+      "  3:num <- copy 12\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 10 in location 1\n"
+      "mem: storing 12 in location 2\n"
+      // label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 12 in location 2\n"
+      // label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 10 in location 4\n"
+  );
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 6);
+}
 
-:(scenario tangle_tangles_into_all_labels_with_same_name_3)
-def main [
-  1:num <- copy 10
-  <label1>
-  <foo>
-  4:num <- copy 10
-]
-before <label1> [
-  2:num <- copy 12
-]
-after <label1> [
-  3:num <- copy 12
-]
-after <foo> [
-  <label1>
-]
-+mem: storing 10 in location 1
-+mem: storing 12 in location 2
-# label1
-+mem: storing 12 in location 3
-+mem: storing 12 in location 2
-# foo/label1
-+mem: storing 12 in location 3
-+mem: storing 10 in location 4
-# nothing else
-$mem: 6
+void test_tangle_tangles_into_all_labels_with_same_name_3() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 10\n"
+      "  <label1>\n"
+      "  <foo>\n"
+      "  4:num <- copy 10\n"
+      "]\n"
+      "before <label1> [\n"
+      "  2:num <- copy 12\n"
+      "]\n"
+      "after <label1> [\n"
+      "  3:num <- copy 12\n"
+      "]\n"
+      "after <foo> [\n"
+      "  <label1>\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 10 in location 1\n"
+      "mem: storing 12 in location 2\n"
+      // label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 12 in location 2\n"
+      // foo/label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 10 in location 4\n"
+  );
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 6);
+}
 
-:(scenario tangle_handles_jump_target_inside_fragment)
-def main [
-  1:num <- copy 10
-  <label1>
-  4:num <- copy 10
-]
-before <label1> [
-  jump +label2:label
-  2:num <- copy 12
-  +label2
-  3:num <- copy 12
-]
-+mem: storing 10 in location 1
-# label1
-+mem: storing 12 in location 3
-+mem: storing 10 in location 4
-# ignored by jump
--mem: storing 12 in label 2
-# nothing else
-$mem: 3
+void test_tangle_handles_jump_target_inside_fragment() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 10\n"
+      "  <label1>\n"
+      "  4:num <- copy 10\n"
+      "]\n"
+      "before <label1> [\n"
+      "  jump +label2:label\n"
+      "  2:num <- copy 12\n"
+      "  +label2\n"
+      "  3:num <- copy 12\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 10 in location 1\n"
+      // label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 10 in location 4\n"
+  );
+  // ignored by jump
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 12 in label 2");
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 3);
+}
 
-:(scenario tangle_renames_jump_target)
-def main [
-  1:num <- copy 10
-  <label1>
-  +label2
-  4:num <- copy 10
-]
-before <label1> [
-  jump +label2:label
-  2:num <- copy 12
-  +label2  # renamed
-  3:num <- copy 12
-]
-+mem: storing 10 in location 1
-# label1
-+mem: storing 12 in location 3
-+mem: storing 10 in location 4
-# ignored by jump
--mem: storing 12 in label 2
-# nothing else
-$mem: 3
+void test_tangle_renames_jump_target() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 10\n"
+      "  <label1>\n"
+      "  +label2\n"
+      "  4:num <- copy 10\n"
+      "]\n"
+      "before <label1> [\n"
+      "  jump +label2:label\n"
+      "  2:num <- copy 12\n"
+      "  +label2  # renamed\n"
+      "  3:num <- copy 12\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 10 in location 1\n"
+      // label1
+      "mem: storing 12 in location 3\n"
+      "mem: storing 10 in location 4\n"
+  );
+  // ignored by jump
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 12 in label 2");
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 3);
+}
 
-:(scenario tangle_jump_to_base_recipe)
-def main [
-  1:num <- copy 10
-  <label1>
-  +label2
-  4:num <- copy 10
-]
-before <label1> [
-  jump +label2:label
-  2:num <- copy 12
-  3:num <- copy 12
-]
-+mem: storing 10 in location 1
-# label1
-+mem: storing 10 in location 4
-# ignored by jump
--mem: storing 12 in label 2
--mem: storing 12 in location 3
-# nothing else
-$mem: 2
+void test_tangle_jump_to_base_recipe() {
+  run(
+      "def main [\n"
+      "  1:num <- copy 10\n"
+      "  <label1>\n"
+      "  +label2\n"
+      "  4:num <- copy 10\n"
+      "]\n"
+      "before <label1> [\n"
+      "  jump +label2:label\n"
+      "  2:num <- copy 12\n"
+      "  3:num <- copy 12\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 10 in location 1\n"
+      // label1
+      "mem: storing 10 in location 4\n"
+  );
+  // ignored by jump
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 12 in label 2");
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 12 in location 3");
+  // nothing else
+  CHECK_TRACE_COUNT("mem", 2);
+}
 
 //: ensure that there are no new fragments created for a label after it's already been inserted to
 
-:(code)
 void test_new_fragment_after_tangle() {
   // define a recipe
   load("def foo [\n"

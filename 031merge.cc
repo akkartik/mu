@@ -1,15 +1,20 @@
 //: Construct types out of their constituent fields.
 
-:(scenario merge)
-container foo [
-  x:num
-  y:num
-]
-def main [
-  1:foo <- merge 3, 4
-]
-+mem: storing 3 in location 1
-+mem: storing 4 in location 2
+void test_merge() {
+  run(
+      "container foo [\n"
+      "  x:num\n"
+      "  y:num\n"
+      "]\n"
+      "def main [\n"
+      "  1:foo <- merge 3, 4\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 3 in location 1\n"
+      "mem: storing 4 in location 2\n"
+  );
+}
 
 :(before "End Primitive Recipe Declarations")
 MERGE,
@@ -31,66 +36,99 @@ case MERGE: {
 
 //: type-check 'merge' to avoid interpreting numbers as addresses
 
-:(scenario merge_check)
-def main [
-  1:point <- merge 3, 4
-]
-$error: 0
+:(code)
+void test_merge_check() {
+  run(
+      "def main [\n"
+      "  1:point <- merge 3, 4\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_missing_element)
-% Hide_errors = true;
-def main [
-  1:point <- merge 3
-]
-+error: main: too few ingredients in '1:point <- merge 3'
+void test_merge_check_missing_element() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:point <- merge 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too few ingredients in '1:point <- merge 3'\n"
+  );
+}
 
-:(scenario merge_check_extra_element)
-% Hide_errors = true;
-def main [
-  1:point <- merge 3, 4, 5
-]
-+error: main: too many ingredients in '1:point <- merge 3, 4, 5'
+void test_merge_check_extra_element() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:point <- merge 3, 4, 5\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too many ingredients in '1:point <- merge 3, 4, 5'\n"
+  );
+}
 
 //: We want to avoid causing memory corruption, but other than that we want to
 //: be flexible in how we construct containers of containers. It should be
 //: equally easy to define a container out of primitives or intermediate
 //: container fields.
 
-:(scenario merge_check_recursive_containers)
-def main [
-  1:point <- merge 3, 4
-  1:point-number <- merge 1:point, 5
-]
-$error: 0
+void test_merge_check_recursive_containers() {
+  run(
+      "def main [\n"
+      "  1:point <- merge 3, 4\n"
+      "  1:point-number <- merge 1:point, 5\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_recursive_containers_2)
-% Hide_errors = true;
-def main [
-  1:point <- merge 3, 4
-  2:point-number <- merge 1:point
-]
-+error: main: too few ingredients in '2:point-number <- merge 1:point'
+void test_merge_check_recursive_containers_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:point <- merge 3, 4\n"
+      "  2:point-number <- merge 1:point\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too few ingredients in '2:point-number <- merge 1:point'\n"
+  );
+}
 
-:(scenario merge_check_recursive_containers_3)
-def main [
-  1:point-number <- merge 3, 4, 5
-]
-$error: 0
+void test_merge_check_recursive_containers_3() {
+  run(
+      "def main [\n"
+      "  1:point-number <- merge 3, 4, 5\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
-:(scenario merge_check_recursive_containers_4)
-% Hide_errors = true;
-def main [
-  1:point-number <- merge 3, 4
-]
-+error: main: too few ingredients in '1:point-number <- merge 3, 4'
+void test_merge_check_recursive_containers_4() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:point-number <- merge 3, 4\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: too few ingredients in '1:point-number <- merge 3, 4'\n"
+  );
+}
 
-:(scenario merge_check_reflexive)
-% Hide_errors = true;
-def main [
-  1:point <- merge 3, 4
-  2:point <- merge 1:point
-]
-$error: 0
+void test_merge_check_reflexive() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:point <- merge 3, 4\n"
+      "  2:point <- merge 1:point\n"
+      "]\n"
+  );
+  CHECK_TRACE_COUNT("error", 0);
+}
 
 //: Since a container can be merged in several ways, we need to be able to
 //: backtrack through different possibilities. Later we'll allow creating
@@ -215,12 +253,17 @@ const type_tree* get_base_type(const type_tree* t) {
   return t;
 }
 
-:(scenario merge_check_product)
-% Hide_errors = true;
-def main [
-  1:num <- merge 3
-]
-+error: main: 'merge' should yield a container in '1:num <- merge 3'
+void test_merge_check_product() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  1:num <- merge 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'merge' should yield a container in '1:num <- merge 3'\n"
+  );
+}
 
 :(before "End Includes")
 #include <stack>

@@ -2,17 +2,22 @@
 //: segment.
 //: This gives up a measure of control in placing code and data.
 
-:(scenario segment_name)
-== code
-05/add-to-EAX  0x0d0c0b0a/imm32
-# code starts at 0x08048000 + p_offset, which is 0x54 for a single-segment binary
-+load: 0x09000054 -> 05
-+load: 0x09000055 -> 0a
-+load: 0x09000056 -> 0b
-+load: 0x09000057 -> 0c
-+load: 0x09000058 -> 0d
-+run: add imm32 0x0d0c0b0a to reg EAX
-+run: storing 0x0d0c0b0a
+void test_segment_name() {
+  run(
+      "== code\n"
+      "05/add-to-EAX  0x0d0c0b0a/imm32\n"
+      // code starts at 0x08048000 + p_offset, which is 0x54 for a single-segment binary
+  );
+  CHECK_TRACE_CONTENTS(
+      "load: 0x09000054 -> 05\n"
+      "load: 0x09000055 -> 0a\n"
+      "load: 0x09000056 -> 0b\n"
+      "load: 0x09000057 -> 0c\n"
+      "load: 0x09000058 -> 0d\n"
+      "run: add imm32 0x0d0c0b0a to reg EAX\n"
+      "run: storing 0x0d0c0b0a\n"
+  );
+}
 
 //: Update the parser to handle non-numeric segment name.
 //:
@@ -61,44 +66,65 @@ if (Currently_parsing_named_segment) {
   return;
 }
 
-:(scenario repeated_segment_merges_data)
-== code
-05/add-to-EAX  0x0d0c0b0a/imm32
-== code
-2d/subtract-from-EAX  0xddccbbaa/imm32
-+parse: new segment 'code'
-+parse: appending to segment 'code'
-# first segment
-+load: 0x09000054 -> 05
-+load: 0x09000055 -> 0a
-+load: 0x09000056 -> 0b
-+load: 0x09000057 -> 0c
-+load: 0x09000058 -> 0d
-# second segment
-+load: 0x09000059 -> 2d
-+load: 0x0900005a -> aa
-+load: 0x0900005b -> bb
-+load: 0x0900005c -> cc
-+load: 0x0900005d -> dd
+:(code)
+void test_repeated_segment_merges_data() {
+  run(
+      "== code\n"
+      "05/add-to-EAX  0x0d0c0b0a/imm32\n"
+      "== code\n"  // again
+      "2d/subtract-from-EAX  0xddccbbaa/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: new segment 'code'\n"
+      "parse: appending to segment 'code'\n"
+      // first segment
+      "load: 0x09000054 -> 05\n"
+      "load: 0x09000055 -> 0a\n"
+      "load: 0x09000056 -> 0b\n"
+      "load: 0x09000057 -> 0c\n"
+      "load: 0x09000058 -> 0d\n"
+      // second segment
+      "load: 0x09000059 -> 2d\n"
+      "load: 0x0900005a -> aa\n"
+      "load: 0x0900005b -> bb\n"
+      "load: 0x0900005c -> cc\n"
+      "load: 0x0900005d -> dd\n"
+  );
+}
 
-:(scenario error_on_missing_segment_header)
-% Hide_errors = true;
-05/add-to-EAX 0/imm32
-+error: input does not start with a '==' section header
+void test_error_on_missing_segment_header() {
+  Hide_errors = true;
+  run(
+      "05/add-to-EAX 0/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: input does not start with a '==' section header\n"
+  );
+}
 
-:(scenario error_on_first_segment_not_code)
-% Hide_errors = true;
-== data
-05 00 00 00 00
-+error: first segment must be 'code' but is 'data'
+void test_error_on_first_segment_not_code() {
+  Hide_errors = true;
+  run(
+      "== data\n"
+      "05 00 00 00 00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: first segment must be 'code' but is 'data'\n"
+  );
+}
 
-:(scenario error_on_second_segment_not_data)
-% Hide_errors = true;
-== code
-05/add-to-EAX 0/imm32
-== bss
-05 00 00 00 00
-+error: second segment must be 'data' but is 'bss'
+void test_error_on_second_segment_not_data() {
+  Hide_errors = true;
+  run(
+      "== code\n"
+      "05/add-to-EAX 0/imm32\n"
+      "== bss\n"
+      "05 00 00 00 00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: second segment must be 'data' but is 'bss'\n"
+  );
+}
 
 //: compute segment address
 

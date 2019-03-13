@@ -16,56 +16,70 @@
 :(before "End Mu Types Initialization")
 put(Type_abbreviations, "space", new_type_tree("address:array:location"));
 
-:(scenario set_default_space)
-def main [
-  # prepare default-space address
-  10:num/alloc-id, 11:num <- copy 0, 1000
-  # prepare default-space payload
-  1000:num <- copy 0  # alloc id of payload
-  1001:num <- copy 5  # length
-  # actual start of this recipe
-  default-space:space <- copy 10:&:@:location
-  # if default-space is 1000, then:
-  #   1000: alloc id
-  #   1001: array size
-  #   1002: location 0 (space for the chaining slot; described later; often unused)
-  #   1003: location 1 (space for the chaining slot; described later; often unused)
-  #   1004: local 2 (assuming it is a scalar)
-  2:num <- copy 93
-]
-+mem: storing 93 in location 1004
+:(code)
+void test_set_default_space() {
+  run(
+      "def main [\n"
+         // prepare default-space address
+      "  10:num/alloc-id, 11:num <- copy 0, 1000\n"
+         // prepare default-space payload
+      "  1000:num <- copy 0\n"  // alloc id of payload
+      "  1001:num <- copy 5\n"  // length
+         // actual start of this recipe
+      "  default-space:space <- copy 10:&:@:location\n"
+         // if default-space is 1000, then:
+         //   1000: alloc id
+         //   1001: array size
+         //   1002: location 0 (space for the chaining slot; described later; often unused)
+         //   1003: location 1 (space for the chaining slot; described later; often unused)
+         //   1004: local 2 (assuming it is a scalar)
+      "  2:num <- copy 93\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 93 in location 1004\n"
+  );
+}
 
-:(scenario lookup_sidesteps_default_space)
-def main [
-  # prepare default-space address
-  10:num/alloc-id, 11:num <- copy 0, 1000
-  # prepare default-space payload
-  1000:num <- copy 0  # alloc id of payload
-  1001:num <- copy 5  # length
-  # prepare payload outside the local scope
-  2000:num/alloc-id, 2001:num <- copy 0, 34
-  # actual start of this recipe
-  default-space:space <- copy 10:&:@:location
-  # a local address
-  2:num, 3:num <- copy 0, 2000
-  20:num/raw <- copy *2:&:num
-]
-+mem: storing 2000 in location 1005
-+mem: storing 34 in location 20
+void test_lookup_sidesteps_default_space() {
+  run(
+      "def main [\n"
+         // prepare default-space address
+      "  10:num/alloc-id, 11:num <- copy 0, 1000\n"
+         // prepare default-space payload
+      "  1000:num <- copy 0\n"  // alloc id of payload
+      "  1001:num <- copy 5\n"  // length
+         // prepare payload outside the local scope
+      "  2000:num/alloc-id, 2001:num <- copy 0, 34\n"
+         // actual start of this recipe
+      "  default-space:space <- copy 10:&:@:location\n"
+         // a local address
+      "  2:num, 3:num <- copy 0, 2000\n"
+      "  20:num/raw <- copy *2:&:num\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 2000 in location 1005\n"
+      "mem: storing 34 in location 20\n"
+  );
+}
 
 //: precondition: disable name conversion for 'default-space'
 
-:(scenarios transform)
-:(scenario convert_names_passes_default_space)
-% Hide_errors = true;
-def main [
-  default-space:num <- copy 0
-  x:num <- copy 1
-]
-+name: assign x 2
--name: assign default-space 1
--name: assign default-space 2
-:(scenarios run)
+void test_convert_names_passes_default_space() {
+  Hide_errors = true;
+  transform(
+      "def main [\n"
+      "  default-space:num <- copy 0\n"
+      "  x:num <- copy 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "name: assign x 2\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("name: assign default-space 1");
+  CHECK_TRACE_DOESNT_CONTAIN("name: assign default-space 2");
+}
 
 :(before "End is_disqualified Special-cases")
 if (x.name == "default-space")
@@ -133,18 +147,23 @@ bool is_mu_space(reagent/*copy*/ x) {
   return x.type && x.type->atom && x.type->name == "location";
 }
 
-:(scenario get_default_space)
-def main [
-  # prepare default-space address
-  10:num/alloc-id, 11:num <- copy 0, 1000
-  # prepare default-space payload
-  1000:num <- copy 0  # alloc id of payload
-  1001:num <- copy 5  # length
-  # actual start of this recipe
-  default-space:space <- copy 10:space
-  2:space/raw <- copy default-space:space
-]
-+mem: storing 1000 in location 3
+void test_get_default_space() {
+  run(
+      "def main [\n"
+         // prepare default-space address
+      "  10:num/alloc-id, 11:num <- copy 0, 1000\n"
+         // prepare default-space payload
+      "  1000:num <- copy 0\n"  // alloc id of payload
+      "  1001:num <- copy 5\n"  // length
+         // actual start of this recipe
+      "  default-space:space <- copy 10:space\n"
+      "  2:space/raw <- copy default-space:space\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 1000 in location 3\n"
+  );
+}
 
 :(after "Begin Preprocess read_memory(x)")
 if (x.name == "default-space") {
@@ -156,45 +175,57 @@ if (x.name == "default-space") {
 
 //:: fix 'get'
 
-:(scenario lookup_sidesteps_default_space_in_get)
-def main [
-  # prepare default-space address
-  10:num/alloc-id, 11:num <- copy 0, 1000
-  # prepare default-space payload
-  1000:num <- copy 0  # alloc id of payload
-  1001:num <- copy 5  # length
-  # prepare payload outside the local scope
-  2000:num/alloc-id, 2001:num/x, 2002:num/y <- copy 0, 34, 35
-  # actual start of this recipe
-  default-space:space <- copy 10:space
-  # a local address
-  2:num, 3:num <- copy 0, 2000
-  3000:num/raw <- get *2:&:point, 1:offset
-]
-+mem: storing 35 in location 3000
+:(code)
+void test_lookup_sidesteps_default_space_in_get() {
+  run(
+      "def main [\n"
+         // prepare default-space address
+      "  10:num/alloc-id, 11:num <- copy 0, 1000\n"
+         // prepare default-space payload
+      "  1000:num <- copy 0\n"  // alloc id of payload
+      "  1001:num <- copy 5\n"  // length
+         // prepare payload outside the local scope
+      "  2000:num/alloc-id, 2001:num/x, 2002:num/y <- copy 0, 34, 35\n"
+         // actual start of this recipe
+      "  default-space:space <- copy 10:space\n"
+         // a local address
+      "  2:num, 3:num <- copy 0, 2000\n"
+      "  3000:num/raw <- get *2:&:point, 1:offset\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 35 in location 3000\n"
+  );
+}
 
 :(before "Read element" following "case GET:")
 element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 //:: fix 'index'
 
-:(scenario lookup_sidesteps_default_space_in_index)
-def main [
-  # prepare default-space address
-  10:num/alloc-id, 11:num <- copy 0, 1000
-  # prepare default-space payload
-  1000:num <- copy 0  # alloc id of payload
-  1001:num <- copy 5  # length
-  # prepare an array address
-  20:num/alloc-id, 21:num <- copy 0, 2000
-  # prepare an array payload
-  2000:num/alloc-id, 2001:num/length, 2002:num/index:0, 2003:num/index:1 <- copy 0, 2, 34, 35
-  # actual start of this recipe
-  default-space:space <- copy 10:&:@:location
-  1:&:@:num <- copy 20:&:@:num/raw
-  3000:num/raw <- index *1:&:@:num, 1
-]
-+mem: storing 35 in location 3000
+:(code)
+void test_lookup_sidesteps_default_space_in_index() {
+  run(
+      "def main [\n"
+         // prepare default-space address
+      "  10:num/alloc-id, 11:num <- copy 0, 1000\n"
+         // prepare default-space payload
+      "  1000:num <- copy 0\n"  // alloc id of payload
+      "  1001:num <- copy 5\n"  // length
+         // prepare an array address
+      "  20:num/alloc-id, 21:num <- copy 0, 2000\n"
+         // prepare an array payload
+      "  2000:num/alloc-id, 2001:num/length, 2002:num/index:0, 2003:num/index:1 <- copy 0, 2, 34, 35\n"
+         // actual start of this recipe
+      "  default-space:space <- copy 10:&:@:location\n"
+      "  1:&:@:num <- copy 20:&:@:num/raw\n"
+      "  3000:num/raw <- index *1:&:@:num, 1\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 35 in location 3000\n"
+  );
+}
 
 :(before "Read element" following "case INDEX:")
 element.properties.push_back(pair<string, string_tree*>("raw", NULL));
@@ -202,14 +233,20 @@ element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 //:: 'local-scope' is a convenience operation to automatically deduce
 //:: the amount of space to allocate in a default space with names
 
-:(scenario local_scope)
-def main [
-  local-scope
-  x:num <- copy 0
-  y:num <- copy 3
-]
-# allocate space for x and y, as well as the chaining slot at indices 0 and 1
-+mem: array length is 4
+:(code)
+void test_local_scope() {
+  run(
+      "def main [\n"
+      "  local-scope\n"
+      "  x:num <- copy 0\n"
+      "  y:num <- copy 3\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      // allocate space for x and y, as well as the chaining slot at indices 0 and 1
+      "mem: array length is 4\n"
+  );
+}
 
 :(before "End is_disqualified Special-cases")
 if (x.name == "number-of-locals")

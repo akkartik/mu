@@ -14,13 +14,16 @@ bool is_jump_target(const string& label) {
   return is_label_word(label);
 }
 
-:(scenario jump_to_label)
-def main [
-  jump +target:label
-  1:num <- copy 0
-  +target
-]
--mem: storing 0 in location 1
+void test_jump_to_label() {
+  run(
+      "def main [\n"
+      "  jump +target:label\n"
+      "  1:num <- copy 0\n"
+      "  +target\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 0 in location 1");
+}
 
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "label", 0);
@@ -94,90 +97,124 @@ void replace_offset(reagent& x, /*const*/ map<string, int>& offset, const int cu
   x.set_value(get(offset, x.name) - current_offset);
 }
 
-:(scenario break_to_label)
-def main [
-  {
-    {
-      break +target:label
-      1:num <- copy 0
-    }
-  }
-  +target
-]
--mem: storing 0 in location 1
+void test_break_to_label() {
+  run(
+      "def main [\n"
+      "  {\n"
+      "    {\n"
+      "      break +target:label\n"
+      "      1:num <- copy 0\n"
+      "    }\n"
+      "  }\n"
+      "  +target\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 0 in location 1");
+}
 
-:(scenario jump_if_to_label)
-def main [
-  {
-    {
-      jump-if 1, +target:label
-      1:num <- copy 0
-    }
-  }
-  +target
-]
--mem: storing 0 in location 1
+void test_jump_if_to_label() {
+  run(
+      "def main [\n"
+      "  {\n"
+      "    {\n"
+      "      jump-if 1, +target:label\n"
+      "      1:num <- copy 0\n"
+      "    }\n"
+      "  }\n"
+      "  +target\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 0 in location 1");
+}
 
-:(scenario loop_unless_to_label)
-def main [
-  {
-    {
-      loop-unless 0, +target:label  # loop/break with a label don't care about braces
-      1:num <- copy 0
-    }
-  }
-  +target
-]
--mem: storing 0 in location 1
+void test_loop_unless_to_label() {
+  run(
+      "def main [\n"
+      "  {\n"
+      "    {\n"
+      "      loop-unless 0, +target:label\n"  // loop/break with a label don't care about braces
+      "      1:num <- copy 0\n"
+      "    }\n"
+      "  }\n"
+      "  +target\n"
+      "]\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 0 in location 1");
+}
 
-:(scenario jump_runs_code_after_label)
-def main [
-  # first a few lines of padding to exercise the offset computation
-  1:num <- copy 0
-  2:num <- copy 0
-  3:num <- copy 0
-  jump +target:label
-  4:num <- copy 0
-  +target
-  5:num <- copy 0
-]
-+mem: storing 0 in location 5
--mem: storing 0 in location 4
+void test_jump_runs_code_after_label() {
+  run(
+      "def main [\n"
+      // first a few lines of padding to exercise the offset computation
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  3:num <- copy 0\n"
+      "  jump +target:label\n"
+      "  4:num <- copy 0\n"
+      "  +target\n"
+      "  5:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "mem: storing 0 in location 5\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN("mem: storing 0 in location 4");
+}
 
-:(scenario jump_fails_without_target)
-% Hide_errors = true;
-def main [
-  jump
-]
-+error: main: 'jump' expects an ingredient but got 0
+void test_jump_fails_without_target() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  jump\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'jump' expects an ingredient but got 0\n"
+  );
+}
 
-:(scenario jump_fails_without_target_2)
-% Hide_errors = true;
-def main [
-  jump-if true
-]
-+error: main: 'jump-if true' expects 2 ingredients but got 1
+void test_jump_fails_without_target_2() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  jump-if true\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: 'jump-if true' expects 2 ingredients but got 1\n"
+  );
+}
 
-:(scenario recipe_fails_on_duplicate_jump_target)
-% Hide_errors = true;
-def main [
-  +label
-  1:num <- copy 0
-  +label
-  2:num <- copy 0
-]
-+error: main: duplicate label '+label'
+void test_recipe_fails_on_duplicate_jump_target() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      "  +label\n"
+      "  1:num <- copy 0\n"
+      "  +label\n"
+      "  2:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: duplicate label '+label'\n"
+  );
+}
 
-:(scenario jump_ignores_nontarget_label)
-% Hide_errors = true;
-def main [
-  # first a few lines of padding to exercise the offset computation
-  1:num <- copy 0
-  2:num <- copy 0
-  3:num <- copy 0
-  jump $target:label
-  4:num <- copy 0
-  $target
-  5:num <- copy 0
-]
-+error: main: can't jump to label '$target'
+void test_jump_ignores_nontarget_label() {
+  Hide_errors = true;
+  run(
+      "def main [\n"
+      // first a few lines of padding to exercise the offset computation
+      "  1:num <- copy 0\n"
+      "  2:num <- copy 0\n"
+      "  3:num <- copy 0\n"
+      "  jump $target:label\n"
+      "  4:num <- copy 0\n"
+      "  $target\n"
+      "  5:num <- copy 0\n"
+      "]\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: main: can't jump to label '$target'\n"
+  );
+}
