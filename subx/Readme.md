@@ -553,6 +553,7 @@ Here's what I've built so far:
   (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/subx/cheatsheet.pdf))
 * [Concise reference for the x86 ISA](https://c9x.me/x86)
 * [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
+* [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
 
 ## Inspirations
 

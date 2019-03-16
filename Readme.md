@@ -389,21 +389,16 @@ for a more complex example with tests of blocking reads from the keyboard and
 what gets printed to the screen -- things we don't typically associate with
 automated tests.
 
-b) Try skimming the [colorized source code](https://akkartik.github.io/mu).
-You should be able to get a pretty good sense for how things work just by
-skimming the files in order, skimming the top of each file and ignoring
-details lower down.
-
-c) Try running the tests:
+b) Try running the tests:
 
   ```shell
   $ ./mu test
   ```
 
-d) Check out [the programming environment](https://github.com/akkartik/mu/tree/master/edit#readme),
+c) Check out [the programming environment](https://github.com/akkartik/mu/tree/master/edit#readme),
 the largest app built so far in Mu.
 
-e) Check out the tracing infrastructure which gives you a maps-like zoomable
+d) Check out the tracing infrastructure which gives you a maps-like zoomable
 UI for browsing Mu's traces:
 
   ```shell
@@ -415,11 +410,17 @@ UI for browsing Mu's traces:
 
 For more details see the [Readme](browse_trace/Readme.md).
 
-f) Look at the `build` scripts. Mu's compilation process is itself designed to
+e) Look at the `build` scripts. Mu's compilation process is itself designed to
 support staged learning. Each of the scripts (`build0`, `build1`, `build2`,
 etc.) is self-contained and can compile the project by itself. Successive
 versions add new features and configurability -- and complexity -- to the
 compilation process.
+
+f) Try skimming the [colorized source code](https://akkartik.github.io/mu).
+You should be able to get a pretty good sense for how things work just by
+skimming the files in order, skimming the top of each file and ignoring
+details lower down.
+[Some details on my unconventional approach to organizing projects.](http://akkartik.name/post/four-repos)
 
 **Credits**
 
