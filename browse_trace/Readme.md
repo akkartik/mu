@@ -60,9 +60,9 @@ The UI provides the following hotkeys:
 * `T`: Scroll line at cursor to top of screen.
 
 * `/`: Search forward for a pattern.
-* '?': Search backward for a pattern.
-* `n`: Repeat the previous '/' or '?'.
-* `N`: Repeat the previous '/' or '?' in the opposite direction.
+* `?`: Search backward for a pattern.
+* `n`: Repeat the previous `/` or `?`.
+* `N`: Repeat the previous `/` or `?` in the opposite direction.
 
 After hitting `/`, the mini-editor on the bottom-most line supports the
 following hotkeys:
