@@ -138,6 +138,7 @@ void init_operand_type_help() {
   );
   put(Help, "disp16",
     "16-bit value to be added in many instructions.\n"
+    "Currently not used in any SubX instructions.\n"
   );
   put(Help, "disp32",
     "32-bit value to be added in many instructions.\n"

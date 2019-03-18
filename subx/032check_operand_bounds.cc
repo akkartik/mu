@@ -47,8 +47,14 @@ void check_operand_bounds(const word& w) {
     if (!looks_like_hex_int(w.data)) continue;  // later transforms are on their own to do their own bounds checking
     int32_t x = parse_int(w.data);
     if (x >= 0) {
-      if (static_cast<uint32_t>(x) >= p->second)
-        raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
+      if (p->first == "disp8" || p->first == "disp16") {
+        if (static_cast<uint32_t>(x) >= p->second/2)
+          raise << "'" << w.original << "' too large to fit in signed bitfield " << p->first << '\n' << end();
+      }
+      else {
+        if (static_cast<uint32_t>(x) >= p->second)
+          raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
+      }
     }
     else {
       // hacky? assuming bound is a power of 2
@@ -56,4 +62,82 @@ void check_operand_bounds(const word& w) {
         raise << "'" << w.original << "' too large to fit in bitfield " << p->first << '\n' << end();
     }
   }
+}
+
+void test_check_bitfield_sizes_for_imm8() {
+  run(
+      "== 0x1\n"  // code segment
+      "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX 0xff/imm8"  // shift EBX left
+  );
+  CHECK(!trace_contains_errors());
+}
+
+void test_check_bitfield_sizes_for_imm8_error() {
+  Hide_errors = true;
+  run(
+      "== 0x1\n"  // code segment
+      "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX 0x100/imm8"  // shift EBX left
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: '0x100/imm8' too large to fit in bitfield imm8\n"
+  );
+}
+
+void test_check_bitfield_sizes_for_negative_imm8() {
+  run(
+      "== 0x1\n"  // code segment
+      "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX -0x80/imm8"  // shift EBX left
+  );
+  CHECK(!trace_contains_errors());
+}
+
+void test_check_bitfield_sizes_for_negative_imm8_error() {
+  Hide_errors = true;
+  run(
+      "== 0x1\n"  // code segment
+      "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX -0x81/imm8"  // shift EBX left
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: '-0x81/imm8' too large to fit in bitfield imm8\n"
+  );
+}
+
+void test_check_bitfield_sizes_for_disp8() {
+  // not bothering to run
+  transform(
+      "== 0x1\n"  // code segment
+      "01/add 1/mod/*+disp8 3/rm32 1/r32 0x7f/disp8\n"  // add ECX to *(EBX+0x7f)
+  );
+  CHECK(!trace_contains_errors());
+}
+
+void test_check_bitfield_sizes_for_disp8_error() {
+  Hide_errors = true;
+  run(
+      "== 0x1\n"  // code segment
+      "01/add 1/mod/*+disp8 3/rm32 1/r32 0x80/disp8\n"  // add ECX to *(EBX+0x80)
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: '0x80/disp8' too large to fit in signed bitfield disp8\n"
+  );
+}
+
+void test_check_bitfield_sizes_for_negative_disp8() {
+  // not bothering to run
+  transform(
+      "== 0x1\n"  // code segment
+      "01/add 1/mod/*+disp8 3/rm32 1/r32 -0x80/disp8\n"  // add ECX to *(EBX-0x80)
+  );
+  CHECK(!trace_contains_errors());
+}
+
+void test_check_bitfield_sizes_for_negative_disp8_error() {
+  Hide_errors = true;
+  run(
+      "== 0x1\n"  // code segment
+      "01/add 1/mod/*+disp8 3/rm32 1/r32 -0x81/disp8\n"  // add ECX to *(EBX-0x81)
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: '-0x81/disp8' too large to fit in bitfield disp8\n"
+  );
 }
