@@ -235,10 +235,10 @@ next-stream-line-equal?:  # f : (address stream), s : (address string) -> EAX : 
     # pseudocode:
     #   currf = f->read  # bound: f->write
     #   currs = 0  # bound : s->length
-    #   while true:
-    #     if (currf >= f->write)
+    #   while true
+    #     if currf >= f->write
     #       return currs >= s->length
-    #     if (f[currf] == '\n')
+    #     if f[currf] == '\n'
     #       ++currf
     #       return currs >= s->length
     #     if (currs >= s->length) return false  # the current line of f still has data to match
@@ -249,7 +249,7 @@ next-stream-line-equal?:  # f : (address stream), s : (address string) -> EAX : 
     # collapsing the two branches that can return true:
     #   currf = f->read  # bound: f->write
     #   currs = 0  # bound : s->length
-    #   while true:
+    #   while true
     #     if (currf >= f->write) break
     #     if (f[currf] == '\n') break
     #     if (currs >= s->length) return false  # the current line of f still has data to match

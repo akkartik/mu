@@ -87,12 +87,12 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   var in-code? = false
-    #   repeatedly
+    #   while true
     #     clear-stream(line)
     #     read-line(in, line)
     #     if (line->write == 0) break             # end of file
     #     var word-slice = next-word(line)
-    #     if (slice-empty?(word-slice))           # whitespace
+    #     if slice-empty?(word-slice)             # whitespace
     #       write-stream-buffered(out, line)
     #     else if (slice-equal?(word-slice, "=="))
     #       word-slice = next-word(line)
@@ -463,24 +463,24 @@ test-convert-passes-segment-headers-through:
 convert-code-segment:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
-    #   repeatedly
+    #   while true
     #     clear-stream(line)
     #     EAX = read-line(in, line)
     #     if (EAX == Eof) break
     #     word-slice = next-word(line)
-    #     if (slice-equal?(word-slice, "=="))
+    #     if slice-equal?(word-slice, "==")
     #       return
     #     convert-instruction(line, out)
 
 convert-data-segment:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
-    #   repeatedly
+    #   while true
     #     clear-stream(line)
     #     EAX = read-line(in, line)
     #     if (EAX == Eof) break
     #     word-slice = next-word(line)
-    #     if (slice-equal?(word-slice, "=="))
+    #     if slice-equal?(word-slice, "==")
     #       return
     #     convert-data-word(line, out)
 
@@ -488,7 +488,7 @@ convert-data-segment:  # in : (address buffered-file), out : (address buffered-f
 # read first word as opcode and write-slice
 # if 0f or f2 or f3 read second opcode and write-slice
 # if 'f2 0f' or 'f3 0f' read third opcode and write-slice
-# while true:
+# while true
 #   word-slice = next-word
 #   if empty(word-slice) break
 #   if has metadata 'mod', parse into mod
@@ -496,7 +496,7 @@ convert-data-segment:  # in : (address buffered-file), out : (address buffered-f
 #   if has metadata 'r32', parse into r32
 #   if has metadata 'subop', parse into r32
 # if at least one of the 3 was present, print-byte
-# while true:
+# while true
 #   word-slice = next-word
 #   if empty(word-slice) break
 #   if has metadata 'base', parse into base
@@ -504,13 +504,13 @@ convert-data-segment:  # in : (address buffered-file), out : (address buffered-f
 #   if has metadata 'scale', parse into scale
 # if at least one of the 3 was present, print-byte
 # parse errors => <abort>
-# while true:
+# while true
 #   word-slice = next-word
 #   if empty(word-slice) break
 #   if has metadata 'disp8', emit as 1 byte
 #   if has metadata 'disp16', emit as 2 bytes
 #   if has metadata 'disp32', emit as 4 bytes
-# while true:
+# while true
 #   word-slice = next-word
 #   if empty(word-slice) break
 #   if has metadata 'imm8', emit
@@ -536,7 +536,7 @@ convert-data-segment:  # in : (address buffered-file), out : (address buffered-f
 convert-instruction:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   word-slice = next-word
-    #   if (starts-with(word-slice, "#"))       # comments
+    #   if starts-with(word-slice, "#")       # comments
     #     write-stream-buffered(out, line)
     #   ...
     #
@@ -905,7 +905,7 @@ has-metadata?:  # word : (address slice), s : (address string) -> EAX : boolean
     # pseudocode:
     #   var twig : &slice = next-token-from-slice(word->start, word->end, '/')  # skip name
     #   curr = twig->end
-    #   while true:
+    #   while true
     #     twig = next-token-from-slice(curr, word->end, '/')
     #     if (twig.empty()) break
     #     if (slice-equal?(twig, s)) return true

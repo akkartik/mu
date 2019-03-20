@@ -72,7 +72,7 @@ $main:end:
 # the main entry point
 convert:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
     # pseudocode:
-    #   repeatedly
+    #   while true
     #     EAX = convert-next-octet(in, err, ed)
     #     if (EAX == Eof) break
     #     write-byte(out, AL)
@@ -488,7 +488,7 @@ $test-convert-next-octet-aborts-on-single-hex-byte:end:
 # abort on any other byte
 scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-Eof/EAX
     # pseudocode:
-    #   repeatedly
+    #   while true
     #     EAX = read-byte(in)
     #     if (EAX == Eof) return EAX
     #     if (is-hex-digit?(EAX)) return EAX
@@ -1412,7 +1412,7 @@ $test-scan-next-byte-aborts-on-invalid-byte:end:
 skip-until-newline:  # in : (address buffered-file) -> <void>
     # pseudocode:
     #   push EAX
-    #   repeatedly:
+    #   while true
     #     EAX = read-byte(in)
     #     if (EAX == Eof) break
     #     if (EAX == 0x0a) break
