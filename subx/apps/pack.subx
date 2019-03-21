@@ -23,7 +23,7 @@
 Entry:  # run tests if necessary, convert stdin if not
 
 #?     # for debugging: run a single test
-#?     e8/call test-next-word-returns-empty-string-on-eof/disp32
+#?     e8/call test-emit-non-number-with-metadata/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -1514,27 +1514,13 @@ test-emit-number:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check(_test-stream->data == 'fe ff ')
-    # . check-ints-equal(_test-stream->data[0..3], 'fe f', msg)
+    # check-stream-equal(_test-stream, "fe ff ", msg)
     # . . push args
     68/push  "F - test-emit-number/1"/imm32
-    68/push  0x66206566/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "fe ff "/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-ints-equal(_test-stream->data[4..7], 'f ', msg)
-    # . . push args
-    68/push  "F - test-emit-number/2"/imm32
-    68/push  0x2066/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0x10/disp8      .                 # push *(EAX+16)
-    # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
@@ -1584,27 +1570,13 @@ test-emit-number-with-metadata:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # the '/foo' will have no impact on the output
-    # check(_test-stream->data == 'fe ff ')
-    # . check-ints-equal(_test-stream->data[0..3], 'fe f', msg)
+    # check-stream-equal(_test-stream, "fe ff ", msg)
     # . . push args
-    68/push  "F - test-emit-number-with-metadata/1"/imm32
-    68/push  0x66206566/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "F - test-emit-number-with-metadata"/imm32
+    68/push  "fe ff "/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-ints-equal(_test-stream->data[4..7], 'f ', msg)
-    # . . push args
-    68/push  "F - test-emit-number-with-metadata/2"/imm32
-    68/push  0x2066/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0x10/disp8      .                 # push *(EAX+16)
-    # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
@@ -1653,16 +1625,13 @@ test-emit-non-number:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check(_test-stream->data == 'xyz')
-    # . check-ints-equal(_test-stream->data[0..3], 'xyz', msg)
+    # check-stream-equal(_test-stream, "xyz", msg)
     # . . push args
     68/push  "F - test-emit-non-number"/imm32
-    68/push  0x7a7978/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "xyz"/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
@@ -1711,16 +1680,13 @@ test-emit-non-number-with-metadata:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check(_test-stream->data == 'xyz/')
-    # . check-ints-equal(_test-stream->data[0..3], 'xyz/', msg)
+    # check-stream-equal(_test-stream, "xyz/", msg)
     # . . push args
     68/push  "F - test-emit-non-number-with-metadata"/imm32
-    68/push  0x2f7a7978/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "xyz/"/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
@@ -1866,27 +1832,13 @@ test-emit-hex-multiple-byte:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check(_test-stream->data == '34 12 ')
-    # . check-ints-equal(_test-stream->data[0..3], '34 1', msg)
+    # check-stream-equal(_test-stream, "34 12 ", msg)
     # . . push args
     68/push  "F - test-emit-hex-multiple-byte/1"/imm32
-    68/push  0x31203433/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "34 12 "/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-ints-equal(_test-stream->data[4..7], '2 ', msg)
-    # . . push args
-    68/push  "F - test-emit-hex-multiple-byte/2"/imm32
-    68/push  0x2032/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0x10/disp8      .                 # push *(EAX+16)
-    # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . end
@@ -1926,27 +1878,13 @@ test-emit-hex-zero-pad:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check(_test-stream->data == '00 ab')
-    # . check-ints-equal(*_test-stream->data, 'ab 0', msg)
+    # check(_test-stream->data == 'ab 00 ')
     # . . push args
     68/push  "F - test-emit-hex-zero-pad/1"/imm32
-    68/push  0x30206261/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "ab 00 "/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-ints-equal(*_test-stream->data[1], '0 ', msg)
-    # . . push args
-    68/push  "F - test-emit-hex-zero-pad/2"/imm32
-    68/push  0x2030/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0x10/disp8      .                 # push *(EAX+16)
-    # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . end
@@ -1986,27 +1924,13 @@ test-emit-hex-negative:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check(_test-stream->data == 'ff ff ')
-    # . check-ints-equal(_test-stream->data[0..3], 'ff f', msg)
+    # check-stream-equal(_test-stream == "ff ff ")
     # . . push args
     68/push  "F - test-emit-hex-negative/1"/imm32
-    68/push  0x66206666/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    68/push  "ff ff "/imm32
+    68/push  _test-stream/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-ints-equal(_test-stream->data[4..7], 'f ', msg)
-    # . . push args
-    68/push  "F - test-emit-hex-negative/2"/imm32
-    68/push  0x2066/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0x10/disp8      .                 # push *(EAX+16)
-    # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . end
