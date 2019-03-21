@@ -34,6 +34,7 @@ case 0x01: {  // add r32 to r/m32
 // Implement tables 2-2 and 2-3 in the Intel manual, Volume 2.
 // We return a pointer so that instructions can write to multiple bytes in
 // 'Mem' at once.
+// beware: will eventually have side-effects
 int32_t* effective_address(uint8_t modrm) {
   const uint8_t mod = (modrm>>6);
   // ignore middle 3 'reg opcode' bits
@@ -43,9 +44,12 @@ int32_t* effective_address(uint8_t modrm) {
     trace(Callstack_depth+1, "run") << "r/m32 is " << rname(rm) << end();
     return &Reg[rm].i;
   }
-  return mem_addr_i32(effective_address_number(modrm));
+  uint32_t addr = effective_address_number(modrm);
+  trace(Callstack_depth+1, "run") << "effective address contains " << read_mem_i32(addr) << end();
+  return mem_addr_i32(addr);
 }
 
+// beware: will eventually have side-effects
 uint32_t effective_address_number(uint8_t modrm) {
   const uint8_t mod = (modrm>>6);
   // ignore middle 3 'reg opcode' bits
