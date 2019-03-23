@@ -23,7 +23,7 @@
 Entry:  # run tests if necessary, convert stdin if not
 
 #?     # for debugging: run a single test
-#?     e8/call test-convert-data-passes-names-through/disp32
+#?     e8/call test-convert-data-passes-labels-through/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -479,7 +479,8 @@ convert-data:  # line : (address stream byte), out : (address buffered-file) -> 
     # pseudocode:
     #   while true
     #     word-slice = next-word
-    #     if (line->write == 0) break                 # end of file
+    #     if slice-empty?(word-slice)                 # whitespace
+    #       write-stream-buffered(out, line)
     #     if slice-starts-with?(word-slice, "#")      # comment
     #       write-stream-buffered(out, line)
     #     else if slice-ends-with?(word-slice, ":")   # label
@@ -509,6 +510,48 @@ convert-data:  # line : (address stream byte), out : (address buffered-file) -> 
     e8/call  next-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$convert-data:check0:
+    # if (slice-empty?(word-slice)) write-stream-buffered(out, line)
+    # . EAX = slice-empty?(word-slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . if (EAX != 0) pass through
+    3d/compare-EAX  0/imm32
+    75/jump-if-not-equal  $convert-data:pass-line-through/disp8
+$convert-data:check1:
+    # if (slice-starts-with?(word-slice, "#")) write-stream-buffered(out, line)
+    # . start/EDX = word-slice->start
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # copy *ECX to EDX
+    # . c/EAX = *start
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/AL    .               .                 # copy byte at *EDX to AL
+    # . if (EAX == '#') pass through
+    3d/compare-with-EAX  0x23/imm32/hash
+    74/jump-if-equal  $convert-data:pass-line-through/disp8
+$convert-data:check2:
+    # if (slice-ends-with?(word-slice, ":")) write-stream-buffered(out, line)
+    # . end/EDX = word-slice->end
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ECX+4) to EDX
+    # . c/EAX = *(end-1)
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    1/mod/*+disp8   2/rm32/EDX    .           .             .           0/r32/AL    -1/disp8        .                 # copy byte at *ECX to AL
+    # . if (EAX == ':') pass through
+    3d/compare-with-EAX  0x3a/imm32/colon
+    74/jump-if-equal  $convert-data:pass-line-through/disp8
+    # emit(out, word-slice, 4)  # temporary
+    # . . push args
+    68/push  4/imm32  # should be unused
+    51/push-ECX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  emit/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    eb/jump  $convert-data:end/disp8
 $convert-data:pass-line-through:
     # write-stream-buffered(out, line)
     # . . push args
