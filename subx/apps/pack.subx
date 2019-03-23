@@ -23,7 +23,7 @@
 Entry:  # run tests if necessary, convert stdin if not
 
 #?     # for debugging: run a single test
-#?     e8/call test-emit-non-number-with-metadata/disp32
+#?     e8/call test-is-valid-name-starts-with-digit/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -479,10 +479,10 @@ convert-data:  # line : (address stream byte), out : (address buffered-file) -> 
     # pseudocode:
     #   while true
     #     word-slice = next-word
-    #     if (line->write == 0) break             # end of file
-    #     if slice-starts-with(word-slice, "#")       # comment
+    #     if (line->write == 0) break                 # end of file
+    #     if slice-starts-with?(word-slice, "#")      # comment
     #       write-stream-buffered(out, line)
-    #     else if slice-ends-with(word-slice, ":")    # label
+    #     else if slice-ends-with?(word-slice, ":")   # label
     #       write-stream-buffered(out, line)
     #     ...
     #
@@ -708,7 +708,7 @@ test-convert-data-passes-labels-through:
 convert-instruction:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   word-slice = next-word
-    #   if slice-starts-with(word-slice, "#")       # comments
+    #   if slice-starts-with?(word-slice, "#")        # comments
     #     write-stream-buffered(out, line)
     #   ...
     #
@@ -1694,6 +1694,240 @@ test-emit-non-number-with-metadata:
     5d/pop-to-EBP
     c3/return
 
+# conditions for 'valid' names that are not at risk of looking like hex numbers
+# keep in sync with the rules in labels.cc
+#: - if it starts with a digit, it's treated as a number. If it can't be
+#:   parsed as hex it will raise an error.
+#: - if it starts with '-' it's treated as a number.
+#: - if it starts with '0x' it's treated as a number. (redundant)
+#: - if it's two characters long, it can't be a name. Either it's a hex
+#:   byte, or it raises an error.
+is-valid-name?:  # in : (address slice) -> EAX : boolean
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    56/push-ESI
+    # ESI = in
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # start/ECX = in->start
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+    # end/EAX = in->end
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ESI+4) to EAX
+$is-valid-name?:check0:
+    # if (start >= end) return false
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # compare ECX with EAX
+    7d/jump-if-greater-or-equal  $is-valid-name?:false/disp8
+$is-valid-name?:check1:
+    # EAX -= ECX
+    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
+    # if (EAX == 2) return false
+    3d/compare-with-EAX  2/imm32
+    74/jump-if-equal  $is-valid-name?:false/disp8
+$is-valid-name?:check2:
+    # c/EAX = *ECX
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
+    # if (c == "-") return false
+    3d/compare-with-EAX  2d/imm32/-
+    74/jump-if-equal  $is-valid-name?:false/disp8
+$is-valid-name?:check3a:
+    # if (c < "0") return true
+    3d/compare-with-EAX  30/imm32/0
+    7c/jump-if-lesser  $is-valid-name?:true/disp8
+$is-valid-name?:check3b:
+    # if (c > "9") return true
+    3d/compare-with-EAX  39/imm32/9
+    7f/jump-if-greater  $is-valid-name?:true/disp8
+$is-valid-name?:false:
+    # return false
+    b8/copy-to-EAX  0/imm32/false
+    eb/jump  $is-valid-name?:end/disp8
+$is-valid-name?:true:
+    # return true
+    b8/copy-to-EAX  1/imm32/true
+$is-valid-name?:end:
+    # . restore registers
+    5e/pop-to-ESI
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-valid-name-digit-prefix:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "34"
+    68/push  _test-slice-hex-int-end/imm32
+    68/push  _test-slice-hex-int/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-valid-name?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-valid-name?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-is-valid-name-digit-prefix"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-valid-name-negative-prefix:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "-0x34"
+    68/push  _test-slice-hex-int-with-0x-prefix-end/imm32
+    68/push  _test-slice-hex-int-with-0x-prefix-negative/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-valid-name?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-valid-name?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-is-valid-name-negative-prefix"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-valid-name-0x-prefix:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "0x34"
+    68/push  _test-slice-hex-int-with-0x-prefix-end/imm32
+    68/push  _test-slice-hex-int-with-0x-prefix/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-valid-name?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-valid-name?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-is-valid-name-0x-prefix"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-valid-name-starts-with-pre-digit:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "/03"
+    68/push  _test-slice-with-slash-prefix-end/imm32
+    68/push  _test-slice-with-slash-prefix/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-valid-name?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-valid-name?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-is-valid-name-starts-with-pre-digit"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-valid-name-starts-with-post-digit:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "q34"
+    68/push  _test-slice-char-and-digits-end/imm32
+    68/push  _test-slice-char-and-digits/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-valid-name?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-valid-name?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-is-valid-name-starts-with-post-digit"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-valid-name-starts-with-digit:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "0x34"
+    68/push  _test-slice-hex-int-with-0x-prefix-end/imm32
+    68/push  _test-slice-hex-int-with-0x-prefix/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = is-valid-name?(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  is-valid-name?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-is-valid-name-starts-with-digit"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
 # print 'n' in hex in 'width' bytes in lower-endian order, with a space after every byte
 emit-hex:  # out : (address buffered-file), n : int, width : int
     # . prolog
@@ -1995,5 +2229,9 @@ _test-output-buffered-file:
     6/imm32
     # data
     00 00 00 00 00 00  # 6 bytes
+
+_test-slice-with-slash-prefix:
+  2f/slash 30/0 33/3
+_test-slice-with-slash-prefix-end:
 
 # . . vim:nowrap:textwidth=0
