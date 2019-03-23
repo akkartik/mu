@@ -299,7 +299,7 @@ test-convert-passes-empty-lines-through:
     e8/call  convert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -360,7 +360,7 @@ test-convert-passes-lines-with-just-whitespace-through:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize input
-    # . write(_test-input-stream, "    ")
+    # . write(_test-input-stream, "    ")  # trailing space just an artifact
     # . . push args
     68/push  "    "/imm32
     68/push  _test-input-stream/imm32
@@ -376,7 +376,7 @@ test-convert-passes-lines-with-just-whitespace-through:
     e8/call  convert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -453,7 +453,7 @@ test-convert-passes-segment-headers-through:
     e8/call  convert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -487,8 +487,7 @@ convert-data:  # line : (address stream byte), out : (address buffered-file) -> 
     #       write-stream-buffered(out, line)
     #     else if has-metadata?(word-slice, "imm32")
     #       emit(out, word-slice, 4)
-    #     else if has-metadata?(word-slice, "disp32")
-    #       emit(out, word-slice, 4)
+    #     # disp32 is not permitted in data segments, and anything else is only a byte long
     #     else
     #       emit(out, word-slice, 1)
     #     ...
@@ -542,9 +541,34 @@ $convert-data:check2:
     # . if (EAX == ':') pass through
     3d/compare-with-EAX  0x3a/imm32/colon
     74/jump-if-equal  $convert-data:pass-line-through/disp8
-    # emit(out, word-slice, 4)  # temporary
+$convert-data:check3:
+    # if (has-metadata?(word-slice, "imm32"))
+    # . EAX = has-metadata?(ECX, "c")
     # . . push args
-    68/push  4/imm32  # should be unused
+    68/push  "imm32"/imm32
+    51/push-ECX
+    # . . call
+    e8/call  has-metadata?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x8/imm32         # add to ESP
+    # . if (EAX == 0) process as a single byte
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    74/jump-if-equal  $convert-data:single-byte/disp8
+$convert-data:imm32:
+    # emit(out, word-slice, 4)
+    # . . push args
+    68/push  4/imm32
+    51/push-ECX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  emit/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    eb/jump  $convert-data:end/disp8
+$convert-data:single-byte:
+    # emit(out, word-slice, 1)
+    # . . push args
+    68/push  1/imm32
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
@@ -615,7 +639,7 @@ test-convert-data-passes-comments-through:
     e8/call  convert-data/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -683,7 +707,7 @@ test-convert-data-passes-labels-through:
     e8/call  convert-data/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -752,7 +776,7 @@ test-convert-data-passes-names-through:
     e8/call  convert-data/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -764,6 +788,144 @@ test-convert-data-passes-names-through:
     # . . push args
     68/push  "F - test-convert-data-passes-names-through"/imm32
     68/push  "abcd/imm32"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-convert-data-handles-imm32:
+    # If a word is a valid name, just emit it unchanged.
+    # Later phases will deal with it.
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize input
+    # . write(_test-input-stream, "30/imm32")
+    # . . push args
+    68/push  "30/imm32"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # convert-data(_test-input-stream, _test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  convert-data/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check that 4 bytes were written
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . check-stream-equal(_test-output-stream, "30 00 00 00 ", msg)  # trailing space just an artifact
+    # . . push args
+    68/push  "F - test-convert-data-handles-imm32"/imm32
+    68/push  "30 00 00 00 "/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-convert-data-handles-single-byte:
+    # If a word is a valid name, just emit it unchanged.
+    # Later phases will deal with it.
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize input
+    # . write(_test-input-stream, "30/imm16")
+    # . . push args
+    68/push  "30/imm16"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # convert-data(_test-input-stream, _test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  convert-data/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check that a single byte was written (imm16 is not a valid operand type)
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . check-stream-equal(_test-output-stream, "30 ", msg)  # trailing space just an artifact
+    # . . push args
+    68/push  "F - test-convert-data-handles-single-byte"/imm32
+    68/push  "30 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
@@ -910,7 +1072,7 @@ test-convert-instruction-passes-comments-through:
     e8/call  convert-instruction/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -978,7 +1140,7 @@ test-convert-instruction-passes-labels-through:
     e8/call  convert-instruction/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check that the write happened as expected
+    # check that the line just passed through
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -2336,7 +2498,7 @@ test-emit-hex-negative:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream == "ff ff ")
+    # check-stream-equal(_test-stream == "ff ff ")  # trailing space just an artifact
     # . . push args
     68/push  "F - test-emit-hex-negative/1"/imm32
     68/push  "ff ff "/imm32
