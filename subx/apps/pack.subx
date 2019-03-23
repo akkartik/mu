@@ -1396,8 +1396,9 @@ test-has-metadata-multiple-false:
     5d/pop-to-EBP
     c3/return
 
-# if the name of 'word' is all hex digits, parse and print its value in 'width' bytes of hex, least significant first
-# otherwise just print the entire word
+# If value of 'word' is not a valid name, it must be a hex int. Parse and print
+# it in 'width' bytes of hex, least significant first.
+# Otherwise just print the entire word including metadata.
 emit:  # out : (address buffered-file), word : (address slice), width : int
     # . prolog
     55/push-EBP
@@ -1422,17 +1423,17 @@ emit:  # out : (address buffered-file), word : (address slice), width : int
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # if (!is-hex-int?(name)) write-slice(out, word) and return
-    # . is-hex-int?(name)
+    # if (is-valid-name?(name)) write-slice(out, word) and return
+    # . EAX = is-valid-name?(name)
     # . . push args
     57/push-EDI
     # . . call
-    e8/call  is-hex-int?/disp32
+    e8/call  is-valid-name?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if (EAX == 0)
+    # . if (EAX != 0)
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
-    75/jump-if-not-equal  $emit:hex-int/disp8
+    74/jump-if-equal  $emit:hex-int/disp8
     # . write-slice(out, word)
     # . . push args
     56/push-ESI
@@ -1444,6 +1445,10 @@ emit:  # out : (address buffered-file), word : (address slice), width : int
     # . return
     eb/jump  $emit:end/disp8
     # otherwise emit-hex(out, parse-hex-int(name), width)
+    #   (Weird shit can happen here if the value of 'word' isn't either a valid
+    #   name or a hex number, but we're only going to be passing in real legal
+    #   programs. We just want to make sure that valid names aren't treated as
+    #   (valid) hex numbers.)
 $emit:hex-int:
     # . n/EAX = parse-hex-int(name)
     # . . push args
@@ -1684,6 +1689,61 @@ test-emit-non-number-with-metadata:
     # . . push args
     68/push  "F - test-emit-non-number-with-metadata"/imm32
     68/push  "xyz/"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-non-number-with-all-hex-digits-and-metadata:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "abcd/xyz"
+    68/push  _test-slice-hexlike-non-number-word-metadata-end/imm32/end
+    68/push  _test-slice-hexlike-non-number-word/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # emit(_test-buffered-file, slice, 2)
+    # . . push args
+    68/push  2/imm32
+    51/push-ECX
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  emit/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # flush(_test-buffered-file)
+    # . . push args
+    68/push  _test-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "abcd/xyz")
+    # . . push args
+    68/push  "F - test-emit-non-number-with-all-hex-digits"/imm32
+    68/push  "abcd/xyz"/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
@@ -2229,6 +2289,13 @@ _test-output-buffered-file:
     6/imm32
     # data
     00 00 00 00 00 00  # 6 bytes
+
+_test-slice-hexlike-non-number-word:
+    61/a 62/b 63/c 64/d
+_test-slice-hexlike-non-number-word-end:
+    2f/slash
+    78/x 79/y 7a/z
+_test-slice-hexlike-non-number-word-metadata-end:
 
 _test-slice-with-slash-prefix:
   2f/slash 30/0 33/3
