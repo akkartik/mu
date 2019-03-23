@@ -364,10 +364,8 @@ case 0x05: {  // add imm32 to EAX
 :(code)
 // read a 32-bit int in little-endian order from the instruction stream
 int32_t next32() {
-  int32_t result = next();
-  result |= (next()<<8);
-  result |= (next()<<16);
-  result |= (next()<<24);
+  int32_t result = read_mem_i32(EIP);
+  EIP+=4;
   return result;
 }
 
