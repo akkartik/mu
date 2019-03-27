@@ -166,7 +166,10 @@ $convert:check1:
     3d/compare-EAX  0/imm32
     75/jump-if-not-equal  $convert:pass-through/disp8
 $convert:check2:
-    # if (slice-equal?(word-slice, "==) && slice-equal?(next-word(line))) write-stream-buffered(out, line)
+    # if (slice-equal?(word-slice, "=="))
+    #   word-slice = next-word(line)
+    #   in-code? = slice-equal?(word-slice, "code")
+    #   write-stream-buffered(out, line)
     # . EAX = slice-equal?(word-slice, "==")
     # . . push args
     68/push  "=="/imm32
@@ -201,7 +204,8 @@ $convert:check2:
 $convert:check3:
     # else if (in-code? != 0) convert-instruction(line, out)
     81          7/subop/compare     3/mod/direct    2/rm32/EBX    .           .             .           .           .               0/imm32           # compare EBX
-    74/jump-if-equal  $convert:check4/disp8
+    74/jump-if-equal  $convert:data/disp8
+$convert:code:
     # . convert-instruction(line, out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
@@ -212,7 +216,7 @@ $convert:check3:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . loop
     e9/jump  $convert:loop/disp32
-$convert:check4:
+$convert:data:
     # else convert-data(line, out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
