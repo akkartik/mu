@@ -594,8 +594,9 @@ Here's what I've built so far:
 
 ### primitives built atop system calls
 
-_(Where these return compound objects that don't fit in a register, the caller
-usually passes in allocated memory for it.)_
+_(Compound arguments are usually passed in by reference. Where the results are
+compound objects that don't fit in a register, the caller usually passes in
+allocated memory for it.)_
 
 #### assertions for tests
 * `check-ints-equal`: fails current test if given ints aren't equal
@@ -630,7 +631,7 @@ usually passes in allocated memory for it.)_
 * `write-slice`: slice -> buffered-file
 * `write-stream-buffered`: stream -> buffered-file
 * `flush`: buffered-file
-* `print-byte`:  # f : (address buffered-file), n : int -> void
+* `print-byte`:  buffered-file, int
 
 #### reading from disk
 * `read-byte`: buffered-file -> byte
@@ -655,17 +656,17 @@ usually passes in allocated memory for it.)_
 #### tokenization
 
 from a stream:
-* `next-token`: (address stream), byte -> (address slice)
-* `skip-chars-matching`: (address stream), delimiter : byte
-* `skip-chars-not-matching`: (address stream), delimiter : byte
+* `next-token`: stream, delimiter byte -> slice
+* `skip-chars-matching`: stream, delimiter byte
+* `skip-chars-not-matching`: stream, delimiter byte
 
 from a slice:
-* `next-token-from-slice`: start, end, delimiter -> (address slice)
+* `next-token-from-slice`: start, end, delimiter byte -> slice
   Given a slice and a delimiter byte, returns a new slice inside the input
   that ends at the delimiter byte.
 
-* `skip-chars-matching-in-slice`: curr, end, delimiter -> new-curr/EAX
-* `skip-chars-not-matching-in-slice`:  curr, end, delimiter -> new-curr/EAX
+* `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `EAX`)
+* `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `EAX`)
 
 ## Known issues
 
