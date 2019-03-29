@@ -798,16 +798,16 @@ test-convert-in-data-segment:
 convert-data:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   while true
-    #     word-slice = next-word
+    #     word-slice = next-word(line)
     #     if slice-empty?(word-slice)                 # end of file (maybe including trailing whitespace)
     #       break  # skip emitting some whitespace
     #     if slice-starts-with?(word-slice, "#")      # comment
     #       write-stream-buffered(out, line)
     #       break
-    #     else if slice-ends-with?(word-slice, ":")   # label
+    #     if slice-ends-with?(word-slice, ":")        # label
     #       write-stream-buffered(out, line)
     #       break
-    #     else if has-metadata?(word-slice, "imm32")
+    #     if has-metadata?(word-slice, "imm32")
     #       emit(out, word-slice, 4)
     #     # disp32 is not permitted in data segments, and anything else is only a byte long
     #     else
@@ -2092,7 +2092,7 @@ $has-metadata?:loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX != 0) return false
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
-    75/compare-if-not-equal  $has-metadata?:false/disp8
+    75/jump-if-not-equal  $has-metadata?:false/disp8
     # if (slice-equal?(twig, s)) return true
     # . EAX = slice-equal?(twig, s)
     # . . push args
@@ -2104,7 +2104,7 @@ $has-metadata?:loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX != 0) return true
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
-    75/compare-if-not-equal  $has-metadata?:true/disp8
+    75/jump-if-not-equal  $has-metadata?:true/disp8
     # curr = twig->end
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EDI+4) to ECX
     eb/jump  $has-metadata?:loop/disp8
