@@ -505,7 +505,8 @@ trace, or if you have questions or complaints.
 
 ### Data Structures
 
-* Kernel strings: null-terminated arrays of bytes.
+* Kernel strings: null-terminated arrays of bytes. Unsafe and to be avoided,
+  but needed for interacting with the kernel.
 
 * Strings: length-prefixed arrays of bytes. String contents are preceded by
   4 bytes (32 bytes) containing the `length` of the array.
