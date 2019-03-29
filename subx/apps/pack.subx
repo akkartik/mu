@@ -1564,19 +1564,19 @@ test-convert-data-multiple-words:
     5d/pop-to-EBP
     c3/return
 
-# simplifications since we perform zero error handling (continuing to rely on the C++ version for that):
+# pack an instruction, following the C++ version
+#
+# zero error handling at the moment (continuing to rely on the C++ version for that):
 #   missing fields are always 0-filled
-#   bytes never mentioned are silently dropped; if you don't provide /mod, /rm32 or /r32 you don't get a 0 modrm byte. You get *no* modrm byte.
-#   in case of conflict, last operand with a name is recognized
+#   bytes never mentioned are silently dropped; if you don't provide /mod, /rm32 or /r32 you don't get a 0 ModR/M byte. You get *no* ModR/M byte.
+#   may pick up any of duplicate operands in an instruction
 #   silently drop extraneous operands
 #   unceremoniously abort on non-numeric operands except disp or imm
 #   opcodes must be lowercase and zero padded
-
-# todo: end each line with original unprocessed line in a comment
-
-# pack an instruction, following the C++ version:
+#   opcodes with misleading operand metadata may get duplicated as operands as well. don't rely on this.
 convert-instruction:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
+    #   # some early exits
     #   var word-slice = next-word(line)
     #   if slice-empty?(word-slice)
     #     write-stream-buffered(out, line)
@@ -1587,7 +1587,138 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     #   if slice-ends-with?(word-slice, ":")
     #     write-stream-buffered(out, line)
     #     return
-    #   # convert opcodes
+    #   # really convert
+    #   emit-opcodes(line, out)
+    #   emit-modrm(line, out)
+    #   emit-sib(line, out)
+    #   emit-disp(line, out)
+    #   emit-imm(line, out)
+    #   emit-line-in-comment(line, out)
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    # var word-slice/ECX = {0, 0}
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # next-word(line, word-slice)
+    # . . push args
+    51/push-ECX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  next-word/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$convert-instruction:check0:
+    # if (slice-empty?(word-slice)) break
+    # . EAX = slice-empty?(word-slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . if (EAX != 0) pass through
+    3d/compare-EAX  0/imm32
+    75/jump-if-not-equal  $convert-instruction:pass-through/disp8
+$convert-instruction:check1:
+    # if (slice-starts-with?(word-slice, "#")) write-stream-buffered(out, line)
+    # . start/EDX = word-slice->start
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # copy *ECX to EDX
+    # . c/EAX = *start
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/AL    .               .                 # copy byte at *EDX to AL
+    # . if (EAX == '#') pass through
+    3d/compare-with-EAX  0x23/imm32/hash
+    74/jump-if-equal  $convert-instruction:pass-through/disp8
+$convert-instruction:check2:
+    # if (slice-ends-with?(word-slice, ":")) write-stream-buffered(out, line)
+    # . end/EDX = word-slice->end
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ECX+4) to EDX
+    # . c/EAX = *(end-1)
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    1/mod/*+disp8   2/rm32/EDX    .           .             .           0/r32/AL    -1/disp8        .                 # copy byte at *ECX to AL
+    # . if (EAX == ':') pass through
+    3d/compare-with-EAX  0x3a/imm32/colon
+    74/jump-if-equal  $convert-instruction:pass-through/disp8
+$convert-instruction:pass-through:
+    # write-stream-buffered(out, line)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-stream-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # return
+    eb/jump  $convert-instruction:end/disp8
+$convert-instruction:really-convert:
+    # emit-opcodes(line, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-opcodes/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # emit-modrm(line, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-modrm/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # emit-sib(line, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-sib/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # emit-disp(line, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-disp/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # emit-imm(line, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-imm/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # emit-line-in-comment(line, out)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-line-in-comment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$convert-instruction:end:
+    # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-opcodes:  # line : (address stream byte), out : (address buffered-file) -> <void>
+    # pseudocode:
+    #   rewind-stream(line)
     #   var op1 = word-slice
     #   write-slice(out, op1)
     #   if slice-equal?(op1, "0f") or slice-equal?(op1, "f2") or slice-equal?(op1, "f3")
@@ -1605,9 +1736,22 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     #         if slice-starts-with?(op2, "#")
     #           return
     #         write-slice(out, op3)
-    #   # pack modrm and sib
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-opcodes:end:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-modrm:  # line : (address stream byte), out : (address buffered-file) -> <void>
+    # pseudocode:
+    #   rewind-stream(line)
     #   var has-modrm? = false, mod = 0, rm32 = 0, r32 = 0
-    #   var has-sib? = false, base = 0, index = 4 (none), scale = 0
     #   while true
     #     word-slice = next-word(line)
     #     if (empty(word-slice)) break
@@ -1621,7 +1765,33 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     #     else if (has-metadata?(word-slice, "r32") or has-metadata?(word-slice, "subop"))
     #       var r32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
-    #     else if (has-metadata?(word-slice, "base")
+    #   if has-modrm?
+    #     var modrm = mod & 0b11
+    #     modrm <<= 2
+    #     modrm |= r32 & 0b111
+    #     modrm <<= 3
+    #     modrm |= rm32 & 0b111
+    #     emit-hex(out, modrm, 1)
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-modrm:end:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-sib:  # line : (address stream byte), out : (address buffered-file) -> <void>
+    # pseudocode:
+    #   var has-sib? = false, base = 0, index = 0, scale = 0
+    #   while true
+    #     word-slice = next-word(line)
+    #     if (empty(word-slice)) break
+    #     if (slice-starts-with?(word-slice, "#")) break
+    #     if (has-metadata?(word-slice, "base")
     #       var base = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
     #     else if (has-metadata?(word-slice, "index")
@@ -1630,13 +1800,6 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     #     else if (has-metadata?(word-slice, "scale")
     #       var scale = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
-    #   if has-modrm?
-    #     var modrm = mod & 0b11
-    #     modrm <<= 2
-    #     modrm |= r32 & 0b111
-    #     modrm <<= 3
-    #     modrm |= rm32 & 0b111
-    #     emit-hex(out, modrm, 1)
     #   if has-sib?
     #     var sib = scale & 0b11
     #     sib <<= 2
@@ -1644,7 +1807,20 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     #     sib <<= 3
     #     sib |= base & 0b111
     #     emit-hex(out, sib, 1)
-    #   # emit disp bytes
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-sib:end:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-disp:  # line : (address stream byte), out : (address buffered-file) -> <void>
+    # pseudocode:
     #   rewind-stream(line)
     #   while true
     #     word-slice = next-word(line)
@@ -1662,7 +1838,20 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     #       var disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       emit-hex(out, disp, 4)
     #       break
-    #   # emit imm bytes
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-disp:end:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-imm:  # line : (address stream byte), out : (address buffered-file) -> <void>
+    # pseudocode:
     #   rewind-stream(line)
     #   while true
     #     word-slice = next-word(line)
@@ -1681,42 +1870,28 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     #       emit-hex(out, imm, 4)
     #       break
     #
-    # Exit blocks:
-    #   pass-through:
-    #     write-stream-buffered(out, line)
-    #     return
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-imm:end:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-line-in-comment:  # line : (address stream byte), out : (address buffered-file) -> <void>
+    # pseudocode:
+    #   write-buffered(out, "  # ")
+    #   write-stream-buffered(out, line)
     #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
-    51/push-ECX
-    # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # next-word(line, word-slice)
-    # . . push args
-    51/push-ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    # . . call
-    e8/call  next-word/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-$convert-instruction:pass-line-through:
-    # write-stream-buffered(out, line)
-    # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    # . . call
-    e8/call  write-stream-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-$convert-instruction:end:
-    # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$emit-line-in-comment:end:
     # . restore registers
-    59/pop-to-ECX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
