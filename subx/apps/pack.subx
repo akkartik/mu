@@ -806,6 +806,7 @@ test-convert-in-data-segment:
 
 convert-data:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
+    #   var word-slice = {0, 0}
     #   while true
     #     word-slice = next-word(line)
     #     if slice-empty?(word-slice)                 # end of file (maybe including trailing whitespace)
@@ -1707,6 +1708,8 @@ $convert-instruction:really-convert:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $convert-instruction:end:
+    # . restore locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . restore registers
     5a/pop-to-EDX
     59/pop-to-ECX
@@ -1717,25 +1720,37 @@ $convert-instruction:end:
     c3/return
 
 emit-opcodes:  # line : (address stream byte), out : (address buffered-file) -> <void>
+    # opcodes occupy 1-3 bytes:
+    #   xx
+    #   0f xx
+    #   f2 xx
+    #   f3 xx
+    #   f2 0f xx
+    #   f3 0f xx
+    #
     # pseudocode:
     #   rewind-stream(line)
-    #   var op1 = word-slice
+    #
+    #   var op1 = next-word(line)
+    #   if (slice-empty?(op1) || slice-starts-with?(op1, "#")) return
+    #   op1 = next-token-from-slice(op1->start, op1->end, "/")
     #   write-slice(out, op1)
-    #   if slice-equal?(op1, "0f") or slice-equal?(op1, "f2") or slice-equal?(op1, "f3")
-    #     var op2 = next-word(line)
-    #     if slice-empty?(op2)
-    #       return
-    #     if slice-starts-with?(op2, "#")
-    #       return
-    #     write-slice(out, op2)
-    #     if slice-equal?(op1, "f2") or slice-equal?(op1, "f3")
-    #       if slice-equal?(op2, "0f")
-    #         var op3 = next-word(line)
-    #         if slice-empty?(op3)
-    #           return
-    #         if slice-starts-with?(op2, "#")
-    #           return
-    #         write-slice(out, op3)
+    #   if !slice-equal?(op1, "0f") && !slice-equal?(op1, "f2") && !slice-equal?(op1, "f3")
+    #     return
+    #
+    #   var op2 = next-word(line)
+    #   if (slice-empty?(op2) || slice-starts-with?(op2, "#")) return
+    #   op2 = next-token-from-slice(op2->start, op2->end, "/")
+    #   write-slice(out, op2)
+    #   if slice-equal?(op1, "0f")
+    #     return
+    #   if !slice-equal?(op2, "0f")
+    #     return
+    #
+    #   var op3 = next-word(line)
+    #   if (slice-empty?(op3) || slice-starts-with?(op3, "#")) return
+    #   op3 = next-token-from-slice(op3->start, op3->end, "/")
+    #   write-slice(out, op3)
     #
     # . prolog
     55/push-EBP
@@ -1752,18 +1767,19 @@ emit-modrm:  # line : (address stream byte), out : (address buffered-file) -> <v
     # pseudocode:
     #   rewind-stream(line)
     #   var has-modrm? = false, mod = 0, rm32 = 0, r32 = 0
+    #   var word-slice = {0, 0}
     #   while true
     #     word-slice = next-word(line)
     #     if (empty(word-slice)) break
     #     if (slice-starts-with?(word-slice, "#")) break
     #     if (has-metadata?(word-slice, "mod"))
-    #       var mod = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       mod = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
     #     else if (has-metadata?(word-slice, "rm32"))
-    #       var rm32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       rm32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
     #     else if (has-metadata?(word-slice, "r32") or has-metadata?(word-slice, "subop"))
-    #       var r32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       r32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
     #   if has-modrm?
     #     var modrm = mod & 0b11
@@ -1787,18 +1803,19 @@ $emit-modrm:end:
 emit-sib:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var has-sib? = false, base = 0, index = 0, scale = 0
+    #   var word-slice = {0, 0}
     #   while true
     #     word-slice = next-word(line)
     #     if (empty(word-slice)) break
     #     if (slice-starts-with?(word-slice, "#")) break
     #     if (has-metadata?(word-slice, "base")
-    #       var base = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       base = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
     #     else if (has-metadata?(word-slice, "index")
-    #       var index = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       index = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
     #     else if (has-metadata?(word-slice, "scale")
-    #       var scale = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       scale = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
     #   if has-sib?
     #     var sib = scale & 0b11
@@ -1822,20 +1839,22 @@ $emit-sib:end:
 emit-disp:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   rewind-stream(line)
+    #   var disp = 0
+    #   var word-slice = {0, 0}
     #   while true
     #     word-slice = next-word(line)
     #     if (empty(word-slice)) break
     #     if (slice-starts-with?(word-slice, "#")) break
     #     if has-metadata?(word-slice, "disp8")
-    #       var disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       emit-hex(out, disp, 1)
     #       break
     #     else if has-metadata?(word-slice, "disp16")
-    #       var disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       emit-hex(out, disp, 2)
     #       break
     #     else if has-metadata?(word-slice, "disp32")
-    #       var disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       emit-hex(out, disp, 4)
     #       break
     #
@@ -1853,20 +1872,22 @@ $emit-disp:end:
 emit-imm:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   rewind-stream(line)
+    #   var imm = 0
+    #   var word-slice = {0, 0}
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-starts-with?(word-slice, "#")) break
     #     if (empty(word-slice)) break
     #     if has-metadata?(word-slice, "imm8")
-    #       var imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       emit-hex(out, imm, 1)
     #       break
     #     if has-metadata?(word-slice, "imm16")
-    #       var imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       emit-hex(out, imm, 2)
     #       break
     #     else if has-metadata?(word-slice, "imm32")
-    #       var imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
     #       emit-hex(out, imm, 4)
     #       break
     #
@@ -1882,16 +1903,26 @@ $emit-imm:end:
     c3/return
 
 emit-line-in-comment:  # line : (address stream byte), out : (address buffered-file) -> <void>
-    # pseudocode:
-    #   write-buffered(out, "  # ")
-    #   write-stream-buffered(out, line)
-    #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
+    # write-buffered(out, "  # ")
+    # . . push args
+    68/push  "  # "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write-stream-buffered(out, line)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-stream-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $emit-line-in-comment:end:
-    # . restore registers
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
