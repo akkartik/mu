@@ -83,6 +83,15 @@ $main:end:
 # primary state: line
 #   stream of 512 bytes; abort if it ever overflows
 
+# conceptual hierarchy within a line:
+#   line = words separated by ' ', maybe followed by comment starting with '#'
+#   word = name until '/', then 0 or more metadata separated by '/'
+#
+# we won't bother saving the internal structure of lines; reparsing should be cheap using three primitives:
+#   next-token(stream, delim char) -> slice (start, end pointers)
+#   next-token-from-slice(start, end, delim char) -> slice
+#   slice-equal?(slice, string)
+
 convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
@@ -1555,66 +1564,127 @@ test-convert-data-multiple-words:
     5d/pop-to-EBP
     c3/return
 
-# - To pack an instruction, following the C++ version:
-# read first word as opcode and write-slice
-# if 0f or f2 or f3 read second opcode and write-slice
-# if 'f2 0f' or 'f3 0f' read third opcode and write-slice
-# while true
-#   word-slice = next-word
-#   if empty(word-slice) break
-#   if has metadata 'mod', parse into mod
-#   if has metadata 'rm32', parse into rm32
-#   if has metadata 'r32', parse into r32
-#   if has metadata 'subop', parse into r32
-# if at least one of the 3 was present, print-byte
-# while true
-#   word-slice = next-word
-#   if empty(word-slice) break
-#   if has metadata 'base', parse into base
-#   if has metadata 'index', parse into index
-#   if has metadata 'scale', parse into scale
-# if at least one of the 3 was present, print-byte
-# parse errors => <abort>
-# while true
-#   word-slice = next-word
-#   if empty(word-slice) break
-#   if has metadata 'disp8', emit as 1 byte
-#   if has metadata 'disp16', emit as 2 bytes
-#   if has metadata 'disp32', emit as 4 bytes
-# while true
-#   word-slice = next-word
-#   if empty(word-slice) break
-#   if has metadata 'imm8', emit
-#   if has metadata 'imm32', emit as 4 bytes
-# finally, emit line prefixed with a '  # '
-
 # simplifications since we perform zero error handling (continuing to rely on the C++ version for that):
 #   missing fields are always 0-filled
 #   bytes never mentioned are silently dropped; if you don't provide /mod, /rm32 or /r32 you don't get a 0 modrm byte. You get *no* modrm byte.
 #   in case of conflict, last operand with a name is recognized
 #   silently drop extraneous operands
 #   unceremoniously abort on non-numeric operands except disp or imm
+#   opcodes must be lowercase and zero padded
 
-# conceptual hierarchy within a line:
-#   line = words separated by ' ', maybe followed by comment starting with '#'
-#   word = name until '/', then 0 or more metadata separated by '/'
-#
-# we won't bother saving the internal structure of lines; reparsing should be cheap using three primitives:
-#   next-token(stream, delim char) -> slice (start, end pointers)
-#   next-token(stream, slice, delim char) -> slice'
-#   slice-equal?(slice, string)
+# todo: end each line with original unprocessed line in a comment
 
+# pack an instruction, following the C++ version:
 convert-instruction:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
+    #   var word-slice = next-word(line)
+    #   if slice-empty?(word-slice)
+    #     write-stream-buffered(out, line)
+    #     return
+    #   if slice-starts-with?(word-slice, "#")
+    #     write-stream-buffered(out, line)
+    #     return
+    #   if slice-ends-with?(word-slice, ":")
+    #     write-stream-buffered(out, line)
+    #     return
+    #   # convert opcodes
+    #   var op1 = word-slice
+    #   write-slice(out, op1)
+    #   if slice-equal?(op1, "0f") or slice-equal?(op1, "f2") or slice-equal?(op1, "f3")
+    #     var op2 = next-word(line)
+    #     if slice-empty?(op2)
+    #       return
+    #     if slice-starts-with?(op2, "#")
+    #       return
+    #     write-slice(out, op2)
+    #     if slice-equal?(op1, "f2") or slice-equal?(op1, "f3")
+    #       if slice-equal?(op2, "0f")
+    #         var op3 = next-word(line)
+    #         if slice-empty?(op3)
+    #           return
+    #         if slice-starts-with?(op2, "#")
+    #           return
+    #         write-slice(out, op3)
+    #   # pack modrm and sib
+    #   var has-modrm? = false, mod = 0, rm32 = 0, r32 = 0
+    #   var has-sib? = false, base = 0, index = 4 (none), scale = 0
     #   while true
-    #     word-slice = next-word
-    #     if slice-empty?(word-slice)                 # end of file (maybe including trailing whitespace)
-    #       write-stream-buffered(out, line)
-    #     if slice-starts-with?(word-slice, "#")      # comment
-    #       write-stream-buffered(out, line)
-    #     else if slice-ends-with?(word-slice, ":")   # label
-    #       write-stream-buffered(out, line)
-    #     ...
+    #     word-slice = next-word(line)
+    #     if (empty(word-slice)) break
+    #     if (slice-starts-with?(word-slice, "#")) break
+    #     if (has-metadata?(word-slice, "mod"))
+    #       var mod = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       has-modrm? = true
+    #     else if (has-metadata?(word-slice, "rm32"))
+    #       var rm32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       has-modrm? = true
+    #     else if (has-metadata?(word-slice, "r32") or has-metadata?(word-slice, "subop"))
+    #       var r32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       has-modrm? = true
+    #     else if (has-metadata?(word-slice, "base")
+    #       var base = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       has-sib? = true
+    #     else if (has-metadata?(word-slice, "index")
+    #       var index = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       has-sib? = true
+    #     else if (has-metadata?(word-slice, "scale")
+    #       var scale = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       has-sib? = true
+    #   if has-modrm?
+    #     var modrm = mod & 0b11
+    #     modrm <<= 2
+    #     modrm |= r32 & 0b111
+    #     modrm <<= 3
+    #     modrm |= rm32 & 0b111
+    #     emit-hex(out, modrm, 1)
+    #   if has-sib?
+    #     var sib = scale & 0b11
+    #     sib <<= 2
+    #     sib |= index & 0b111
+    #     sib <<= 3
+    #     sib |= base & 0b111
+    #     emit-hex(out, sib, 1)
+    #   # emit disp bytes
+    #   rewind-stream(line)
+    #   while true
+    #     word-slice = next-word(line)
+    #     if (empty(word-slice)) break
+    #     if (slice-starts-with?(word-slice, "#")) break
+    #     if has-metadata?(word-slice, "disp8")
+    #       var disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       emit-hex(out, disp, 1)
+    #       break
+    #     else if has-metadata?(word-slice, "disp16")
+    #       var disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       emit-hex(out, disp, 2)
+    #       break
+    #     else if has-metadata?(word-slice, "disp32")
+    #       var disp = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       emit-hex(out, disp, 4)
+    #       break
+    #   # emit imm bytes
+    #   rewind-stream(line)
+    #   while true
+    #     word-slice = next-word(line)
+    #     if (slice-starts-with?(word-slice, "#")) break
+    #     if (empty(word-slice)) break
+    #     if has-metadata?(word-slice, "imm8")
+    #       var imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       emit-hex(out, imm, 1)
+    #       break
+    #     if has-metadata?(word-slice, "imm16")
+    #       var imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       emit-hex(out, imm, 2)
+    #       break
+    #     else if has-metadata?(word-slice, "imm32")
+    #       var imm = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       emit-hex(out, imm, 4)
+    #       break
+    #
+    # Exit blocks:
+    #   pass-through:
+    #     write-stream-buffered(out, line)
+    #     return
     #
     # . prolog
     55/push-EBP
