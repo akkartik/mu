@@ -501,18 +501,46 @@ while, modifying the sources, regenerating the trace, and so on. Email
 [me](mailto:mu@akkartik.com) if you'd like another pair of eyes to stare at a
 trace, or if you have questions or complaints.
 
-## SubX library
+## Reference documentation on available primitives
+
+### Data Structures
+
+* Kernel strings: null-terminated arrays of bytes.
+
+* Strings: length-prefixed arrays of bytes. String contents are preceded by
+  4 bytes (32 bytes) containing the `length` of the array.
+
+* Slices: a pair of 32-bit addresses denoting a [half-open](https://en.wikipedia.org/wiki/Interval_(mathematics))
+  \[`start`, `end`) interval to live memory with a consistent lifetime.
+
+  Invariant: `start` <= `end`
+
+* Streams: strings prefixed by 32-bit `write` and `read` indexes that the next
+  write or read goes to, respectively.
+
+  * offset 0: write index
+  * offset 4: read index
+  * offset 8: length of array (in bytes)
+  * offset 12: start of array data
+
+  Invariant: 0 <= `read` <= `write` <= `length`
+
+* File descriptors (fd): Low-level 32-bit integers that the kernel uses to
+  track files opened by the program.
+
+* File: 32-bit value containing either a fd or an address to a stream (fake
+  file).
+
+* Buffered files (buffered-file): Contain a file descriptor and a stream for
+  buffering reads/writes. Each `buffered-file` must exclusively perform either
+  reads or writes.
+
+### 'system calls'
 
 A major goal of SubX is testable wrappers for operating system syscalls.
 Here's what I've built so far:
 
-* `write`: takes two arguments, `f` and `s`.
-  - `s` is an address to an _array_. Arrays in SubX are always assumed to
-    start with a 4-byte length.
-  - `f` is either a file descriptor to write `s` to, or (in tests) a _stream_.
-    Streams are in-memory buffers that can be read or written. They consist of
-    a `data` array of bytes as well as `read` and `write` indexes into the
-    array, showing how far we've read and written so far.
+* `write`: takes two arguments, a file `f` and an address to array `s`.
 
   Comparing this interface with the Unix `write()` syscall shows two benefits:
 
@@ -523,10 +551,8 @@ Here's what I've built so far:
      SubX's wrapper keeps the two together to increase the chances that we
      never accidentally go out of array bounds.
 
-* `read`: takes two arguments, `f` and `s`.
-  - `f` is either a file descriptor to read from, or (in tests) a stream.
-  - `s` is an address to a stream to save the read data to. We read as much
-    data as can fit in (the free space of) `s`, and no more.
+* `read`: takes two arguments, a file `f` and an address to stream `s`. Reads
+  as much data from `f` as can fit in (the free space of) `s`.
 
   Like with `write()`, this wrapper around the Unix `read()` syscall adds the
   ability to handle 'fake' file descriptors in tests, and reduces the chances
@@ -545,7 +571,106 @@ Here's what I've built so far:
   For more details on exit descriptors and how to create one, see [the
   comments before the implementation](http://akkartik.github.io/mu/html/subx/057stop.subx.html).
 
+* `new-segment`
+
+  Allocates a whole new segment of memory for the program, discontiguous with
+  both existing code and data (heap) segments. Just a more opinionated form of
+  [`mmap`](http://man7.org/linux/man-pages/man2/mmap.2.html).
+
+* `allocate`: takes two arguments, an address to allocation-descriptor `ad`
+  and an integer `n`
+
+  Allocates a contiguous range of memory that is guaranteed to be exclusively
+  available to the caller. Returns the starting address to the range in `EAX`.
+
+  An allocation descriptor tracks allocated vs available addresses in some
+  contiguous range of memory. The int specifies the number of bytes to allocate.
+
+  Explicitly passing in an allocation descriptor allows for nested memory
+  management, where a sub-system gets a chunk of memory and further parcels it
+  out to individual allocations. Particularly helpful for (surprise) tests.
+
 * ... _(to be continued)_
+
+### primitives built atop system calls
+
+_(Where these return compound objects that don't fit in a register, the caller
+usually passes in allocated memory for it.)_
+
+#### assertions for tests
+* `check-ints-equal`: fails current test if given ints aren't equal
+* `check-stream-equal`: fails current test if stream doesn't match string
+* `check-next-stream-line-equal`: fails current test if next line of stream
+  until newline doesn't match string
+
+#### error handling
+* `error`: takes three arguments, an exit-descriptor, a file and a string (message)
+
+  Prints out the message to the file and then exits using the provided
+  exit-descriptor.
+
+* `error-byte`: like `error` but takes an extra byte value that it prints out
+  at the end of the message.
+
+#### predicates
+* `kernel-string-equal?`: compares a kernel string with a string
+* `string-equal?`: compares two strings
+* `stream-data-equal?`: compares a stream with a string
+* `next-stream-line-equal?`: compares with string the next line in a stream, from
+  `read` index to newline
+
+* `slice-empty?`: checks if the `start` and `end` of a slice are equal
+* `slice-equal?`: compares a slice with a string
+* `slice-starts-with?`: compares the start of a slice with a string
+* `slice-ends-with?`: compares the end of a slice with a string
+
+#### writing to disk
+* `write-stream`: stream -> file
+* `write-buffered`: string -> buffered-file
+* `write-slice`: slice -> buffered-file
+* `write-stream-buffered`: stream -> buffered-file
+* `flush`: buffered-file
+* `print-byte`:  # f : (address buffered-file), n : int -> void
+
+#### reading from disk
+* `read-byte`: buffered-file -> byte
+* `read-line`: buffered-file -> stream
+
+#### non-IO operations on streams
+* `new-stream`: allocates space for a stream of size `n`.
+* `clear-stream`: resets everything in the stream to `0` (except its `length`).
+* `rewind-stream`: resets the read index of the stream to `0` without modifying
+  its contents.
+
+#### reading/writing hex representations of integers
+* `is-hex-int?`: takes a slice argument, returns boolean result in `EAX`
+* `parse-hex-int`: takes a slice argument, returns int result in `EAX`
+* `is-hex-digit?`: takes a 32-bit word containing a single byte, returns
+  boolean result in `EAX`.
+* `from-hex-char`: takes a hexadecimal digit character in EAX, returns its
+  numeric value in `EAX`
+* `to-hex-char`: takes a single-digit numeric value in EAX, returns its
+  corresponding hexadecimal character in `EAX`
+
+#### tokenization
+
+from a stream:
+* `next-token`: (address stream), byte -> (address slice)
+* `skip-chars-matching`: (address stream), delimiter : byte
+* `skip-chars-not-matching`: (address stream), delimiter : byte
+
+from a slice:
+* `next-token-from-slice`: start, end, delimiter -> (address slice)
+  Given a slice and a delimiter byte, returns a new slice inside the input
+  that ends at the delimiter byte.
+
+* `skip-chars-matching-in-slice`: curr, end, delimiter -> new-curr/EAX
+* `skip-chars-not-matching-in-slice`:  curr, end, delimiter -> new-curr/EAX
+
+## Known issues
+
+* String literals support no escape sequences. In particular, no way to
+  represent newlines.
 
 ## Resources
 
