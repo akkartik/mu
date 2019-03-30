@@ -51,7 +51,7 @@ Entry:  # run tests if necessary, call 'compile' if not
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . check result
-    3d/compare-EAX  1/imm32
+    3d/compare-EAX-and  1/imm32
     75/jump-if-not-equal  $run-main/disp8
     # . run-tests()
     e8/call  run-tests/disp32
@@ -235,7 +235,7 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX == 0)
-    3d/compare-EAX  0/imm32
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $get-num:main/disp8
     # . expected(ed, err, "integer")
     # . . push args
@@ -300,7 +300,7 @@ $get-num:loop-stage2:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX != 0) loop
-    3d/compare-EAX  0/imm32
+    3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $get-num:loop/disp32
 $get-num:loop-end:
     # persist necessary variables from registers

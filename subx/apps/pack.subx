@@ -42,7 +42,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . check result
-    3d/compare-EAX  1/imm32
+    3d/compare-EAX-and  1/imm32
     75/jump-if-not-equal  $run-main/disp8
     # . run-tests()
     e8/call  run-tests/disp32
@@ -208,7 +208,7 @@ $convert:check1:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX != 0) write-stream-buffered(out, line)
-    3d/compare-EAX  0/imm32
+    3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $convert:pass-through/disp32
 $convert:check2:
 #?     # dump current word {{{
@@ -905,7 +905,7 @@ $convert-data:check0:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX != 0) pass through
-    3d/compare-EAX  0/imm32
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $convert-data:break/disp8
 $convert-data:check1:
     # if (slice-starts-with?(word-slice, "#")) write-stream-buffered(out, line)
@@ -915,7 +915,7 @@ $convert-data:check1:
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/AL    .               .                 # copy byte at *EDX to AL
     # . if (EAX == '#') pass through
-    3d/compare-with-EAX  0x23/imm32/hash
+    3d/compare-EAX-and  0x23/imm32/hash
     74/jump-if-equal  $convert-data:pass-line-through/disp8
 $convert-data:check2:
     # if (slice-ends-with?(word-slice, ":")) write-stream-buffered(out, line)
@@ -925,7 +925,7 @@ $convert-data:check2:
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   2/rm32/EDX    .           .             .           0/r32/AL    -1/disp8        .                 # copy byte at *ECX to AL
     # . if (EAX == ':') pass through
-    3d/compare-with-EAX  0x3a/imm32/colon
+    3d/compare-EAX-and  0x3a/imm32/colon
     74/jump-if-equal  $convert-data:pass-line-through/disp8
 $convert-data:check3:
     # if (has-metadata?(word-slice, "imm32"))
@@ -1625,7 +1625,7 @@ $convert-instruction:check0:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX != 0) pass through
-    3d/compare-EAX  0/imm32
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $convert-instruction:pass-through/disp8
 $convert-instruction:check1:
     # if (slice-starts-with?(word-slice, "#")) write-stream-buffered(out, line)
@@ -1635,7 +1635,7 @@ $convert-instruction:check1:
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/AL    .               .                 # copy byte at *EDX to AL
     # . if (EAX == '#') pass through
-    3d/compare-with-EAX  0x23/imm32/hash
+    3d/compare-EAX-and  0x23/imm32/hash
     74/jump-if-equal  $convert-instruction:pass-through/disp8
 $convert-instruction:check2:
     # if (slice-ends-with?(word-slice, ":")) write-stream-buffered(out, line)
@@ -1645,7 +1645,7 @@ $convert-instruction:check2:
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   2/rm32/EDX    .           .             .           0/r32/AL    -1/disp8        .                 # copy byte at *ECX to AL
     # . if (EAX == ':') pass through
-    3d/compare-with-EAX  0x3a/imm32/colon
+    3d/compare-EAX-and  0x3a/imm32/colon
     74/jump-if-equal  $convert-instruction:pass-through/disp8
 $convert-instruction:pass-through:
     # write-stream-buffered(out, line)
@@ -2108,7 +2108,7 @@ $next-word:check1:
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
     # . compare
-    3d/compare-EAX-with  0x23/imm32/pound
+    3d/compare-EAX-and  0x23/imm32/pound
     75/jump-if-not-equal  $next-word:not-comment/disp8
     # . out->end = &line->data[line->write]
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
@@ -3030,22 +3030,22 @@ $is-valid-name?:check1:
     # EAX -= ECX
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     # if (EAX == 2) return false
-    3d/compare-with-EAX  2/imm32
+    3d/compare-EAX-and  2/imm32
     74/jump-if-equal  $is-valid-name?:false/disp8
 $is-valid-name?:check2:
     # c/EAX = *ECX
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
     # if (c == "-") return false
-    3d/compare-with-EAX  2d/imm32/-
+    3d/compare-EAX-and  2d/imm32/-
     74/jump-if-equal  $is-valid-name?:false/disp8
 $is-valid-name?:check3a:
     # if (c < "0") return true
-    3d/compare-with-EAX  30/imm32/0
+    3d/compare-EAX-with  30/imm32/0
     7c/jump-if-lesser  $is-valid-name?:true/disp8
 $is-valid-name?:check3b:
     # if (c > "9") return true
-    3d/compare-with-EAX  39/imm32/9
+    3d/compare-EAX-with  39/imm32/9
     7f/jump-if-greater  $is-valid-name?:true/disp8
 $is-valid-name?:false:
     # return false
