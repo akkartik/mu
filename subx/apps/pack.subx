@@ -1947,7 +1947,7 @@ $emit-opcodes:op2:
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     0f 84/jump-if-equal  $emit-opcodes:end/disp32
 $emit-opcodes:op3:
-    # next-word(line, op3)  # reuse EDX
+    # next-word(line, op3)  # reuse op2/EDX
     # . . push args
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -2002,6 +2002,8 @@ $emit-opcodes:op3:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $emit-opcodes:end:
+    # . restore locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # . restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
@@ -2088,8 +2090,8 @@ $emit-sib:end:
 emit-disp:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   rewind-stream(line)
-    #   var disp = 0
     #   var slice = {0, 0}
+    #   var disp = 0
     #   while true
     #     slice = next-word(line)
     #     if (slice-empty?(slice)) break
@@ -2119,9 +2121,7 @@ emit-disp:  # line : (address stream byte), out : (address buffered-file) -> <vo
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # var imm/EBX = 0
-    68/push  0/imm32
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
+    # var disp/EBX = 0
     # rewind-stream(line)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -2213,7 +2213,7 @@ $emit-disp:check1:
     3d/compare-EAX-and  0x23/imm32/hash
     0f 84/jump-if-equal  $emit-disp:break/disp32
 $emit-disp:check-for-disp32:
-    # if (has-metadata?(slice, "disp32")) emit(imm) and break
+    # if (has-metadata?(slice, "disp32"))
     # . EAX = has-metadata?(ECX, "c")
     # . . push args
     68/push  "disp32"/imm32
@@ -2226,7 +2226,7 @@ $emit-disp:check-for-disp32:
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     74/jump-if-equal  $emit-disp:check-for-disp16/disp8
 $emit-disp:disp32:
-    # slice = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
+    # disp = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
     # . slice = next-token-from-slice(slice->start, slice->end, '/')
     # . . push args
     51/push-ECX
@@ -2244,9 +2244,9 @@ $emit-disp:disp32:
     e8/call  parse-hex-int/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . imm = EAX
+    # . disp = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # . emit-hex(out, imm, 4)
+    # emit-hex(out, disp, 4)
     # . . push args
     68/push  4/imm32
     53/push-EBX
@@ -2255,10 +2255,10 @@ $emit-disp:disp32:
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . break
+    # break
     e9/jump  $emit-disp:break/disp32
 $emit-disp:check-for-disp16:
-    # if (has-metadata?(slice, "disp16")) emit-hex(out, imm, 2) and break
+    # else if (has-metadata?(slice, "disp16"))
     # . EAX = has-metadata?(ECX, "disp16")
     # . . push args
     68/push  "disp16"/imm32
@@ -2271,7 +2271,7 @@ $emit-disp:check-for-disp16:
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     74/jump-if-equal  $emit-disp:check-for-disp8/disp8
 $emit-disp:disp16:
-    # slice = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
+    # disp = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
     # . slice = next-token-from-slice(slice->start, slice->end, '/')
     # . . push args
     51/push-ECX
@@ -2289,9 +2289,9 @@ $emit-disp:disp16:
     e8/call  parse-hex-int/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . imm = EAX
+    # . disp = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # . emit-hex(out, imm, 2)
+    # emit-hex(out, disp, 2)
     # . . push args
     68/push  2/imm32
     53/push-EBX
@@ -2300,10 +2300,10 @@ $emit-disp:disp16:
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . break
+    # break
     e9/jump  $emit-disp:break/disp32
 $emit-disp:check-for-disp8:
-    # if (has-metadata?(slice, "disp8")) emit-hex(out, imm, 2) and break
+    # if (has-metadata?(slice, "disp8"))
     # . EAX = has-metadata?(ECX, "disp8")
     # . . push args
     68/push  "disp8"/imm32
@@ -2334,9 +2334,9 @@ $emit-disp:disp8:
     e8/call  parse-hex-int/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . imm = EAX
+    # . disp = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # . emit-hex(out, imm, 1)
+    # emit-hex(out, imm, 1)
     # . . push args
     68/push  1/imm32
     53/push-EBX
@@ -2345,8 +2345,10 @@ $emit-disp:disp8:
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . break
+    # break
 $emit-disp:break:
+    # . restore locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
@@ -2360,8 +2362,8 @@ $emit-disp:break:
 emit-imm:  # line : (address stream byte), out : (address buffered-file) -> <void>
     # pseudocode:
     #   rewind-stream(line)
-    #   var imm = 0
     #   var slice = {0, 0}
+    #   var imm = 0
     #   while true
     #     slice = next-word(line)
     #     if (slice-empty?(slice)) break
@@ -2392,8 +2394,6 @@ emit-imm:  # line : (address stream byte), out : (address buffered-file) -> <voi
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # var imm/EBX = 0
-    68/push  0/imm32
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
     # rewind-stream(line)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -2485,7 +2485,7 @@ $emit-imm:check1:
     3d/compare-EAX-and  0x23/imm32/hash
     0f 84/jump-if-equal  $emit-imm:break/disp32
 $emit-imm:check-for-imm32:
-    # if (has-metadata?(slice, "imm32")) emit(imm) and break
+    # if (has-metadata?(slice, "imm32"))
     # . EAX = has-metadata?(ECX, "c")
     # . . push args
     68/push  "imm32"/imm32
@@ -2498,7 +2498,7 @@ $emit-imm:check-for-imm32:
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     74/jump-if-equal  $emit-imm:check-for-imm16/disp8
 $emit-imm:imm32:
-    # slice = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
+    # imm = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
     # . slice = next-token-from-slice(slice->start, slice->end, '/')
     # . . push args
     51/push-ECX
@@ -2518,7 +2518,7 @@ $emit-imm:imm32:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . imm = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # . emit-hex(out, imm, 4)
+    # emit-hex(out, imm, 4)
     # . . push args
     68/push  4/imm32
     53/push-EBX
@@ -2527,10 +2527,10 @@ $emit-imm:imm32:
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . break
+    # break
     e9/jump  $emit-imm:break/disp32
 $emit-imm:check-for-imm16:
-    # if (has-metadata?(slice, "imm16")) emit-hex(out, imm, 2) and break
+    # if (has-metadata?(slice, "imm16"))
     # . EAX = has-metadata?(ECX, "imm16")
     # . . push args
     68/push  "imm16"/imm32
@@ -2543,7 +2543,7 @@ $emit-imm:check-for-imm16:
     81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
     74/jump-if-equal  $emit-imm:check-for-imm8/disp8
 $emit-imm:imm16:
-    # slice = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
+    # imm = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
     # . slice = next-token-from-slice(slice->start, slice->end, '/')
     # . . push args
     51/push-ECX
@@ -2563,7 +2563,7 @@ $emit-imm:imm16:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . imm = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # . emit-hex(out, imm, 2)
+    # emit-hex(out, imm, 2)
     # . . push args
     68/push  2/imm32
     53/push-EBX
@@ -2572,10 +2572,10 @@ $emit-imm:imm16:
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . break
+    # break
     e9/jump  $emit-imm:break/disp32
 $emit-imm:check-for-imm8:
-    # if (has-metadata?(slice, "imm8")) emit-hex(out, imm, 2) and break
+    # if (has-metadata?(slice, "imm8"))
     # . EAX = has-metadata?(ECX, "imm8")
     # . . push args
     68/push  "imm8"/imm32
@@ -2608,7 +2608,7 @@ $emit-imm:imm8:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . imm = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # . emit-hex(out, imm, 1)
+    # emit-hex(out, imm, 1)
     # . . push args
     68/push  1/imm32
     53/push-EBX
@@ -2617,8 +2617,10 @@ $emit-imm:imm8:
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . break
+    # break
 $emit-imm:break:
+    # . restore locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
