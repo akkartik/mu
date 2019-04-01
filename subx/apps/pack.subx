@@ -2459,21 +2459,11 @@ $emit-disp:check-for-disp32:
     74/jump-if-equal  $emit-disp:check-for-disp16/disp8
 $emit-disp:disp32:
     # disp = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
-    # . slice = next-token-from-slice(slice->start, slice->end, '/')
-    # . . push args
-    51/push-ECX
-    68/push  0x2f/imm32/slash
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    # . . call
-    e8/call  next-token-from-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # . EAX = parse-hex-int(slice)
+    # . EAX = parse-datum-of-word(slice)
     # . . push args
     51/push-ECX
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-datum-of-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . disp = EAX
@@ -2504,21 +2494,11 @@ $emit-disp:check-for-disp16:
     74/jump-if-equal  $emit-disp:check-for-disp8/disp8
 $emit-disp:disp16:
     # disp = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
-    # . slice = next-token-from-slice(slice->start, slice->end, '/')
-    # . . push args
-    51/push-ECX
-    68/push  0x2f/imm32/slash
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    # . . call
-    e8/call  next-token-from-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # . EAX = parse-hex-int(slice)
+    # . EAX = parse-datum-of-word(slice)
     # . . push args
     51/push-ECX
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-datum-of-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . disp = EAX
@@ -2549,21 +2529,11 @@ $emit-disp:check-for-disp8:
     0f 84/jump-if-equal  $emit-disp:loop/disp32
 $emit-disp:disp8:
     # slice = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
-    # . slice = next-token-from-slice(slice->start, slice->end, '/')
-    # . . push args
-    51/push-ECX
-    68/push  0x2f/imm32/slash
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    # . . call
-    e8/call  next-token-from-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # . EAX = parse-hex-int(slice)
+    # . EAX = parse-datum-of-word(slice)
     # . . push args
     51/push-ECX
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-datum-of-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . disp = EAX
@@ -2731,21 +2701,11 @@ $emit-imm:check-for-imm32:
     74/jump-if-equal  $emit-imm:check-for-imm16/disp8
 $emit-imm:imm32:
     # imm = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
-    # . slice = next-token-from-slice(slice->start, slice->end, '/')
-    # . . push args
-    51/push-ECX
-    68/push  0x2f/imm32/slash
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    # . . call
-    e8/call  next-token-from-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # . EAX = parse-hex-int(slice)
+    # . EAX = parse-datum-of-word(slice)
     # . . push args
     51/push-ECX
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-datum-of-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . imm = EAX
@@ -2776,21 +2736,11 @@ $emit-imm:check-for-imm16:
     74/jump-if-equal  $emit-imm:check-for-imm8/disp8
 $emit-imm:imm16:
     # imm = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
-    # . slice = next-token-from-slice(slice->start, slice->end, '/')
-    # . . push args
-    51/push-ECX
-    68/push  0x2f/imm32/slash
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    # . . call
-    e8/call  next-token-from-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # . EAX = parse-hex-int(slice)
+    # . EAX = parse-datum-of-word(slice)
     # . . push args
     51/push-ECX
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-datum-of-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . imm = EAX
@@ -2821,21 +2771,11 @@ $emit-imm:check-for-imm8:
     0f 84/jump-if-equal  $emit-imm:loop/disp32
 $emit-imm:imm8:
     # slice = parse-hex-int(next-token-from-slice(slice->start, slice->end, '/'))
-    # . slice = next-token-from-slice(slice->start, slice->end, '/')
-    # . . push args
-    51/push-ECX
-    68/push  0x2f/imm32/slash
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           4/disp8         .                 # push *(ECX+4)
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    # . . call
-    e8/call  next-token-from-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # . EAX = parse-hex-int(slice)
+    # . EAX = parse-datum-of-word(slice)
     # . . push args
     51/push-ECX
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-datum-of-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . imm = EAX
@@ -5985,6 +5925,46 @@ test-emit-hex-negative:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . end
+    c3/return
+
+# shortcut for parse-hex-int(next-token-from-slice(word->start, word->end, '/'))
+parse-datum-of-word:  # word : (address slice) -> value/EAX
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    56/push-ESI
+    # ESI = word
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # var slice/ECX = {0, 0}
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # slice = next-token-from-slice(word->start, word->end, '/')
+    # . . push args
+    51/push-ECX
+    68/push  0x2f/imm32/slash
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # push *(ESI+4)
+    ff          6/subop/push        0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # push *ESI
+    # . . call
+    e8/call  next-token-from-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    # value/EAX = parse-hex-int(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  parse-hex-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+$parse-datum-of-word:end:
+    # . restore registers
+    5e/pop-to-ESI
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
     c3/return
 
 == data
