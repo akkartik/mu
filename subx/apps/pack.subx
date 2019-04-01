@@ -84,7 +84,7 @@ $main:end:
 
 # conceptual hierarchy within a line:
 #   line = words separated by ' ', maybe followed by comment starting with '#'
-#   word = name until '/', then 0 or more metadata separated by '/'
+#   word = datum until '/', then 0 or more metadata separated by '/'
 #
 # we won't bother saving the internal structure of lines; reparsing should be cheap using three primitives:
 #   next-token(stream, delim char) -> slice (start, end pointers)
@@ -5070,7 +5070,7 @@ test-has-metadata-multiple-false:
     5d/pop-to-EBP
     c3/return
 
-# If value of 'word' is not a valid name, it must be a hex int. Parse and print
+# If datum of 'word' is not a valid name, it must be a hex int. Parse and print
 # it in 'width' bytes of hex, least significant first.
 # Otherwise just print the entire word including metadata.
 # Always print a trailing space.
@@ -5088,7 +5088,7 @@ emit:  # out : (address buffered-file), word : (address slice), width : int -> <
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    7/rm32/EDI    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDI
-    # name = next-token-from-slice(word->start, word->end, '/')
+    # datum = next-token-from-slice(word->start, word->end, '/')
     # . . push args
     57/push-EDI
     68/push  0x2f/imm32/slash
@@ -5098,7 +5098,7 @@ emit:  # out : (address buffered-file), word : (address slice), width : int -> <
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # if (is-valid-name?(name)) write-slice(out, word) and return
+    # if (is-valid-name?(datum)) write-slice(out, word) and return
     # . EAX = is-valid-name?(name)
     # . . push args
     57/push-EDI
@@ -5128,20 +5128,20 @@ $emit:name:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . return
     eb/jump  $emit:end/disp8
-    # otherwise emit-hex(out, parse-hex-int(name), width)
-    #   (Weird shit can happen here if the value of 'word' isn't either a valid
+    # otherwise emit-hex(out, parse-hex-int(datum), width)
+    #   (Weird shit can happen here if the datum of 'word' isn't either a valid
     #   name or a hex number, but we're only going to be passing in real legal
     #   programs. We just want to make sure that valid names aren't treated as
     #   (valid) hex numbers.)
 $emit:hex-int:
-    # . n/EAX = parse-hex-int(name)
+    # . value/EAX = parse-hex-int(datum)
     # . . push args
     57/push-EDI
     # . . call
     e8/call  parse-hex-int/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . emit-hex(out, n, width)
+    # . emit-hex(out, value, width)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     50/push-EAX
