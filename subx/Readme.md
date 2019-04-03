@@ -630,7 +630,6 @@ allocated memory for it.)_
 * `write-stream`: stream -> file
 * `write-buffered`: string -> buffered-file
 * `write-slice`: slice -> buffered-file
-* `write-stream-buffered`: stream -> buffered-file
 * `flush`: buffered-file
 * `print-byte`:  buffered-file, int
 
