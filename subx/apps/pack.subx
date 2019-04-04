@@ -133,8 +133,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     68/push  0/imm32/curr
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
     # var in-code?/EBX = false
-    68/push  0/imm32/false
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
+    31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
 $convert:loop:
     # clear-stream(line)
     # . . push args
@@ -400,7 +399,7 @@ $convert:break:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $convert:end:
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x218/imm32       # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x214/imm32       # add to ESP
     # . restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
@@ -807,7 +806,7 @@ test-convert-in-data-segment:
     c3/return
 
 test-convert-code-and-data-segments:
-    # correctly process lines in the data segment
+    # correctly process lines in both code and data segments
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
