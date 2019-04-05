@@ -7,8 +7,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 #? Entry:  # run a single test, while debugging
-#?     e8/call test-slice-starts-with-fails/disp32
-#?     e8/call test-slice-starts-with-single-character/disp32
+#?     e8/call test-slice-to-string/disp32
 #?     # syscall(exit, Num-test-failures)
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     b8/copy-to-EAX  1/imm32/exit
@@ -788,6 +787,149 @@ test-write-slice:
     68/push  _test-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# copy a slice into a new (dynamically allocated) string
+slice-to-string:  # ad : (address allocation-descriptor), in : (address slice) -> out/EAX : (address array)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    # ESI = in
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+    # curr/EDX = in->start
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
+    # max/EBX = in->end
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           3/r32/EBX   4/disp8         .                 # copy *(ESI+4) to EBX
+    # size/ECX = max - curr + 4  # total size of output string (including the initial length)
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           3/r32/EBX   .               .                 # copy EBX to ECX
+    29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # subtract EDX from ECX
+    81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
+    # out/EAX = allocate(ad, size)
+    # . . push args
+    51/push-ECX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # if (EAX == 0) abort
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    74/jump-if-equal  $slice-to-string:abort/disp8
+    # *out = size-4
+    89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy ECX to *EAX
+    81          5/subop/subtract    0/mod/indirect  0/rm32/EAX    .           .             .           .           .               4/imm32           # subtract 4 from *EAX
+    # save out
+    50/push-EAX
+    # EAX = _append-4(EAX+4, EAX+size, curr, max)  # clobbering ECX
+    # . . push args
+    53/push-EBX
+    52/push-EDX
+    # . . push EAX+size (clobbering ECX)
+    01/add                          3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # add EAX to ECX
+    51/push-ECX
+    # . . push EAX+4 (clobbering EAX)
+    81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               4/imm32           # add to EAX
+    50/push-EAX
+    # . . call
+    e8/call  _append-4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    # restore out (assumes _append-4 can't error)
+    58/pop-to-EAX
+$slice-to-string:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+$slice-to-string:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "slice-to-string: out of space"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-slice-to-string:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "Abc"
+    68/push  _test-slice-data-3/imm32/end
+    68/push  _test-slice-data-0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = slice-to-string(Heap, slice)
+    # . . push args
+    51/push-ECX
+    68/push  Heap/imm32
+    # . . call
+    e8/call  slice-to-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # dump word-slice {{{
+#?     # . write(2/stderr, "AA: ")
+#?     # . . push args
+#?     68/push  "AA: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, EAX)
+#?     # . . push args
+#?     50/push-EAX
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$")
+#?     # . . push args
+#?     68/push  "$"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # EAX = string-equal?(EAX, "Abc")
+    # . . push args
+    68/push  "Abc"/imm32
+    50/push-EAX
+    # . . call
+    e8/call  string-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-slice-to-string"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
