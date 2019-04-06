@@ -272,7 +272,7 @@ $convert:check2:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto check3
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $convert:check3/disp32
     # . next-word(line, word-slice)
     # . . push args
@@ -1222,7 +1222,7 @@ $convert-data:check-for-imm32:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) process as a single byte
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $convert-data:single-byte/disp8
 $convert-data:imm32:
     # emit(out, word-slice, 4)
@@ -2250,7 +2250,7 @@ $emit-opcodes:op1:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX != 0) goto op2
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $emit-opcodes:op2/disp8
     # if (slice-equal?(op1, "f2")) goto op2
     # . EAX = slice-equal?(op1, "f2")
@@ -2262,7 +2262,7 @@ $emit-opcodes:op1:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX != 0) goto op2
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $emit-opcodes:op2/disp8
     # if (slice-equal?(op1, "f3")) goto op2
     # . EAX = slice-equal?(op1, "f3")
@@ -2274,7 +2274,7 @@ $emit-opcodes:op1:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX != 0) goto op2
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $emit-opcodes:op2/disp8
     # otherwise return
     e9/jump  $emit-opcodes:end/disp32
@@ -2343,7 +2343,7 @@ $emit-opcodes:op2:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX != 0) return
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $emit-opcodes:end/disp32
     # if (!slice-equal?(op2, "0f")) return
     # . EAX = slice-equal?(op2, "0f")
@@ -2355,7 +2355,7 @@ $emit-opcodes:op2:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) return
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $emit-opcodes:end/disp32
 $emit-opcodes:op3:
     # next-word(line, op3)  # reuse op2/EDX
@@ -2610,7 +2610,7 @@ $emit-modrm:check-for-mod:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-modrm:check-for-rm32/disp8
 $emit-modrm:mod:
     # mod = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
@@ -2638,7 +2638,7 @@ $emit-modrm:check-for-rm32:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-modrm:check-for-r32/disp8
 $emit-modrm:rm32:
     # rm32 = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
@@ -2666,7 +2666,7 @@ $emit-modrm:check-for-r32:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-modrm:check-for-subop/disp8
 $emit-modrm:r32:
     # r32 = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
@@ -2694,7 +2694,7 @@ $emit-modrm:check-for-subop:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) loop
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $emit-modrm:loop/disp32
 $emit-modrm:subop:
     # r32 = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
@@ -2937,7 +2937,7 @@ $emit-sib:check-for-scale:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-sib:check-for-base/disp8
 $emit-sib:scale:
     # scale = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
@@ -2965,7 +2965,7 @@ $emit-sib:check-for-base:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-sib:check-for-index/disp8
 $emit-sib:base:
     # base = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
@@ -2993,7 +2993,7 @@ $emit-sib:check-for-index:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) loop
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $emit-sib:loop/disp32
 $emit-sib:index:
     # index = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
@@ -3214,7 +3214,7 @@ $emit-disp:check-for-disp32:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-disp:check-for-disp16/disp8
 $emit-disp:disp32:
     # emit(out, word-slice, 4)
@@ -3239,7 +3239,7 @@ $emit-disp:check-for-disp16:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-disp:check-for-disp8/disp8
 $emit-disp:disp16:
     # emit(out, word-slice, 2)
@@ -3264,7 +3264,7 @@ $emit-disp:check-for-disp8:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) loop
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $emit-disp:loop/disp32
 $emit-disp:disp8:
     # emit(out, word-slice, 1)
@@ -3451,7 +3451,7 @@ $emit-imm:check-for-imm32:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-imm:check-for-imm16/disp8
 $emit-imm:imm32:
     # emit(out, word-slice, 4)
@@ -3476,7 +3476,7 @@ $emit-imm:check-for-imm16:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto next check
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-imm:check-for-imm8/disp8
 $emit-imm:imm16:
     # emit(out, word-slice, 2)
@@ -3501,7 +3501,7 @@ $emit-imm:check-for-imm8:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) loop
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $emit-imm:loop/disp32
 $emit-imm:imm8:
     # emit(out, word-slice, 1)
@@ -6298,7 +6298,7 @@ $has-metadata?:loop:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX != 0) return false
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $has-metadata?:false/disp8
     # if (slice-equal?(twig, s)) return true
     # . EAX = slice-equal?(twig, s)
@@ -6310,7 +6310,7 @@ $has-metadata?:loop:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX != 0) return true
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $has-metadata?:true/disp8
     # curr = twig->end
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EDI+4) to ECX
@@ -6545,7 +6545,7 @@ emit:  # out : (address buffered-file), word : (address slice), width : int -> <
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX != 0)
-    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit:hex-int/disp8
 $emit:name:
     # . write-slice(out, word)
