@@ -26,7 +26,8 @@
 Entry:  # run tests if necessary, convert stdin if not
 
     # for debugging: run a single test
-#?     e8/call test-convert-data-trailing-comment/disp32
+#?     e8/call test-get-or-insert-segment/disp32
+#?     e8/call test-slice-equal-with-null/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -81,7 +82,7 @@ $main:end:
 
 convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
-    #   var table = new-table(10)  # rows
+    #   var table : (address stream) = new-stream(10 rows, 8 bytes each)
     #   read-segments(in, table)
     #   write-segments(out, table)
     #
@@ -549,7 +550,7 @@ read-segments:  # in : (address buffered-file), table : (address stream row)
     #       continue
     #     if (slice-equal?(word-slice, "=="))
     #       var segment-name = next-word(line)
-    #       curr-segment = get-or-insert(table, segment-name)
+    #       curr-segment = get-or-insert-segment(table, segment-name, N)
     #     else
     #       write-stream-data(curr-segment, line)
     #
@@ -717,8 +718,8 @@ $read-segments:check-for-segment-header:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX == 0) goto check3
-    3d/compare-EAX-and  0/imm32
-    0f 84/jump-if-equal  $read-segments:check3/disp32
+    81          7/subop/compare     3/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # compare EAX
+    0f 84/jump-if-equal  $read-segments:regular-line/disp32
     # . next-word(line, segment-name)
     # . . push args
     52/push-EDX
@@ -777,18 +778,19 @@ $read-segments:check-for-segment-header:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # . EAX = get-or-insert(table, segment-name)
+    # . EAX = get-or-insert-segment(table, segment-name, N)
     # . . push args
+    68/push  0x1000/imm32/segment-size/4KB
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  get-or-insert/disp32
+    e8/call  get-or-insert-segment/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . curr-segment = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
     # . continue
-    eb/jump  $read-segments:loop/disp8
+    e9/jump  $read-segments:loop/disp32
 $read-segments:regular-line:
     # write-stream-data(curr-segment, line)
     # . . push args
@@ -799,7 +801,7 @@ $read-segments:regular-line:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # loop
-    eb/jump  $read-segments:loop/disp8
+    e9/jump  $read-segments:loop/disp32
 $read-segments:break:
 $read-segments:end:
     # . reclaim locals
@@ -839,6 +841,211 @@ $write-segments:end:
     c3/return
 
 ## helpers
+
+# TODO: pass in an allocation descriptor
+get-or-insert-segment:  # table : (address stream row), s : (address slice), n : int -> EAX : (address stream)
+    # pseudocode:
+    #   curr = table->data
+    #   max = &table->data[table->write]
+    #   while curr < max
+    #     if slice-equal?(s, *curr)
+    #       return *(curr+4)
+    #     curr += 8
+    #   if table->write < table->length
+    #     *max = slice-to-string(Heap, s)
+    #     result = new-stream(Heap, n, 1)
+    #     *(max+4) = result
+    #     table->write += 8
+    #     return result
+    #   return 0
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    56/push-ESI
+    # ESI = table
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # curr/ECX = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
+    # max/EDX = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+$get-or-insert-segment:search-loop:
+    # if (curr >= max) break
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX and EDX
+    7d/jump-if-greater-or-equal  $get-or-insert-segment:not-found/disp8
+    # if (slice-equal?(s, *curr)) return *(curr+4)
+    # . EAX = slice-equal?(s, *curr)
+    # . . push args
+    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # curr += 8
+    81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               8/imm32           # add to ECX
+    # loop
+    eb/jump  $get-or-insert-segment:search-loop/disp8
+$get-or-insert-segment:not-found:
+    # result/EAX = 0
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    # if (table->write >= table->length) abort
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+    3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
+    7d/jump-if-greater-or-equal  $get-or-insert-segment:abort/disp8
+    # *max = slice-to-string(Heap, s)
+    # . EAX = slice-to-string(Heap, s)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    68/push  Heap/imm32
+    # . . call
+    e8/call  slice-to-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . *max = EAX <= writes to 0x0a003873
+    89/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EDX
+    # result/EAX = new-stream(Heap, n, 1)
+    # . . push args
+    68/push  1/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    68/push  Heap/imm32
+    # . . call
+    e8/call  new-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # *(max+4) = result
+    89/copy                         1/mod/*+disp8   2/rm32/EDX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EDX+4)
+    # table->write += 8
+    81          0/subop/add         0/mod/indirect  6/rm32/ESI    .           .             .           .           .               8/imm32           # add to *ESI
+$get-or-insert-segment:end:
+    # . restore registers
+    5e/pop-to-ESI
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+$get-or-insert-segment:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "get-or-insert-segment: too many segments"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-get-or-insert-segment:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var table/ECX : (address stream byte) = stream(2 * 8)
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    68/push  0x10/imm32/length
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # var s/EDX : (address slice) = "code"
+    68/push  _test-code-segment-end/imm32/end
+    68/push  _test-code-segment/imm32/start
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # segment/EAX = get-or-insert-segment(table, s, 8)
+    # . . push args
+    68/push  8/imm32/segment-length
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  get-or-insert-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # if (segment != 0) goto next check
+    3d/compare-EAX-and  0/imm32
+    75/jump-if-not-equal  $test-get-or-insert-segment:check1/disp8
+    # fail test
+    # . _write(2/stderr, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/0"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . _write(2/stderr, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . increment Num-test-failures
+    ff          0/subop/increment   0/mod/indirect  5/rm32/.disp32            .             .           .           Num-test-failures/disp32          # increment *Num-test-failures
+    eb/jump  $test-get-or-insert-segment:end/disp8
+$test-get-or-insert-segment:check1:
+    # check-ints-equal(segment->length, 8, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/1"/imm32
+    68/push  8/imm32/segment-length
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         .                 # push *(EAX+8)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-insert-segment:check2:
+    # check-ints-equal(table->write, rowsize = 8, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/2"/imm32
+    68/push  8/imm32/row-size
+    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # EAX = string-equal?(*table->data, "code")
+    # . . push args
+    68/push  "code"/imm32
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    # . . call
+    e8/call  string-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/3"/imm32
+    68/push  1/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-insert-segment:check3:
+    # stream/EAX = *(table->data+4)
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(ECX+16) to EAX
+    # check-ints-equal(stream->length, 8, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/4"/imm32
+    68/push  8/imm32/row-size
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         .                 # push *(EAX+8)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-insert-segment:end:
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
 
 # write an entire stream's contents to a buffered-file
 # ways to do this:
@@ -1098,5 +1305,9 @@ _test-slice-hexlike-non-number-word-metadata-end:
 _test-slice-with-slash-prefix:
   2f/slash 30/0 33/3
 _test-slice-with-slash-prefix-end:
+
+_test-code-segment:
+  63/c 6f/o 64/d 65/e
+_test-code-segment-end:
 
 # . . vim:nowrap:textwidth=0

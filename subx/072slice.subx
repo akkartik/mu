@@ -97,6 +97,7 @@ test-slice-empty-false:
 
 slice-equal?:  # s : (address slice), p : (address string) -> EAX : boolean
     # pseudocode:
+    #   if (p == 0) return (s == 0)
     #   currs = s->start
     #   maxs = s->end
     #   if (maxs - currs != p->length) return false
@@ -128,11 +129,20 @@ slice-equal?:  # s : (address slice), p : (address string) -> EAX : boolean
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
     # maxs/ESI = s->end
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           6/r32/ESI   4/disp8         .                 # copy *(ESI+4) to ESI
-    # EBX = p
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
     # EAX = maxs - currs
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           6/r32/ESI   .               .                 # copy ESI to EAX
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # subtract EDX from EAX
+    # EBX = p
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+    # if (p != 0) goto next check
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0/imm32           # compare EBX
+    75/jump-if-not-equal  $slice-equal?:nonnull-string/disp8
+$slice-equal?:null-string:
+    # return s->start == s->end
+    3d/compare-EAX-and  0/imm32
+    74/jump-if-equal  $slice-equal?:true/disp8
+    eb/jump  $slice-equal?:false/disp8
+$slice-equal?:nonnull-string:
     # if (EAX != p->length) return false
     39/compare                      0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # compare *EBX and EAX
     75/jump-if-not-equal  $slice-equal?:false/disp8
@@ -380,6 +390,37 @@ test-slice-equal-empty-with-empty:
     # . . push args
     68/push  "F - test-slice-equal-empty-with-empty"/imm32
     68/push  1/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-slice-equal-with-null:
+    # - slice-equal?(slice("Ab"), null) == 0
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX
+    68/push  _test-slice-data-2/imm32/end
+    68/push  _test-slice-data-0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = slice-equal?(ECX, 0)
+    # . . push args
+    68/push  0/imm32
+    51/push-ECX
+    # . . call
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-slice-equal-with-null"/imm32
+    68/push  0/imm32
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
@@ -800,6 +841,10 @@ slice-to-string:  # ad : (address allocation-descriptor), in : (address slice) -
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
     # ESI = in
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     # curr/EDX = in->start
@@ -843,8 +888,11 @@ slice-to-string:  # ad : (address allocation-descriptor), in : (address slice) -
     # restore out (assumes _append-4 can't error)
     58/pop-to-EAX
 $slice-to-string:end:
-    # . reclaim locals
     # . restore registers
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
