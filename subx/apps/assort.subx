@@ -27,7 +27,6 @@ Entry:  # run tests if necessary, convert stdin if not
 
     # for debugging: run a single test
 #?     e8/call test-get-or-insert-segment/disp32
-#?     e8/call test-slice-equal-with-null/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -132,408 +131,408 @@ $convert:end:
     5d/pop-to-EBP
     c3/return
 
-test-convert:
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # setup
-    # . clear-stream(_test-input-stream)
-    # . . push args
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-input-buffered-file+4)
-    # . . push args
-    b8/copy-to-EAX  _test-input-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-output-stream)
-    # . . push args
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-output-buffered-file+4)
-    # . . push args
-    b8/copy-to-EAX  _test-output-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # initialize input (meta comments in parens)
-    #   # comment 1
-    #     # comment 2 indented
-    #   == code  (new segment)
-    #   # comment 3 inside a segment
-    #   1
-    #                         (empty line)
-    #   2 3 # comment 4 inline with other contents
-    #   == data  (new segment)
-    #   4 5/imm32
-    #   == code  (existing segment but non-contiguous with previous iteration)
-    #   6 7
-    #   8 9  (multiple lines)
-    #   == code  (existing segment contiguous with previous iteration)
-    #   10 11
-    # . write(_test-input-stream, "# comment 1")
-    # . . push args
-    68/push  "# comment 1"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "  # comment 2 indented")
-    # . . push args
-    68/push  "  # comment 2 indented"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== code")
-    # . . push args
-    68/push  "== code"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "# comment 3 inside a segment")
-    # . . push args
-    68/push  "# comment 3 inside a segment"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "1")
-    # . . push args
-    68/push  "1"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")  # empty line
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "2 3 # comment 4 inline with other comments")
-    # . . push args
-    68/push  "2 3 # comment 4 inline with other comments"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== data")
-    # . . push args
-    68/push  "== data"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "4 5/imm32")
-    # . . push args
-    68/push  "4 5/imm32"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== code")
-    # . . push args
-    68/push  "== code"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "6 7")
-    # . . push args
-    68/push  "6 7"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "8 9")
-    # . . push args
-    68/push  "6 7"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== code")
-    # . . push args
-    68/push  "== code"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "10 11")
-    # . . push args
-    68/push  "10 11"/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "\n")
-    # . . push args
-    68/push  Newline/imm32
-    68/push  _test-input-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
-    # . . push args
-    68/push  _test-output-buffered-file/imm32
-    68/push  _test-input-buffered-file/imm32
-    # . . call
-    e8/call  convert/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check output
-    #   == code
-    #   1
-    #   2 3 # comment 4 inline with other contents
-    #   6 7
-    #   8 9
-    #   10 11
-    #   == data
-    #   4 5/imm32
-#?     # debug print {{{
-#?     # . write(2/stderr, "^")
+#? test-convert:
+#?     # . prolog
+#?     55/push-EBP
+#?     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+#?     # setup
+#?     # . clear-stream(_test-input-stream)
 #?     # . . push args
-#?     68/push  "^"/imm32
-#?     68/push  2/imm32/stderr
+#?     68/push  _test-input-stream/imm32
 #?     # . . call
-#?     e8/call  write/disp32
+#?     e8/call  clear-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . write-stream(2/stderr, _test-output-stream)
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # . clear-stream(_test-input-buffered-file+4)
+#?     # . . push args
+#?     b8/copy-to-EAX  _test-input-buffered-file/imm32
+#?     05/add-to-EAX  4/imm32
+#?     50/push-EAX
+#?     # . . call
+#?     e8/call  clear-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # . clear-stream(_test-output-stream)
 #?     # . . push args
 #?     68/push  _test-output-stream/imm32
-#?     68/push  2/imm32/stderr
 #?     # . . call
-#?     e8/call  write-stream/disp32
+#?     e8/call  clear-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . write(2/stderr, "$")
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # . clear-stream(_test-output-buffered-file+4)
 #?     # . . push args
-#?     68/push  "$"/imm32
-#?     68/push  2/imm32/stderr
+#?     b8/copy-to-EAX  _test-output-buffered-file/imm32
+#?     05/add-to-EAX  4/imm32
+#?     50/push-EAX
+#?     # . . call
+#?     e8/call  clear-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # initialize input (meta comments in parens)
+#?     #   # comment 1
+#?     #     # comment 2 indented
+#?     #   == code  (new segment)
+#?     #   # comment 3 inside a segment
+#?     #   1
+#?     #                         (empty line)
+#?     #   2 3 # comment 4 inline with other contents
+#?     #   == data  (new segment)
+#?     #   4 5/imm32
+#?     #   == code  (existing segment but non-contiguous with previous iteration)
+#?     #   6 7
+#?     #   8 9  (multiple lines)
+#?     #   == code  (existing segment contiguous with previous iteration)
+#?     #   10 11
+#?     # . write(_test-input-stream, "# comment 1")
+#?     # . . push args
+#?     68/push  "# comment 1"/imm32
+#?     68/push  _test-input-stream/imm32
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . write(2/stderr, "\n")
+#?     # . write(_test-input-stream, "\n")
 #?     # . . push args
 #?     68/push  Newline/imm32
-#?     68/push  2/imm32/stderr
+#?     68/push  _test-input-stream/imm32
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # }}}
-    # . flush(_test-output-buffered-file)
-    # . . push args
-    68/push  _test-output-buffered-file/imm32
-    # . . call
-    e8/call  flush/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== code", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/0"/imm32
-    68/push  "== code"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "1", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/1"/imm32
-    68/push  "e8 20 00 00 00  # e8/call 20/disp32"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "2 3 # comment 4 inline with other contents", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/2"/imm32
-    68/push  "2 3 # comment 4 inline with other contents"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "6 7", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/3"/imm32
-    68/push  "6 7"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "8 9", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/4"/imm32
-    68/push  "8 9"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "10 11", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/5"/imm32
-    68/push  "10 11"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== data", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/6"/imm32
-    68/push  "== data"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "4 5/imm32", msg)
-    # . . push args
-    68/push  "F - test-convert-code-and-data-segments/4"/imm32
-    68/push  "4 5/imm32"/imm32
-    68/push  _test-output-stream/imm32
-    # . . call
-    e8/call  check-next-stream-line-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
+#?     # . write(_test-input-stream, "  # comment 2 indented")
+#?     # . . push args
+#?     68/push  "  # comment 2 indented"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "== code")
+#?     # . . push args
+#?     68/push  "== code"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "# comment 3 inside a segment")
+#?     # . . push args
+#?     68/push  "# comment 3 inside a segment"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "1")
+#?     # . . push args
+#?     68/push  "1"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")  # empty line
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "2 3 # comment 4 inline with other comments")
+#?     # . . push args
+#?     68/push  "2 3 # comment 4 inline with other comments"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "== data")
+#?     # . . push args
+#?     68/push  "== data"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "4 5/imm32")
+#?     # . . push args
+#?     68/push  "4 5/imm32"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "== code")
+#?     # . . push args
+#?     68/push  "== code"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "6 7")
+#?     # . . push args
+#?     68/push  "6 7"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "8 9")
+#?     # . . push args
+#?     68/push  "6 7"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "== code")
+#?     # . . push args
+#?     68/push  "== code"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "10 11")
+#?     # . . push args
+#?     68/push  "10 11"/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(_test-input-stream, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  _test-input-stream/imm32
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # convert(_test-input-buffered-file, _test-output-buffered-file)
+#?     # . . push args
+#?     68/push  _test-output-buffered-file/imm32
+#?     68/push  _test-input-buffered-file/imm32
+#?     # . . call
+#?     e8/call  convert/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # check output
+#?     #   == code
+#?     #   1
+#?     #   2 3 # comment 4 inline with other contents
+#?     #   6 7
+#?     #   8 9
+#?     #   10 11
+#?     #   == data
+#?     #   4 5/imm32
+#? #?     # debug print {{{
+#? #?     # . write(2/stderr, "^")
+#? #?     # . . push args
+#? #?     68/push  "^"/imm32
+#? #?     68/push  2/imm32/stderr
+#? #?     # . . call
+#? #?     e8/call  write/disp32
+#? #?     # . . discard args
+#? #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#? #?     # . write-stream(2/stderr, _test-output-stream)
+#? #?     # . . push args
+#? #?     68/push  _test-output-stream/imm32
+#? #?     68/push  2/imm32/stderr
+#? #?     # . . call
+#? #?     e8/call  write-stream/disp32
+#? #?     # . . discard args
+#? #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#? #?     # . write(2/stderr, "$")
+#? #?     # . . push args
+#? #?     68/push  "$"/imm32
+#? #?     68/push  2/imm32/stderr
+#? #?     # . . call
+#? #?     e8/call  write/disp32
+#? #?     # . . discard args
+#? #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#? #?     # . write(2/stderr, "\n")
+#? #?     # . . push args
+#? #?     68/push  Newline/imm32
+#? #?     68/push  2/imm32/stderr
+#? #?     # . . call
+#? #?     e8/call  write/disp32
+#? #?     # . . discard args
+#? #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#? #?     # }}}
+#?     # . flush(_test-output-buffered-file)
+#?     # . . push args
+#?     68/push  _test-output-buffered-file/imm32
+#?     # . . call
+#?     e8/call  flush/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "== code", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/0"/imm32
+#?     68/push  "== code"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "1", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/1"/imm32
+#?     68/push  "e8 20 00 00 00  # e8/call 20/disp32"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "2 3 # comment 4 inline with other contents", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/2"/imm32
+#?     68/push  "2 3 # comment 4 inline with other contents"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "6 7", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/3"/imm32
+#?     68/push  "6 7"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "8 9", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/4"/imm32
+#?     68/push  "8 9"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "10 11", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/5"/imm32
+#?     68/push  "10 11"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "== data", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/6"/imm32
+#?     68/push  "== data"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . check-next-stream-line-equal(_test-output-stream, "4 5/imm32", msg)
+#?     # . . push args
+#?     68/push  "F - test-convert-code-and-data-segments/4"/imm32
+#?     68/push  "4 5/imm32"/imm32
+#?     68/push  _test-output-stream/imm32
+#?     # . . call
+#?     e8/call  check-next-stream-line-equal/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+#?     # . epilog
+#?     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+#?     5d/pop-to-EBP
+#?     c3/return
 
 read-segments:  # in : (address buffered-file), table : (address stream row)
     # pseudocode:
@@ -886,6 +885,12 @@ $get-or-insert-segment:search-loop:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . if (EAX != 0) return EAX = *(curr+4)
+    3d/compare-EAX-and  0/imm32
+    74/jump-if-equal  $get-or-insert-segment:mismatch/disp8
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
+    eb/jump  $get-or-insert-segment:end/disp8
+$get-or-insert-segment:mismatch:
     # curr += 8
     81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               8/imm32           # add to ECX
     # loop
@@ -956,19 +961,23 @@ test-get-or-insert-segment:
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # var s/EDX : (address slice) = "code"
+    # EDX : (address slice) = "code"
     68/push  _test-code-segment-end/imm32/end
     68/push  _test-code-segment/imm32/start
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # segment/EAX = get-or-insert-segment(table, s, 8)
+$test-get-or-insert-segment:first-call:
+    # - start with an empty table, insert one segment, verify that it was inserted
+    # segment/EAX = get-or-insert-segment(table, "code" slice, 10)
     # . . push args
-    68/push  8/imm32/segment-length
+    68/push  0xa/imm32/segment-length
     52/push-EDX
     51/push-ECX
     # . . call
     e8/call  get-or-insert-segment/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # save segment
+    50/push-EAX
     # if (segment != 0) goto next check
     3d/compare-EAX-and  0/imm32
     75/jump-if-not-equal  $test-get-or-insert-segment:check1/disp8
@@ -991,12 +1000,12 @@ test-get-or-insert-segment:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . increment Num-test-failures
     ff          0/subop/increment   0/mod/indirect  5/rm32/.disp32            .             .           .           Num-test-failures/disp32          # increment *Num-test-failures
-    eb/jump  $test-get-or-insert-segment:end/disp8
+    e9/jump  $test-get-or-insert-segment:end/disp32
 $test-get-or-insert-segment:check1:
-    # check-ints-equal(segment->length, 8, msg)
+    # check-ints-equal(segment->length, 10, msg)
     # . . push args
     68/push  "F - test-get-or-insert-segment/1"/imm32
-    68/push  8/imm32/segment-length
+    68/push  0xa/imm32/segment-length
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         .                 # push *(EAX+8)
     # . . call
     e8/call  check-ints-equal/disp32
@@ -1032,11 +1041,67 @@ $test-get-or-insert-segment:check2:
 $test-get-or-insert-segment:check3:
     # stream/EAX = *(table->data+4)
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(ECX+16) to EAX
-    # check-ints-equal(stream->length, 8, msg)
+    # check-ints-equal(stream->length, 10, msg)
     # . . push args
     68/push  "F - test-get-or-insert-segment/4"/imm32
-    68/push  8/imm32/row-size
+    68/push  0xa/imm32/segment-size
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         .                 # push *(EAX+8)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-insert-segment:second-call:
+    # - insert the same segment name again, verify that it was reused
+    # segment2/EAX = get-or-insert-segment(table, "code" slice, 8)
+    # . . push args
+    68/push  8/imm32/segment-length
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  get-or-insert-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # restore old segment1
+    5a/pop-to-EDX
+    # check-ints-equal(segment2/EAX, segment1/EDX, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/5"/imm32
+    52/push-EDX
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # no change to table size
+    # . check-ints-equal(table->write, rowsize = 8, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/6"/imm32
+    68/push  8/imm32/row-size
+    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-insert-segment:third-call:
+    # - insert a new segment name, verify that it was inserted
+    # EDX : (address slice) = "data"
+    c7          0/subop/copy        0/mod/indirect  2/rm32/EDX    .           .             .           .           .               _test-data-segment/imm32  # copy to *EDX
+    c7          0/subop/copy        1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         _test-data-segment-end/imm32  # copy to *(EDX+4)
+    # segment2/EAX = get-or-insert-segment(table, "data" slice, 8)
+    # . . push args
+    68/push  8/imm32/segment-length
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  get-or-insert-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # table gets a new row
+    # . check-ints-equal(table->write, 2 rows = 16, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-segment/7"/imm32
+    68/push  0x10/imm32/two-rows
+    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
@@ -1309,5 +1374,9 @@ _test-slice-with-slash-prefix-end:
 _test-code-segment:
   63/c 6f/o 64/d 65/e
 _test-code-segment-end:
+
+_test-data-segment:
+  64/d 61/a 74/t 61/a
+_test-data-segment-end:
 
 # . . vim:nowrap:textwidth=0
