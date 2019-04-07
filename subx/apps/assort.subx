@@ -1224,65 +1224,7 @@ test-write-stream-data:
     5d/pop-to-EBP
     c3/return
 
-# shortcut for parse-hex-int(next-token-from-slice(word->start, word->end, '/'))
-parse-datum-of-word:  # word : (address slice) -> value/EAX
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-    51/push-ECX
-    56/push-ESI
-    # ESI = word
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # slice = next-token-from-slice(word->start, word->end, '/')
-    # . . push args
-    51/push-ECX
-    68/push  0x2f/imm32/slash
-    ff          6/subop/push        1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # push *(ESI+4)
-    ff          6/subop/push        0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # push *ESI
-    # . . call
-    e8/call  next-token-from-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # value/EAX = parse-hex-int(slice)
-    # . . push args
-    51/push-ECX
-    # . . call
-    e8/call  parse-hex-int/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-$parse-datum-of-word:end:
-    # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . restore registers
-    5e/pop-to-ESI
-    59/pop-to-ECX
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
 == data
-
-_test-slice-negative-two:
-    2d/- 32/2
-_test-slice-negative-two-end:
-    2f/slash 66/f 6f/o 6f/o
-_test-slice-negative-two-metadata-end:
-
-_test-slice-three-zero:
-    33/3 30/0
-_test-slice-three-zero-end:
-
-_test-slice-non-number-word:
-    78/x 79/y 7a/z
-_test-slice-non-number-word-end:
-    2f/slash
-_test-slice-non-number-word-metadata-end:
 
 _test-input-stream:
     # current write index
@@ -1359,17 +1301,6 @@ _test-output-buffered-file:
     6/imm32
     # data
     00 00 00 00 00 00  # 6 bytes
-
-_test-slice-hexlike-non-number-word:
-    61/a 62/b 63/c 64/d
-_test-slice-hexlike-non-number-word-end:
-    2f/slash
-    78/x 79/y 7a/z
-_test-slice-hexlike-non-number-word-metadata-end:
-
-_test-slice-with-slash-prefix:
-  2f/slash 30/0 33/3
-_test-slice-with-slash-prefix-end:
 
 _test-code-segment:
   63/c 6f/o 64/d 65/e
