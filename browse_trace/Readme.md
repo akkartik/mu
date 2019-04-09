@@ -42,8 +42,8 @@ The UI provides the following hotkeys:
 * `Backspace`: 'Zoom out' on a line after zooming in, collapsing lines below
   expanded by some series of `Enter` commands.
 
-* `j` or `down-arrow`: Move/scroll cursor down one line.
-* `k` or `up-arrow`: Move/scroll cursor up one line.
+* `j` or `down-arrow`: Move cursor down one line.
+* `k` or `up-arrow`: Move cursor up one line.
 * `J` or `ctrl-f` or `page-down`: Scroll cursor down one page.
 * `K` or `ctrl-b` or `page-up`: Scroll cursor up one page.
 * `h` or `left-arrow`: Scroll cursor left one character.
