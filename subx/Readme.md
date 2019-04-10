@@ -289,7 +289,7 @@ point of the program. It doesn't have to be unique, and the latest definition
 will override earlier ones.
 
 (The `Entry` label, along with duplicate segment headers, allows programs to
-be built up incrementally out of multiple _layers_](http://akkartik.name/post/wart-layers).)
+be built up incrementally out of multiple [_layers_](http://akkartik.name/post/wart-layers).)
 
 The data segment consists of labels as before and byte values. Referring to
 data labels in either `code` segment instructions or `data` segment values
