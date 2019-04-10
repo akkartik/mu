@@ -7190,20 +7190,6 @@ $emit-hex:loop:
     # if (curr >= width) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX and EDX
     7d/jump-if-greater-or-equal  $emit-hex:end/disp8
-#?     # if (EBX == 0) write(out, "00 ") and continue
-#?     81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
-#?     75/jump-if-not-equal  $emit-hex:print-octet/disp8
-#? $emit-hex:pad-zero:
-#?     # . write(out, "00 ")
-#?     # . . push args
-#?     68/push  "00 "/imm32
-#?     57/push-EDI
-#?     # . . call
-#?     e8/call  write/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     eb/jump  $emit-hex:continue/disp8
-#? $emit-hex:print-octet:
     # print-byte(out, EBX)
     # . . push args
     53/push-EBX
@@ -7222,7 +7208,7 @@ $emit-hex:loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # EBX = EBX >> 8
     c1/shift    5/subop/logic-right 3/mod/direct    3/rm32/EBX    .           .             .           .           .               8/imm8            # shift EBX right by 8 bits, while padding zeroes
-#? $emit-hex:continue:
+$emit-hex:continue:
     # ++curr
     41/increment-ECX
     eb/jump  $emit-hex:loop/disp8
