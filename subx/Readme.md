@@ -121,24 +121,27 @@ understanding of your computer.
 
 Most instructions operate on an operand in register or memory ('reg/mem'), and
 a second operand in a register. The register operand is specified fairly
-directly using the `/r32` argument. The reg/mem operand, however, gets
-complex. It can be specified by 1-7 arguments, each ranging in size from 2
-bits to 4 bytes.
+directly using the 3-bit `/r32` argument:
+
+  - 0 means register `EAX`
+  - 1 means register `ECX`
+  - 2 means register `EDX`
+  - 3 means register `EBX`
+  - 4 means register `ESP`
+  - 5 means register `EBP`
+  - 6 means register `ESI`
+  - 7 means register `EDI`
+
+The reg/mem operand, however, gets complex. It can be specified by 1-7
+arguments, each ranging in size from 2 bits to 4 bytes.
 
 The key argument that's always present for reg/mem operands is `/mod`, the
 _addressing mode_. This is a 2-bit argument that can take 4 possible values,
 and it determines what other arguments are required, and how to interpret
 them.
 
-* If `/mod` is `3`: the operand is the register described by the `/rm32` bits:
-    - 0 means register `EAX`
-    - 1 means register `ECX`
-    - 2 means register `EDX`
-    - 3 means register `EBX`
-    - 4 means register `ESP`
-    - 5 means register `EBP`
-    - 6 means register `ESI`
-    - 7 means register `EDI`
+* If `/mod` is `3`: the operand is the register described by the 3-bit `/rm32`
+  argument similarly to `/r32` above.
 
 * If `/mod` is `0`: the operand is the address provided in the register
   described by `/rm32`. That's `*rm32` in C syntax.
