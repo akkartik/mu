@@ -140,7 +140,7 @@ them.
     - 6 means register `ESI`
     - 7 means register `EDI`
 
-* If `/mod` is `0`: the operand is the the address provided in the register
+* If `/mod` is `0`: the operand is the address provided in the register
   described by `/rm32`. That's `*rm32` in C syntax.
 
 * If `/mod` is `1`: the operand is the address provided by adding the register
@@ -148,7 +148,7 @@ them.
   syntax.
 
 * If `/mod` is `2`: the operand is the address provided by adding the register
-  in `r/m` with the (4-byte) displacement. That's `*(r/m + disp32)` in C
+  in `/rm32` with the (4-byte) displacement. That's `*(/rm32 + disp32)` in C
   syntax.
 
 In the last three cases, one exception occurs when the `/rm32` argument
@@ -184,11 +184,11 @@ and digest it:
    be? Can you think of another approach?)
 
 1. To read from `*(EAX+ECX+1000)`, one approach would be:
-   - `mod`: `2` (indirect + disp32)
-   - `r/m`: `4` (`/base`, `/index` and `/scale` arguments required)
-   - `base`: `0` (EAX)
-   - `index`: `1` (ECX)
-   - `displacement`: 4 bytes containing `1000`
+   - `/mod`: `2` (indirect + disp32)
+   - `/rm32`: `4` (`/base`, `/index` and `/scale` arguments required)
+   - `/base`: `0` (EAX)
+   - `/index`: `1` (ECX)
+   - `/disp32`: 4 bytes containing `1000`
 
 ## Putting it all together
 
