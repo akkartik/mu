@@ -1,124 +1,198 @@
-## SubX: a simplistic assembly language
+## A minimalist assembly language
 
-SubX is a minimalist assembly language designed:
-* to explore ways to turn arbitrary manual tests into reproducible automated
-  tests,
-* to be easy to implement in itself, and
-* to help learn and teach the x86 instruction set.
+SubX is a simple, minimalist stack for programming your computer.
 
-```
-$ git clone https://github.com/akkartik/mu
-$ cd mu/subx
-$ ./subx  # print out a help message
-```
+  ```
+  $ git clone https://github.com/akkartik/mu
+  $ cd mu/subx
+  $ ./subx  # print out a help message
+  ```
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
 
-Expanding on the first bullet, it hopes to support more comprehensive tests
-by:
+You can generate native ELF binaries with it that run on a bare Linux
+kernel. No other dependencies needed.
 
-0. Running generated binaries in _emulated mode_. Emulated mode is slower than
-   native execution (which will also work), but there's more sanity checking,
-   and more descriptive error messages for common low-level problems.
+  ```sh
+  $ ./subx translate examples/ex1.subx -o examples/ex1
+  $ ./examples/ex1  # only on Linux
+  $ echo $?
+  42
+ ```
 
-   ```sh
-   $ ./subx translate examples/ex1.subx -o examples/ex1
-   $ ./examples/ex1  # only on Linux
-   $ echo $?
-   42
-   $ ./subx run examples/ex1  # on Linux or BSD or OS X
-   $ echo $?
-   42
-   ```
+You can emulate programs on an interpreter/VM for better error messages.
 
-   The assembly syntax is designed so the assembler (`subx translate`) has
-   very little to do, making it feasible to reimplement in itself. Programmers
-   have to explicitly specify all opcodes and operands.
+  ```sh
+  $ ./subx run examples/ex1  # on Linux or BSD or OS X
+  $ echo $?
+  42
+  ```
 
-   ```sh (just for syntax highlighting)
-   # exit(42)
-   bb/copy-to-EBX  0x2a/imm32  # 42 in hex
-   b8/copy-to-EAX  1/imm32/exit
-   cd/syscall  0x80/imm8
-   ```
+Emulated runs generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
 
-   To keep code readable you can add _metadata_ to any word after a `/`.
-   Metadata can be just comments for readers, and they'll be ignored. They can
-   also trigger checks. Here, tagging operands with the `imm32` type allows
-   SubX to check that instructions have precisely the operand types they
-   should. x86 instructions have 14 types of operands, and missing one causes
-   all future instructions to go off the rails, interpreting operands as
-   opcodes and vice versa. So this is a useful check.
+  ```sh
+  $ ./subx --map translate examples/factorial.subx -o examples/factorial
+  $ ./subx --map --trace run examples/factorial
+  saving trace to 'last_run'
+  $ ../browse_trace/browse_trace last_run  # text-mode debugger UI
+  ```
 
-1. Designing testable wrappers for operating system interfaces. For example,
-   it can `read()` from or `write()` to fake in-memory files in tests. More
-   details [below](#subx-library). We are continuing to port syscalls from
-   [the old Mu VM in the parent directory](https://github.com/akkartik/mu).
+You can write tests for your assembly programs. The entire stack is thoroughly
+covered by automated tests. SubX's tagline: tests before syntax.
 
-2. Supporting a special _trace_ stream in addition to the default `stdin`,
-   `stdout` and `stderr` streams. The trace stream is designed for programs to
-   emit structured facts they deduce about their domain as they execute. Tests
-   can then check the set of facts deduced in addition to the results of the
-   function under test. This form of _automated whitebox testing_ permits
-   writing tests for performance, fault tolerance, deadlock-freedom, memory
-   usage, etc. For example, if a sort function traces each swap, a performance
-   test could check that the number of swaps doesn't quadruple when the size
-   of the input doubles.
+  ```sh
+  $ ./subx test
+  $ ./subx run apps/factorial test
+  ```
 
-The hypothesis is that designing the entire system to be testable from day 1
-and from the ground up would radically impact the culture of an eco-system in
-a way that no bolted-on tool or service at higher levels can replicate. It
-would make it easier to write programs that can be [easily understood by newcomers](http://akkartik.name/about).
-It would reassure authors that an app is free from regression if all automated
-tests pass. It would make the stack easy to rewrite and simplify by dropping
-features, without fear that a subset of targeted apps might break. As a result
-people might fork projects more easily, and also exchange code between
-disparate forks more easily (copy the tests over, then try copying code over
-and making tests pass, rewriting and polishing where necessary). The community
-would have in effect a diversified portfolio of forks, a “wavefront” of
-possible combinations of features and alternative implementations of features
-instead of the single trunk with monotonically growing complexity that we get
-today. Application writers who wrote thorough tests for their apps (something
-they just can’t do today) would be able to bounce around between forks more
-easily without getting locked in to a single one as currently happens.
+You can use it to learn about the x86 processor that (almost certainly) runs
+your computer. (See below.)
 
-However, that vision is far away, and SubX is just a first, hesitant step.
-SubX supports a small, regular subset of the 32-bit x86 instruction set.
-(Think of the name as short for "sub-x86".)
+You can read its tiny zero-dependency internals and understand how they work.
+You can hack on it, and its thorough tests will raise the alarm when you break
+something.
 
-  - Only instructions that operate on the 32-bit integer E\*X registers, and a
-    couple of instructions for operating on 8-bit values. No floating-point
-    yet. Most legacy registers will never be supported.
+Eventually you will be able to program in higher-level notations. But you'll
+always have tests as guardrails and traces for inspecting runs. The entire
+stack will always be designed for others to comprehend. You'll always be
+empowered to understand how things work, and change what doesn't work for you.
+You'll always be expected to make small changes during upgrades.
 
-  - Only instructions that assume a flat address space; legacy instructions
-    that use segment registers will never be supported.
+## What it looks like
 
-  - No instructions that check the carry or parity flags; arithmetic operations
-    always operate on signed integers (while bitwise operations always operate
-    on unsigned integers).
+Here is the first example we ran above, a program that just returns 42:
 
-  - Only relative jump instructions (with 8-bit or 32-bit offsets).
+  ```sh
+  bb/copy-to-EBX  0x2a/imm32  # 42 in hex
+  b8/copy-to-EAX  1/imm32/exit
+  cd/syscall  0x80/imm8
+  ```
 
-The (rudimentary, statically linked) ELF binaries SubX generates can be run
-natively on Linux, and they require only the Linux kernel.
+Every line contains at most one instruction. Instructions consist of words
+separated by whitespace. Words may be _opcodes_ (defining the operation being
+performed) or _arguments_ (specifying the data the operation acts on). Any
+word can have extra _metadata_ attached to it after `/`. Some metadata is
+required (like the `/imm32` and `/imm8` above), but unrecognized metadata is
+silently skipped so you can attach comments to words (like the instruction
+name `/copy-to-EAX` above, or the `/exit` operand).
 
-## Status
+SubX doesn't provide much syntax (there aren't even the usual mnemonics for
+opcodes), but it _does_ provide error-checking. If you miss an operand or
+accidentally add an extra operand you'll get a nice error. SubX won't arbitrarily
+interpret bytes of data as instructions or vice versa.
 
-I'm currently implementing SubX in SubX in 3 phases:
+So much for syntax. What do all these numbers actually _mean_? SubX supports a
+small subset of the 32-bit x86 instruction set that likely runs on your
+computer. (Think of the name as short for "sub-x86".) Instructions operate on
+a few registers:
 
-  1. Converting ascii hex bytes to binary. (✓)
-  2. Packing bitfields for x86 instructions into bytes. (80% complete)
-  3. Replacing addresses with labels.
+* 6 general-purpose 32-bit registers: EAX, EBX, ECX, EDX, ESI and EDI
+* 2 additional 32-bit registers: ESP and EBP, I suggest you only use these to
+  manage the call stack.
+* 3 bit-size _flag_ registers for conditional branching:
+  - zero/equal flag ZF
+  - sign flag SF
+  - overflow flag OF
 
-In parallel, I'm designing testable wrappers for syscalls, particularly for
-scalably running blocking syscalls with a test harness concurrently monitoring
-their progress.
+SubX programs consist of instructions like `89/copy`, `01/add`, `39/compare`
+and `52/push-ECX` which modify these registers as well as a byte-addressable
+memory. For a complete list of supported instructions, run `subx help opcodes`.
 
-## An example program
+(SubX doesn't support floating-point registers yet. Intel processors support
+an 8-bit mode, 16-bit mode and 64-bit mode. SubX will never support them.
+There are other flags. SubX will never support them. There are also _many_
+more instructions that SubX will never support.)
 
-In the interest of minimalism, SubX requires more knowledge than traditional
-assembly languages of the x86 instructions it supports. Here's an example
-SubX program, using one line per instruction:
+It's worth distinguishing between an instruction's _operands_ and its _arguments_.
+Arguments are provided directly in instructions. Operands are pieces of data
+in register or memory that are operated on by instructions. Intel processors
+determine operands from arguments in fairly complex ways.
+
+## Lengthy interlude: How x86 instructions compute operands
+
+The [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf)
+is the final source of truth on the x86 instruction set, but it can be
+forbidding to make sense of, so here's a quick orientation. You will need
+familiarity with binary numbers, and maybe a few other things. Email [me](mailto:mu@akkartik.com)
+any time if something isn't clear. I love explaining this stuff for as long as
+it takes. The bad news is that it takes some getting used to. The good news is
+that internalizing the next 500 words will give you a significantly deeper
+understanding of your computer.
+
+Most instructions operate on an operand in register or memory ('reg/mem'), and
+a second operand in a register. The register operand is specified fairly
+directly using the `/r32` argument. The reg/mem operand, however, gets
+complex. It can be specified by 1-7 arguments, each ranging in size from 2
+bits to 4 bytes.
+
+The key argument that's always present for reg/mem operands is `/mod`, the
+_addressing mode_. This is a 2-bit argument that can take 4 possible values,
+and it determines what other arguments are required, and how to interpret
+them.
+
+* If `/mod` is `3`: the operand is the register described by the `/rm32` bits:
+    - 0 means register `EAX`
+    - 1 means register `ECX`
+    - 2 means register `EDX`
+    - 3 means register `EBX`
+    - 4 means register `ESP`
+    - 5 means register `EBP`
+    - 6 means register `ESI`
+    - 7 means register `EDI`
+
+* If `/mod` is `0`: the operand is the the address provided in the register
+  described by `/rm32`. That's `*rm32` in C syntax.
+
+* If `/mod` is `1`: the operand is the address provided by adding the register
+  in `/rm32` with the (1-byte) displacement. That's `*(rm32 + disp8)` in C
+  syntax.
+
+* If `/mod` is `2`: the operand is the address provided by adding the register
+  in `r/m` with the (4-byte) displacement. That's `*(r/m + disp32)` in C
+  syntax.
+
+In the last three cases, one exception occurs when the `/rm32` argument
+contains `4`. Rather than encoding register `ESP`, it means the address is
+provided by three _whole new_ arguments (`/base`, `/index` and `/scale`) in a
+_totally_ different way:
+
+  ```
+  reg/mem = *(base + index * 2^scale)
+  ```
+
+(There are a couple more exceptions ☹; see [Table 2-2](modrm.pdf) and [Table 2-3](sib.pdf)
+of the Intel manual for the complete story.)
+
+Phew, that was a lot to take in. Some examples to work through as you reread
+and digest it:
+
+1. To read directly from the EAX register, `/mod` must be `3` (direct mode),
+   and `/rm32` must be `0`. There must be no `/base`, `/index` or `/scale`
+   arguments.
+
+1. To read from `*EAX` (in C syntax), `/mod` must be `0` (indirect mode), and
+   the `/rm32` argument must be `0`. There must be no `/base`, `/index` or
+   `/scale` arguments.
+
+1. To read from `*(EAX+4)`, `/mod` must be `1` (indirect + disp8 mode),
+   `/rm32` must be `0`, there must be no SIB byte, and there must be a single
+   displacement byte containing `4`.
+
+1. To read from `*(EAX+ECX+4)`, one approach would be to set `/mod` to `1` as
+   above, `/rm32` to `4` (SIB byte next), `/base` to `0`, `/index` to `1`
+   (ECX) and a single displacement byte to `4`. (What should the `scale` bits
+   be? Can you think of another approach?)
+
+1. To read from `*(EAX+ECX+1000)`, one approach would be:
+   - `mod`: `2` (indirect + disp32)
+   - `r/m`: `4` (`/base`, `/index` and `/scale` arguments required)
+   - `base`: `0` (EAX)
+   - `index`: `1` (ECX)
+   - `displacement`: 4 bytes containing `1000`
+
+## Putting it all together
+
+Here's a more meaty example:
 
 <img alt='examples/ex3.subx' src='../html/subx/ex3.png'>
 
@@ -129,18 +203,6 @@ and comments at the end of complex instructions to state the low-level
 operation they perform. Numbers are always in hexadecimal (base 16); the '0x'
 prefix is optional, and I tend to include it as a reminder when numbers look
 like decimal numbers or words.
-
-As you can see, programming in SubX requires the programmer to know the (kinda
-complex) structure of x86 instructions, all the different operands that an
-instruction can have, their layout in bytes (for example, the `subop` and
-`r32` fields use the same bits, so an instruction can't have both; more on
-this below), the opcodes for supported instructions, and so on.
-
-While SubX syntax is fairly dumb, the error-checking is relatively smart. I
-try to provide clear error messages on instructions missing operands or having
-unexpected operands. Either case would otherwise cause instruction boundaries
-to diverge from what you expect, and potentially lead to errors far away. It's
-useful to catch such errors early.
 
 Try running this example now:
 
@@ -159,116 +221,7 @@ $ echo $?
 55
 ```
 
-The rest of this Readme elaborates on the syntax for SubX programs, starting
-with a few prerequisites about the x86 instruction set.
-
-## A quick tour of the x86 instruction set
-
-The [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf)
-is the final source of truth on the x86 instruction set, but it can be
-forbidding to make sense of, so here's a quick orientation. You will need
-familiarity with binary and hexadecimal encodings (starting with '0x') for
-numbers, and maybe a few other things. Email [me](mailto:mu@akkartik.com)
-any time if something isn't clear. I love explaining this stuff for as long as
-it takes.
-
-The x86 instructions SubX supports can take anywhere from 1 to 13 bytes. Early
-bytes affect what later bytes mean and where an instruction ends. Here's the
-big picture of a single x86 instruction from the Intel manual:
-
-<img alt='x86 instruction structure' src='../html/subx/encoding.png'>
-
-There's a lot here, so let's unpack it piece by piece:
-
-* The prefix bytes are not used by SubX, so ignore them.
-
-* The opcode bytes encode the instruction used. Ignore their internal structure;
-  we'll just treat them as a sequence of whole bytes. The opcode sequences
-  SubX recognizes are enumerated by running `subx help opcodes`. For more
-  details on a specific opcode, consult html guides like https://c9x.me/x86 or
-  the Intel manual.
-
-* The addressing mode byte is used by all instructions that take an `rm32`
-  operand according to `subx help opcodes`. (That's most instructions.) The
-  `rm32` operand expresses how an instruction should load one 32-bit operand
-  from either a register or memory. It is configured by the addressing mode
-  byte and, optionally, the SIB (scale, index, base) byte as follows:
-
-  - if the `mod` (mode) field is `11` (3): the `rm32` operand is the contents
-    of the register described by the `r/m` bits.
-    - `000` (0) means register `EAX`
-    - `001` (1) means register `ECX`
-    - `010` (2) means register `EDX`
-    - `011` (3) means register `EBX`
-    - `100` (4) means register `ESP`
-    - `101` (5) means register `EBP`
-    - `110` (6) means register `ESI`
-    - `111` (7) means register `EDI`
-
-  - if `mod` is `00` (0): `rm32` is the contents of the address provided in the
-    register provided by `r/m`. That's `*r/m` in C syntax.
-
-  - if `mod` is `01` (1): `rm32` is the contents of the address provided by
-    adding the register in `r/m` with the (1-byte) displacement. That's
-    `*(r/m + disp8)` in C syntax.
-
-  - if `mod` is `10` (2): `rm32` is the contents of the address provided by
-    adding the register in `r/m` with the (4-byte) displacement. That's
-    `*(r/m + disp32)` in C syntax.
-
-  In the last 3 cases, one exception occurs when the `r/m` field contains
-  `010` (4). Rather than encoding register ESP, that means the address is
-  provided by a SIB byte next:
-
-  ```
-  base + index * 2^scale + displacement
-  ```
-
-  (There are a couple more exceptions ☹; see [Table 2-2](modrm.pdf) and [Table 2-3](sib.pdf)
-  of the Intel manual for the complete story.)
-
-  Phew, that was a lot to take in. Some examples to work through as you reread
-  and digest it:
-
-  1. To read directly from the EAX register, `mod` must be `11` (direct mode),
-     and the `r/m` bits must be `000` (EAX). There must be no SIB byte.
-
-  1. To read from `*EAX` in C syntax, `mod` must be `00` (indirect mode), and
-     the `r/m` bits must be `000`. There must be no SIB byte.
-
-  1. To read from `*(EAX+4)`, `mod` must be `01` (indirect + disp8 mode),
-     `r/m` must be `000`, there must be no SIB byte, and there must be a
-     single displacement byte containing `00000010` (4).
-
-  1. To read from `*(EAX+ECX+4)`, one approach would be to set `mod` to `01`,
-     `r/m` to `100` (SIB byte next), `base` to `000`, `index` to `001` (ECX)
-     and a single displacement byte to 4. What should the `scale` bits be? Can
-     you think of another approach?
-
-  1. To read from `*(EAX+ECX+0x00f00000)`, one approach would be:
-     - `mod`: `10` (indirect + disp32)
-     - `r/m`: `100` (SIB byte)
-     - `base`: `000` (EAX)
-     - `index`: `001` (ECX)
-     - `displacement`: 4 bytes containing 0x00f00000
-
-* Back to the instruction picture. We've already covered the SIB byte and most
-  of the addressing mode byte. Instructions can also provide a second operand
-  as either a displacement or immediate value (the two are distinct because
-  some instructions use a displacement as part of `rm32` and an immediate for
-  the other operand).
-
-* Finally, the `reg` bits in the addressing mode byte can also encode the
-  second operand. Sometimes they can also be part of the opcode bits. For
-  example, an operand byte of `ff` and `reg` bits of `001` means "increment
-  rm32". (Notice that instructions that use the `reg` bits as a "sub-opcode"
-  cannot also use it as a second operand.)
-
-That concludes our quick tour. By this point it's probably clear to you that
-the x86 instruction set is overly complicated. Many simpler instruction sets
-exist. However, your computer right now likely runs x86 instructions and not
-them. Internalizing the last 750 words may allow you to program your computer
-fairly directly, with only minimal-going-on-zero reliance on a C compiler.
+Use it now to follow along for a more complete tour of SubX syntax.
 
 ## The syntax of SubX programs
 
@@ -299,23 +252,13 @@ Within the `code` segment, each line contains a comment, label or instruction.
 Comments start with a `#` and are ignored. Labels should always be the first
 word on a line, and they end with a `:`.
 
-Instructions consist of a sequence of words. As mentioned above, each word can
-contain _metadata_ after a `/`. Metadata can be either required by SubX or act
-as a comment for the reader; SubX silently ignores unrecognized metadata. A
-single word can contain multiple pieces of metadata, each starting with a `/`.
-
-The words in an instruction consist of 1-3 opcode bytes, and different kinds
-of operands corresponding to the bitfields in an x86 instruction listed above.
-For error checking, these operands must be tagged with one of the following
-bits of metadata:
-  - `mod`
-  - `rm32` ("r/m" in the x86 instruction diagram above, but we can't use `/`
-    in metadata tags)
-  - `r32` ("reg" in the x86 diagram)
-  - `subop` (for when "reg" in the x86 diagram encodes a sub-opcode rather
-    than an operand)
-  - displacement: `disp8`, `disp16` or `disp32`
-  - immediate: `imm8` or `imm32`
+Instruction arguments must specify their type, from:
+  - `/mod`
+  - `/rm32`
+  - `/r32`
+  - `/subop` (sometimes the `/r32` bits in an instruction are used as an extra opcode)
+  - displacement: `/disp8` or `/disp32`
+  - immediate: `/imm8` or `/imm32`
 
 Different instructions (opcodes) require different operands. SubX will
 validate each instruction in your programs, and raise an error anytime you
@@ -324,10 +267,11 @@ miss or spuriously add an operand.
 I recommend you order operands consistently in your programs. SubX allows
 operands in any order, but only because that's simplest to explain/implement.
 Switching order from instruction to instruction is likely to add to the
-reader's burden. Here's the order I've been using:
+reader's burden. Here's the order I've been using after opcodes:
 
 ```
-/subop  /mod /rm32  /base /index /scale  /r32  /displacement  /immediate
+        |<--------- reg/mem --------->|        |<- reg/mem? ->|
+/subop  /mod /rm32  /base /index /scale  /r32   /displacement   /immediate
 ```
 
 Instructions can refer to labels in displacement or immediate operands, and
@@ -370,6 +314,29 @@ commit, an example's binary should be identical bit for bit with the result of
 translating the corresponding `.subx` file. The binary should also be natively
 runnable on a Linux system running on Intel x86 processors, either 32- or
 64-bit. If either of these invariants is broken it's a bug on my part.
+
+## Roadmap and status
+
+* Bootstrapping a SubX-\>ELF translator in SubX
+
+  1. [Converting ascii hex bytes to binary.](http://akkartik.github.io/mu/html/subx/apps/hex.subx.html) (✓)
+  2. [Packing bitfields for x86 instructions into bytes.](http://akkartik.github.io/mu/html/subx/apps/pack.subx.html) (✓)
+  3. [Combining segments with the same name.](apps/assort.subx) (30% complete)
+  4. Replacing addresses with labels.
+  5. Support for string literals.
+
+* Testable, dependency-injected vocabulary of primitives
+  - Streams: `read()`, `write()`. (✓)
+  - `exit()` (✓)
+  - Sockets
+  - Files
+  - Concurrency, and a framework for testing blocking code
+
+* Using the trace in [white-box tests](https://git.sr.ht/~akkartik/basic-whitebox-test/tree/master/Readme.md)
+  for performance, fault tolerance, etc.
+
+* Higher-level notations. Like programming languages, but with thinner
+  implementations that you can -- and are expected to! -- modify.
 
 ## Running
 
@@ -493,6 +460,9 @@ rudimentary but hopefully still workable toolkit:
   case I uncomment a commented-out call to `dump_stack()` in the `vm.cc`
   layer. It makes the trace a lot more verbose and a lot less dense, necessitating
   a lot more scrolling around, so I keep it turned off most of the time.
+
+* If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md)
+  in the 'time-travel debugger'.
 
 Hopefully these hints are enough to get you started. The main thing to
 remember is to not be afraid of modifying the sources. A good debugging
