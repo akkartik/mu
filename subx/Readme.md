@@ -1,4 +1,4 @@
-## A minimalist assembly language
+## SubX: A minimalist assembly language for a subset of the x86 ISA
 
 SubX is a simple, minimalist stack for programming your computer.
 
