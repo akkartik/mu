@@ -87,8 +87,8 @@ computer. (Think of the name as short for "sub-x86".) Instructions operate on
 a few registers:
 
 * 6 general-purpose 32-bit registers: EAX, EBX, ECX, EDX, ESI and EDI
-* 2 additional 32-bit registers: ESP and EBP, I suggest you only use these to
-  manage the call stack.
+* 2 additional 32-bit registers: ESP and EBP (I suggest you only use these to
+  manage the call stack.)
 * 3 bit-size _flag_ registers for conditional branching:
   - zero/equal flag ZF
   - sign flag SF
@@ -260,12 +260,12 @@ Instruction arguments must specify their type, from:
   - displacement: `/disp8` or `/disp32`
   - immediate: `/imm8` or `/imm32`
 
-Different instructions (opcodes) require different operands. SubX will
+Different instructions (opcodes) require different arguments. SubX will
 validate each instruction in your programs, and raise an error anytime you
-miss or spuriously add an operand.
+miss or spuriously add an argument.
 
-I recommend you order operands consistently in your programs. SubX allows
-operands in any order, but only because that's simplest to explain/implement.
+I recommend you order arguments consistently in your programs. SubX allows
+arguments in any order, but only because that's simplest to explain/implement.
 Switching order from instruction to instruction is likely to add to the
 reader's burden. Here's the order I've been using after opcodes:
 
@@ -274,9 +274,9 @@ reader's burden. Here's the order I've been using after opcodes:
 /subop  /mod /rm32  /base /index /scale  /r32   /displacement   /immediate
 ```
 
-Instructions can refer to labels in displacement or immediate operands, and
-they'll obtain a value based on the address of the label: immediate operands
-will contain the address directly, while displacement operands will contain
+Instructions can refer to labels in displacement or immediate arguments, and
+they'll obtain a value based on the address of the label: immediate arguments
+will contain the address directly, while displacement arguments will contain
 the difference between the address and the address of the current instruction.
 The latter is mostly useful for `jump` and `call` instructions.
 
@@ -302,9 +302,9 @@ to call it is up to you.
 
 I try to keep things simple so that there's less work to do when I eventually
 implement SubX in SubX. But there _is_ one convenience: instructions can
-provide a string literal surrounded by quotes (`"`) in an `imm32` operand.
+provide a string literal surrounded by quotes (`"`) in an `imm32` argument.
 SubX will transparently copy it to the `data` segment and replace it with its
-address. Strings are the only place where a SubX operand is allowed to contain
+address. Strings are the only place where a SubX word is allowed to contain
 spaces.
 
 That should be enough information for writing SubX programs. The `examples/`
