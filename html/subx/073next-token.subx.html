@@ -712,16 +712,16 @@ if ('onhashchange' in window) {
 <span id="L652" class="LineNr">652 </span>    31/xor                          3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear EAX</span>
 <span id="L653" class="LineNr">653 </span>    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX  <span class="Normal"> . </span>          0/r32/AL    0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *(ESI+ECX+12) to AL</span>
 <span id="L654" class="LineNr">654 </span>    <span class="subxComment"># if (EAX == ' ') break</span>
-<span id="L655" class="LineNr">655 </span>    3d/compare-with-EAX  0x20/imm32/space
+<span id="L655" class="LineNr">655 </span>    3d/compare-EAX-and  0x20/imm32/space
 <span id="L656" class="LineNr">656 </span>    74/jump-if-equal  $skip-chars-not-matching-whitespace:end/disp8
 <span id="L657" class="LineNr">657 </span>    <span class="subxComment"># if (EAX == '\n') break</span>
-<span id="L658" class="LineNr">658 </span>    3d/compare-with-EAX  0x0a/imm32/newline
+<span id="L658" class="LineNr">658 </span>    3d/compare-EAX-and  0x0a/imm32/newline
 <span id="L659" class="LineNr">659 </span>    74/jump-if-equal  $skip-chars-not-matching-whitespace:end/disp8
 <span id="L660" class="LineNr">660 </span>    <span class="subxComment"># if (EAX == '\t') break</span>
-<span id="L661" class="LineNr">661 </span>    3d/compare-with-EAX  0x09/imm32/tab
+<span id="L661" class="LineNr">661 </span>    3d/compare-EAX-and  0x09/imm32/tab
 <span id="L662" class="LineNr">662 </span>    74/jump-if-equal  $skip-chars-not-matching-whitespace:end/disp8
 <span id="L663" class="LineNr">663 </span>    <span class="subxComment"># if (EAX == '\r') break</span>
-<span id="L664" class="LineNr">664 </span>    3d/compare-with-EAX  0x0d/imm32/cr
+<span id="L664" class="LineNr">664 </span>    3d/compare-EAX-and  0x0d/imm32/cr
 <span id="L665" class="LineNr">665 </span>    74/jump-if-equal  $skip-chars-not-matching-whitespace:end/disp8
 <span id="L666" class="LineNr">666 </span>    <span class="subxComment"># ++in-&gt;read</span>
 <span id="L667" class="LineNr">667 </span>    41/inc-ECX
@@ -763,7 +763,7 @@ if ('onhashchange' in window) {
 <span id="L703" class="LineNr">703 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/BL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *EAX to BL</span>
 <span id="L704" class="LineNr">704 </span>    39/compare                      3/mod/direct    3/rm32/EBX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare EBX and EDX</span>
 <span id="L705" class="LineNr">705 </span>    75/jump-if-not-equal  $skip-chars-matching-in-slice:end/disp8
-<span id="L706" class="LineNr">706 </span>    <span class="subxComment"># ++in-&gt;read</span>
+<span id="L706" class="LineNr">706 </span>    <span class="subxComment"># ++curr</span>
 <span id="L707" class="LineNr">707 </span>    40/inc-EAX
 <span id="L708" class="LineNr">708 </span>    eb/jump  $skip-chars-matching-in-slice:loop/disp8
 <span id="L709" class="LineNr">709 </span><span class="Constant">$skip-chars-matching-in-slice:end</span>:
@@ -859,7 +859,7 @@ if ('onhashchange' in window) {
 <span id="L799" class="LineNr">799 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/BL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *EAX to BL</span>
 <span id="L800" class="LineNr">800 </span>    39/compare                      3/mod/direct    3/rm32/EBX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare EBX and EDX</span>
 <span id="L801" class="LineNr">801 </span>    74/jump-if-equal  $skip-chars-not-matching-in-slice:end/disp8
-<span id="L802" class="LineNr">802 </span>    <span class="subxComment"># ++in-&gt;read</span>
+<span id="L802" class="LineNr">802 </span>    <span class="subxComment"># ++curr</span>
 <span id="L803" class="LineNr">803 </span>    40/inc-EAX
 <span id="L804" class="LineNr">804 </span>    eb/jump  $skip-chars-not-matching-in-slice:loop/disp8
 <span id="L805" class="LineNr">805 </span><span class="Constant">$skip-chars-not-matching-in-slice:end</span>:

@@ -154,7 +154,7 @@ if ('onhashchange' in window) {
 <span id="L92" class="LineNr"> 92 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L93" class="LineNr"> 93 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L94" class="LineNr"> 94 </span>    <span class="subxComment"># if (EAX == 0) return</span>
-<span id="L95" class="LineNr"> 95 </span>    81          7/subop/compare     3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32           <span class="subxComment"># compare EDX</span>
+<span id="L95" class="LineNr"> 95 </span>    3d/compare-EAX-and  0/imm32
 <span id="L96" class="LineNr"> 96 </span>    74/jump-if-equal  $trace:end/disp8
 <span id="L97" class="LineNr"> 97 </span>    <span class="subxComment"># t-&gt;write += EAX</span>
 <span id="L98" class="LineNr"> 98 </span>    01/add                          0/mod/indirect  7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># add EAX to *EDI</span>
@@ -334,7 +334,7 @@ if ('onhashchange' in window) {
 <span id="L272" class="LineNr">272 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
 <span id="L273" class="LineNr">273 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L274" class="LineNr">274 </span>    51/push-ECX
-<span id="L275" class="LineNr">275 </span>    <span class="subxComment"># _append-4(out, outend, &amp;s-&gt;data[0], &amp;s-&gt;data[s-&gt;length]) -&gt; num_bytes_appended/EAX</span>
+<span id="L275" class="LineNr">275 </span>    <span class="subxComment"># EAX = _append-4(out, outend, &amp;s-&gt;data[0], &amp;s-&gt;data[s-&gt;length])</span>
 <span id="L276" class="LineNr">276 </span>    <span class="subxS2Comment"># . . push &amp;s-&gt;data[s-&gt;length]</span>
 <span id="L277" class="LineNr">277 </span>    8b/copy                         1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>                        0/r32/EAX   0x10/disp8     <span class="Normal"> . </span>                <span class="subxComment"># copy *(EBP+16) to EAX</span>
 <span id="L278" class="LineNr">278 </span>    8b/copy                         0/mod/indirect  0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *EAX to ECX</span>
@@ -384,9 +384,9 @@ if ('onhashchange' in window) {
 <span id="L322" class="LineNr">322 </span>    <span class="subxComment"># if (in &gt;= inend) break</span>
 <span id="L323" class="LineNr">323 </span>    39/compare                      3/mod/direct    6/rm32/ESI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ESI with ECX</span>
 <span id="L324" class="LineNr">324 </span>    7d/jump-if-greater-or-equal  $_append-4:end/disp8
-<span id="L325" class="LineNr">325 </span>    <span class="subxComment"># if (out &gt;= outend) break  # for now silently ignore filled up buffer</span>
+<span id="L325" class="LineNr">325 </span>    <span class="subxComment"># if (out &gt;= outend) abort  # just to catch test failures fast</span>
 <span id="L326" class="LineNr">326 </span>    39/compare                      3/mod/direct    7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/EDX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare EDI with EDX</span>
-<span id="L327" class="LineNr">327 </span>    7d/jump-if-greater-or-equal  $_append-4:end/disp8
+<span id="L327" class="LineNr">327 </span>    7d/jump-if-greater-or-equal  $_append-4:abort/disp8
 <span id="L328" class="LineNr">328 </span>    <span class="subxComment"># *out = *in</span>
 <span id="L329" class="LineNr">329 </span>    8a/copy-byte                    0/mod/indirect  6/rm32/ESI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/BL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ESI to BL</span>
 <span id="L330" class="LineNr">330 </span>    88/copy-byte                    0/mod/indirect  7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/BL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at BL to *EDI</span>
@@ -409,7 +409,22 @@ if ('onhashchange' in window) {
 <span id="L347" class="LineNr">347 </span>    5d/pop-to-EBP
 <span id="L348" class="LineNr">348 </span>    c3/return
 <span id="L349" class="LineNr">349 </span>
-<span id="L350" class="LineNr">350 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L350" class="LineNr">350 </span><span class="Constant">$_append-4:abort</span>:
+<span id="L351" class="LineNr">351 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
+<span id="L352" class="LineNr">352 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L353" class="LineNr">353 </span>    68/push  <span class="Constant">&quot;stream overflow&quot;</span>/imm32
+<span id="L354" class="LineNr">354 </span>    68/push  2/imm32/stderr
+<span id="L355" class="LineNr">355 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L356" class="LineNr">356 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
+<span id="L357" class="LineNr">357 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L358" class="LineNr">358 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L359" class="LineNr">359 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L360" class="LineNr">360 </span>    bb/copy-to-EBX  1/imm32
+<span id="L361" class="LineNr">361 </span>    b8/copy-to-EAX  1/imm32/exit
+<span id="L362" class="LineNr">362 </span>    cd/syscall  0x80/imm8
+<span id="L363" class="LineNr">363 </span>    <span class="subxComment"># never gets here</span>
+<span id="L364" class="LineNr">364 </span>
+<span id="L365" class="LineNr">365 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
