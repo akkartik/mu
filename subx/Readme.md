@@ -23,7 +23,8 @@ kernel. No other dependencies needed.
   42
  ```
 
-You can emulate programs on an interpreter/VM for better error messages.
+You can run the generated binaries on an interpreter/VM for better error
+messages.
 
   ```sh
   $ ./subx run examples/ex1  # on Linux or BSD or OS X
