@@ -24,8 +24,9 @@ function! HighlightTangledFile()
   syntax match subxGlobal %\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
 endfunction
 augroup LocalVimrc
-  autocmd BufRead,BufNewFile *.mu set ft=mu
   autocmd BufRead,BufNewFile *.cc call HighlightTangledFile()
+  autocmd BufRead,BufNewFile *.subx set ft=subx
+  autocmd BufRead,BufNewFile *.mu set ft=mu
 augroup END
 
 " Scenarios considered:
@@ -64,18 +65,6 @@ function! GrepSubX(regex)
   silent exec "r !grep -h '".a:regex."' *.subx */*.subx"
 endfunction
 command! -nargs=1 G call GrepSubX(<q-args>)
-
-" temporary helpers while we port https://github.com/akkartik/crenshaw to apps/crenshaw*.subx
-command! -nargs=1 C exec "E crenshaw".<f-args>
-command! -nargs=1 CS exec "S crenshaw".<f-args>
-command! -nargs=1 CH exec "H crenshaw".<f-args>
-function! Orig()
-  let l:p = expand("%:t:r")
-  if l:p =~ "^crenshaw\\d*-\\d*$"
-    exec "vert split crenshaw/tutor" . substitute(expand("%:t:r"), "^crenshaw\\(\\d*\\)-\\(\\d*\\)$", "\\1.\\2", "") . ".pas"
-  endif
-endfunction
-command! O call Orig()
 
 if exists("&splitvertical")
   command! -nargs=0 P hor split opcodes
