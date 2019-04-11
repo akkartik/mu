@@ -21,7 +21,7 @@
 Entry:  # run tests if necessary, convert stdin if not
 
     # for debugging: run a single test
-#?     e8/call test-convert-data-trailing-comment/disp32
+#?     e8/call test-emit-non-number-with-all-hex-digits-and-metadata/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -1280,7 +1280,7 @@ test-convert-data-passes-comments-through:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -3573,7 +3573,7 @@ test-convert-instruction-passes-comments-through:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -6604,16 +6604,16 @@ test-emit-number:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -6624,27 +6624,27 @@ test-emit-number:
     68/push  _test-slice-three-zero-end/imm32/end
     68/push  _test-slice-three-zero/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit(_test-buffered-file, slice, 1)
+    # emit(_test-output-buffered-file, slice, 1)
     # . . push args
     68/push  1/imm32
     51/push-ECX
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream, "30 ", msg)
+    # check-stream-equal(_test-output-stream, "30 ", msg)
     # . . push args
     68/push  "F - test-emit-number/1"/imm32
     68/push  "30 "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -6660,16 +6660,16 @@ test-emit-negative-number:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -6680,27 +6680,27 @@ test-emit-negative-number:
     68/push  _test-slice-negative-two-end/imm32/end
     68/push  _test-slice-negative-two/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit(_test-buffered-file, slice, 2)
+    # emit(_test-output-buffered-file, slice, 2)
     # . . push args
     68/push  2/imm32
     51/push-ECX
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream, "fe ff ", msg)
+    # check-stream-equal(_test-output-stream, "fe ff ", msg)
     # . . push args
     68/push  "F - test-emit-number/1"/imm32
     68/push  "fe ff "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -6715,16 +6715,16 @@ test-emit-number-with-metadata:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -6735,28 +6735,28 @@ test-emit-number-with-metadata:
     68/push  _test-slice-negative-two-metadata-end/imm32/end
     68/push  _test-slice-negative-two/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit(_test-buffered-file, slice, 2)
+    # emit(_test-output-buffered-file, slice, 2)
     # . . push args
     68/push  2/imm32
     51/push-ECX
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # the '/foo' will have no impact on the output
-    # check-stream-equal(_test-stream, "fe ff ", msg)
+    # check-stream-equal(_test-output-stream, "fe ff ", msg)
     # . . push args
     68/push  "F - test-emit-number-with-metadata"/imm32
     68/push  "fe ff "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -6771,16 +6771,16 @@ test-emit-non-number:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -6791,27 +6791,27 @@ test-emit-non-number:
     68/push  _test-slice-non-number-word-end/imm32/end
     68/push  _test-slice-non-number-word/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit(_test-buffered-file, slice, 2)
+    # emit(_test-output-buffered-file, slice, 2)
     # . . push args
     68/push  2/imm32
     51/push-ECX
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream, "xyz", msg)
+    # check-stream-equal(_test-output-stream, "xyz", msg)
     # . . push args
     68/push  "F - test-emit-non-number"/imm32
     68/push  "xyz "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -6826,16 +6826,16 @@ test-emit-non-number-with-metadata:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -6846,27 +6846,27 @@ test-emit-non-number-with-metadata:
     68/push  _test-slice-non-number-word-metadata-end/imm32/end
     68/push  _test-slice-non-number-word/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit(_test-buffered-file, slice, 2)
+    # emit(_test-output-buffered-file, slice, 2)
     # . . push args
     68/push  2/imm32
     51/push-ECX
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream, "xyz/", msg)
+    # check-stream-equal(_test-output-stream, "xyz/", msg)
     # . . push args
     68/push  "F - test-emit-non-number-with-metadata"/imm32
     68/push  "xyz/ "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -6881,16 +6881,16 @@ test-emit-non-number-with-all-hex-digits-and-metadata:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -6901,27 +6901,61 @@ test-emit-non-number-with-all-hex-digits-and-metadata:
     68/push  _test-slice-hexlike-non-number-word-metadata-end/imm32/end
     68/push  _test-slice-hexlike-non-number-word/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit(_test-buffered-file, slice, 2)
+    # emit(_test-output-buffered-file, slice, 2)
     # . . push args
     68/push  2/imm32
     51/push-ECX
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream, "abcd/xyz")
+#?     # dump output {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$")
+#?     # . . push args
+#?     68/push  "$"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "\n")
+#?     # . . push args
+#?     68/push  Newline/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-stream-equal(_test-output-stream, "abcd/xyz")
     # . . push args
     68/push  "F - test-emit-non-number-with-all-hex-digits"/imm32
-    68/push  "abcd/xyz"/imm32
-    68/push  _test-stream/imm32
+    68/push  "abcd/xyz "/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -7226,44 +7260,44 @@ $emit-hex:end:
 
 test-emit-hex-single-byte:
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # emit-hex(_test-buffered-file, 0xab, 1)
+    # emit-hex(_test-output-buffered-file, 0xab, 1)
     # . . push args
     68/push  1/imm32
     68/push  0xab/imm32
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(*_test-stream->data, 'ab ', msg)
+    # check-ints-equal(*_test-output-stream->data, 'ab ', msg)
     # . . push args
     68/push  "F - test-emit-hex-single-byte"/imm32
     68/push  0x206261/imm32
-    # . . push *_test-stream->data
-    b8/copy-to-EAX  _test-stream/imm32
+    # . . push *_test-output-stream->data
+    b8/copy-to-EAX  _test-output-stream/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
     # . . call
     e8/call  check-ints-equal/disp32
@@ -7274,43 +7308,43 @@ test-emit-hex-single-byte:
 
 test-emit-hex-multiple-byte:
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # emit-hex(_test-buffered-file, 0x1234, 2)
+    # emit-hex(_test-output-buffered-file, 0x1234, 2)
     # . . push args
     68/push  2/imm32
     68/push  0x1234/imm32
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream, "34 12 ", msg)
+    # check-stream-equal(_test-output-stream, "34 12 ", msg)
     # . . push args
     68/push  "F - test-emit-hex-multiple-byte/1"/imm32
     68/push  "34 12 "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -7320,43 +7354,43 @@ test-emit-hex-multiple-byte:
 
 test-emit-hex-zero-pad:
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # emit-hex(_test-buffered-file, 0xab, 2)
+    # emit-hex(_test-output-buffered-file, 0xab, 2)
     # . . push args
     68/push  2/imm32
     68/push  0xab/imm32
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check(_test-stream->data == 'ab 00 ')
+    # check(_test-output-stream->data == 'ab 00 ')
     # . . push args
     68/push  "F - test-emit-hex-zero-pad/1"/imm32
     68/push  "ab 00 "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -7366,43 +7400,43 @@ test-emit-hex-zero-pad:
 
 test-emit-hex-negative:
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # emit-hex(_test-buffered-file, -1, 2)
+    # emit-hex(_test-output-buffered-file, -1, 2)
     # . . push args
     68/push  2/imm32
     68/push  -1/imm32
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # flush(_test-buffered-file)
+    # flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-stream-equal(_test-stream == "ff ff ")
+    # check-stream-equal(_test-output-stream == "ff ff ")
     # . . push args
     68/push  "F - test-emit-hex-negative/1"/imm32
     68/push  "ff ff "/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
@@ -7460,16 +7494,16 @@ test-write-stream-data:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # setup
-    # . clear-stream(_test-stream)
+    # . clear-stream(_test-output-stream)
     # . . push args
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
     05/add-to-EAX  4/imm32
     50/push-EAX
     # . . call
@@ -7492,27 +7526,27 @@ test-write-stream-data:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # write-stream-data(_test-buffered-file, _test-tmp-stream)
+    # write-stream-data(_test-output-buffered-file, _test-tmp-stream)
     # . . push args
     68/push  _test-tmp-stream/imm32
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  write-stream-data/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check that the write happened as expected
-    # . flush(_test-buffered-file)
+    # . flush(_test-output-buffered-file)
     # . . push args
-    68/push  _test-buffered-file/imm32
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . check-stream-equal(_test-stream, "abcd", msg)
+    # . check-stream-equal(_test-output-stream, "abcd", msg)
     # . . push args
     68/push  "F - test-write-stream-data"/imm32
     68/push  "abcd"/imm32
-    68/push  _test-stream/imm32
+    68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args

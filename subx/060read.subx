@@ -70,7 +70,7 @@ $read:fake:
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # EDI = s
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to ESI
-    # EAX = _append-4(out = &s->data[s->write], outend = &s->data[s->length],
+    # EAX = _buffer-4(out = &s->data[s->write], outend = &s->data[s->length],
     #                 in  = &f->data[f->read],  inend  = &f->data[f->write])
     # . . push &f->data[f->write]
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
@@ -89,7 +89,7 @@ $read:fake:
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy EDI+EAX+12 to EAX
     50/push-EAX
     # . . call
-    e8/call  _append-4/disp32
+    e8/call  _buffer-4/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # s->write += EAX
@@ -106,6 +106,91 @@ $read:end:
     c3/return
 
 # - helpers
+
+# '_buffer' is like '_append', but silently stops instead of aborting when it runs out of space
+
+# 3-argument variant of _buffer
+_buffer-3:  # out : address, outend : address, s : (array byte) -> num_bytes_buffered/EAX
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    # EAX = _buffer-4(out, outend, &s->data[0], &s->data[s->length])
+    # . . push &s->data[s->length]
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    51/push-ECX
+    # . . push &s->data[0]
+    8d/copy-address                 1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy EAX+4 to ECX
+    51/push-ECX
+    # . . push outend
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . push out
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  _buffer-4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+$_buffer-3:end:
+    # . restore registers
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# 4-argument variant of _buffer
+_buffer-4:  # out : address, outend : address, in : address, inend : address -> num_bytes_buffered/EAX
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    57/push-EDI
+    # EAX/num_bytes_buffered = 0
+    b8/copy-to-EAX  0/imm32
+    # EDI = out
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # EDX = outend
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
+    # ESI = in
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0x10/disp8      .                 # copy *(EBP+16) to ESI
+    # ECX = inend
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x14/disp8      .                 # copy *(EBP+20) to ECX
+$_buffer-4:loop:
+    # if (in >= inend) break
+    39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
+    7d/jump-if-greater-or-equal  $_buffer-4:end/disp8
+    # if (out >= outend) break  # for now silently ignore filled up buffer
+    39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
+    7d/jump-if-greater-or-equal  $_buffer-4:end/disp8
+    # *out = *in
+    8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
+    88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
+    # ++num_bytes_buffered
+    40/increment-EAX
+    # ++in
+    46/increment-ESI
+    # ++out
+    47/increment-EDI
+    eb/jump  $_buffer-4:loop/disp8
+$_buffer-4:end:
+    # . restore registers
+    5f/pop-to-EDI
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
 
 # idea: a clear-if-empty method on streams that clears only if f->read == f->write
 # Unclear how I'd use it, though. Callers seem to need the check anyway.

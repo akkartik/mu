@@ -272,7 +272,7 @@ _append-3:  # out : address, outend : address, s : (array byte) -> num_bytes_app
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
     51/push-ECX
-    # _append-4(out, outend, &s->data[0], &s->data[s->length]) -> num_bytes_appended/EAX
+    # EAX = _append-4(out, outend, &s->data[0], &s->data[s->length])
     # . . push &s->data[s->length]
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
@@ -322,9 +322,9 @@ $_append-4:loop:
     # if (in >= inend) break
     39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
     7d/jump-if-greater-or-equal  $_append-4:end/disp8
-    # if (out >= outend) break  # for now silently ignore filled up buffer
+    # if (out >= outend) abort  # just to catch test failures fast
     39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
-    7d/jump-if-greater-or-equal  $_append-4:end/disp8
+    7d/jump-if-greater-or-equal  $_append-4:abort/disp8
     # *out = *in
     8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
     88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI
@@ -346,5 +346,20 @@ $_append-4:end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
+$_append-4:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "stream overflow"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 # . . vim:nowrap:textwidth=0
