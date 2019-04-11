@@ -8,6 +8,9 @@ SubX is a simple, minimalist stack for programming your computer.
   $ ./subx  # print out a help message
   ```
 
+It requires a Unix-like environment with a C++ compiler (Linux or BSD or Mac
+OS). Running `subx` will transparently compile it as necessary.
+
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
 
 You can generate native ELF binaries with it that run on a bare Linux
@@ -342,8 +345,6 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   implementations that you can -- and are expected to! -- modify.
 
 ## Running
-
-Running `subx` will transparently compile it as necessary.
 
 `subx` currently has the following sub-commands:
 
