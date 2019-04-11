@@ -86,15 +86,15 @@ small subset of the 32-bit x86 instruction set that likely runs on your
 computer. (Think of the name as short for "sub-x86".) Instructions operate on
 a few registers:
 
-* 6 general-purpose 32-bit registers: EAX, EBX, ECX, EDX, ESI and EDI
-* 2 additional 32-bit registers: ESP and EBP (I suggest you only use these to
+* Six general-purpose 32-bit registers: EAX, EBX, ECX, EDX, ESI and EDI
+* Two additional 32-bit registers: ESP and EBP (I suggest you only use these to
   manage the call stack.)
-* 3 bit-size _flag_ registers for conditional branching:
+* Three 1-bit _flag_ registers for conditional branching:
   - zero/equal flag ZF
   - sign flag SF
   - overflow flag OF
 
-SubX programs consist of instructions like `89/copy`, `01/add`, `39/compare`
+SubX programs consist of instructions like `89/copy`, `01/add`, `3d/compare`
 and `52/push-ECX` which modify these registers as well as a byte-addressable
 memory. For a complete list of supported instructions, run `subx help opcodes`.
 
