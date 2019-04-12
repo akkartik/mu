@@ -223,8 +223,10 @@ inline uint8_t* mem_addr_u8(uint32_t addr) {
       result = &Mem.at(i).data(addr);
     }
   }
-  if (result == NULL)
+  if (result == NULL) {
+    if (Trace_file) Trace_file.flush();
     raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
+  }
   return result;
 }
 inline int8_t* mem_addr_i8(uint32_t addr) {
