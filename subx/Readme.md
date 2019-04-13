@@ -602,13 +602,21 @@ allocated memory for it.)_
 * `slice-ends-with?`: compares the end of a slice with a string
 
 #### writing to disk
+* `write`: string -> file
+  - Can also be used to cat a string into a stream.
+  - Will abort the entire program if there isn't enough room.
 * `write-stream`: stream -> file
+  - Can also be used to cat one stream into another.
+  - Will abort the entire program if there isn't enough room.
 * `write-buffered`: string -> buffered-file
 * `write-slice`: slice -> buffered-file
 * `flush`: buffered-file
 * `print-byte`:  buffered-file, int
 
 #### reading from disk
+* `read`: file -> stream
+  - Can also be used to cat one stream into another.
+  - Will silently stop reading when destination runs out of space.
 * `read-byte`: buffered-file -> byte
 * `read-line`: buffered-file -> stream
 
