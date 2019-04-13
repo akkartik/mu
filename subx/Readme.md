@@ -651,11 +651,6 @@ from a slice:
 * `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `EAX`)
 * `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `EAX`)
 
-## Known issues
-
-* String literals support no escape sequences. In particular, no way to
-  represent newlines.
-
 ## Resources
 
 * [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)

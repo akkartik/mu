@@ -77,11 +77,11 @@ void add_global_to_data_segment(const string& name, const word& value, segment& 
 
 void test_instruction_with_string_literal() {
   parse_instruction_character_by_character(
-      "a \"abc  def\" z\n"  // two spaces inside string
+      "a \"abc  def\\nwee\" z\n"  // two spaces inside string
   );
   CHECK_TRACE_CONTENTS(
       "parse2: word: a\n"
-      "parse2: word: \"abc  def\"\n"
+      "parse2: word: \"abc  def\\nwee\"\n"
       "parse2: word: z\n"
   );
   // no other words
@@ -123,7 +123,18 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
       d << c;
       while (has_data(in)) {
         in >> c;
-        d << c;
+        if(c == '\\') {
+          in >> c;
+          if(c == 'n') d << '\n';
+          else if(c == 't') d << '\t';
+          else if(c == '"') d << '"';
+          else {
+            raise << "parse_instruction_character_by_character: unknown escape sequence '\\" << c << "'\n" << end();
+            return;
+          }
+        } else {
+          d << c;
+        }
         if (c == '"') break;
       }
       result.words.back().data = d.str();

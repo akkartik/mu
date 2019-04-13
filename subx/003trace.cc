@@ -129,6 +129,21 @@ struct trace_line {
   }
 };
 
+string unescape_newline(string& s) {
+  std::stringstream ss;
+  for(char c : s) {
+    if(c == '\n')
+      ss << "\\n";
+    else
+      ss << c;
+  }
+  return ss.str();
+}
+
+void dump_trace_line(ostream& s, trace_line &t) {
+  s << std::setw(4) << t.depth << ' ' << t.label << ": " << unescape_newline(t.contents) << '\n';
+}
+
 //: Starting a new trace line.
 :(before "End trace_stream Methods")
 ostream& stream(string label) {
@@ -164,7 +179,7 @@ void trace_stream::newline() {
     // maybe incrementally dump trace
     trace_line& t = past_lines.back();
     if (should_incrementally_print_trace()) {
-      cerr       << std::setw(4) << t.depth << ' ' << t.label << ": " << t.contents << '\n';
+      dump_trace_line(cerr, t);
     }
     // End trace Commit
   }
@@ -301,7 +316,8 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   split_label_contents(expected_lines.at(curr_expected_line), &label, &contents);
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
     if (label != p->label) continue;
-    if (contents != trim(p->contents)) continue;
+    string t = trim(p->contents);
+    if (contents != unescape_newline(t)) continue;
     ++curr_expected_line;
     while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
@@ -429,7 +445,7 @@ else if (is_equal(*arg, "--trace")) {
 }
 :(before "End trace Commit")
 if (Trace_file) {
-  Trace_file << std::setw(4) << t.depth << ' ' << t.label << ": " << t.contents << '\n';
+  dump_trace_line(Trace_file, t);
 }
 :(before "End One-time Setup")
 atexit(cleanup_main);
@@ -446,7 +462,7 @@ string readable_contents(string label) {
   label = trim(label);
   for (vector<trace_line>::iterator p = past_lines.begin();  p != past_lines.end();  ++p)
     if (label.empty() || label == p->label)
-      output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
+      dump_trace_line(output, *p);
   return output.str();
 }
 

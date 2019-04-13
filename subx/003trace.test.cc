@@ -64,6 +64,11 @@ void test_trace_count_ignores_trailing_whitespace() {
   CHECK_EQ(trace_count("test layer 1", "foo"), 1);
 }
 
+void test_trace_unescapes_newlines() {
+  trace("test layer 1") << "f\no\no\n" << end();
+  CHECK_TRACE_CONTENTS("test layer 1: f\\no\\no");
+}
+
 // pending: DUMP tests
 // pending: readable_contents() adds newline if necessary.
 // pending: raise also prints to stderr.
