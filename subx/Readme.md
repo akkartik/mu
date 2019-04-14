@@ -619,9 +619,12 @@ allocated memory for it.)_
   - Will silently stop reading when destination runs out of space.
 * `read-byte`: buffered-file -> byte
 * `read-line`: buffered-file -> stream
+  - Will abort the entire program if there isn't enough room.
 
 #### non-IO operations on streams
-* `new-stream`: allocates space for a stream of size `n`.
+* `new-stream`: allocates space for a stream of `n` elements, each occupying
+  `b` bytes.
+  - Will abort the entire program if `n*b` requires more than 32 bits.
 * `clear-stream`: resets everything in the stream to `0` (except its `length`).
 * `rewind-stream`: resets the read index of the stream to `0` without modifying
   its contents.
@@ -645,8 +648,8 @@ from a stream:
 
 from a slice:
 * `next-token-from-slice`: start, end, delimiter byte -> slice
-  Given a slice and a delimiter byte, returns a new slice inside the input
-  that ends at the delimiter byte.
+  - Given a slice and a delimiter byte, returns a new slice inside the input
+    that ends at the delimiter byte.
 
 * `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `EAX`)
 * `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `EAX`)
