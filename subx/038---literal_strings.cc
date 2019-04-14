@@ -123,11 +123,11 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
       d << c;
       while (has_data(in)) {
         in >> c;
-        if(c == '\\') {
+        if (c == '\\') {
           in >> c;
-          if(c == 'n') d << '\n';
-          else if(c == 't') d << '\t';
-          else if(c == '"') d << '"';
+          if (c == 'n') d << '\n';
+          else if (c == 't') d << '\t';
+          else if (c == '"') d << '"';
           else {
             raise << "parse_instruction_character_by_character: unknown escape sequence '\\" << c << "'\n" << end();
             return;

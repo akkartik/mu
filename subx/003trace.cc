@@ -131,16 +131,16 @@ struct trace_line {
 
 string unescape_newline(string& s) {
   std::stringstream ss;
-  for(char c : s) {
-    if(c == '\n')
+  for (int i = 0;  i < SIZE(s);  ++i) {
+    if (s.at(i) == '\n')
       ss << "\\n";
     else
-      ss << c;
+      ss << s.at(i);
   }
   return ss.str();
 }
 
-void dump_trace_line(ostream& s, trace_line &t) {
+void dump_trace_line(ostream& s, trace_line& t) {
   s << std::setw(4) << t.depth << ' ' << t.label << ": " << unescape_newline(t.contents) << '\n';
 }
 
