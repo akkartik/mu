@@ -103,15 +103,7 @@ $read-line:end:
 $read-line:abort:
     # . _write(2/stderr, error)
     # . . push args
-    68/push  "read-line: line too long"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . _write(2/stderr, Newline)
-    # . . push args
-    68/push  Newline/imm32
+    68/push  "read-line: line too long\n"/imm32
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
@@ -150,25 +142,8 @@ test-read-line:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # write(_test-stream, "ab\ncd")
-    # . write(_test-stream, "ab")
     # . . push args
-    68/push  "ab"/imm32
-    68/push  _test-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-stream, "\n")
-    # . . push args
-    68/push Newline/imm32
-    68/push  _test-stream/imm32
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-stream, "cd")
-    # . . push args
-    68/push  "cd"/imm32
+    68/push  "ab\ncd"/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  write/disp32

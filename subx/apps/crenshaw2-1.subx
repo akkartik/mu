@@ -154,33 +154,17 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(out, "b8/copy-to-EAX  1/imm32/exit")
+    # . write(out, "b8/copy-to-EAX  1/imm32/exit\n")
     # . . push args
-    68/push  "b8/copy-to-EAX  1/imm32/exit"/imm32
+    68/push  "b8/copy-to-EAX  1/imm32/exit\n"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(out, Newline)
+    # . write(out, "cd/syscall  0x80/imm8\n")
     # . . push args
-    68/push  Newline/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(out, "cd/syscall  0x80/imm8")
-    # . . push args
-    68/push  "cd/syscall  0x80/imm8"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(out, Newline)
-    # . . push args
-    68/push  Newline/imm32
+    68/push  "cd/syscall  0x80/imm8\n"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
@@ -502,15 +486,7 @@ expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (ad
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # write(f, " expected")
     # . . push args
-    68/push  " expected"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # write(f, Newline)
-    # . . push args
-    68/push  Newline/imm32
+    68/push  " expected\n"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
     e8/call  write/disp32
