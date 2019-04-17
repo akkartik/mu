@@ -39,19 +39,19 @@ ascii-length:  # s : (address array byte) -> n/EAX
     8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
     # var result/EAX = 0
     b8/copy-to-EAX  0/imm32
-$ascii-length-loop:
+$ascii-length:loop:
     # var c/ECX = *s
     8a/copy-byte                    0/mod/*         2/rm32/EDX    .           .             .           1/r32/CL    .               .                 # copy byte at *EDX to CL
     # if (c == '\0') break
     81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
-    74/jump-if-equal  $ascii-length-ret/disp8
+    74/jump-if-equal  $ascii-length:end/disp8
     # ++s
     42/increment-EDX
     # ++result
     40/inc-EAX
     # loop
-    eb/jump  $ascii-length-loop/disp8
-$ascii-length-ret:
+    eb/jump  $ascii-length:loop/disp8
+$ascii-length:end:
     # return EAX
     c3/return
 
