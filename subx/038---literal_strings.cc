@@ -77,11 +77,11 @@ void add_global_to_data_segment(const string& name, const word& value, segment& 
 
 void test_instruction_with_string_literal() {
   parse_instruction_character_by_character(
-      "a \"abc  \\\"def\\nwee\" z\n"  // two spaces inside string
+      "a \"abc  def\" z\n"  // two spaces inside string
   );
   CHECK_TRACE_CONTENTS(
       "parse2: word: a\n"
-      "parse2: word: \"abc  \"def\\nwee\"\n"
+      "parse2: word: \"abc  def\"\n"
       "parse2: word: z\n"
   );
   // no other words
@@ -127,6 +127,7 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
           in >> c;
           if (c == 'n') d << '\n';
           else if (c == '"') d << '"';
+          else if (c == '\\') d << '\\';
           else {
             raise << "parse_instruction_character_by_character: unknown escape sequence '\\" << c << "'\n" << end();
             return;
@@ -297,4 +298,26 @@ void test_parse2_string_containing_slashes() {
   CHECK_TRACE_CONTENTS(
       "parse2: word: \"bc/def\" /disp32\n"
   );
+}
+
+void test_instruction_with_string_literal_with_escaped_quote() {
+  parse_instruction_character_by_character(
+      "\"a\\\"b\"\n"  // escaped quote inside string
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: \"a\"b\"\n"
+  );
+  // no other words
+  CHECK_TRACE_COUNT("parse2", 1);
+}
+
+void test_instruction_with_string_literal_with_escaped_backslash() {
+  parse_instruction_character_by_character(
+      "\"a\\\\b\"\n"  // escaped backslash inside string
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse2: word: \"a\\b\"\n"
+  );
+  // no other words
+  CHECK_TRACE_COUNT("parse2", 1);
 }
