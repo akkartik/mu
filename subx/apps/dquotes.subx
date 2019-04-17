@@ -182,8 +182,7 @@ $next-word:string-literal:
     e8/call  parse-string/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # return
-    eb/jump  $next-word:end/disp8
+    # fall through
 $next-word:regular-word:
     # otherwise skip-chars-not-matching-whitespace(line)  # including trailing newline
     # . . push args
@@ -248,13 +247,9 @@ $parse-string:loop:
     # c/EAX = *curr
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
 $parse-string:check1:
-    # if (c == '"') ++curr, break
+    # if (c == '"') break  # rely on caller to skip trailing non-whitespace
     3d/compare-EAX-and  0x22/imm32/dquote
-    75/jump-if-not-equal  $parse-string:check2/disp8
-    # . ++curr
-    41/increment-ECX
-    # . break
-    eb/jump  $parse-string:break/disp8
+    74/jump-if-equal  $parse-string:break/disp8
 $parse-string:check2:
     # if (c == '\\') ++curr
     3d/compare-EAX-and  0x5c/imm32/backslash
@@ -469,9 +464,9 @@ test-next-word-returns-whole-string:
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # write(_test-input-stream, " \"a b\"")
+    # write(_test-input-stream, " \"a b\"/imm32 ")
     # . . push args
-    68/push  " \"a b\""/imm32
+    68/push  " \"a b\"/imm32 "/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -498,11 +493,11 @@ test-next-word-returns-whole-string:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(slice->end - _test-input-stream->data, 6, msg)
-    # . check-ints-equal(slice->end - _test-input-stream, 18, msg)
+    # check-ints-equal(slice->end - _test-input-stream->data, 12, msg)
+    # . check-ints-equal(slice->end - _test-input-stream, 24, msg)
     # . . push args
     68/push  "F - test-next-word-returns-whole-string: end"/imm32
-    68/push  0x12/imm32
+    68/push  0x18/imm32
     # . . push slice->end - _test-input-stream
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
     81          5/subop/subtract    3/mod/direct    0/rm32/EAX    .           .             .           .           .               _test-input-stream/imm32 # subtract from EAX
@@ -532,9 +527,9 @@ test-next-word-returns-string-with-escapes:
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # write(_test-input-stream, " \"a\\\"b\"")
+    # write(_test-input-stream, " \"a\\\"b\"/x")
     # . . push args
-    68/push  " \"a\\\"b\""/imm32
+    68/push  " \"a\\\"b\"/x"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -561,11 +556,11 @@ test-next-word-returns-string-with-escapes:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(slice->end - _test-input-stream->data, 7, msg)
-    # . check-ints-equal(slice->end - _test-input-stream, 19, msg)
+    # check-ints-equal(slice->end - _test-input-stream->data, 9, msg)
+    # . check-ints-equal(slice->end - _test-input-stream, 21, msg)
     # . . push args
     68/push  "F - test-next-word-returns-string-with-escapes: end"/imm32
-    68/push  0x13/imm32
+    68/push  0x15/imm32
     # . . push slice->end - _test-input-stream
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
     81          5/subop/subtract    3/mod/direct    0/rm32/EAX    .           .             .           .           .               _test-input-stream/imm32 # subtract from EAX
