@@ -1084,12 +1084,12 @@ $next-word:check0:
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ESI+4) to EAX
     # . if (EAX < line->write) goto next check
     3b/compare                      0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # compare EAX with *ESI
-    7c/jump-if-lesser  $next-word:check1/disp8
+    7c/jump-if-lesser  $next-word:check-for-comment/disp8
     # . return out = {0, 0}
     c7          0/subop/copy        0/mod/direct    7/rm32/EDI    .           .             .           .           .               0/imm32           # copy to *EDI
     c7          0/subop/copy        1/mod/*+disp8   7/rm32/EDI    .           .             .           .           4/disp8         0/imm32           # copy to *(EDI+4)
     eb/jump  $next-word:end/disp8
-$next-word:check1:
+$next-word:check-for-comment:
     # out->start = &line->data[line->read]
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ESI+4) to ECX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+ECX+12 to EAX
@@ -1100,7 +1100,8 @@ $next-word:check1:
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
     # . compare
     3d/compare-EAX-and  0x23/imm32/pound
-    75/jump-if-not-equal  $next-word:not-comment/disp8
+    75/jump-if-not-equal  $next-word:regular-word/disp8
+$next-word:comment:
     # . out->end = &line->data[line->write]
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+EAX+12 to EAX
@@ -1109,7 +1110,7 @@ $next-word:check1:
     89/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(ESI+4)
     # . return
     eb/jump  $next-word:end/disp8
-$next-word:not-comment:
+$next-word:regular-word:
     # otherwise skip-chars-not-matching-whitespace(line)  # including trailing newline
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
