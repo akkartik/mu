@@ -538,7 +538,7 @@ $read-segments:check1:
     3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $read-segments:loop/disp32
 $read-segments:check-for-comment:
-    # if slice-starts-with?(word-slice, "#")
+    # if (slice-starts-with?(word-slice, "#")) continue
     # . start/ESI = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # copy *ECX to ESI
     # . c/EAX = *start
@@ -1312,6 +1312,7 @@ _test-data-segment:
 _test-data-segment-end:
 
 Segment-size:
+  # TODO: there's currently a tight size limit on segments because we aren't growing the heap
   0x100/imm32/4KB
 #?   0x1000/imm32/4KB
 
