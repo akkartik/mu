@@ -141,7 +141,7 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
       result.words.back().data = d.str();
       // slurp metadata
       ostringstream m;
-      while (!isspace(in.peek()) && has_data(in)) {
+      while (!isspace(in.peek()) && has_data(in)) {  // peek can sometimes trigger eof(), so do it first
         in >> c;
         if (c == '/') {
           if (!m.str().empty()) result.words.back().metadata.push_back(m.str());
