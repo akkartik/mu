@@ -118,7 +118,7 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
     }
     result.words.push_back(word());
     if (c == '"') {
-      // slurp word data
+      // string literal; slurp everything between quotes into data
       ostringstream d;
       d << c;
       while (has_data(in)) {
@@ -154,7 +154,7 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
       if (!m.str().empty()) result.words.back().metadata.push_back(m.str());
     }
     else {
-      // slurp all characters until whitespace
+      // not a string literal; slurp all characters until whitespace
       ostringstream w;
       w << c;
       while (!isspace(in.peek()) && has_data(in)) {  // peek can sometimes trigger eof(), so do it first
