@@ -91,9 +91,10 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #       if slice-starts-with?(word-slice, "#")  # comment
     #         continue
     #       if slice-starts-with?(word-slice, '"')  # string literal <== what we're here for
-    #         process-literal-string(out, word-slice, new-segment)
+    #         process-literal-string(out, word-slice, new-data-segment)
     #       else
     #         write-slice(out, word-slice)
+    #   write-stream-data(out, new-data-segment)
     #   flush(out)
     #
     # . prolog
@@ -573,32 +574,5 @@ test-next-word-returns-string-with-escapes:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
-
-== data
-
-_test-input-stream:
-    # current write index
-    0/imm32
-    # current read index
-    0/imm32
-    # length
-    0x100/imm32  # 256 bytes
-    # data (16 lines x 16 bytes/line)
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # . . vim:nowrap:textwidth=0
