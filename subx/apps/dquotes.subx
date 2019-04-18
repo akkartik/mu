@@ -187,10 +187,10 @@ $convert:check-for-comment:
     8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/AL    .               .                 # copy byte at *ESI to AL
     # . if (EAX == '#') continue
     3d/compare-EAX-and  0x23/imm32/hash
-    0f 84/jump-if-equal  $convert:next-word/disp32
+    74/jump-if-equal  $convert:word-loop/disp8
 $convert:check-for-string-literal:
     3d/compare-EAX-and  0x22/imm32/hash
-    0f 85/jump-if-not-equal  $convert:regular-word/disp32
+    75/jump-if-not-equal  $convert:regular-word/disp8
 $convert:string-literal:
     # process-string-literal(word-slice, out, new-data-segment)
     # . . push args
@@ -434,19 +434,19 @@ test-convert-is-idempotent-by-default:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, " ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "", msg)
     # . . push args
     68/push  "F - test-convert/0"/imm32
-    68/push  " "/imm32
+    68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, " ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "", msg)
     # . . push args
     68/push  "F - test-convert/1"/imm32
-    68/push  " "/imm32
+    68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -461,10 +461,10 @@ test-convert-is-idempotent-by-default:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, " ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "", msg)
     # . . push args
     68/push  "F - test-convert/3"/imm32
-    68/push  " "/imm32
+    68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -488,10 +488,10 @@ test-convert-is-idempotent-by-default:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "2 3  ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "2 3 ", msg)
     # . . push args
     68/push  "F - test-convert/6"/imm32
-    68/push  "2 3  "/imm32
+    68/push  "2 3 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
