@@ -297,11 +297,12 @@ void test_loading_label_as_imm32() {
   transform(
       "== 0x1\n"
       "label:\n"
-      "be/copy-to-ESI   label/imm32");
+      "  be/copy-to-ESI  label/imm32\n"
+  );
   CHECK_TRACE_CONTENTS(
       "transform: label 'label' is at address 1\n"
       "transform: instruction after transform: 'be 01 00 00 00'\n"
-      );
+  );
 }
 
 void test_duplicate_label() {
