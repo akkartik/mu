@@ -235,6 +235,8 @@ void replace_labels_with_displacements(segment& code, const map<string, int32_t>
         }
         else if (has_operand_metadata(curr, "disp32")) {
           emit_hex_bytes(new_inst, displacement, 4);
+        } else if (has_operand_metadata(curr, "imm32")) {
+          emit_hex_bytes(new_inst, code.start + get(byte_index, curr.data), 4);
         }
       }
       else {
@@ -289,6 +291,17 @@ void test_multiple_labels_at() {
       // second jump is to 0 (fall through)
       "transform: instruction after transform: 'eb 00'\n"
   );
+}
+
+void test_loading_label_as_imm32() {
+  transform(
+      "== 0x1\n"
+      "label:\n"
+      "be/copy-to-ESI   label/imm32");
+  CHECK_TRACE_CONTENTS(
+      "transform: label 'label' is at address 1\n"
+      "transform: instruction after transform: 'be 01 00 00 00'\n"
+      );
 }
 
 void test_duplicate_label() {
