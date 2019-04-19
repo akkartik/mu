@@ -328,9 +328,9 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
 
   1. [Converting ascii hex bytes to binary.](http://akkartik.github.io/mu/html/subx/apps/hex.subx.html) (✓)
   2. [Packing bitfields for x86 instructions into bytes.](http://akkartik.github.io/mu/html/subx/apps/pack.subx.html) (✓)
-  3. [Combining segments with the same name.](apps/assort.subx) (30% complete)
-  4. Replacing addresses with labels.
-  5. Support for string literals.
+  3. [Combining segments with the same name.](apps/assort.subx) (✓)
+  4. Support for string literals. (10% complete)
+  5. Replacing addresses with labels.
 
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
