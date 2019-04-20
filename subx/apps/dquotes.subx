@@ -212,6 +212,7 @@ $convert:regular-word:
     e8/call  write-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # fall through
 $convert:next-word:
     # write-buffered(out, " ")
     # . . push args
@@ -250,14 +251,72 @@ $convert:end:
     5d/pop-to-EBP
     c3/return
 
-process-string-literal:  # word : (address slice), out : (address buffered-file), string-literal-segment : (address stream)
+# Write out 'string-literal' in a new format to 'out-segment', assign it a new
+# label, and write the new label out to 'out'.
+process-string-literal:  # string-literal : (address slice), out : (address buffered-file), out-segment : (address stream)
+    # pseudocode:
+    #   print(out-segment, "_string#{Next-string-literal}:\n")
+    #   emit-string-literal-data(out-segment, string-literal)
+    #   print(out, "_string#{Next-string-literal}")
+    #   emit-metadata(out, string-literal)
+    #   ++ *Next-string-literal
+    #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    51/push-ECX
+    # var int32-stream/ECX = stream(10)  # number of decimal digits a 32-bit number can have
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xa/imm32         # subtract from ESP
+    68/push  0xa/imm32/decimal-digits-in-32bit-number
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # print(out-segment, "_string#{Next-string-literal}:\n")
+    # . write(out-segment, "_string")
+    # . . push args
+    68/push  "_string"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-decimal(out-segment, *Next-string-literal)
+    # . write(out-segment, ":\n")
+    # . . push args
+    68/push  ":\n"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # emit-string-literal-data(out-segment, string-literal)
+    # write(out-segment, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # print(out, "_string#{Next-string-literal}")
+    # . write-buffered(out, "_string")
+    # . . push args
+    68/push  "_string"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-decimal(tmp, *Next-string-literal)
+    # emit-metadata(out, string-literal)
+    # ++ *Next-string-literal
+    ff          0/subop/increment   0/mod/indirect  5/rm32/.disp32            .             .           .           Next-string-literal/disp32        # increment *Num-test-failures
 $process-string-literal:end:
     # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x16/imm32        # add to ESP
     # . restore registers
+    59/pop-to-ECX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -995,5 +1054,8 @@ Segment-size:
   # TODO: there's currently a tight size limit on segments because we aren't growing the heap
   0x100/imm32/4KB
 #?   0x1000/imm32/4KB
+
+Next-string-literal:
+  1/imm32
 
 # . . vim:nowrap:textwidth=0
