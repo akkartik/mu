@@ -141,6 +141,8 @@ void init_permitted_operands() {
   put(Permitted_operands, "5d", 0x00);
   put(Permitted_operands, "5e", 0x00);
   put(Permitted_operands, "5f", 0x00);
+  // sign-extend EAX into EDX
+  put(Permitted_operands, "99", 0x00);
   // return
   put(Permitted_operands, "c3", 0x00);
 
