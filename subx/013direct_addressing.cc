@@ -119,7 +119,7 @@ case 0x29: {  // subtract r32 from r/m32
 //:: multiply
 
 :(before "End Initialize Op Names")
-put_new(Name, "f7", "negate/multiply rm32 (with EAX if necessary) depending on subop (neg/mul)");
+put_new(Name, "f7", "negate/multiply/divide rm32 (with EAX and EDX if necessary) depending on subop (neg/mul/idiv)");
 
 :(code)
 void test_multiply_eax_by_r32() {
@@ -248,6 +248,98 @@ void test_negate_can_overflow() {
       "run: r/m32 is EBX\n"
       "run: subop: negate\n"
       "run: overflow\n"
+  );
+}
+
+//:: divide with remainder
+
+void test_divide_eax_by_rm32() {
+  Reg[EAX].u = 7;
+  Reg[EDX].u = 0;
+  Reg[ECX].i = 3;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7     f9                                    \n"  // multiply EAX by ECX
+      // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is ECX\n"
+      "run: subop: divide EDX:EAX by r/m32, storing quotient in EAX and remainder in EDX\n"
+      "run: quotient: 0x00000002\n"
+      "run: remainder: 0x00000001\n"
+  );
+}
+
+:(before "End Op f7 Subops")
+case 7: {  // divide EDX:EAX by r/m32, storing quotient in EAX and remainder in EDX
+  trace(Callstack_depth+1, "run") << "subop: divide EDX:EAX by r/m32, storing quotient in EAX and remainder in EDX" << end();
+  int64_t dividend = static_cast<int64_t>((static_cast<uint64_t>(Reg[EDX].u) << 32) | Reg[EAX].u);
+  int32_t divisor = *arg1;
+  assert(divisor != 0);
+  Reg[EAX].i = dividend/divisor;  // quotient
+  Reg[EDX].i = dividend%divisor;  // remainder
+  trace(Callstack_depth+1, "run") << "quotient: 0x" << HEXWORD << Reg[EAX].i << end();
+  trace(Callstack_depth+1, "run") << "remainder: 0x" << HEXWORD << Reg[EDX].i << end();
+  break;
+}
+
+:(code)
+void test_divide_eax_by_negative_rm32() {
+  Reg[EAX].u = 7;
+  Reg[EDX].u = 0;
+  Reg[ECX].i = -3;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7     f9                                    \n"  // multiply EAX by ECX
+      // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is ECX\n"
+      "run: subop: divide EDX:EAX by r/m32, storing quotient in EAX and remainder in EDX\n"
+      "run: quotient: 0xfffffffe\n"  // -2
+      "run: remainder: 0x00000001\n"
+  );
+}
+
+void test_divide_negative_eax_by_rm32() {
+  Reg[EAX].i = -7;
+  Reg[EDX].i = -1;  // sign extend
+  Reg[ECX].i = 3;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7     f9                                    \n"  // multiply EAX by ECX
+      // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is ECX\n"
+      "run: subop: divide EDX:EAX by r/m32, storing quotient in EAX and remainder in EDX\n"
+      "run: quotient: 0xfffffffe\n"  // -2
+      "run: remainder: 0xffffffff\n"  // -1, same sign as divident (EDX:EAX)
+  );
+}
+
+void test_divide_negative_edx_eax_by_rm32() {
+  Reg[EAX].i = 0;  // lower 32 bits are clear
+  Reg[EDX].i = -7;
+  Reg[ECX].i = 0x40000000;  // 2^30 (largest positive power of 2)
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  f7     f9                                    \n"  // multiply EAX by ECX
+      // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: operate on r/m32\n"
+      "run: r/m32 is ECX\n"
+      "run: subop: divide EDX:EAX by r/m32, storing quotient in EAX and remainder in EDX\n"
+      "run: quotient: 0xffffffe4\n"  // (-7 << 32) / (1 << 30) = -7 << 2 = -28
+      "run: remainder: 0x00000000\n"
   );
 }
 
