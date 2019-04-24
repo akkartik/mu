@@ -23,7 +23,6 @@ a { color:inherit; }
 .subxTest { color: #5f8700; }
 .Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
 .subxS2Comment { color: #8a8a8a; }
-.SpecialChar { color: #d70000; }
 .subxH1Comment { color: #005faf; text-decoration: underline; }
 -->
 </style>
@@ -165,153 +164,128 @@ if ('onhashchange' in window) {
 <span id="L103" class="LineNr">103 </span><span class="Constant">$read-line:abort</span>:
 <span id="L104" class="LineNr">104 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
 <span id="L105" class="LineNr">105 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L106" class="LineNr">106 </span>    68/push  <span class="Constant">&quot;read-line: line too long&quot;</span>/imm32
+<span id="L106" class="LineNr">106 </span>    68/push  <span class="Constant">&quot;read-line: line too long\n&quot;</span>/imm32
 <span id="L107" class="LineNr">107 </span>    68/push  2/imm32/stderr
 <span id="L108" class="LineNr">108 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L109" class="LineNr">109 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
 <span id="L110" class="LineNr">110 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L111" class="LineNr">111 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L112" class="LineNr">112 </span>    <span class="subxS1Comment"># . _write(2/stderr, Newline)</span>
-<span id="L113" class="LineNr">113 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L114" class="LineNr">114 </span>    68/push  <span class="SpecialChar"><a href='051test.subx.html#L83'>Newline</a></span>/imm32
-<span id="L115" class="LineNr">115 </span>    68/push  2/imm32/stderr
-<span id="L116" class="LineNr">116 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L117" class="LineNr">117 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
-<span id="L118" class="LineNr">118 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L119" class="LineNr">119 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L120" class="LineNr">120 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
-<span id="L121" class="LineNr">121 </span>    bb/copy-to-EBX  1/imm32
-<span id="L122" class="LineNr">122 </span>    b8/copy-to-EAX  1/imm32/exit
-<span id="L123" class="LineNr">123 </span>    cd/syscall  0x80/imm8
-<span id="L124" class="LineNr">124 </span>    <span class="subxComment"># never gets here</span>
-<span id="L125" class="LineNr">125 </span>
-<span id="L126" class="LineNr">126 </span><span class="subxTest">test-read-line</span>:
-<span id="L127" class="LineNr">127 </span>    <span class="subxH1Comment"># - check that read-line stops at a newline</span>
-<span id="L128" class="LineNr">128 </span>    <span class="subxComment"># setup</span>
-<span id="L129" class="LineNr">129 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
-<span id="L130" class="LineNr">130 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L131" class="LineNr">131 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
-<span id="L132" class="LineNr">132 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L133" class="LineNr">133 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
-<span id="L134" class="LineNr">134 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L135" class="LineNr">135 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L136" class="LineNr">136 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file+4)</span>
-<span id="L137" class="LineNr">137 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L138" class="LineNr">138 </span>    b8/copy-to-EAX  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
-<span id="L139" class="LineNr">139 </span>    05/add-to-EAX  4/imm32
-<span id="L140" class="LineNr">140 </span>    50/push-EAX
-<span id="L141" class="LineNr">141 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L142" class="LineNr">142 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
-<span id="L143" class="LineNr">143 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L144" class="LineNr">144 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L145" class="LineNr">145 </span>    <span class="subxS1Comment"># . clear-stream(_test-tmp-stream)</span>
-<span id="L146" class="LineNr">146 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L147" class="LineNr">147 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
+<span id="L112" class="LineNr">112 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L113" class="LineNr">113 </span>    bb/copy-to-EBX  1/imm32
+<span id="L114" class="LineNr">114 </span>    b8/copy-to-EAX  1/imm32/exit
+<span id="L115" class="LineNr">115 </span>    cd/syscall  0x80/imm8
+<span id="L116" class="LineNr">116 </span>    <span class="subxComment"># never gets here</span>
+<span id="L117" class="LineNr">117 </span>
+<span id="L118" class="LineNr">118 </span><span class="subxTest">test-read-line</span>:
+<span id="L119" class="LineNr">119 </span>    <span class="subxH1Comment"># - check that read-line stops at a newline</span>
+<span id="L120" class="LineNr">120 </span>    <span class="subxComment"># setup</span>
+<span id="L121" class="LineNr">121 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
+<span id="L122" class="LineNr">122 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L123" class="LineNr">123 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
+<span id="L124" class="LineNr">124 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L125" class="LineNr">125 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L126" class="LineNr">126 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L127" class="LineNr">127 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L128" class="LineNr">128 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file+4)</span>
+<span id="L129" class="LineNr">129 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L130" class="LineNr">130 </span>    b8/copy-to-EAX  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
+<span id="L131" class="LineNr">131 </span>    05/add-to-EAX  4/imm32
+<span id="L132" class="LineNr">132 </span>    50/push-EAX
+<span id="L133" class="LineNr">133 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L134" class="LineNr">134 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L135" class="LineNr">135 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L136" class="LineNr">136 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L137" class="LineNr">137 </span>    <span class="subxS1Comment"># . clear-stream(_test-tmp-stream)</span>
+<span id="L138" class="LineNr">138 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L139" class="LineNr">139 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
+<span id="L140" class="LineNr">140 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L141" class="LineNr">141 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L142" class="LineNr">142 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L143" class="LineNr">143 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L144" class="LineNr">144 </span>    <span class="subxComment"># write(_test-stream, &quot;ab\ncd&quot;)</span>
+<span id="L145" class="LineNr">145 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L146" class="LineNr">146 </span>    68/push  <span class="Constant">&quot;ab\ncd&quot;</span>/imm32
+<span id="L147" class="LineNr">147 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
 <span id="L148" class="LineNr">148 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L149" class="LineNr">149 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L149" class="LineNr">149 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
 <span id="L150" class="LineNr">150 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L151" class="LineNr">151 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L152" class="LineNr">152 </span>    <span class="subxComment"># write(_test-stream, &quot;ab\ncd&quot;)</span>
-<span id="L153" class="LineNr">153 </span>    <span class="subxS1Comment"># . write(_test-stream, &quot;ab&quot;)</span>
+<span id="L151" class="LineNr">151 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L152" class="LineNr">152 </span>    <span class="subxComment"># read a line from _test-stream (buffered by _test-buffered-file) into _test-tmp-stream</span>
+<span id="L153" class="LineNr">153 </span>    <span class="subxS1Comment"># . EAX = read-line(_test-buffered-file, _test-tmp-stream)</span>
 <span id="L154" class="LineNr">154 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L155" class="LineNr">155 </span>    68/push  <span class="Constant">&quot;ab&quot;</span>/imm32
-<span id="L156" class="LineNr">156 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
+<span id="L155" class="LineNr">155 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
+<span id="L156" class="LineNr">156 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
 <span id="L157" class="LineNr">157 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L158" class="LineNr">158 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
+<span id="L158" class="LineNr">158 </span>    e8/call  <a href='071read-line.subx.html#L16'>read-line</a>/disp32
 <span id="L159" class="LineNr">159 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L160" class="LineNr">160 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L161" class="LineNr">161 </span>    <span class="subxS1Comment"># . write(_test-stream, &quot;\n&quot;)</span>
+<span id="L161" class="LineNr">161 </span>    <span class="subxComment"># check-next-stream-line-equal(_test-tmp-stream, &quot;ab&quot;, msg)</span>
 <span id="L162" class="LineNr">162 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L163" class="LineNr">163 </span>    68/push <span class="SpecialChar"><a href='051test.subx.html#L83'>Newline</a></span>/imm32
-<span id="L164" class="LineNr">164 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
-<span id="L165" class="LineNr">165 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L166" class="LineNr">166 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
-<span id="L167" class="LineNr">167 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L168" class="LineNr">168 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L169" class="LineNr">169 </span>    <span class="subxS1Comment"># . write(_test-stream, &quot;cd&quot;)</span>
-<span id="L170" class="LineNr">170 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L171" class="LineNr">171 </span>    68/push  <span class="Constant">&quot;cd&quot;</span>/imm32
-<span id="L172" class="LineNr">172 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
-<span id="L173" class="LineNr">173 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L174" class="LineNr">174 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
-<span id="L175" class="LineNr">175 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L176" class="LineNr">176 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L177" class="LineNr">177 </span>    <span class="subxComment"># read a line from _test-stream (buffered by _test-buffered-file) into _test-tmp-stream</span>
-<span id="L178" class="LineNr">178 </span>    <span class="subxS1Comment"># . EAX = read-line(_test-buffered-file, _test-tmp-stream)</span>
-<span id="L179" class="LineNr">179 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L180" class="LineNr">180 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
-<span id="L181" class="LineNr">181 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
-<span id="L182" class="LineNr">182 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L183" class="LineNr">183 </span>    e8/call  <a href='071read-line.subx.html#L16'>read-line</a>/disp32
-<span id="L184" class="LineNr">184 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L185" class="LineNr">185 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L186" class="LineNr">186 </span>    <span class="subxComment"># check-next-stream-line-equal(_test-tmp-stream, &quot;ab&quot;, msg)</span>
-<span id="L187" class="LineNr">187 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L188" class="LineNr">188 </span>    68/push  <span class="Constant">&quot;F - test-read-line&quot;</span>/imm32
-<span id="L189" class="LineNr">189 </span>    68/push  <span class="Constant">&quot;ab&quot;</span>/imm32
-<span id="L190" class="LineNr">190 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
-<span id="L191" class="LineNr">191 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L192" class="LineNr">192 </span>    e8/call  <a href='058stream-equal.subx.html#L644'>check-next-stream-line-equal</a>/disp32
-<span id="L193" class="LineNr">193 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L194" class="LineNr">194 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L195" class="LineNr">195 </span>    <span class="subxComment"># end</span>
-<span id="L196" class="LineNr">196 </span>    c3/return
-<span id="L197" class="LineNr">197 </span>
-<span id="L198" class="LineNr">198 </span><span class="subxTest">test-read-line-reads-final-line-until-Eof</span>:
-<span id="L199" class="LineNr">199 </span>    <span class="subxComment"># setup</span>
-<span id="L200" class="LineNr">200 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
-<span id="L201" class="LineNr">201 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L202" class="LineNr">202 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
-<span id="L203" class="LineNr">203 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L204" class="LineNr">204 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
-<span id="L205" class="LineNr">205 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L206" class="LineNr">206 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L207" class="LineNr">207 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file+4)</span>
+<span id="L163" class="LineNr">163 </span>    68/push  <span class="Constant">&quot;F - test-read-line&quot;</span>/imm32
+<span id="L164" class="LineNr">164 </span>    68/push  <span class="Constant">&quot;ab&quot;</span>/imm32
+<span id="L165" class="LineNr">165 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
+<span id="L166" class="LineNr">166 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L167" class="LineNr">167 </span>    e8/call  <a href='058stream-equal.subx.html#L569'>check-next-stream-line-equal</a>/disp32
+<span id="L168" class="LineNr">168 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L169" class="LineNr">169 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L170" class="LineNr">170 </span>    <span class="subxComment"># end</span>
+<span id="L171" class="LineNr">171 </span>    c3/return
+<span id="L172" class="LineNr">172 </span>
+<span id="L173" class="LineNr">173 </span><span class="subxTest">test-read-line-reads-final-line-until-Eof</span>:
+<span id="L174" class="LineNr">174 </span>    <span class="subxComment"># setup</span>
+<span id="L175" class="LineNr">175 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
+<span id="L176" class="LineNr">176 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L177" class="LineNr">177 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
+<span id="L178" class="LineNr">178 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L179" class="LineNr">179 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L180" class="LineNr">180 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L181" class="LineNr">181 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L182" class="LineNr">182 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file+4)</span>
+<span id="L183" class="LineNr">183 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L184" class="LineNr">184 </span>    b8/copy-to-EAX  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
+<span id="L185" class="LineNr">185 </span>    05/add-to-EAX  4/imm32
+<span id="L186" class="LineNr">186 </span>    50/push-EAX
+<span id="L187" class="LineNr">187 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L188" class="LineNr">188 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L189" class="LineNr">189 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L190" class="LineNr">190 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L191" class="LineNr">191 </span>    <span class="subxS1Comment"># . clear-stream(_test-tmp-stream)</span>
+<span id="L192" class="LineNr">192 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L193" class="LineNr">193 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
+<span id="L194" class="LineNr">194 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L195" class="LineNr">195 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L196" class="LineNr">196 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L197" class="LineNr">197 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L198" class="LineNr">198 </span>    <span class="subxComment"># write(_test-stream, &quot;cd&quot;)</span>
+<span id="L199" class="LineNr">199 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L200" class="LineNr">200 </span>    68/push  <span class="Constant">&quot;cd&quot;</span>/imm32
+<span id="L201" class="LineNr">201 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
+<span id="L202" class="LineNr">202 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L203" class="LineNr">203 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
+<span id="L204" class="LineNr">204 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L205" class="LineNr">205 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L206" class="LineNr">206 </span>    <span class="subxComment"># read a line from _test-stream (buffered by _test-buffered-file) into _test-tmp-stream</span>
+<span id="L207" class="LineNr">207 </span>    <span class="subxS1Comment"># . EAX = read-line(_test-buffered-file, _test-tmp-stream)</span>
 <span id="L208" class="LineNr">208 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L209" class="LineNr">209 </span>    b8/copy-to-EAX  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
-<span id="L210" class="LineNr">210 </span>    05/add-to-EAX  4/imm32
-<span id="L211" class="LineNr">211 </span>    50/push-EAX
-<span id="L212" class="LineNr">212 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L213" class="LineNr">213 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
-<span id="L214" class="LineNr">214 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L215" class="LineNr">215 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L216" class="LineNr">216 </span>    <span class="subxS1Comment"># . clear-stream(_test-tmp-stream)</span>
-<span id="L217" class="LineNr">217 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L218" class="LineNr">218 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
-<span id="L219" class="LineNr">219 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L220" class="LineNr">220 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
-<span id="L221" class="LineNr">221 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L222" class="LineNr">222 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L223" class="LineNr">223 </span>    <span class="subxComment"># write(_test-stream, &quot;cd&quot;)</span>
-<span id="L224" class="LineNr">224 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L225" class="LineNr">225 </span>    68/push  <span class="Constant">&quot;cd&quot;</span>/imm32
-<span id="L226" class="LineNr">226 </span>    68/push  <a href='057write.subx.html#L148'>_test-stream</a>/imm32
-<span id="L227" class="LineNr">227 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L228" class="LineNr">228 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
-<span id="L229" class="LineNr">229 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L230" class="LineNr">230 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L231" class="LineNr">231 </span>    <span class="subxComment"># read a line from _test-stream (buffered by _test-buffered-file) into _test-tmp-stream</span>
-<span id="L232" class="LineNr">232 </span>    <span class="subxS1Comment"># . EAX = read-line(_test-buffered-file, _test-tmp-stream)</span>
-<span id="L233" class="LineNr">233 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L234" class="LineNr">234 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
-<span id="L235" class="LineNr">235 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
-<span id="L236" class="LineNr">236 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L237" class="LineNr">237 </span>    e8/call  <a href='071read-line.subx.html#L16'>read-line</a>/disp32
-<span id="L238" class="LineNr">238 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L239" class="LineNr">239 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L240" class="LineNr">240 </span>    <span class="subxComment"># check-stream-equal(_test-tmp-stream, &quot;cd&quot;, msg)</span>
-<span id="L241" class="LineNr">241 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L242" class="LineNr">242 </span>    68/push  <span class="Constant">&quot;F - test-read-line-reads-final-line-until-Eof&quot;</span>/imm32
-<span id="L243" class="LineNr">243 </span>    68/push  <span class="Constant">&quot;cd&quot;</span>/imm32
-<span id="L244" class="LineNr">244 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
-<span id="L245" class="LineNr">245 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L246" class="LineNr">246 </span>    e8/call  <a href='058stream-equal.subx.html#L199'>check-stream-equal</a>/disp32
-<span id="L247" class="LineNr">247 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L248" class="LineNr">248 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
-<span id="L249" class="LineNr">249 </span>    <span class="subxComment"># end</span>
-<span id="L250" class="LineNr">250 </span>    c3/return
-<span id="L251" class="LineNr">251 </span>
-<span id="L252" class="LineNr">252 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L209" class="LineNr">209 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
+<span id="L210" class="LineNr">210 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
+<span id="L211" class="LineNr">211 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L212" class="LineNr">212 </span>    e8/call  <a href='071read-line.subx.html#L16'>read-line</a>/disp32
+<span id="L213" class="LineNr">213 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L214" class="LineNr">214 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
+<span id="L215" class="LineNr">215 </span>    <span class="subxComment"># check-stream-equal(_test-tmp-stream, &quot;cd&quot;, msg)</span>
+<span id="L216" class="LineNr">216 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L217" class="LineNr">217 </span>    68/push  <span class="Constant">&quot;F - test-read-line-reads-final-line-until-Eof&quot;</span>/imm32
+<span id="L218" class="LineNr">218 </span>    68/push  <span class="Constant">&quot;cd&quot;</span>/imm32
+<span id="L219" class="LineNr">219 </span>    68/push  <a href='060read.subx.html#L430'>_test-tmp-stream</a>/imm32
+<span id="L220" class="LineNr">220 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L221" class="LineNr">221 </span>    e8/call  <a href='058stream-equal.subx.html#L199'>check-stream-equal</a>/disp32
+<span id="L222" class="LineNr">222 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L223" class="LineNr">223 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
+<span id="L224" class="LineNr">224 </span>    <span class="subxComment"># end</span>
+<span id="L225" class="LineNr">225 </span>    c3/return
+<span id="L226" class="LineNr">226 </span>
+<span id="L227" class="LineNr">227 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
