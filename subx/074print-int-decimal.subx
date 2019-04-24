@@ -1,0 +1,285 @@
+# Helper to print an int32 in decimal.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+#? Entry:  # run a single test, while debugging
+#?     e8/call test-print-int32-decimal/disp32
+#?     # syscall(exit, Num-test-failures)
+#?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
+#?     b8/copy-to-EAX  1/imm32/exit
+#?     cd/syscall  0x80/imm8
+
+print-int32-decimal:  # out : (address stream), n : int32
+    # works by generating characters from lowest to highest and pushing them
+    # to the stack, before popping them one by one into the stream
+    #
+    # pseudocode:
+    #   copy ESP to EBX
+    #   EAX = n
+    #   while true
+    #     if (EAX == 0) break
+    #     sign-extend EAX into EDX
+    #     EAX, EDX = EAX/10, EAX%10
+    #     push EDX
+    #   if n < 0
+    #     push '-' - 0x30 = -3
+    #   w/EAX = out->write
+    #   max/ECX = out->length
+    #   curr/EDI = out->data[out->write]
+    #   while true
+    #     if (ESP == EBX) break
+    #     if (curr >= max) abort
+    #     pop into EDX
+    #     EDX += '0'  # convert decimal digit to ascii
+    #     *curr = DL
+    #     ++curr
+    #     ++w
+    #   out->write = w
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    57/push-EDI
+    # copy ESP to EBX
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
+    # ten/ECX = 10
+    b9/copy-to-ECX  0xa/imm32
+    # EAX = |n|
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    3d/compare-EAX-with  0/imm32
+    7d/jump-if-greater-or-equal $print-int32-decimal:read-loop/disp8
+$print-int32-decimal:negative:
+    f7          3/subop/negate      3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
+$print-int32-decimal:read-loop:
+    # if (EAX == 0) break
+    3d/compare-EAX-and  0/imm32
+    74/jump-if-equal $print-int32-decimal:read-break/disp8
+    # sign-extend
+    99/sign-extend-EAX-into-EDX
+    # EAX, EDX = divide-with-remainder EAX/ten, EAX%ten
+    f7          7/subop/divide-by   3/mod/direct    1/rm32/ECX    .           .             .           .           .               .                 # divide EDX:EAX by ECX, storing quotient in EAX and remainder in EDX
+    # push EDX
+    52/push-EDX
+    eb/jump  $print-int32-decimal:read-loop/disp8
+$print-int32-decimal:read-break:
+    # if (n < 0) push('-')
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       0/imm32           # compare *(EBP+12)
+    7d/jump-if-greater-or-equal $print-int32-decimal:write/disp8
+$print-int32-decimal:push-negative:
+    68/push  -3/imm32/dash-minus-zero
+    # fall through
+$print-int32-decimal:write:
+    # EDI = out
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # max/ECX = &out->data[out->length]
+    8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EDI+8) to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EDI+ECX+12 to ECX
+    # w/EAX = out->write
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy *EDI to EAX
+    # curr/EDI = &out->data[out->write]
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  0/index/EAX   .           7/r32/EDI   0xc/disp8       .                 # copy EDI+EAX+12 to EDI
+$print-int32-decimal:write-loop:
+    # if (ESP == EBX) break
+    39/compare                      3/mod/direct    4/rm32/ESP    .           .             .           3/r32/EBX   .               .                 # compare ESP and EBX
+    74/jump-if-equal  $print-int32-decimal:write-break/disp8
+    # if (curr >= max) abort
+    39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # compare EDI and ECX
+    7d/jump-if-greater-or-equal  $print-int32-decimal:abort/disp8
+    # pop into EDX
+    5a/pop-into-EDX
+    # EDX += '0'
+    81          0/subop/add         3/mod/direct    2/rm32/EDX    .           .             .           .           .               0x30/imm32/zero   # add to EDX
+$print-int32-decimal:write-char:
+    # *curr = DL
+    88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/DL    .               .                 # copy DL to byte at *ECX
+    # ++curr
+    47/increment-EDI
+    # ++w
+    40/increment-EAX
+    eb/jump  $print-int32-decimal:write-loop/disp8
+$print-int32-decimal:write-break:
+    # out->write = w
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    89/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EDI
+$print-int32-decimal:end:
+    # . restore registers
+    5f/pop-to-EDI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+$print-int32-decimal:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "print-int32-decimal: out of space"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-print-int32-decimal:
+    # check that a single-digit number converts correctly
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # print-int32-decimal(_test-stream, 9)
+    # . . push args
+    68/push  9/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  print-int32-decimal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "9", msg)
+    # . . push args
+    68/push  "F - test-print-int32-decimal"/imm32
+    68/push  "9"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-print-int32-decimal-multiple-digits:
+    # check that a multi-digit number converts correctly
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # print-int32-decimal(_test-stream, 10)
+    # . . push args
+    68/push  0xa/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  print-int32-decimal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "10", msg)
+    # . . push args
+    68/push  "F - test-print-int32-decimal-multiple-digits"/imm32
+    68/push  "10"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-print-int32-decimal-negative:
+    # check that a negative single-digit number converts correctly
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # print-int32-decimal(_test-stream, -9)
+    # . . push args
+    68/push  -9/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  print-int32-decimal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # dump _test-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, _test-stream)
+#?     # . . push args
+#?     68/push  _test-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-stream-equal(_test-stream, "-9", msg)
+    # . . push args
+    68/push  "F - test-print-int32-decimal-negative"/imm32
+    68/push  "-9"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-print-int32-decimal-negative-multiple-digits:
+    # check that a multi-digit number converts correctly
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # print-int32-decimal(_test-stream, -10)
+    # . . push args
+    68/push  -0xa/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  print-int32-decimal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "-10", msg)
+    # . . push args
+    68/push  "F - test-print-int32-decimal-negative-multiple-digits"/imm32
+    68/push  "-10"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+# . . vim:nowrap:textwidth=0
