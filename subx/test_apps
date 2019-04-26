@@ -12,7 +12,7 @@ CFLAGS=$CFLAGS ./build
 
 echo ex1
 ./subx translate examples/ex1.subx  -o examples/ex1
-git diff --quiet examples/ex1
+git diff --exit-code examples/ex1
 ./subx run examples/ex1  ||  ret=$?
 test $ret -eq 42  # life, the universe and everything
 test `uname` = 'Linux'  &&  {
@@ -22,7 +22,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex2
 ./subx translate examples/ex2.subx  -o examples/ex2
-git diff --quiet examples/ex2
+git diff --exit-code examples/ex2
 ./subx run examples/ex2  ||  ret=$?
 test $ret -eq 2  # 1 + 1
 test `uname` = 'Linux'  &&  {
@@ -32,7 +32,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex3
 ./subx translate examples/ex3.subx  -o examples/ex3
-git diff --quiet examples/ex3
+git diff --exit-code examples/ex3
 ./subx run examples/ex3  ||  ret=$?
 test $ret -eq 55  # 1 + 2 + ... + 10
 test `uname` = 'Linux'  &&  {
@@ -42,7 +42,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex4
 ./subx translate examples/ex4.subx  -o examples/ex4
-git diff --quiet examples/ex4
+git diff --exit-code examples/ex4
 echo a | ./subx run examples/ex4 >ex4.out  ||  true
 test `cat ex4.out` = 'a'
 test `uname` = 'Linux'  &&  {
@@ -52,7 +52,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex5
 ./subx translate examples/ex5.subx  -o examples/ex5
-git diff --quiet examples/ex5
+git diff --exit-code examples/ex5
 echo a | ./subx run examples/ex5 >ex5.out  ||  true
 test `cat ex5.out` = 'a'
 test `uname` = 'Linux'  &&  {
@@ -62,7 +62,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex6
 ./subx translate examples/ex6.subx  -o examples/ex6
-git diff --quiet examples/ex6
+git diff --exit-code examples/ex6
 ./subx run examples/ex6 >ex6.out  ||  true
 test "`cat ex6.out`" = 'Hello, world!'
 test `uname` = 'Linux'  &&  {
@@ -72,7 +72,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex7
 ./subx translate examples/ex7.subx  -o examples/ex7
-git diff --quiet examples/ex7
+git diff --exit-code examples/ex7
 ./subx run examples/ex7  ||  ret=$?
 test $ret -eq 97  # 'a'
 test `uname` = 'Linux'  &&  {
@@ -82,7 +82,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex8
 ./subx translate examples/ex8.subx  -o examples/ex8
-[ "$1" != record ]  && git diff --quiet examples/ex8
+[ "$1" != record ]  && git diff --exit-code examples/ex8
 ./subx run examples/ex8 abcd  ||  ret=$?
 test $ret -eq 4  # length('abcd')
 test `uname` = 'Linux'  &&  {
@@ -92,7 +92,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex9
 ./subx translate examples/ex9.subx  -o examples/ex9
-[ "$1" != record ]  && git diff --quiet examples/ex9
+[ "$1" != record ]  && git diff --exit-code examples/ex9
 ./subx run examples/ex9 z x  ||  ret=$?
 test $ret -eq 2  # 'z' - 'x'
 test `uname` = 'Linux'  &&  {
@@ -102,7 +102,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex10
 ./subx translate examples/ex10.subx  -o examples/ex10
-[ "$1" != record ]  && git diff --quiet examples/ex10
+[ "$1" != record ]  && git diff --exit-code examples/ex10
 ./subx run examples/ex10 abc abc  ||  ret=$?
 test $ret -eq 1  # equal
 ./subx run examples/ex10 abc abcd  # 0; not equal
@@ -114,7 +114,7 @@ test `uname` = 'Linux'  &&  {
 
 echo ex11
 ./subx translate examples/ex11.subx  -o examples/ex11
-[ "$1" != record ]  && git diff --quiet examples/ex11
+[ "$1" != record ]  && git diff --exit-code examples/ex11
 ./subx run examples/ex11
 echo
 test `uname` = 'Linux'  &&  {
@@ -124,13 +124,13 @@ test `uname` = 'Linux'  &&  {
 
 echo ex12
 ./subx translate examples/ex12.subx  -o examples/ex12
-[ "$1" != record ]  && git diff --quiet examples/ex12
+[ "$1" != record ]  && git diff --exit-code examples/ex12
 ./subx run examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
 test `uname` = 'Linux'  &&  examples/ex12
 
 echo handle
 ./subx translate 0*.subx apps/handle.subx  -o apps/handle
-[ "$1" != record ]  &&  git diff --quiet apps/handle
+[ "$1" != record ]  &&  git diff --exit-code apps/handle
 ./subx run apps/handle 2>&1  |grep -q 'lookup failed'
 test `uname` = 'Linux'  &&  {
   apps/handle test 2>&1  |grep -q 'lookup failed'
@@ -138,7 +138,7 @@ test `uname` = 'Linux'  &&  {
 
 echo factorial
 ./subx translate 0*.subx apps/factorial.subx  -o apps/factorial
-[ "$1" != record ]  &&  git diff --quiet apps/factorial
+[ "$1" != record ]  &&  git diff --exit-code apps/factorial
 ./subx run apps/factorial  ||  ret=$?
 test $ret -eq 120  # factorial(5)
 ./subx run apps/factorial test
@@ -152,7 +152,7 @@ test `uname` = 'Linux'  &&  {
 
 echo crenshaw2-1
 ./subx translate 0*.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
-[ "$1" != record ]  &&  git diff --quiet apps/crenshaw2-1
+[ "$1" != record ]  &&  git diff --exit-code apps/crenshaw2-1
 ./subx run apps/crenshaw2-1 test
 echo
 test `uname` = 'Linux'  &&  {
@@ -162,7 +162,7 @@ test `uname` = 'Linux'  &&  {
 
 echo crenshaw2-1b
 ./subx translate 0*.subx apps/crenshaw2-1b.subx  -o apps/crenshaw2-1b
-[ "$1" != record ]  &&  git diff --quiet apps/crenshaw2-1b
+[ "$1" != record ]  &&  git diff --exit-code apps/crenshaw2-1b
 ./subx run apps/crenshaw2-1b test
 echo
 test `uname` = 'Linux'  &&  {
@@ -172,7 +172,7 @@ test `uname` = 'Linux'  &&  {
 
 echo hex
 ./subx translate 0*.subx apps/hex.subx  -o apps/hex
-[ "$1" != record ]  &&  git diff --quiet apps/hex
+[ "$1" != record ]  &&  git diff --exit-code apps/hex
 ./subx run apps/hex test
 echo
 test `uname` = 'Linux'  &&  {
@@ -182,7 +182,7 @@ test `uname` = 'Linux'  &&  {
 
 echo pack
 ./subx translate 0*.subx apps/subx-common.subx apps/pack.subx  -o apps/pack
-[ "$1" != record ]  &&  git diff --quiet apps/pack
+[ "$1" != record ]  &&  git diff --exit-code apps/pack
 ./subx run apps/pack test
 echo
 test `uname` = 'Linux'  &&  {
@@ -192,7 +192,7 @@ test `uname` = 'Linux'  &&  {
 
 echo assort
 ./subx translate 0*.subx apps/subx-common.subx apps/assort.subx  -o apps/assort
-[ "$1" != record ]  &&  git diff --quiet apps/assort
+[ "$1" != record ]  &&  git diff --exit-code apps/assort
 ./subx run apps/assort test
 echo
 test `uname` = 'Linux'  &&  {
