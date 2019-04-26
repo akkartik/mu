@@ -17,6 +17,10 @@ add-two-nums:  # a : int, b : int -> EAX : int
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX (b)
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0xc/disp8        .                # copy *(EBP+12) to ECX (a)
+    01/add                          3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # b = a + b
+
 $add-two-nums:end:
     # . restore registers
     # . epilog
@@ -25,16 +29,19 @@ $add-two-nums:end:
     c3/return
 
 test-add-two-nums:
+    68/push 0xd/imm32
+    68/push 0x1b/imm32
     # EAX = add-two-nums(13, 27)
+    e8/call add-two-nums/disp32
     # check-ints-equal(EAX, 40, msg)
     # . . push args
     68/push  "F - test-add-two-nums"/imm32
-    68/push  40/imm32
+    68/push  0x28/imm32
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32         # add to ESP
     # . end
     c3/return
 
