@@ -39,7 +39,51 @@ write:  # f : fd or (address stream), s : (address array byte) -> <void>
 $write:fake:
     # otherwise, treat 'f' as a stream to append to
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+
+    # EAX = s
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         0/r32/EAX   0xc/disp8         .               # copy *(EBP+12) to EAX
+
+    # push s (arg 3)
+    50/push-EAX
+
+    # EDX = f
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
+
+    # ECX = f->length
+    8b/copy                         1/mod/*+disp8   2/rm32/EDX    .           .                         1/r32/ECX   8/disp8         .                 # copy *(EDX+8) to ECX
+
+    # ECX = &f->data[f->length]
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    2/base/EDX  1/index/ECX   .           1/r32/ECX   0xc/disp8        .                 # copy EDX+ECX+12 to ECX
+
+    # push &f->data[f->length] (arg 2)
+    51/push-ECX
+
+    # EDX = f->write
+    8b/copy                         0/mod/indirect  2/rm32/EDX    .           .                         1/r32/EDX   .               .                 # copy *(EDX) to ECX
+
+    # ECX = &f->data[f->write]
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    2/base/EDX  1/index/ECX   .           1/r32/ECX   0xc/disp8        .                 # copy EDX+ECX+12 to ECX
+
+    # push &f->data[f->write] (arg 1)
+    51/push-ECX
+
+    # EAX = _append-3(&f->data[f->write], &f->data[f->length], s)
+    e8/call _append-3/disp32
+
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+
+    # f->write += EAX
+    01/add                          0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # add EAX to *EDX
+
     # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
+
 $write:end:
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
