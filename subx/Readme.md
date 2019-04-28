@@ -17,7 +17,7 @@ SubX is designed:
 It requires a Unix-like environment with a C++ compiler (Linux or BSD or Mac
 OS). Running `subx` will transparently compile it as necessary.
 
-[![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
+[![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
 
 You can generate native ELF binaries with it that run on a bare Linux
 kernel. No other dependencies needed.
