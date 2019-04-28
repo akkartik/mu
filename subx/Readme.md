@@ -526,32 +526,9 @@ stack, at the OS syscall level. The idea is that every syscall that interacts
 with hardware (and so the environment) should be *dependency injected* so that
 it's possible to insert fake hardware in tests.
 
-The hypothesis is that designing the entire system to be testable from day 1
-and from the ground up would radically impact the culture of the eco-system in
-a way that no bolted-on tool or service at higher levels can replicate:
-
-* Tests would make it easier to write programs that can be easily understood
-  by newcomers.
-
-* More broad-based understanding would lead to more forks.
-
-* Tests would make it easy to share code across forks. Copy the tests over,
-  and then copy code over and polish it until the tests pass. Manual work, but
-  tractable and without major risks.
-
-* The community would gain a diversified portfolio of forks for each program,
-  a “wavefront” of possible combinations of features and alternative
-  implementations of features. Application writers who wrote thorough tests
-  for their apps (something they just can’t do today) would be able to bounce
-  around between forks more easily without getting locked in to a single one
-  as currently happens.
-
-* There would be a stronger culture of reviewing the code for programs you use
-  or libraries you depend on. [More eyeballs would make more bugs shallow.](https://en.wikipedia.org/wiki/Linus%27s_Law)
-
 But those are big goals. Here are the syscalls I have so far:
 
-1. `write`: takes two arguments, a file `f` and an address to array `s`.
+* `write`: takes two arguments, a file `f` and an address to array `s`.
 
   Comparing this interface with the Unix `write()` syscall shows two benefits:
 
@@ -562,7 +539,7 @@ But those are big goals. Here are the syscalls I have so far:
      SubX's wrapper keeps the two together to increase the chances that we
      never accidentally go out of array bounds.
 
-1. `read`: takes two arguments, a file `f` and an address to stream `s`. Reads
+* `read`: takes two arguments, a file `f` and an address to stream `s`. Reads
   as much data from `f` as can fit in (the free space of) `s`.
 
   Like with `write()`, this wrapper around the Unix `read()` syscall adds the
@@ -573,7 +550,7 @@ But those are big goals. Here are the syscalls I have so far:
   to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/subx/058read.subx.html)
   for a discussion of alternative interfaces.
 
-1. `stop`: takes two arguments:
+* `stop`: takes two arguments:
   - `ed` is an address to an _exit descriptor_. Exit descriptors allow us to
     `exit()` the program in production, but return to the test harness within
     tests. That allows tests to make assertions about when `exit()` is called.
@@ -582,13 +559,13 @@ But those are big goals. Here are the syscalls I have so far:
   For more details on exit descriptors and how to create one, see [the
   comments before the implementation](http://akkartik.github.io/mu/html/subx/057stop.subx.html).
 
-1. `new-segment`
+* `new-segment`
 
   Allocates a whole new segment of memory for the program, discontiguous with
   both existing code and data (heap) segments. Just a more opinionated form of
   [`mmap`](http://man7.org/linux/man-pages/man2/mmap.2.html).
 
-1. `allocate`: takes two arguments, an address to allocation-descriptor `ad`
+* `allocate`: takes two arguments, an address to allocation-descriptor `ad`
   and an integer `n`
 
   Allocates a contiguous range of memory that is guaranteed to be exclusively
@@ -601,7 +578,7 @@ But those are big goals. Here are the syscalls I have so far:
   management, where a sub-system gets a chunk of memory and further parcels it
   out to individual allocations. Particularly helpful for (surprise) tests.
 
-1. ... _(to be continued)_
+* ... _(to be continued)_
 
 I will continue to import syscalls over time from [the old Mu VM in the parent
 directory](https://github.com/akkartik/mu), which has experimented with
@@ -692,6 +669,32 @@ from a slice:
 
 * `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `EAX`)
 * `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `EAX`)
+
+## Conclusion
+
+The hypothesis of Mu and SubX is that designing the entire system to be
+testable from day 1 and from the ground up would radically impact the culture
+of the eco-system in a way that no bolted-on tool or service at higher levels
+can replicate:
+
+* Tests would make it easier to write programs that can be easily understood
+  by newcomers.
+
+* More broad-based understanding would lead to more forks.
+
+* Tests would make it easy to share code across forks. Copy the tests over,
+  and then copy code over and polish it until the tests pass. Manual work, but
+  tractable and without major risks.
+
+* The community would gain a diversified portfolio of forks for each program,
+  a “wavefront” of possible combinations of features and alternative
+  implementations of features. Application writers who wrote thorough tests
+  for their apps (something they just can’t do today) would be able to bounce
+  around between forks more easily without getting locked in to a single one
+  as currently happens.
+
+* There would be a stronger culture of reviewing the code for programs you use
+  or libraries you depend on. [More eyeballs would make more bugs shallow.](https://en.wikipedia.org/wiki/Linus%27s_Law)
 
 ## Resources
 
