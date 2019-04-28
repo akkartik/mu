@@ -305,7 +305,7 @@ void run_one_instruction() {
   }
   uint32_t inst_start_address = EIP;
   op = next();
-  trace(Callstack_depth, "run") << "0x" << HEXWORD << inst_start_address << " opcode: " << HEXBYTE << NUM(op) << end();
+  trace(Callstack_depth+1, "run") << "0x" << HEXWORD << inst_start_address << " opcode: " << HEXBYTE << NUM(op) << end();
   switch (op) {
   case 0xf4:  // hlt
     EIP = End_of_program;
@@ -369,7 +369,7 @@ inline uint8_t next() {
 
 void dump_registers() {
   ostringstream out;
-  out << "registers: ";
+  out << "registers before: ";
   for (int i = 0;  i < NUM_INT_REGISTERS;  ++i) {
     if (i > 0) out << "; ";
     out << "  " << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;

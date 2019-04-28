@@ -138,6 +138,8 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
   int current_byte = 0;
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     const line& inst = code.lines.at(i);
+    if (Source_lines_file.is_open() && !inst.original.empty() && /*not a label*/ *inst.words.at(0).data.rbegin() != ':')
+      Source_lines_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << inst.original << '\n';
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       const word& curr = inst.words.at(j);
       // hack: if we have any operand metadata left after previous transforms,
@@ -185,6 +187,7 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
 :(before "End Globals")
 bool Dump_debug_info = false;  // currently used only by 'subx translate'
 ofstream Labels_file;
+ofstream Source_lines_file;
 :(before "End Commandline Options")
 else if (is_equal(*arg, "--debug")) {
   Dump_debug_info = true;
@@ -195,10 +198,14 @@ else if (is_equal(*arg, "--debug")) {
 if (Dump_debug_info) {
   cerr << "saving address->label information to 'labels'\n";
   Labels_file.open("labels");
+  cerr << "saving address->source information to 'source_lines'\n";
+  Source_lines_file.open("source_lines");
 }
 :(before "End subx translate")
-if (Dump_debug_info)
+if (Dump_debug_info) {
   Labels_file.close();
+  Source_lines_file.close();
+}
 
 :(code)
 void drop_labels(segment& code) {

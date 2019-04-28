@@ -104,6 +104,7 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
   istringstream in(line_data);
   in >> std::noskipws;
   line result;
+  result.original = line_data;
   // add tokens (words or strings) one by one
   while (has_data(in)) {
     skip_whitespace(in);

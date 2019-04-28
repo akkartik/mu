@@ -429,16 +429,22 @@ void render() {
     if (!contains_key(Trace_index, screen_row)) break;
     trace_line& curr_line = Trace_stream->past_lines.at(get(Trace_index, screen_row));
     ostringstream out;
-    out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
     if (screen_row < tb_height()-1) {
       int delta = lines_hidden(screen_row);
       // home-brew escape sequence for red
       if (delta > 1) {
         if (delta > 999) out << static_cast<char>(1);
-        out << " (" << delta << ")";
+        out << std::setw(6) << delta << "| ";
         if (delta > 999) out << static_cast<char>(2);
       }
+      else {
+        out << "        ";
+      }
     }
+    else {
+      out << "        ";
+    }
+    out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
     render_line(screen_row, out.str(), screen_row == Display_row);
   }
   // clear rest of screen
@@ -467,8 +473,8 @@ void render_line(int screen_row, const string& s, bool cursor_line) {
     char c = s.at(col+Left_of_screen);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
     // escapes. hack: can't start a line with them.
-    if (c == '\1') { color = /*red*/1;  c = ' '; }
-    if (c == '\2') { color = TB_WHITE;  c = ' '; }
+    if (c == '\1') { color = /*red*/1;  continue; }
+    if (c == '\2') { color = TB_WHITE;  continue; }
     if (in_range(highlight_ranges, col+Left_of_screen))
       tb_print(c, TB_BLACK, /*yellow*/11);
     else

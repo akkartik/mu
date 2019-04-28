@@ -6,11 +6,13 @@
 
 :(before "End Globals")
 map</*address*/uint32_t, string> Symbol_name;  // used only by 'subx run'
+map</*address*/uint32_t, string> Source_line;  // used only by 'subx run'
 :(before "End --debug Settings")
-load_map("labels");
+load_labels();
+load_source_lines();
 :(code)
-void load_map(const string& map_filename) {
-  ifstream fin(map_filename.c_str());
+void load_labels() {
+  ifstream fin("labels");
   fin >> std::hex;
   while (has_data(fin)) {
     uint32_t addr = 0;
@@ -21,9 +23,43 @@ void load_map(const string& map_filename) {
   }
 }
 
+void load_source_lines() {
+  ifstream fin("source_lines");
+  fin >> std::hex;
+  while (has_data(fin)) {
+    uint32_t addr = 0;
+    fin >> addr;
+    string line;
+    getline(fin, line);
+    put(Source_line, addr, hacky_squeeze_out_whitespace(line));
+  }
+}
+
 :(after "Run One Instruction")
 if (contains_key(Symbol_name, EIP))
   trace(Callstack_depth, "run") << "== label " << get(Symbol_name, EIP) << end();
+if (contains_key(Source_line, EIP))
+  trace(Callstack_depth, "run") << "0x" << HEXWORD << EIP << ": " << get(Source_line, EIP) << end();
+else
+  // no source line info; do what you can
+  trace(Callstack_depth, "run") << "0x" << HEXWORD << EIP << ": " << debug_info(EIP) << end();
+
+:(code)
+string debug_info(uint32_t inst_address) {
+  uint8_t op = read_mem_u8(EIP);
+  if (op != 0xe8) {
+    ostringstream out;
+    out << HEXBYTE << NUM(op);
+    return out.str();
+  }
+  int32_t offset = read_mem_i32(EIP+/*skip op*/1);
+  uint32_t next_eip = EIP+/*inst length*/5+offset;
+  if (contains_key(Symbol_name, next_eip))
+    return "e8/call "+get(Symbol_name, next_eip);
+  ostringstream out;
+  out << "e8/call 0x" << HEXWORD << next_eip;
+  return out.str();
+}
 
 //: If a label starts with '$watch-', make a note of the effective address
 //: computed by the next instruction. Start dumping out its contents to the
@@ -53,4 +89,45 @@ if (contains_key(Symbol_name, EIP) && starts_with(get(Symbol_name, EIP), "$watch
 if (!Watch_this_effective_address.empty()) {
   dbg << "now watching " << HEXWORD << addr << " for " << Watch_this_effective_address << end();
   put(Watch_points, Watch_this_effective_address, addr);
+}
+
+//: helpers
+
+:(code)
+string hacky_squeeze_out_whitespace(const string& s) {
+  // strip whitespace at start
+  string::const_iterator first = s.begin();
+  while (first != s.end() && isspace(*first))
+    ++first;
+  if (first == s.end()) return "";
+
+  // strip whitespace at end
+  string::const_iterator last = --s.end();
+  while (last != s.begin() && isspace(*last))
+    --last;
+  ++last;
+
+  // replace runs of spaces/dots with single space until comment or string
+  // TODO:
+  //   leave alone dots not surrounded by whitespace
+  //   leave alone '#' within word
+  //   leave alone '"' within word
+  //   squeeze spaces after end of string
+  ostringstream out;
+  bool previous_was_space = false;
+  bool in_comment_or_string = false;
+  for (string::const_iterator curr = first;  curr != last;  ++curr) {
+    if (in_comment_or_string)
+      out << *curr;
+    else if (isspace(*curr) || *curr == '.')
+      previous_was_space = true;
+    else {
+      if (previous_was_space)
+        out << ' ';
+      out << *curr;
+      previous_was_space = false;
+      if (*curr == '#' || *curr == '"') in_comment_or_string = true;
+    }
+  }
+  return out.str();
 }
