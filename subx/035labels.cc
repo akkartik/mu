@@ -168,8 +168,8 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
           raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
         if (j > 0)
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
-        if (Map_file.is_open())
-          Map_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << label << '\n';
+        if (Labels_file.is_open())
+          Labels_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << label << '\n';
         if (contains_key(byte_index, label) && label != "Entry") {
           raise << "duplicate label '" << label << "'\n" << end();
           return;
@@ -183,20 +183,22 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
 }
 
 :(before "End Globals")
-bool Dump_map = false;  // currently used only by 'subx translate'
-ofstream Map_file;
+bool Dump_debug_info = false;  // currently used only by 'subx translate'
+ofstream Labels_file;
 :(before "End Commandline Options")
-else if (is_equal(*arg, "--map")) {
-  Dump_map = true;
-  // End --map Settings
+else if (is_equal(*arg, "--debug")) {
+  Dump_debug_info = true;
+  // End --debug Settings
 }
-//: wait to open "map" for writing until we're sure we aren't trying to read it
+//: wait to open "labels" for writing until we're sure we aren't trying to read it
 :(after "Begin subx translate")
-if (Dump_map)
-  Map_file.open("map");
+if (Dump_debug_info) {
+  cerr << "saving address->label information to 'labels'\n";
+  Labels_file.open("labels");
+}
 :(before "End subx translate")
-if (Dump_map)
-  Map_file.close();
+if (Dump_debug_info)
+  Labels_file.close();
 
 :(code)
 void drop_labels(segment& code) {

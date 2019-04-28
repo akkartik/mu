@@ -41,8 +41,9 @@ messages.
 Emulated runs generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
 
   ```sh
-  $ ./subx --map translate examples/factorial.subx -o examples/factorial
-  $ ./subx --map --trace run examples/factorial
+  $ ./subx --debug translate examples/factorial.subx -o examples/factorial
+  saving address->label information to 'labels'
+  $ ./subx --debug --trace run examples/factorial
   saving trace to 'last_run'
   $ ../browse_trace/browse_trace last_run  # text-mode debugger UI
   ```
@@ -408,12 +409,12 @@ rudimentary but hopefully still workable toolkit:
 * As a further refinement, it is possible to render label names in the trace
   by adding a second flag to both the `translate` and `run` commands:
   ```
-  $ ./subx --map translate input.subx -o binary
-  $ ./subx --map --trace run binary arg1 arg2  2>trace
+  $ ./subx --debug translate input.subx -o binary
+  $ ./subx --debug --trace run binary arg1 arg2  2>trace
   ```
-  `subx --map translate` emits a mapping from label to address in a file
-  called `map`. `subx --map --trace run` reads in the `map` file at the start
-  and prints out any matching label name as it traces each instruction
+  `subx --debug translate` emits a mapping from label to address in a file
+  called `labels`. `subx --debug --trace run` reads in the `labels` file at
+  the start and prints out any matching label name as it traces each instruction
   executed.
 
   Here's a sample of what a trace looks like, with a few boxes highlighted:

@@ -54,8 +54,8 @@ void compute_addresses_for_global_variables(const segment& s, map<string, uint32
         if (trace_contains_errors()) return;
         if (j > 0)
           raise << "'" << to_string(inst) << "': global variable names can only be the first word in a line.\n" << end();
-        if (Map_file.is_open())
-          Map_file << "0x" << HEXWORD << current_address << ' ' << variable << '\n';
+        if (Labels_file.is_open())
+          Labels_file << "0x" << HEXWORD << current_address << ' ' << variable << '\n';
         if (contains_key(address, variable)) {
           raise << "duplicate global '" << variable << "'\n" << end();
           return;
