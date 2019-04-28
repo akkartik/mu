@@ -25,14 +25,6 @@ void load_map(const string& map_filename) {
 if (contains_key(Symbol_name, EIP))
   trace(Callstack_depth, "run") << "== label " << get(Symbol_name, EIP) << end();
 
-//: make calls in particular more salient
-:(before "End Trace Call Instruction")
-// at this point we've skipped past the e8 opcode, but not the offset operand
-int32_t offset = read_mem_i32(EIP);
-uint32_t next_eip = EIP+offset+4;
-if (contains_key(Symbol_name, next_eip))
-  return "/call "+get(Symbol_name, next_eip);
-
 //: If a label starts with '$watch-', make a note of the effective address
 //: computed by the next instruction. Start dumping out its contents to the
 //: trace after every subsequent instruction.

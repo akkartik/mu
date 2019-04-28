@@ -305,7 +305,7 @@ void run_one_instruction() {
   }
   uint32_t inst_start_address = EIP;
   op = next();
-  trace(Callstack_depth, "run") << "0x" << HEXWORD << inst_start_address << " opcode: " << HEXBYTE << NUM(op) << call_label(op) << end();
+  trace(Callstack_depth, "run") << "0x" << HEXWORD << inst_start_address << " opcode: " << HEXBYTE << NUM(op) << end();
   switch (op) {
   case 0xf4:  // hlt
     EIP = End_of_program;
@@ -376,13 +376,6 @@ void dump_registers() {
   }
   out << " -- SF: " << SF << "; ZF: " << ZF << "; OF: " << OF;
   trace(Callstack_depth+1, "run") << out.str() << end();
-}
-
-// debugging info from a later layer
-string call_label(uint8_t op) {
-  if (op != 0xe8) return "";
-  // End Trace Call Instruction
-  return "/call";
 }
 
 //: start tracking supported opcodes
