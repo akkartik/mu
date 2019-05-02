@@ -138,6 +138,8 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
   int current_byte = 0;
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     const line& inst = code.lines.at(i);
+    if (Source_lines_file.is_open() && !inst.original.empty() && /*not a label*/ *inst.words.at(0).data.rbegin() != ':')
+      Source_lines_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << inst.original << '\n';
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
       const word& curr = inst.words.at(j);
       // hack: if we have any operand metadata left after previous transforms,
@@ -168,8 +170,8 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
           raise << "'" << to_string(inst) << "': label definition (':') not allowed in operand\n" << end();
         if (j > 0)
           raise << "'" << to_string(inst) << "': labels can only be the first word in a line.\n" << end();
-        if (Map_file.is_open())
-          Map_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << label << '\n';
+        if (Labels_file.is_open())
+          Labels_file << "0x" << HEXWORD << (code.start + current_byte) << ' ' << label << '\n';
         if (contains_key(byte_index, label) && label != "Entry") {
           raise << "duplicate label '" << label << "'\n" << end();
           return;
@@ -183,20 +185,27 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
 }
 
 :(before "End Globals")
-bool Dump_map = false;  // currently used only by 'subx translate'
-ofstream Map_file;
+bool Dump_debug_info = false;  // currently used only by 'subx translate'
+ofstream Labels_file;
+ofstream Source_lines_file;
 :(before "End Commandline Options")
-else if (is_equal(*arg, "--map")) {
-  Dump_map = true;
-  // End --map Settings
+else if (is_equal(*arg, "--debug")) {
+  Dump_debug_info = true;
+  // End --debug Settings
 }
-//: wait to open "map" for writing until we're sure we aren't trying to read it
+//: wait to open "labels" for writing until we're sure we aren't trying to read it
 :(after "Begin subx translate")
-if (Dump_map)
-  Map_file.open("map");
+if (Dump_debug_info) {
+  cerr << "saving address->label information to 'labels'\n";
+  Labels_file.open("labels");
+  cerr << "saving address->source information to 'source_lines'\n";
+  Source_lines_file.open("source_lines");
+}
 :(before "End subx translate")
-if (Dump_map)
-  Map_file.close();
+if (Dump_debug_info) {
+  Labels_file.close();
+  Source_lines_file.close();
+}
 
 :(code)
 void drop_labels(segment& code) {

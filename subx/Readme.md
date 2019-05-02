@@ -2,16 +2,22 @@
 
 SubX is a simple, minimalist stack for programming your computer.
 
-  ```
+  ```sh
   $ git clone https://github.com/akkartik/mu
   $ cd mu/subx
   $ ./subx  # print out a help message
   ```
 
+SubX is designed:
+
+* to explore ways to turn arbitrary manual tests into reproducible automated tests,
+* to be easy to implement in itself, and
+* to help learn and teach the x86 instruction set.
+
 It requires a Unix-like environment with a C++ compiler (Linux or BSD or Mac
 OS). Running `subx` will transparently compile it as necessary.
 
-[![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
+[![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
 
 You can generate native ELF binaries with it that run on a bare Linux
 kernel. No other dependencies needed.
@@ -35,8 +41,10 @@ messages.
 Emulated runs generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
 
   ```sh
-  $ ./subx --map translate examples/factorial.subx -o examples/factorial
-  $ ./subx --map --trace run examples/factorial
+  $ ./subx --debug translate examples/factorial.subx -o examples/factorial
+  saving address->label information to 'labels'
+  saving address->source information to 'source_lines'
+  $ ./subx --debug --trace run examples/factorial
   saving trace to 'last_run'
   $ ../browse_trace/browse_trace last_run  # text-mode debugger UI
   ```
@@ -402,12 +410,12 @@ rudimentary but hopefully still workable toolkit:
 * As a further refinement, it is possible to render label names in the trace
   by adding a second flag to both the `translate` and `run` commands:
   ```
-  $ ./subx --map translate input.subx -o binary
-  $ ./subx --map --trace run binary arg1 arg2  2>trace
+  $ ./subx --debug translate input.subx -o binary
+  $ ./subx --debug --trace run binary arg1 arg2  2>trace
   ```
-  `subx --map translate` emits a mapping from label to address in a file
-  called `map`. `subx --map --trace run` reads in the `map` file at the start
-  and prints out any matching label name as it traces each instruction
+  `subx --debug translate` emits a mapping from label to address in a file
+  called `labels`. `subx --debug --trace run` reads in the `labels` file at
+  the start and prints out any matching label name as it traces each instruction
   executed.
 
   Here's a sample of what a trace looks like, with a few boxes highlighted:
@@ -513,8 +521,14 @@ trace, or if you have questions or complaints.
 
 ### 'system calls'
 
-A major goal of SubX is testable wrappers for operating system syscalls.
-Here's what I've built so far:
+As I said at the top, a primary design goal of SubX (and Mu more broadly) is
+to explore ways to turn arbitrary manual tests into reproducible automated
+tests. SubX aims for this goal by baking testable interfaces deep into the
+stack, at the OS syscall level. The idea is that every syscall that interacts
+with hardware (and so the environment) should be *dependency injected* so that
+it's possible to insert fake hardware in tests.
+
+But those are big goals. Here are the syscalls I have so far:
 
 * `write`: takes two arguments, a file `f` and an address to array `s`.
 
@@ -567,6 +581,10 @@ Here's what I've built so far:
   out to individual allocations. Particularly helpful for (surprise) tests.
 
 * ... _(to be continued)_
+
+I will continue to import syscalls over time from [the old Mu VM in the parent
+directory](https://github.com/akkartik/mu), which has experimented with
+interfaces for the screen, keyboard, mouse, disk and network.
 
 ### primitives built atop system calls
 
@@ -653,6 +671,32 @@ from a slice:
 
 * `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `EAX`)
 * `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `EAX`)
+
+## Conclusion
+
+The hypothesis of Mu and SubX is that designing the entire system to be
+testable from day 1 and from the ground up would radically impact the culture
+of the eco-system in a way that no bolted-on tool or service at higher levels
+can replicate:
+
+* Tests would make it easier to write programs that can be easily understood
+  by newcomers.
+
+* More broad-based understanding would lead to more forks.
+
+* Tests would make it easy to share code across forks. Copy the tests over,
+  and then copy code over and polish it until the tests pass. Manual work, but
+  tractable and without major risks.
+
+* The community would gain a diversified portfolio of forks for each program,
+  a “wavefront” of possible combinations of features and alternative
+  implementations of features. Application writers who wrote thorough tests
+  for their apps (something they just can’t do today) would be able to bounce
+  around between forks more easily without getting locked in to a single one
+  as currently happens.
+
+* There would be a stronger culture of reviewing the code for programs you use
+  or libraries you depend on. [More eyeballs would make more bugs shallow.](https://en.wikipedia.org/wiki/Linus%27s_Law)
 
 ## Resources
 
