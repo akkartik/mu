@@ -82,7 +82,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #   write-stream(new-data-segment, "== data\n")
     #   while true
     #     clear-stream(line)
-    #     read-line(in, line)
+    #     read-line-buffered(in, line)
     #     if (line->write == 0) break               # end of file
     #     while true
     #       var word-slice = next-word(line)
@@ -93,7 +93,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #       if slice-starts-with?(word-slice, '"')  # string literal <== what we're here for
     #         process-string-literal(word-slice, out, new-data-segment)
     #       else
-    #         write-slice(out, word-slice)
+    #         write-slice-buffered(out, word-slice)
     #   write-stream-data(out, new-data-segment)
     #   flush(out)
     #
@@ -145,12 +145,12 @@ $convert:line-loop:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # read-line(in, line)
+    # read-line-buffered(in, line)
     # . . push args
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  read-line/disp32
+    e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $convert:check0:
@@ -204,12 +204,12 @@ $convert:string-literal:
     # continue
     eb/jump  $convert:next-word/disp8
 $convert:regular-word:
-    # write-slice(out, word-slice)
+    # write-slice-buffered(out, word-slice)
     # . . push args
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  write-slice/disp32
+    e8/call  write-slice-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # fall through

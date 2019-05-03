@@ -428,7 +428,7 @@ read-segments:  # in : (address buffered-file), table : (address stream row)
     #   var line = new-stream(512, 1)
     #   while true
     #     clear-stream(line)
-    #     read-line(in, line)
+    #     read-line-buffered(in, line)
     #     if (line->write == 0) break             # end of file
     #     var word-slice = next-word(line)
     #     if slice-empty?(word-slice)             # whitespace
@@ -479,12 +479,12 @@ $read-segments:loop:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # read-line(in, line)
+    # read-line-buffered(in, line)
     # . . push args
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  read-line/disp32
+    e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $read-segments:check0:
@@ -566,12 +566,12 @@ $read-segments:check-for-segment-header:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     52/push-EDX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -630,12 +630,12 @@ $read-segments:check-for-segment-header:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     52/push-EDX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)

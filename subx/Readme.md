@@ -627,16 +627,18 @@ allocated memory for it.)_
   - Can also be used to cat one stream into another.
   - Will abort the entire program if there isn't enough room.
 * `write-buffered`: string -> buffered-file
-* `write-slice`: slice -> buffered-file
+* `write-slice-buffered`: slice -> buffered-file
 * `flush`: buffered-file
-* `print-byte`:  buffered-file, int
+* `write-byte-buffered`: int -> buffered-file
+* `print-byte-buffered`: int -> buffered-file
+  - textual representation in hex
 
 #### reading from disk
 * `read`: file -> stream
   - Can also be used to cat one stream into another.
   - Will silently stop reading when destination runs out of space.
-* `read-byte`: buffered-file -> byte
-* `read-line`: buffered-file -> stream
+* `read-byte-buffered`: buffered-file -> byte
+* `read-line-buffered`: buffered-file -> stream
   - Will abort the entire program if there isn't enough room.
 
 #### non-IO operations on streams

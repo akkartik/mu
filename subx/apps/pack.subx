@@ -96,7 +96,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #   var in-code? = false
     #   while true
     #     clear-stream(line)
-    #     read-line(in, line)
+    #     read-line-buffered(in, line)
     #     if (line->write == 0) break             # end of file
     #     var word-slice = next-word(line)
     #     if slice-empty?(word-slice)             # whitespace
@@ -141,12 +141,12 @@ $convert:loop:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # read-line(in, line)
+    # read-line-buffered(in, line)
     # . . push args
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  read-line/disp32
+    e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $convert:check0:
@@ -218,12 +218,12 @@ $convert:check2:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     52/push-EDX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -283,12 +283,12 @@ $convert:check2:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     52/push-EDX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -937,7 +937,7 @@ convert-data:  # line : (address stream byte), out : (address buffered-file) -> 
     #     if slice-empty?(word-slice)                 # end of file (maybe including trailing whitespace)
     #       break  # skip emitting some whitespace
     #     if slice-starts-with?(word-slice, "#")      # comment
-    #       write-slice(out, word-slice)
+    #       write-slice-buffered(out, word-slice)
     #       break
     #     if slice-ends-with?(word-slice, ":")        # label
     #       write-stream-data(out, line)
@@ -1012,12 +1012,12 @@ $convert-data:loop:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     51/push-ECX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -1059,12 +1059,12 @@ $convert-data:check-for-comment:
     3d/compare-EAX-and  0x23/imm32/hash
     75/jump-if-not-equal  $convert-data:check-for-label/disp8
 $convert-data:comment:
-    # write-slice(out, word-slice)
+    # write-slice-buffered(out, word-slice)
     # . . push args
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  write-slice/disp32
+    e8/call  write-slice-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # break
@@ -1999,14 +1999,14 @@ emit-opcodes:  # line : (address stream byte), out : (address buffered-file) -> 
     #   var op1 = next-word(line)
     #   if (slice-empty?(op1) || slice-starts-with?(op1, "#")) return
     #   op1 = next-token-from-slice(op1->start, op1->end, "/")
-    #   write-slice(out, op1)
+    #   write-slice-buffered(out, op1)
     #   if !slice-equal?(op1, "0f") && !slice-equal?(op1, "f2") && !slice-equal?(op1, "f3")
     #     return
     #
     #   var op2 = next-word(line)
     #   if (slice-empty?(op2) || slice-starts-with?(op2, "#")) return
     #   op2 = next-token-from-slice(op2->start, op2->end, "/")
-    #   write-slice(out, op2)
+    #   write-slice-buffered(out, op2)
     #   if slice-equal?(op1, "0f")
     #     return
     #   if !slice-equal?(op2, "0f")
@@ -2015,7 +2015,7 @@ emit-opcodes:  # line : (address stream byte), out : (address buffered-file) -> 
     #   var op3 = next-word(line)
     #   if (slice-empty?(op3) || slice-starts-with?(op3, "#")) return
     #   op3 = next-token-from-slice(op3->start, op3->end, "/")
-    #   write-slice(out, op3)
+    #   write-slice-buffered(out, op3)
     #
     # . prolog
     55/push-EBP
@@ -2079,12 +2079,12 @@ $emit-opcodes:op1:
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # write-slice(out, op1)
+    # write-slice-buffered(out, op1)
     # . . push args
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  write-slice/disp32
+    e8/call  write-slice-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # write-buffered(out, " ")
@@ -2172,12 +2172,12 @@ $emit-opcodes:op2:
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # write-slice(out, op2)
+    # write-slice-buffered(out, op2)
     # . . push args
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  write-slice/disp32
+    e8/call  write-slice-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # write-buffered(out, " ")
@@ -2251,12 +2251,12 @@ $emit-opcodes:op3:
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # write-slice(out, op3)
+    # write-slice-buffered(out, op3)
     # . . push args
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  write-slice/disp32
+    e8/call  write-slice-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # write-buffered(out, " ")
@@ -2388,12 +2388,12 @@ $emit-modrm:loop:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     51/push-ECX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -2699,12 +2699,12 @@ $emit-sib:loop:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     51/push-ECX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -2964,12 +2964,12 @@ $emit-disp:loop:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     51/push-ECX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -3185,12 +3185,12 @@ $emit-imm:loop:
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write-slice(Stderr, word-slice)
+#?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
 #?     51/push-ECX
 #?     68/push  Stderr/imm32
 #?     # . . call
-#?     e8/call  write-slice/disp32
+#?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . flush(Stderr)
@@ -6373,7 +6373,7 @@ emit:  # out : (address buffered-file), word : (address slice), width : int -> <
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    # if (is-valid-name?(datum)) write-slice(out, word) and return
+    # if (is-valid-name?(datum)) write-slice-buffered(out, word) and return
     # . EAX = is-valid-name?(name)
     # . . push args
     57/push-EDI
@@ -6385,12 +6385,12 @@ emit:  # out : (address buffered-file), word : (address slice), width : int -> <
     3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit:hex-int/disp8
 $emit:name:
-    # . write-slice(out, word)
+    # . write-slice-buffered(out, word)
     # . . push args
     56/push-ESI
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  write-slice/disp32
+    e8/call  write-slice-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . write-buffered(out, " ")
@@ -7054,20 +7054,20 @@ $emit-hex:loop:
     # if (curr >= width) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     7d/jump-if-greater-or-equal  $emit-hex:end/disp8
-    # print-byte(out, EBX)
+    # print-byte-buffered(out, EBX)
     # . . push args
     53/push-EBX
     57/push-EDI
     # . . call
-    e8/call  print-byte/disp32
+    e8/call  print-byte-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # write-byte(out, ' ')
+    # write-byte-buffered(out, ' ')
     # . . push args
     68/push  0x20/imm32/space
     57/push-EDI
     # . . call
-    e8/call  write-byte/disp32
+    e8/call  write-byte-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # EBX = EBX >> 8
