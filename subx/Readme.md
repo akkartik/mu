@@ -626,6 +626,10 @@ allocated memory for it.)_
 * `write-stream`: stream -> file
   - Can also be used to cat one stream into another.
   - Will abort the entire program if there isn't enough room.
+* `append-byte`: int -> stream
+  - Will abort the entire program if there isn't enough room.
+* `append-byte-hex`: int -> stream
+  - Will abort the entire program if there isn't enough room.
 * `write-buffered`: string -> buffered-file
 * `write-slice-buffered`: slice -> buffered-file
 * `flush`: buffered-file

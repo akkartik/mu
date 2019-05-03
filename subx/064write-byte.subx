@@ -103,8 +103,6 @@ $flush:end:
     5d/pop-to-EBP
     c3/return
 
-# - tests
-
 test-write-byte-buffered-single:
     # - check that write-byte-buffered writes to first byte of 'file'
     # setup
@@ -200,6 +198,85 @@ test-write-byte-buffered-multiple-flushes:
     # . . push args
     68/push  "F - test-write-byte-buffered-multiple-flushes: 1"/imm32
     68/push  "abcdefg"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+# - variant without buffering
+
+# Write lower byte of 'n' to 'f'.
+append-byte:  # f : (address stream), n : int -> <void>
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    57/push-EDI
+    # EDI = f
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # ECX = f->write
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
+    # if (f->write >= f->length) abort
+    3b/compare                      1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(EDI+8)
+    7d/jump-if-greater-or-equal  $append-byte:abort/disp8
+$append-byte:to-stream:
+    # write to stream
+    # f->data[f->write] = LSB(n)
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/AL    0xc/disp8       .                 # copy byte at *(EBP+12) to AL
+    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy AL to *(EDI+ECX+12)
+    # ++f->write
+    ff          0/subop/increment   0/mod/indirect  7/rm32/EDI    .           .             .           .           .               .                 # increment *EDI
+$append-byte:end:
+    # . restore registers
+    5f/pop-to-EDI
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+$append-byte:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "append-byte: out of space"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-append-byte-single:
+    # - check that append-byte writes to first byte of 'file'
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # append-byte(_test-stream, 'A')
+    # . . push args
+    68/push  0x41/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  append-byte/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "A", msg)
+    # . . push args
+    68/push  "F - test-append-byte-single"/imm32
+    68/push  "A"/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
