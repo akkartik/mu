@@ -14,6 +14,9 @@
 #?     cd/syscall  0x80/imm8
 
 print-int32-decimal:  # out : (address stream), n : int32
+    # works by generating characters from lowest to highest and pushing them
+    # to the stack, before popping them one by one into the stream
+    #
     # pseudocode:
     #   push sentinel
     #   EAX = abs(n)
@@ -57,7 +60,8 @@ print-int32-decimal:  # out : (address stream), n : int32
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     3d/compare-EAX-with  0/imm32
     7d/jump-if-greater-or-equal  $print-int32-decimal:read-loop/disp8
-    f7  3/subop/negate              3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
+$print-int32-decimal:negative:
+    f7          3/subop/negate      3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
 $print-int32-decimal:read-loop:
     # EAX, EDX = EAX / 10, EAX % 10
     99/sign-extend-EAX-into-EDX
@@ -73,6 +77,7 @@ $print-int32-decimal:read-break:
     # if (n < 0) push('-')
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       0/imm32           # compare *(EBP+12)
     7d/jump-if-greater-or-equal  $print-int32-decimal:write/disp8
+$print-int32-decimal:push-negative:
     68/push  0x2d/imm32/-
 $print-int32-decimal:write:
     # EDI = out
@@ -93,6 +98,7 @@ $print-int32-decimal:write-loop:
     # if (curr >= max) abort
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           3/r32/EBX   .               .                 # compare ECX with EBX
     7d/jump-if-greater-or-equal  $print-int32-decimal:abort/disp8
+$print-int32-decimal:write-char:
     # *curr = AL
     88/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy AL to byte at *ECX
     # ++curr
