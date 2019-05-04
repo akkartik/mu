@@ -41,7 +41,7 @@ print-int32-decimal:  # out : (address stream), n : int32
     50/push-EAX
     51/push-ECX
     52/push-EDX
-    53/push-EBX
+    57/push-EDI
     # ten/ECX = 10
     b9/copy-to-ECX  0xa/imm32
     # push sentinel
@@ -68,8 +68,8 @@ $print-int32-decimal:read-break:
     7d/jump-if-greater-or-equal  $print-int32-decimal:write/disp8
     68/push  0x2d/imm32/-
 $print-int32-decimal:write:
-    # EBX = out
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
+    # EDI = out
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
 $print-int32-decimal:write-loop:
     # pop into EAX
     58/pop-to-EAX
@@ -78,17 +78,17 @@ $print-int32-decimal:write-loop:
     74/jump-if-equal  $print-int32-decimal:end/disp8
     # out->data[out->write] = AL
     # . ECX = out->write
-    8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           1/r32/ECX   .               .                 # ECX = *EBX
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
     # . ECX = &out->data[out->write]
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EBX+ECX+12 to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EBX+ECX+12 to ECX
     # . out->data[out->write] = AL
     88/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy AL to byte at *ECX
     # out->write++
-    ff          0/subop/increment   0/mod/indirect  3/rm32/EBX    .           .             .           .           .               .                 # increment *EBX
+    ff          0/subop/increment   0/mod/indirect  7/rm32/EDI    .           .             .           .           .               .                 # increment *EDI
     eb/jump  $print-int32-decimal:write-loop/disp8
 $print-int32-decimal:end:
     # . restore registers
-    5b/pop-to-EBX
+    5f/pop-to-EDI
     5a/pop-to-EDX
     59/pop-to-ECX
     58/pop-to-EAX
