@@ -43,22 +43,18 @@ print-int32-decimal:  # out : (address stream), n : int32
     52/push-EDX
     53/push-EBX
     57/push-EDI
+    # ten/ECX = 10
+    b9/copy-to-ECX  0xa/imm32
     # push sentinel
     68/push  0/imm32/sentinel
     # EAX, negative?/EDI = abs(n), sign(n)
     bf/copy-to-EDI  0/imm32/false
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # EAX = *(EBP+12)
     3d/compare-EAX-with  0/imm32
-    7d/jump-if-greater-or-equal  $print-int32-decimal:read/disp8
+    7d/jump-if-greater-or-equal  $print-int32-decimal:read-loop/disp8
     f7  3/subop/negate              3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
     bf/copy-to-EDI  1/imm32/true
-$print-int32-decimal:read:
-    # EBX = n
-    8b/copy                         3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # EBX = EAX
 $print-int32-decimal:read-loop:
-    # EAX = EBX(n)
-    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # EAX = EBX
-    b9/copy-to-ECX  0xa/imm32
     # EAX, EDX = EAX / 10, EAX % 10
     99/sign-extend-EAX-into-EDX
     f7          7/subop/idiv        3/mod/direct    1/rm32/ECX    .           .             .           .           .               .                 # divide EDX:EAX by ECX, storing quotient in EAX and remainder in EDX
@@ -66,15 +62,12 @@ $print-int32-decimal:read-loop:
     81          0/subop/add         3/mod/direct    2/rm32/EDX    .           .             .           .           .               0x30/imm32        # add to EDX
     # push EDX
     52/push-EDX
-    # EBX = n / 10
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # EBX = EAX
     # if (EAX == 0) break
     3d/compare-EAX-and  0/imm32
     7f/jump-if-greater  $print-int32-decimal:read-loop/disp8
 $print-int32-decimal:read-break:
     # if (negative?) push('-')
-    8b/copy                         3/mod/direct    7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # EAX = EDX
-    3d/compare-EAX-and  0/imm32
+    81          7/subop/compare     3/mod/direct    7/rm32/EDI    .           .             .           .           .               0/imm32/false     # compare EDI
     74/jump-if-equal  $print-int32-decimal:write/disp8
     68/push  0x2d/imm32/-
 $print-int32-decimal:write:
