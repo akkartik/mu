@@ -25,11 +25,15 @@ print-int32-decimal:  # out : (address stream), n : int32
     #     if (EAX == 0) break
     #   if n < 0
     #     push '-'
+    #   w = out->write
+    #   curr = &out->data[out->write]
     #   while true
     #     pop into EAX
     #     if (EAX == sentinel) break
-    #     out->data[out->write] = AL
-    #     ++out->write
+    #     *curr = AL
+    #     ++curr
+    #     ++w
+    #   out->write = w
     # (based on K&R itoa: https://en.wikibooks.org/wiki/C_Programming/stdlib.h/itoa)
     # (this pseudocode contains registers because operations like division
     # require specific registers in x86)
@@ -47,7 +51,7 @@ print-int32-decimal:  # out : (address stream), n : int32
     # push sentinel
     68/push  0/imm32/sentinel
     # EAX = abs(n)
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # EAX = *(EBP+12)
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     3d/compare-EAX-with  0/imm32
     7d/jump-if-greater-or-equal  $print-int32-decimal:read-loop/disp8
     f7  3/subop/negate              3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
@@ -70,22 +74,26 @@ $print-int32-decimal:read-break:
 $print-int32-decimal:write:
     # EDI = out
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # w/EDX = out->write
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # copy *EDI to EDX
+    # curr/ECX = &out->data[out->write]
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  2/index/EDX   .           1/r32/ECX   0xc/disp8       .                 # copy EBX+EDX+12 to ECX
 $print-int32-decimal:write-loop:
     # pop into EAX
     58/pop-to-EAX
     # if (EAX == sentinel) break
     3d/compare-EAX-and  0/imm32/sentinel
-    74/jump-if-equal  $print-int32-decimal:end/disp8
-    # out->data[out->write] = AL
-    # . ECX = out->write
-    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
-    # . ECX = &out->data[out->write]
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EBX+ECX+12 to ECX
-    # . out->data[out->write] = AL
+    74/jump-if-equal  $print-int32-decimal:write-break/disp8
+    # *curr = AL
     88/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy AL to byte at *ECX
-    # out->write++
-    ff          0/subop/increment   0/mod/indirect  7/rm32/EDI    .           .             .           .           .               .                 # increment *EDI
+    # ++curr
+    41/increment-ECX
+    # ++w
+    42/increment-EDX
     eb/jump  $print-int32-decimal:write-loop/disp8
+$print-int32-decimal:write-break:
+    # out->write = w
+    89/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # copy EDX to *EDI
 $print-int32-decimal:end:
     # . restore registers
     5f/pop-to-EDI
