@@ -27,9 +27,11 @@ print-int32-decimal:  # out : (address stream), n : int32
     #     push '-'
     #   w = out->write
     #   curr = &out->data[out->write]
+    #   max = &out->data[out->length]
     #   while true
     #     pop into EAX
     #     if (EAX == sentinel) break
+    #     if (curr >= max) abort
     #     *curr = AL
     #     ++curr
     #     ++w
@@ -45,6 +47,7 @@ print-int32-decimal:  # out : (address stream), n : int32
     50/push-EAX
     51/push-ECX
     52/push-EDX
+    53/push-EBX
     57/push-EDI
     # ten/ECX = 10
     b9/copy-to-ECX  0xa/imm32
@@ -78,12 +81,18 @@ $print-int32-decimal:write:
     8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # copy *EDI to EDX
     # curr/ECX = &out->data[out->write]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  2/index/EDX   .           1/r32/ECX   0xc/disp8       .                 # copy EBX+EDX+12 to ECX
+    # max/EBX = &out->data[out->length]
+    8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           3/r32/EBX   8/disp8         .                 # copy *(EDI+8) to EBX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/EDI  3/index/EBX   .           3/r32/EBX   0xc/disp8       .                 # copy EDI+EBX+12 to EBX
 $print-int32-decimal:write-loop:
     # pop into EAX
     58/pop-to-EAX
     # if (EAX == sentinel) break
     3d/compare-EAX-and  0/imm32/sentinel
     74/jump-if-equal  $print-int32-decimal:write-break/disp8
+    # if (curr >= max) abort
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           3/r32/EBX   .               .                 # compare ECX with EBX
+    7d/jump-if-greater-or-equal  $print-int32-decimal:abort/disp8
     # *curr = AL
     88/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy AL to byte at *ECX
     # ++curr
@@ -97,6 +106,7 @@ $print-int32-decimal:write-break:
 $print-int32-decimal:end:
     # . restore registers
     5f/pop-to-EDI
+    5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
     58/pop-to-EAX
