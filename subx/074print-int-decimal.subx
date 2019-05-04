@@ -14,24 +14,25 @@
 #?     cd/syscall  0x80/imm8
 
 print-int32-decimal:  # out : (address stream), n : int32
-    # PSEUDOCODE
-    # based on K&R itoa: https://en.wikibooks.org/wiki/C_Programming/stdlib.h/itoa
-    # push SENTINAL
-    # if n >= 0:
-    #   goto digit-encode
-    # else:
-    #   n = -n
-    #   negative = true
-    # while true:
-    #   push n % 10 + '0'
-    #   n = n / 10
-    #   break if n == 0
-    # if negative:
-    #   push '-'
-    # while true:
-    #   EAX = pop
-    #   break if EAX == SENTINAL
-    #   out->data[out->write++] = EAX
+    # pseudocode:
+    #   push sentinel
+    #   EAX, negative? = abs(n), sign(n)
+    #   while true
+    #     sign-extend EAX into EDX
+    #     EAX, EDX = EAX/10, EAX%10
+    #     EDX += '0'
+    #     push EDX
+    #     if (EAX == 0) break
+    #   if negative?
+    #     push '-'
+    #   while true
+    #     pop into EAX
+    #     if (EAX == sentinel) break
+    #     out->data[out->write] = AL
+    #     ++out->write
+    # (based on K&R itoa: https://en.wikibooks.org/wiki/C_Programming/stdlib.h/itoa)
+    # (this pseudocode contains registers because operations like division
+    # require specific registers in x86)
     #
     # . prolog
     55/push-EBP
@@ -42,86 +43,60 @@ print-int32-decimal:  # out : (address stream), n : int32
     52/push-EDX
     53/push-EBX
     57/push-EDI
-
-    # negative = false
-    bf/copy-to-EDI  0/imm32                                                                                                                           # EDI = 0
-
-    # push sentinal for $append-loop
-    68/push-sentinel   0/imm32
-
-    # EAX = n
+    # push sentinel
+    68/push  0/imm32/sentinel
+    # EAX, negative?/EDI = abs(n), sign(n)
+    bf/copy-to-EDI  0/imm32/false
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # EAX = *(EBP+12)
-    # if n >= 0 jump to digit-encode
-    3d/compare-EAX-and  0/imm32
-    7d/jump-if-greater-eq $digit-encode:prelude/disp8
-    # else
-    # n = -n
-    f7  3/subop/negate              3/mod/direct    0/rm32/EAX                                                                                        # EAX = -EAX
-
-    # negative = true
-    bf/copy-to-EDI  1/imm32                                                                                                                           # EDI = 1
-
-$digit-encode:prelude:
+    3d/compare-EAX-with  0/imm32
+    7d/jump-if-greater-or-equal  $print-int32-decimal:read/disp8
+    f7  3/subop/negate              3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
+    bf/copy-to-EDI  1/imm32/true
+$print-int32-decimal:read:
     # EBX = n
     8b/copy                         3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # EBX = EAX
-
-$digit-encode-loop:
+$print-int32-decimal:read-loop:
     # EAX = EBX(n)
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # EAX = EBX
-    b9/copy-to-ECX    0xa/imm32
+    b9/copy-to-ECX  0xa/imm32
+    # EAX, EDX = EAX / 10, EAX % 10
     99/sign-extend-EAX-into-EDX
-    # EDX:EAX(n) / ECX(10)
-
-    # EDX, EAX = n % 10, n / 10
     f7          7/subop/idiv        3/mod/direct    1/rm32/ECX    .           .             .           .           .               .                 # divide EDX:EAX by ECX, storing quotient in EAX and remainder in EDX
-    81          0/subop/add         3/mod/direct    2/rm32/EDX    .           .             .           .           .               0x30/imm32        # EDX += '0' (0x30)
-
-    # push n % 10 + '0'
+    # EDX += '0'
+    81          0/subop/add         3/mod/direct    2/rm32/EDX    .           .             .           .           .               0x30/imm32        # add to EDX
+    # push EDX
     52/push-EDX
-
     # EBX = n / 10
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # EBX = EAX
-
-    # loop if n / 10 > 0
+    # if (EAX == 0) break
     3d/compare-EAX-and  0/imm32
-    7f/jump-if-greater $digit-encode-loop/disp8
-    # else:
-
+    7f/jump-if-greater  $print-int32-decimal:read-loop/disp8
+$print-int32-decimal:read-break:
+    # if (negative?) push('-')
     8b/copy                         3/mod/direct    7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # EAX = EDX
-    # . if !negative: goto append-loop
-    3d/compare-EAX-and 0/imm32
-    74/jump-if-equal   $append-loop:prelude/disp8
-    # . else
-    68/push-negative   0x2d/imm32 # push '-'
-
-$append-loop:prelude:
-    # EBX = &out
+    3d/compare-EAX-and  0/imm32
+    74/jump-if-equal  $print-int32-decimal:write/disp8
+    68/push  0x2d/imm32/-
+$print-int32-decimal:write:
+    # EBX = out
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
-
-$append-loop:
-    # EAX = next_character
+$print-int32-decimal:write-loop:
+    # pop into EAX
     58/pop-to-EAX
-
-    3d/compare-EAX                  .               .             .           .             .           .           .               0/imm32           # EAX == 0
-    74/jump-if-equal   $append-loop:break/disp8
-
-    # ECX = out->write
+    # if (EAX == sentinel) break
+    3d/compare-EAX-and  0/imm32/sentinel
+    74/jump-if-equal  $print-int32-decimal:end/disp8
+    # out->data[out->write] = AL
+    # . ECX = out->write
     8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           1/r32/ECX   .               .                 # ECX = *EBX
-
-    # out->data[out->write] = next_character
     # . ECX = &out->data[out->write]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    3/base/EBX  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy EBX+ECX+12 to ECX
     # . out->data[out->write] = EAX
     89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/ECX  .                .                 # *ECX = EAX
-
     # out->write++
-    ff          0/subop/increment   0/mod/indirect  3/rm32/EBX    .           .             .           .           .               .                 # (*EBX)++
-    eb/jump $append-loop/disp8
-
-$append-loop:break:
-
+    ff          0/subop/increment   0/mod/indirect  3/rm32/EBX    .           .             .           .           .               .                 # increment *EBX
+    eb/jump  $print-int32-decimal:write-loop/disp8
 $print-int32-decimal:end:
-    # . reclaim locals
     # . restore registers
     57/pop-to-EDI
     5b/pop-to-EBX
