@@ -16,14 +16,14 @@
 print-int32-decimal:  # out : (address stream), n : int32
     # pseudocode:
     #   push sentinel
-    #   EAX, negative? = abs(n), sign(n)
+    #   EAX = abs(n)
     #   while true
     #     sign-extend EAX into EDX
     #     EAX, EDX = EAX/10, EAX%10
     #     EDX += '0'
     #     push EDX
     #     if (EAX == 0) break
-    #   if negative?
+    #   if n < 0
     #     push '-'
     #   while true
     #     pop into EAX
@@ -42,18 +42,15 @@ print-int32-decimal:  # out : (address stream), n : int32
     51/push-ECX
     52/push-EDX
     53/push-EBX
-    57/push-EDI
     # ten/ECX = 10
     b9/copy-to-ECX  0xa/imm32
     # push sentinel
     68/push  0/imm32/sentinel
-    # EAX, negative?/EDI = abs(n), sign(n)
-    bf/copy-to-EDI  0/imm32/false
+    # EAX = abs(n)
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # EAX = *(EBP+12)
     3d/compare-EAX-with  0/imm32
     7d/jump-if-greater-or-equal  $print-int32-decimal:read-loop/disp8
     f7  3/subop/negate              3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # negate EAX
-    bf/copy-to-EDI  1/imm32/true
 $print-int32-decimal:read-loop:
     # EAX, EDX = EAX / 10, EAX % 10
     99/sign-extend-EAX-into-EDX
@@ -66,9 +63,9 @@ $print-int32-decimal:read-loop:
     3d/compare-EAX-and  0/imm32
     7f/jump-if-greater  $print-int32-decimal:read-loop/disp8
 $print-int32-decimal:read-break:
-    # if (negative?) push('-')
-    81          7/subop/compare     3/mod/direct    7/rm32/EDI    .           .             .           .           .               0/imm32/false     # compare EDI
-    74/jump-if-equal  $print-int32-decimal:write/disp8
+    # if (n < 0) push('-')
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       0/imm32           # compare *(EBP+12)
+    7d/jump-if-greater-or-equal  $print-int32-decimal:write/disp8
     68/push  0x2d/imm32/-
 $print-int32-decimal:write:
     # EBX = out
@@ -91,7 +88,6 @@ $print-int32-decimal:write-loop:
     eb/jump  $print-int32-decimal:write-loop/disp8
 $print-int32-decimal:end:
     # . restore registers
-    57/pop-to-EDI
     5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
