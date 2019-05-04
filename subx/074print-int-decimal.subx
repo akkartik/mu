@@ -178,6 +178,36 @@ test-print-int32-decimal:
     # . end
     c3/return
 
+test-print-int32-decimal-zero:
+    # - check that 0 converts correctly
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # print-int32-decimal(_test-stream, 0)
+    # . . push args
+    68/push  0/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  print-int32-decimal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "0", msg)
+    # . . push args
+    68/push  "F - test-print-int32-decimal-zero"/imm32
+    68/push  "0"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
 test-print-int32-decimal-multiple-digits:
     # - check that a multi-digit number converts correctly
     # setup
