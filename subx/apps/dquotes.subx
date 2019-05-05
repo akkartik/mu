@@ -827,9 +827,65 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+
+    # PSEUDOCODE
+    # ECX = (char *) word->start
+    # while true:
+    #   if ECX == word->end: return
+    #   if *(ECX++) == '/': break
+    # write-slice(out, {ECX, word->end})
+
+    # ECX = word
+    8b/copy/word                    1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy *(EBP+12) to ECX
+    # EDX = word->end
+    8b/copy/word->end               1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ECX+4) to EDX
+    # ECX = word->start
+    8b/copy/word->start             0/mod/indirect  1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # copy *ECX to ECX
+
+    # clear out EAX
+    b8/copy-to-EAX 0/imm32
+    # while *start != '/':
+$skip-datum-loop:
+    # . start == end?
+    39/compare-ECX-and              3/mod/direct    2/rm32/EDX    .           .             .           1/r32/ECX   .               .                 # EDX == ECX
+    # . if so, return from function (it's only datum, or empty)
+    74/jump-if-equal  $emit-metadata:end/disp8
+
+    # . start++
+    41/increment-ECX                                                                                                                                  # ECX++
+
+    # . EAX = *start
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+
+    # . EAX != '/'?
+    3d/compare-EAX-and  0x2f/imm32
+    # . if so, continue looping
+    75/jump-if-not-equal  $skip-datum-loop/disp8
+    # end
+
+    # write-slice(out, &{start, end})
+    # . push end
+    52/push-EDX
+    # . push start
+    51/push-ECX
+    # . push &{start, end}
+    54/push-ESP
+
+    # . push out
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+
+    e8/call  write-slice/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           0x10/imm32      .                 # add 16 to ESP
+
 $emit-metadata:end:
-    # . reclaim locals
     # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
