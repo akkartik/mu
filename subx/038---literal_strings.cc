@@ -184,6 +184,13 @@ void skip_comment(istream& in) {
   }
 }
 
+line label(string s) {
+  line result;
+  result.words.push_back(word());
+  result.words.back().data = (s+":");
+  return result;
+}
+
 // helper for tests
 void parse_instruction_character_by_character(const string& line_data) {
   vector<line> out;
