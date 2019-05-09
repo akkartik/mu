@@ -46,14 +46,14 @@ else
 
 :(code)
 string debug_info(uint32_t inst_address) {
-  uint8_t op = read_mem_u8(EIP);
+  uint8_t op = read_mem_u8(inst_address);
   if (op != 0xe8) {
     ostringstream out;
     out << HEXBYTE << NUM(op);
     return out.str();
   }
-  int32_t offset = read_mem_i32(EIP+/*skip op*/1);
-  uint32_t next_eip = EIP+/*inst length*/5+offset;
+  int32_t offset = read_mem_i32(inst_address+/*skip op*/1);
+  uint32_t next_eip = inst_address+/*inst length*/5+offset;
   if (contains_key(Symbol_name, next_eip))
     return "e8/call "+get(Symbol_name, next_eip);
   ostringstream out;
