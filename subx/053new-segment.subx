@@ -17,39 +17,54 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 Entry:   # manual test
-    # EAX = new-segment(0x1000)
+    # var ad/ECX : (address allocation-descriptor) = {0, 0}
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # new-segment(0x1000, ad)
     # . . push args
+    51/push-ECX
     68/push  0x1000/imm32
     # . . call
     e8/call  new-segment/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # EAX = ad->curr
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
     # write to *EAX to check that we have access to the newly-allocated segment
     c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0x34/imm32        # copy to *EAX
-
     # syscall(exit, EAX)
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 
-new-segment:  # len : int -> address
+new-segment:  # len : int, ad : (address allocation-descriptor)
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
     53/push-EBX
     # copy len to _mmap-new-segment->len
-    # TODO: compute _mmap-new-segment+4 before runtime
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    bb/copy-to-EBX  _mmap-new-segment/imm32
-    89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EBX+4)
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   _mmap-new-segment:len/disp32      # copy EAX to *_mmap-new-segment:len
     # mmap(_mmap-new-segment)
     bb/copy-to-EBX  _mmap-new-segment/imm32
     b8/copy-to-EAX  0x5a/imm32/mmap
     cd/syscall  0x80/imm8
+    # copy {EAX, EAX+len} to *ad
+    # . EBX = ad
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
+    # . *EBX = EAX
+    89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
+    # . *(EBX+4) = EAX+len
+    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # add *(EBP+8) to EAX
+    89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EBX+4)
 $new-segment:end:
-    # . epilog
+    # . restore registers
     5b/pop-to-EBX
+    58/pop-to-EAX
+    # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
@@ -60,6 +75,7 @@ $new-segment:end:
 _mmap-new-segment:  # type mmap_arg_struct
     # addr
     0/imm32
+_mmap-new-segment:len:
     # len
     0/imm32
     # protection flags
