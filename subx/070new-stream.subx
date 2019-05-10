@@ -68,20 +68,21 @@ test-new-stream:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var ad/ECX : (address allocation-descriptor) = allocate-region(Heap, 512)
-    # . EAX = allocate-region(Heap, 512)
+    # var heap/ECX : (address allocation-descriptor) = {0, 0}
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # heap = new-segment(512)
     # . . push args
+    51/push-ECX
     68/push  0x200/imm32
-    68/push  Heap/imm32
     # . . call
-    e8/call  allocate-region/disp32
+    e8/call  new-segment/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . ECX = EAX
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
     # var start/EDX = ad->curr
     8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # copy *ECX to EDX
-    # EAX = new-stream(ad, 3, 2)
+    # EAX = new-stream(heap, 3, 2)
     # . . push args
     68/push  2/imm32
     68/push  3/imm32

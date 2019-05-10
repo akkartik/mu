@@ -66,6 +66,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
   assert(overlap.find(STACK_SEGMENT) == overlap.end());
   Mem.push_back(vma(STACK_SEGMENT));
   assert(overlap.find(AFTER_STACK) == overlap.end());
+  // The stack grows downward.
   Reg[ESP].u = AFTER_STACK;
   Reg[EBP].u = 0;
   EIP = e_entry;
@@ -129,15 +130,24 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 }
 
 :(before "End Includes")
-// Very primitive/fixed/insecure ELF segments for now: just consecutive VMAs.
-//   code: 0x09000000 -> 0x09ffffff
-//   data/heap: 0x0a000000 -> 0x0affffff
-//   stack: 0x0b000ffc -> 0x0b000000 (downward)
-const int CODE_SEGMENT = 0x09000000;
-const int DATA_SEGMENT = 0x0a000000;  // keep sync'd with `Heap.limit` in allocate.subx
-const int STACK_SEGMENT = 0x0b000000;
-const int AFTER_STACK = 0x0c000000;
-const int ARGV_DATA_SEGMENT = 0x0c000000;
+// Very primitive/fixed/insecure ELF segments for now.
+//   code:  0x09000000 -> 0x09ffffff (specified in ELF binary)
+//   data:  0x0a000000 -> 0x0affffff (specified in ELF binary)
+//   --- heap gets mmap'd somewhere here ---
+//   stack: 0x7dffffff -> 0x7d000000 (downward; not in ELF binary)
+//   argv hack: 0x7f000000 -> 0x7fffffff (not in ELF binary)
+//
+// For now we avoid addresses with the most significant bit set; SubX doesn't
+// support unsigned comparison yet (https://github.com/akkartik/mu/issues/30)
+// Once we do, we can go up to 0xc0000000; higher addresses are reserved for
+// the Linux kernel.
+const int CODE_SEGMENT      = 0x09000000;
+const int DATA_SEGMENT =      0x0a000000;
+const int STACK_SEGMENT     = 0x7d000000;
+const int AFTER_STACK       = 0x7e000000;
+const int ARGV_DATA_SEGMENT = 0x7f000000;
+// When updating the above memory map, don't forget to update `mmap`'s
+// implementation in the 'syscalls' layer.
 :(before "End Dump Info for Instruction")
 //? dump_stack();  // slow
 :(code)
