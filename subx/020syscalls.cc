@@ -24,14 +24,14 @@ void process_int80() {
     trace(Callstack_depth+1, "run") << "read: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
     Reg[EAX].i = read(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
-    if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
+    if (Reg[EAX].i == -1) raise << "read: " << strerror(errno) << '\n' << end();
     break;
   case 4:
     trace(Callstack_depth+1, "run") << "write: " << Reg[EBX].u << ' ' << Reg[ECX].u << ' ' << Reg[EDX].u << end();
     trace(Callstack_depth+1, "run") << Reg[ECX].u << " => " << mem_addr_string(Reg[ECX].u, Reg[EDX].u) << end();
     Reg[EAX].i = write(/*file descriptor*/Reg[EBX].u, /*memory buffer*/mem_addr_u8(Reg[ECX].u), /*size*/Reg[EDX].u);
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
-    if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
+    if (Reg[EAX].i == -1) raise << "write: " << strerror(errno) << '\n' << end();
     break;
   case 5: {
     check_flags(ECX);
@@ -40,14 +40,14 @@ void process_int80() {
     trace(Callstack_depth+1, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
     Reg[EAX].i = open(/*filename*/mem_addr_kernel_string(Reg[EBX].u), /*flags*/Reg[ECX].u, /*mode*/0640);
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
-    if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
+    if (Reg[EAX].i == -1) raise << "open: " << strerror(errno) << '\n' << end();
     break;
   }
   case 6:
     trace(Callstack_depth+1, "run") << "close: " << Reg[EBX].u << end();
     Reg[EAX].i = close(/*file descriptor*/Reg[EBX].u);
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
-    if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
+    if (Reg[EAX].i == -1) raise << "close: " << strerror(errno) << '\n' << end();
     break;
   case 8:
     check_mode(ECX);
@@ -55,14 +55,14 @@ void process_int80() {
     trace(Callstack_depth+1, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
     Reg[EAX].i = creat(/*filename*/mem_addr_kernel_string(Reg[EBX].u), /*mode*/0640);
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
-    if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
+    if (Reg[EAX].i == -1) raise << "creat: " << strerror(errno) << '\n' << end();
     break;
   case 10:
     trace(Callstack_depth+1, "run") << "unlink: " << Reg[EBX].u << end();
     trace(Callstack_depth+1, "run") << Reg[EBX].u << " => " << mem_addr_kernel_string(Reg[EBX].u) << end();
     Reg[EAX].i = unlink(/*filename*/mem_addr_kernel_string(Reg[EBX].u));
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
-    if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
+    if (Reg[EAX].i == -1) raise << "unlink: " << strerror(errno) << '\n' << end();
     break;
   case 38:
     trace(Callstack_depth+1, "run") << "rename: " << Reg[EBX].u << " -> " << Reg[ECX].u << end();
@@ -70,7 +70,7 @@ void process_int80() {
     trace(Callstack_depth+1, "run") << Reg[ECX].u << " => " << mem_addr_kernel_string(Reg[ECX].u) << end();
     Reg[EAX].i = rename(/*old filename*/mem_addr_kernel_string(Reg[EBX].u), /*new filename*/mem_addr_kernel_string(Reg[ECX].u));
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
-    if (Reg[EAX].i == -1) raise << strerror(errno) << '\n' << end();
+    if (Reg[EAX].i == -1) raise << "rename: " << strerror(errno) << '\n' << end();
     break;
   case 45:  // brk: modify size of data segment
     trace(Callstack_depth+1, "run") << "grow data segment to " << Reg[EBX].u << end();
@@ -110,7 +110,12 @@ void check_mode(int reg) {
 }
 
 :(before "End Globals")
-uint32_t Next_segment = 0xb0000000;  // 0xc0000000 and up is reserved for Linux kernel
+// Very primitive/fixed/insecure mmap segments for now.
+// For now we avoid addresses with the most significant bit set; SubX doesn't
+// support unsigned comparison yet (https://github.com/akkartik/mu/issues/30)
+// Once we do, we can go up to 0xc0000000; higher addresses are reserved for
+// the Linux kernel.
+uint32_t Next_segment = 0x7c000000;
 const uint32_t SPACE_FOR_SEGMENT = 0x01000000;
 :(code)
 uint32_t new_segment(uint32_t length) {
