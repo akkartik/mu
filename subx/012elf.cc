@@ -66,6 +66,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
   assert(overlap.find(STACK_SEGMENT) == overlap.end());
   Mem.push_back(vma(STACK_SEGMENT));
   assert(overlap.find(AFTER_STACK) == overlap.end());
+  // The stack grows downward.
   Reg[ESP].u = AFTER_STACK;
   Reg[EBP].u = 0;
   EIP = e_entry;
@@ -130,10 +131,14 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 
 :(before "End Includes")
 // Very primitive/fixed/insecure ELF segments for now.
-//   code:  0x09000000 -> 0x09ffffff
-//   stack: 0xbe000000 -> 0xb0000000 (downward)
+//   code:  0x09000000 -> 0x09ffffff (specified in ELF binary)
+//   data:  0x0a000000 -> 0x0affffff (specified in ELF binary)
+//   --- heap gets mmap'd somewhere here ---
+//   stack: 0xbdffffff -> 0xbd000000 (downward; not in ELF binary)
+//   argv hack: 0xbf000000 -> 0xc0000000 (not in ELF binary)
 const int CODE_SEGMENT      = 0x09000000;
-const int STACK_SEGMENT     = 0xb0000000;
+const int DATA_SEGMENT =      0x0a000000;
+const int STACK_SEGMENT     = 0xbd000000;
 const int AFTER_STACK       = 0xbe000000;
 const int ARGV_DATA_SEGMENT = 0xbf000000;
 :(before "End Dump Info for Instruction")
