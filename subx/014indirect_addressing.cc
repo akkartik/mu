@@ -531,7 +531,8 @@ case 4: {  // jump to r/m32
 :(code)
 void test_push_mem_at_r32() {
   Reg[EAX].i = 0x2000;
-  Reg[ESP].u = 0x14;
+  Mem.push_back(vma(0x7d000000));  // manually allocate memory
+  Reg[ESP].u = 0x7d000014;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -542,7 +543,7 @@ void test_push_mem_at_r32() {
   CHECK_TRACE_CONTENTS(
       "run: push r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: decrementing ESP to 0x00000010\n"
+      "run: decrementing ESP to 0x7d000010\n"
       "run: pushing value 0x000000af\n"
   );
 }
@@ -563,20 +564,20 @@ put_new(Name, "8f", "pop top of stack to rm32 (pop)");
 :(code)
 void test_pop_mem_at_r32() {
   Reg[EAX].i = 0x60;
-  Reg[ESP].u = 0x2000;
+  Mem.push_back(vma(0x7d000000));  // manually allocate memory
+  Reg[ESP].u = 0x7d000000;
+  write_mem_i32(0x7d000000, 0x00000030);
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  8f     00                                    \n"  // pop stack into *EAX
       // ModR/M in binary: 00 (indirect mode) 000 (pop r/m32) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
-      "30 00 00 00\n"  // 0x00000030
   );
   CHECK_TRACE_CONTENTS(
       "run: pop into r/m32\n"
       "run: effective address is 0x00000060 (EAX)\n"
       "run: popping value 0x00000030\n"
-      "run: incrementing ESP to 0x00002004\n"
+      "run: incrementing ESP to 0x7d000004\n"
   );
 }
 

@@ -90,6 +90,7 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
 
 void push(uint32_t val) {
   Reg[ESP].u -= 4;
+  assert(Reg[ESP].u >= STACK_SEGMENT);
   trace(Callstack_depth+1, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
   trace(Callstack_depth+1, "run") << "pushing value 0x" << HEXWORD << val << end();
   write_mem_u32(Reg[ESP].u, val);

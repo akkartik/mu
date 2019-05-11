@@ -971,7 +971,8 @@ put_new(Name, "57", "push EDI to stack (push)");
 
 :(code)
 void test_push_r32() {
-  Reg[ESP].u = 0x64;
+  Mem.push_back(vma(0x7d000000));  // manually allocate memory
+  Reg[ESP].u = 0x7d000008;
   Reg[EBX].i = 0x0000000a;
   run(
       "== 0x1\n"  // code segment
@@ -980,7 +981,7 @@ void test_push_r32() {
   );
   CHECK_TRACE_CONTENTS(
       "run: push EBX\n"
-      "run: decrementing ESP to 0x00000060\n"
+      "run: decrementing ESP to 0x7d000004\n"
       "run: pushing value 0x0000000a\n"
   );
 }
@@ -1015,9 +1016,9 @@ put_new(Name, "5f", "pop top of stack to EDI (pop)");
 
 :(code)
 void test_pop_r32() {
-  Reg[ESP].u = 0x02000000;
-  Mem.push_back(vma(0x02000000));  // manually allocate memory
-  write_mem_i32(0x02000000, 0x0000000a);  // ..before this write
+  Mem.push_back(vma(0x7d000000));  // manually allocate memory
+  Reg[ESP].u = 0x7d000008;
+  write_mem_i32(0x7d000008, 0x0000000a);  // ..before this write
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -1028,7 +1029,7 @@ void test_pop_r32() {
   CHECK_TRACE_CONTENTS(
       "run: pop into EBX\n"
       "run: popping value 0x0000000a\n"
-      "run: incrementing ESP to 0x02000004\n"
+      "run: incrementing ESP to 0x7d00000c\n"
   );
 }
 
@@ -1054,5 +1055,6 @@ uint32_t pop() {
   trace(Callstack_depth+1, "run") << "popping value 0x" << HEXWORD << result << end();
   Reg[ESP].u += 4;
   trace(Callstack_depth+1, "run") << "incrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
+  assert(Reg[ESP].u < AFTER_STACK);
   return result;
 }
