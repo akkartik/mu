@@ -102,6 +102,8 @@ _write-stream:  # fd : int, s : (address stream) -> <void>
     # . . syscall
     b8/copy-to-EAX  4/imm32/write
     cd/syscall  0x80/imm8
+    # s->read += EAX
+    01/add                          1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # add EAX to *(ESI+4)
     # . restore registers
     5f/pop-to-EDI
     5e/pop-to-ESI
