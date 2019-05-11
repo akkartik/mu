@@ -22,12 +22,30 @@
 Entry:  # run tests if necessary, convert stdin if not
 
     # for debugging: run a single test
+#?     # . Heap = new-segment(4096)
+#?     # . . push args
+#?     68/push  Heap/imm32
+#?     68/push  0x1000/imm32
+#?     # . . call
+#?     e8/call  new-segment/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . test()
 #?     e8/call test-emit-string-literal-data/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # initialize heap
+    # . Heap = new-segment(4096)
+    # . . push args
+    68/push  Heap/imm32
+    68/push  0x1000/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # . argc > 1
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
@@ -1691,6 +1709,12 @@ Segment-size:
 
 Next-string-literal:  # tracks the next auto-generated variable name
   1/imm32
+
+Heap:
+  # curr
+  0/imm32
+  # limit
+  0/imm32
 
 # length-prefixed string containing just a single space
 Space:

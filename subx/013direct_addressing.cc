@@ -488,7 +488,7 @@ void test_shift_right_logical_r32_with_cl() {
 }
 
 :(before "End Op d3 Subops")
-case 5: {  // shift right r/m32 by CL, preserving sign
+case 5: {  // shift right r/m32 by CL, padding zeroes
   trace(Callstack_depth+1, "run") << "subop: shift right by CL bits, while padding zeroes" << end();
   uint8_t count = Reg[ECX].u & 0x1f;
   // OF is only defined if count is 1
