@@ -149,7 +149,9 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 // Once we do, we can go up to 0xc0000000; higher addresses are reserved for
 // the Linux kernel.
 const int CODE_SEGMENT      = 0x09000000;
-const int DATA_SEGMENT =      0x0a000000;
+const int DATA_SEGMENT      = 0x0a000000;
+const int START_HEAP        = 0x0b000000;
+const int END_HEAP          = 0x7d000000;
 const int STACK_SEGMENT     = 0x7d000000;
 const int AFTER_STACK       = 0x7e000000;
 const int ARGV_DATA_SEGMENT = 0x7f000000;
