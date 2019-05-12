@@ -733,7 +733,6 @@ case 0x39: {  // set SF if r/m32 < r32
   trace(Callstack_depth+1, "run") << "compare " << rname(reg2) << " with r/m32" << end();
   const int32_t* signed_arg1 = effective_address(modrm);
   const int32_t signed_arg2 = Reg[reg2].i;
-  cerr << *signed_arg1 << " vs " << signed_arg2 << '\n';
   const int32_t signed_difference = *signed_arg1 - signed_arg2;
   SF = (signed_difference < 0);
   ZF = (signed_difference == 0);
@@ -741,11 +740,8 @@ case 0x39: {  // set SF if r/m32 < r32
   OF = (signed_difference != signed_full_difference);
   const uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
   const uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
-  cerr << unsigned_arg1 << " vs " << unsigned_arg2 << '\n';
   const uint32_t unsigned_difference = unsigned_arg1 - unsigned_arg2;
-  cerr << "result: " << unsigned_difference << '\n';
   const uint64_t unsigned_full_difference = unsigned_arg1 - unsigned_arg2;
-  cerr << "full result: " << unsigned_full_difference << '\n';
   CF = (unsigned_difference != unsigned_full_difference);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;

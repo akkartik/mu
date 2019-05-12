@@ -93,7 +93,6 @@ SF = ZF = CF = OF = false;
 // result in 'arg1', then update flags.
 // beware: no side-effects in args
 #define BINARY_ARITHMETIC_OP(op, signed_arg1, signed_arg2) { \
-  cerr << signed_arg1 << " vs " << signed_arg2 << '\n'; \
   int64_t signed_full_result = signed_arg1 op signed_arg2; \
   signed_arg1 = signed_arg1 op signed_arg2; \
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << signed_arg1 << end(); \
@@ -103,9 +102,7 @@ SF = ZF = CF = OF = false;
   /* CF is more complex */ \
   uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1); \
   uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2); \
-  cerr << unsigned_arg1 << " vs " << unsigned_arg2 << '\n'; \
   uint32_t unsigned_result = unsigned_arg1 op unsigned_arg2; \
-  cerr << "result: " << unsigned_result << '\n'; \
   uint64_t unsigned_full_result = unsigned_arg1 op unsigned_arg2; \
   CF = (unsigned_result != unsigned_full_result); \
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
