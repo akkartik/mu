@@ -320,7 +320,7 @@ void test_compare_mem_at_r32_with_r32_greater() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -339,7 +339,7 @@ void test_compare_mem_at_r32_with_r32_lesser() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -358,7 +358,7 @@ void test_compare_mem_at_r32_with_r32_equal() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 
@@ -382,7 +382,7 @@ void test_compare_r32_with_mem_at_r32_greater() {
   CHECK_TRACE_CONTENTS(
       "run: compare r/m32 with EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -391,14 +391,19 @@ case 0x3b: {  // set SF if r32 < r/m32
   const uint8_t modrm = next();
   const uint8_t reg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "compare r/m32 with " << rname(reg1) << end();
-  const int32_t arg1 = Reg[reg1].i;
-  const int32_t* arg2 = effective_address(modrm);
-  const int32_t tmp1 = arg1 - *arg2;
-  SF = (tmp1 < 0);
-  ZF = (tmp1 == 0);
-  int64_t tmp2 = arg1 - *arg2;
-  OF = (tmp1 != tmp2);
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  const int32_t signed_arg1 = Reg[reg1].i;
+  const int32_t* signed_arg2 = effective_address(modrm);
+  const int32_t signed_difference = signed_arg1 - *signed_arg2;
+  SF = (signed_difference < 0);
+  ZF = (signed_difference == 0);
+  int64_t full_signed_difference = signed_arg1 - *signed_arg2;
+  OF = (signed_difference != full_signed_difference);
+  const uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1);
+  const uint32_t unsigned_arg2 = static_cast<uint32_t>(*signed_arg2);
+  const uint32_t unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  const uint64_t full_unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  CF = (unsigned_difference != full_unsigned_difference);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -417,7 +422,7 @@ void test_compare_r32_with_mem_at_r32_lesser() {
   CHECK_TRACE_CONTENTS(
       "run: compare r/m32 with EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -436,7 +441,7 @@ void test_compare_r32_with_mem_at_r32_equal() {
   CHECK_TRACE_CONTENTS(
       "run: compare r/m32 with EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 

@@ -31,6 +31,24 @@ case 0x01: {  // add r32 to r/m32
 }
 
 :(code)
+void test_add_r32_to_r32_unsigned() {
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed number
+  Reg[EBX].i = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  01     d8                                    \n" // add EBX to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add EBX to r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0x80000000\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"  // carry flag set
+  );
+}
+
+:(code)
 // Implement tables 2-2 and 2-3 in the Intel manual, Volume 2.
 // We return a pointer so that instructions can write to multiple bytes in
 // 'Mem' at once.
@@ -114,6 +132,24 @@ case 0x29: {  // subtract r32 from r/m32
   int32_t* arg1 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(-, *arg1, Reg[arg2].i);
   break;
+}
+
+:(code)
+void test_subtract_r32_from_r32_unsigned() {
+  Reg[EAX].i = 0x7ffffffd;
+  Reg[EBX].i = 0x7fffffff;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  29     d8                                    \n"  // subtract EBX from EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract EBX from r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: storing 0xfffffffe\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
+  );
 }
 
 //:: multiply
@@ -686,7 +722,7 @@ void test_compare_r32_with_r32_greater() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: r/m32 is EAX\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -695,14 +731,23 @@ case 0x39: {  // set SF if r/m32 < r32
   const uint8_t modrm = next();
   const uint8_t reg2 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "compare " << rname(reg2) << " with r/m32" << end();
-  const int32_t* arg1 = effective_address(modrm);
-  const int32_t arg2 = Reg[reg2].i;
-  const int32_t tmp1 = *arg1 - arg2;
-  SF = (tmp1 < 0);
-  ZF = (tmp1 == 0);
-  const int64_t tmp2 = *arg1 - arg2;
-  OF = (tmp1 != tmp2);
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  const int32_t* signed_arg1 = effective_address(modrm);
+  const int32_t signed_arg2 = Reg[reg2].i;
+  cerr << *signed_arg1 << " vs " << signed_arg2 << '\n';
+  const int32_t signed_difference = *signed_arg1 - signed_arg2;
+  SF = (signed_difference < 0);
+  ZF = (signed_difference == 0);
+  const int64_t signed_full_difference = *signed_arg1 - signed_arg2;
+  OF = (signed_difference != signed_full_difference);
+  const uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+  const uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  cerr << unsigned_arg1 << " vs " << unsigned_arg2 << '\n';
+  const uint32_t unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  cerr << "result: " << unsigned_difference << '\n';
+  const uint64_t unsigned_full_difference = unsigned_arg1 - unsigned_arg2;
+  cerr << "full result: " << unsigned_full_difference << '\n';
+  CF = (unsigned_difference != unsigned_full_difference);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -719,7 +764,23 @@ void test_compare_r32_with_r32_lesser() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: r/m32 is EAX\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
+  );
+}
+
+void test_compare_r32_with_r32_lesser_unsigned() {
+  Reg[EAX].i = 0x7ffffffd;
+  Reg[EBX].i = 0x7fffffff;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  39     d8                                    \n"  // compare EBX with EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EBX with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
 }
 
@@ -735,7 +796,7 @@ void test_compare_r32_with_r32_equal() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: r/m32 is EAX\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 

@@ -571,21 +571,26 @@ void test_compare_imm32_with_eax_greater() {
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX and imm32 0x0d0c0b07\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
 :(before "End Single-Byte Opcodes")
 case 0x3d: {  // compare EAX with imm32
-  const int32_t arg1 = Reg[EAX].i;
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "compare EAX and imm32 0x" << HEXWORD << arg2 << end();
-  const int32_t tmp1 = arg1 - arg2;
-  SF = (tmp1 < 0);
-  ZF = (tmp1 == 0);
-  const int64_t tmp2 = arg1 - arg2;
-  OF = (tmp1 != tmp2);
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  const int32_t signed_arg1 = Reg[EAX].i;
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "compare EAX and imm32 0x" << HEXWORD << signed_arg2 << end();
+  const int32_t signed_difference = signed_arg1 - signed_arg2;
+  SF = (signed_difference < 0);
+  ZF = (signed_difference == 0);
+  const int64_t full_signed_difference = signed_arg1 - signed_arg2;
+  OF = (signed_difference != full_signed_difference);
+  const uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1);
+  const uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  const uint32_t unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  const uint64_t full_unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  CF = (unsigned_difference != full_unsigned_difference);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -599,7 +604,7 @@ void test_compare_imm32_with_eax_lesser() {
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX and imm32 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -613,7 +618,7 @@ void test_compare_imm32_with_eax_equal() {
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX and imm32 0x0d0c0b0a\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 
@@ -632,7 +637,7 @@ void test_compare_imm32_with_r32_greater() {
       "run: combine imm32 with r/m32\n"
       "run: r/m32 is EBX\n"
       "run: imm32 is 0x0d0c0b07\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -644,7 +649,7 @@ case 7: {
   ZF = (tmp1 == 0);
   const int64_t tmp2 = *arg1 - arg2;
   OF = (tmp1 != tmp2);
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -661,7 +666,7 @@ void test_compare_imm32_with_r32_lesser() {
       "run: combine imm32 with r/m32\n"
       "run: r/m32 is EBX\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -678,7 +683,7 @@ void test_compare_imm32_with_r32_equal() {
       "run: combine imm32 with r/m32\n"
       "run: r/m32 is EBX\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 
@@ -697,7 +702,7 @@ void test_compare_imm32_with_mem_at_r32_greater() {
       "run: combine imm32 with r/m32\n"
       "run: effective address is 0x00002000 (EBX)\n"
       "run: imm32 is 0x0d0c0b07\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -716,7 +721,7 @@ void test_compare_imm32_with_mem_at_r32_lesser() {
       "run: combine imm32 with r/m32\n"
       "run: effective address is 0x00002000 (EBX)\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -736,7 +741,7 @@ void test_compare_imm32_with_mem_at_r32_equal() {
       "run: combine imm32 with r/m32\n"
       "run: effective address is 0x00002000 (EBX)\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 

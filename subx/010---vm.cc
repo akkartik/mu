@@ -62,7 +62,10 @@ put_new(Help, "registers",
   "- the sign flag (SF): usually set if an arithmetic result is negative, or\n"
   "  reset if not.\n"
   "- the zero flag (ZF): usually set if a result is zero, or reset if not.\n"
-  "- the overflow flag (OF): usually set if an arithmetic result overflows.\n"
+  "- the carry flag (CF): usually set if an arithmetic result overflows by just one bit.\n"
+  "  Useful for operating on unsigned numbers.\n"
+  "- the overflow flag (OF): usually set if an arithmetic result overflows by more than one bit.\n"
+  "  Useful for operating on signed numbers.\n"
   "The flag bits are read by conditional jumps.\n"
   "\n"
   "For complete details on how different instructions update the flags, consult the IA-32\n"
@@ -78,9 +81,10 @@ put_new(Help, "registers",
 // the subset of x86 flag registers we care about
 bool SF = false;  // sign flag
 bool ZF = false;  // zero flag
+bool CF = false;  // carry flag
 bool OF = false;  // overflow flag
 :(before "End Reset")
-SF = ZF = OF = false;
+SF = ZF = CF = OF = false;
 
 //: how the flag registers are updated after each instruction
 
@@ -88,25 +92,35 @@ SF = ZF = OF = false;
 // Combine 'arg1' and 'arg2' with arithmetic operation 'op' and store the
 // result in 'arg1', then update flags.
 // beware: no side-effects in args
-#define BINARY_ARITHMETIC_OP(op, arg1, arg2) { \
-  /* arg1 and arg2 must be signed */ \
-  int64_t tmp = arg1 op arg2; \
-  arg1 = arg1 op arg2; \
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
-  SF = (arg1 < 0); \
-  ZF = (arg1 == 0); \
-  OF = (arg1 != tmp); \
+#define BINARY_ARITHMETIC_OP(op, signed_arg1, signed_arg2) { \
+  cerr << signed_arg1 << " vs " << signed_arg2 << '\n'; \
+  int64_t signed_full_result = signed_arg1 op signed_arg2; \
+  signed_arg1 = signed_arg1 op signed_arg2; \
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << signed_arg1 << end(); \
+  SF = (signed_arg1 < 0); \
+  ZF = (signed_arg1 == 0); \
+  OF = (signed_arg1 != signed_full_result); \
+  /* CF is more complex */ \
+  uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1); \
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2); \
+  cerr << unsigned_arg1 << " vs " << unsigned_arg2 << '\n'; \
+  uint32_t unsigned_result = unsigned_arg1 op unsigned_arg2; \
+  cerr << "result: " << unsigned_result << '\n'; \
+  uint64_t unsigned_full_result = unsigned_arg1 op unsigned_arg2; \
+  CF = (unsigned_result != unsigned_full_result); \
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
 }
 
 // Combine 'arg1' and 'arg2' with bitwise operation 'op' and store the result
 // in 'arg1', then update flags.
-#define BINARY_BITWISE_OP(op, arg1, arg2) { \
-  /* arg1 and arg2 must be unsigned */ \
-  arg1 = arg1 op arg2; \
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << arg1 << end(); \
-  SF = (arg1 >> 31); \
-  ZF = (arg1 == 0); \
+#define BINARY_BITWISE_OP(op, unsigned_arg1, unsigned_arg2) { \
+  unsigned_arg1 = unsigned_arg1 op unsigned_arg2; \
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << unsigned_arg1 << end(); \
+  SF = (unsigned_arg1 >> 31); \
+  ZF = (unsigned_arg1 == 0); \
+  CF = false; \
   OF = false; \
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
 }
 
 //:: simulated RAM
@@ -374,7 +388,7 @@ void dump_registers() {
     if (i > 0) out << "; ";
     out << "  " << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
   }
-  out << " -- SF: " << SF << "; ZF: " << ZF << "; OF: " << OF;
+  out << " -- SF: " << SF << "; ZF: " << ZF << "; CF: " << CF << "; OF: " << OF;
   trace(Callstack_depth+1, "run") << out.str() << end();
 }
 
