@@ -122,5 +122,10 @@ uint32_t new_segment(uint32_t length) {
   uint32_t result = Next_segment;
   Mem.push_back(vma(Next_segment, Next_segment+length));
   Next_segment -= SPACE_FOR_SEGMENT;
+  if (Next_segment <= DATA_SEGMENT) {
+    raise << "Allocated too many segments; the VM ran out of memory. "
+          << "Maybe SPACE_FOR_SEGMENT can be smaller?\n" << end();
+    exit(1);
+  }
   return result;
 }

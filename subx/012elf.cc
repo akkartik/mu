@@ -90,7 +90,13 @@ void load_elf_contents(uint8_t* elf_contents, size_t size, int argc, char* argv[
 
 void push(uint32_t val) {
   Reg[ESP].u -= 4;
-  assert(Reg[ESP].u >= STACK_SEGMENT);
+  if (Reg[ESP].u < STACK_SEGMENT) {
+    raise << "The stack overflowed its segment. "
+          << "Maybe SPACE_FOR_SEGMENT should be larger? "
+          << "Or you need to carve out an exception for the stack segment "
+          << "to be larger.\n" << end();
+    exit(1);
+  }
   trace(Callstack_depth+1, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
   trace(Callstack_depth+1, "run") << "pushing value 0x" << HEXWORD << val << end();
   write_mem_u32(Reg[ESP].u, val);
