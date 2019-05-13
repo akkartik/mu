@@ -244,9 +244,54 @@ case 0x2d: {  // subtract imm32 from EAX
   break;
 }
 
+:(code)
+void test_subtract_imm32_from_EAX_signed_overflow() {
+  Reg[EAX].i = 0x80000000;  // smallest negative signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  2d                                 ff ff ff 7f \n"  // subtract largest positive signed integer from EAX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract imm32 0x7fffffff from EAX\n"
+      "run: SF=0; ZF=0; CF=0; OF=1\n"
+      "run: storing 0x00000001\n"
+  );
+}
+
+void test_subtract_imm32_from_EAX_unsigned_overflow() {
+  Reg[EAX].i = 0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  2d                                 01 00 00 00 \n"  // subtract 1 from EAX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract imm32 0x00000001 from EAX\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
+      "run: storing 0xffffffff\n"
+  );
+}
+
+void test_subtract_imm32_from_EAX_signed_and_unsigned_overflow() {
+  Reg[EAX].i = 0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  2d                                 00 00 00 80 \n"  // subtract smallest negative signed integer from EAX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract imm32 0x80000000 from EAX\n"
+      "run: SF=1; ZF=0; CF=1; OF=1\n"
+      "run: storing 0x80000000\n"
+  );
+}
+
 //:
 
-:(code)
 void test_subtract_imm32_from_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
