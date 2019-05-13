@@ -61,9 +61,9 @@ case 0x03: {  // add r/m32 to r32
   trace(Callstack_depth+1, "run") << "add r/m32 to " << rname(arg1) << end();
   const int32_t* signed_arg2 = effective_address(modrm);
   int32_t signed_result = Reg[arg1].i + *signed_arg2;
-  int64_t signed_full_result = static_cast<int64_t>(Reg[arg1].i) + *signed_arg2;
   SF = (signed_result < 0);
   ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(Reg[arg1].i) + *signed_arg2;
   OF = (signed_result != signed_full_result);
   // set CF
   uint32_t unsigned_arg2 = static_cast<uint32_t>(*signed_arg2);
@@ -189,9 +189,9 @@ case 0x2b: {  // subtract r/m32 from r32
   trace(Callstack_depth+1, "run") << "subtract r/m32 from " << rname(arg1) << end();
   const int32_t* signed_arg2 = effective_address(modrm);
   const int32_t signed_result = Reg[arg1].i - *signed_arg2;
-  int64_t signed_full_result = static_cast<int64_t>(Reg[arg1].i) - *signed_arg2;
   SF = (signed_result < 0);
   ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(Reg[arg1].i) - *signed_arg2;
   OF = (signed_result != signed_full_result);
   // set CF
   uint32_t unsigned_arg2 = static_cast<uint32_t>(*signed_arg2);
@@ -563,15 +563,14 @@ case 0x3b: {  // set SF if r32 < r/m32
   trace(Callstack_depth+1, "run") << "compare " << rname(reg1) << " with r/m32" << end();
   const int32_t signed_arg1 = Reg[reg1].i;
   const int32_t* signed_arg2 = effective_address(modrm);
-  const int32_t signed_difference = signed_arg1 - *signed_arg2;
+  const int32_t signed_difference = Reg[reg1].i - *signed_arg2;
   SF = (signed_difference < 0);
   ZF = (signed_difference == 0);
-  int64_t full_signed_difference = signed_arg1 - *signed_arg2;
+  int64_t full_signed_difference = static_cast<int64_t>(Reg[reg1].i) - *signed_arg2;
   OF = (signed_difference != full_signed_difference);
-  const uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1);
   const uint32_t unsigned_arg2 = static_cast<uint32_t>(*signed_arg2);
-  const uint32_t unsigned_difference = unsigned_arg1 - unsigned_arg2;
-  const uint64_t full_unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  const uint32_t unsigned_difference = Reg[reg1].u - unsigned_arg2;
+  const uint64_t full_unsigned_difference = static_cast<uint64_t>(Reg[reg1].u) - unsigned_arg2;
   CF = (unsigned_difference != full_unsigned_difference);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
@@ -584,7 +583,7 @@ void test_compare_r32_with_mem_at_r32_lesser() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  3b     18                                    \n"  // compare *EAX with EBX
+      "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
@@ -592,18 +591,17 @@ void test_compare_r32_with_mem_at_r32_lesser() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=1; ZF=0; CF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
 }
 
-:(code)
 void test_compare_r32_with_mem_at_r32_equal() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  3b     18                                    \n"  // compare *EAX with EBX
+      "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
@@ -617,7 +615,6 @@ void test_compare_r32_with_mem_at_r32_equal() {
 
 //:: copy (mov)
 
-:(code)
 void test_copy_r32_to_mem_at_r32() {
   Reg[EBX].i = 0xaf;
   Reg[EAX].i = 0x60;

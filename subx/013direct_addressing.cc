@@ -27,9 +27,9 @@ case 0x01: {  // add r32 to r/m32
   trace(Callstack_depth+1, "run") << "add " << rname(arg2) << " to r/m32" << end();
   int32_t* signed_arg1 = effective_address(modrm);
   int32_t signed_result = *signed_arg1 + Reg[arg2].i;
-  int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) + Reg[arg2].i;
   SF = (signed_result < 0);
   ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) + Reg[arg2].i;
   OF = (signed_result != signed_full_result);
   // set CF
   uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
@@ -176,9 +176,9 @@ case 0x29: {  // subtract r32 from r/m32
   trace(Callstack_depth+1, "run") << "subtract " << rname(arg2) << " from r/m32" << end();
   int32_t* signed_arg1 = effective_address(modrm);
   int32_t signed_result = *signed_arg1 - Reg[arg2].i;
-  int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) - Reg[arg2].i;
   SF = (signed_result < 0);
   ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) - Reg[arg2].i;
   OF = (signed_result != signed_full_result);
   // set CF
   uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
@@ -275,7 +275,7 @@ case 0xf7: {
   switch (subop) {
   case 4: {  // mul unsigned EAX by r/m32
     trace(Callstack_depth+1, "run") << "subop: multiply EAX by r/m32" << end();
-    const uint64_t result = Reg[EAX].u * static_cast<uint32_t>(*arg1);
+    const uint64_t result = static_cast<uint64_t>(Reg[EAX].u) * static_cast<uint32_t>(*arg1);
     Reg[EAX].u = result & 0xffffffff;
     Reg[EDX].u = result >> 32;
     OF = (Reg[EDX].u != 0);
@@ -318,14 +318,15 @@ case 0xaf: {  // multiply r32 by r/m32
   const uint8_t arg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "multiply " << rname(arg1) << " by r/m32" << end();
   const int32_t* arg2 = effective_address(modrm);
-  int64_t full_result = Reg[arg1].i * (*arg2);
-  Reg[arg1].i *= (*arg2);
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
+  int32_t result = Reg[arg1].i * (*arg2);
   SF = (Reg[arg1].i < 0);
   ZF = (Reg[arg1].i == 0);
+  int64_t full_result = static_cast<int64_t>(Reg[arg1].i) * (*arg2);
   OF = (Reg[arg1].i != full_result);
   CF = OF;
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  Reg[arg1].i = result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
   break;
 }
 

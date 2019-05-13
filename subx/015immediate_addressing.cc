@@ -7,19 +7,19 @@ put_new(Name, "05", "add imm32 to EAX (add)");
 case 0x05: {  // add imm32 to EAX
   int32_t signed_arg2 = next32();
   trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << signed_arg2 << " to reg EAX" << end();
-  int64_t signed_full_result = Reg[EAX].i + signed_arg2;
-  Reg[EAX].i += signed_arg2;
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
-  SF = (Reg[EAX].i < 0);
-  ZF = (Reg[EAX].i == 0);
-  OF = (Reg[EAX].i != signed_full_result);
+  int32_t signed_result = Reg[EAX].i + signed_arg2;
+  SF = (signed_result < 0);
+  ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(Reg[EAX].i) + signed_arg2;
+  OF = (signed_result != signed_full_result);
   // set CF
-  uint32_t unsigned_arg1 = static_cast<uint32_t>(Reg[EAX].i);
   uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
-  uint32_t unsigned_result = unsigned_arg1 + unsigned_arg2;
-  uint64_t unsigned_full_result = unsigned_arg1 + unsigned_arg2;
+  uint32_t unsigned_result = Reg[EAX].u + unsigned_arg2;
+  uint64_t unsigned_full_result = static_cast<uint64_t>(Reg[EAX].u) + unsigned_arg2;
   CF = (unsigned_result != unsigned_full_result);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  Reg[EAX].i = signed_result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
   break;
 }
 
@@ -55,19 +55,20 @@ case 0x81: {  // combine imm32 with r/m32
   switch (subop) {
   case 0: {
     trace(Callstack_depth+1, "run") << "subop add" << end();
-    int64_t signed_full_result = *signed_arg1 + signed_arg2;
-    *signed_arg1 += signed_arg2;
-    trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
-    SF = (*signed_arg1 < 0);
-    ZF = (*signed_arg1 == 0);
-    OF = (*signed_arg1 != signed_full_result);
+    int32_t signed_result = *signed_arg1 + signed_arg2;
+    SF = (signed_result < 0);
+    ZF = (signed_result == 0);
+    int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) + signed_arg2;
+    OF = (signed_result != signed_full_result);
     // set CF
     uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
     uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
     uint32_t unsigned_result = unsigned_arg1 + unsigned_arg2;
-    uint64_t unsigned_full_result = unsigned_arg1 + unsigned_arg2;
+    uint64_t unsigned_full_result = static_cast<uint64_t>(unsigned_arg1) + unsigned_arg2;
     CF = (unsigned_result != unsigned_full_result);
     trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+    *signed_arg1 = signed_result;
+    trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
     break;
   }
   // End Op 81 Subops
@@ -163,19 +164,20 @@ void test_subtract_imm32_from_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 5: {
   trace(Callstack_depth+1, "run") << "subop subtract" << end();
-  int64_t signed_full_result = *signed_arg1 - signed_arg2;
-  *signed_arg1 -= signed_arg2;
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
-  SF = (*signed_arg1 < 0);
-  ZF = (*signed_arg1 == 0);
-  OF = (*signed_arg1 != signed_full_result);
+  int32_t signed_result = *signed_arg1 - signed_arg2;
+  SF = (signed_result < 0);
+  ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) - signed_arg2;
+  OF = (signed_result != signed_full_result);
   // set CF
   uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
   uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
   uint32_t unsigned_result = unsigned_arg1 - unsigned_arg2;
-  uint64_t unsigned_full_result = unsigned_arg1 - unsigned_arg2;
+  uint64_t unsigned_full_result = static_cast<uint64_t>(unsigned_arg1) - unsigned_arg2;
   CF = (unsigned_result != unsigned_full_result);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  *signed_arg1 = signed_result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
   break;
 }
 
@@ -674,10 +676,10 @@ void test_compare_imm32_with_eax_greater() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  3d                                 07 0b 0c 0d \n"  // compare 0x0d0c0b07 with EAX
+      "  3d                                 07 0b 0c 0d \n"  // compare EAX with 0x0d0c0b07
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EAX and imm32 0x0d0c0b07\n"
+      "run: compare EAX with imm32 0x0d0c0b07\n"
       "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
@@ -686,36 +688,35 @@ void test_compare_imm32_with_eax_greater() {
 case 0x3d: {  // compare EAX with imm32
   const int32_t signed_arg1 = Reg[EAX].i;
   const int32_t signed_arg2 = next32();
-  trace(Callstack_depth+1, "run") << "compare EAX and imm32 0x" << HEXWORD << signed_arg2 << end();
+  trace(Callstack_depth+1, "run") << "compare EAX with imm32 0x" << HEXWORD << signed_arg2 << end();
   const int32_t signed_difference = signed_arg1 - signed_arg2;
   SF = (signed_difference < 0);
   ZF = (signed_difference == 0);
-  const int64_t full_signed_difference = signed_arg1 - signed_arg2;
+  const int64_t full_signed_difference = static_cast<int64_t>(signed_arg1) - signed_arg2;
   OF = (signed_difference != full_signed_difference);
   const uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1);
   const uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
   const uint32_t unsigned_difference = unsigned_arg1 - unsigned_arg2;
-  const uint64_t full_unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  const uint64_t full_unsigned_difference = static_cast<uint64_t>(unsigned_arg1) - unsigned_arg2;
   CF = (unsigned_difference != full_unsigned_difference);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
 :(code)
-void test_compare_imm32_with_eax_lesser() {
+void test_compare_eax_with_imm32_lesser() {
   Reg[EAX].i = 0x0d0c0b07;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  3d                                 0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EAX
+      "  3d                                 0a 0b 0c 0d \n"  // compare EAX with 0x0d0c0b0a
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EAX and imm32 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; CF=0; OF=0\n"
+      "run: compare EAX with imm32 0x0d0c0b0a\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
 }
 
-:(code)
 void test_compare_imm32_with_eax_equal() {
   Reg[EAX].i = 0x0d0c0b0a;
   run(
@@ -724,14 +725,13 @@ void test_compare_imm32_with_eax_equal() {
       "  3d                                 0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EAX
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EAX and imm32 0x0d0c0b0a\n"
+      "run: compare EAX with imm32 0x0d0c0b0a\n"
       "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 
 //:
 
-:(code)
 void test_compare_imm32_with_r32_greater() {
   Reg[EBX].i = 0x0d0c0b0a;
   run(
@@ -754,7 +754,7 @@ case 7: {
   const int32_t tmp1 = *signed_arg1 - signed_arg2;
   SF = (tmp1 < 0);
   ZF = (tmp1 == 0);
-  const int64_t tmp2 = *signed_arg1 - signed_arg2;
+  const int64_t tmp2 = static_cast<int64_t>(*signed_arg1) - signed_arg2;
   OF = (tmp1 != tmp2);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
