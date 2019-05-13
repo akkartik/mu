@@ -770,11 +770,11 @@ void test_compare_r32_with_r32_greater() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  39     d8                                    \n"  // compare EBX with EAX
+      "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EBX with r/m32\n"
+      "run: compare r/m32 with EBX\n"
       "run: r/m32 is EAX\n"
       "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
@@ -784,7 +784,7 @@ void test_compare_r32_with_r32_greater() {
 case 0x39: {  // set SF if r/m32 < r32
   const uint8_t modrm = next();
   const uint8_t reg2 = (modrm>>3)&0x7;
-  trace(Callstack_depth+1, "run") << "compare " << rname(reg2) << " with r/m32" << end();
+  trace(Callstack_depth+1, "run") << "compare r/m32 with " << rname(reg2) << end();
   const int32_t* signed_arg1 = effective_address(modrm);
   const int32_t signed_arg2 = Reg[reg2].i;
   const int32_t signed_difference = *signed_arg1 - signed_arg2;
@@ -808,11 +808,11 @@ void test_compare_r32_with_r32_lesser() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  39     d8                                    \n"  // compare EBX with EAX
+      "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EBX with r/m32\n"
+      "run: compare r/m32 with EBX\n"
       "run: r/m32 is EAX\n"
       "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
@@ -824,11 +824,11 @@ void test_compare_r32_with_r32_lesser_unsigned() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  39     d8                                    \n"  // compare EBX with EAX
+      "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EBX with r/m32\n"
+      "run: compare r/m32 with EBX\n"
       "run: r/m32 is EAX\n"
       "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
@@ -840,11 +840,11 @@ void test_compare_r32_with_r32_equal() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  39     d8                                    \n"  // compare EBX with EAX
+      "  39     d8                                    \n"  // compare EAX and EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EBX with r/m32\n"
+      "run: compare r/m32 with EBX\n"
       "run: r/m32 is EAX\n"
       "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
