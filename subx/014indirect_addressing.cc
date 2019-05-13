@@ -60,19 +60,81 @@ case 0x03: {  // add r/m32 to r32
   const uint8_t arg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "add r/m32 to " << rname(arg1) << end();
   const int32_t* signed_arg2 = effective_address(modrm);
-  int64_t signed_full_result = Reg[arg1].i + *signed_arg2;
-  Reg[arg1].i += *signed_arg2;
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
-  SF = (Reg[arg1].i < 0);
-  ZF = (Reg[arg1].i == 0);
-  OF = (Reg[arg1].i != signed_full_result);
+  int32_t signed_result = Reg[arg1].i + *signed_arg2;
+  int64_t signed_full_result = static_cast<int64_t>(Reg[arg1].i) + *signed_arg2;
+  SF = (signed_result < 0);
+  ZF = (signed_result == 0);
+  OF = (signed_result != signed_full_result);
   // set CF
   uint32_t unsigned_arg2 = static_cast<uint32_t>(*signed_arg2);
   uint32_t unsigned_result = Reg[arg1].u + unsigned_arg2;
-  uint64_t unsigned_full_result = Reg[arg1].u + unsigned_arg2;
+  uint64_t unsigned_full_result = static_cast<uint64_t>(Reg[arg1].u) + unsigned_arg2;
   CF = (unsigned_result != unsigned_full_result);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  Reg[arg1].i = signed_result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
   break;
+}
+
+:(code)
+void test_add_mem_at_r32_to_r32_signed_overflow() {
+  Reg[EAX].i = 0x2000;
+  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  03     18                                    \n" // add *EAX to EBX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "01 00 00 00\n"  // 1
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add r/m32 to EBX\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: effective address contains 1\n"
+      "run: SF=1; ZF=0; CF=0; OF=1\n"
+      "run: storing 0x80000000\n"
+  );
+}
+
+void test_add_mem_at_r32_to_r32_unsigned_overflow() {
+  Reg[EAX].u = 0x2000;
+  Reg[EBX].u = 0xffffffff;  // largest unsigned number
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  03     18                                    \n" // add *EAX to EBX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "01 00 00 00\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add r/m32 to EBX\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: effective address contains 1\n"
+      "run: SF=0; ZF=1; CF=1; OF=0\n"
+      "run: storing 0x00000000\n"
+  );
+}
+
+void test_add_mem_at_r32_to_r32_unsigned_and_signed_overflow() {
+  Reg[EAX].u = 0x2000;
+  Reg[EBX].u = 0x80000000;  // smallest negative signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  03     18                                    \n" // add *EAX to EBX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "00 00 00 80\n"  // smallest negative signed integer
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add r/m32 to EBX\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: effective address contains 80000000\n"
+      "run: SF=0; ZF=1; CF=1; OF=1\n"
+      "run: storing 0x00000000\n"
+  );
 }
 
 //:: subtract
