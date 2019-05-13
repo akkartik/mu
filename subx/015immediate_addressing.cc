@@ -6,7 +6,7 @@ put_new(Name, "05", "add imm32 to EAX (add)");
 :(before "End Single-Byte Opcodes")
 case 0x05: {  // add imm32 to EAX
   int32_t signed_arg2 = next32();
-  trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << signed_arg2 << " to reg EAX" << end();
+  trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << signed_arg2 << " to EAX" << end();
   int32_t signed_result = Reg[EAX].i + signed_arg2;
   SF = (signed_result < 0);
   ZF = (signed_result == 0);
@@ -22,6 +22,55 @@ case 0x05: {  // add imm32 to EAX
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
   break;
 }
+
+:(code)
+void test_add_imm32_to_EAX_signed_overflow() {
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  05                                 01 00 00 00 \n" // add 1 to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add imm32 0x00000001 to EAX\n"
+      "run: SF=1; ZF=0; CF=0; OF=1\n"
+      "run: storing 0x80000000\n"
+  );
+}
+
+void test_add_imm32_to_EAX_unsigned_overflow() {
+  Reg[EAX].u = 0xffffffff;  // largest unsigned number
+  Reg[EBX].u = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  05                                 01 00 00 00 \n" // add 1 to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add imm32 0x00000001 to EAX\n"
+      "run: SF=0; ZF=1; CF=1; OF=0\n"
+      "run: storing 0x00000000\n"
+  );
+}
+
+void test_add_imm32_to_EAX_unsigned_and_signed_overflow() {
+  Reg[EAX].u = 0x80000000;  // smallest negative signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  05                                 00 00 00 80 \n" // add 0x80000000 to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add imm32 0x80000000 to EAX\n"
+      "run: SF=0; ZF=1; CF=1; OF=1\n"
+      "run: storing 0x00000000\n"
+  );
+}
+
+//:
 
 :(before "End Initialize Op Names")
 put_new(Name, "81", "combine rm32 with imm32 based on subop (add/sub/and/or/xor/cmp)");

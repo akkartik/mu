@@ -14,7 +14,7 @@ void test_segment_name() {
       "load: 0x09000056 -> 0b\n"
       "load: 0x09000057 -> 0c\n"
       "load: 0x09000058 -> 0d\n"
-      "run: add imm32 0x0d0c0b0a to reg EAX\n"
+      "run: add imm32 0x0d0c0b0a to EAX\n"
       "run: storing 0x0d0c0b0a\n"
   );
 }
