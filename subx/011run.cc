@@ -35,7 +35,7 @@ put_new(Help, "syntax",
 cerr << "  syntax\n";
 
 :(code)
-void test_add_imm32_to_eax() {
+void test_add_imm32_to_EAX() {
   // At the lowest level, SubX programs are a series of hex bytes, each
   // (variable-length) instruction on one line.
   run(

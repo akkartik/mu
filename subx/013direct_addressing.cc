@@ -249,7 +249,7 @@ void test_subtract_r32_from_r32_signed_and_unsigned_overflow() {
 put_new(Name, "f7", "negate/multiply/divide rm32 (with EAX and EDX if necessary) depending on subop (neg/mul/idiv)");
 
 :(code)
-void test_multiply_eax_by_r32() {
+void test_multiply_EAX_by_r32() {
   Reg[EAX].i = 4;
   Reg[ECX].i = 3;
   run(
@@ -388,7 +388,7 @@ void test_negate_can_overflow() {
 
 //:: divide with remainder
 
-void test_divide_eax_by_rm32() {
+void test_divide_EAX_by_rm32() {
   Reg[EAX].u = 7;
   Reg[EDX].u = 0;
   Reg[ECX].i = 3;
@@ -422,7 +422,7 @@ case 7: {  // divide EDX:EAX by r/m32, storing quotient in EAX and remainder in 
 }
 
 :(code)
-void test_divide_eax_by_negative_rm32() {
+void test_divide_EAX_by_negative_rm32() {
   Reg[EAX].u = 7;
   Reg[EDX].u = 0;
   Reg[ECX].i = -3;
@@ -441,7 +441,7 @@ void test_divide_eax_by_negative_rm32() {
   );
 }
 
-void test_divide_negative_eax_by_rm32() {
+void test_divide_negative_EAX_by_rm32() {
   Reg[EAX].i = -7;
   Reg[EDX].i = -1;  // sign extend
   Reg[ECX].i = 3;
@@ -460,7 +460,7 @@ void test_divide_negative_eax_by_rm32() {
   );
 }
 
-void test_divide_negative_edx_eax_by_rm32() {
+void test_divide_negative_EDX_EAX_by_rm32() {
   Reg[EAX].i = 0;  // lower 32 bits are clear
   Reg[EDX].i = -7;
   Reg[ECX].i = 0x40000000;  // 2^30 (largest positive power of 2)
