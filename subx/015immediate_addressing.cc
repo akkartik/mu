@@ -124,18 +124,19 @@ void test_subtract_imm32_from_eax() {
 case 0x2d: {  // subtract imm32 from EAX
   const int32_t signed_arg2 = next32();
   trace(Callstack_depth+1, "run") << "subtract imm32 0x" << HEXWORD << signed_arg2 << " from EAX" << end();
-  int64_t signed_full_result = Reg[EAX].i - signed_arg2;
-  Reg[EAX].i -= signed_arg2;
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
-  SF = (Reg[EAX].i < 0);
-  ZF = (Reg[EAX].i == 0);
-  OF = (Reg[EAX].i != signed_full_result);
+  int32_t signed_result = Reg[EAX].i - signed_arg2;
+  SF = (signed_result < 0);
+  ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(Reg[EAX].i) - signed_arg2;
+  OF = (signed_result != signed_full_result);
   // set CF
   uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
   uint32_t unsigned_result = Reg[EAX].u - unsigned_arg2;
-  uint64_t unsigned_full_result = Reg[EAX].u - unsigned_arg2;
+  uint64_t unsigned_full_result = static_cast<uint64_t>(Reg[EAX].u) - unsigned_arg2;
   CF = (unsigned_result != unsigned_full_result);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  Reg[EAX].i = signed_result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
   break;
 }
 
