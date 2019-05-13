@@ -385,7 +385,7 @@ void test_compare_mem_at_r32_with_r32_lesser() {
   CHECK_TRACE_CONTENTS(
       "run: compare r/m32 with EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: SF=1; ZF=0; CF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
 }
 
