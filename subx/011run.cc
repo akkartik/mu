@@ -351,6 +351,8 @@ void parse_and_load(const string& text_bytes) {
 :(before "End Initialize Op Names")
 put_new(Name, "b8", "copy imm32 to EAX (mov)");
 
+//: our first opcode
+
 :(before "End Single-Byte Opcodes")
 case 0xb8: {  // copy imm32 to EAX
   const int32_t src = next32();
@@ -371,9 +373,6 @@ void test_copy_imm32_to_EAX() {
   );
 }
 
-//: our first opcode
-
-:(code)
 // read a 32-bit int in little-endian order from the instruction stream
 int32_t next32() {
   int32_t result = read_mem_i32(EIP);
