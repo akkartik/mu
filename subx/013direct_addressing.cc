@@ -44,7 +44,7 @@ case 0x01: {  // add r32 to r/m32
 
 :(code)
 void test_add_r32_to_r32_signed_overflow() {
-  Reg[EAX].i = 0x7fffffff;  // largest positive signed number
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
   Reg[EBX].i = 1;
   run(
       "== 0x1\n"  // code segment
@@ -61,7 +61,7 @@ void test_add_r32_to_r32_signed_overflow() {
 }
 
 void test_add_r32_to_r32_unsigned_overflow() {
-  Reg[EAX].u = 0xffffffff;  // largest positive unsigned number
+  Reg[EAX].u = 0xffffffff;  // largest unsigned number
   Reg[EBX].u = 1;
   run(
       "== 0x1\n"  // code segment
@@ -78,7 +78,7 @@ void test_add_r32_to_r32_unsigned_overflow() {
 }
 
 void test_add_r32_to_r32_unsigned_and_signed_overflow() {
-  Reg[EAX].u = Reg[EBX].u = 0x80000000;  // largest negative number
+  Reg[EAX].u = Reg[EBX].u = 0x80000000;  // smallest negative signed integer
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -193,8 +193,8 @@ case 0x29: {  // subtract r32 from r/m32
 
 :(code)
 void test_subtract_r32_from_r32_signed_overflow() {
-  Reg[EAX].i = 0x80000000;  // largest negative number
-  Reg[EBX].i = 0x7fffffff;  // largest positive number
+  Reg[EAX].i = 0x80000000;  // smallest negative signed integer
+  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -228,7 +228,7 @@ void test_subtract_r32_from_r32_unsigned_overflow() {
 
 void test_subtract_r32_from_r32_signed_and_unsigned_overflow() {
   Reg[EAX].i = 0;
-  Reg[EBX].i = 0x80000000;  // largest positive signed number
+  Reg[EBX].i = 0x80000000;  // smallest negative signed integer
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -887,8 +887,8 @@ void test_compare_r32_with_r32_lesser_unsigned_and_signed() {
 }
 
 void test_compare_r32_with_r32_lesser_unsigned_and_signed_due_to_overflow() {
-  Reg[EAX].i = 0x7fffffff;  // largest positive integer
-  Reg[EBX].i = 0x80000000;  // smallest negative integer
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  Reg[EBX].i = 0x80000000;  // smallest negative signed integer
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
