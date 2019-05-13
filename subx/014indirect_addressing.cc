@@ -547,7 +547,7 @@ void test_compare_r32_with_mem_at_r32_greater() {
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
-      "07 0c 0b 0a\n"  // 0x0a0b0c0d
+      "07 0c 0b 0a\n"  // 0x0a0b0c07
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
@@ -577,21 +577,79 @@ case 0x3b: {  // set SF if r32 < r/m32
 }
 
 :(code)
-void test_compare_r32_with_mem_at_r32_lesser() {
+void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c07;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
-      // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
+      "run: effective address contains a0b0c0d\n"
       "run: SF=1; ZF=0; CF=1; OF=0\n"
+  );
+}
+
+void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed_due_to_overflow() {
+  Reg[EAX].i = 0x2000;
+  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3b     18                                    \n"  // compare EBX with *EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "00 00 00 80\n"  // smallest negative signed integer
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EBX with r/m32\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: effective address contains 80000000\n"
+      "run: SF=1; ZF=0; CF=1; OF=1\n"
+  );
+}
+
+void test_compare_r32_with_mem_at_r32_lesser_signed() {
+  Reg[EAX].i = 0x2000;
+  Reg[EBX].i = 0xffffffff;  // -1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3b     18                                    \n"  // compare EBX with *EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "01 00 00 00\n"  // 1
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EBX with r/m32\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: effective address contains 1\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
+  );
+}
+
+void test_compare_r32_with_mem_at_r32_lesser_unsigned() {
+  Reg[EAX].i = 0x2000;
+  Reg[EBX].i = 0x00000001;  // 1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3b     18                                    \n"  // compare EBX with *EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+      "== 0x2000\n"  // data segment
+      "ff ff ff ff\n"  // -1
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EBX with r/m32\n"
+      "run: effective address is 0x00002000 (EAX)\n"
+      "run: effective address contains ffffffff\n"
+      "run: SF=0; ZF=0; CF=1; OF=0\n"
   );
 }
 
