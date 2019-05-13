@@ -59,8 +59,19 @@ case 0x03: {  // add r/m32 to r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "add r/m32 to " << rname(arg1) << end();
-  const int32_t* arg2 = effective_address(modrm);
-  BINARY_ARITHMETIC_OP(+, Reg[arg1].i, *arg2);
+  const int32_t* signed_arg2 = effective_address(modrm);
+  int64_t signed_full_result = Reg[arg1].i + *signed_arg2;
+  Reg[arg1].i += *signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
+  SF = (Reg[arg1].i < 0);
+  ZF = (Reg[arg1].i == 0);
+  OF = (Reg[arg1].i != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(*signed_arg2);
+  uint32_t unsigned_result = Reg[arg1].u + unsigned_arg2;
+  uint64_t unsigned_full_result = Reg[arg1].u + unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -114,8 +125,19 @@ case 0x2b: {  // subtract r/m32 from r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "subtract r/m32 from " << rname(arg1) << end();
-  const int32_t* arg2 = effective_address(modrm);
-  BINARY_ARITHMETIC_OP(-, Reg[arg1].i, *arg2);
+  const int32_t* signed_arg2 = effective_address(modrm);
+  int64_t signed_full_result = Reg[arg1].i - *signed_arg2;
+  Reg[arg1].i -= *signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
+  SF = (Reg[arg1].i < 0);
+  ZF = (Reg[arg1].i == 0);
+  OF = (Reg[arg1].i != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(*signed_arg2);
+  uint32_t unsigned_result = Reg[arg1].u - unsigned_arg2;
+  uint64_t unsigned_full_result = Reg[arg1].u - unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -168,8 +190,16 @@ case 0x23: {  // and r/m32 with r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "and r/m32 with " << rname(arg1) << end();
-  const int32_t* arg2 = effective_address(modrm);
-  BINARY_BITWISE_OP(&, Reg[arg1].u, *arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t* signed_arg2 = effective_address(modrm);
+  Reg[arg1].i &= *signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
+  SF = (Reg[arg1].i >> 31);
+  ZF = (Reg[arg1].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -223,8 +253,16 @@ case 0x0b: {  // or r/m32 with r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "or r/m32 with " << rname(arg1) << end();
-  const int32_t* arg2 = effective_address(modrm);
-  BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t* signed_arg2 = effective_address(modrm);
+  Reg[arg1].i |= *signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
+  SF = (Reg[arg1].i >> 31);
+  ZF = (Reg[arg1].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -277,8 +315,16 @@ case 0x33: {  // xor r/m32 with r32
   const uint8_t modrm = next();
   const uint8_t arg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "xor r/m32 with " << rname(arg1) << end();
-  const int32_t* arg2 = effective_address(modrm);
-  BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t* signed_arg2 = effective_address(modrm);
+  Reg[arg1].i |= *signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
+  SF = (Reg[arg1].i >> 31);
+  ZF = (Reg[arg1].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 

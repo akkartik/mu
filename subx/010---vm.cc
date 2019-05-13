@@ -86,40 +86,6 @@ bool OF = false;  // overflow flag
 :(before "End Reset")
 SF = ZF = CF = OF = false;
 
-//: how the flag registers are updated after each instruction
-
-:(before "End Includes")
-// Combine 'arg1' and 'arg2' with arithmetic operation 'op' and store the
-// result in 'arg1', then update flags.
-// beware: no side-effects in args
-#define BINARY_ARITHMETIC_OP(op, signed_arg1, signed_arg2) { \
-  int64_t signed_full_result = signed_arg1 op signed_arg2; \
-  signed_arg1 = signed_arg1 op signed_arg2; \
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << signed_arg1 << end(); \
-  SF = (signed_arg1 < 0); \
-  ZF = (signed_arg1 == 0); \
-  OF = (signed_arg1 != signed_full_result); \
-  /* CF is more complex */ \
-  uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1); \
-  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2); \
-  uint32_t unsigned_result = unsigned_arg1 op unsigned_arg2; \
-  uint64_t unsigned_full_result = unsigned_arg1 op unsigned_arg2; \
-  CF = (unsigned_result != unsigned_full_result); \
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
-}
-
-// Combine 'arg1' and 'arg2' with bitwise operation 'op' and store the result
-// in 'arg1', then update flags.
-#define BINARY_BITWISE_OP(op, unsigned_arg1, unsigned_arg2) { \
-  unsigned_arg1 = unsigned_arg1 op unsigned_arg2; \
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << unsigned_arg1 << end(); \
-  SF = (unsigned_arg1 >> 31); \
-  ZF = (unsigned_arg1 == 0); \
-  CF = false; \
-  OF = false; \
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
-}
-
 //:: simulated RAM
 
 :(before "End Types")

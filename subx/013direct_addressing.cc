@@ -25,8 +25,19 @@ case 0x01: {  // add r32 to r/m32
   uint8_t modrm = next();
   uint8_t arg2 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "add " << rname(arg2) << " to r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  BINARY_ARITHMETIC_OP(+, *arg1, Reg[arg2].i);
+  int32_t* signed_arg1 = effective_address(modrm);
+  int64_t signed_full_result = *signed_arg1 + Reg[arg2].i;
+  *signed_arg1 += Reg[arg2].i;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 < 0);
+  ZF = (*signed_arg1 == 0);
+  OF = (*signed_arg1 != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+  uint32_t unsigned_result = unsigned_arg1 + Reg[arg2].u;
+  uint64_t unsigned_full_result = unsigned_arg1 + Reg[arg2].u;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -129,8 +140,19 @@ case 0x29: {  // subtract r32 from r/m32
   const uint8_t modrm = next();
   const uint8_t arg2 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "subtract " << rname(arg2) << " from r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  BINARY_ARITHMETIC_OP(-, *arg1, Reg[arg2].i);
+  int32_t* signed_arg1 = effective_address(modrm);
+  int64_t signed_full_result = *signed_arg1 - Reg[arg2].i;
+  *signed_arg1 -= Reg[arg2].i;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 < 0);
+  ZF = (*signed_arg1 == 0);
+  OF = (*signed_arg1 != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+  uint32_t unsigned_result = unsigned_arg1 - Reg[arg2].u;
+  uint64_t unsigned_full_result = unsigned_arg1 - Reg[arg2].u;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -215,19 +237,26 @@ void test_multiply_r32_into_r32() {
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
-      "run: multiply r/m32 into EBX\n"
+      "run: multiply EBX by r/m32\n"
       "run: r/m32 is EAX\n"
       "run: storing 0x00000008\n"
   );
 }
 
 :(before "End Two-Byte Opcodes Starting With 0f")
-case 0xaf: {  // multiply r32 into r/m32
+case 0xaf: {  // multiply r32 by r/m32
   const uint8_t modrm = next();
-  const uint8_t arg2 = (modrm>>3)&0x7;
-  trace(Callstack_depth+1, "run") << "multiply r/m32 into " << rname(arg2) << end();
-  const int32_t* arg1 = effective_address(modrm);
-  BINARY_ARITHMETIC_OP(*, Reg[arg2].i, *arg1);
+  const uint8_t arg1 = (modrm>>3)&0x7;
+  trace(Callstack_depth+1, "run") << "multiply " << rname(arg1) << " by r/m32" << end();
+  const int32_t* arg2 = effective_address(modrm);
+  int64_t full_result = Reg[arg1].i * (*arg2);
+  Reg[arg1].i *= (*arg2);
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[arg1].i << end();
+  SF = (Reg[arg1].i < 0);
+  ZF = (Reg[arg1].i == 0);
+  OF = (Reg[arg1].i != full_result);
+  CF = OF;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -316,6 +345,7 @@ case 7: {  // divide EDX:EAX by r/m32, storing quotient in EAX and remainder in 
   assert(divisor != 0);
   Reg[EAX].i = dividend/divisor;  // quotient
   Reg[EDX].i = dividend%divisor;  // remainder
+  // flag state undefined
   trace(Callstack_depth+1, "run") << "quotient: 0x" << HEXWORD << Reg[EAX].i << end();
   trace(Callstack_depth+1, "run") << "remainder: 0x" << HEXWORD << Reg[EDX].i << end();
   break;
@@ -605,8 +635,16 @@ case 0x21: {  // and r32 with r/m32
   const uint8_t modrm = next();
   const uint8_t arg2 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "and " << rname(arg2) << " with r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  BINARY_BITWISE_OP(&, *arg1, Reg[arg2].u);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  int32_t* signed_arg1 = effective_address(modrm);
+  *signed_arg1 &= Reg[arg2].i;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -637,8 +675,16 @@ case 0x09: {  // or r32 with r/m32
   const uint8_t modrm = next();
   const uint8_t arg2 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "or " << rname(arg2) << " with r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  BINARY_BITWISE_OP(|, *arg1, Reg[arg2].u);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  int32_t* signed_arg1 = effective_address(modrm);
+  *signed_arg1 |= Reg[arg2].i;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -669,8 +715,16 @@ case 0x31: {  // xor r32 with r/m32
   const uint8_t modrm = next();
   const uint8_t arg2 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "xor " << rname(arg2) << " with r/m32" << end();
-  int32_t* arg1 = effective_address(modrm);
-  BINARY_BITWISE_OP(^, *arg1, Reg[arg2].u);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  int32_t* signed_arg1 = effective_address(modrm);
+  *signed_arg1 ^= Reg[arg2].i;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 

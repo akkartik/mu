@@ -25,15 +25,28 @@ void test_add_imm32_to_r32() {
 case 0x81: {  // combine imm32 with r/m32
   trace(Callstack_depth+1, "run") << "combine imm32 with r/m32" << end();
   const uint8_t modrm = next();
-  int32_t* arg1 = effective_address(modrm);
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "imm32 is 0x" << HEXWORD << arg2 << end();
+  int32_t* signed_arg1 = effective_address(modrm);
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "imm32 is 0x" << HEXWORD << signed_arg2 << end();
   const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
-  case 0:
+  case 0: {
     trace(Callstack_depth+1, "run") << "subop add" << end();
-    BINARY_ARITHMETIC_OP(+, *arg1, arg2);
+    int64_t signed_full_result = *signed_arg1 + signed_arg2;
+    *signed_arg1 += signed_arg2;
+    trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+    SF = (*signed_arg1 < 0);
+    ZF = (*signed_arg1 == 0);
+    OF = (*signed_arg1 != signed_full_result);
+    // set CF
+    uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+    uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+    uint32_t unsigned_result = unsigned_arg1 + unsigned_arg2;
+    uint64_t unsigned_full_result = unsigned_arg1 + unsigned_arg2;
+    CF = (unsigned_result != unsigned_full_result);
+    trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
     break;
+  }
   // End Op 81 Subops
   default:
     cerr << "unrecognized subop for opcode 81: " << NUM(subop) << '\n';
@@ -85,9 +98,20 @@ void test_subtract_imm32_from_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x2d: {  // subtract imm32 from EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "subtract imm32 0x" << HEXWORD << arg2 << " from EAX" << end();
-  BINARY_ARITHMETIC_OP(-, Reg[EAX].i, arg2);
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "subtract imm32 0x" << HEXWORD << signed_arg2 << " from EAX" << end();
+  int64_t signed_full_result = Reg[EAX].i - signed_arg2;
+  Reg[EAX].i -= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i < 0);
+  ZF = (Reg[EAX].i == 0);
+  OF = (Reg[EAX].i != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  uint32_t unsigned_result = Reg[EAX].u - unsigned_arg2;
+  uint64_t unsigned_full_result = Reg[EAX].u - unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -116,7 +140,19 @@ void test_subtract_imm32_from_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 5: {
   trace(Callstack_depth+1, "run") << "subop subtract" << end();
-  BINARY_ARITHMETIC_OP(-, *arg1, arg2);
+  int64_t signed_full_result = *signed_arg1 - signed_arg2;
+  *signed_arg1 -= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 < 0);
+  ZF = (*signed_arg1 == 0);
+  OF = (*signed_arg1 != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  uint32_t unsigned_result = unsigned_arg1 - unsigned_arg2;
+  uint64_t unsigned_full_result = unsigned_arg1 - unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -353,9 +389,17 @@ void test_and_imm32_with_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x25: {  // and imm32 with EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "and imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
-  BINARY_BITWISE_OP(&, Reg[EAX].i, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "and imm32 0x" << HEXWORD << signed_arg2 << " with EAX" << end();
+  Reg[EAX].i &= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i >> 31);
+  ZF = (Reg[EAX].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -384,7 +428,15 @@ void test_and_imm32_with_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 4: {
   trace(Callstack_depth+1, "run") << "subop and" << end();
-  BINARY_BITWISE_OP(&, *arg1, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  *signed_arg1 &= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -429,9 +481,17 @@ void test_or_imm32_with_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x0d: {  // or imm32 with EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "or imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
-  BINARY_BITWISE_OP(|, Reg[EAX].i, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "or imm32 0x" << HEXWORD << signed_arg2 << " with EAX" << end();
+  Reg[EAX].i |= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i >> 31);
+  ZF = (Reg[EAX].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -460,7 +520,15 @@ void test_or_imm32_with_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 1: {
   trace(Callstack_depth+1, "run") << "subop or" << end();
-  BINARY_BITWISE_OP(|, *arg1, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  *signed_arg1 |= signed_arg2; \
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end(); \
+  SF = (*signed_arg1 >> 31); \
+  ZF = (*signed_arg1 == 0); \
+  CF = false; \
+  OF = false; \
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
   break;
 }
 
@@ -503,9 +571,17 @@ void test_xor_imm32_with_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x35: {  // xor imm32 with EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "xor imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
-  BINARY_BITWISE_OP(^, Reg[EAX].i, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "xor imm32 0x" << HEXWORD << signed_arg2 << " with EAX" << end();
+  Reg[EAX].i ^= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i >> 31);
+  ZF = (Reg[EAX].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -534,7 +610,15 @@ void test_xor_imm32_with_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 6: {
   trace(Callstack_depth+1, "run") << "subop xor" << end();
-  BINARY_BITWISE_OP(^, *arg1, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  *signed_arg1 ^= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -644,10 +728,10 @@ void test_compare_imm32_with_r32_greater() {
 :(before "End Op 81 Subops")
 case 7: {
   trace(Callstack_depth+1, "run") << "subop compare" << end();
-  const int32_t tmp1 = *arg1 - arg2;
+  const int32_t tmp1 = *signed_arg1 - signed_arg2;
   SF = (tmp1 < 0);
   ZF = (tmp1 == 0);
-  const int64_t tmp2 = *arg1 - arg2;
+  const int64_t tmp2 = *signed_arg1 - signed_arg2;
   OF = (tmp1 != tmp2);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;

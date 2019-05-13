@@ -355,9 +355,21 @@ put_new(Name, "05", "add imm32 to EAX (add)");
 //: our first opcode
 :(before "End Single-Byte Opcodes")
 case 0x05: {  // add imm32 to EAX
-  int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
-  BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
+  int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << signed_arg2 << " to reg EAX" << end();
+  int64_t signed_full_result = Reg[EAX].i + signed_arg2;
+  Reg[EAX].i += signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i < 0);
+  ZF = (Reg[EAX].i == 0);
+  OF = (Reg[EAX].i != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg1 = static_cast<uint32_t>(Reg[EAX].i);
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  uint32_t unsigned_result = unsigned_arg1 + unsigned_arg2;
+  uint64_t unsigned_full_result = unsigned_arg1 + unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
