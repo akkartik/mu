@@ -917,16 +917,59 @@ case 0x3d: {  // compare EAX with imm32
 }
 
 :(code)
-void test_compare_EAX_with_imm32_lesser() {
-  Reg[EAX].i = 0x0d0c0b07;
+void test_compare_EAX_with_imm32_lesser_unsigned_and_signed() {
+  Reg[EAX].i = 0x0a0b0c07;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  3d                                 0a 0b 0c 0d \n"  // compare EAX with 0x0d0c0b0a
+      "  3d                                 0d 0c 0b 0a \n"  // compare EAX with imm32
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EAX with imm32 0x0d0c0b0a\n"
+      "run: compare EAX with imm32 0x0a0b0c0d\n"
       "run: SF=1; ZF=0; CF=1; OF=0\n"
+  );
+}
+
+void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 00 00 00 80\n"  // compare EAX with smallest negative signed integer
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX with imm32 0x80000000\n"
+      "run: SF=1; ZF=0; CF=1; OF=1\n"
+  );
+}
+
+void test_compare_EAX_with_imm32_lesser_signed() {
+  Reg[EAX].i = 0xffffffff;  // -1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 01 00 00 00\n"  // compare EAX with 1
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX with imm32 0x00000001\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
+  );
+}
+
+void test_compare_EAX_with_imm32_lesser_unsigned() {
+  Reg[EAX].i = 0x00000001;  // 1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 ff ff ff ff\n"  // compare EAX with -1
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX with imm32 0xffffffff\n"
+      "run: SF=0; ZF=0; CF=1; OF=0\n"
   );
 }
 
