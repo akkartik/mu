@@ -32,6 +32,9 @@ _write:  # fd : int, s : (address array byte) -> <void>
     # . syscall
     b8/copy-to-EAX  4/imm32/write
     cd/syscall  0x80/imm8
+    # if (EAX < 0) abort
+    3d/compare-EAX-with  0/imm32
+    0f 8c/jump-if-lesser  $_write:abort/disp32
 $_write:end:
     # . restore registers
     5b/pop-to-EBX
@@ -42,5 +45,13 @@ $_write:end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
+$_write:abort:
+    # can't write a message here for risk of an infinite loop, so we'll use a special exit code instead
+    # . syscall(exit, 255)
+    bb/copy-to-EBX  0xff/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 # . . vim:nowrap:textwidth=0

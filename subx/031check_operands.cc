@@ -152,8 +152,12 @@ void init_permitted_operands() {
 
   // jump
   put(Permitted_operands, "eb", 0x04);
+  put(Permitted_operands, "72", 0x04);
+  put(Permitted_operands, "73", 0x04);
   put(Permitted_operands, "74", 0x04);
   put(Permitted_operands, "75", 0x04);
+  put(Permitted_operands, "76", 0x04);
+  put(Permitted_operands, "77", 0x04);
   put(Permitted_operands, "7c", 0x04);
   put(Permitted_operands, "7d", 0x04);
   put(Permitted_operands, "7e", 0x04);

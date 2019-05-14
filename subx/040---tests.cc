@@ -16,7 +16,8 @@ Transform.push_back(create_test_function);
 
 :(code)
 void test_run_test() {
-  Reg[ESP].u = 0x100;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000100;
   run(
       "== 0x1\n"  // code segment
       "main:\n"
