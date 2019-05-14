@@ -1,6 +1,78 @@
 //: instructions that (immediately) contain an argument to act with
 
 :(before "End Initialize Op Names")
+put_new(Name, "05", "add imm32 to EAX (add)");
+
+:(before "End Single-Byte Opcodes")
+case 0x05: {  // add imm32 to EAX
+  int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << signed_arg2 << " to EAX" << end();
+  int32_t signed_result = Reg[EAX].i + signed_arg2;
+  SF = (signed_result < 0);
+  ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(Reg[EAX].i) + signed_arg2;
+  OF = (signed_result != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  uint32_t unsigned_result = Reg[EAX].u + unsigned_arg2;
+  uint64_t unsigned_full_result = static_cast<uint64_t>(Reg[EAX].u) + unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  Reg[EAX].i = signed_result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  break;
+}
+
+:(code)
+void test_add_imm32_to_EAX_signed_overflow() {
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  05                                 01 00 00 00 \n" // add 1 to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add imm32 0x00000001 to EAX\n"
+      "run: SF=1; ZF=0; CF=0; OF=1\n"
+      "run: storing 0x80000000\n"
+  );
+}
+
+void test_add_imm32_to_EAX_unsigned_overflow() {
+  Reg[EAX].u = 0xffffffff;  // largest unsigned number
+  Reg[EBX].u = 1;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  05                                 01 00 00 00 \n" // add 1 to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add imm32 0x00000001 to EAX\n"
+      "run: SF=0; ZF=1; CF=1; OF=0\n"
+      "run: storing 0x00000000\n"
+  );
+}
+
+void test_add_imm32_to_EAX_unsigned_and_signed_overflow() {
+  Reg[EAX].u = 0x80000000;  // smallest negative signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  05                                 00 00 00 80 \n" // add 0x80000000 to EAX
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: add imm32 0x80000000 to EAX\n"
+      "run: SF=0; ZF=1; CF=1; OF=1\n"
+      "run: storing 0x00000000\n"
+  );
+}
+
+//:
+
+:(before "End Initialize Op Names")
 put_new(Name, "81", "combine rm32 with imm32 based on subop (add/sub/and/or/xor/cmp)");
 
 :(code)
@@ -10,7 +82,7 @@ void test_add_imm32_to_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     c3                          0a 0b 0c 0d\n"  // add 0x0d0c0b0a to EBX
-      // ModR/M in binary: 11 (direct mode) 000 (add imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 000 (subop add) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
@@ -25,21 +97,90 @@ void test_add_imm32_to_r32() {
 case 0x81: {  // combine imm32 with r/m32
   trace(Callstack_depth+1, "run") << "combine imm32 with r/m32" << end();
   const uint8_t modrm = next();
-  int32_t* arg1 = effective_address(modrm);
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "imm32 is 0x" << HEXWORD << arg2 << end();
+  int32_t* signed_arg1 = effective_address(modrm);
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "imm32 is 0x" << HEXWORD << signed_arg2 << end();
   const uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
-  case 0:
+  case 0: {
     trace(Callstack_depth+1, "run") << "subop add" << end();
-    BINARY_ARITHMETIC_OP(+, *arg1, arg2);
+    int32_t signed_result = *signed_arg1 + signed_arg2;
+    SF = (signed_result < 0);
+    ZF = (signed_result == 0);
+    int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) + signed_arg2;
+    OF = (signed_result != signed_full_result);
+    // set CF
+    uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+    uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+    uint32_t unsigned_result = unsigned_arg1 + unsigned_arg2;
+    uint64_t unsigned_full_result = static_cast<uint64_t>(unsigned_arg1) + unsigned_arg2;
+    CF = (unsigned_result != unsigned_full_result);
+    trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+    *signed_arg1 = signed_result;
+    trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
     break;
+  }
   // End Op 81 Subops
   default:
     cerr << "unrecognized subop for opcode 81: " << NUM(subop) << '\n';
     exit(1);
   }
   break;
+}
+
+:(code)
+void test_add_imm32_to_r32_signed_overflow() {
+  Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     c3                          01 00 00 00\n"  // add 1 to EBX
+      // ModR/M in binary: 11 (direct mode) 000 (subop add) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x00000001\n"
+      "run: subop add\n"
+      "run: SF=1; ZF=0; CF=0; OF=1\n"
+      "run: storing 0x80000000\n"
+  );
+}
+
+void test_add_imm32_to_r32_unsigned_overflow() {
+  Reg[EBX].u = 0xffffffff;  // largest unsigned number
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     c3                          01 00 00 00\n"  // add 1 to EBX
+      // ModR/M in binary: 11 (direct mode) 011 (subop add) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x00000001\n"
+      "run: subop add\n"
+      "run: SF=0; ZF=1; CF=1; OF=0\n"
+      "run: storing 0x00000000\n"
+  );
+}
+
+void test_add_imm32_to_r32_unsigned_and_signed_overflow() {
+  Reg[EBX].u = 0x80000000;  // smallest negative signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     c3                          00 00 00 80\n"  // add 0x80000000 to EBX
+      // ModR/M in binary: 11 (direct mode) 011 (subop add) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EBX\n"
+      "run: imm32 is 0x80000000\n"
+      "run: subop add\n"
+      "run: SF=0; ZF=1; CF=1; OF=1\n"
+      "run: storing 0x00000000\n"
+  );
 }
 
 //:
@@ -51,7 +192,7 @@ void test_add_imm32_to_mem_at_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     03                          0a 0b 0c 0d \n"  // add 0x0d0c0b0a to *EBX
-      // ModR/M in binary: 00 (indirect mode) 000 (add imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 000 (subop add) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "01 00 00 00\n"  // 0x00000001
   );
@@ -70,7 +211,7 @@ void test_add_imm32_to_mem_at_r32() {
 put_new(Name, "2d", "subtract imm32 from EAX (sub)");
 
 :(code)
-void test_subtract_imm32_from_eax() {
+void test_subtract_imm32_from_EAX() {
   Reg[EAX].i = 0x0d0c0baa;
   run(
       "== 0x1\n"  // code segment
@@ -85,22 +226,79 @@ void test_subtract_imm32_from_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x2d: {  // subtract imm32 from EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "subtract imm32 0x" << HEXWORD << arg2 << " from EAX" << end();
-  BINARY_ARITHMETIC_OP(-, Reg[EAX].i, arg2);
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "subtract imm32 0x" << HEXWORD << signed_arg2 << " from EAX" << end();
+  int32_t signed_result = Reg[EAX].i - signed_arg2;
+  SF = (signed_result < 0);
+  ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(Reg[EAX].i) - signed_arg2;
+  OF = (signed_result != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  uint32_t unsigned_result = Reg[EAX].u - unsigned_arg2;
+  uint64_t unsigned_full_result = static_cast<uint64_t>(Reg[EAX].u) - unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  Reg[EAX].i = signed_result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
   break;
+}
+
+:(code)
+void test_subtract_imm32_from_EAX_signed_overflow() {
+  Reg[EAX].i = 0x80000000;  // smallest negative signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  2d                                 ff ff ff 7f \n"  // subtract largest positive signed integer from EAX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract imm32 0x7fffffff from EAX\n"
+      "run: SF=0; ZF=0; CF=0; OF=1\n"
+      "run: storing 0x00000001\n"
+  );
+}
+
+void test_subtract_imm32_from_EAX_unsigned_overflow() {
+  Reg[EAX].i = 0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  2d                                 01 00 00 00 \n"  // subtract 1 from EAX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract imm32 0x00000001 from EAX\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
+      "run: storing 0xffffffff\n"
+  );
+}
+
+void test_subtract_imm32_from_EAX_signed_and_unsigned_overflow() {
+  Reg[EAX].i = 0;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  2d                                 00 00 00 80 \n"  // subtract smallest negative signed integer from EAX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: subtract imm32 0x80000000 from EAX\n"
+      "run: SF=1; ZF=0; CF=1; OF=1\n"
+      "run: storing 0x80000000\n"
+  );
 }
 
 //:
 
-:(code)
 void test_subtract_imm32_from_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     2b                          01 00 00 00 \n"  // subtract 1 from *EBX
-      // ModR/M in binary: 00 (indirect mode) 101 (subtract imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "0a 00 00 00\n"  // 0x0000000a
   );
@@ -116,20 +314,96 @@ void test_subtract_imm32_from_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 5: {
   trace(Callstack_depth+1, "run") << "subop subtract" << end();
-  BINARY_ARITHMETIC_OP(-, *arg1, arg2);
+  int32_t signed_result = *signed_arg1 - signed_arg2;
+  SF = (signed_result < 0);
+  ZF = (signed_result == 0);
+  int64_t signed_full_result = static_cast<int64_t>(*signed_arg1) - signed_arg2;
+  OF = (signed_result != signed_full_result);
+  // set CF
+  uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+  uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  uint32_t unsigned_result = unsigned_arg1 - unsigned_arg2;
+  uint64_t unsigned_full_result = static_cast<uint64_t>(unsigned_arg1) - unsigned_arg2;
+  CF = (unsigned_result != unsigned_full_result);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  *signed_arg1 = signed_result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
   break;
+}
+
+:(code)
+void test_subtract_imm32_from_mem_at_r32_signed_overflow() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     2b                          ff ff ff 7f \n"  // subtract largest positive signed integer from *EBX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "00 00 00 80\n"  // smallest negative signed integer
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: effective address contains 80000000\n"
+      "run: imm32 is 0x7fffffff\n"
+      "run: subop subtract\n"
+      "run: SF=0; ZF=0; CF=0; OF=1\n"
+      "run: storing 0x00000001\n"
+  );
+}
+
+void test_subtract_imm32_from_mem_at_r32_unsigned_overflow() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     2b                          01 00 00 00 \n"  // subtract 1 from *EBX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "00 00 00 00\n"  // 0
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: effective address contains 0\n"
+      "run: imm32 is 0x00000001\n"
+      "run: subop subtract\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
+      "run: storing 0xffffffff\n"
+  );
+}
+
+void test_subtract_imm32_from_mem_at_r32_signed_and_unsigned_overflow() {
+  Reg[EBX].i = 0x2000;
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     2b                          00 00 00 80 \n"  // subtract smallest negative signed integer from *EBX
+      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
+      "== 0x2000\n"  // data segment
+      "00 00 00 00\n"  // 0
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: effective address is 0x00002000 (EBX)\n"
+      "run: effective address contains 0\n"
+      "run: imm32 is 0x80000000\n"
+      "run: subop subtract\n"
+      "run: SF=1; ZF=0; CF=1; OF=1\n"
+      "run: storing 0x80000000\n"
+  );
 }
 
 //:
 
-:(code)
 void test_subtract_imm32_from_r32() {
   Reg[EBX].i = 10;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     eb                          01 00 00 00 \n"  // subtract 1 from EBX
-      // ModR/M in binary: 11 (direct mode) 101 (subtract imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 101 (subop subtract) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
@@ -338,7 +612,7 @@ void test_shift_right_logical_negative_r32_with_imm8() {
 put_new(Name, "25", "EAX = bitwise AND of imm32 with EAX (and)");
 
 :(code)
-void test_and_imm32_with_eax() {
+void test_and_EAX_with_imm32() {
   Reg[EAX].i = 0xff;
   run(
       "== 0x1\n"  // code segment
@@ -353,9 +627,17 @@ void test_and_imm32_with_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x25: {  // and imm32 with EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "and imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
-  BINARY_BITWISE_OP(&, Reg[EAX].i, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "and imm32 0x" << HEXWORD << signed_arg2 << " with EAX" << end();
+  Reg[EAX].i &= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i >> 31);
+  ZF = (Reg[EAX].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -368,7 +650,7 @@ void test_and_imm32_with_mem_at_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     23                          0a 0b 0c 0d \n"  // and 0x0d0c0b0a with *EBX
-      // ModR/M in binary: 00 (indirect mode) 100 (and imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 100 (subop and) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "ff 00 00 00\n"  // 0x000000ff
   );
@@ -384,7 +666,15 @@ void test_and_imm32_with_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 4: {
   trace(Callstack_depth+1, "run") << "subop and" << end();
-  BINARY_BITWISE_OP(&, *arg1, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  *signed_arg1 &= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -397,7 +687,7 @@ void test_and_imm32_with_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     e3                          0a 0b 0c 0d \n"  // and 0x0d0c0b0a with EBX
-      // ModR/M in binary: 11 (direct mode) 100 (and imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 100 (subop and) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
@@ -414,7 +704,7 @@ void test_and_imm32_with_r32() {
 put_new(Name, "0d", "EAX = bitwise OR of imm32 with EAX (or)");
 
 :(code)
-void test_or_imm32_with_eax() {
+void test_or_EAX_with_imm32() {
   Reg[EAX].i = 0xd0c0b0a0;
   run(
       "== 0x1\n"  // code segment
@@ -429,9 +719,17 @@ void test_or_imm32_with_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x0d: {  // or imm32 with EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "or imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
-  BINARY_BITWISE_OP(|, Reg[EAX].i, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "or imm32 0x" << HEXWORD << signed_arg2 << " with EAX" << end();
+  Reg[EAX].i |= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i >> 31);
+  ZF = (Reg[EAX].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -444,7 +742,7 @@ void test_or_imm32_with_mem_at_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     0b                          0a 0b 0c 0d \n"  // or 0x0d0c0b0a with *EBX
-      // ModR/M in binary: 00 (indirect mode) 001 (or imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 001 (subop or) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "a0 b0 c0 d0\n"  // 0xd0c0b0a0
   );
@@ -460,7 +758,15 @@ void test_or_imm32_with_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 1: {
   trace(Callstack_depth+1, "run") << "subop or" << end();
-  BINARY_BITWISE_OP(|, *arg1, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  *signed_arg1 |= signed_arg2; \
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end(); \
+  SF = (*signed_arg1 >> 31); \
+  ZF = (*signed_arg1 == 0); \
+  CF = false; \
+  OF = false; \
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
   break;
 }
 
@@ -471,7 +777,7 @@ void test_or_imm32_with_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     cb                          0a 0b 0c 0d \n"  // or 0x0d0c0b0a with EBX
-      // ModR/M in binary: 11 (direct mode) 001 (or imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 001 (subop or) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
@@ -488,7 +794,7 @@ void test_or_imm32_with_r32() {
 put_new(Name, "35", "EAX = bitwise XOR of imm32 with EAX (xor)");
 
 :(code)
-void test_xor_imm32_with_eax() {
+void test_xor_EAX_with_imm32() {
   Reg[EAX].i = 0xddccb0a0;
   run(
       "== 0x1\n"  // code segment
@@ -503,9 +809,17 @@ void test_xor_imm32_with_eax() {
 
 :(before "End Single-Byte Opcodes")
 case 0x35: {  // xor imm32 with EAX
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "xor imm32 0x" << HEXWORD << arg2 << " with EAX" << end();
-  BINARY_BITWISE_OP(^, Reg[EAX].i, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "xor imm32 0x" << HEXWORD << signed_arg2 << " with EAX" << end();
+  Reg[EAX].i ^= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].i << end();
+  SF = (Reg[EAX].i >> 31);
+  ZF = (Reg[EAX].i == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -518,7 +832,7 @@ void test_xor_imm32_with_mem_at_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     33                          0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with *EBX
-      // ModR/M in binary: 00 (indirect mode) 110 (xor imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 110 (subop xor) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "a0 b0 c0 d0\n"  // 0xd0c0b0a0
   );
@@ -534,7 +848,15 @@ void test_xor_imm32_with_mem_at_r32() {
 :(before "End Op 81 Subops")
 case 6: {
   trace(Callstack_depth+1, "run") << "subop xor" << end();
-  BINARY_BITWISE_OP(^, *arg1, arg2);
+  // bitwise ops technically operate on unsigned numbers, but it makes no
+  // difference
+  *signed_arg1 ^= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -545,7 +867,7 @@ void test_xor_imm32_with_r32() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     f3                          0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with EBX
-      // ModR/M in binary: 11 (direct mode) 110 (xor imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 110 (subop xor) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
@@ -562,49 +884,96 @@ void test_xor_imm32_with_r32() {
 put_new(Name, "3d", "compare: set SF if EAX < imm32 (cmp)");
 
 :(code)
-void test_compare_imm32_with_eax_greater() {
+void test_compare_EAX_with_imm32_greater() {
   Reg[EAX].i = 0x0d0c0b0a;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  3d                                 07 0b 0c 0d \n"  // compare 0x0d0c0b07 with EAX
+      "  3d                                 07 0b 0c 0d \n"  // compare EAX with 0x0d0c0b07
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EAX and imm32 0x0d0c0b07\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: compare EAX with imm32 0x0d0c0b07\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
 :(before "End Single-Byte Opcodes")
 case 0x3d: {  // compare EAX with imm32
-  const int32_t arg1 = Reg[EAX].i;
-  const int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "compare EAX and imm32 0x" << HEXWORD << arg2 << end();
-  const int32_t tmp1 = arg1 - arg2;
-  SF = (tmp1 < 0);
-  ZF = (tmp1 == 0);
-  const int64_t tmp2 = arg1 - arg2;
-  OF = (tmp1 != tmp2);
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  const int32_t signed_arg1 = Reg[EAX].i;
+  const int32_t signed_arg2 = next32();
+  trace(Callstack_depth+1, "run") << "compare EAX with imm32 0x" << HEXWORD << signed_arg2 << end();
+  const int32_t signed_difference = signed_arg1 - signed_arg2;
+  SF = (signed_difference < 0);
+  ZF = (signed_difference == 0);
+  const int64_t full_signed_difference = static_cast<int64_t>(signed_arg1) - signed_arg2;
+  OF = (signed_difference != full_signed_difference);
+  const uint32_t unsigned_arg1 = static_cast<uint32_t>(signed_arg1);
+  const uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  const uint32_t unsigned_difference = unsigned_arg1 - unsigned_arg2;
+  const uint64_t full_unsigned_difference = static_cast<uint64_t>(unsigned_arg1) - unsigned_arg2;
+  CF = (unsigned_difference != full_unsigned_difference);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
 :(code)
-void test_compare_imm32_with_eax_lesser() {
-  Reg[EAX].i = 0x0d0c0b07;
+void test_compare_EAX_with_imm32_lesser_unsigned_and_signed() {
+  Reg[EAX].i = 0x0a0b0c07;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  3d                                 0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EAX
+      "  3d                                 0d 0c 0b 0a \n"  // compare EAX with imm32
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EAX and imm32 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: compare EAX with imm32 0x0a0b0c0d\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
 }
 
-:(code)
-void test_compare_imm32_with_eax_equal() {
+void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 00 00 00 80\n"  // compare EAX with smallest negative signed integer
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX with imm32 0x80000000\n"
+      "run: SF=1; ZF=0; CF=1; OF=1\n"
+  );
+}
+
+void test_compare_EAX_with_imm32_lesser_signed() {
+  Reg[EAX].i = 0xffffffff;  // -1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 01 00 00 00\n"  // compare EAX with 1
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX with imm32 0x00000001\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
+  );
+}
+
+void test_compare_EAX_with_imm32_lesser_unsigned() {
+  Reg[EAX].i = 0x00000001;  // 1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  3d                                 ff ff ff ff\n"  // compare EAX with -1
+      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: compare EAX with imm32 0xffffffff\n"
+      "run: SF=0; ZF=0; CF=1; OF=0\n"
+  );
+}
+
+void test_compare_EAX_with_imm32_equal() {
   Reg[EAX].i = 0x0d0c0b0a;
   run(
       "== 0x1\n"  // code segment
@@ -612,39 +981,38 @@ void test_compare_imm32_with_eax_equal() {
       "  3d                                 0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EAX
   );
   CHECK_TRACE_CONTENTS(
-      "run: compare EAX and imm32 0x0d0c0b0a\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: compare EAX with imm32 0x0d0c0b0a\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 
 //:
 
-:(code)
 void test_compare_imm32_with_r32_greater() {
   Reg[EBX].i = 0x0d0c0b0a;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     fb                          07 0b 0c 0d \n"  // compare 0x0d0c0b07 with EBX
-      // ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
       "run: r/m32 is EBX\n"
       "run: imm32 is 0x0d0c0b07\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
 :(before "End Op 81 Subops")
 case 7: {
   trace(Callstack_depth+1, "run") << "subop compare" << end();
-  const int32_t tmp1 = *arg1 - arg2;
+  const int32_t tmp1 = *signed_arg1 - signed_arg2;
   SF = (tmp1 < 0);
   ZF = (tmp1 == 0);
-  const int64_t tmp2 = *arg1 - arg2;
+  const int64_t tmp2 = static_cast<int64_t>(*signed_arg1) - signed_arg2;
   OF = (tmp1 != tmp2);
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
@@ -655,13 +1023,13 @@ void test_compare_imm32_with_r32_lesser() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     fb                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EBX
-      // ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
       "run: r/m32 is EBX\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -672,13 +1040,13 @@ void test_compare_imm32_with_r32_equal() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     fb                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EBX
-      // ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
+      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
       "run: r/m32 is EBX\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 
@@ -689,7 +1057,7 @@ void test_compare_imm32_with_mem_at_r32_greater() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     3b                          07 0b 0c 0d \n"  // compare 0x0d0c0b07 with *EBX
-      // ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "0a 0b 0c 0d\n"  // 0x0d0c0b0a
   );
@@ -697,7 +1065,7 @@ void test_compare_imm32_with_mem_at_r32_greater() {
       "run: combine imm32 with r/m32\n"
       "run: effective address is 0x00002000 (EBX)\n"
       "run: imm32 is 0x0d0c0b07\n"
-      "run: SF=0; ZF=0; OF=0\n"
+      "run: SF=0; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -708,7 +1076,7 @@ void test_compare_imm32_with_mem_at_r32_lesser() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     3b                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EBX
-      // ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "07 0b 0c 0d\n"  // 0x0d0c0b07
   );
@@ -716,7 +1084,7 @@ void test_compare_imm32_with_mem_at_r32_lesser() {
       "run: combine imm32 with r/m32\n"
       "run: effective address is 0x00002000 (EBX)\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
 
@@ -728,7 +1096,7 @@ void test_compare_imm32_with_mem_at_r32_equal() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  81     3b                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EBX
-      // ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 011 (dest EBX)
       "== 0x2000\n"  // data segment
       "0a 0b 0c 0d\n"  // 0x0d0c0b0a
   );
@@ -736,14 +1104,14 @@ void test_compare_imm32_with_mem_at_r32_equal() {
       "run: combine imm32 with r/m32\n"
       "run: effective address is 0x00002000 (EBX)\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=0; ZF=1; OF=0\n"
+      "run: SF=0; ZF=1; CF=0; OF=0\n"
   );
 }
 
 //:: copy (mov)
 
 :(before "End Initialize Op Names")
-put_new(Name, "b8", "copy imm32 to EAX (mov)");
+// b8 defined earlier to copy imm32 to EAX
 put_new(Name, "b9", "copy imm32 to ECX (mov)");
 put_new(Name, "ba", "copy imm32 to EDX (mov)");
 put_new(Name, "bb", "copy imm32 to EBX (mov)");
@@ -765,7 +1133,6 @@ void test_copy_imm32_to_r32() {
 }
 
 :(before "End Single-Byte Opcodes")
-case 0xb8:
 case 0xb9:
 case 0xba:
 case 0xbb:
@@ -824,8 +1191,8 @@ put_new(Name, "68", "push imm32 to stack (push)");
 
 :(code)
 void test_push_imm32() {
-  Mem.push_back(vma(0x7d000000));  // manually allocate memory
-  Reg[ESP].u = 0x7d000014;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000014;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -833,7 +1200,7 @@ void test_push_imm32() {
   );
   CHECK_TRACE_CONTENTS(
       "run: push imm32 0x000000af\n"
-      "run: ESP is now 0x7d000010\n"
+      "run: ESP is now 0xbd000010\n"
       "run: contents at ESP: 0x000000af\n"
   );
 }

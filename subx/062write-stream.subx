@@ -21,7 +21,7 @@ write-stream:  # f : fd or (address stream), s : (address stream) -> <void>
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # if (f < 0x08000000) _write-stream(f, s), return  # f can't be a user-mode address, so treat it as a kernel file descriptor
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         0x08000000/imm32  # compare *(EBP+8)
-    7d/jump-if-greater-or-equal  $write-stream:fake/disp8
+    73/jump-if-greater-unsigned-or-equal  $write-stream:fake/disp8
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)

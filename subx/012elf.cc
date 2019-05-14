@@ -141,20 +141,17 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 //   code:  0x09000000 -> 0x09ffffff (specified in ELF binary)
 //   data:  0x0a000000 -> 0x0affffff (specified in ELF binary)
 //   --- heap gets mmap'd somewhere here ---
-//   stack: 0x7dffffff -> 0x7d000000 (downward; not in ELF binary)
-//   argv hack: 0x7f000000 -> 0x7fffffff (not in ELF binary)
+//   stack: 0xbdffffff -> 0xbd000000 (downward; not in ELF binary)
+//   argv hack: 0xbf000000 -> 0xbfffffff (not in ELF binary)
 //
-// For now we avoid addresses with the most significant bit set; SubX doesn't
-// support unsigned comparison yet (https://github.com/akkartik/mu/issues/30)
-// Once we do, we can go up to 0xc0000000; higher addresses are reserved for
-// the Linux kernel.
-const int CODE_SEGMENT      = 0x09000000;
-const int DATA_SEGMENT      = 0x0a000000;
-const int START_HEAP        = 0x0b000000;
-const int END_HEAP          = 0x7d000000;
-const int STACK_SEGMENT     = 0x7d000000;
-const int AFTER_STACK       = 0x7e000000;
-const int ARGV_DATA_SEGMENT = 0x7f000000;
+// Addresses above 0xc0000000 are reserved for the Linux kernel.
+const uint32_t CODE_SEGMENT      = 0x09000000;
+const uint32_t DATA_SEGMENT      = 0x0a000000;
+const uint32_t START_HEAP        = 0x0b000000;
+const uint32_t END_HEAP          = 0xbd000000;
+const uint32_t STACK_SEGMENT     = 0xbd000000;
+const uint32_t AFTER_STACK       = 0xbe000000;
+const uint32_t ARGV_DATA_SEGMENT = 0xbf000000;
 // When updating the above memory map, don't forget to update `mmap`'s
 // implementation in the 'syscalls' layer.
 :(before "End Dump Info for Instruction")
