@@ -1191,8 +1191,8 @@ put_new(Name, "68", "push imm32 to stack (push)");
 
 :(code)
 void test_push_imm32() {
-  Mem.push_back(vma(0x7d000000));  // manually allocate memory
-  Reg[ESP].u = 0x7d000014;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000014;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -1200,7 +1200,7 @@ void test_push_imm32() {
   );
   CHECK_TRACE_CONTENTS(
       "run: push imm32 0x000000af\n"
-      "run: ESP is now 0x7d000010\n"
+      "run: ESP is now 0xbd000010\n"
       "run: contents at ESP: 0x000000af\n"
   );
 }

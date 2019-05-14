@@ -135,7 +135,8 @@ void test_jne_rel8_fail() {
 //:: jump if greater
 
 :(before "End Initialize Op Names")
-put_new(Name, "7f", "jump disp8 bytes away if greater, if ZF is unset and SF == OF (jcc/jg/jnle)");
+put_new(Name, "7f", "jump disp8 bytes away if greater (signed), if ZF is unset and SF == OF (jcc/jg/jnle)");
+put_new(Name, "77", "jump disp8 bytes away if greater (unsigned), if ZF is unset and CF is unset (jcc/ja/jnbe)");
 
 :(code)
 void test_jg_rel8_success() {
@@ -158,9 +159,17 @@ void test_jg_rel8_success() {
 }
 
 :(before "End Single-Byte Opcodes")
-case 0x7f: {  // jump rel8 if !SF and !ZF
+case 0x7f: {  // jump rel8 if SF == OF and !ZF
   const int8_t offset = static_cast<int>(next());
-  if (!ZF && SF == OF) {
+  if (SF == OF && !ZF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}
+case 0x77: {  // jump rel8 if !CF and !ZF
+  const int8_t offset = static_cast<int>(next());
+  if (!CF && !ZF) {
     trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
@@ -190,7 +199,8 @@ void test_jg_rel8_fail() {
 //:: jump if greater or equal
 
 :(before "End Initialize Op Names")
-put_new(Name, "7d", "jump disp8 bytes away if greater or equal, if SF == OF (jcc/jge/jnl)");
+put_new(Name, "7d", "jump disp8 bytes away if greater or equal (signed), if SF == OF (jcc/jge/jnl)");
+put_new(Name, "73", "jump disp8 bytes away if greater or equal (unsigned), if CF is unset (jcc/jae/jnb)");
 
 :(code)
 void test_jge_rel8_success() {
@@ -212,9 +222,17 @@ void test_jge_rel8_success() {
 }
 
 :(before "End Single-Byte Opcodes")
-case 0x7d: {  // jump rel8 if !SF
+case 0x7d: {  // jump rel8 if SF == OF
   const int8_t offset = static_cast<int>(next());
   if (SF == OF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}
+case 0x73: {  // jump rel8 if !CF
+  const int8_t offset = static_cast<int>(next());
+  if (!CF) {
     trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
@@ -243,7 +261,8 @@ void test_jge_rel8_fail() {
 //:: jump if lesser
 
 :(before "End Initialize Op Names")
-put_new(Name, "7c", "jump disp8 bytes away if lesser, if SF != OF (jcc/jl/jnge)");
+put_new(Name, "7c", "jump disp8 bytes away if lesser (signed), if SF != OF (jcc/jl/jnge)");
+put_new(Name, "72", "jump disp8 bytes away if lesser (unsigned), if CF is set (jcc/jb/jnae)");
 
 :(code)
 void test_jl_rel8_success() {
@@ -266,9 +285,17 @@ void test_jl_rel8_success() {
 }
 
 :(before "End Single-Byte Opcodes")
-case 0x7c: {  // jump rel8 if SF and !ZF
+case 0x7c: {  // jump rel8 if SF != OF
   const int8_t offset = static_cast<int>(next());
   if (SF != OF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}
+case 0x72: {  // jump rel8 if CF
+  const int8_t offset = static_cast<int>(next());
+  if (CF) {
     trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }
@@ -298,7 +325,8 @@ void test_jl_rel8_fail() {
 //:: jump if lesser or equal
 
 :(before "End Initialize Op Names")
-put_new(Name, "7e", "jump disp8 bytes away if lesser or equal, if ZF is set or SF != OF (jcc/jle/jng)");
+put_new(Name, "7e", "jump disp8 bytes away if lesser or equal (signed), if ZF is set or SF != OF (jcc/jle/jng)");
+put_new(Name, "76", "jump disp8 bytes away if lesser or equal (unsigned), if ZF is set or CF is set (jcc/jbe/jna)");
 
 :(code)
 void test_jle_rel8_equal() {
@@ -341,9 +369,17 @@ void test_jle_rel8_lesser() {
 }
 
 :(before "End Single-Byte Opcodes")
-case 0x7e: {  // jump rel8 if SF or ZF
+case 0x7e: {  // jump rel8 if ZF or SF != OF
   const int8_t offset = static_cast<int>(next());
   if (ZF || SF != OF) {
+    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    EIP += offset;
+  }
+  break;
+}
+case 0x76: {  // jump rel8 if ZF or CF
+  const int8_t offset = static_cast<int>(next());
+  if (ZF || CF) {
     trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
     EIP += offset;
   }

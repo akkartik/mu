@@ -561,7 +561,6 @@ case 0x3b: {  // set SF if r32 < r/m32
   const uint8_t modrm = next();
   const uint8_t reg1 = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "compare " << rname(reg1) << " with r/m32" << end();
-  const int32_t signed_arg1 = Reg[reg1].i;
   const int32_t* signed_arg2 = effective_address(modrm);
   const int32_t signed_difference = Reg[reg1].i - *signed_arg2;
   SF = (signed_difference < 0);
@@ -732,8 +731,8 @@ void test_jump_mem_at_r32() {
       // op     ModR/M  SIB   displacement  immediate
       "  ff     20                                    \n"  // jump to *EAX
       // ModR/M in binary: 00 (indirect mode) 100 (jump to r/m32) 000 (src EAX)
-      "  05                                 00 00 00 01\n"
-      "  05                                 00 00 00 02\n"
+      "  b8                                 00 00 00 01\n"
+      "  b8                                 00 00 00 02\n"
       "== 0x2000\n"  // data segment
       "08 00 00 00\n"  // 0x00000008
   );
@@ -742,9 +741,9 @@ void test_jump_mem_at_r32() {
       "run: jump to r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
       "run: jumping to 0x00000008\n"
-      "run: 0x00000008 opcode: 05\n"
+      "run: 0x00000008 opcode: b8\n"
   );
-  CHECK_TRACE_DOESNT_CONTAIN("run: 0x00000003 opcode: 05");
+  CHECK_TRACE_DOESNT_CONTAIN("run: 0x00000003 opcode: b8");
 }
 
 :(before "End Op ff Subops")
@@ -761,8 +760,8 @@ case 4: {  // jump to r/m32
 :(code)
 void test_push_mem_at_r32() {
   Reg[EAX].i = 0x2000;
-  Mem.push_back(vma(0x7d000000));  // manually allocate memory
-  Reg[ESP].u = 0x7d000014;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000014;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -773,7 +772,7 @@ void test_push_mem_at_r32() {
   CHECK_TRACE_CONTENTS(
       "run: push r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: decrementing ESP to 0x7d000010\n"
+      "run: decrementing ESP to 0xbd000010\n"
       "run: pushing value 0x000000af\n"
   );
 }
@@ -794,9 +793,9 @@ put_new(Name, "8f", "pop top of stack to rm32 (pop)");
 :(code)
 void test_pop_mem_at_r32() {
   Reg[EAX].i = 0x60;
-  Mem.push_back(vma(0x7d000000));  // manually allocate memory
-  Reg[ESP].u = 0x7d000000;
-  write_mem_i32(0x7d000000, 0x00000030);
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000000;
+  write_mem_i32(0xbd000000, 0x00000030);
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -807,7 +806,7 @@ void test_pop_mem_at_r32() {
       "run: pop into r/m32\n"
       "run: effective address is 0x00000060 (EAX)\n"
       "run: popping value 0x00000030\n"
-      "run: incrementing ESP to 0x7d000004\n"
+      "run: incrementing ESP to 0xbd000004\n"
   );
 }
 
