@@ -612,7 +612,7 @@ void test_shift_right_logical_negative_r32_with_imm8() {
 put_new(Name, "25", "EAX = bitwise AND of imm32 with EAX (and)");
 
 :(code)
-void test_and_imm32_with_EAX() {
+void test_and_EAX_with_imm32() {
   Reg[EAX].i = 0xff;
   run(
       "== 0x1\n"  // code segment
@@ -704,7 +704,7 @@ void test_and_imm32_with_r32() {
 put_new(Name, "0d", "EAX = bitwise OR of imm32 with EAX (or)");
 
 :(code)
-void test_or_imm32_with_EAX() {
+void test_or_EAX_with_imm32() {
   Reg[EAX].i = 0xd0c0b0a0;
   run(
       "== 0x1\n"  // code segment
@@ -794,7 +794,7 @@ void test_or_imm32_with_r32() {
 put_new(Name, "35", "EAX = bitwise XOR of imm32 with EAX (xor)");
 
 :(code)
-void test_xor_imm32_with_EAX() {
+void test_xor_EAX_with_imm32() {
   Reg[EAX].i = 0xddccb0a0;
   run(
       "== 0x1\n"  // code segment
@@ -884,7 +884,7 @@ void test_xor_imm32_with_r32() {
 put_new(Name, "3d", "compare: set SF if EAX < imm32 (cmp)");
 
 :(code)
-void test_compare_imm32_with_EAX_greater() {
+void test_compare_EAX_with_imm32_greater() {
   Reg[EAX].i = 0x0d0c0b0a;
   run(
       "== 0x1\n"  // code segment
@@ -930,7 +930,7 @@ void test_compare_EAX_with_imm32_lesser() {
   );
 }
 
-void test_compare_imm32_with_EAX_equal() {
+void test_compare_EAX_with_imm32_equal() {
   Reg[EAX].i = 0x0d0c0b0a;
   run(
       "== 0x1\n"  // code segment
