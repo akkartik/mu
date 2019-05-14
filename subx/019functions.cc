@@ -5,7 +5,8 @@ put_new(Name, "e8", "call disp32 (call)");
 
 :(code)
 void test_call_disp32() {
-  Reg[ESP].u = 0x64;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000064;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
@@ -14,7 +15,7 @@ void test_call_disp32() {
   );
   CHECK_TRACE_CONTENTS(
       "run: call imm32 0x000000a0\n"
-      "run: decrementing ESP to 0x00000060\n"
+      "run: decrementing ESP to 0xbd000060\n"
       "run: pushing value 0x00000006\n"
       "run: jumping to 0x000000a6\n"
   );
@@ -36,7 +37,8 @@ case 0xe8: {  // call disp32 relative to next EIP
 
 :(code)
 void test_call_r32() {
-  Reg[ESP].u = 0x64;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000064;
   Reg[EBX].u = 0x000000a0;
   run(
       "== 0x1\n"  // code segment
@@ -47,7 +49,7 @@ void test_call_r32() {
   CHECK_TRACE_CONTENTS(
       "run: call to r/m32\n"
       "run: r/m32 is EBX\n"
-      "run: decrementing ESP to 0x00000060\n"
+      "run: decrementing ESP to 0xbd000060\n"
       "run: pushing value 0x00000003\n"
       "run: jumping to 0x000000a3\n"
   );
@@ -66,7 +68,8 @@ case 2: {  // call function pointer at r/m32
 
 :(code)
 void test_call_mem_at_r32() {
-  Reg[ESP].u = 0x64;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000064;
   Reg[EBX].u = 0x2000;
   run(
       "== 0x1\n"  // code segment
@@ -79,7 +82,7 @@ void test_call_mem_at_r32() {
   CHECK_TRACE_CONTENTS(
       "run: call to r/m32\n"
       "run: effective address is 0x00002000 (EBX)\n"
-      "run: decrementing ESP to 0x00000060\n"
+      "run: decrementing ESP to 0xbd000060\n"
       "run: pushing value 0x00000003\n"
       "run: jumping to 0x000000a3\n"
   );
@@ -92,7 +95,9 @@ put_new(Name, "c3", "return from most recent unfinished call (ret)");
 
 :(code)
 void test_ret() {
-  Reg[ESP].u = 0x2000;
+  Mem.push_back(vma(0xbd000000));  // manually allocate memory
+  Reg[ESP].u = 0xbd000064;
+  write_mem_u32(Reg[ESP].u, 0x10);
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate

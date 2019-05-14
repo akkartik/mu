@@ -35,7 +35,7 @@ put_new(Help, "syntax",
 cerr << "  syntax\n";
 
 :(code)
-void test_add_imm32_to_eax() {
+void test_add_imm32_to_EAX() {
   // At the lowest level, SubX programs are a series of hex bytes, each
   // (variable-length) instruction on one line.
   run(
@@ -65,19 +65,18 @@ void test_add_imm32_to_eax() {
       // opcode        ModR/M                    SIB                   displacement    immediate
       // instruction   mod, reg, Reg/Mem bits    scale, index, base
       // 1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-      "  05            .                         .                     .               0a 0b 0c 0d\n"  // add 0x0d0c0b0a to EAX
+      "  b8            .                         .                     .               0a 0b 0c 0d\n"  // copy 0x0d0c0b0a to EAX
       // The periods are just to help the eye track long gaps between columns,
       // and are otherwise ignored.
   );
   // This program, when run, causes the following events in the trace:
   CHECK_TRACE_CONTENTS(
-      "load: 0x00000001 -> 05\n"
+      "load: 0x00000001 -> b8\n"
       "load: 0x00000002 -> 0a\n"
       "load: 0x00000003 -> 0b\n"
       "load: 0x00000004 -> 0c\n"
       "load: 0x00000005 -> 0d\n"
-      "run: add imm32 0x0d0c0b0a to reg EAX\n"
-      "run: storing 0x0d0c0b0a\n"
+      "run: copy imm32 0x0d0c0b0a to EAX\n"
   );
 }
 
@@ -350,18 +349,30 @@ void parse_and_load(const string& text_bytes) {
 //:: run
 
 :(before "End Initialize Op Names")
-put_new(Name, "05", "add imm32 to EAX (add)");
+put_new(Name, "b8", "copy imm32 to EAX (mov)");
 
 //: our first opcode
+
 :(before "End Single-Byte Opcodes")
-case 0x05: {  // add imm32 to EAX
-  int32_t arg2 = next32();
-  trace(Callstack_depth+1, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
-  BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
+case 0xb8: {  // copy imm32 to EAX
+  const int32_t src = next32();
+  trace(Callstack_depth+1, "run") << "copy imm32 0x" << HEXWORD << src << " to EAX" << end();
+  Reg[EAX].i = src;
   break;
 }
 
 :(code)
+void test_copy_imm32_to_EAX() {
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  b8                                 0a 0b 0c 0d \n"  // copy 0x0d0c0b0a to EAX
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: copy imm32 0x0d0c0b0a to EAX\n"
+  );
+}
+
 // read a 32-bit int in little-endian order from the instruction stream
 int32_t next32() {
   int32_t result = read_mem_i32(EIP);

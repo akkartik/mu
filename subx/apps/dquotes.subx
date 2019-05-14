@@ -112,6 +112,8 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #         process-string-literal(word-slice, out, new-data-segment)
     #       else
     #         write-slice-buffered(out, word-slice)
+    #       write(out, " ")
+    #     write(out, "\n\n")
     #   write-stream-data(out, new-data-segment)
     #   flush(out)
     #
@@ -1223,9 +1225,227 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+
+    # PSEUDOCODE
+    # ECX = (char *) word->start
+    # while true:
+    #   if ECX == word->end: return
+    #   if *(ECX++) == '/': break
+    # write-slice-buffered(out, {ECX, word->end})
+
+    # ECX = word
+    8b/copy/word                    1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy *(EBP+12) to ECX
+    # EDX = word->end
+    8b/copy/word->end               1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ECX+4) to EDX
+    # ECX = word->start
+    8b/copy/word->start             0/mod/indirect  1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # copy *ECX to ECX
+
+    # clear out EAX
+    b8/copy-to-EAX 0/imm32
+    # while *start != '/':
+$skip-datum-loop:
+    # . start == end?
+    39/compare-ECX-and              3/mod/direct    2/rm32/EDX    .           .             .           1/r32/ECX   .               .                 # EDX == ECX
+    # . if so, return from function (it's only datum, or empty)
+    74/jump-if-equal  $emit-metadata:end/disp8
+
+    # . start++
+    41/increment-ECX                                                                                                                                  # ECX++
+
+    # . EAX = *start
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+
+    # . EAX != '/'?
+    3d/compare-EAX-and  0x2f/imm32
+    # . if so, continue looping
+    75/jump-if-not-equal  $skip-datum-loop/disp8
+    # end
+
+    # write-slice-buffered(out, &{start, end})
+    # . push end
+    52/push-EDX
+    # . push start
+    51/push-ECX
+    # . push &{start, end}
+    54/push-ESP
+
+    # . push out
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+
+    e8/call  write-slice-buffered/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           0x10/imm32      .                 # add 16 to ESP
+
 $emit-metadata:end:
-    # . reclaim locals
     # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-metadata:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "abc/def"
+    68/push  _test-slice-word-end/imm32
+    68/push  _test-slice-word/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # emit-metadata(_test-output-buffered-file, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  emit-metadata/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-stream-equal(_test-output-stream, "/def", msg)  # important that there's no leading space
+    # . . push args
+    68/push  "F - test-emit-metadata"/imm32
+    68/push  "/def"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-metadata-none:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "abc"
+    68/push  _test-slice-word-datum-end/imm32
+    68/push  _test-slice-word/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # emit-metadata(_test-output-buffered-file, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  emit-metadata/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-stream-equal(_test-output-stream, "", msg)
+    # . . push args
+    68/push  "F - test-emit-metadata-none"/imm32
+    68/push  ""/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-metadata-multiple:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "abc/def/ghi"
+    68/push  _test-slice-word-end2/imm32
+    68/push  _test-slice-word/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # emit-metadata(_test-output-buffered-file, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  emit-metadata/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-stream-equal(_test-output-stream, "/def/ghi", msg)  # important that there's no leading space
+    # . . push args
+    68/push  "F - test-emit-metadata-multiple"/imm32
+    68/push  "/def/ghi"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -1745,5 +1965,14 @@ _test-slice-a-space-b-end:
 _test-slice-a-dquote-b:
   22/dquote 61/a 5c/backslash 22/dquote 62/b 22/dquote  # "a\"b"
 _test-slice-a-dquote-b-end:
+
+# abc/def/ghi
+_test-slice-word:
+  61/a 62/b 63/c  # abc
+_test-slice-word-datum-end:
+  2f/slash 64/d 65/e 66/f  # /def
+_test-slice-word-end:
+  2f/slash 67/g 68/h 69/i  # /ghi
+_test-slice-word-end2:
 
 # . . vim:nowrap:textwidth=0
