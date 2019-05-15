@@ -754,13 +754,13 @@ case 1: {
   trace(Callstack_depth+1, "run") << "subop or" << end();
   // bitwise ops technically operate on unsigned numbers, but it makes no
   // difference
-  *signed_arg1 |= signed_arg2; \
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end(); \
-  SF = (*signed_arg1 >> 31); \
-  ZF = (*signed_arg1 == 0); \
-  CF = false; \
-  OF = false; \
-  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end(); \
+  *signed_arg1 |= signed_arg2;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *signed_arg1 << end();
+  SF = (*signed_arg1 >> 31);
+  ZF = (*signed_arg1 == 0);
+  CF = false;
+  OF = false;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
