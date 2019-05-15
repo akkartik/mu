@@ -449,6 +449,8 @@ case 0xc1: {
     *arg1 = (*arg1 << count);
     ZF = (*arg1 == 0);
     SF = (*arg1 < 0);
+    // CF undefined
+    trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
     trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
     break;
   }
@@ -483,11 +485,15 @@ void test_shift_right_arithmetic_r32_with_imm8() {
 case 7: {  // shift right r/m32 by CL, preserving sign
   trace(Callstack_depth+1, "run") << "subop: shift right by CL bits, while preserving sign" << end();
   uint8_t count = next() & 0x1f;
-  *arg1 = (*arg1 >> count);
+  int32_t result = (*arg1 >> count);
   ZF = (*arg1 == 0);
   SF = (*arg1 < 0);
   // OF is only defined if count is 1
   if (count == 1) OF = false;
+  // CF
+  CF = ((*arg1 >> (count-1)) & 0x1);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  *arg1 = result;
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   break;
 }
@@ -562,6 +568,8 @@ case 5: {  // shift right r/m32 by CL, preserving sign
   ZF = (*uarg1 == 0);
   // result is always positive by definition
   SF = false;
+  // CF undefined
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   break;
 }

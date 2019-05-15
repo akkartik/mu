@@ -279,6 +279,8 @@ case 0xf7: {
     Reg[EAX].u = result & 0xffffffff;
     Reg[EDX].u = result >> 32;
     OF = (Reg[EDX].u != 0);
+    CF = OF;
+    trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
     trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[EAX].u << end();
     break;
   }
@@ -360,11 +362,14 @@ case 3: {  // negate r/m32
     OF = true;
     break;
   }
-  *arg1 = -(*arg1);
-  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
-  SF = (*arg1 >> 31);
-  ZF = (*arg1 == 0);
+  int32_t result = -(*arg1);
+  SF = (result >> 31);
+  ZF = (result == 0);
   OF = false;
+  CF = (*arg1 != 0);
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  *arg1 = result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   break;
 }
 
@@ -518,9 +523,12 @@ case 0xd3: {
       bool pnsb = (*arg1 & 0x40000000);
       OF = (msb != pnsb);
     }
-    *arg1 = (*arg1 << count);
-    ZF = (*arg1 == 0);
-    SF = (*arg1 < 0);
+    int32_t result = (*arg1 << count);
+    ZF = (result == 0);
+    SF = (result < 0);
+    CF = (*arg1 << (count-1)) & 0x80000000;
+    trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+    *arg1 = result;
     trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
     break;
   }
@@ -561,6 +569,7 @@ case 7: {  // shift right r/m32 by CL, preserving sign
   SF = (*arg1 < 0);
   // OF is only defined if count is 1
   if (count == 1) OF = false;
+  // CF undefined
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   break;
 }
@@ -638,6 +647,7 @@ case 5: {  // shift right r/m32 by CL, padding zeroes
   ZF = (*uarg1 == 0);
   // result is always positive by definition
   SF = false;
+  // CF undefined
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   break;
 }
@@ -822,9 +832,7 @@ case 2: {  // not r/m32
   trace(Callstack_depth+1, "run") << "subop: not" << end();
   *arg1 = ~(*arg1);
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *arg1 << end();
-  SF = (*arg1 >> 31);
-  ZF = (*arg1 == 0);
-  OF = false;
+  // no flags affected
   break;
 }
 
