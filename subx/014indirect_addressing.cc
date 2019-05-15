@@ -7,7 +7,7 @@ void test_add_r32_to_mem_at_r32() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  01  18                                       \n"  // add EBX to *EAX
+      "  01     18                                    \n"  // add EBX to *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "01 00 00 00\n"  // 0x00000001
@@ -42,7 +42,7 @@ void test_add_mem_at_r32_to_r32() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  03  18                                       \n"  // add *EAX to EBX
+      "  03     18                                    \n"  // add *EAX to EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "01 00 00 00\n"  // 0x00000001
@@ -146,7 +146,7 @@ void test_subtract_r32_from_mem_at_r32() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  29  18                                       \n"  // subtract EBX from *EAX
+      "  29     18                                    \n"  // subtract EBX from *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "0a 00 00 00\n"  // 0x0000000a
@@ -336,7 +336,7 @@ void test_or_r32_with_mem_at_r32() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  09  18                                      #\n"  // EBX with *EAX
+      "  09     18                                   #\n"  // EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
