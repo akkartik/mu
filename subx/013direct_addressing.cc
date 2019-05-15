@@ -338,7 +338,7 @@ void test_negate_r32() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  f7 db                                        \n"  // negate EBX
+      "  f7     db                                    \n"  // negate EBX
       // ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
@@ -375,7 +375,7 @@ void test_negate_can_overflow() {
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  f7 db                                        \n"  // negate EBX
+      "  f7     db                                    \n"  // negate EBX
       // ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(

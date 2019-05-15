@@ -30,7 +30,6 @@ void test_add_imm32_to_EAX_signed_overflow() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  05                                 01 00 00 00 \n" // add 1 to EAX
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: add imm32 0x00000001 to EAX\n"
@@ -46,7 +45,6 @@ void test_add_imm32_to_EAX_unsigned_overflow() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  05                                 01 00 00 00 \n" // add 1 to EAX
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: add imm32 0x00000001 to EAX\n"
@@ -61,7 +59,6 @@ void test_add_imm32_to_EAX_unsigned_and_signed_overflow() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  05                                 00 00 00 80 \n" // add 0x80000000 to EAX
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: add imm32 0x80000000 to EAX\n"
@@ -251,7 +248,6 @@ void test_subtract_imm32_from_EAX_signed_overflow() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  2d                                 ff ff ff 7f \n"  // subtract largest positive signed integer from EAX
-      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract imm32 0x7fffffff from EAX\n"
@@ -266,7 +262,6 @@ void test_subtract_imm32_from_EAX_unsigned_overflow() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  2d                                 01 00 00 00 \n"  // subtract 1 from EAX
-      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract imm32 0x00000001 from EAX\n"
@@ -281,7 +276,6 @@ void test_subtract_imm32_from_EAX_signed_and_unsigned_overflow() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  2d                                 00 00 00 80 \n"  // subtract smallest negative signed integer from EAX
-      // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: subtract imm32 0x80000000 from EAX\n"
@@ -923,7 +917,6 @@ void test_compare_EAX_with_imm32_lesser_unsigned_and_signed() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 0d 0c 0b 0a \n"  // compare EAX with imm32
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX with imm32 0x0a0b0c0d\n"
@@ -937,7 +930,6 @@ void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 00 00 00 80\n"  // compare EAX with smallest negative signed integer
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX with imm32 0x80000000\n"
@@ -951,7 +943,6 @@ void test_compare_EAX_with_imm32_lesser_signed() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 01 00 00 00\n"  // compare EAX with 1
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX with imm32 0x00000001\n"
@@ -965,7 +956,6 @@ void test_compare_EAX_with_imm32_lesser_unsigned() {
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 ff ff ff ff\n"  // compare EAX with -1
-      // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: compare EAX with imm32 0xffffffff\n"
