@@ -1012,24 +1012,81 @@ case 7: {
   ZF = (tmp1 == 0);
   const int64_t tmp2 = static_cast<int64_t>(*signed_arg1) - signed_arg2;
   OF = (tmp1 != tmp2);
+  const uint32_t unsigned_arg1 = static_cast<uint32_t>(*signed_arg1);
+  const uint32_t unsigned_arg2 = static_cast<uint32_t>(signed_arg2);
+  const uint32_t tmp3 = unsigned_arg1 - unsigned_arg2;
+  const uint64_t tmp4 = static_cast<uint64_t>(unsigned_arg1) - unsigned_arg2;
+  CF = (tmp3 != tmp4);
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   break;
 }
 
 :(code)
-void test_compare_imm32_with_r32_lesser() {
-  Reg[EBX].i = 0x0d0c0b07;
+void test_compare_rm32_with_imm32_lesser_unsigned_and_signed() {
+  Reg[EAX].i = 0x0a0b0c07;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  81     fb                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EBX
-      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 011 (dest EBX)
+      "  81     f8                          0d 0c 0b 0a \n"  // compare EAX with imm32
+      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
-      "run: r/m32 is EBX\n"
-      "run: imm32 is 0x0d0c0b0a\n"
+      "run: r/m32 is EAX\n"
+      "run: imm32 is 0x0a0b0c0d\n"
+      "run: subop compare\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
+  );
+}
+
+void test_compare_rm32_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
+  Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     f8                          00 00 00 80\n"  // compare EAX with smallest negative signed integer
+      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: imm32 is 0x80000000\n"
+      "run: subop compare\n"
+      "run: SF=1; ZF=0; CF=1; OF=1\n"
+  );
+}
+
+void test_compare_rm32_with_imm32_lesser_signed() {
+  Reg[EAX].i = 0xffffffff;  // -1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     f8                          01 00 00 00\n"  // compare EAX with 1
+      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: imm32 is 0x00000001\n"
+      "run: subop compare\n"
       "run: SF=1; ZF=0; CF=0; OF=0\n"
+  );
+}
+
+void test_compare_rm32_with_imm32_lesser_unsigned() {
+  Reg[EAX].i = 0x00000001;  // 1
+  run(
+      "== 0x1\n"  // code segment
+      // op     ModR/M  SIB   displacement  immediate
+      "  81     f8                          ff ff ff ff\n"  // compare EAX with -1
+      // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: combine imm32 with r/m32\n"
+      "run: r/m32 is EAX\n"
+      "run: imm32 is 0xffffffff\n"
+      "run: subop compare\n"
+      "run: SF=0; ZF=0; CF=1; OF=0\n"
   );
 }
 
@@ -1071,20 +1128,20 @@ void test_compare_imm32_with_mem_at_r32_greater() {
 
 :(code)
 void test_compare_imm32_with_mem_at_r32_lesser() {
-  Reg[EBX].i = 0x2000;
+  Reg[EAX].i = 0x2000;
   run(
       "== 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
-      "  81     3b                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EBX
-      // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 011 (dest EBX)
+      "  81     38                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EAX
+      // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 000 (dest EAX)
       "== 0x2000\n"  // data segment
       "07 0b 0c 0d\n"  // 0x0d0c0b07
   );
   CHECK_TRACE_CONTENTS(
       "run: combine imm32 with r/m32\n"
-      "run: effective address is 0x00002000 (EBX)\n"
+      "run: effective address is 0x00002000 (EAX)\n"
       "run: imm32 is 0x0d0c0b0a\n"
-      "run: SF=1; ZF=0; CF=0; OF=0\n"
+      "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
 }
 
