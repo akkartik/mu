@@ -12,8 +12,7 @@
 #?     b8/copy-to-EAX  1/imm32/exit
 #?     cd/syscall  0x80/imm8
 
-# print the hex representation for the lowest byte of a number
-print-byte:  # f : (address buffered-file), n : int -> <void>
+append-byte-hex:  # f : (address stream), n : int -> <void>
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -25,12 +24,12 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     25/and-EAX  0xf/imm32
     # . AL = to-hex-char(AL)
     e8/call  to-hex-char/disp32
-    # write-byte(f, AL)
+    # append-byte(f, AL)
     # . . push args
     50/push-EAX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  write-byte/disp32
+    e8/call  append-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # AL = convert lower nibble to hex
@@ -38,15 +37,15 @@ print-byte:  # f : (address buffered-file), n : int -> <void>
     25/and-EAX  0xf/imm32
     # . AL = to-hex-char(AL)
     e8/call  to-hex-char/disp32
-    # write-byte(f, AL)
+    # append-byte(f, AL)
     # . . push args
     50/push-EAX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  write-byte/disp32
+    e8/call  append-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-$print-byte:end:
+$append-byte-hex:end:
     # . restore registers
     58/pop-to-EAX
     # . epilog
@@ -54,8 +53,80 @@ $print-byte:end:
     5d/pop-to-EBP
     c3/return
 
-test-print-byte:
-    # - check that print-byte prints the hex textual representation
+test-append-byte-hex:
+    # - check that append-byte-hex adds the hex textual representation
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # append-byte-hex(_test-stream, 0xa)  # exercises digit, non-digit as well as leading zero
+    # . . push args
+    68/push  0xa/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  append-byte-hex/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "0a", msg)
+    # . . push args
+    68/push  "F - test-append-byte-hex"/imm32
+    68/push  "0a"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+# print the hex representation for the lowest byte of a number
+print-byte-buffered:  # f : (address buffered-file), n : int -> <void>
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    # AL = convert upper nibble to hex
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    c1/shift    5/subop/logic-right 3/mod/direct    0/rm32/EAX    .           .             .           .           .               4/imm8            # shift EAX right by 4 bits, while padding zeroes
+    25/and-EAX  0xf/imm32
+    # . AL = to-hex-char(AL)
+    e8/call  to-hex-char/disp32
+    # write-byte-buffered(f, AL)
+    # . . push args
+    50/push-EAX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # AL = convert lower nibble to hex
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    25/and-EAX  0xf/imm32
+    # . AL = to-hex-char(AL)
+    e8/call  to-hex-char/disp32
+    # write-byte-buffered(f, AL)
+    # . . push args
+    50/push-EAX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$print-byte-buffered:end:
+    # . restore registers
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-print-byte-buffered:
+    # - check that print-byte-buffered prints the hex textual representation
     # setup
     # . clear-stream(_test-stream)
     # . . push args
@@ -73,12 +144,12 @@ test-print-byte:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # print-byte(_test-buffered-file, 0xa)  # exercises digit, non-digit as well as leading zero
+    # print-byte-buffered(_test-buffered-file, 0xa)  # exercises digit, non-digit as well as leading zero
     # . . push args
     68/push  0xa/imm32
     68/push  _test-buffered-file/imm32
     # . . call
-    e8/call  print-byte/disp32
+    e8/call  print-byte-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # flush(_test-buffered-file)
@@ -90,7 +161,7 @@ test-print-byte:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # check-stream-equal(_test-stream, "0a", msg)
     # . . push args
-    68/push  "F - test-print-byte"/imm32
+    68/push  "F - test-print-byte-buffered"/imm32
     68/push  "0a"/imm32
     68/push  _test-stream/imm32
     # . . call
@@ -100,14 +171,15 @@ test-print-byte:
     # . end
     c3/return
 
-print-int32:  # f : (address buffered-file), n : int -> <void>
+print-int32:  # f : (address stream), n : int -> <void>
     # pseudocode:
+    #  write(f, "0x")
     #  ECX = 28
     #  while true
     #    if (ECX < 0) break
     #    EAX = n >> ECX
     #    EAX = EAX & 0xf
-    #    write-byte(f, AL)
+    #    append-byte(f, AL)
     #    ECX -= 4
     #
     # . prolog
@@ -118,6 +190,15 @@ print-int32:  # f : (address buffered-file), n : int -> <void>
     51/push-ECX
     # ECX = 28
     b9/copy-to-ECX  0x1c/imm32
+$print-int32:print-hex-prefix:
+    # write(f, "0x")
+    # . . push args
+    68/push  "0x"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $print-int32:loop:
     # if (ECX < 0) break
     81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
@@ -128,12 +209,12 @@ $print-int32:loop:
     # EAX = to-hex-char(AL)
     25/and-EAX  0xf/imm32
     e8/call  to-hex-char/disp32
-    # write-byte(f, AL)
+    # append-byte(f, AL)
     # . . push args
     50/push-EAX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  write-byte/disp32
+    e8/call  append-byte/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # ECX -= 4
@@ -158,6 +239,94 @@ test-print-int32:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # print-int32(_test-stream, 0x8899aa)
+    # . . push args
+    68/push  0x8899aa/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  print-int32/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "0x008899aa", msg)
+    # . . push args
+    68/push  "F - test-print-int32"/imm32
+    68/push  "0x008899aa"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+print-int32-buffered:  # f : (address buffered-file), n : int -> <void>
+    # pseudocode:
+    #  write-buffered(f, "0x")
+    #  ECX = 28
+    #  while true
+    #    if (ECX < 0) break
+    #    EAX = n >> ECX
+    #    EAX = EAX & 0xf
+    #    write-byte-buffered(f, AL)
+    #    ECX -= 4
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    # ECX = 28
+    b9/copy-to-ECX  0x1c/imm32
+$print-int32-buffered:print-hex-prefix:
+    # write-buffered(f, "0x")
+    # . . push args
+    68/push  "0x"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$print-int32-buffered:loop:
+    # if (ECX < 0) break
+    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
+    7c/jump-if-lesser  $print-int32-buffered:end/disp8
+    # EAX = n >> ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    d3/>>ECX    5/subop/pad-zeroes  3/mod/direct    0/rm32/EAX    .           .             .           .           .               .                 # shift EAX right by ECX bits, padding zeroes
+    # EAX = to-hex-char(AL)
+    25/and-EAX  0xf/imm32
+    e8/call  to-hex-char/disp32
+    # write-byte-buffered(f, AL)
+    # . . push args
+    50/push-EAX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # ECX -= 4
+    81          5/subop/subtract    3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # subtract from ECX
+    eb/jump  $print-int32-buffered:loop/disp8
+$print-int32-buffered:end:
+    # . restore registers
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-print-int32-buffered:
+    # - check that print-int32-buffered prints the hex textual representation
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . clear-stream(_test-buffered-file+4)
     # . . push args
     b8/copy-to-EAX  _test-buffered-file/imm32
@@ -167,12 +336,12 @@ test-print-int32:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # print-int32(_test-buffered-file, 0x8899aa)
+    # print-int32-buffered(_test-buffered-file, 0x8899aa)
     # . . push args
     68/push  0x8899aa/imm32
     68/push  _test-buffered-file/imm32
     # . . call
-    e8/call  print-int32/disp32
+    e8/call  print-int32-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # flush(_test-buffered-file)
@@ -200,10 +369,10 @@ test-print-int32:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # check-stream-equal(_test-stream, "008899aa", msg)
+    # check-stream-equal(_test-stream, "0x008899aa", msg)
     # . . push args
-    68/push  "F - test-print-int32"/imm32
-    68/push  "008899aa"/imm32
+    68/push  "F - test-print-int32-buffered"/imm32
+    68/push  "0x008899aa"/imm32
     68/push  _test-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32

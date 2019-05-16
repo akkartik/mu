@@ -75,7 +75,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file), err : (
     #   while true
     #     EAX = convert-next-octet(in, err, ed)
     #     if (EAX == Eof) break
-    #     write-byte(out, AL)
+    #     write-byte-buffered(out, AL)
     #   flush(out)
     #
     # . prolog
@@ -96,12 +96,12 @@ $convert:loop:
     # if (EAX == Eof) break
     3d/compare-EAX-and  0xffffffff/imm32/Eof
     74/jump-if-equal  $convert:loop-end/disp8
-    # write-byte(out, AL)
+    # write-byte-buffered(out, AL)
     # . . push args
     50/push-EAX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  write-byte/disp32
+    e8/call  write-byte-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # loop
@@ -489,7 +489,7 @@ $test-convert-next-octet-aborts-on-single-hex-byte:end:
 scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-Eof/EAX
     # pseudocode:
     #   while true
-    #     EAX = read-byte(in)
+    #     EAX = read-byte-buffered(in)
     #     if (EAX == Eof) return EAX
     #     if (is-hex-digit?(EAX)) return EAX
     #     if (EAX == ' ' or '\t' or '\n') continue
@@ -501,11 +501,11 @@ scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), 
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
 $scan-next-byte:loop:
-    # EAX = read-byte(in)
+    # EAX = read-byte-buffered(in)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  read-byte/disp32
+    e8/call  read-byte-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # if (EAX == Eof) return EAX
@@ -1389,7 +1389,7 @@ skip-until-newline:  # in : (address buffered-file) -> <void>
     # pseudocode:
     #   push EAX
     #   while true
-    #     EAX = read-byte(in)
+    #     EAX = read-byte-buffered(in)
     #     if (EAX == Eof) break
     #     if (EAX == 0x0a) break
     #   pop EAX
@@ -1399,11 +1399,11 @@ skip-until-newline:  # in : (address buffered-file) -> <void>
     # . save registers
     50/push-EAX
 $skip-until-newline:loop:
-    # . EAX = read-byte(in)
+    # . EAX = read-byte-buffered(in)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  read-byte/disp32
+    e8/call  read-byte-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX == Eof) break

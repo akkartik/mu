@@ -75,4 +75,4 @@ endif
 " useful for inspecting just the control flow in a trace
 " see https://github.com/akkartik/mu/blob/master/subx/Readme.md#a-few-hints-for-debugging
 " the '-a' is because traces can sometimes contain unprintable characters that bother grep
-command! -nargs=0 L exec "%!grep -a label"
+command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"

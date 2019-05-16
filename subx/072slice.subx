@@ -704,7 +704,7 @@ test-slice-starts-with-fails-2:
     5d/pop-to-EBP
     c3/return
 
-write-slice:  # out : (address buffered-file), s : (address slice)
+write-slice-buffered:  # out : (address buffered-file), s : (address slice)
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -727,13 +727,13 @@ write-slice:  # out : (address buffered-file), s : (address slice)
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   0xc/disp8       .                 # copy *(EDI+12) to EDX
     # EBX = out->write
     8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           3/r32/EBX   4/disp8         .                 # copy *(EDI+4) to EBX
-$write-slice:loop:
+$write-slice-buffered:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           6/r32/ESI   .               .                 # compare ECX with ESI
-    7d/jump-if-greater-or-equal  $write-slice:loop-end/disp8
+    7d/jump-if-greater-or-equal  $write-slice-buffered:loop-end/disp8
     # if (out->write >= out->length) flush and clear out's stream
     39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare EBX with EDX
-    7c/jump-if-lesser  $write-slice:to-stream/disp8
+    7c/jump-if-lesser  $write-slice-buffered:to-stream/disp8
     # . persist out->write
     89/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           3/r32/EBX   4/disp8         .                 # copy EBX to *(EDI+4)
     # . flush(out)
@@ -753,7 +753,7 @@ $write-slice:loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . out->write must now be 0; update its cache at EBX
     31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
-$write-slice:to-stream:
+$write-slice-buffered:to-stream:
     # out->data[out->write] = *in
     # . AL = *in
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
@@ -764,11 +764,11 @@ $write-slice:to-stream:
     43/increment-EBX
     # ++in
     41/increment-ECX
-    eb/jump  $write-slice:loop/disp8
-$write-slice:loop-end:
+    eb/jump  $write-slice-buffered:loop/disp8
+$write-slice-buffered:loop-end:
     # persist necessary variables from registers
     89/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           3/r32/EBX   4/disp8         .                 # copy EBX to *(EDI+4)
-$write-slice:end:
+$write-slice-buffered:end:
     # . restore registers
     5f/pop-to-EDI
     5e/pop-to-ESI
@@ -781,7 +781,7 @@ $write-slice:end:
     5d/pop-to-EBP
     c3/return
 
-test-write-slice:
+test-write-slice-buffered:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -806,12 +806,12 @@ test-write-slice:
     68/push  _test-slice-data-3/imm32/end
     68/push  _test-slice-data-0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # write-slice(_test-buffered-file, slice)
+    # write-slice-buffered(_test-buffered-file, slice)
     # . . push args
     51/push-ECX
     68/push  _test-buffered-file/imm32
     # . . call
-    e8/call  write-slice/disp32
+    e8/call  write-slice-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # flush(_test-buffered-file)
@@ -823,7 +823,7 @@ test-write-slice:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # check-stream-equal(_test-stream, "Abc", msg)
     # . . push args
-    68/push  "F - test-write-slice"/imm32
+    68/push  "F - test-write-slice-buffered"/imm32
     68/push  "Abc"/imm32
     68/push  _test-stream/imm32
     # . . call
