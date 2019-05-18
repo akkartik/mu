@@ -8,7 +8,7 @@ void test_add_r32_to_r32() {
   Reg[EAX].i = 0x10;
   Reg[EBX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  01     d8                                    \n" // add EBX to EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -47,7 +47,7 @@ void test_add_r32_to_r32_signed_overflow() {
   Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
   Reg[EBX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  01     d8                                    \n" // add EBX to EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -64,7 +64,7 @@ void test_add_r32_to_r32_unsigned_overflow() {
   Reg[EAX].u = 0xffffffff;  // largest unsigned number
   Reg[EBX].u = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  01     d8                                    \n" // add EBX to EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -80,7 +80,7 @@ void test_add_r32_to_r32_unsigned_overflow() {
 void test_add_r32_to_r32_unsigned_and_signed_overflow() {
   Reg[EAX].u = Reg[EBX].u = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  01     d8                                    \n" // add EBX to EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -157,7 +157,7 @@ void test_subtract_r32_from_r32() {
   Reg[EAX].i = 10;
   Reg[EBX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  29     d8                                    \n"  // subtract EBX from EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -196,7 +196,7 @@ void test_subtract_r32_from_r32_signed_overflow() {
   Reg[EAX].i = 0x80000000;  // smallest negative signed integer
   Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  29     d8                                    \n"  // subtract EBX from EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -213,7 +213,7 @@ void test_subtract_r32_from_r32_unsigned_overflow() {
   Reg[EAX].i = 0;
   Reg[EBX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  29     d8                                    \n"  // subtract EBX from EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -230,7 +230,7 @@ void test_subtract_r32_from_r32_signed_and_unsigned_overflow() {
   Reg[EAX].i = 0;
   Reg[EBX].i = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  29     d8                                    \n"  // subtract EBX from EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -253,7 +253,7 @@ void test_multiply_EAX_by_r32() {
   Reg[EAX].i = 4;
   Reg[ECX].i = 3;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     e1                                    \n"  // multiply EAX by ECX
       // ModR/M in binary: 11 (direct mode) 100 (subop mul) 001 (src ECX)
@@ -302,7 +302,7 @@ void test_multiply_r32_into_r32() {
   Reg[EAX].i = 4;
   Reg[EBX].i = 2;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  0f af  d8                                    \n"  // subtract EBX into EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -338,7 +338,7 @@ case 0xaf: {  // multiply r32 by r/m32
 void test_negate_r32() {
   Reg[EBX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     db                                    \n"  // negate EBX
       // ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
@@ -378,7 +378,7 @@ case 3: {  // negate r/m32
 void test_negate_can_overflow() {
   Reg[EBX].i = 0x80000000;  // INT_MIN
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     db                                    \n"  // negate EBX
       // ModR/M in binary: 11 (direct mode) 011 (subop negate) 011 (dest EBX)
@@ -398,7 +398,7 @@ void test_divide_EAX_by_rm32() {
   Reg[EDX].u = 0;
   Reg[ECX].i = 3;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     f9                                    \n"  // multiply EAX by ECX
       // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
@@ -432,7 +432,7 @@ void test_divide_EAX_by_negative_rm32() {
   Reg[EDX].u = 0;
   Reg[ECX].i = -3;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     f9                                    \n"  // multiply EAX by ECX
       // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
@@ -451,7 +451,7 @@ void test_divide_negative_EAX_by_rm32() {
   Reg[EDX].i = -1;  // sign extend
   Reg[ECX].i = 3;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     f9                                    \n"  // multiply EAX by ECX
       // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
@@ -470,7 +470,7 @@ void test_divide_negative_EDX_EAX_by_rm32() {
   Reg[EDX].i = -7;
   Reg[ECX].i = 0x40000000;  // 2^30 (largest positive power of 2)
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     f9                                    \n"  // multiply EAX by ECX
       // ModR/M in binary: 11 (direct mode) 111 (subop idiv) 001 (divisor ECX)
@@ -494,7 +494,7 @@ void test_shift_left_r32_with_cl() {
   Reg[EBX].i = 13;
   Reg[ECX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  d3     e3                                    \n"  // shift EBX left by CL bits
       // ModR/M in binary: 11 (direct mode) 100 (subop shift left) 011 (dest EBX)
@@ -547,7 +547,7 @@ void test_shift_right_arithmetic_r32_with_cl() {
   Reg[EBX].i = 26;
   Reg[ECX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  d3     fb                                    \n"  // shift EBX right by CL bits, while preserving sign
       // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
@@ -579,7 +579,7 @@ void test_shift_right_arithmetic_odd_r32_with_cl() {
   Reg[EBX].i = 27;
   Reg[ECX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  d3     fb                                    \n"  // shift EBX right by CL bits, while preserving sign
       // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
@@ -597,7 +597,7 @@ void test_shift_right_arithmetic_negative_r32_with_cl() {
   Reg[EBX].i = 0xfffffffd;  // -3
   Reg[ECX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  d3     fb                                    \n"  // shift EBX right by CL bits, while preserving sign
       // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
@@ -618,7 +618,7 @@ void test_shift_right_logical_r32_with_cl() {
   Reg[EBX].i = 26;
   Reg[ECX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  d3     eb                                    \n"  // shift EBX right by CL bits, while padding zeroes
       // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
@@ -657,7 +657,7 @@ void test_shift_right_logical_odd_r32_with_cl() {
   Reg[EBX].i = 27;
   Reg[ECX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  d3     eb                                    \n"  // shift EBX right by CL bits, while padding zeroes
       // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
@@ -675,7 +675,7 @@ void test_shift_right_logical_negative_r32_with_cl() {
   Reg[EBX].i = 0xfffffffd;
   Reg[ECX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  d3     eb                                    \n"  // shift EBX right by CL bits, while padding zeroes
       // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
@@ -698,7 +698,7 @@ void test_and_r32_with_r32() {
   Reg[EAX].i = 0x0a0b0c0d;
   Reg[EBX].i = 0x000000ff;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  21     d8                                    \n"  // and EBX with destination EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -738,7 +738,7 @@ void test_or_r32_with_r32() {
   Reg[EAX].i = 0x0a0b0c0d;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  09     d8                                    \n"  // or EBX with destination EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -778,7 +778,7 @@ void test_xor_r32_with_r32() {
   Reg[EAX].i = 0x0a0b0c0d;
   Reg[EBX].i = 0xaabbc0d0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  31     d8                                    \n"  // xor EBX with destination EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -814,7 +814,7 @@ case 0x31: {  // xor r32 with r/m32
 void test_not_r32() {
   Reg[EBX].i = 0x0f0f00ff;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  f7     d3                                    \n"  // not EBX
       // ModR/M in binary: 11 (direct mode) 010 (subop not) 011 (dest EBX)
@@ -846,7 +846,7 @@ void test_compare_r32_with_r32_greater() {
   Reg[EAX].i = 0x0a0b0c0d;
   Reg[EBX].i = 0x0a0b0c07;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -883,7 +883,7 @@ void test_compare_r32_with_r32_lesser_unsigned_and_signed() {
   Reg[EAX].i = 0x0a0b0c07;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -899,7 +899,7 @@ void test_compare_r32_with_r32_lesser_unsigned_and_signed_due_to_overflow() {
   Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
   Reg[EBX].i = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -915,7 +915,7 @@ void test_compare_r32_with_r32_lesser_signed() {
   Reg[EAX].i = 0xffffffff;  // -1
   Reg[EBX].i = 0x00000001;  // 1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -931,7 +931,7 @@ void test_compare_r32_with_r32_lesser_unsigned() {
   Reg[EAX].i = 0x00000001;  // 1
   Reg[EBX].i = 0xffffffff;  // -1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  39     d8                                    \n"  // compare EAX with EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -947,7 +947,7 @@ void test_compare_r32_with_r32_equal() {
   Reg[EAX].i = 0x0a0b0c0d;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  39     d8                                    \n"  // compare EAX and EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -968,7 +968,7 @@ put_new(Name, "89", "copy r32 to rm32 (mov)");
 void test_copy_r32_to_r32() {
   Reg[EBX].i = 0xaf;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  89     d8                                    \n"  // copy EBX to EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -1001,7 +1001,7 @@ void test_xchg_r32_with_r32() {
   Reg[EBX].i = 0xaf;
   Reg[EAX].i = 0x2e;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  87     d8                                    \n"  // exchange EBX with EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
@@ -1044,7 +1044,7 @@ put_new(Name, "47", "increment EDI (inc)");
 void test_increment_r32() {
   Reg[ECX].u = 0x1f;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  41                                           \n"  // increment ECX
   );
@@ -1077,7 +1077,7 @@ put_new(Name, "ff", "increment/decrement/jump/push/call rm32 based on subop (inc
 void test_increment_rm32() {
   Reg[EAX].u = 0x20;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  ff     c0                                    \n"  // increment EAX
       // ModR/M in binary: 11 (direct mode) 000 (subop inc) 000 (EAX)
@@ -1126,7 +1126,7 @@ put_new(Name, "4f", "decrement EDI (dec)");
 void test_decrement_r32() {
   Reg[ECX].u = 0x1f;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  49                                           \n"  // decrement ECX
   );
@@ -1156,7 +1156,7 @@ case 0x4f: {  // decrement r32
 void test_decrement_rm32() {
   Reg[EAX].u = 0x20;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  ff     c8                                    \n"  // decrement EAX
       // ModR/M in binary: 11 (direct mode) 001 (subop inc) 000 (EAX)
@@ -1195,7 +1195,7 @@ void test_push_r32() {
   Reg[ESP].u = 0xbd000008;
   Reg[EBX].i = 0x0000000a;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  53                                           \n"  // push EBX to stack
   );
@@ -1240,10 +1240,10 @@ void test_pop_r32() {
   Reg[ESP].u = 0xbd000008;
   write_mem_i32(0xbd000008, 0x0000000a);  // ..before this write
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  5b                                           \n"  // pop stack to EBX
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"  // data segment
       "0a 00 00 00\n"  // 0x0000000a
   );
   CHECK_TRACE_CONTENTS(

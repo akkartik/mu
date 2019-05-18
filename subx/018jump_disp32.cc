@@ -8,7 +8,7 @@ put_new(Name, "e9", "jump disp32 bytes away (jmp)");
 :(code)
 void test_jump_disp32() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  e9                   05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -39,7 +39,7 @@ put_new(Name_0f, "84", "jump disp32 bytes away if equal, if ZF is set (jcc/jz/je
 void test_je_disp32_success() {
   ZF = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 84                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -67,7 +67,7 @@ case 0x84: {  // jump disp32 if ZF
 void test_je_disp32_fail() {
   ZF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 84                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -90,7 +90,7 @@ put_new(Name_0f, "85", "jump disp32 bytes away if not equal, if ZF is not set (j
 void test_jne_disp32_success() {
   ZF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 85                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -118,7 +118,7 @@ case 0x85: {  // jump disp32 unless ZF
 void test_jne_disp32_fail() {
   ZF = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 85                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -143,7 +143,7 @@ void test_jg_disp32_success() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8f                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -173,7 +173,7 @@ void test_jg_disp32_fail() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8f                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -197,7 +197,7 @@ void test_jge_disp32_success() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8d                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -226,7 +226,7 @@ void test_jge_disp32_fail() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8d                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -251,7 +251,7 @@ void test_jl_disp32_success() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8c                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -281,7 +281,7 @@ void test_jl_disp32_fail() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8c                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -306,7 +306,7 @@ void test_jle_disp32_equal() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8e                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -326,7 +326,7 @@ void test_jle_disp32_lesser() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8e                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -356,7 +356,7 @@ void test_jle_disp32_greater() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0f 8e                05 00 00 00               \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"

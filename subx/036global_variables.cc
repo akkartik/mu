@@ -9,14 +9,14 @@
 :(code)
 void test_global_variable() {
   run(
-      "== code\n"
+      "== code 0x1\n"
       "b9  x/imm32\n"
-      "== data\n"
+      "== data 0x2000\n"
       "x:\n"
       "  00 00 00 00\n"
   );
   CHECK_TRACE_CONTENTS(
-      "transform: global variable 'x' is at address 0x0a000079\n"
+      "transform: global variable 'x' is at address 0x00002000\n"
   );
 }
 
@@ -34,8 +34,10 @@ void rewrite_global_variables(program& p) {
 }
 
 void compute_addresses_for_global_variables(const program& p, map<string, uint32_t>& address) {
-  for (int i = /*skip code segment*/1;  i < SIZE(p.segments);  ++i)
-    compute_addresses_for_global_variables(p.segments.at(i), address);
+  for (int i = 0;  i < SIZE(p.segments);  ++i) {
+    if (p.segments.at(i).name != "code")
+      compute_addresses_for_global_variables(p.segments.at(i), address);
+  }
 }
 
 void compute_addresses_for_global_variables(const segment& s, map<string, uint32_t>& address) {
@@ -69,15 +71,21 @@ void compute_addresses_for_global_variables(const segment& s, map<string, uint32
 }
 
 void drop_global_variables(program& p) {
-  for (int i = /*skip code segment*/1;  i < SIZE(p.segments);  ++i)
-    drop_labels(p.segments.at(i));
+  for (int i = 0;  i < SIZE(p.segments);  ++i) {
+    if (p.segments.at(i).name != "code")
+      drop_labels(p.segments.at(i));
+  }
 }
 
 void replace_global_variables_with_addresses(program& p, const map<string, uint32_t>& address) {
   if (p.segments.empty()) return;
-  replace_global_variables_in_code_segment(p.segments.at(0), address);
-  for (int i = /*skip code*/1;  i < SIZE(p.segments);  ++i)
-    replace_global_variables_in_data_segment(p.segments.at(i), address);
+  for (int i = 0;  i < SIZE(p.segments);  ++i) {
+    segment& curr = p.segments.at(i);
+    if (curr.name == "code")
+      replace_global_variables_in_code_segment(curr, address);
+    else
+      replace_global_variables_in_data_segment(curr, address);
+  }
 }
 
 void replace_global_variables_in_code_segment(segment& code, const map<string, uint32_t>& address) {
@@ -154,7 +162,7 @@ Transform.push_back(correlate_disp32_with_mod);
 :(code)
 void correlate_disp32_with_mod(program& p) {
   if (p.segments.empty()) return;
-  segment& code = p.segments.at(0);
+  segment& code = *find(p, "code");
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
@@ -182,9 +190,9 @@ bool has_metadata(const word& w, const string& m) {
 void test_global_variable_disallowed_in_jump() {
   Hide_errors = true;
   run(
-      "== code\n"
+      "== code 0x1\n"
       "eb/jump  x/disp8\n"
-      "== data\n"
+      "== data 0x2000\n"
       "x:\n"
       "  00 00 00 00\n"
   );
@@ -198,9 +206,9 @@ void test_global_variable_disallowed_in_jump() {
 void test_global_variable_disallowed_in_call() {
   Hide_errors = true;
   run(
-      "== code\n"
+      "== code 0x1\n"
       "e8/call  x/disp32\n"
-      "== data\n"
+      "== data 0x2000\n"
       "x:\n"
       "  00 00 00 00\n"
   );
@@ -213,9 +221,9 @@ void test_global_variable_disallowed_in_call() {
 
 void test_global_variable_in_data_segment() {
   run(
-      "== 0x1\n"
+      "== code 0x1\n"
       "b9  x/imm32\n"
-      "== 0x0a000000\n"
+      "== data 0x2000\n"
       "x:\n"
       "  y/imm32\n"
       "y:\n"
@@ -223,28 +231,28 @@ void test_global_variable_in_data_segment() {
   );
   // check that we loaded 'x' with the address of 'y'
   CHECK_TRACE_CONTENTS(
-      "load: 0x0a000000 -> 04\n"
-      "load: 0x0a000001 -> 00\n"
-      "load: 0x0a000002 -> 00\n"
-      "load: 0x0a000003 -> 0a\n"
+      "load: 0x00002000 -> 04\n"
+      "load: 0x00002001 -> 20\n"
+      "load: 0x00002002 -> 00\n"
+      "load: 0x00002003 -> 00\n"
   );
   CHECK_TRACE_COUNT("error", 0);
 }
 
 void test_raw_number_with_imm32_in_data_segment() {
   run(
-      "== 0x1\n"
+      "== code 0x1\n"
       "b9  x/imm32\n"
-      "== 0x0a000000\n"
+      "== data 0x2000\n"
       "x:\n"
       "  1/imm32\n"
   );
   // check that we loaded 'x' with the address of 1
   CHECK_TRACE_CONTENTS(
-      "load: 0x0a000000 -> 01\n"
-      "load: 0x0a000001 -> 00\n"
-      "load: 0x0a000002 -> 00\n"
-      "load: 0x0a000003 -> 00\n"
+      "load: 0x00002000 -> 01\n"
+      "load: 0x00002001 -> 00\n"
+      "load: 0x00002002 -> 00\n"
+      "load: 0x00002003 -> 00\n"
   );
   CHECK_TRACE_COUNT("error", 0);
 }
@@ -252,9 +260,9 @@ void test_raw_number_with_imm32_in_data_segment() {
 void test_duplicate_global_variable() {
   Hide_errors = true;
   run(
-      "== 0x1\n"
+      "== code 0x1\n"
       "40/increment-EAX\n"
-      "== 0x0a000000\n"
+      "== data 0x2000\n"
       "x:\n"
       "x:\n"
       "  00\n"
@@ -266,9 +274,9 @@ void test_duplicate_global_variable() {
 
 void test_global_variable_disp32_with_modrm() {
   run(
-      "== code\n"
+      "== code 0x1\n"
       "8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX x/disp32\n"
-      "== data\n"
+      "== data 0x2000\n"
       "x:\n"
       "  00 00 00 00\n"
   );
@@ -277,7 +285,7 @@ void test_global_variable_disp32_with_modrm() {
 
 void test_global_variable_disp32_with_call() {
   transform(
-      "== code\n"
+      "== code 0x1\n"
       "foo:\n"
       "  e8/call bar/disp32\n"
       "bar:\n"

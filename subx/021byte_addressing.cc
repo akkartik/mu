@@ -45,11 +45,11 @@ void test_copy_r8_to_mem_at_r32() {
   Reg[EBX].i = 0x224488ab;
   Reg[EAX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  88     18                                      \n"  // copy BL to the byte at *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src BL) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "f0 cc bb aa\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -83,11 +83,11 @@ void test_copy_mem_at_r32_to_r8() {
   Reg[EBX].i = 0xaabbcc0f;  // one nibble each of lowest byte set to all 0s and all 1s, to maximize value of this test
   Reg[EAX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  8a     18                                      \n"  // copy just the byte at *EAX to BL
       // ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "ab ff ff ff\n"  // 0xab with more data in following bytes
   );
   CHECK_TRACE_CONTENTS(
@@ -119,7 +119,7 @@ void test_cannot_copy_byte_to_ESP_EBP_ESI_EDI() {
   Reg[ESI].u = 0xaabbccdd;
   Reg[EBX].u = 0x11223344;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  8a     f3                                      \n"  // copy just the byte at *EBX to 8-bit register '6'
       // ModR/M in binary: 11 (direct mode) 110 (dest 8-bit 'register 6') 011 (src EBX)
@@ -142,11 +142,11 @@ put_new(Name, "c6", "copy imm8 to r8/m8-at-r32 (mov)");
 void test_copy_imm8_to_mem_at_r32() {
   Reg[EAX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c6     00                          dd          \n"  // copy to the byte at *EAX
       // ModR/M in binary: 00 (indirect mode) 000 (unused) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "f0 cc bb aa\n"
   );
   CHECK_TRACE_CONTENTS(

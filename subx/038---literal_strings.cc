@@ -5,9 +5,9 @@
 
 void test_transform_literal_string() {
   run(
-      "== code\n"
+      "== code 0x1\n"
       "b8/copy  \"test\"/imm32\n"
-      "== data\n"  // need to manually create the segment for now
+      "== data 0x2000\n"  // need an empty segment
   );
   CHECK_TRACE_CONTENTS(
       "transform: -- move literal strings to data segment\n"
@@ -30,8 +30,8 @@ int Next_auto_global = 1;
 void transform_literal_strings(program& p) {
   trace(3, "transform") << "-- move literal strings to data segment" << end();
   if (p.segments.empty()) return;
-  segment& code = p.segments.at(0);
-  segment data;
+  segment& code = *find(p, "code");
+  segment& data = *find(p, "data");
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
     line& inst = code.lines.at(i);
     for (int j = 0;  j < SIZE(inst.words);  ++j) {
@@ -45,13 +45,6 @@ void transform_literal_strings(program& p) {
     }
     trace(99, "transform") << "instruction after transform: '" << data_to_string(inst) << "'" << end();
   }
-  if (data.lines.empty()) return;
-  if (SIZE(p.segments) < 2) {
-    p.segments.resize(2);
-    p.segments.at(1).lines.swap(data.lines);
-  }
-  vector<line>& existing_data = p.segments.at(1).lines;
-  existing_data.insert(existing_data.end(), data.lines.begin(), data.lines.end());
 }
 
 void add_global_to_data_segment(const string& name, const word& value, segment& data) {

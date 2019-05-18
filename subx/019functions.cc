@@ -8,7 +8,7 @@ void test_call_disp32() {
   Mem.push_back(vma(0xbd000000));  // manually allocate memory
   Reg[ESP].u = 0xbd000064;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  e8                                 a0 00 00 00 \n"  // call function offset at 0x000000a0
       // next EIP is 6
@@ -41,7 +41,7 @@ void test_call_r32() {
   Reg[ESP].u = 0xbd000064;
   Reg[EBX].u = 0x000000a0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  ff     d3                                      \n"  // call function offset at EBX
       // next EIP is 3
@@ -72,11 +72,11 @@ void test_call_mem_at_r32() {
   Reg[ESP].u = 0xbd000064;
   Reg[EBX].u = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  ff     13                                      \n"  // call function offset at *EBX
       // next EIP is 3
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "a0 00 00 00\n"  // 0x000000a0
   );
   CHECK_TRACE_CONTENTS(
@@ -99,10 +99,10 @@ void test_ret() {
   Reg[ESP].u = 0xbd000064;
   write_mem_u32(Reg[ESP].u, 0x10);
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c3                                           \n"  // return
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "10 00 00 00\n"  // 0x00000010
   );
   CHECK_TRACE_CONTENTS(

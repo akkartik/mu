@@ -3,7 +3,7 @@
 void test_check_bitfield_sizes() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "01/add 4/mod 3/rm32 1/r32\n"  // add ECX to EBX
   );
   CHECK_TRACE_CONTENTS(
@@ -66,7 +66,7 @@ void check_operand_bounds(const word& w) {
 
 void test_check_bitfield_sizes_for_imm8() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX 0xff/imm8"  // shift EBX left
   );
   CHECK(!trace_contains_errors());
@@ -75,7 +75,7 @@ void test_check_bitfield_sizes_for_imm8() {
 void test_check_bitfield_sizes_for_imm8_error() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX 0x100/imm8"  // shift EBX left
   );
   CHECK_TRACE_CONTENTS(
@@ -85,7 +85,7 @@ void test_check_bitfield_sizes_for_imm8_error() {
 
 void test_check_bitfield_sizes_for_negative_imm8() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX -0x80/imm8"  // shift EBX left
   );
   CHECK(!trace_contains_errors());
@@ -94,7 +94,7 @@ void test_check_bitfield_sizes_for_negative_imm8() {
 void test_check_bitfield_sizes_for_negative_imm8_error() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX -0x81/imm8"  // shift EBX left
   );
   CHECK_TRACE_CONTENTS(
@@ -105,7 +105,7 @@ void test_check_bitfield_sizes_for_negative_imm8_error() {
 void test_check_bitfield_sizes_for_disp8() {
   // not bothering to run
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "01/add 1/mod/*+disp8 3/rm32 1/r32 0x7f/disp8\n"  // add ECX to *(EBX+0x7f)
   );
   CHECK(!trace_contains_errors());
@@ -114,7 +114,7 @@ void test_check_bitfield_sizes_for_disp8() {
 void test_check_bitfield_sizes_for_disp8_error() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "01/add 1/mod/*+disp8 3/rm32 1/r32 0x80/disp8\n"  // add ECX to *(EBX+0x80)
   );
   CHECK_TRACE_CONTENTS(
@@ -125,7 +125,7 @@ void test_check_bitfield_sizes_for_disp8_error() {
 void test_check_bitfield_sizes_for_negative_disp8() {
   // not bothering to run
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "01/add 1/mod/*+disp8 3/rm32 1/r32 -0x80/disp8\n"  // add ECX to *(EBX-0x80)
   );
   CHECK(!trace_contains_errors());
@@ -134,7 +134,7 @@ void test_check_bitfield_sizes_for_negative_disp8() {
 void test_check_bitfield_sizes_for_negative_disp8_error() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "01/add 1/mod/*+disp8 3/rm32 1/r32 -0x81/disp8\n"  // add ECX to *(EBX-0x81)
   );
   CHECK_TRACE_CONTENTS(

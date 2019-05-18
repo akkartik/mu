@@ -100,7 +100,7 @@ void write_elf_header(ostream& out, const program& p) {
   // e_version
   O(0x01); O(0x00); O(0x00); O(0x00);
   // e_entry
-  uint32_t e_entry = p.segments.at(0).start;  // convention
+  uint32_t e_entry = find(p, "code")->start;
   // Override e_entry
   emit(e_entry);
   // e_phoff -- immediately after ELF header
@@ -130,6 +130,7 @@ void write_elf_header(ostream& out, const program& p) {
 
   uint32_t p_offset = /*size of ehdr*/0x34 + SIZE(p.segments)*0x20/*size of each phdr*/;
   for (int i = 0;  i < SIZE(p.segments);  ++i) {
+    const segment& curr = p.segments.at(i);
     //// phdr
     // p_type
     uint32_t p_type = 0x1;
@@ -137,18 +138,18 @@ void write_elf_header(ostream& out, const program& p) {
     // p_offset
     emit(p_offset);
     // p_vaddr
-    uint32_t p_start = p.segments.at(i).start;
+    uint32_t p_start = curr.start;
     emit(p_start);
     // p_paddr
     emit(p_start);
     // p_filesz
-    uint32_t size = num_words(p.segments.at(i));
+    uint32_t size = num_words(curr);
     assert(p_offset + size < SEGMENT_ALIGNMENT);
     emit(size);
     // p_memsz
     emit(size);
     // p_flags
-    uint32_t p_flags = (i == 0) ? /*r-x*/0x5 : /*rw-*/0x6;  // convention: only first segment is code
+    uint32_t p_flags = (curr.name == "code") ? /*r-x*/0x5 : /*rw-*/0x6;
     emit(p_flags);
 
     // p_align

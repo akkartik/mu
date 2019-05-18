@@ -8,7 +8,7 @@ put_new(Name, "eb", "jump disp8 bytes away (jmp)");
 :(code)
 void test_jump_rel8() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  eb                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -39,7 +39,7 @@ put_new(Name, "74", "jump disp8 bytes away if equal, if ZF is set (jcc/jz/je)");
 void test_je_rel8_success() {
   ZF = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  74                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -67,7 +67,7 @@ case 0x74: {  // jump rel8 if ZF
 void test_je_rel8_fail() {
   ZF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  74                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -90,7 +90,7 @@ put_new(Name, "75", "jump disp8 bytes away if not equal, if ZF is not set (jcc/j
 void test_jne_rel8_success() {
   ZF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  75                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -118,7 +118,7 @@ case 0x75: {  // jump rel8 unless ZF
 void test_jne_rel8_fail() {
   ZF = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  75                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -144,7 +144,7 @@ void test_jg_rel8_success() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7f                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -182,7 +182,7 @@ void test_jg_rel8_fail() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7f                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -207,7 +207,7 @@ void test_jge_rel8_success() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7d                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -244,7 +244,7 @@ void test_jge_rel8_fail() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7d                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -270,7 +270,7 @@ void test_jl_rel8_success() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7c                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -308,7 +308,7 @@ void test_jl_rel8_fail() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7c                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -334,7 +334,7 @@ void test_jle_rel8_equal() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7e                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -354,7 +354,7 @@ void test_jle_rel8_lesser() {
   SF = true;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7e                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"
@@ -392,7 +392,7 @@ void test_jle_rel8_greater() {
   SF = false;
   OF = false;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  7e                   05                        \n"  // skip 1 instruction
       "  05                                 00 00 00 01 \n"

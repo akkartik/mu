@@ -4,7 +4,13 @@
 #   $ ./subx translate examples/ex4.subx -o examples/ex4
 #   $ ./subx run examples/ex4
 
-== code
+== data 0x0a000000
+
+# the global variable we save to
+X:
+    0/imm32  # space for read() to write to
+
+== code 0x09000000
 
 # syscall(read, stdin, X, 1)
 # . fd = 0 (stdin)
@@ -31,10 +37,5 @@ cd/syscall  0x80/imm8
 # syscall(exit, EBX)
 b8/copy-to-EAX  1/imm32/exit
 cd/syscall  0x80/imm8
-
-== data
-
-X:
-    0/imm32  # space for read() to write to
 
 # . . vim:nowrap:textwidth=0

@@ -23,7 +23,7 @@
 
 void test_entry_label() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "05 0x0d0c0b0a/imm32\n"
       "Entry:\n"
       "05 0x0d0c0b0a/imm32\n"
@@ -50,7 +50,7 @@ if (SIZE(s) == 2) return true;
 void test_pack_immediate_ignores_single_byte_nondigit_operand() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "b9/copy  a/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -63,7 +63,7 @@ void test_pack_immediate_ignores_single_byte_nondigit_operand() {
 void test_pack_immediate_ignores_3_hex_digit_operand() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "b9/copy  aaa/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -76,7 +76,7 @@ void test_pack_immediate_ignores_3_hex_digit_operand() {
 void test_pack_immediate_ignores_non_hex_operand() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "b9/copy xxx/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -108,7 +108,7 @@ void check_valid_name(const string& s) {
 
 void test_map_label() {
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "loop:\n"
       "  05  0x0d0c0b0a/imm32\n"
   );
@@ -123,7 +123,7 @@ Transform.push_back(rewrite_labels);
 void rewrite_labels(program& p) {
   trace(3, "transform") << "-- rewrite labels" << end();
   if (p.segments.empty()) return;
-  segment& code = p.segments.at(0);
+  segment& code = *find(p, "code");
   map<string, int32_t> byte_index;  // values are unsigned, but we're going to do subtractions on them so they need to fit in 31 bits
   compute_byte_indices_for_labels(code, byte_index);
   if (trace_contains_errors()) return;
@@ -278,7 +278,7 @@ string drop_last(const string& s) {
 
 void test_multiple_labels_at() {
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // address 1
       "loop:\n"
       " $loop2:\n"
@@ -304,7 +304,7 @@ void test_multiple_labels_at() {
 
 void test_loading_label_as_imm32() {
   transform(
-      "== 0x1\n"
+      "== code 0x1\n"
       "label:\n"
       "  be/copy-to-ESI  label/imm32\n"
   );
@@ -317,7 +317,7 @@ void test_loading_label_as_imm32() {
 void test_duplicate_label() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"
+      "== code 0x1\n"
       "loop:\n"
       "loop:\n"
       "    05  0x0d0c0b0a/imm32\n"
@@ -330,7 +330,7 @@ void test_duplicate_label() {
 void test_label_too_short() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"
+      "== code 0x1\n"
       "xz:\n"
       "  05  0x0d0c0b0a/imm32\n"
   );
@@ -342,7 +342,7 @@ void test_label_too_short() {
 void test_label_hex() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"
+      "== code 0x1\n"
       "0xab:\n"
       "  05  0x0d0c0b0a/imm32\n"
   );
@@ -354,7 +354,7 @@ void test_label_hex() {
 void test_label_negative_hex() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"
+      "== code 0x1\n"
       "-a:\n"
       "    05  0x0d0c0b0a/imm32\n"
   );
@@ -368,10 +368,10 @@ void test_label_negative_hex() {
 
 void test_segment_size_ignores_labels() {
   transform(
-      "== code\n"  // 0x09000074
+      "== code 0x09000074\n"
       "  05/add  0x0d0c0b0a/imm32\n"  // 5 bytes
       "foo:\n"                        // 0 bytes
-      "== data\n"  // 0x0a000079
+      "== data 0x0a000000\n"
       "bar:\n"
       "  00\n"
   );
