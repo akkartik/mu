@@ -112,15 +112,14 @@ void check_mode(int reg) {
 :(before "End Globals")
 // Very primitive/fixed/insecure mmap segments for now.
 uint32_t Segments_allocated_above = END_HEAP;
-const uint32_t SPACE_FOR_SEGMENT = 0x01000000;
 :(code)
 // always allocate multiples of the segment size
 uint32_t new_segment(uint32_t length) {
   assert(length > 0);
-  uint32_t result = (Segments_allocated_above - length) & 0xff000000;
+  uint32_t result = (Segments_allocated_above - length) & 0xff000000;  // same number of zeroes as SEGMENT_ALIGNMENT
   if (result <= START_HEAP) {
     raise << "Allocated too many segments; the VM ran out of memory. "
-          << "Maybe SPACE_FOR_SEGMENT can be smaller?\n" << end();
+          << "Maybe SEGMENT_ALIGNMENT can be smaller?\n" << end();
     exit(1);
   }
   Mem.push_back(vma(result, result+length));

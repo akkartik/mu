@@ -138,15 +138,13 @@ void load_segment_from_program_header(uint8_t* elf_contents, int segment_index, 
 
 :(before "End Includes")
 // Very primitive/fixed/insecure ELF segments for now.
-//   code:  0x09000000 -> 0x09ffffff (specified in ELF binary)
-//   data:  0x0a000000 -> 0x0affffff (specified in ELF binary)
-//   --- heap gets mmap'd somewhere here ---
-//   stack: 0xbdffffff -> 0xbd000000 (downward; not in ELF binary)
-//   argv hack: 0xbf000000 -> 0xbfffffff (not in ELF binary)
-//
-// Addresses above 0xc0000000 are reserved for the Linux kernel.
-const uint32_t CODE_SEGMENT      = 0x09000000;
-const uint32_t DATA_SEGMENT      = 0x0a000000;
+//   --- inaccessible:        0x00000000 -> 0x08047fff
+//   code:                    0x09000000 -> 0x09ffffff (specified in ELF binary)
+//   data:                    0x0a000000 -> 0x0affffff (specified in ELF binary)
+//                      --- heap gets mmap'd somewhere here ---
+//   stack:                   0xbdffffff -> 0xbd000000 (downward; not in ELF binary)
+//   argv hack:               0xbf000000 -> 0xbfffffff (not in ELF binary)
+//   --- reserved for kernel: 0xc0000000 -> ...
 const uint32_t START_HEAP        = 0x0b000000;
 const uint32_t END_HEAP          = 0xbd000000;
 const uint32_t STACK_SEGMENT     = 0xbd000000;
