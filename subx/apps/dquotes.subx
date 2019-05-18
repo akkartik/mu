@@ -2265,63 +2265,46 @@ skip-string-in-slice:  # curr : (address byte), end : (address byte) -> new_curr
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-
     # . save registers
     51/push-ECX
     52/push-EDX
     53/push-EBX
-
     # ECX = curr
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
-
     # EDX = end
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         2/r32/EDX   0xc/disp8         .               # copy *(EBP+12) to EDX
-
     # EAX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-    # loop:
 $skip-string-in-slice:loop:
-    # . ECX++
-    41/increment-ECX                                                                                                                                  # ECX++
+    # ++curr
+    41/increment-ECX
     # if (curr >= end) return curr
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     73/jump-if-greater-unsigned-or-equal  $skip-string-in-slice:return-curr/disp8
-
-    # . EAX = *((char*) ECX)
-    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
-    # . if EAX == '\':
-    # . . goto escaped-char
-    3d/compare-EAX-and              0x5c/imm32/backslash
-    74/jump-if-equal  $skip-string-in-slice:escaped-char/disp8
-    # . else if EAX == '"':
-    # . . break
-    3d/compare-EAX-and              0x22/imm32/double-quote
-    74/jump-if-equal  $skip-string-in-slice:loop-end/disp8
-    # . else:
-    # . . continue loop
+    # AL = *curr
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
+$skip-string-in-slice:dquote:
+    # if (EAX == '"') break
+    3d/compare-EAX-and  0x22/imm32/double-quote
+    74/jump-if-equal  $skip-string-in-slice:break/disp8
+$skip-string-in-slice:check-for-escape:
+    # if (EAX == '\') escape next char
+    3d/compare-EAX-and  0x5c/imm32/backslash
+    75/jump-if-not-equal  $skip-string-in-slice:loop/disp8
+$skip-string-in-slice:escape:
+    41/increment-ECX
     eb/jump  $skip-string-in-slice:loop/disp8
-
-$skip-string-in-slice:escaped-char:
-    # . ECX++ (step over escaped charcter)
-    41/increment-ECX                                                                                                                                  # ECX++
-    # . continue loop
-    eb/jump  $skip-string-in-slice:loop/disp8
-$skip-string-in-slice:loop-end:
+$skip-string-in-slice:break:
     # step over last '"'
-    # . ECX++
-    41/increment-ECX                                                                                                                                  # ECX++
-
+    41/increment-ECX
 $skip-string-in-slice:return-curr:
-    # EAX = ECX for return
+    # return curr
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy ECX to EAX
-
-
 $skip-string-in-slice:end:
     # . restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
-
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
