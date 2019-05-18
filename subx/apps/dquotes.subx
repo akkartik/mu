@@ -31,7 +31,7 @@ Entry:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 
     # for debugging: run a single test
-#?     e8/call  test-convert-processes-string-literals/disp32
+#?     e8/call  test-skip-string-in-slice-stops-at-end/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -2283,6 +2283,9 @@ skip-string-in-slice:  # curr : (address byte), end : (address byte) -> new_curr
 $skip-string-in-slice:loop:
     # . ECX++
     41/increment-ECX                                                                                                                                  # ECX++
+    # if (curr >= end) return curr
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    73/jump-if-greater-unsigned-or-equal  $skip-string-in-slice:return-curr/disp8
 
     # . EAX = *((char*) ECX)
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
@@ -2308,6 +2311,7 @@ $skip-string-in-slice:loop-end:
     # . ECX++
     41/increment-ECX                                                                                                                                  # ECX++
 
+$skip-string-in-slice:return-curr:
     # EAX = ECX for return
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy ECX to EAX
 
@@ -2410,6 +2414,39 @@ test-skip-string-in-slice-ignores-escapes:
     # . . push args
     68/push  "F - test-skip-string-in-slice-ignores-escapes"/imm32
     68/push  3/imm32
+    # . . push ECX-EAX
+    29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from ECX
+    51/push-ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-skip-string-in-slice-stops-at-end:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup: (EAX..ECX) = "\"abc"  # unbalanced dquote
+    b8/copy-to-EAX  "\"abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # EAX = skip-string-in-slice(EAX, ECX)
+    # . . push args
+    51/push-ECX
+    50/push-EAX
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(ECX-EAX, 0, msg)  # skipped to end of slice
+    # . . push args
+    68/push  "F - test-skip-string-in-slice-stops-at-end"/imm32
+    68/push  0/imm32
     # . . push ECX-EAX
     29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from ECX
     51/push-ECX
