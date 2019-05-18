@@ -2055,9 +2055,60 @@ skip-string:  # line : (address stream)
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+
+    # EDX = line
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         2/r32/EDX   8/disp8         .                 # copy *(EBP+8) to EDX
+
+    # ECX = line->read
+    8b/copy                         1/mod/*+disp8   2/rm32/EDX    .           .                         1/r32/ECX   4/disp8         .                 # copy *(EDX+4) to ECX
+
+    # EAX = 0
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    # loop:
+$skip-string:loop:
+    #   ECX++
+    41/increment-ECX                                                                                                                                  # ECX++
+
+    #   EAX = *((char*) line->data/EDX[line->read/ECX])
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    2/base/EDX  1/index/ECX   .           0/r32/EAX   0xc/disp8       .                 # copy *(EDX+ECX+12) to EBX
+    #   if EAX == '\':
+    #     goto escaped-char
+    3d/compare-EAX-and              0x5c/imm32/backslash
+    74/jump-if-equal  $skip-string:escaped-char/disp8
+    #   else if EAX == '"':
+    #     break
+    3d/compare-EAX-and              0x22/imm32/double-quote
+    74/jump-if-equal  $skip-string:loop-end/disp8
+    #   else:
+    #     continue loop
+    eb/jump  $skip-string:loop/disp8
+
+$skip-string:escaped-char:
+    #   ECX++ (step over escaped charcter)
+    41/increment-ECX                                                                                                                                  # ECX++
+    #   continue loop
+    eb/jump  $skip-string:loop/disp8
+$skip-string:loop-end:
+    # step over last '"'
+    # . ECX++
+    41/increment-ECX                                                                                                                                  # ECX++
+
+    # line->read = ECX
+    89/copy                         1/mod/*+disp8   2/rm32/EDX    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(EDX+4)
+
 $skip-string:end:
     # . restore registers
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
+
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
