@@ -2050,52 +2050,39 @@ test-next-word-returns-string-with-escapes:
     c3/return
 
 # update line->read to end of string literal surrounded by double quotes
-# line-read must start out at a double-quote
+# line->read must start out at a double-quote
 skip-string:  # line : (address stream)
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-
     # . save registers
     50/push-EAX
     51/push-ECX
     52/push-EDX
-
     # ECX = line
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
-
-    # skip-string-in-slice(&line->data[line->read], &line->data[line->end])
-    # . push &line->data[line->end]
-    # . . EDX = line->end
+    # EAX = skip-string-in-slice(&line->data[line->read], &line->data[line->write])
+    # . . push &line->data[line->write]
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .                         2/r32/EDX   8/disp8         .                 # copy *(ECX+8) to EDX
-    # . . EDX = &line->data[line->end]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   0xc/disp8       .                 # copy ECX+EDX+12 to EDX
-    # . . push EDX
     52/push-EDX
-
-    # . push &line->data[line->read]
-    # . . EDX = line->read
+    # . . push &line->data[line->read]
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .                         2/r32/EDX   4/disp8         .                 # copy *(ECX+4) to EDX
-    # . . EDX = &line->data[line->read]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   0xc/disp8       .                 # copy ECX+EDX+12 to EDX
-    # . . push EDX
     52/push-EDX
-
-    e8/call skip-string-in-slice/disp32
-    # . discard args
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-
     # line->read = EAX - line->data
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     2d/subtract-from-EAX  0xc/imm32
     89/copy                         1/mod/*+disp8   1/rm32/ECX    .           .                         0/r32/EAX   4/disp8         .                 # copy EAX to *(ECX+4)
-
 $skip-string:end:
     # . restore registers
     5a/pop-to-EDX
     59/pop-to-ECX
     58/pop-to-EAX
-
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
