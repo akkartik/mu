@@ -5,11 +5,11 @@ void test_add_r32_to_mem_at_r32() {
   Reg[EBX].i = 0x10;
   Reg[EAX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  01     18                                    \n"  // add EBX to *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -40,11 +40,11 @@ void test_add_mem_at_r32_to_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x10;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  03     18                                    \n"  // add *EAX to EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -81,11 +81,11 @@ void test_add_mem_at_r32_to_r32_signed_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  03     18                                    \n" // add *EAX to EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
@@ -101,11 +101,11 @@ void test_add_mem_at_r32_to_r32_unsigned_overflow() {
   Reg[EAX].u = 0x2000;
   Reg[EBX].u = 0xffffffff;  // largest unsigned number
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  03     18                                    \n" // add *EAX to EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -121,11 +121,11 @@ void test_add_mem_at_r32_to_r32_unsigned_and_signed_overflow() {
   Reg[EAX].u = 0x2000;
   Reg[EBX].u = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  03     18                                    \n" // add *EAX to EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "00 00 00 80\n"  // smallest negative signed integer
   );
   CHECK_TRACE_CONTENTS(
@@ -144,11 +144,11 @@ void test_subtract_r32_from_mem_at_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  29     18                                    \n"  // subtract EBX from *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0a 00 00 00\n"  // 0x0000000a
   );
   CHECK_TRACE_CONTENTS(
@@ -168,11 +168,11 @@ void test_subtract_mem_at_r32_from_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 10;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -209,11 +209,11 @@ void test_subtract_mem_at_r32_from_r32_signed_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "ff ff ff 7f\n"  // largest positive signed integer
   );
   CHECK_TRACE_CONTENTS(
@@ -229,11 +229,11 @@ void test_subtract_mem_at_r32_from_r32_unsigned_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
@@ -249,11 +249,11 @@ void test_subtract_mem_at_r32_from_r32_signed_and_unsigned_overflow() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2b     18                                    \n"  // subtract *EAX from EBX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "00 00 00 80\n"  // smallest negative signed integer
   );
   CHECK_TRACE_CONTENTS(
@@ -271,11 +271,11 @@ void test_and_r32_with_mem_at_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xff;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  21     18                                    \n"  // and EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -295,11 +295,11 @@ void test_and_mem_at_r32_with_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  23     18                                    \n"  // and *EAX with EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "ff 00 00 00\n"  // 0x000000ff
   );
   CHECK_TRACE_CONTENTS(
@@ -334,11 +334,11 @@ void test_or_r32_with_mem_at_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  09     18                                   #\n"  // EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -358,11 +358,11 @@ void test_or_mem_at_r32_with_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0b     18                                    \n"  // or *EAX with EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -397,10 +397,10 @@ void test_xor_r32_with_mem_at_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  31     18                                    \n"  // xor EBX with *EAX
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c bb aa\n"  // 0xaabb0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -420,11 +420,11 @@ void test_xor_mem_at_r32_with_r32() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xa0b0c0d0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  33     18                                    \n"  // xor *EAX with EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -458,11 +458,11 @@ case 0x33: {  // xor r/m32 with r32
 void test_not_of_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  f7     13                                    \n"  // not *EBX
       // ModR/M in binary: 00 (indirect mode) 010 (subop not) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "ff 00 0f 0f\n"  // 0x0f0f00ff
   );
   CHECK_TRACE_CONTENTS(
@@ -480,11 +480,11 @@ void test_compare_mem_at_r32_with_r32_greater() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c07;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  39     18                                    \n"  // compare *EAX with EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -499,11 +499,11 @@ void test_compare_mem_at_r32_with_r32_lesser() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  39     18                                    \n"  // compare *EAX with EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "07 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -518,11 +518,11 @@ void test_compare_mem_at_r32_with_r32_equal() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  39     18                                    \n"  // compare *EAX and EBX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -542,11 +542,11 @@ void test_compare_r32_with_mem_at_r32_greater() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "07 0c 0b 0a\n"  // 0x0a0b0c07
   );
   CHECK_TRACE_CONTENTS(
@@ -580,11 +580,11 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c07;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -599,11 +599,11 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed_due_to_overflow
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "00 00 00 80\n"  // smallest negative signed integer
   );
   CHECK_TRACE_CONTENTS(
@@ -618,11 +618,11 @@ void test_compare_r32_with_mem_at_r32_lesser_signed() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0xffffffff;  // -1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 1
   );
   CHECK_TRACE_CONTENTS(
@@ -637,11 +637,11 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x00000001;  // 1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "ff ff ff ff\n"  // -1
   );
   CHECK_TRACE_CONTENTS(
@@ -656,11 +656,11 @@ void test_compare_r32_with_mem_at_r32_equal() {
   Reg[EAX].i = 0x2000;
   Reg[EBX].i = 0x0a0b0c0d;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3b     18                                    \n"  // compare EBX with *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0d 0c 0b 0a\n"  // 0x0a0b0c0d
   );
   CHECK_TRACE_CONTENTS(
@@ -676,7 +676,7 @@ void test_copy_r32_to_mem_at_r32() {
   Reg[EBX].i = 0xaf;
   Reg[EAX].i = 0x60;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  89     18                                    \n"  // copy EBX to *EAX
       // ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
@@ -697,10 +697,10 @@ put_new(Name, "8b", "copy rm32 to r32 (mov)");
 void test_copy_mem_at_r32_to_r32() {
   Reg[EAX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  8b     18                                    \n"  // copy *EAX to EBX
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "af 00 00 00\n"  // 0x000000af
   );
   CHECK_TRACE_CONTENTS(
@@ -727,13 +727,13 @@ case 0x8b: {  // copy r32 to r/m32
 void test_jump_mem_at_r32() {
   Reg[EAX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  ff     20                                    \n"  // jump to *EAX
       // ModR/M in binary: 00 (indirect mode) 100 (jump to r/m32) 000 (src EAX)
       "  b8                                 00 00 00 01\n"
       "  b8                                 00 00 00 02\n"
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "08 00 00 00\n"  // 0x00000008
   );
   CHECK_TRACE_CONTENTS(
@@ -763,10 +763,10 @@ void test_push_mem_at_r32() {
   Mem.push_back(vma(0xbd000000));  // manually allocate memory
   Reg[ESP].u = 0xbd000014;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  ff     30                                    \n"  // push *EAX to stack
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "af 00 00 00\n"  // 0x000000af
   );
   CHECK_TRACE_CONTENTS(
@@ -797,7 +797,7 @@ void test_pop_mem_at_r32() {
   Reg[ESP].u = 0xbd000000;
   write_mem_i32(0xbd000000, 0x00000030);
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  8f     00                                    \n"  // pop stack into *EAX
       // ModR/M in binary: 00 (indirect mode) 000 (pop r/m32) 000 (dest EAX)
@@ -831,11 +831,11 @@ case 0x8f: {  // pop stack into r/m32
 void test_add_r32_to_mem_at_displacement() {
   Reg[EBX].i = 0x10;  // source
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  01     1d            00 20 00 00             \n"  // add EBX to *0x2000
       // ModR/M in binary: 00 (indirect mode) 011 (src EBX) 101 (dest in disp32)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -858,11 +858,11 @@ void test_add_r32_to_mem_at_r32_plus_disp8() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x1ffe;  // dest
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  01     58            02                      \n"  // add EBX to *(EAX+2)
       // ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -893,11 +893,11 @@ void test_add_r32_to_mem_at_r32_plus_negative_disp8() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x2001;  // dest
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  01     58            ff                      \n"  // add EBX to *(EAX-1)
       // ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -915,11 +915,11 @@ void test_add_r32_to_mem_at_r32_plus_disp32() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x1ffe;  // dest
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  01     98            02 00 00 00             \n"  // add EBX to *(EAX+2)
       // ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -950,11 +950,11 @@ void test_add_r32_to_mem_at_r32_plus_negative_disp32() {
   Reg[EBX].i = 0x10;  // source
   Reg[EAX].i = 0x2001;  // dest
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  01     98            ff ff ff ff             \n"  // add EBX to *(EAX-1)
       // ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -974,7 +974,7 @@ put_new(Name, "8d", "copy address in rm32 into r32 (lea)");
 void test_copy_address() {
   Reg[EAX].u = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  8d     18                                    \n"  // copy address in EAX into EBX
       // ModR/M in binary: 00 (indirect mode) 011 (dest EBX) 000 (src EAX)

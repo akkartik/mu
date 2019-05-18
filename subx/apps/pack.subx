@@ -570,9 +570,9 @@ test-convert-passes-segment-headers-through:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize input
-    # . write(_test-input-stream, "== abcd")
+    # . write(_test-input-stream, "== abcd 0x1")
     # . . push args
-    68/push  "== abcd"/imm32
+    68/push  "== abcd 0x1"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -594,10 +594,10 @@ test-convert-passes-segment-headers-through:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . check-stream-equal(_test-output-stream, "== abcd", msg)
+    # . check-stream-equal(_test-output-stream, "== abcd 0x1", msg)
     # . . push args
     68/push  "F - test-convert-passes-segment-headers-through"/imm32
-    68/push  "== abcd"/imm32
+    68/push  "== abcd 0x1"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
@@ -647,20 +647,20 @@ test-convert-in-data-segment:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize input
-    #   == code
-    #   == data
+    #   == code 0x1
+    #   == data 0x2
     #   3 4/imm32
-    # . write(_test-input-stream, "== code")
+    # . write(_test-input-stream, "== code 0x1")
     # . . push args
-    68/push  "== code\n"/imm32
+    68/push  "== code 0x1\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== data\n")
+    # . write(_test-input-stream, "== data 0x2\n")
     # . . push args
-    68/push  "== data\n"/imm32
+    68/push  "== data 0x2\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -716,19 +716,19 @@ test-convert-in-data-segment:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== code", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== code 0x1", msg)
     # . . push args
     68/push  "F - test-convert-in-data-segment/0"/imm32
-    68/push  "== code"/imm32
+    68/push  "== code 0x1"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== data", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== data 0x2", msg)
     # . . push args
     68/push  "F - test-convert-in-data-segment/1"/imm32
-    68/push  "== data"/imm32
+    68/push  "== data 0x2"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -787,14 +787,14 @@ test-convert-code-and-data-segments:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # initialize input
-    #   == code
+    #   == code 0x1
     #   e8/call 20/disp32
     #   68/push 0x20/imm8
-    #   == data
+    #   == data 0x2
     #   3 4/imm32
-    # . write(_test-input-stream, "== code\n")
+    # . write(_test-input-stream, "== code 0x1\n")
     # . . push args
-    68/push  "== code\n"/imm32
+    68/push  "== code 0x1\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -816,9 +816,9 @@ test-convert-code-and-data-segments:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== data\n")
+    # . write(_test-input-stream, "== data 0x2\n")
     # . . push args
-    68/push  "== data\n"/imm32
+    68/push  "== data 0x2\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -841,10 +841,10 @@ test-convert-code-and-data-segments:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check output
-    #   == code
+    #   == code 0x1
     #   e8 20 00 00 00  # e8/call 20/disp32
     #   68 20  # 68/push 0x20/imm8
-    #   == data
+    #   == data 0x2
     #   03 04 00 00 00
 #?     # debug print {{{
 #?     # . write(2/stderr, "^")
@@ -879,10 +879,10 @@ test-convert-code-and-data-segments:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== code", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== code 0x1", msg)
     # . . push args
     68/push  "F - test-convert-code-and-data-segments/0"/imm32
-    68/push  "== code"/imm32
+    68/push  "== code 0x1"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -906,10 +906,10 @@ test-convert-code-and-data-segments:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== data", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== data 0x2", msg)
     # . . push args
     68/push  "F - test-convert-code-and-data-segments/3"/imm32
-    68/push  "== data"/imm32
+    68/push  "== data 0x2"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32

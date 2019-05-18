@@ -7,7 +7,7 @@ put_new(Name, "99", "sign-extend EAX into EDX (cdq)");
 void test_cdq() {
   Reg[EAX].i = 10;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "99\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -28,7 +28,7 @@ case 0x99: {  // sign-extend EAX into EDX
 void test_cdq_negative() {
   Reg[EAX].i = -10;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "99\n"
   );
   CHECK_TRACE_CONTENTS(

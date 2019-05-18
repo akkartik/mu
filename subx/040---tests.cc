@@ -19,7 +19,7 @@ void test_run_test() {
   Mem.push_back(vma(0xbd000000));  // manually allocate memory
   Reg[ESP].u = 0xbd000100;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       "main:\n"
       "  e8/call run-tests/disp32\n"  // 5 bytes
       "  f4/halt\n"                   // 1 byte
@@ -35,7 +35,7 @@ void test_run_test() {
 
 void create_test_function(program& p) {
   if (p.segments.empty()) return;
-  segment& code = p.segments.at(0);
+  segment& code = *find(p, "code");
   trace(3, "transform") << "-- create 'run-tests'" << end();
   vector<line> new_insts;
   for (int i = 0;  i < SIZE(code.lines);  ++i) {

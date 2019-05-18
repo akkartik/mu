@@ -27,7 +27,7 @@ case 0x05: {  // add imm32 to EAX
 void test_add_imm32_to_EAX_signed_overflow() {
   Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  05                                 01 00 00 00 \n" // add 1 to EAX
   );
@@ -42,7 +42,7 @@ void test_add_imm32_to_EAX_unsigned_overflow() {
   Reg[EAX].u = 0xffffffff;  // largest unsigned number
   Reg[EBX].u = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  05                                 01 00 00 00 \n" // add 1 to EAX
   );
@@ -56,7 +56,7 @@ void test_add_imm32_to_EAX_unsigned_overflow() {
 void test_add_imm32_to_EAX_unsigned_and_signed_overflow() {
   Reg[EAX].u = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  05                                 00 00 00 80 \n" // add 0x80000000 to EAX
   );
@@ -76,7 +76,7 @@ put_new(Name, "81", "combine rm32 with imm32 based on subop (add/sub/and/or/xor/
 void test_add_imm32_to_r32() {
   Reg[EBX].i = 1;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     c3                          0a 0b 0c 0d\n"  // add 0x0d0c0b0a to EBX
       // ModR/M in binary: 11 (direct mode) 000 (subop add) 011 (dest EBX)
@@ -129,7 +129,7 @@ case 0x81: {  // combine r/m32 with imm32
 void test_add_imm32_to_r32_signed_overflow() {
   Reg[EBX].i = 0x7fffffff;  // largest positive signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     c3                          01 00 00 00\n"  // add 1 to EBX
       // ModR/M in binary: 11 (direct mode) 000 (subop add) 011 (dest EBX)
@@ -147,7 +147,7 @@ void test_add_imm32_to_r32_signed_overflow() {
 void test_add_imm32_to_r32_unsigned_overflow() {
   Reg[EBX].u = 0xffffffff;  // largest unsigned number
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     c3                          01 00 00 00\n"  // add 1 to EBX
       // ModR/M in binary: 11 (direct mode) 011 (subop add) 011 (dest EBX)
@@ -165,7 +165,7 @@ void test_add_imm32_to_r32_unsigned_overflow() {
 void test_add_imm32_to_r32_unsigned_and_signed_overflow() {
   Reg[EBX].u = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     c3                          00 00 00 80\n"  // add 0x80000000 to EBX
       // ModR/M in binary: 11 (direct mode) 011 (subop add) 011 (dest EBX)
@@ -186,11 +186,11 @@ void test_add_imm32_to_r32_unsigned_and_signed_overflow() {
 void test_add_imm32_to_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     03                          0a 0b 0c 0d \n"  // add 0x0d0c0b0a to *EBX
       // ModR/M in binary: 00 (indirect mode) 000 (subop add) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "01 00 00 00\n"  // 0x00000001
   );
   CHECK_TRACE_CONTENTS(
@@ -211,7 +211,7 @@ put_new(Name, "2d", "subtract imm32 from EAX (sub)");
 void test_subtract_imm32_from_EAX() {
   Reg[EAX].i = 0x0d0c0baa;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2d                                 0a 0b 0c 0d \n"  // subtract 0x0d0c0b0a from EAX
   );
@@ -245,7 +245,7 @@ case 0x2d: {  // subtract imm32 from EAX
 void test_subtract_imm32_from_EAX_signed_overflow() {
   Reg[EAX].i = 0x80000000;  // smallest negative signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2d                                 ff ff ff 7f \n"  // subtract largest positive signed integer from EAX
   );
@@ -259,7 +259,7 @@ void test_subtract_imm32_from_EAX_signed_overflow() {
 void test_subtract_imm32_from_EAX_unsigned_overflow() {
   Reg[EAX].i = 0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2d                                 01 00 00 00 \n"  // subtract 1 from EAX
   );
@@ -273,7 +273,7 @@ void test_subtract_imm32_from_EAX_unsigned_overflow() {
 void test_subtract_imm32_from_EAX_signed_and_unsigned_overflow() {
   Reg[EAX].i = 0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  2d                                 00 00 00 80 \n"  // subtract smallest negative signed integer from EAX
   );
@@ -289,11 +289,11 @@ void test_subtract_imm32_from_EAX_signed_and_unsigned_overflow() {
 void test_subtract_imm32_from_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     2b                          01 00 00 00 \n"  // subtract 1 from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0a 00 00 00\n"  // 0x0000000a
   );
   CHECK_TRACE_CONTENTS(
@@ -329,11 +329,11 @@ case 5: {
 void test_subtract_imm32_from_mem_at_r32_signed_overflow() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     2b                          ff ff ff 7f \n"  // subtract largest positive signed integer from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "00 00 00 80\n"  // smallest negative signed integer
   );
   CHECK_TRACE_CONTENTS(
@@ -350,11 +350,11 @@ void test_subtract_imm32_from_mem_at_r32_signed_overflow() {
 void test_subtract_imm32_from_mem_at_r32_unsigned_overflow() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     2b                          01 00 00 00 \n"  // subtract 1 from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "00 00 00 00\n"  // 0
   );
   CHECK_TRACE_CONTENTS(
@@ -371,11 +371,11 @@ void test_subtract_imm32_from_mem_at_r32_unsigned_overflow() {
 void test_subtract_imm32_from_mem_at_r32_signed_and_unsigned_overflow() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     2b                          00 00 00 80 \n"  // subtract smallest negative signed integer from *EBX
       // ModR/M in binary: 00 (indirect mode) 101 (subop subtract) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "00 00 00 00\n"  // 0
   );
   CHECK_TRACE_CONTENTS(
@@ -394,7 +394,7 @@ void test_subtract_imm32_from_mem_at_r32_signed_and_unsigned_overflow() {
 void test_subtract_imm32_from_r32() {
   Reg[EBX].i = 10;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     eb                          01 00 00 00 \n"  // subtract 1 from EBX
       // ModR/M in binary: 11 (direct mode) 101 (subop subtract) 011 (dest EBX)
@@ -417,7 +417,7 @@ put_new(Name, "c1", "shift rm32 by imm8 bits depending on subop (sal/sar/shl/shr
 void test_shift_left_r32_with_imm8() {
   Reg[EBX].i = 13;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c1     e3                          01          \n"  // shift EBX left by 1 bit
       // ModR/M in binary: 11 (direct mode) 100 (subop shift left) 011 (dest EBX)
@@ -468,7 +468,7 @@ case 0xc1: {
 void test_shift_right_arithmetic_r32_with_imm8() {
   Reg[EBX].i = 26;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c1     fb                          01          \n"  // shift EBX right by 1 bit
       // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
@@ -502,7 +502,7 @@ case 7: {  // shift right r/m32 by CL, preserving sign
 void test_shift_right_arithmetic_odd_r32_with_imm8() {
   Reg[EBX].i = 27;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c1     fb                          01          \n"  // shift EBX right by 1 bit
       // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
@@ -520,7 +520,7 @@ void test_shift_right_arithmetic_odd_r32_with_imm8() {
 void test_shift_right_arithmetic_negative_r32_with_imm8() {
   Reg[EBX].i = 0xfffffffd;  // -3
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c1     fb                          01          \n"  // shift EBX right by 1 bit, while preserving sign
       // ModR/M in binary: 11 (direct mode) 111 (subop shift right arithmetic) 011 (dest EBX)
@@ -540,7 +540,7 @@ void test_shift_right_arithmetic_negative_r32_with_imm8() {
 void test_shift_right_logical_r32_with_imm8() {
   Reg[EBX].i = 26;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c1     eb                          01          \n"  // shift EBX right by 1 bit, while padding zeroes
       // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
@@ -578,7 +578,7 @@ case 5: {  // shift right r/m32 by CL, preserving sign
 void test_shift_right_logical_odd_r32_with_imm8() {
   Reg[EBX].i = 27;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c1     eb                          01          \n"  // shift EBX right by 1 bit, while padding zeroes
   );
@@ -595,7 +595,7 @@ void test_shift_right_logical_odd_r32_with_imm8() {
 void test_shift_right_logical_negative_r32_with_imm8() {
   Reg[EBX].i = 0xfffffffd;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c1     eb                          01          \n"  // shift EBX right by 1 bit, while padding zeroes
       // ModR/M in binary: 11 (direct mode) 101 (subop shift right logical) 011 (dest EBX)
@@ -617,7 +617,7 @@ put_new(Name, "25", "EAX = bitwise AND of imm32 with EAX (and)");
 void test_and_EAX_with_imm32() {
   Reg[EAX].i = 0xff;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  25                                 0a 0b 0c 0d \n"  // and 0x0d0c0b0a with EAX
   );
@@ -649,11 +649,11 @@ case 0x25: {  // and imm32 with EAX
 void test_and_imm32_with_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     23                          0a 0b 0c 0d \n"  // and 0x0d0c0b0a with *EBX
       // ModR/M in binary: 00 (indirect mode) 100 (subop and) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "ff 00 00 00\n"  // 0x000000ff
   );
   CHECK_TRACE_CONTENTS(
@@ -686,7 +686,7 @@ case 4: {
 void test_and_imm32_with_r32() {
   Reg[EBX].i = 0xff;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     e3                          0a 0b 0c 0d \n"  // and 0x0d0c0b0a with EBX
       // ModR/M in binary: 11 (direct mode) 100 (subop and) 011 (dest EBX)
@@ -709,7 +709,7 @@ put_new(Name, "0d", "EAX = bitwise OR of imm32 with EAX (or)");
 void test_or_EAX_with_imm32() {
   Reg[EAX].i = 0xd0c0b0a0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  0d                                 0a 0b 0c 0d \n"  // or 0x0d0c0b0a with EAX
   );
@@ -741,11 +741,11 @@ case 0x0d: {  // or imm32 with EAX
 void test_or_imm32_with_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     0b                          0a 0b 0c 0d \n"  // or 0x0d0c0b0a with *EBX
       // ModR/M in binary: 00 (indirect mode) 001 (subop or) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "a0 b0 c0 d0\n"  // 0xd0c0b0a0
   );
   CHECK_TRACE_CONTENTS(
@@ -776,7 +776,7 @@ case 1: {
 void test_or_imm32_with_r32() {
   Reg[EBX].i = 0xd0c0b0a0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     cb                          0a 0b 0c 0d \n"  // or 0x0d0c0b0a with EBX
       // ModR/M in binary: 11 (direct mode) 001 (subop or) 011 (dest EBX)
@@ -799,7 +799,7 @@ put_new(Name, "35", "EAX = bitwise XOR of imm32 with EAX (xor)");
 void test_xor_EAX_with_imm32() {
   Reg[EAX].i = 0xddccb0a0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  35                                 0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with EAX
   );
@@ -831,11 +831,11 @@ case 0x35: {  // xor imm32 with EAX
 void test_xor_imm32_with_mem_at_r32() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     33                          0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with *EBX
       // ModR/M in binary: 00 (indirect mode) 110 (subop xor) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "a0 b0 c0 d0\n"  // 0xd0c0b0a0
   );
   CHECK_TRACE_CONTENTS(
@@ -866,7 +866,7 @@ case 6: {
 void test_xor_imm32_with_r32() {
   Reg[EBX].i = 0xd0c0b0a0;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     f3                          0a 0b 0c 0d \n"  // xor 0x0d0c0b0a with EBX
       // ModR/M in binary: 11 (direct mode) 110 (subop xor) 011 (dest EBX)
@@ -889,7 +889,7 @@ put_new(Name, "3d", "compare: set SF if EAX < imm32 (cmp)");
 void test_compare_EAX_with_imm32_greater() {
   Reg[EAX].i = 0x0d0c0b0a;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 07 0b 0c 0d \n"  // compare EAX with 0x0d0c0b07
   );
@@ -922,7 +922,7 @@ case 0x3d: {  // compare EAX with imm32
 void test_compare_EAX_with_imm32_lesser_unsigned_and_signed() {
   Reg[EAX].i = 0x0a0b0c07;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 0d 0c 0b 0a \n"  // compare EAX with imm32
   );
@@ -935,7 +935,7 @@ void test_compare_EAX_with_imm32_lesser_unsigned_and_signed() {
 void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
   Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 00 00 00 80\n"  // compare EAX with smallest negative signed integer
   );
@@ -948,7 +948,7 @@ void test_compare_EAX_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
 void test_compare_EAX_with_imm32_lesser_signed() {
   Reg[EAX].i = 0xffffffff;  // -1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 01 00 00 00\n"  // compare EAX with 1
   );
@@ -961,7 +961,7 @@ void test_compare_EAX_with_imm32_lesser_signed() {
 void test_compare_EAX_with_imm32_lesser_unsigned() {
   Reg[EAX].i = 0x00000001;  // 1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 ff ff ff ff\n"  // compare EAX with -1
   );
@@ -974,7 +974,7 @@ void test_compare_EAX_with_imm32_lesser_unsigned() {
 void test_compare_EAX_with_imm32_equal() {
   Reg[EAX].i = 0x0d0c0b0a;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  3d                                 0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EAX
   );
@@ -989,7 +989,7 @@ void test_compare_EAX_with_imm32_equal() {
 void test_compare_imm32_with_r32_greater() {
   Reg[EBX].i = 0x0d0c0b0a;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     fb                          07 0b 0c 0d \n"  // compare 0x0d0c0b07 with EBX
       // ModR/M in binary: 11 (direct mode) 111 (subop compare) 011 (dest EBX)
@@ -1023,7 +1023,7 @@ case 7: {
 void test_compare_rm32_with_imm32_lesser_unsigned_and_signed() {
   Reg[EAX].i = 0x0a0b0c07;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     f8                          0d 0c 0b 0a \n"  // compare EAX with imm32
       // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
@@ -1040,7 +1040,7 @@ void test_compare_rm32_with_imm32_lesser_unsigned_and_signed() {
 void test_compare_rm32_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
   Reg[EAX].i = 0x7fffffff;  // largest positive signed integer
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     f8                          00 00 00 80\n"  // compare EAX with smallest negative signed integer
       // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
@@ -1057,7 +1057,7 @@ void test_compare_rm32_with_imm32_lesser_unsigned_and_signed_due_to_overflow() {
 void test_compare_rm32_with_imm32_lesser_signed() {
   Reg[EAX].i = 0xffffffff;  // -1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     f8                          01 00 00 00\n"  // compare EAX with 1
       // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
@@ -1074,7 +1074,7 @@ void test_compare_rm32_with_imm32_lesser_signed() {
 void test_compare_rm32_with_imm32_lesser_unsigned() {
   Reg[EAX].i = 0x00000001;  // 1
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     f8                          ff ff ff ff\n"  // compare EAX with -1
       // ModR/M in binary: 11 (direct mode) 111 (subop compare) 000 (dest EAX)
@@ -1092,7 +1092,7 @@ void test_compare_rm32_with_imm32_lesser_unsigned() {
 void test_compare_imm32_with_r32_equal() {
   Reg[EBX].i = 0x0d0c0b0a;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     fb                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with EBX
       // ModR/M in binary: 11 (direct mode) 111 (subop compare) 011 (dest EBX)
@@ -1109,11 +1109,11 @@ void test_compare_imm32_with_r32_equal() {
 void test_compare_imm32_with_mem_at_r32_greater() {
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     3b                          07 0b 0c 0d \n"  // compare 0x0d0c0b07 with *EBX
       // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0a 0b 0c 0d\n"  // 0x0d0c0b0a
   );
   CHECK_TRACE_CONTENTS(
@@ -1128,11 +1128,11 @@ void test_compare_imm32_with_mem_at_r32_greater() {
 void test_compare_imm32_with_mem_at_r32_lesser() {
   Reg[EAX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     38                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EAX
       // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 000 (dest EAX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "07 0b 0c 0d\n"  // 0x0d0c0b07
   );
   CHECK_TRACE_CONTENTS(
@@ -1148,11 +1148,11 @@ void test_compare_imm32_with_mem_at_r32_equal() {
   Reg[EBX].i = 0x0d0c0b0a;
   Reg[EBX].i = 0x2000;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  81     3b                          0a 0b 0c 0d \n"  // compare 0x0d0c0b0a with *EBX
       // ModR/M in binary: 00 (indirect mode) 111 (subop compare) 011 (dest EBX)
-      "== 0x2000\n"  // data segment
+      "== data 0x2000\n"
       "0a 0b 0c 0d\n"  // 0x0d0c0b0a
   );
   CHECK_TRACE_CONTENTS(
@@ -1178,7 +1178,7 @@ put_new(Name, "bf", "copy imm32 to EDI (mov)");
 :(code)
 void test_copy_imm32_to_r32() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  bb                                 0a 0b 0c 0d \n"  // copy 0x0d0c0b0a to EBX
   );
@@ -1211,7 +1211,7 @@ put_new(Name, "c7", "copy imm32 to rm32 (mov)");
 void test_copy_imm32_to_mem_at_r32() {
   Reg[EBX].i = 0x60;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c7     03                          0a 0b 0c 0d \n"  // copy 0x0d0c0b0a to *EBX
       // ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
@@ -1249,7 +1249,7 @@ void test_push_imm32() {
   Mem.push_back(vma(0xbd000000));  // manually allocate memory
   Reg[ESP].u = 0xbd000014;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  68                                 af 00 00 00 \n"  // push *EAX to stack
   );

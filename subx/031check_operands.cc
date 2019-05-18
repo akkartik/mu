@@ -4,7 +4,7 @@
 void test_check_missing_imm8_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "cd\n"  // interrupt ??
   );
   CHECK_TRACE_CONTENTS(
@@ -348,7 +348,7 @@ uint32_t expected_bit_for_received_operand(const word& w, set<string>& instructi
 void test_conflicting_operand_type() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "cd/software-interrupt 80/imm8/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -362,7 +362,7 @@ void test_conflicting_operand_type() {
 void test_check_missing_mod_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "81 0/add/subop       3/rm32/ebx 1/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -443,7 +443,7 @@ void check_operand_metadata_absent(const line& inst, const string& type, const w
 void test_modrm_with_displacement() {
   Reg[EAX].u = 0x1;
   transform(
-      "== 0x1\n"
+      "== code 0x1\n"
       // just avoid null pointer
       "8b/copy 1/mod/lookup+disp8 0/rm32/EAX 2/r32/EDX 4/disp8\n"  // copy *(EAX+4) to EDX
   );
@@ -453,7 +453,7 @@ void test_modrm_with_displacement() {
 void test_check_missing_disp8() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "89/copy 1/mod/lookup+disp8 0/rm32/EAX 1/r32/ECX\n"  // missing disp8
   );
   CHECK_TRACE_CONTENTS(
@@ -464,7 +464,7 @@ void test_check_missing_disp8() {
 void test_check_missing_disp32() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX\n"  // missing disp32
   );
   CHECK_TRACE_CONTENTS(
@@ -475,7 +475,7 @@ void test_check_missing_disp32() {
 void test_conflicting_operands_in_modrm_instruction() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "01/add 0/mod 3/mod\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -486,7 +486,7 @@ void test_conflicting_operands_in_modrm_instruction() {
 void test_conflicting_operand_type_modrm() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "01/add 0/mod 3/rm32/r32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -497,7 +497,7 @@ void test_conflicting_operand_type_modrm() {
 void test_check_missing_rm32_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "81 0/add/subop 0/mod            1/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -508,7 +508,7 @@ void test_check_missing_rm32_operand() {
 void test_check_missing_subop_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "81             0/mod 3/rm32/ebx 1/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -519,7 +519,7 @@ void test_check_missing_subop_operand() {
 void test_check_missing_base_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "81 0/add/subop 0/mod/indirect 4/rm32/use-sib 1/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -530,7 +530,7 @@ void test_check_missing_base_operand() {
 void test_check_missing_index_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "81 0/add/subop 0/mod/indirect 4/rm32/use-sib 0/base 1/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -541,7 +541,7 @@ void test_check_missing_index_operand() {
 void test_check_missing_base_operand_2() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "81 0/add/subop 0/mod/indirect 4/rm32/use-sib 2/index 3/scale 1/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -552,7 +552,7 @@ void test_check_missing_base_operand_2() {
 void test_check_extra_displacement() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 4/disp8\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -563,7 +563,7 @@ void test_check_extra_displacement() {
 void test_check_duplicate_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 1/r32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -573,7 +573,7 @@ void test_check_duplicate_operand() {
 
 void test_check_base_operand_not_needed_in_direct_mode() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "81 0/add/subop 3/mod/indirect 4/rm32/use-sib 1/imm32\n"
   );
   CHECK_TRACE_COUNT("error", 0);
@@ -582,7 +582,7 @@ void test_check_base_operand_not_needed_in_direct_mode() {
 void test_extra_modrm() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "59/pop-to-ECX  3/mod/direct 1/rm32/ECX 4/r32/ESP\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -613,8 +613,8 @@ void check_operands_f3(const line& /*unused*/) {
 void test_check_missing_disp32_operand() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
-      "  0f 84                                                                                                                                             # jmp if ZF to ??\n"
+      "== code 0x1\n"
+      "  0f 84  # jmp if ZF to ??\n"
   );
   CHECK_TRACE_CONTENTS(
       "error: '0f 84' (jump disp32 bytes away if equal, if ZF is set): missing disp32 operand\n"

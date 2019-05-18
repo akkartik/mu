@@ -13,15 +13,15 @@ put_new(Help, "syntax",
   "(start of line, or following a space).\n"
   "\n"
   "Each segment starts with a header line: a '==' delimiter followed by the name of\n"
-  "the segment.\n"
+  "the segment and a (sometimes approximate) starting address in memory.\n"
+  "The name 'code' is special; instructions to execute should always go here.\n"
   "\n"
-  "The first segment contains code and should be called 'code'.\n"
-  "The second segment should be called 'data'.\n"
-  "The resulting binary starts running from the start of the code segment by default.\n"
+  "The resulting binary starts running from the start of the segment by default.\n"
   "To start elsewhere in the code segment, define a special label called 'Entry'.\n"
   "\n"
   "Segments with the same name get merged together. This rule helps keep functions and\n"
   "their data close together in .subx files.\n"
+  "You don't have to specify the starting address after the first time.\n"
   "\n"
   "Lines consist of a series of words. Words can contain arbitrary metadata\n"
   "after a '/', but they can never contain whitespace. Metadata has no effect\n"
@@ -35,16 +35,16 @@ put_new(Help, "syntax",
 cerr << "  syntax\n";
 
 :(code)
-void test_add_imm32_to_EAX() {
+void test_copy_imm32_to_EAX() {
   // At the lowest level, SubX programs are a series of hex bytes, each
   // (variable-length) instruction on one line.
   run(
       // Comments start with '#' and are ignored.
       "# comment\n"
-      // Segment headers start with '==' and a name or starting hex address.
+      // Segment headers start with '==', a name and a starting hex address.
       // There's usually one code and one data segment. The code segment
       // always comes first.
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
 
       // After the header, each segment consists of lines, and each line
       // consists of words separated by whitespace.
@@ -107,6 +107,7 @@ struct program {
 };
 :(before "struct program")
 struct segment {
+  string name;
   uint32_t start;
   vector<line> lines;
   // End segment Fields
@@ -132,6 +133,7 @@ struct word {
 
 :(code)
 void parse(istream& fin, program& out) {
+  segment* curr_segment = NULL;
   vector<line> l;
   while (has_data(fin)) {
     string line_data;
@@ -148,19 +150,25 @@ void parse(istream& fin, program& out) {
       if (word_data[0] == '#') break;  // comment
       if (word_data == ".") continue;  // comment token
       if (word_data == "==") {
-        flush(out, l);
-        string segment_title;
-        lin >> segment_title;
-        if (starts_with(segment_title, "0x")) {
-          segment s;
-          s.start = parse_int(segment_title);
-          sanity_check_program_segment(out, s.start);
-          if (trace_contains_errors()) continue;
-          trace(3, "parse") << "new segment from 0x" << HEXWORD << s.start << end();
-          out.segments.push_back(s);
+        flush(curr_segment, l);
+        string segment_name;
+        lin >> segment_name;
+        curr_segment = find(out, segment_name);
+        if (curr_segment != NULL) {
+          trace(3, "parse") << "appending to segment '" << segment_name << "'" << end();
         }
-        // End Segment Parsing Special-cases(segment_title)
-        // todo: segment segment metadata
+        else {
+          trace(3, "parse") << "new segment '" << segment_name << "'" << end();
+          uint32_t seg_start = 0;
+          lin >> std::hex >> seg_start;
+          sanity_check_program_segment(out, seg_start);
+          out.segments.push_back(segment());
+          curr_segment = &out.segments.back();
+          curr_segment->name = segment_name;
+          curr_segment->start = seg_start;
+          if (trace_contains_errors()) continue;
+          trace(3, "parse") << "starts at address 0x" << HEXWORD << curr_segment->start << end();
+        }
         break;  // skip rest of line
       }
       if (word_data[0] == ':') {
@@ -174,19 +182,27 @@ void parse(istream& fin, program& out) {
     if (!curr.words.empty())
       l.push_back(curr);
   }
-  flush(out, l);
+  flush(curr_segment, l);
   trace(99, "parse") << "done" << end();
 }
 
-void flush(program& p, vector<line>& lines) {
+segment* find(program& p, const string& segment_name) {
+  for (int i = 0;  i < SIZE(p.segments);  ++i) {
+    if (p.segments.at(i).name == segment_name)
+      return &p.segments.at(i);
+  }
+  return NULL;
+}
+
+void flush(segment* s, vector<line>& lines) {
   if (lines.empty()) return;
-  if (p.segments.empty()) {
+  if (s == NULL) {
     raise << "input does not start with a '==' section header\n" << end();
     return;
   }
-  // End flush(p, lines) Special-cases
-  trace(99, "parse") << "flushing segment" << end();
-  p.segments.back().lines.swap(lines);
+  trace(3, "parse") << "flushing segment" << end();
+  s->lines.insert(s->lines.end(), lines.begin(), lines.end());
+  lines.clear();
 }
 
 void parse_word(const string& data, word& out) {
@@ -216,9 +232,9 @@ void parse(const string& text_bytes) {
 void test_detect_duplicate_segments() {
   Hide_errors = true;
   parse(
-      "== 0xee\n"
+      "== segment1 0xee\n"
       "ab\n"
-      "== 0xee\n"
+      "== segment2 0xee\n"
       "cd\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -242,7 +258,7 @@ void transform(program& p) {
 //:: load
 
 void load(const program& p) {
-  if (p.segments.empty()) {
+  if (find(p, "code") == NULL) {
     raise << "no code to run\n" << end();
     return;
   }
@@ -267,10 +283,20 @@ void load(const program& p) {
         ++addr;
       }
     }
-    if (i == 0) End_of_program = addr;
+    if (seg.name == "code") {
+      End_of_program = addr;
+      EIP = seg.start;
+      // End Initialize EIP
+    }
   }
-  EIP = p.segments.at(0).start;
-  // End Initialize EIP
+}
+
+const segment* find(const program& p, const string& segment_name) {
+  for (int i = 0;  i < SIZE(p.segments);  ++i) {
+    if (p.segments.at(i).name == segment_name)
+      return &p.segments.at(i);
+  }
+  return NULL;
 }
 
 uint8_t hex_byte(const string& s) {
@@ -291,8 +317,8 @@ uint8_t hex_byte(const string& s) {
 void test_number_too_large() {
   Hide_errors = true;
   parse_and_load(
-      "== 0x1\n"
-      "05 cab\n"
+      "== code 0x1\n"
+      "01 cab\n"
   );
   CHECK_TRACE_CONTENTS(
       "error: token 'cab' is not a hex byte\n"
@@ -302,8 +328,8 @@ void test_number_too_large() {
 void test_invalid_hex() {
   Hide_errors = true;
   parse_and_load(
-      "== 0x1\n"
-      "05 cx\n"
+      "== code 0x1\n"
+      "01 cx\n"
   );
   CHECK_TRACE_CONTENTS(
       "error: token 'cx' is not a hex byte\n"
@@ -312,8 +338,8 @@ void test_invalid_hex() {
 
 void test_negative_number() {
   parse_and_load(
-      "== 0x1\n"
-      "05 -12\n"
+      "== code 0x1\n"
+      "01 -02\n"
   );
   CHECK_TRACE_COUNT("error", 0);
 }
@@ -321,8 +347,8 @@ void test_negative_number() {
 void test_negative_number_too_small() {
   Hide_errors = true;
   parse_and_load(
-      "== 0x1\n"
-      "05 -12345\n"
+      "== code 0x1\n"
+      "01 -12345\n"
   );
   CHECK_TRACE_CONTENTS(
       "error: token '-12345' is not a hex byte\n"
@@ -331,10 +357,39 @@ void test_negative_number_too_small() {
 
 void test_hex_prefix() {
   parse_and_load(
-      "== 0x1\n"
-      "0x05 -0x12\n"
+      "== code 0x1\n"
+      "0x01 -0x02\n"
   );
   CHECK_TRACE_COUNT("error", 0);
+}
+
+void test_repeated_segment_merges_data() {
+  parse_and_load(
+      "== code 0x1\n"
+      "11 22\n"
+      "== code\n"  // again
+      "33 44\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "parse: new segment 'code'\n"
+      "parse: appending to segment 'code'\n"
+      // first segment
+      "load: 0x00000001 -> 11\n"
+      "load: 0x00000002 -> 22\n"
+      // second segment
+      "load: 0x00000003 -> 33\n"
+      "load: 0x00000004 -> 44\n"
+  );
+}
+
+void test_error_on_missing_segment_header() {
+  Hide_errors = true;
+  parse_and_load(
+      "01 02\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: input does not start with a '==' section header\n"
+  );
 }
 
 //: helper for tests
@@ -362,9 +417,9 @@ case 0xb8: {  // copy imm32 to EAX
 }
 
 :(code)
-void test_copy_imm32_to_EAX() {
+void test_copy_imm32_to_EAX_again() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"  // code segment
       // op     ModR/M  SIB   displacement  immediate
       "  b8                                 0a 0b 0c 0d \n"  // copy 0x0d0c0b0a to EAX
   );

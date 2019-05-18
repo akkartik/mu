@@ -425,12 +425,12 @@ test-convert-is-idempotent-by-default:
     # initialize input (meta comments in parens)
     #   # comment 1
     #     # comment 2 indented
-    #   == code  (new segment)
+    #   == code 0x1  (new segment)
     #   # comment 3 inside a segment
     #   1
     #                         (empty line)
     #   2 3 # comment 4 inline with other contents
-    #   == data  (new segment)
+    #   == data 0x2  (new segment)
     #   4 5/imm32
     # . write(_test-input-stream, "# comment 1\n")
     # . . push args
@@ -448,9 +448,9 @@ test-convert-is-idempotent-by-default:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== code\n")
+    # . write(_test-input-stream, "== code 0x1\n")
     # . . push args
-    68/push  "== code\n"/imm32
+    68/push  "== code 0x1\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -488,9 +488,9 @@ test-convert-is-idempotent-by-default:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "== data\n")
+    # . write(_test-input-stream, "== data 0x2\n")
     # . . push args
-    68/push  "== data\n"/imm32
+    68/push  "== data 0x2\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -522,12 +522,12 @@ test-convert-is-idempotent-by-default:
     # check output
     #     (comment dropped for now)
     #     (comment dropped for now)
-    #   == code
+    #   == code 0x1
     #     (comment dropped for now)
     #   1
     #     (comment dropped for now)
     #   2 3
-    #   == data
+    #   == data 0x2
     #   4 5/imm32
     # We don't care right now what exactly happens to comments. Trailing spaces are also minor details.
 #?     # dump output {{{
@@ -574,10 +574,10 @@ test-convert-is-idempotent-by-default:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== code ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== code 0x1 ", msg)
     # . . push args
     68/push  "F - test-convert-is-idempotent-by-default/2"/imm32
-    68/push  "== code "/imm32
+    68/push  "== code 0x1 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -619,10 +619,10 @@ test-convert-is-idempotent-by-default:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== data ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== data 0x2 ", msg)
     # . . push args
     68/push  "F - test-convert-is-idempotent-by-default/7"/imm32
-    68/push  "== data "/imm32
+    68/push  "== data 0x2 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -683,7 +683,7 @@ test-convert-processes-string-literals:
     #   == code  (new segment)
     #   1 "a"/x
     #   2 "bc"/y
-    68/push  "== code\n"/imm32
+    68/push  "== code 0x1\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -721,7 +721,7 @@ test-convert-processes-string-literals:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # check output
-    #   == code
+    #   == code 0x1
     #   1 _string1/x
     #   2 _string2/y
     #   == data
@@ -769,10 +769,10 @@ test-convert-processes-string-literals:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # }}}
-    # . check-next-stream-line-equal(_test-output-stream, "== code ", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== code 0x1 ", msg)
     # . . push args
     68/push  "F - test-convert-processes-string-literals/0"/imm32
-    68/push  "== code "/imm32
+    68/push  "== code 0x1 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32
@@ -796,10 +796,10 @@ test-convert-processes-string-literals:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . check-next-stream-line-equal(_test-output-stream, "== data", msg)
+    # . check-next-stream-line-equal(_test-output-stream, "== data ", msg)
     # . . push args
     68/push  "F - test-convert-processes-string-literals/3"/imm32
-    68/push  "== data"/imm32
+    68/push  "== data "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-next-stream-line-equal/disp32

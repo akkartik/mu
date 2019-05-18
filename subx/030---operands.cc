@@ -30,7 +30,7 @@ cerr << "  instructions\n";
 :(code)
 void test_pack_immediate_constants() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "bb  0x2a/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -161,7 +161,7 @@ Transform.push_back(pack_operands);
 :(code)
 void pack_operands(program& p) {
   if (p.segments.empty()) return;
-  segment& code = p.segments.at(0);
+  segment& code = *find(p, "code");
   // Pack Operands(segment code)
   trace(3, "transform") << "-- pack operands" << end();
   for (int i = 0;  i < SIZE(code.lines);  ++i) {
@@ -320,7 +320,7 @@ void test_preserve_metadata_when_emitting_single_byte() {
 :(code)
 void test_pack_disp8() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "74 2/disp8\n"  // jump 2 bytes away if ZF is set
   );
   CHECK_TRACE_CONTENTS(
@@ -331,7 +331,7 @@ void test_pack_disp8() {
 
 void test_pack_disp8_negative() {
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // running this will cause an infinite loop
       "74 -1/disp8\n"  // jump 1 byte before if ZF is set
   );
@@ -352,7 +352,7 @@ void transform(const string& text_bytes) {
 
 void test_pack_modrm_imm32() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       // instruction                     effective address                                                   operand     displacement    immediate\n"
       // op          subop               mod             rm32          base        index         scale       r32\n"
       // 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes\n"
@@ -366,7 +366,7 @@ void test_pack_modrm_imm32() {
 
 void test_pack_imm32_large() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "b9  0x080490a7/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -377,7 +377,7 @@ void test_pack_imm32_large() {
 
 void test_pack_immediate_constants_hex() {
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "b9  0x2a/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -390,7 +390,7 @@ void test_pack_immediate_constants_hex() {
 void test_pack_silently_ignores_non_hex() {
   Hide_errors = true;
   transform(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "b9  foo/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
@@ -403,7 +403,7 @@ void test_pack_silently_ignores_non_hex() {
 void test_pack_flags_bad_hex() {
   Hide_errors = true;
   run(
-      "== 0x1\n"  // code segment
+      "== code 0x1\n"
       "b9  0xfoo/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
