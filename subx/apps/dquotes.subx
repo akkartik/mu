@@ -1297,12 +1297,14 @@ $emit-metadata:skip-datum-loop:
     # if (curr == end) return
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX and EDX
     74/jump-if-equal  $emit-metadata:end/disp8
-    # ++curr
-    41/increment-ECX
     # if (*curr == '/') break
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
     3d/compare-EAX-and  0x2f/imm32
-    75/jump-if-not-equal  $emit-metadata:skip-datum-loop/disp8
+    74/jump-if-equal  $emit-metadata:break/disp8
+    # ++curr
+    41/increment-ECX
+    eb/jump  $emit-metadata:skip-datum-loop/disp8
+$emit-metadata:break:
     # write-slice-buffered(out, &{start, end})
     # . . local var
     52/push-EDX
@@ -1476,6 +1478,67 @@ test-emit-metadata-multiple:
     # . . push args
     68/push  "F - test-emit-metadata-multiple"/imm32
     68/push  "/def/ghi"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-metadata-when-no-datum:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "/abc"
+    b8/copy-to-EAX  "/abc"/imm32
+    # . push end/ECX
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    51/push-ECX
+    # . push curr/EAX
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . save stack pointer
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # emit-metadata(_test-output-buffered-file, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  emit-metadata/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-stream-equal(_test-output-stream, "/abc", msg)  # nothing skipped
+    # . . push args
+    68/push  "F - test-emit-metadata-when-no-datum"/imm32
+    68/push  "/abc"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
