@@ -1262,7 +1262,7 @@ test-emit-string-literal-data-handles-escape-sequences:
     # . check-stream-equal(_test-output-stream, "3/imm32 61/a 22 62/b ", msg)
     # . . push args
     68/push  "F - test-emit-string-literal-data-handles-escape-sequences"/imm32
-    68/push  "3/imm32 61/a 22 62/b "/imm32
+    68/push  "0x00000003/imm32 61/a 22 62/b "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
@@ -2395,9 +2395,9 @@ skip-string-in-slice:  # curr : (address byte), end : (address byte) -> new_curr
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         2/r32/EDX   0xc/disp8         .               # copy *(EBP+12) to EDX
     # EAX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-$skip-string-in-slice:loop:
-    # ++curr
+    # skip initial dquote
     41/increment-ECX
+$skip-string-in-slice:loop:
     # if (curr >= end) return curr
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
     73/jump-if-greater-unsigned-or-equal  $skip-string-in-slice:return-curr/disp8
@@ -2410,12 +2410,15 @@ $skip-string-in-slice:dquote:
 $skip-string-in-slice:check-for-escape:
     # if (EAX == '\') escape next char
     3d/compare-EAX-and  0x5c/imm32/backslash
-    75/jump-if-not-equal  $skip-string-in-slice:loop/disp8
+    75/jump-if-not-equal  $skip-string-in-slice:continue/disp8
 $skip-string-in-slice:escape:
+    41/increment-ECX
+$skip-string-in-slice:continue:
+    # ++curr
     41/increment-ECX
     eb/jump  $skip-string-in-slice:loop/disp8
 $skip-string-in-slice:break:
-    # step over last '"'
+    # skip final dquote
     41/increment-ECX
 $skip-string-in-slice:return-curr:
     # return curr
