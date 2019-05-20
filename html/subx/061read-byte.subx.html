@@ -61,7 +61,7 @@ if ('onhashchange' in window) {
 <body onload='JumpToLine();'>
 <a href='https://github.com/akkartik/mu/blob/master/subx/061read-byte.subx'>https://github.com/akkartik/mu/blob/master/subx/061read-byte.subx</a>
 <pre id='vimCodeElement'>
-<span id="L1" class="LineNr">  1 </span><span class="subxComment"># read-byte: one higher-level abstraction atop 'read'.</span>
+<span id="L1" class="LineNr">  1 </span><span class="subxComment"># read-byte-buffered: one higher-level abstraction atop 'read'.</span>
 <span id="L2" class="LineNr">  2 </span><span class="subxComment">#</span>
 <span id="L3" class="LineNr">  3 </span><span class="subxComment"># There are many situations where 'read' is a lot to manage, and we need</span>
 <span id="L4" class="LineNr">  4 </span><span class="subxComment"># to abstract some details away. One of them is when we want to read a file</span>
@@ -95,8 +95,8 @@ if ('onhashchange' in window) {
 <span id="L32" class="LineNr"> 32 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L33" class="LineNr"> 33 </span>
 <span id="L34" class="LineNr"> 34 </span><span class="CommentedCode">#? Entry:  # run a single test, while debugging</span>
-<span id="L35" class="LineNr"> 35 </span><span class="CommentedCode">#?     e8/call test-read-byte-multiple/disp32</span>
-<span id="L36" class="LineNr"> 36 </span><span class="CommentedCode">#?     e8/call test-read-byte-refills-buffer/disp32</span>
+<span id="L35" class="LineNr"> 35 </span><span class="CommentedCode">#?     e8/call test-read-byte-buffered-multiple/disp32</span>
+<span id="L36" class="LineNr"> 36 </span><span class="CommentedCode">#?     e8/call test-read-byte-buffered-refills-buffer/disp32</span>
 <span id="L37" class="LineNr"> 37 </span><span class="CommentedCode">#?     # syscall(exit, Num-test-failures)</span>
 <span id="L38" class="LineNr"> 38 </span><span class="CommentedCode">#?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX</span>
 <span id="L39" class="LineNr"> 39 </span><span class="CommentedCode">#?     b8/copy-to-EAX  1/imm32/exit</span>
@@ -104,7 +104,7 @@ if ('onhashchange' in window) {
 <span id="L41" class="LineNr"> 41 </span>
 <span id="L42" class="LineNr"> 42 </span><span class="subxComment"># return next byte value in EAX, with top 3 bytes cleared.</span>
 <span id="L43" class="LineNr"> 43 </span><span class="subxComment"># On reaching end of file, return 0xffffffff (Eof).</span>
-<span id="L44" class="LineNr"> 44 </span><span class="subxFunction">read-byte</span>:  <span class="subxComment"># f : (address buffered-file) -&gt; byte-or-Eof/EAX</span>
+<span id="L44" class="LineNr"> 44 </span><span class="subxFunction">read-byte-buffered</span>:  <span class="subxComment"># f : (address buffered-file) -&gt; byte-or-Eof/EAX</span>
 <span id="L45" class="LineNr"> 45 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L46" class="LineNr"> 46 </span>    55/push-EBP
 <span id="L47" class="LineNr"> 47 </span>    89/copy                         3/mod/direct    5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to EBP</span>
@@ -117,7 +117,7 @@ if ('onhashchange' in window) {
 <span id="L54" class="LineNr"> 54 </span>    8b/copy                         1/mod/*+disp8   6/rm32/ESI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ESI+8) to ECX</span>
 <span id="L55" class="LineNr"> 55 </span>    <span class="subxComment"># if (f-&gt;read &gt;= f-&gt;write) populate stream from file</span>
 <span id="L56" class="LineNr"> 56 </span>    3b/compare                      1/mod/*+disp8   6/rm32/ESI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ECX   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare ECX with *(ESI+4)</span>
-<span id="L57" class="LineNr"> 57 </span>    7c/jump-if-lesser  $read-byte:from-stream/disp8
+<span id="L57" class="LineNr"> 57 </span>    7c/jump-if-lesser  $read-byte-buffered:from-stream/disp8
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxS1Comment"># . clear-stream(stream = f+4)</span>
 <span id="L59" class="LineNr"> 59 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L60" class="LineNr"> 60 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy ESI+4 to EAX</span>
@@ -138,17 +138,17 @@ if ('onhashchange' in window) {
 <span id="L75" class="LineNr"> 75 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L76" class="LineNr"> 76 </span>    <span class="subxComment"># if (EAX == 0) return 0xffffffff</span>
 <span id="L77" class="LineNr"> 77 </span>    3d/compare-EAX-and  0/imm32
-<span id="L78" class="LineNr"> 78 </span>    75/jump-if-not-equal  $read-byte:from-stream/disp8
+<span id="L78" class="LineNr"> 78 </span>    75/jump-if-not-equal  $read-byte-buffered:from-stream/disp8
 <span id="L79" class="LineNr"> 79 </span>    b8/copy-to-EAX  0xffffffff/imm32/Eof
-<span id="L80" class="LineNr"> 80 </span>    eb/jump  $read-byte:end/disp8
-<span id="L81" class="LineNr"> 81 </span><span class="Constant">$read-byte:from-stream</span>:
+<span id="L80" class="LineNr"> 80 </span>    eb/jump  $read-byte-buffered:end/disp8
+<span id="L81" class="LineNr"> 81 </span><span class="Constant">$read-byte-buffered:from-stream</span>:
 <span id="L82" class="LineNr"> 82 </span>    <span class="subxComment"># read byte from stream</span>
 <span id="L83" class="LineNr"> 83 </span>    <span class="subxComment"># AL = f-&gt;data[f-&gt;read]</span>
 <span id="L84" class="LineNr"> 84 </span>    31/xor                          3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/EAX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear EAX</span>
 <span id="L85" class="LineNr"> 85 </span>    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX  <span class="Normal"> . </span>          0/r32/AL    0x10/disp8     <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *(ESI+ECX+16) to AL</span>
 <span id="L86" class="LineNr"> 86 </span>    <span class="subxComment"># ++f-&gt;read</span>
 <span id="L87" class="LineNr"> 87 </span>    ff          0/subop/increment   1/mod/*+disp8   6/rm32/ESI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># increment *(ESI+8)</span>
-<span id="L88" class="LineNr"> 88 </span><span class="Constant">$read-byte:end</span>:
+<span id="L88" class="LineNr"> 88 </span><span class="Constant">$read-byte-buffered:end</span>:
 <span id="L89" class="LineNr"> 89 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L90" class="LineNr"> 90 </span>    5e/pop-to-ESI
 <span id="L91" class="LineNr"> 91 </span>    59/pop-to-ECX
@@ -159,8 +159,8 @@ if ('onhashchange' in window) {
 <span id="L96" class="LineNr"> 96 </span>
 <span id="L97" class="LineNr"> 97 </span><span class="subxH1Comment"># - tests</span>
 <span id="L98" class="LineNr"> 98 </span>
-<span id="L99" class="LineNr"> 99 </span><span class="subxTest">test-read-byte-single</span>:
-<span id="L100" class="LineNr">100 </span>    <span class="subxH1Comment"># - check that read-byte returns first byte of 'file'</span>
+<span id="L99" class="LineNr"> 99 </span><span class="subxTest">test-read-byte-buffered-single</span>:
+<span id="L100" class="LineNr">100 </span>    <span class="subxH1Comment"># - check that read-byte-buffered returns first byte of 'file'</span>
 <span id="L101" class="LineNr">101 </span>    <span class="subxComment"># setup</span>
 <span id="L102" class="LineNr">102 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L103" class="LineNr">103 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -186,16 +186,16 @@ if ('onhashchange' in window) {
 <span id="L123" class="LineNr">123 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
 <span id="L124" class="LineNr">124 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L125" class="LineNr">125 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L126" class="LineNr">126 </span>    <span class="subxComment"># read-byte(_test-buffered-file)</span>
+<span id="L126" class="LineNr">126 </span>    <span class="subxComment"># read-byte-buffered(_test-buffered-file)</span>
 <span id="L127" class="LineNr">127 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L128" class="LineNr">128 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
 <span id="L129" class="LineNr">129 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L130" class="LineNr">130 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte</a>/disp32
+<span id="L130" class="LineNr">130 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte-buffered</a>/disp32
 <span id="L131" class="LineNr">131 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L132" class="LineNr">132 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L133" class="LineNr">133 </span>    <span class="subxComment"># check-ints-equal(EAX, 'A', msg)</span>
 <span id="L134" class="LineNr">134 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L135" class="LineNr">135 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-single&quot;</span>/imm32
+<span id="L135" class="LineNr">135 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-buffered-single&quot;</span>/imm32
 <span id="L136" class="LineNr">136 </span>    68/push  0x41/imm32
 <span id="L137" class="LineNr">137 </span>    50/push-EAX
 <span id="L138" class="LineNr">138 </span>    <span class="subxS2Comment"># . . call</span>
@@ -205,8 +205,8 @@ if ('onhashchange' in window) {
 <span id="L142" class="LineNr">142 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L143" class="LineNr">143 </span>    c3/return
 <span id="L144" class="LineNr">144 </span>
-<span id="L145" class="LineNr">145 </span><span class="subxTest">test-read-byte-multiple</span>:
-<span id="L146" class="LineNr">146 </span>    <span class="subxH1Comment"># - call read-byte twice, check that second call returns second byte</span>
+<span id="L145" class="LineNr">145 </span><span class="subxTest">test-read-byte-buffered-multiple</span>:
+<span id="L146" class="LineNr">146 </span>    <span class="subxH1Comment"># - call read-byte-buffered twice, check that second call returns second byte</span>
 <span id="L147" class="LineNr">147 </span>    <span class="subxComment"># setup</span>
 <span id="L148" class="LineNr">148 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L149" class="LineNr">149 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -232,23 +232,23 @@ if ('onhashchange' in window) {
 <span id="L169" class="LineNr">169 </span>    e8/call  <a href='057write.subx.html#L24'>write</a>/disp32
 <span id="L170" class="LineNr">170 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L171" class="LineNr">171 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L172" class="LineNr">172 </span>    <span class="subxComment"># read-byte(_test-buffered-file)</span>
+<span id="L172" class="LineNr">172 </span>    <span class="subxComment"># read-byte-buffered(_test-buffered-file)</span>
 <span id="L173" class="LineNr">173 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L174" class="LineNr">174 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
 <span id="L175" class="LineNr">175 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L176" class="LineNr">176 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte</a>/disp32
+<span id="L176" class="LineNr">176 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte-buffered</a>/disp32
 <span id="L177" class="LineNr">177 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L178" class="LineNr">178 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L179" class="LineNr">179 </span>    <span class="subxComment"># read-byte(_test-buffered-file)</span>
+<span id="L179" class="LineNr">179 </span>    <span class="subxComment"># read-byte-buffered(_test-buffered-file)</span>
 <span id="L180" class="LineNr">180 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L181" class="LineNr">181 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
 <span id="L182" class="LineNr">182 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L183" class="LineNr">183 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte</a>/disp32
+<span id="L183" class="LineNr">183 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte-buffered</a>/disp32
 <span id="L184" class="LineNr">184 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L185" class="LineNr">185 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L186" class="LineNr">186 </span>    <span class="subxComment"># check-ints-equal(EAX, 'b', msg)</span>
 <span id="L187" class="LineNr">187 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L188" class="LineNr">188 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-multiple&quot;</span>/imm32
+<span id="L188" class="LineNr">188 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-buffered-multiple&quot;</span>/imm32
 <span id="L189" class="LineNr">189 </span>    68/push  0x62/imm32
 <span id="L190" class="LineNr">190 </span>    50/push-EAX
 <span id="L191" class="LineNr">191 </span>    <span class="subxS2Comment"># . . call</span>
@@ -258,8 +258,8 @@ if ('onhashchange' in window) {
 <span id="L195" class="LineNr">195 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L196" class="LineNr">196 </span>    c3/return
 <span id="L197" class="LineNr">197 </span>
-<span id="L198" class="LineNr">198 </span><span class="subxTest">test-read-byte-end-of-file</span>:
-<span id="L199" class="LineNr">199 </span>    <span class="subxH1Comment"># - call read-byte on an empty 'file', check that it returns Eof</span>
+<span id="L198" class="LineNr">198 </span><span class="subxTest">test-read-byte-buffered-end-of-file</span>:
+<span id="L199" class="LineNr">199 </span>    <span class="subxH1Comment"># - call read-byte-buffered on an empty 'file', check that it returns Eof</span>
 <span id="L200" class="LineNr">200 </span>    <span class="subxComment"># setup</span>
 <span id="L201" class="LineNr">201 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L202" class="LineNr">202 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -277,16 +277,16 @@ if ('onhashchange' in window) {
 <span id="L214" class="LineNr">214 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L215" class="LineNr">215 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L216" class="LineNr">216 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
-<span id="L217" class="LineNr">217 </span>    <span class="subxComment"># read-byte(_test-buffered-file)</span>
+<span id="L217" class="LineNr">217 </span>    <span class="subxComment"># read-byte-buffered(_test-buffered-file)</span>
 <span id="L218" class="LineNr">218 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L219" class="LineNr">219 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
 <span id="L220" class="LineNr">220 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L221" class="LineNr">221 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte</a>/disp32
+<span id="L221" class="LineNr">221 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte-buffered</a>/disp32
 <span id="L222" class="LineNr">222 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L223" class="LineNr">223 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L224" class="LineNr">224 </span>    <span class="subxComment"># check-ints-equal(EAX, 0xffffffff, msg)</span>
 <span id="L225" class="LineNr">225 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L226" class="LineNr">226 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-end-of-file&quot;</span>/imm32
+<span id="L226" class="LineNr">226 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-buffered-end-of-file&quot;</span>/imm32
 <span id="L227" class="LineNr">227 </span>    68/push  0xffffffff/imm32/Eof
 <span id="L228" class="LineNr">228 </span>    50/push-EAX
 <span id="L229" class="LineNr">229 </span>    <span class="subxS2Comment"># . . call</span>
@@ -296,8 +296,8 @@ if ('onhashchange' in window) {
 <span id="L233" class="LineNr">233 </span>    <span class="subxS1Comment"># . end</span>
 <span id="L234" class="LineNr">234 </span>    c3/return
 <span id="L235" class="LineNr">235 </span>
-<span id="L236" class="LineNr">236 </span><span class="subxTest">test-read-byte-refills-buffer</span>:
-<span id="L237" class="LineNr">237 </span>    <span class="subxH1Comment"># - consume buffered-file's buffer, check that next read-byte still works</span>
+<span id="L236" class="LineNr">236 </span><span class="subxTest">test-read-byte-buffered-refills-buffer</span>:
+<span id="L237" class="LineNr">237 </span>    <span class="subxH1Comment"># - consume buffered-file's buffer, check that next read-byte-buffered still works</span>
 <span id="L238" class="LineNr">238 </span>    <span class="subxComment"># setup</span>
 <span id="L239" class="LineNr">239 </span>    <span class="subxS1Comment"># . clear-stream(_test-stream)</span>
 <span id="L240" class="LineNr">240 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -327,16 +327,16 @@ if ('onhashchange' in window) {
 <span id="L264" class="LineNr">264 </span>    <span class="subxS1Comment"># . _test-buffered-file-&gt;read = 6  # &gt;= _test-buffered-file-&gt;length</span>
 <span id="L265" class="LineNr">265 </span>    b8/copy-to-EAX  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
 <span id="L266" class="LineNr">266 </span>    c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8         6/imm32           <span class="subxComment"># copy to *(EAX+8)</span>
-<span id="L267" class="LineNr">267 </span>    <span class="subxComment"># read-byte(_test-buffered-file)</span>
+<span id="L267" class="LineNr">267 </span>    <span class="subxComment"># read-byte-buffered(_test-buffered-file)</span>
 <span id="L268" class="LineNr">268 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L269" class="LineNr">269 </span>    68/push  <a href='061read-byte.subx.html#L289'>_test-buffered-file</a>/imm32
 <span id="L270" class="LineNr">270 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L271" class="LineNr">271 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte</a>/disp32
+<span id="L271" class="LineNr">271 </span>    e8/call  <a href='061read-byte.subx.html#L44'>read-byte-buffered</a>/disp32
 <span id="L272" class="LineNr">272 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L273" class="LineNr">273 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L274" class="LineNr">274 </span>    <span class="subxComment"># check-ints-equal(EAX, 'A', msg)</span>
 <span id="L275" class="LineNr">275 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L276" class="LineNr">276 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-refills-buffer&quot;</span>/imm32
+<span id="L276" class="LineNr">276 </span>    68/push  <span class="Constant">&quot;F - test-read-byte-buffered-refills-buffer&quot;</span>/imm32
 <span id="L277" class="LineNr">277 </span>    68/push  0x41/imm32
 <span id="L278" class="LineNr">278 </span>    50/push-EAX
 <span id="L279" class="LineNr">279 </span>    <span class="subxS2Comment"># . . call</span>
