@@ -31,7 +31,7 @@ Entry:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 
     # for debugging: run a single test
-#?     e8/call  test-skip-string-in-slice-stops-at-end/disp32
+#?     e8/call  test-emit-metadata-in-string-literal/disp32
 #?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
 #?     eb/jump  $main:end/disp8
 
@@ -1272,12 +1272,15 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     # pseudocode
     #   var slice = {0, word->end}
     #   curr = word->start
-    #   while true
-    #     if curr == word->end
-    #       return
-    #     if *curr == '/'
-    #       break
-    #     ++curr
+    #   if *curr == '"'
+    #     curr = skip-string-in-slice(curr, word->end)
+    #   else
+    #     while true
+    #       if curr == word->end
+    #         return
+    #       if *curr == '/'
+    #         break
+    #       ++curr
     #   slice->curr = curr
     #   write-slice-buffered(out, slice)
     #
@@ -1302,18 +1305,36 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
     # EAX = 0
     b8/copy-to-EAX  0/imm32
+$emit-metadata:check-for-string-literal:
+    # if (*curr == '"') curr = skip-string-in-slice(curr, end)
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
+    3d/compare-EAX-and  0x22/imm32/dquote
+    75/jump-if-not-equal  $emit-metadata:skip-datum-loop/disp8
+$emit-metadata:skip-string-literal:
+    # . EAX = skip-string-in-slice(curr, end)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  skip-string-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . curr = EAX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
+    # skip loop
+    eb/jump  $emit-metadata:emit/disp8
 $emit-metadata:skip-datum-loop:
     # if (curr == end) return
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX and EDX
     74/jump-if-equal  $emit-metadata:end/disp8
     # if (*curr == '/') break
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
-    3d/compare-EAX-and  0x2f/imm32
-    74/jump-if-equal  $emit-metadata:break/disp8
+    3d/compare-EAX-and  0x2f/imm32/slash
+    74/jump-if-equal  $emit-metadata:emit/disp8
     # ++curr
     41/increment-ECX
     eb/jump  $emit-metadata:skip-datum-loop/disp8
-$emit-metadata:break:
+$emit-metadata:emit:
     # slice->curr = ECX
     89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           1/r32/ECX   .               .                 # copy ECX to *EBX
     # write-slice-buffered(out, slice)
