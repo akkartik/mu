@@ -200,4 +200,14 @@ test `uname` = 'Linux'  &&  {
   echo
 }
 
+echo dquotes
+./subx translate 0*.subx apps/subx-common.subx apps/dquotes.subx  -o apps/dquotes
+[ "$1" != record ]  &&  git diff --exit-code apps/dquotes
+./subx run apps/dquotes test
+echo
+test `uname` = 'Linux'  &&  {
+  apps/dquotes test
+  echo
+}
+
 exit 0
