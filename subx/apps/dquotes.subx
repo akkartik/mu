@@ -877,10 +877,12 @@ emit-string-literal-data:  # out : (address stream), word : (address slice)
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     # curr/EDX = word->start
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
+    # max/ESI = word->end
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           6/r32/ESI   4/disp8         .                 # copy *(ESI+4) to ESI
 $emit-string-literal-data:emit-length:
     # len/EAX = string-length-at-start-of-slice(word->start, word->end)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # push *(ESI+4)
+    56/push-ESI
     52/push-EDX
     # . . call
     e8/call  string-length-at-start-of-slice/disp32
@@ -906,9 +908,7 @@ $emit-string-literal-data:emit-length:
 $emit-string-literal-data:loop-init:
     # ++curr  # skip initial '"'
     42/increment-EDX
-    # max/ESI = word->end
-    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           6/r32/ESI   4/disp8         .                 # copy *(ESI+4) to ESI
-    # ECX = 0
+    # c/ECX = 0
     31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
 $emit-string-literal-data:loop:
     # if (curr >= max) break
@@ -1320,7 +1320,7 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     # EAX = 0
     b8/copy-to-EAX  0/imm32
 $emit-metadata:check-for-string-literal:
-    # if (*curr == '"') curr = skip-string-in-slice(curr, end)
+    # -  if (*curr == '"') curr = skip-string-in-slice(curr, end)
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
     3d/compare-EAX-and  0x22/imm32/dquote
     75/jump-if-not-equal  $emit-metadata:skip-datum-loop/disp8
@@ -1335,9 +1335,9 @@ $emit-metadata:skip-string-literal:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . curr = EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
-    # skip loop
     eb/jump  $emit-metadata:emit/disp8
 $emit-metadata:skip-datum-loop:
+    # - otherwise scan for '/'
     # if (curr == end) return
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX and EDX
     74/jump-if-equal  $emit-metadata:end/disp8
