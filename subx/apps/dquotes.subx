@@ -1296,6 +1296,10 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
     # end/EDX = word->end
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ESI+4) to EDX
+    # var slice/EBX = {0, end}
+    52/push-EDX
+    68/push  0/imm32
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
     # EAX = 0
     b8/copy-to-EAX  0/imm32
 $emit-metadata:skip-datum-loop:
@@ -1310,18 +1314,19 @@ $emit-metadata:skip-datum-loop:
     41/increment-ECX
     eb/jump  $emit-metadata:skip-datum-loop/disp8
 $emit-metadata:break:
-    # write-slice-buffered(out, &{start, end})
-    # . . local var
-    52/push-EDX
-    51/push-ECX
+    # slice->curr = ECX
+    89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           1/r32/ECX   .               .                 # copy ECX to *EBX
+    # write-slice-buffered(out, slice)
     # . . push args
-    54/push-ESP
+    53/push-EBX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  write-slice-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           0x10/imm32      .                 # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           8/imm32      .                    # add to ESP
 $emit-metadata:end:
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           8/imm32      .                    # add to ESP
     # . restore registers
     5e/pop-to-ESI
     5b/pop-to-EBX
