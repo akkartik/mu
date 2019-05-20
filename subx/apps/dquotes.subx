@@ -1270,6 +1270,7 @@ test-emit-string-literal-data-handles-escape-sequences:
 # emit everything from a word except the initial datum
 emit-metadata:  # out : (address buffered-file), word : (address slice)
     # pseudocode
+    #   var slice = {0, word->end}
     #   curr = word->start
     #   while true
     #     if curr == word->end
@@ -1277,7 +1278,9 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     #     if *curr == '/'
     #       break
     #     ++curr
-    #   write-slice-buffered(out, slice{curr, word->end})
+    #   slice->curr = curr
+    #   write-slice-buffered(out, slice)
+    #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -1285,20 +1288,22 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     50/push-EAX
     51/push-ECX
     52/push-EDX
-    # ECX = word
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy *(EBP+12) to ECX
-    # end/EDX = word->end
-    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ECX+4) to EDX
+    53/push-EBX
+    56/push-ESI
+    # ESI = word
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     # curr/ECX = word->start
-    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # copy *ECX to ECX
-    # clear out EAX
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+    # end/EDX = word->end
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ESI+4) to EDX
+    # EAX = 0
     b8/copy-to-EAX  0/imm32
 $emit-metadata:skip-datum-loop:
     # if (curr == end) return
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX and EDX
     74/jump-if-equal  $emit-metadata:end/disp8
     # if (*curr == '/') break
-    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
     3d/compare-EAX-and  0x2f/imm32
     74/jump-if-equal  $emit-metadata:break/disp8
     # ++curr
@@ -1318,6 +1323,8 @@ $emit-metadata:break:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           0x10/imm32      .                 # add to ESP
 $emit-metadata:end:
     # . restore registers
+    5e/pop-to-ESI
+    5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
     58/pop-to-EAX
