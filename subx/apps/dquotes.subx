@@ -1741,22 +1741,16 @@ $next-word:check-for-string-literal:
     3d/compare-EAX-and  0x22/imm32/dquote
     75/jump-if-not-equal  $next-word:regular-word/disp8
 $next-word:string-literal:
-    # ++line->read  # skip '"'
-    # . persist line->read
-    89/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(ESI+4)
-    # . ++line->read
-    ff          0/subop/increment   1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # increment *(ESI+4)
-    # parse-string(line, out)
+    # skip-string(line)
     # . . push args
-    57/push-EDI
     56/push-ESI
     # . . call
-    e8/call  parse-string/disp32
+    e8/call  skip-string/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # fall through
 $next-word:regular-word:
-    # otherwise skip-chars-not-matching-whitespace(line)  # including trailing newline
+    # skip-chars-not-matching-whitespace(line)  # including trailing newline
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
@@ -1771,80 +1765,6 @@ $next-word:end:
     # . restore registers
     5f/pop-to-EDI
     5e/pop-to-ESI
-    59/pop-to-ECX
-    58/pop-to-EAX
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
-parse-string:  # line : (address stream byte), out : (address slice)
-    # pseudocode:
-    #   ESI = line
-    #   curr/ECX = line->data[line->read]
-    #   max/EDX = line->data[line->write]
-    #   while curr >= max
-    #     if (*curr == '"') ++curr, break
-    #     if (*curr == '\\') curr+=2, continue
-    #     ++curr
-    #   line->read = curr - line->data
-    #   out->end = curr
-    #
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-    50/push-EAX
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = line
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = &table->data[table->read]
-    # . ECX = table->read
-    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ESI+4) to ECX
-    # . ECX = table->data + ECX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           1/r32/ECX   0xc/disp8       .                 # copy ESI+ECX+12 to ECX
-    # max/EDX = &table->data[table->write]
-    # . EDX = table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    # . EDX = table->data + EDX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  2/index/EDX   .           2/r32/EDX   0xc/disp8       .                 # copy ESI+EDX+12 to EDX
-    # clear EAX
-    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-$parse-string:loop:
-    # if (curr >= max) break
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $parse-string:break/disp8
-    # c/EAX = *curr
-    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
-$parse-string:check1:
-    # if (c == '"') break  # rely on caller to skip trailing non-whitespace
-    3d/compare-EAX-and  0x22/imm32/dquote
-    74/jump-if-equal  $parse-string:break/disp8
-$parse-string:check2:
-    # if (c == '\\') ++curr
-    3d/compare-EAX-and  0x5c/imm32/backslash
-    75/jump-if-not-equal  $parse-string:continue/disp8
-    # . ++curr
-    41/increment-ECX
-$parse-string:continue:
-    # ++curr
-    41/increment-ECX
-    # loop
-    eb/jump  $parse-string:loop/disp8
-$parse-string:break:
-    # out->end = curr
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EDI
-    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(EAX+4)
-    # line->read = curr - line - 12
-    29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           6/r32/ESI   .               .                 # subtract ESI from ECX
-    81          5/subop/subtract    3/mod/direct    1/rm32/ECX    .           .             .           .           .               0xc/imm32         # subtract from ECX
-    89/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(ESI+4)
-$parse-string:end:
-    # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
     59/pop-to-ECX
     58/pop-to-EAX
     # . epilog
