@@ -44,8 +44,10 @@ Emulated runs generate a trace that permits [time-travel debugging](https://gith
   $ ./subx --debug translate examples/factorial.subx -o examples/factorial
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
+
   $ ./subx --debug --trace run examples/factorial
   saving trace to 'last_run'
+
   $ ../browse_trace/browse_trace last_run  # text-mode debugger UI
   ```
 
