@@ -218,7 +218,7 @@ lookup:  # h : (handle T) -> EAX : (address T)
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # copy *EAX to EAX
     # if (EAX != *ESP) abort
     39/compare                      0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # compare *ESP and EAX
-    75/jump-if-not-equal  $lookup:fail/disp8
+    75/jump-if-not-equal  $lookup:abort/disp8
     # return ESP+4
     58/pop-to-EAX
     05/add-to-EAX  4/imm32
@@ -227,7 +227,8 @@ lookup:  # h : (handle T) -> EAX : (address T)
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
-$lookup:fail:
+
+$lookup:abort:
     # . _write(2/stderr, msg)
     # . . push args
     68/push  "lookup failed"/imm32
