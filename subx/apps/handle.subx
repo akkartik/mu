@@ -231,6 +231,17 @@ lookup:  # h : (handle T) -> EAX : (address T)
     # add 4
     05/add-to-EAX  4/imm32
     # - }
+    # - alternative consuming a second register {
+#?     # ECX = handle->alloc_id
+#?     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+#?     # EAX = handle->address (payload)
+#?     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
+#?     # if (ECX != *EAX) abort
+#?     39/compare                      0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare *EAX and ECX
+#?     75/jump-if-not-equal  $lookup:abort/disp8
+#?     # add 4 to EAX
+#?     05/add-to-EAX  4/imm32
+    # - }
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
