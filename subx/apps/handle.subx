@@ -15,10 +15,11 @@
 # To run (from the subx directory):
 #   $ ./subx translate *.subx apps/handle.subx -o apps/handle
 #   $ ./subx run apps/handle
-# Expected result is a hard abort:
-#   ........lookup failed
-# (This file is a prototype, so the tests in this file aren't real tests. Don't
-# expect to run anything in the same process after they've completed.)
+# Expected result is a successful lookup followed by a hard abort:
+#   lookup succeeded
+#   lookup failed
+# (This file is a prototype. The 'tests' in it aren't real; failures are
+# expected.)
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -212,15 +213,22 @@ lookup:  # h : (handle T) -> EAX : (address T)
     # EAX = handle
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
     # - inline {
+    # push handle->alloc_id
+    ff          6/subop/push        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # push *EAX
+    # EAX = handle->address (payload)
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # copy *(EAX+4) to EAX
     # push handle->address
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
-    # EAX = handle->alloc_id
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
-    # if (EAX != *ESP) abort
-    39/compare                      0/mod/indirect  4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   .               .                 # compare *ESP and EAX
+    50/push-EAX
+    # EAX = payload->alloc_id
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # copy *EAX to EAX
+    # if (EAX != handle->alloc_id) abort
+    39/compare                      1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           0/r32/EAX   4/disp8         .                 # compare *(ESP+4) and EAX
     75/jump-if-not-equal  $lookup:abort/disp8
-    # return ESP+4
+    # EAX = pop handle->address
     58/pop-to-EAX
+    # discard handle->alloc_id
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # add 4
     05/add-to-EAX  4/imm32
     # - }
     # . epilog
@@ -295,6 +303,14 @@ test-lookup-success:
     # clean up
     # . *Next-alloc-id = 1
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     Next-alloc-id/disp32  1/imm32           # copy to *Next-alloc-id
+    # write(2/stderr, "lookup succeeded\n")
+    # . . push args
+    68/push  "lookup succeeded\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . restore registers
     5a/pop-to-EDX
     59/pop-to-ECX
