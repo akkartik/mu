@@ -131,11 +131,11 @@ test `uname` = 'Linux'  &&  examples/ex12
 echo handle
 ./subx translate 0*.subx apps/handle.subx  -o apps/handle
 [ "$1" != record ]  &&  git diff --exit-code apps/handle
-./subx run apps/handle >& handle.out  ||  true
+./subx run apps/handle > handle.out 2>&1  ||  true
 grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
 grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
 test `uname` = 'Linux'  &&  {
-  apps/handle >& handle.out  ||  true
+  apps/handle > handle.out 2>&1  ||  true
   grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
   grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
 }
