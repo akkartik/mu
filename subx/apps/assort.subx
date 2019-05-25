@@ -86,8 +86,7 @@ $main:end:
     cd/syscall  0x80/imm8
 
 # data structure:
-#   row: pair of (address array byte) and (address stream byte)
-#   table: (address stream row)
+#   table: (address stream {string, (address stream byte)})     (8 bytes per row)
 
 convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
@@ -439,7 +438,7 @@ test-convert:
     5d/pop-to-EBP
     c3/return
 
-read-segments:  # in : (address buffered-file), table : (address stream row)
+read-segments:  # in : (address buffered-file), table : (address stream {string, (address stream byte)})
     # pseudocode:
     #   var curr-segment = null
     #   var line = new-stream(512, 1)
@@ -724,7 +723,7 @@ $read-segments:end:
     5d/pop-to-EBP
     c3/return
 
-write-segments:  # out : (address buffered-file), table : (address stream row)
+write-segments:  # out : (address buffered-file), table : (address stream {string, (address stream byte)})
     # pseudocode:
     #   var curr = table->data
     #   var max = table->data + table->write
@@ -788,7 +787,7 @@ $write-segments:end:
 ## helpers
 
 # TODO: pass in an allocation descriptor
-get-or-insert-segment:  # table : (address stream row), s : (address slice), n : int -> EAX : (address stream)
+get-or-insert-segment:  # table : (address stream {string, (address stream byte)}), s : (address slice), n : int -> EAX : (address stream)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -950,7 +949,7 @@ $test-get-or-insert-segment:check1:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-get-or-insert-segment:check2:
-    # check-ints-equal(table->write, rowsize = 8, msg)
+    # check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-get-or-insert-segment/2"/imm32
     68/push  8/imm32/row-size
@@ -1011,7 +1010,7 @@ $test-get-or-insert-segment:second-call:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # no change to table size
-    # . check-ints-equal(table->write, rowsize = 8, msg)
+    # . check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-get-or-insert-segment/6"/imm32
     68/push  8/imm32/row-size
