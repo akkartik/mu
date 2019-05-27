@@ -155,19 +155,19 @@ _addressing mode_. This is a 2-bit argument that can take 4 possible values,
 and it determines what other arguments are required, and how to interpret
 them.
 
-* If `/mod` is `3`: the operand is the register described by the 3-bit `/rm32`
-  argument similarly to `/r32` above.
+* If `/mod` is `3`: the operand is in the register described by the 3-bit
+  `/rm32` argument similarly to `/r32` above.
 
-* If `/mod` is `0`: the operand is the address provided in the register
+* If `/mod` is `0`: the operand is in the address provided in the register
   described by `/rm32`. That's `*rm32` in C syntax.
 
-* If `/mod` is `1`: the operand is the address provided by adding the register
-  in `/rm32` with the (1-byte) displacement. That's `*(rm32 + disp8)` in C
-  syntax.
+* If `/mod` is `1`: the operand is in the address provided by adding the
+  register in `/rm32` with the (1-byte) displacement. That's `*(rm32 + disp8)`
+  in C syntax.
 
-* If `/mod` is `2`: the operand is the address provided by adding the register
-  in `/rm32` with the (4-byte) displacement. That's `*(/rm32 + disp32)` in C
-  syntax.
+* If `/mod` is `2`: the operand is in the address provided by adding the
+  register in `/rm32` with the (4-byte) displacement. That's `*(/rm32 +
+  disp32)` in C syntax.
 
 In the last three cases, one exception occurs when the `/rm32` argument
 contains `4`. Rather than encoding register `ESP`, it means the address is
