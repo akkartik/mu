@@ -218,9 +218,10 @@ This program sums the first 10 natural numbers. By convention I use horizontal
 tabstops to help read instructions, dots to help follow the long lines,
 comments before groups of instructions to describe their high-level purpose,
 and comments at the end of complex instructions to state the low-level
-operation they perform. Numbers are always in hexadecimal (base 16); the '0x'
-prefix is optional, and I tend to include it as a reminder when numbers look
-like decimal numbers or words.
+operation they perform. Numbers are always in hexadecimal (base 16) and must
+start with a digit ('0'..'9'); use the '0x' prefix when a number starts with a
+letter ('a'..'f'). I tend to also include it as a reminder when numbers look
+like decimal numbers.
 
 Try running this example now:
 
