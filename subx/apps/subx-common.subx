@@ -5,25 +5,26 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-# scan a 'table' of (string, stream) rows for a row matching 's'
-# if it doesn't exist, add a new row with a stream of size 'n'
-# if there isn't room, abort
+# 'table' is a stream of (key, value) rows
+# keys are always strings
+# values may be any type but have size 'n'
+# scan 'table' for a row with a key 's' and return the address of the corresponding value
+# if no row is found, save 's' in the next available row
+# if there are no rows free, return null
 # TODO: pass in an allocation descriptor
-get-or-insert-stream:  # table : (address stream {string, (address stream byte)}), s : (address slice), n : int -> EAX : (address stream)
+get-or-insert:  # table : (address stream {string, _}), s : (address slice), n : int -> EAX : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
     #   while curr < max
     #     if slice-equal?(s, *curr)
-    #       return *(curr+4)
-    #     curr += 8
-    #   if table->write < table->length
-    #     *max = slice-to-string(Heap, s)
-    #     result = new-stream(Heap, n, 1)
-    #     *(max+4) = result
-    #     table->write += 8
-    #     return result
-    #   return 0
+    #       return curr+4
+    #     curr += n
+    #   if table->write >= table->length
+    #     abort
+    #   *max = slice-to-string(Heap, s)
+    #   table->write += n
+    #   return max+4
     #
     # . prolog
     55/push-EBP
@@ -39,10 +40,10 @@ get-or-insert-stream:  # table : (address stream {string, (address stream byte)}
     # max/EDX = table->data + table->write
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
-$get-or-insert-stream:search-loop:
+$get-or-insert:search-loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $get-or-insert-stream:not-found/disp8
+    7d/jump-if-greater-or-equal  $get-or-insert:not-found/disp8
     # if (slice-equal?(s, *curr)) return *(curr+4)
     # . EAX = slice-equal?(s, *curr)
     # . . push args
@@ -52,23 +53,23 @@ $get-or-insert-stream:search-loop:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = *(curr+4)
+    # . if (EAX != 0) return EAX = curr+4
     3d/compare-EAX-and  0/imm32
-    74/jump-if-equal  $get-or-insert-stream:mismatch/disp8
-    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
-    eb/jump  $get-or-insert-stream:end/disp8
-$get-or-insert-stream:mismatch:
-    # curr += 8
-    81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               8/imm32           # add to ECX
+    74/jump-if-equal  $get-or-insert:mismatch/disp8
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    eb/jump  $get-or-insert:end/disp8
+$get-or-insert:mismatch:
+    # curr += n
+    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
     # loop
-    eb/jump  $get-or-insert-stream:search-loop/disp8
-$get-or-insert-stream:not-found:
+    eb/jump  $get-or-insert:search-loop/disp8
+$get-or-insert:not-found:
     # result/EAX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     # if (table->write >= table->length) abort
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
     3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
-    7d/jump-if-greater-or-equal  $get-or-insert-stream:abort/disp8
+    7d/jump-if-greater-or-equal  $get-or-insert:abort/disp8
     # *max = slice-to-string(Heap, s)
     # . EAX = slice-to-string(Heap, s)
     # . . push args
@@ -80,20 +81,17 @@ $get-or-insert-stream:not-found:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . *max = EAX
     89/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EDX
-    # result/EAX = new-stream(Heap, n, 1)
-    # . . push args
-    68/push  1/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
-    68/push  Heap/imm32
-    # . . call
-    e8/call  new-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # *(max+4) = result
-    89/copy                         1/mod/*+disp8   2/rm32/EDX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EDX+4)
-    # table->write += 8
-    81          0/subop/add         0/mod/indirect  6/rm32/ESI    .           .             .           .           .               8/imm32           # add to *ESI
-$get-or-insert-stream:end:
+    # table->write += n
+    # . EAX = n
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
+    # . table->write += EAX
+    01/add                          0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # add EAX to *ESI
+    # return max+4
+    # . EAX = max
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy EDX to EAX
+    # . EAX += 4
+    05/add-to-EAX  4/imm32
+$get-or-insert:end:
     # . restore registers
     5e/pop-to-ESI
     5a/pop-to-EDX
@@ -103,10 +101,10 @@ $get-or-insert-stream:end:
     5d/pop-to-EBP
     c3/return
 
-$get-or-insert-stream:abort:
+$get-or-insert:abort:
     # . _write(2/stderr, error)
     # . . push args
-    68/push  "get-or-insert-stream: too many segments"/imm32
+    68/push  "get-or-insert: too many segments"/imm32
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
@@ -118,11 +116,11 @@ $get-or-insert-stream:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-test-get-or-insert-stream:
+test-get-or-insert:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var table/ECX : (address stream byte) = stream(2 * 8)
+    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
     81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
     68/push  0x10/imm32/length
     68/push  0/imm32/read
@@ -132,140 +130,134 @@ test-get-or-insert-stream:
     68/push  _test-code-segment-end/imm32/end
     68/push  _test-code-segment/imm32/start
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-$test-get-or-insert-stream:first-call:
-    # - start with an empty table, insert one segment, verify that it was inserted
-    # segment/EAX = get-or-insert-stream(table, "code" slice, 10)
+$test-get-or-insert:first-call:
+    # - start with an empty table, insert one key, verify that it was inserted
+    # EAX = get-or-insert(table, "code" slice, 8 bytes per row)
     # . . push args
-    68/push  0xa/imm32/segment-length
+    68/push  8/imm32/row-size
     52/push-EDX
     51/push-ECX
     # . . call
-    e8/call  get-or-insert-stream/disp32
+    e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # save segment
+    # check-ints-equal(EAX - table->data, 4, msg)  # first row's value slot returned
+    # . check-ints-equal(EAX - table, 16, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert/0"/imm32
+    68/push  0x10/imm32
+    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     50/push-EAX
-    # if (segment != 0) goto next check
-    3d/compare-EAX-and  0/imm32
-    75/jump-if-not-equal  $test-get-or-insert-stream:check1/disp8
-    # fail test
-    # . _write(2/stderr, msg)
-    # . . push args
-    68/push  "F - test-get-or-insert-stream/0\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . increment Num-test-failures
-    ff          0/subop/increment   0/mod/indirect  5/rm32/.disp32            .             .           .           Num-test-failures/disp32          # increment *Num-test-failures
-    e9/jump  $test-get-or-insert-stream:end/disp32
-$test-get-or-insert-stream:check1:
-    # check-ints-equal(segment->length, 10, msg)
-    # . . push args
-    68/push  "F - test-get-or-insert-stream/1"/imm32
-    68/push  0xa/imm32/segment-length
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         .                 # push *(EAX+8)
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-stream:check2:
+$test-get-or-insert:check2:
     # check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-stream/2"/imm32
+    68/push  "F - test-get-or-insert/1"/imm32
     68/push  8/imm32/row-size
     ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # EAX = string-equal?(*table->data, "code")
+    # check-string-equal(*table->data, "code", msg)
     # . . push args
+    68/push  "F - test-get-or-insert/2"/imm32
     68/push  "code"/imm32
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
     # . . call
-    e8/call  string-equal?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, 1, msg)
-    # . . push args
-    68/push  "F - test-get-or-insert-stream/3"/imm32
-    68/push  1/imm32
-    50/push-EAX
-    # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  check-string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-stream:check3:
-    # stream/EAX = *(table->data+4)
-    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(ECX+16) to EAX
-    # check-ints-equal(stream->length, 10, msg)
+$test-get-or-insert:second-call:
+    # - insert the same key again, verify that it was reused
+    # EAX = get-or-insert(table, "code" slice, 8 bytes per row)
     # . . push args
-    68/push  "F - test-get-or-insert-stream/4"/imm32
-    68/push  0xa/imm32/segment-size
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         .                 # push *(EAX+8)
-    # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-stream:second-call:
-    # - insert the same segment name again, verify that it was reused
-    # segment2/EAX = get-or-insert-stream(table, "code" slice, 8)
-    # . . push args
-    68/push  8/imm32/segment-length
+    68/push  8/imm32/row-size
     52/push-EDX
     51/push-ECX
     # . . call
-    e8/call  get-or-insert-stream/disp32
+    e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # restore old segment1
-    5a/pop-to-EDX
-    # check-ints-equal(segment2/EAX, segment1/EDX, msg)
+    # check-ints-equal(EAX - table->data, 4, msg)
+    # . check-ints-equal(EAX - table, 16, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-stream/5"/imm32
-    52/push-EDX
+    68/push  "F - test-get-or-insert/3"/imm32
+    68/push  0x10/imm32
+    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # no change to table size
+    # no new row inserted
     # . check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-stream/6"/imm32
+    68/push  "F - test-get-or-insert/4"/imm32
     68/push  8/imm32/row-size
     ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-stream:third-call:
-    # - insert a new segment name, verify that it was inserted
+    # check-string-equal(*table->data, "code", msg)
+    # . . push args
+    68/push  "F - test-get-or-insert/5"/imm32
+    68/push  "code"/imm32
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    # . . call
+    e8/call  check-string-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-insert:third-call:
+    # - insert a new key, verify that it was inserted
     # EDX : (address slice) = "data"
     c7          0/subop/copy        0/mod/indirect  2/rm32/EDX    .           .             .           .           .               _test-data-segment/imm32  # copy to *EDX
     c7          0/subop/copy        1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         _test-data-segment-end/imm32  # copy to *(EDX+4)
-    # segment2/EAX = get-or-insert-stream(table, "data" slice, 8)
+    # EAX = get-or-insert(table, "data" slice, 8 bytes per row)
     # . . push args
-    68/push  8/imm32/segment-length
+    68/push  8/imm32/row-size
     52/push-EDX
     51/push-ECX
     # . . call
-    e8/call  get-or-insert-stream/disp32
+    e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # table gets a new row
-    # . check-ints-equal(table->write, 2 rows = 16, msg)
+    # check-ints-equal(EAX - table->data, 12, msg)  # second row's value slot returned
+    # . check-ints-equal(EAX - table, 24, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-stream/7"/imm32
+    68/push  "F - test-get-or-insert/6"/imm32
+    68/push  0x18/imm32
+    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(table->write, 2 rows = 16, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert/7"/imm32
     68/push  0x10/imm32/two-rows
     ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-stream:end:
+    # check-string-equal(*table->data+8, "data", msg)
+    # check-string-equal(*(table+20), "data", msg)
+    # . . push args
+    68/push  "F - test-get-or-insert/8"/imm32
+    68/push  "data"/imm32
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0x14/disp8      .                 # push *(ECX+20)
+    # . . call
+    e8/call  check-string-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-insert:end:
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
