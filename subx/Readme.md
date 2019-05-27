@@ -103,10 +103,11 @@ a few registers:
 * Six general-purpose 32-bit registers: EAX, EBX, ECX, EDX, ESI and EDI
 * Two additional 32-bit registers: ESP and EBP (I suggest you only use these to
   manage the call stack.)
-* Three 1-bit _flag_ registers for conditional branching:
+* Four 1-bit _flag_ registers for conditional branching:
   - zero/equal flag ZF
   - sign flag SF
   - overflow flag OF
+  - carry flag CF
 
 SubX programs consist of instructions like `89/copy`, `01/add`, `3d/compare`
 and `52/push-ECX` which modify these registers as well as a byte-addressable
