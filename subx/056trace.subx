@@ -43,18 +43,36 @@ _test-trace-stream:
 
 # Allocate a new segment for the trace stream, initialize its length, and save its address to Trace-stream.
 # The Trace-stream segment will consist of variable-length lines separated by newlines (0x0a)
-initialize-trace-stream:
-    # EAX = new-segment(0x1000)
+initialize-trace-stream:  # n : int -> <void>
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    # ECX = n
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    # EAX = new-segment(n)
     # . . push args
-    68/push  0x1000/imm32/N
+    51/push-ECX
     # . . call
     e8/call  new-segment/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # copy EAX to *Trace-stream
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
-    # Trace-stream->length = 0x1000/N - 12
-    c7          0/subop/copy        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           8/disp8         0xff4/imm32       # copy 0xff4 to *(EAX+8)
+    # Trace-stream->length = n - 12
+    # . ECX -= 12
+    81          5/subop/subtract    3/mod/direct    1/rm32/ECX    .           .             .           .           .               0xc/imm32         # subtract from ECX
+    # . Trace-stream->length = ECX
+    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy ECX to *(EAX+8)
+$initialize-trace-stream:end:
+    # . restore registers
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
     c3/return
 
 # Append a string to the given trace stream.
