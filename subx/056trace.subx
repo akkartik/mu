@@ -6,17 +6,11 @@
 #   data : (array byte)  # prefixed by length as usual
 # In a real trace the data will be in a special segment set aside for the purpose.
 #
-# primitives for operating on traces:
-#   - initialize-trace-stream (update global variable)
-#   - trace: stream, string
-#   - die: stream (exit(1) if using real trace)
-#   - check-trace-contains: stream, string/line, string/message (scans only from stream's read pointer, prints message to stderr on failure, updates stream's read pointer)
-#   - scan-to-next-line: stream (advance read pointer past next newline)
-#
-# Traces are very fundamental, so many of the helpers we create here won't be
-# used elsewhere; we'll switch to more bounds-checked variants. But here we get
-# bounds-checking for free; we allocate a completely disjoint segment for trace
-# data, and overflowing it will generate a page fault.
+# primitives for operating on traces (arguments in quotes):
+#   - initialize-trace-stream: populates Trace-stream with a new segment of the given 'size'
+#   - trace: adds a 'line' to Trace-stream
+#   - check-trace-contains: scans from Trace-stream's start for a matching 'line', prints a 'message' to stderr on failure
+#   - check-trace-scans-to: scans from Trace-stream's read pointer for a matching 'line', prints a 'message' to stderr on failure
 
 == data
 
