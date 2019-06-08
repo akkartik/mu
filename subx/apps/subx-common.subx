@@ -375,6 +375,118 @@ test-write-stream-data:
     5d/pop-to-EBP
     c3/return
 
+compute-width:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-compute-width:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+
+$test-compute-width:imm8:
+    # EAX = compute-width("0x2/imm8")
+    68/push "0x2/imm8"/imm32
+    e8/call  compute-width/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+
+    # check-ints-equal(EAX, 1, msg)
+    68/push "F - test-compute-width: 0x2/imm8"/imm32
+    50/push-EAX
+    68/push 1/imm32
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+
+$test-compute-width:imm32:
+    # EAX = compute-width("2/imm32")
+    68/push "4/imm32"/imm32
+    e8/call  compute-width/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+
+    # check-ints-equal(EAX, 4, msg)
+    68/push "F - test-compute-width: 4/imm32"/imm32
+    50/push-EAX
+    68/push 4/imm32
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+
+$test-compute-width:disp8:
+    # EAX = compute-width("foo/disp8")
+    68/push "foo/disp8"/imm32
+    e8/call  compute-width/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+
+    # check-ints-equal(EAX, 1, msg)
+    68/push "F - test-compute-width: foo/disp8"/imm32
+    50/push-EAX
+    68/push 1/imm32
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+
+$test-compute-width:disp16:
+    # EAX = compute-width("foo/disp16")
+    68/push "foo/disp16"/imm32
+    e8/call  compute-width/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+
+    # check-ints-equal(EAX, 2, msg)
+    68/push "F - test-compute-width: foo/disp16"/imm32
+    50/push-EAX
+    68/push 2/imm32
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+
+$test-compute-width:disp32:
+    # EAX = compute-width("foo/disp32")
+    68/push "foo/disp32"/imm32
+    e8/call  compute-width/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+
+    # check-ints-equal(EAX, 4, msg)
+    68/push "F - test-compute-width: foo/disp32"/imm32
+    50/push-EAX
+    68/push 4/imm32
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+
+$test-compute-width:no-metadata:
+    # EAX = compute-width("45")
+    68/push "45"/imm32
+    e8/call  compute-width/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+
+    # check-ints-equal(EAX, 1, msg)
+    68/push "F - test-compute-width: 45 (no metadata)"/imm32
+    50/push-EAX
+    68/push 1/imm32
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
 == data
 
 _test-input-stream:
