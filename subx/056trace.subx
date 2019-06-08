@@ -250,12 +250,12 @@ check-trace-contains:  # line : (address string), msg : (address string)
     e8/call  rewind-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-trace-can-scan-to(line, msg)
+    # check-trace-scans-to(line, msg)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  check-trace-can-scan-to/disp32
+    e8/call  check-trace-scans-to/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $check-trace-contains:end:
@@ -275,7 +275,7 @@ check-trace-scans-to:  # line : (address string), msg : (address string)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Segment-size
     # . . call
-    e8/call  check-trace-can-scan-to/disp32
+    e8/call  trace-scan/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # check-ints-equal(EAX, 1, msg)
