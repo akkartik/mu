@@ -83,7 +83,7 @@ $initialize-trace-stream:end:
 
 # Append a string to the given trace stream.
 # Silently give up if it's already full. Or truncate the string if there isn't enough room.
-trace:  # t : (address trace-stream), line : string
+trace:  # line : string
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -94,10 +94,10 @@ trace:  # t : (address trace-stream), line : string
     53/push-EBX
     56/push-ESI
     57/push-EDI
-    # EDI = t
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # EDI = *Trace-stream
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           7/r32/EDI   Trace-stream/disp32               # copy *Trace-stream to EDI
     # ESI = line
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # ECX = t->write
     8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
     # EDX = t->length
@@ -150,15 +150,103 @@ $trace:end:
     5d/pop-to-EBP
     c3/return
 
-clear-trace-stream:  # t : (address trace-stream)
+test-trace-single:
+    # *Trace-stream = _test-trace-stream
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+    # clear-trace-stream()
+    e8/call  clear-trace-stream/disp32
+    # trace("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(*_test-trace-stream->data, 41/A 62/b 0a/newline 00, msg)
+    # . . push args
+    68/push  "F - test-trace-single"/imm32
+    68/push  0x0a6241/imm32/Ab-newline
+    # . . push *_test-trace-stream->data
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
+test-trace-appends:
+    # *Trace-stream = _test-trace-stream
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+    # clear-trace-stream()
+    e8/call  clear-trace-stream/disp32
+    # trace("C")
+    # . . push args
+    68/push  "C"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # trace("D")
+    # . . push args
+    68/push  "D"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(*_test-trace-stream->data, 43/C 0a/newline 44/D 0a/newline, msg)
+    # . . push args
+    68/push  "F - test-trace-appends"/imm32
+    68/push  0x0a440a43/imm32/C-newline-D-newline
+    # . . push *_test-trace-stream->data
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
+test-trace-empty-line:
+    # *Trace-stream = _test-trace-stream
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+    # clear-trace-stream()
+    e8/call  clear-trace-stream/disp32
+    # trace("")
+    # . . push args
+    68/push  ""/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(*_test-trace-stream->data, 0, msg)
+    # . . push args
+    68/push  "F - test-trace-empty-line"/imm32
+    68/push  0/imm32
+    # . . push *_test-trace-stream->data
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
+clear-trace-stream:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
     50/push-EAX
     51/push-ECX
-    # EAX = t
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    # EAX = *Trace-stream
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
     # ECX = t->length
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EAX+8) to ECX
     # ECX = &t->data[t->length]
@@ -185,106 +273,6 @@ $clear-trace-stream:end:
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
-    c3/return
-
-# - tests
-
-test-trace-single:
-    # clear-trace-stream(_test-trace-stream)
-    # . . push args
-    68/push  _test-trace-stream/imm32
-    # . . call
-    e8/call  clear-trace-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # trace(_test-trace-stream, "Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    68/push  _test-trace-stream/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(*_test-trace-stream->data, 41/A 62/b 0a/newline 00, msg)
-    # . . push args
-    68/push  "F - test-trace-single"/imm32
-    68/push  0x0a6241/imm32/Ab-newline
-    # . . push *_test-trace-stream->data
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
-    # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # end
-    c3/return
-
-test-trace-appends:
-    # clear-trace-stream(_test-trace-stream)
-    # . . push args
-    68/push  _test-trace-stream/imm32
-    # . . call
-    e8/call  clear-trace-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # trace(_test-trace-stream, "C")
-    # . . push args
-    68/push  "C"/imm32
-    68/push  _test-trace-stream/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # trace(_test-trace-stream, "D")
-    # . . push args
-    68/push  "D"/imm32
-    68/push  _test-trace-stream/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(*_test-trace-stream->data, 43/C 0a/newline 44/D 0a/newline, msg)
-    # . . push args
-    68/push  "F - test-trace-appends"/imm32
-    68/push  0x0a440a43/imm32/C-newline-D-newline
-    # . . push *_test-trace-stream->data
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
-    # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # end
-    c3/return
-
-test-trace-empty-line:
-    # clear-trace-stream(_test-trace-stream)
-    # . . push args
-    68/push  _test-trace-stream/imm32
-    # . . call
-    e8/call  clear-trace-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # trace(_test-trace-stream, "")
-    # . . push args
-    68/push  ""/imm32
-    68/push  _test-trace-stream/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(*_test-trace-stream->data, 0, msg)
-    # . . push args
-    68/push  "F - test-trace-empty-line"/imm32
-    68/push  0/imm32
-    # . . push *_test-trace-stream->data
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           0xc/disp8       .                 # push *(EAX+12)
-    # . . call
-    e8/call  check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # end
     c3/return
 
 # - helpers
