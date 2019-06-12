@@ -16,5 +16,12 @@ fi
 
 envsubst '$TEST_NAME' < run_one_test.subx > /tmp/run_one_test.subx
 
-subx --debug translate [0-9]*.subx apps/subx-common.subx $1 /tmp/run_one_test.subx -o /tmp/a.elf
+if [[ $1 == */* ]]
+then
+  subx --debug translate [0-9]*.subx apps/subx-common.subx $1 /tmp/run_one_test.subx -o /tmp/a.elf
+else
+  # don't mention files twice
+  subx --debug translate [0-9]*.subx apps/subx-common.subx    /tmp/run_one_test.subx -o /tmp/a.elf
+fi
+
 subx --debug --trace run /tmp/a.elf
