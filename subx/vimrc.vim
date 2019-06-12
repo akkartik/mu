@@ -83,6 +83,8 @@ command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
 "   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
 "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
 "   can't avoid the function because that disables the wait for <CR> prompt
+" known issue:
+"   cursor on '#' causes error
 noremap <Leader>t {j0:call RunTestMoveCursorAndMaybeOpenTrace("<C-r><C-w>")<CR>
 function RunTestMoveCursorAndMaybeOpenTrace(arg)
   exec "!run_one_test.sh ".expand("%")." ".a:arg
