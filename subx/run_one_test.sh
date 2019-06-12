@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 # Either run the test with the given name, or rerun the most recently run test.
+# Intended to be called from within Vim. Check out the vimrc.vim file.
 
 if [[ $2 == 'test-'* ]]
 then
