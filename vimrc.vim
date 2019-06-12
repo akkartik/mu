@@ -77,5 +77,19 @@ endif
 " the '-a' is because traces can sometimes contain unprintable characters that bother grep
 command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
 
-" run test cursor around cursor, then bring up its trace in a split window
-noremap <Leader>t {j0:exec "!run_one_test.sh ".expand("%")." <C-R><C-W>"<CR>:vert split last_run<CR><C-w>p<C-o>
+" run test cursor around cursor
+"   if test fails, open trace in split window
+"   if test passes, just show output and wait for <CR>
+"   don't move cursor in original window
+" this solution is unfortunate, but seems forced:
+"   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
+"   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
+"   can't avoid the function because that disables the wait for <CR> prompt
+noremap <Leader>t {j0:call RunTestMoveCursorAndMaybeOpenTrace("<C-r><C-w>")<CR>
+function RunTestMoveCursorAndMaybeOpenTrace(arg)
+  exec "!run_one_test.sh ".expand("%")." ".a:arg
+  exec "normal \<C-o>"
+  if v:shell_error
+    noautocmd vertical split last_run
+  endif
+endfunction
