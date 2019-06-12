@@ -76,3 +76,6 @@ endif
 " see https://github.com/akkartik/mu/blob/master/subx/Readme.md#a-few-hints-for-debugging
 " the '-a' is because traces can sometimes contain unprintable characters that bother grep
 command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
+
+" run test cursor around cursor, then bring up its trace in a split window
+noremap <Leader>t {j0:exec "!run_one_test.sh ".expand("%")." <C-R><C-W>"<CR>:vert split last_run<CR><C-w>p<C-o>
