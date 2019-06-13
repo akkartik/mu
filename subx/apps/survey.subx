@@ -318,7 +318,42 @@ test-convert-computes-addresses:
 
 compute-offsets:  # in : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
-    #   gg
+    #   var curr-segment-name = 0
+    #   var file-offset = 0, segment-offset = 0
+    #   var line = new-stream(512, 1)
+    #   while true
+    #     clear-stream(line)
+    #     read-line-buffered(in, line)
+    #     if (line->write == 0) break               # end of file
+    #     while true
+    #       var word-slice = next-word(line)
+    #       if slice-empty?(word-slice)             # end of line
+    #         break
+    #       if slice-starts-with?(word-slice, "#")  # comment
+    #         continue
+    #       if is-label?(word-slice)
+    #         x : (address number) = insert(labels, name)
+    #         *x = segment-offset
+    #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'")
+    #         trace("label '", word-slice, "' is at offset 0x", file-offset)
+    #         continue
+    #       if slice-equal?(word-slice, "==")
+    #         segment-name : (address slice) = next-word(line)
+    #         if slice-empty?(segment-name)
+    #           abort
+    #         segment-start : (address slice) = next-word(line)
+    #         if slice-empty?(segment-start)
+    #           abort
+    #         seg : (address segment-info) = insert(segments, segment-name)
+    #         seg->starting-address = parse-hex-int(segment-start)
+    #         seg->starting-offset = file-offset
+    #         trace("segment '", segment-name, "' is at file offset 0x", seg->starting-offset)
+    #         trace("segment '", segment-name, "' has size 0x", seg->starting-offset)
+    #         segment-offset = 0
+    #       else
+    #         width = compute-width(word-slice)
+    #         segment-offset += width
+    #         file-offset += width
     #
     # . prolog
     55/push-EBP
