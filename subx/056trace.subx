@@ -42,7 +42,17 @@ _test-stream-with-newline:
     # length
     8/imm32
     # data
-    00 00 00 00 0A 00 00 00  # 8 bytes
+    41 41 41 41 0A 41 41 41  # 8 bytes
+
+_test-stream-line-match:
+    # current write index
+    8/imm32
+    # current read index
+    0/imm32
+    # length
+    8/imm32
+    # data
+    41 42 41 42 41 0A 00 00  # 8 bytes
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -368,25 +378,140 @@ next-line-matches?:  # t : (address stream), line : string -> result/EAX : boole
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
-    # ESI = line
-    # maxl/ECX = line->data + line->size
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    57/push-EDI
+    # EDX = line
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
     # currl/ESI = line->data
+    # . ESI = line/EDX->data
+    8d/copy-address                 1/mod/*+disp8   2/rm32/EDX    .           .             .           6/r32/ESI   4/disp8         .                 # copy EDX+4 to ESI
+    # maxl/ECX = line->data + line->size
+    # . EAX = line/EDX->size
+    8b/copy                         0/mod/indirect  2/rm32/EDX    .           .                         0/r32/EAX   .               .                 # copy *EDX to EAX
+    # . maxl/ECX = line->data/ESI + line->size/EAX
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    6/base/ESI  0/index/EAX   .           1/r32/ECX   .               .                 # copy EDX+EAX to ECX
     # EDI = t
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # EBX = t->data
+    8d/copy-address                 1/mod/*+disp8   7/rm32/EDI    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy EDI+12 to EBX
     # maxt/EDX = t->data + t->write
+    # . EAX = t->write
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .                         0/r32/EAX   .               .                 # copy *EDI to EAX
+    # . maxt/EDX = t->data/EBX + t->write/EAX
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    3/base/EBX  0/index/EAX   .           2/r32/EDX   .               .                 # copy EBX+EAX to EDX
     # currt/EDI = t->data + t->read
+    # . EAX = t/EDI->read
+    8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .                         0/r32/EAX   4/disp8         .                 # copy *(EDI+4) to EAX
+    # . currt/EDI = t->data/EBX + t->read/EAX
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    3/base/EBX  0/index/EAX   .           7/r32/EDI   .               .                 # copy EBX+EAX to EDI
 $next-line-matches?:loop:
-    # if (currl >= maxl) break
-    # if (currt >= maxt) return false
-    # if (*currt != *currl) return false
-    # ++currt
-    # ++currl
+    # if (currl/ESI >= maxl/ECX) break
+    39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI and ECX
+    7d/jump-if-greater-or-equal  $next-line-matches?:break/disp8
+    # if (currt/EDI >= maxt/EDX) return false
+    # . EAX = false
+    b8/copy-to-EAX  0/imm32/false
+    39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI and EDX
+    7d/jump-if-greater-or-equal  $next-line-matches?:end/disp8
+    # if (*currt/EDI != *currl/ESI) return false
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    31/xor                          3/mod/direct    3/rm32/EAX    .           .             .           3/r32/EAX   .               .                 # clear EBX
+    # . EAX = (char) *currt/EDI
+    8a/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .                         0/r32/EAX   .               .                 # copy *EDI to EAX
+    # . EBX = (char) *currl/ESI
+    8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .                         3/r32/EBX   .               .                 # copy *ESI to EBX
+    # . EAX >= EBX
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
+    # . EAX = false
+    b8/copy-to-EAX  0/imm32/false
+    75/jump-if-not-equal  $next-line-matches?:end/disp8
+    # ++currt/EDI
+    47/increment-EDI
+    # ++currl/ESI
+    46/increment-ESI
+    eb/jump  $next-line-matches?:loop/disp8
 $next-line-matches?:break:
     # return *currt == '\n'
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    # . EAX = (char) *currt
+    8a/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .                         0/r32/EAX   .               .                 # copy *EDI to EAX
+    3d/compare-EAX-and  0xa/imm32/newline
+    # . EAX = false
+    b8/copy-to-EAX  1/imm32/true
+    74/jump-if-equal  $next-line-matches?:end/disp8
+    b8/copy-to-EAX  0/imm32/true
 $next-line-matches?:end:
     # . restore registers
+    5f/pop-to-EDI
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
+    c3/return
+
+test-next-line-matches?:
+$test-next-line-matches?:no-match-1:
+    # EAX = next-line-matches?(_test-stream-line-match, "blah blah")
+    68/push  "blah blah"/imm32
+    68/push  _test-stream-line-match/imm32
+    e8/call  next-line-matches?/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    68/push  "F - test-next-line-matches?:no-match-1"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-next-line-matches?:no-match-2:
+    # EAX = next-line-matches?(_test-stream-line-match, "")
+    68/push  ""/imm32
+    68/push  _test-stream-line-match/imm32
+    e8/call  next-line-matches?/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    68/push  "F - test-next-line-matches?:no-match-2"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-next-line-matches?:no-match-3:
+    # EAX = next-line-matches?(_test-stream-line-match, "AA")
+    68/push  "AA"/imm32
+    68/push  _test-stream-line-match/imm32
+    e8/call  next-line-matches?/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    68/push  "F - test-next-line-matches?:no-match-3"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-next-line-matches?:match:
+    # EAX = next-line-matches?(_test-stream-line-match, "blah blah")
+    68/push  "ABABA"/imm32
+    68/push  _test-stream-line-match/imm32
+    e8/call  next-line-matches?/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    68/push  "F - test-next-line-matches?:match"/imm32
+    68/push  1/imm32
+    50/push-EAX
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 skip-next-line:  # t : (address stream)
