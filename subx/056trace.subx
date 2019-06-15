@@ -34,6 +34,16 @@ _test-trace-stream:
     # data
     00 00 00 00 00 00 00 00  # 8 bytes
 
+_test-stream-with-newline:
+    # current write index
+    0/imm32
+    # current read index
+    0/imm32
+    # length
+    8/imm32
+    # data
+    00 00 00 00 0A 00 00 00  # 8 bytes
+
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
 # . op          subop               mod             rm32          base        index         scale       r32
@@ -381,9 +391,9 @@ $next-line-matches?:end:
 
 skip-next-line:  # t : (address stream)
     # pseudocode:
+    #   max = t->data + t->write
     #   i = t->read
     #   curr = t->data + t->read
-    #   max = t->data + t->write
     #   while true
     #     if (curr >= max) break
     #     if (*curr == '\n') break
@@ -395,20 +405,89 @@ skip-next-line:  # t : (address stream)
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
-    # i = t->read
-    # curr = t->data + t->read
-    # max = t->data + t->write
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    # ECX = t
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    # EDX = t/ECX->data
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   0xc/disp8       .                 # copy ECX+12 to EDX
+    # EAX = t/ECX->write
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+    # max/EBX = t->data/EDX + t->write/EAX
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    2/base/EDX  0/index/EAX   .           3/r32/EBX   .               .                 # copy EDX+EAX to EBX
+    # EAX = t/ECX->read
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EDX
+    # curr/ECX = t->data/EDX + t->read/EAX
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    2/base/EDX  0/index/EAX   .           1/r32/ECX   .               .                 # copy EDX+EAX to ECX
+    # i/EDX = EAX
+    8b/copy                         3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy EAX to EDX
 $skip-next-line:loop:
-    # if (curr >= max) break
-    # if (*curr == '\n') break
-    # ++curr
-    # ++i
+    # if (curr/ECX >= max/EBX) break
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           3/r32/EBX   .               .                 # compare ECX and EBX
+    7d/jump-if-greater-or-equal  $skip-next-line:end/disp8
+    # if (*curr/ECX == '\n') break
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+    3d/compare-EAX-and  0a/imm32/newline
+    74/jump-if-equal  $skip-next-line:end/disp8
+    # ++curr/ECX
+    41/increment-ECX
+    # ++i/EDX
+    42/increment-EDX
+    # loop
+    eb/jump  $skip-next-line:loop/disp8
 $skip-next-line:end:
-    # t->read = i
+    # ECX = t
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    # t/ECX->read = i/EDX
+    89/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           2/r32/EDX   4/disp8         .                 # copy EDX to *(ECX+4)
     # . restore registers
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
+    c3/return
+
+test-skip-next-line:
+$test-skip-next-line:empty:
+    # skip-next-line(_test-stream-with-newline)
+    68/push  _test-stream-with-newline/imm32
+    e8/call  skip-next-line/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(_test-stream-with-newline->read, 0)
+    b8/copy-to-EAX  _test-stream-with-newline/imm32
+    # . EAX = _test-stream-with-newline/EAX->read
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
+    # . push args
+    68/push  "F - test-skip-next-line:empty"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-skip-next-line:filled:
+    # _test-stream-with-newline/EAX->write = 8
+    b8/copy-to-EAX  _test-stream-with-newline/imm32
+    c7          0/subop/copy        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               8/imm32           # copy 8 to *EAX
+    # skip-next-line(_test-stream-with-newline/EAX)
+    50/push-EAX
+    e8/call  skip-next-line/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . EAX = _test-stream-with-newline/EAX->read
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
+    # check-ints-equal(_test-stream-with-newline->read/EAX, 4)
+    68/push  "F - test-skip-next-line:filled"/imm32
+    68/push  4/imm32
+    50/push-EAX
+    e8/call  check-ints-equal/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
 test-trace-scan-first:
