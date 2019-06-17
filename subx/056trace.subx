@@ -291,12 +291,16 @@ $check-trace-scans-to:end:
 # Start scanning from Trace-stream->read for 'line'. If found, update Trace-stream->read and return true.
 trace-scan:  # line : string -> result/EAX : boolean
     # pseudocode:
+    #   push Trace-stream->read
     #   while true:
     #     if Trace-stream->read >= Trace-stream->write
     #       break
     #     if next-line-matches?(Trace-stream, line)
     #       skip-next-line(Trace-stream)
+    #       dump saved copy of Trace-stream->read
     #       return true
+    #     skip-next-line(Trace-stream)
+    #   pop saved copy of Trace-stream->read
     #   return false
     #
     # . prolog
@@ -309,6 +313,8 @@ trace-scan:  # line : string -> result/EAX : boolean
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           6/r32/ESI   Trace-stream/disp32               # copy *Trace-stream to ESI
     # ECX = Trace-stream->write
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX                   .                 # copy *ESI to ECX
+    # push Trace-stream->read
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # push *(ESI+4)
 $trace-scan:loop:
     # if (Trace-stream->read >= Trace-stream->write) return false
     39/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # compare ECX with *(ESI+4)
@@ -323,7 +329,7 @@ $trace-scan:loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # if (EAX == 0) continue
     3d/compare-EAX-and  0/imm32
-    74/jump-if-equal  $trace-scan:loop/disp8
+    74/jump-if-equal  $trace-scan:continue/disp8
 $trace-scan:true:
     # skip-next-line(Trace-stream)
     # . . push args
@@ -332,10 +338,24 @@ $trace-scan:true:
     e8/call  skip-next-line/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # dump saved copy of Trace-stream->read
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # return true
     b8/copy-to-EAX  1/imm32/true
     eb/jump  $trace-scan:end/disp8
+$trace-scan:continue:
+    # skip-next-line(Trace-stream)
+    # . . push args
+    56/push-ESI
+    # . . call
+    e8/call  skip-next-line/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    eb/jump  $trace-scan:loop/disp8
 $trace-scan:false:
+    # restore saved copy of Trace-stream->read
+    8f          0/subop/pop         1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # pop to *(ESI+4)
+    # return false
     b8/copy-to-EAX  0/imm32/false
 $trace-scan:end:
     # . restore registers
@@ -495,6 +515,7 @@ $test-next-line-matches?:match:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
+# move t->read to _after_ next newline
 skip-next-line:  # t : (address stream)
     # pseudocode:
     #   max = t->data + t->write
@@ -502,9 +523,9 @@ skip-next-line:  # t : (address stream)
     #   curr = t->data + t->read
     #   while true
     #     if (curr >= max) break
+    #     ++i
     #     if (*curr == '\n') break
     #     ++curr
-    #     ++i
     #   t->read = i
     #
     # . prolog
@@ -533,6 +554,8 @@ $skip-next-line:loop:
     # if (curr/ECX >= max/EBX) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           3/r32/EBX   .               .                 # compare ECX and EBX
     7d/jump-if-greater-or-equal  $skip-next-line:end/disp8
+    # ++i/EDX
+    42/increment-EDX
     # if (*curr/ECX == '\n') break
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
@@ -540,8 +563,6 @@ $skip-next-line:loop:
     74/jump-if-equal  $skip-next-line:end/disp8
     # ++curr/ECX
     41/increment-ECX
-    # ++i/EDX
-    42/increment-EDX
     # loop
     eb/jump  $skip-next-line:loop/disp8
 $skip-next-line:end:
@@ -588,9 +609,9 @@ $test-skip-next-line:filled:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . EAX = _test-stream-with-newline/EAX->read
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
-    # check-ints-equal(_test-stream-with-newline->read/EAX, 4)
+    # check-ints-equal(_test-stream-with-newline->read/EAX, 5)
     68/push  "F - test-skip-next-line:filled"/imm32
-    68/push  4/imm32
+    68/push  5/imm32
     50/push-EAX
     e8/call  check-ints-equal/disp32
     # . discard args
