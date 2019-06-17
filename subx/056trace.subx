@@ -616,62 +616,87 @@ $next-line-matches?:end:
     5d/pop-to-EBP
     c3/return
 
-test-next-line-matches?:
-$test-next-line-matches?:no-match-1:
-    # EAX = next-line-matches?(_test-stream-line-ABABA, "blah blah")
+test-next-line-matches?-no-match-1:
+    # next line of "ABABA" does not match "blah blah"
+    # . EAX = next-line-matches?(_test-stream-line-ABABA, "blah blah")
+    # . . push args
     68/push  "blah blah"/imm32
     68/push  _test-stream-line-ABABA/imm32
+    # . . call
     e8/call  next-line-matches?/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, 0, msg)
-    68/push  "F - test-next-line-matches?:no-match-1"/imm32
+    # . check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-next-line-matches?-no-match-1"/imm32
     68/push  0/imm32
     50/push-EAX
+    # . . call
     e8/call  check-ints-equal/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-next-line-matches?:no-match-2:
-    # EAX = next-line-matches?(_test-stream-line-ABABA, "")
+    c3/return
+
+test-next-line-matches?-no-match-2:
+    # next line of "ABABA" does not match ""
+    # . EAX = next-line-matches?(_test-stream-line-ABABA, "")
+    # . . push args
     68/push  ""/imm32
     68/push  _test-stream-line-ABABA/imm32
+    # . . call
     e8/call  next-line-matches?/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, 0, msg)
-    68/push  "F - test-next-line-matches?:no-match-2"/imm32
+    # . check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-next-line-matches?-no-match-2"/imm32
     68/push  0/imm32
     50/push-EAX
+    # . . call
     e8/call  check-ints-equal/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-next-line-matches?:no-match-3:
-    # EAX = next-line-matches?(_test-stream-line-ABABA, "AA")
+    c3/return
+
+test-next-line-matches?-no-match-3:
+    # next line of "ABABA" does not match  "AA"
+    # . EAX = next-line-matches?(_test-stream-line-ABABA, "AA")
+    # . . push args
     68/push  "AA"/imm32
     68/push  _test-stream-line-ABABA/imm32
+    # . . call
     e8/call  next-line-matches?/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, 0, msg)
-    68/push  "F - test-next-line-matches?:no-match-3"/imm32
+    # . check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-next-line-matches?-no-match-3"/imm32
     68/push  0/imm32
     50/push-EAX
+    # . . call
     e8/call  check-ints-equal/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-next-line-matches?:match:
-    # EAX = next-line-matches?(_test-stream-line-ABABA, "blah blah")
+    c3/return
+
+test-next-line-matches?-match:
+    # next line of "ABABA" matches "ABABA"
+    # . EAX = next-line-matches?(_test-stream-line-ABABA, "ABABA")
+    # . . push args
     68/push  "ABABA"/imm32
     68/push  _test-stream-line-ABABA/imm32
+    # . . call
     e8/call  next-line-matches?/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # check-ints-equal(EAX, 0, msg)
-    68/push  "F - test-next-line-matches?:match"/imm32
+    # . check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-next-line-matches?-match"/imm32
     68/push  1/imm32
     50/push-EAX
+    # . . call
     e8/call  check-ints-equal/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
@@ -740,39 +765,47 @@ $skip-next-line:end:
     5d/pop-to-EBP
     c3/return
 
-test-skip-next-line:
-$test-skip-next-line:empty:
-    # skip-next-line(_test-stream-empty)
+test-skip-next-line-empty:
+    # skipping next line in empty stream leaves read pointer at 0
+    # . skip-next-line(_test-stream-empty)
+    # . . push args
     68/push  _test-stream-empty/imm32
+    # . . call
     e8/call  skip-next-line/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(_test-stream-empty->read, 0)
-    b8/copy-to-EAX  _test-stream-empty/imm32
-    # . EAX = _test-stream-empty/EAX->read
-    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
-    # . push args
-    68/push  "F - test-skip-next-line:empty"/imm32
+    # . check-ints-equal(_test-stream-empty->read, 0, msg)
+    # . . push args
+    68/push  "F - test-skip-next-line-empty"/imm32
     68/push  0/imm32
+    b8/copy-to-EAX  _test-stream-empty/imm32
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
     50/push-EAX
+    # . . call
     e8/call  check-ints-equal/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-skip-next-line:filled:
-    # skip-next-line(_test-stream-filled/EAX)
+    c3/return
+
+test-skip-next-line-filled:
+    # skipping next line increments read pointer by length of line + 1 (for newline)
+    # . skip-next-line(_test-stream-filled)
+    # . . push args
     68/push  _test-stream-filled/imm32
+    # . . call
     e8/call  skip-next-line/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(_test-stream-filled->read, 5)
-    # . EAX = _test-stream-filled->read
+    # . check-ints-equal(_test-stream-filled->read, 5, msg)
+    # . . push args
+    68/push  "F - test-skip-next-line-filled"/imm32
+    68/push  5/imm32
     b8/copy-to-EAX  _test-stream-filled/imm32
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
-    68/push  "F - test-skip-next-line:filled"/imm32
-    68/push  5/imm32
     50/push-EAX
+    # . . call
     e8/call  check-ints-equal/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
