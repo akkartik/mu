@@ -34,26 +34,6 @@ _test-trace-stream:
     # data
     00 00 00 00 00 00 00 00  # 8 bytes
 
-_test-stream-with-newline:
-    # current write index
-    0/imm32
-    # current read index
-    0/imm32
-    # length
-    8/imm32
-    # data
-    41 41 41 41 0A 41 41 41  # 8 bytes
-
-_test-stream-line-match:
-    # current write index
-    8/imm32
-    # current read index
-    0/imm32
-    # length
-    8/imm32
-    # data
-    41 42 41 42 41 0A 00 00  # 8 bytes
-
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
 # . op          subop               mod             rm32          base        index         scale       r32
@@ -458,9 +438,9 @@ $next-line-matches?:end:
 
 test-next-line-matches?:
 $test-next-line-matches?:no-match-1:
-    # EAX = next-line-matches?(_test-stream-line-match, "blah blah")
+    # EAX = next-line-matches?(_test-stream-line-ABABA, "blah blah")
     68/push  "blah blah"/imm32
-    68/push  _test-stream-line-match/imm32
+    68/push  _test-stream-line-ABABA/imm32
     e8/call  next-line-matches?/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -472,9 +452,9 @@ $test-next-line-matches?:no-match-1:
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-next-line-matches?:no-match-2:
-    # EAX = next-line-matches?(_test-stream-line-match, "")
+    # EAX = next-line-matches?(_test-stream-line-ABABA, "")
     68/push  ""/imm32
-    68/push  _test-stream-line-match/imm32
+    68/push  _test-stream-line-ABABA/imm32
     e8/call  next-line-matches?/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -486,9 +466,9 @@ $test-next-line-matches?:no-match-2:
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-next-line-matches?:no-match-3:
-    # EAX = next-line-matches?(_test-stream-line-match, "AA")
+    # EAX = next-line-matches?(_test-stream-line-ABABA, "AA")
     68/push  "AA"/imm32
-    68/push  _test-stream-line-match/imm32
+    68/push  _test-stream-line-ABABA/imm32
     e8/call  next-line-matches?/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -500,9 +480,9 @@ $test-next-line-matches?:no-match-3:
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-next-line-matches?:match:
-    # EAX = next-line-matches?(_test-stream-line-match, "blah blah")
+    # EAX = next-line-matches?(_test-stream-line-ABABA, "blah blah")
     68/push  "ABABA"/imm32
-    68/push  _test-stream-line-match/imm32
+    68/push  _test-stream-line-ABABA/imm32
     e8/call  next-line-matches?/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -912,5 +892,27 @@ $_append-4:abort:
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+== data
+
+_test-stream-line-ABABA:
+    # current write index
+    8/imm32
+    # current read index
+    0/imm32
+    # length
+    8/imm32
+    # data
+    41 42 41 42 41 0A 00 00  # 8 bytes
+
+_test-stream-with-newline:
+    # current write index
+    0/imm32
+    # current read index
+    0/imm32
+    # length
+    8/imm32
+    # data
+    41 41 41 41 0A 41 41 41  # 8 bytes
 
 # . . vim:nowrap:textwidth=0
