@@ -582,14 +582,14 @@ $skip-next-line:end:
 
 test-skip-next-line:
 $test-skip-next-line:empty:
-    # skip-next-line(_test-stream-with-newline)
-    68/push  _test-stream-with-newline/imm32
+    # skip-next-line(_test-stream-empty)
+    68/push  _test-stream-empty/imm32
     e8/call  skip-next-line/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(_test-stream-with-newline->read, 0)
-    b8/copy-to-EAX  _test-stream-with-newline/imm32
-    # . EAX = _test-stream-with-newline/EAX->read
+    # check-ints-equal(_test-stream-empty->read, 0)
+    b8/copy-to-EAX  _test-stream-empty/imm32
+    # . EAX = _test-stream-empty/EAX->read
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
     # . push args
     68/push  "F - test-skip-next-line:empty"/imm32
@@ -599,17 +599,15 @@ $test-skip-next-line:empty:
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-skip-next-line:filled:
-    # _test-stream-with-newline/EAX->write = 8
-    b8/copy-to-EAX  _test-stream-with-newline/imm32
-    c7          0/subop/copy        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               8/imm32           # copy 8 to *EAX
-    # skip-next-line(_test-stream-with-newline/EAX)
-    50/push-EAX
+    # skip-next-line(_test-stream-filled/EAX)
+    68/push  _test-stream-filled/imm32
     e8/call  skip-next-line/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . EAX = _test-stream-with-newline/EAX->read
+    # check-ints-equal(_test-stream-filled->read, 5)
+    # . EAX = _test-stream-filled->read
+    b8/copy-to-EAX  _test-stream-filled/imm32
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(EAX+4) to EAX
-    # check-ints-equal(_test-stream-with-newline->read/EAX, 5)
     68/push  "F - test-skip-next-line:filled"/imm32
     68/push  5/imm32
     50/push-EAX
@@ -926,9 +924,19 @@ _test-stream-line-ABABA:
     # data
     41 42 41 42 41 0A 00 00  # 8 bytes
 
-_test-stream-with-newline:
+_test-stream-empty:
     # current write index
     0/imm32
+    # current read index
+    0/imm32
+    # length
+    8/imm32
+    # data
+    00 00 00 00 00 00 00 00  # 8 bytes
+
+_test-stream-filled:
+    # current write index
+    8/imm32
     # current read index
     0/imm32
     # length
