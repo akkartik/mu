@@ -365,6 +365,166 @@ $trace-scan:end:
     5d/pop-to-EBP
     c3/return
 
+test-trace-scan-first:
+    # setup
+    # . *Trace-stream = _test-trace-stream
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+    # . clear-trace-stream()
+    e8/call  clear-trace-stream/disp32
+    # . trace("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # EAX = trace-scan("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace-scan/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-trace-scan-first"/imm32
+    68/push  1/imm32
+    50/push-EAX
+    # . . call
+    e8/call check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-trace-scan-skips-lines-until-found:
+    # setup
+    # . *Trace-stream = _test-trace-stream
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+    # . clear-trace-stream()
+    e8/call  clear-trace-stream/disp32
+    # . trace("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . trace("cd")
+    # . . push args
+    68/push  "cd"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # EAX = trace-scan("cd")
+    # . . push args
+    68/push  "cd"/imm32
+    # . . call
+    e8/call  trace-scan/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-trace-scan-skips-lines-until-found"/imm32
+    68/push  1/imm32
+    50/push-EAX
+    # . . call
+    e8/call check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-trace-second-scan-starts-where-first-left-off:
+    # setup
+    # . *Trace-stream = _test-trace-stream
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+    # . clear-trace-stream()
+    e8/call  clear-trace-stream/disp32
+    # . trace("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . EAX = trace-scan("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace-scan/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # second scan fails
+    # . EAX = trace-scan("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace-scan/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-trace-second-scan-starts-where-first-left-off"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    # . . call
+    e8/call check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
+test-trace-scan-failure-leaves-read-index-untouched:
+    # setup
+    # . *Trace-stream = _test-trace-stream
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
+    # . clear-trace-stream()
+    e8/call  clear-trace-stream/disp32
+    # . trace("Ab")
+    # . . push args
+    68/push  "Ab"/imm32
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . check-ints-equal(_test-trace-stream->read, 0, msg)
+    # . . push args
+    68/push  "F - test-trace-second-scan-starts-where-first-left-off/precondition-failure"/imm32
+    68/push  0/imm32
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
+    # . . call
+    e8/call check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # perform a failing scan
+    # . EAX = trace-scan("Ax")
+    # . . push args
+    68/push  "Ax"/imm32
+    # . . call
+    e8/call  trace-scan/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # no change in read index
+    # . check-ints-equal(_test-trace-stream->read, 0, msg)
+    # . . push args
+    68/push  "F - test-trace-second-scan-starts-where-first-left-off"/imm32
+    68/push  0/imm32
+    b8/copy-to-EAX  _test-trace-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
+    # . . call
+    e8/call check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . end
+    c3/return
+
 next-line-matches?:  # t : (address stream), line : string -> result/EAX : boolean
     # pseudocode:
     #   while true:
@@ -614,166 +774,6 @@ $test-skip-next-line:filled:
     e8/call  check-ints-equal/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    c3/return
-
-test-trace-scan-first:
-    # setup
-    # . *Trace-stream = _test-trace-stream
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
-    # . clear-trace-stream()
-    e8/call  clear-trace-stream/disp32
-    # . trace("Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # EAX = trace-scan("Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    # . . call
-    e8/call  trace-scan/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(EAX, 1, msg)
-    # . . push args
-    68/push  "F - test-trace-scan-first"/imm32
-    68/push  1/imm32
-    50/push-EAX
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . end
-    c3/return
-
-test-trace-scan-skips-lines-until-found:
-    # setup
-    # . *Trace-stream = _test-trace-stream
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
-    # . clear-trace-stream()
-    e8/call  clear-trace-stream/disp32
-    # . trace("Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . trace("cd")
-    # . . push args
-    68/push  "cd"/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # EAX = trace-scan("cd")
-    # . . push args
-    68/push  "cd"/imm32
-    # . . call
-    e8/call  trace-scan/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(EAX, 1, msg)
-    # . . push args
-    68/push  "F - test-trace-scan-skips-lines-until-found"/imm32
-    68/push  1/imm32
-    50/push-EAX
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . end
-    c3/return
-
-test-trace-second-scan-starts-where-first-left-off:
-    # setup
-    # . *Trace-stream = _test-trace-stream
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
-    # . clear-trace-stream()
-    e8/call  clear-trace-stream/disp32
-    # . trace("Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . EAX = trace-scan("Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    # . . call
-    e8/call  trace-scan/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # second scan fails
-    # . EAX = trace-scan("Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    # . . call
-    e8/call  trace-scan/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # check-ints-equal(EAX, 0, msg)
-    # . . push args
-    68/push  "F - test-trace-second-scan-starts-where-first-left-off"/imm32
-    68/push  0/imm32
-    50/push-EAX
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . end
-    c3/return
-
-test-trace-scan-failure-leaves-read-index-untouched:
-    # setup
-    # . *Trace-stream = _test-trace-stream
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
-    # . clear-trace-stream()
-    e8/call  clear-trace-stream/disp32
-    # . trace("Ab")
-    # . . push args
-    68/push  "Ab"/imm32
-    # . . call
-    e8/call  trace/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . check-ints-equal(_test-trace-stream->read, 0, msg)
-    # . . push args
-    68/push  "F - test-trace-second-scan-starts-where-first-left-off/precondition-failure"/imm32
-    68/push  0/imm32
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # perform a failing scan
-    # . EAX = trace-scan("Ax")
-    # . . push args
-    68/push  "Ax"/imm32
-    # . . call
-    e8/call  trace-scan/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # no change in read index
-    # . check-ints-equal(_test-trace-stream->read, 0, msg)
-    # . . push args
-    68/push  "F - test-trace-second-scan-starts-where-first-left-off"/imm32
-    68/push  0/imm32
-    b8/copy-to-EAX  _test-trace-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . end
     c3/return
 
 clear-trace-stream:
