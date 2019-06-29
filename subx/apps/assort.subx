@@ -448,7 +448,7 @@ read-segments:  # in : (address buffered-file), table : (address stream {string,
     #       continue
     #     if slice-equal?(word-slice, "==")
     #       var segment-name = next-word(line)
-    #       segment-slot = get-or-insert(table, segment-name, row-size=8)
+    #       segment-slot = get-or-insert-slice(table, segment-name, row-size=8)
     #       curr-segment = *segment-slot
     #       if curr-segment != 0
     #         continue
@@ -667,13 +667,13 @@ $read-segments:check-for-segment-header:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # segment-slot/EAX = get-or-insert(table, segment-name, value-size=8)
+    # segment-slot/EAX = get-or-insert-slice(table, segment-name, value-size=8)
     # . . push args
     68/push  8/imm32/value-size
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  get-or-insert/disp32
+    e8/call  get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # curr-segment = *segment-slot
