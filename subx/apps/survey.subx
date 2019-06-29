@@ -317,6 +317,81 @@ test-convert-computes-addresses:
     5d/pop-to-EBP
     c3/return
 
+is-label?: # word : (address slice) -> EAX : boolean
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    # ECX = word
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
+    # ECX = word->end
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ECX+4) to ECX
+    # *(word->end - 1) == ':'
+    # . EAX = 0
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    # . EAX = *((char *) word->end - 1)
+    8a/copy-byte                    1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/AL    -1/disp8         .                 # copy byte at *(ECX-1) to AL
+    # . (word->end - 1)/EAX == ':'
+    3d/compare-EAX-and  3A/imm32/colon
+    b8/copy-to-EAX  1/imm32/true
+    74/jump-if-equal  $is-label?:end/disp8
+    b8/copy-to-EAX  0/imm32/false
+$is-label?:end:
+    # . restore registers
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-is-label?:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+$test-is-label?:true:
+    # var slice/ECX = slice("AAA:")
+    68/push  _test-label-slice-end1/imm32
+    68/push  _test-label-slice-start/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # is-label?(slice/ECX)
+    51/push-ECX
+    e8/call  is-label?/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-is-label?:true"/imm32
+    68/push  1/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-is-label?:false:
+    # var slice/ECX = slice("AAA")
+    68/push  _test-label-slice-end2/imm32
+    68/push  _test-label-slice-start/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # is-label?(slice/ECX)
+    51/push-ECX
+    e8/call  is-label?/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-is-label?:false"/imm32
+    68/push  0/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
 compute-offsets:  # in : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
     #   var curr-segment-name = 0
