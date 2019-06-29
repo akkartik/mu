@@ -545,22 +545,91 @@ compute-addresses:  # segments : (address stream {string, segment-info}), labels
     #     if (s >= max) break
     #     s->address &= 0xfffff000  # clear last 12 bits for p_align
     #     s->address += (s->file-offset & 0x00000fff)
-    #     s += 16  # size of segment-info
+    #     s += 16  # size of row
     #   l : (address label-info) = labels->data + 4  # skip key
     #   max = labels->data + labels->write
     #   while true
     #     if (l >= max) break
     #     seg-name : (address string) = l->segment-name
-    #     label-seg : (address segment-info) = get(labels, seg-name)
+    #     label-seg : (address segment-info) = get-or-insert(segments, seg-name)
     #     l->address = label-seg->address + l->segment-offset
+    #     l += 16  # size of row
     #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    # ESI = segments
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # s/EAX = segments->data + 4
+    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy ESI+16 to EAX
+    # max/ECX = segments->data + segments->write
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+    01/add                          3/mod/direct    1/rm32/ECX    .           .             .           6/r32/ESI   .               .                 # add ESI to ECX
+$compute-addresses:segment-loop:
+    # if (s >= max) break
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
+    73/jump-if-greater-or-equal-unsigned  $compute-addresses:segment-break/disp8
+    # clear last 12 bits of s->address for p_align=0x1000
+    # . EDX = s->address
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
+    # . EDX &= 0xfffff000
+    81          4/subop/and         3/mod/direct    2/rm32/EDX    .           .             .           .           .               0xfffff000/imm32  # bitwise and of EDX
+    # update last 12 bits from s->file-offset
+    # . EBX = s->file-offset
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy *(EAX+4) to EBX
+    # . EBX &= 0xfff
+    81          4/subop/and         3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x00000fff/imm32  # bitwise and of EBX
+    # . s->address = EDX | EBX
+    09/or                           3/mod/direct    2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # EDX = bitwise OR with EBX
+    89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy EDX to *EAX
+    # s += 16  # size of row
+    05/add-to-EAX  0x10/imm32
+    eb/jump  $compute-addresses:segment-loop/disp8
+$compute-addresses:segment-break:
+    # ESI = labels
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+    # l/EAX = labels->data + 4
+    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy ESI+16 to EAX
+    # max/ECX = labels->data + labels->write
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+    01/add                          3/mod/direct    1/rm32/ECX    .           .             .           6/r32/ESI   .               .                 # add ESI to ECX
+$compute-addresses:label-loop:
+    # if (l >= max) break
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
+    73/jump-if-greater-or-equal-unsigned  $compute-addresses:end/disp8
+    # seg-name/EDX = l->segment-name
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
+    # label-seg/EDX : (address label-info) = get-or-insert(labels, seg-name, row-size=16)
+    # . . push args
+    68/push  0x10/imm32/row-size
+    52/push-EDX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  get-or-insert/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # EBX = label-seg->address
+    8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy *EDX to EBX
+    # EBX += l->segment-offset
+    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   4/disp8         .                 # add *(EAX+4) to EBX
+    # l->address = EBX
+    89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to *EAX
+    # l += 16  # size of row
+    05/add-to-EAX  0x10/imm32
+    eb/jump  $compute-addresses:label-loop/disp8
 $compute-addresses:end:
-    # . reclaim locals
     # . restore registers
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -696,7 +765,7 @@ stream-add4:  # in : (address stream byte), key : address, val1 : address, val2 
     52/push-EDX
     56/push-ESI
     # ESI = in
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # curr/EAX = in->data + in->write
     # . EAX = in->write
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
