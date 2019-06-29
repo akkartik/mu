@@ -82,6 +82,7 @@ $main:end:
 
 # data structure:
 #   table: (address stream {string, (address stream byte)})     (8 bytes per row)
+# inefficient; uses sequential search for looking up segments by name
 
 convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
@@ -433,6 +434,7 @@ test-convert:
     5d/pop-to-EBP
     c3/return
 
+# beware: leaks memory (one name per segment read)
 read-segments:  # in : (address buffered-file), table : (address stream {string, (address stream byte)})
     # pseudocode:
     #   var curr-segment = null
