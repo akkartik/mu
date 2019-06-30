@@ -5,14 +5,17 @@
 if [[ $2 == 'test-'* ]]
 then
   TEST_NAME=$2 envsubst '$TEST_NAME' < run_one_test.subx > /tmp/run_one_test.subx
-elif [[ ! -e /tmp/run_one_test.subx ]]
+  FILES=$(ls [0-9]*.subx apps/subx-common.subx $1 |sort |uniq)
+  echo $FILES > /tmp/last_run_files
+elif [[ -e /tmp/last_run_files ]]
 then
+  FILES=`cat /tmp/last_run_files`
+else
   echo "no test found"
   exit 0  # don't open trace
 fi
 
 set -e
-FILES=$(ls [0-9]*.subx apps/subx-common.subx $1 |sort |uniq)
                                       # turn newlines into spaces
 CFLAGS=$CFLAGS subx --debug translate $(echo $FILES) /tmp/run_one_test.subx -o /tmp/a.elf
 
