@@ -12,6 +12,8 @@ then
 fi
 
 set -e
-CFLAGS=$CFLAGS subx --debug translate `ls [0-9]*.subx apps/subx-common.subx $1 |sort |uniq` /tmp/run_one_test.subx -o /tmp/a.elf
+FILES=$(ls [0-9]*.subx apps/subx-common.subx $1 |sort |uniq)
+                                      # turn newlines into spaces
+CFLAGS=$CFLAGS subx --debug translate $(echo $FILES) /tmp/run_one_test.subx -o /tmp/a.elf
 
 subx --debug --trace run /tmp/a.elf
