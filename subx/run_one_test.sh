@@ -4,17 +4,12 @@
 
 if [[ $2 == 'test-'* ]]
 then
-  export TEST_NAME=$2
-  echo $TEST_NAME > /tmp/last_test_run
-elif [[ -e /tmp/last_test_run ]]
+  TEST_NAME=$2 envsubst '$TEST_NAME' < run_one_test.subx > /tmp/run_one_test.subx
+elif [[ ! -e /tmp/run_one_test.subx ]]
 then
-  export TEST_NAME=`cat /tmp/last_test_run`
-else
   echo "no test found"
   exit 0  # don't open trace
 fi
-
-envsubst '$TEST_NAME' < run_one_test.subx > /tmp/run_one_test.subx
 
 set -e
 if [[ $1 == */* ]]
