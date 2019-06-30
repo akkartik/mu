@@ -12,12 +12,6 @@ then
 fi
 
 set -e
-if [[ $1 == */* ]]
-then
-  CFLAGS=$CFLAGS subx --debug translate [0-9]*.subx apps/subx-common.subx $1 /tmp/run_one_test.subx -o /tmp/a.elf
-else
-  # don't mention files twice
-  CFLAGS=$CFLAGS subx --debug translate [0-9]*.subx apps/subx-common.subx    /tmp/run_one_test.subx -o /tmp/a.elf
-fi
+CFLAGS=$CFLAGS subx --debug translate `ls [0-9]*.subx apps/subx-common.subx $1 |sort |uniq` /tmp/run_one_test.subx -o /tmp/a.elf
 
 subx --debug --trace run /tmp/a.elf
