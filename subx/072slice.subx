@@ -697,6 +697,119 @@ test-slice-starts-with-fails-2:
     5d/pop-to-EBP
     c3/return
 
+# write a slice to a stream
+# abort if the stream doesn't have enough space
+write-slice:  # out : (address stream), s : (address slice)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    57/push-EDI
+    # ESI = s
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+    # curr/ECX = s->start
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
+    # max/ESI = s->end
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           6/r32/ESI   4/disp8         .                 # copy *(ESI+4) to ESI
+    # EDI = out
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .                         7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
+    # EDX = out->length
+    8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   8/disp8         .                 # copy *(EDI+8) to EDX
+    # EBX = out->write
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/EBX   .               .                 # copy *EDI to EBX
+$write-slice:loop:
+    # if (curr >= max) break
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           6/r32/ESI   .               .                 # compare ECX with ESI
+    73/jump-if-greater-or-equal-unsigned  $write-slice:loop-end/disp8
+    # if (out->write >= out->length) abort
+    39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare EBX with EDX
+    7d/jump-if-greater-or-equal  $write-slice:abort/disp8
+    # out->data[out->write] = *in
+    # . AL = *in
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
+    # . out->data[out->write] = AL
+    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  3/index/EBX   .           0/r32/AL    0xc/disp8       .                 # copy AL to *(EDI+EBX+12)
+    # ++out->write
+    43/increment-EBX
+    # ++in
+    41/increment-ECX
+    eb/jump  $write-slice:loop/disp8
+$write-slice:loop-end:
+    # persist out->write
+    89/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/EBX   .               .                 # copy EBX to *EDI
+$write-slice:end:
+    # . restore registers
+    5f/pop-to-EDI
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+$write-slice:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "write-slice: out of space"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-write-slice:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "Abc"
+    68/push  _test-slice-data-3/imm32/end
+    68/push  _test-slice-data-0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # write-slice(_test-stream, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-stream, "Abc", msg)
+    # . . push args
+    68/push  "F - test-write-slice"/imm32
+    68/push  "Abc"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# write a slice to a buffered-file
 write-slice-buffered:  # out : (address buffered-file), s : (address slice)
     # . prolog
     55/push-EBP
