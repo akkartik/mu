@@ -147,7 +147,7 @@ $slice-equal?:nonnull-string:
 $slice-equal?:loop:
     # if (currs >= maxs) return true
     39/compare                      3/mod/direct    2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # compare EDX with ESI
-    7d/jump-if-greater-or-equal  $slice-equal?:true/disp8
+    73/jump-if-greater-or-equal-unsigned  $slice-equal?:true/disp8
     # AL = *currp
     8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/AL    .               .                 # copy byte at *EBX to AL
     # CL = *currs
@@ -723,7 +723,7 @@ write-slice-buffered:  # out : (address buffered-file), s : (address slice)
 $write-slice-buffered:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           6/r32/ESI   .               .                 # compare ECX with ESI
-    7d/jump-if-greater-or-equal  $write-slice-buffered:loop-end/disp8
+    73/jump-if-greater-or-equal-unsigned  $write-slice-buffered:loop-end/disp8
     # if (out->write >= out->length) flush and clear out's stream
     39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare EBX with EDX
     7c/jump-if-lesser  $write-slice-buffered:to-stream/disp8

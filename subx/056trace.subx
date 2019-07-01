@@ -263,14 +263,13 @@ check-trace-scans-to:  # line : (address string), msg : (address string)
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
     50/push-EAX
-    # EAX = trace-scan(*Trace-stream, line)
+    # EAX = trace-scan(line)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # . . call
     e8/call  trace-scan/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # check-ints-equal(EAX, 1, msg)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
@@ -571,12 +570,12 @@ next-line-matches?:  # t : (address stream), line : (address string) -> result/E
 $next-line-matches?:loop:
     # if (currl/ESI >= maxl/ECX) break
     39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI and ECX
-    7d/jump-if-greater-or-equal  $next-line-matches?:break/disp8
+    73/jump-if-greater-or-equal-unsigned  $next-line-matches?:break/disp8
     # if (currt/EDI >= maxt/EDX) return false
     # . EAX = false
     b8/copy-to-EAX  0/imm32/false
     39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI and EDX
-    7d/jump-if-greater-or-equal  $next-line-matches?:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $next-line-matches?:end/disp8
     # if (*currt/EDI != *currl/ESI) return false
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     31/xor                          3/mod/direct    3/rm32/EAX    .           .             .           3/r32/EAX   .               .                 # clear EBX
@@ -738,7 +737,7 @@ skip-next-line:  # t : (address stream)
 $skip-next-line:loop:
     # if (curr/ECX >= max/EBX) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           3/r32/EBX   .               .                 # compare ECX and EBX
-    7d/jump-if-greater-or-equal  $skip-next-line:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $skip-next-line:end/disp8
     # ++i/EDX
     42/increment-EDX
     # if (*curr/ECX == '\n') break
@@ -831,7 +830,7 @@ clear-trace-stream:
 $clear-trace-stream:loop:
     # if (EAX >= ECX) break
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
-    7d/jump-if-greater-or-equal  $clear-trace-stream:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $clear-trace-stream:end/disp8
     # *EAX = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
     # EAX += 4
@@ -904,10 +903,10 @@ _append-4:  # out : address, outend : address, in : address, inend : address -> 
 $_append-4:loop:
     # if (in >= inend) break
     39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ESI with ECX
-    7d/jump-if-greater-or-equal  $_append-4:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $_append-4:end/disp8
     # if (out >= outend) abort  # just to catch test failures fast
     39/compare                      3/mod/direct    7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare EDI with EDX
-    7d/jump-if-greater-or-equal  $_append-4:abort/disp8
+    73/jump-if-greater-or-equal-unsigned  $_append-4:abort/disp8
     # *out = *in
     8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/BL    .               .                 # copy byte at *ESI to BL
     88/copy-byte                    0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *EDI

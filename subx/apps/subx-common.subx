@@ -71,7 +71,7 @@ $get-or-insert:not-found:
     # if (table->write >= table->length) abort
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
     3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
-    7d/jump-if-greater-or-equal  $get-or-insert:abort/disp8
+    73/jump-if-greater-or-equal-unsigned  $get-or-insert:abort/disp8
     # *max = key
     # . EAX = key
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
@@ -290,7 +290,7 @@ get-or-insert-slice:  # table : (address stream {string, _}), key : (address sli
 $get-or-insert-slice:search-loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $get-or-insert-slice:not-found/disp8
+    73/jump-if-greater-or-equal-unsigned  $get-or-insert-slice:not-found/disp8
     # if (slice-equal?(key, *curr)) return curr+4
     # . EAX = slice-equal?(key, *curr)
     # . . push args

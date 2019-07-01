@@ -23,7 +23,7 @@ is-hex-int?:  # in : (address slice) -> EAX : boolean
     # if s is empty return false
     b8/copy-to-EAX  0/imm32/false
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $is-hex-int?:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $is-hex-int?:end/disp8
     # skip past leading '-'
     # . if (*curr == '-') ++curr
     31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
@@ -44,7 +44,7 @@ $is-hex-int?:initial-0:
 $is-hex-int?:initial-0x:
     # . if (curr >= in->end) return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $is-hex-int?:true/disp8
+    73/jump-if-greater-or-equal-unsigned  $is-hex-int?:true/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           3/r32/BL    .               .                 # copy byte at *ECX to BL
@@ -55,7 +55,7 @@ $is-hex-int?:initial-0x:
 $is-hex-int?:loop:
     # if (curr >= in->end) return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $is-hex-int?:true/disp8
+    73/jump-if-greater-or-equal-unsigned  $is-hex-int?:true/disp8
     # EAX = is-hex-digit?(*curr)
     # . . push args
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
@@ -356,7 +356,7 @@ $parse-hex-int:initial-0:
 $parse-hex-int:initial-0x:
     # . if (curr >= in->end) return result
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $parse-hex-int:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $parse-hex-int:end/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
@@ -367,7 +367,7 @@ $parse-hex-int:initial-0x:
 $parse-hex-int:loop:
     # if (curr >= in->end) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $parse-hex-int:negate/disp8
+    73/jump-if-greater-or-equal-unsigned  $parse-hex-int:negate/disp8
     # EAX = from-hex-char(*curr)
     # . . copy arg to EAX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
