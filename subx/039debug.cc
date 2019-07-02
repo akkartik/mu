@@ -74,9 +74,9 @@ Watch_points.clear();
 :(code)
 void dump_watch_points() {
   if (Watch_points.empty()) return;
-  dbg << "watch points:" << end();
+  trace(Callstack_depth, "dbg") << "watch points:" << end();
   for (map<string, uint32_t>::iterator p = Watch_points.begin();  p != Watch_points.end();  ++p)
-    dbg << "  " << p->first << ": " << HEXWORD << p->second << " -> " << HEXWORD << read_mem_u32(p->second) << end();
+    trace(Callstack_depth, "dbg") << "  " << p->first << ": " << HEXWORD << p->second << " -> " << HEXWORD << read_mem_u32(p->second) << end();
 }
 
 :(before "End Globals")

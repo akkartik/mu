@@ -60,6 +60,8 @@ initialize-trace-stream:  # n : int -> <void>
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # copy Trace-segment->curr to *Trace-stream
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-segment/disp32              # copy *Trace-segment to EAX
+    # watch point to catch Trace-stream leaks
+#? $watch-1:
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
     # Trace-stream->length = n - 12
     # . ECX -= 12
@@ -145,6 +147,8 @@ $trace:end:
     c3/return
 
 test-trace-single:
+    # push *Trace-stream
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # *Trace-stream = _test-trace-stream
     b8/copy-to-EAX  _test-trace-stream/imm32
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
@@ -168,10 +172,14 @@ test-trace-single:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # pop into *Trace-stream
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # end
     c3/return
 
 test-trace-appends:
+    # push *Trace-stream
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # *Trace-stream = _test-trace-stream
     b8/copy-to-EAX  _test-trace-stream/imm32
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
@@ -202,10 +210,14 @@ test-trace-appends:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # pop into *Trace-stream
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # end
     c3/return
 
 test-trace-empty-line:
+    # push *Trace-stream
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # *Trace-stream = _test-trace-stream
     b8/copy-to-EAX  _test-trace-stream/imm32
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy EAX to *Trace-stream
@@ -229,6 +241,8 @@ test-trace-empty-line:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # pop into *Trace-stream
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # end
     c3/return
 
@@ -365,6 +379,8 @@ $trace-scan:end:
     c3/return
 
 test-trace-scan-first:
+    # push *Trace-stream
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # setup
     # . *Trace-stream = _test-trace-stream
     b8/copy-to-EAX  _test-trace-stream/imm32
@@ -394,10 +410,14 @@ test-trace-scan-first:
     e8/call check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # pop into *Trace-stream
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # . end
     c3/return
 
 test-trace-scan-skips-lines-until-found:
+    # push *Trace-stream
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # setup
     # . *Trace-stream = _test-trace-stream
     b8/copy-to-EAX  _test-trace-stream/imm32
@@ -434,10 +454,14 @@ test-trace-scan-skips-lines-until-found:
     e8/call check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # pop into *Trace-stream
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # . end
     c3/return
 
 test-trace-second-scan-starts-where-first-left-off:
+    # push *Trace-stream
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # setup
     # . *Trace-stream = _test-trace-stream
     b8/copy-to-EAX  _test-trace-stream/imm32
@@ -475,10 +499,14 @@ test-trace-second-scan-starts-where-first-left-off:
     e8/call check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # pop into *Trace-stream
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # . end
     c3/return
 
 test-trace-scan-failure-leaves-read-index-untouched:
+    # push *Trace-stream
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # setup
     # . *Trace-stream = _test-trace-stream
     b8/copy-to-EAX  _test-trace-stream/imm32
@@ -521,6 +549,8 @@ test-trace-scan-failure-leaves-read-index-untouched:
     e8/call check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # pop into *Trace-stream
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
     # . end
     c3/return
 

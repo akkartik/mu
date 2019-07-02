@@ -830,7 +830,8 @@ test-compute-addresses:
     5d/pop-to-EBP
     c3/return
 
-# helper for tests
+# - some helpers for tests
+
 stream-add4:  # in : (address stream byte), key : address, val1 : address, val2 : address, val3 : address
     # . prolog
     55/push-EBP
@@ -909,6 +910,451 @@ $stream-add4:abort:
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+# some variants of 'trace' that take multiple arguments in different combinations of types:
+#   n: int
+#   c: character [4-bytes, will eventually be UTF-8]
+#   s: (address string)
+#   l: (address slice)
+
+trace-sssns:  # s1 : (address string), s2 : (address string), s3 : (address string), n4 : int, s5 : (address string)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # write(*Trace-stream, s1)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write(*Trace-stream, s2)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write(*Trace-stream, s3)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # print-int32(*Trace-stream, n4)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  print-int32/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # trace(s5)  # implicitly adds a newline and finalizes the trace line
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+$trace-sssns:end:
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-trace-sssns:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # trace-sssns("A" "b" "c " 3 " e")
+    # . . push args
+    68/push  " e"/imm32
+    68/push  3/imm32
+    68/push  "c "/imm32
+    68/push  "b"/imm32
+    68/push  "A"/imm32
+    # . . call
+    e8/call  trace-sssns/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+#?     # dump *Trace-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, *Trace-stream)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-trace-contains("Abc 0x00000003 e")
+    # . . push args
+    68/push  "F - test-trace-sssns"/imm32
+    68/push  "Abc 0x00000003 e"/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+trace-snsns:  # s1 : (address string), n2 : int, s3 : (address string), n4 : int, s5 : (address string)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # write(*Trace-stream, s1)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # print-int32(*Trace-stream, n2)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  print-int32/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write(*Trace-stream, s3)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # print-int32(*Trace-stream, n4)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  print-int32/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # trace(s5)  # implicitly adds a newline and finalizes the trace line
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+$trace-snsns:end:
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-trace-snsns:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # trace-snsns("A " 2 " c " 3 " e")
+    # . . push args
+    68/push  " e"/imm32
+    68/push  3/imm32
+    68/push  " c "/imm32
+    68/push  2/imm32
+    68/push  "A "/imm32
+    # . . call
+    e8/call  trace-snsns/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+#?     # dump *Trace-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, *Trace-stream)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-trace-contains("Abc 0x00000003 e")
+    # . . push args
+    68/push  "F - test-trace-snsns"/imm32
+    68/push  "A 0x00000002 c 0x00000003 e"/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+trace-slsls:  # s1 : (address string), l2 : (address slice), s3 : (address string), l4 : (address slice), s5 : (address string)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # write(*Trace-stream, s1)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write-slice(*Trace-stream, l2)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write(*Trace-stream, s3)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write-slice(*Trace-stream, l4)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # trace(s5)  # implicitly adds a newline and finalizes the trace line
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+$trace-slsls:end:
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-trace-slsls:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # (EAX..ECX) = "b"
+    b8/copy-to-EAX  "b"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var b/EBX : (address slice) = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
+    # (EAX..ECX) = "d"
+    b8/copy-to-EAX  "d"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var d/EDX : (address slice) = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # trace-slsls("A" b "c" d "e")
+    # . . push args
+    68/push  "e"/imm32
+    52/push-EDX
+    68/push  "c"/imm32
+    53/push-EBX
+    68/push  "A"/imm32
+    # . . call
+    e8/call  trace-slsls/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+#?     # dump *Trace-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, *Trace-stream)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-trace-contains("Abcde")
+    # . . push args
+    68/push  "F - test-trace-slsls"/imm32
+    68/push  "Abcde"/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+trace-slsns:  # s1 : (address string), l2 : (address slice), s3 : (address string), n4 : int, s5 : (address string)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # write(*Trace-stream, s1)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write-slice(*Trace-stream, l2)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # write(*Trace-stream, s3)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # print-int32(*Trace-stream, n4)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  print-int32/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # trace(s5)  # implicitly adds a newline and finalizes the trace line
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    # . . call
+    e8/call  trace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+$trace-slsns:end:
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-trace-slsns:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # (EAX..ECX) = "b"
+    b8/copy-to-EAX  "b"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var b/EBX : (address slice) = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
+    # trace-slsls("A" b "c " 3 " e")
+    # . . push args
+    68/push  " e"/imm32
+    68/push  3/imm32
+    68/push  "c "/imm32
+    53/push-EBX
+    68/push  "A"/imm32
+    # . . call
+    e8/call  trace-slsns/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+#?     # dump *Trace-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, *Trace-stream)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-trace-contains("Abc 0x00000003 e")
+    # . . push args
+    68/push  "F - test-trace-slsls"/imm32
+    68/push  "Abc 0x00000003 e"/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
 
 emit-output:  # in : (address buffered-file), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
