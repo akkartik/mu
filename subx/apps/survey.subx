@@ -617,26 +617,26 @@ test-compute-offsets:
 
 compute-addresses:  # segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
-    #   s : (address segment-info) = segments->data
+    #   srow : (address segment-info) = segments->data
     #   max = segments->data + segments->write
     #   num-segments = segments->write / 16
     #   starting-offset = 0x34 + (num-segments * 0x20)
     #   while true
-    #     if (s >= max) break
+    #     if (srow >= max) break
     #     s->file-offset += starting-offset
     #     s->address &= 0xfffff000  # clear last 12 bits for p_align
     #     s->address += (s->file-offset & 0x00000fff)
     #     trace-sssns("segment " s->key " starts at address " s->address)
-    #     s += 16  # size of row
-    #   l : (address label-info) = labels->data
+    #     srow += 16  # row-size
+    #   lrow : (address label-info) = labels->data
     #   max = labels->data + labels->write
     #   while true
-    #     if (l >= max) break
-    #     seg-name : (address string) = l->segment-name
-    #     label-seg : (address segment-info) = get-or-insert(segments, seg-name)
-    #     l->address = label-seg->address + l->segment-offset
-    #     trace-sssns("label " l->key " is at address " l->address)
-    #     l += 16  # size of row
+    #     if (lrow >= max) break
+    #     seg-name : (address string) = lrow->segment-name
+    #     label-seg : (address segment-info) = get-or-insert(segments, seg-name, row-size=16)
+    #     lrow->address = label-seg->address + lrow->segment-offset
+    #     trace-sssns("label " lrow->key " is at address " lrow->address)
+    #     lrow += 16  # row-size
     #
     # . prolog
     55/push-EBP
@@ -666,22 +666,22 @@ $compute-addresses:segment-loop:
     # if (srow >= max) break
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
     73/jump-if-greater-or-equal-unsigned  $compute-addresses:segment-break/disp8
-    # s->file-offset += starting-offset
+    # srow->file-offset += starting-offset
     01/add                          1/mod/*+disp8   0/rm32/EAX    .           .             .           7/r32/EDI   8/disp8         .                 # add EDI to *(EAX+8)
-    # clear last 12 bits of s->address for p_align=0x1000
-    # . EDX = s->address
+    # clear last 12 bits of srow->address for p_align=0x1000
+    # . EDX = srow->address
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(EAX+4) to EDX
     # . EDX &= 0xfffff000
     81          4/subop/and         3/mod/direct    2/rm32/EDX    .           .             .           .           .               0xfffff000/imm32  # bitwise and of EDX
-    # update last 12 bits from s->file-offset
-    # . EBX = s->file-offset
+    # update last 12 bits from srow->file-offset
+    # . EBX = srow->file-offset
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   8/disp8         .                 # copy *(EAX+8) to EBX
     # . EBX &= 0xfff
     81          4/subop/and         3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x00000fff/imm32  # bitwise and of EBX
-    # . s->address = EDX | EBX
+    # . srow->address = EDX | EBX
     09/or                           3/mod/direct    2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # EDX = bitwise OR with EBX
     89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           2/r32/EDX   4/disp8         .                 # copy EDX to *(EAX+4)
-    # trace-sssns("segment " srow " starts at address " s->address ".")
+    # trace-sssns("segment " srow " starts at address " srow->address ".")
     # . . push args
     68/push  "."/imm32
     52/push-EDX
@@ -709,7 +709,10 @@ $compute-addresses:label-loop:
     73/jump-if-greater-or-equal-unsigned  $compute-addresses:end/disp8
     # seg-name/EDX = lrow->segment-name
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *EAX to EDX
-    # label-seg/EDX : (address label-info) = get-or-insert(segments, seg-name, row-size=16)
+    # label-seg/EDX : (address segment-info) = get-or-insert(segments, seg-name, row-size=16)
+    # . save EAX
+    50/push-EAX
+    # . EAX = get-or-insert(segments, seg-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     52/push-EDX
@@ -718,12 +721,27 @@ $compute-addresses:label-loop:
     e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . EDX = EAX
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EDX
+    # . restore EAX
+    58/pop-to-EAX
     # EBX = label-seg->address
     8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy *EDX to EBX
     # EBX += lrow->segment-offset
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   8/disp8         .                 # add *(EAX+8) to EBX
+    03/add                          1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   8/disp8         .                 # add *(EAX+8) to EBX
     # lrow->address = EBX
     89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy EBX to *(EAX+12)
+    # trace-sssns("label " lrow->key " is at address " lrow->address ".")
+    # . . push args
+    68/push  "."/imm32
+    53/push-EBX
+    68/push  "' is at address "/imm32
+    ff          6/subop/push        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # push *EAX
+    68/push  "label '"/imm32
+    # . . call
+    e8/call  trace-sssns/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # lrow += 16  # size of row
     05/add-to-EAX  0x10/imm32
     eb/jump  $compute-addresses:label-loop/disp8
@@ -753,8 +771,8 @@ test-compute-addresses:
     #   segment 'a' starts at address 0x00001094.  (0x34 + 0x20 for each segment)
     #   segment 'b' starts at address 0x00002099.  (0x018 discarded)
     #   segment 'c' starts at address 0x0000509a.  (0x444 discarded)
-    #   label 'l1' is at address 0x1077
-    #   label 'l2' is at address 0x579
+    #   label 'l1' is at address 0x00001097.       (0x1094 + segment-offset 3)
+    #   label 'l2' is at address 0x00002099.       (0x2099 + segment-offset 0)
     #
     # . prolog
     55/push-EBP
@@ -832,32 +850,32 @@ test-compute-addresses:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # checks
-    # dump *Trace-stream {{{
-    # . write(2/stderr, "^")
-    # . . push args
-    68/push  "^"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write-stream(2/stderr, *Trace-stream)
-    # . . push args
-    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  write-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(2/stderr, "$\n")
-    # . . push args
-    68/push  "$\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # }}}
+#?     # dump *Trace-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, *Trace-stream)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # . check-trace-contains("segment 'a' starts at address 0x00001094.", msg)
     # . . push args
     68/push  "F - test-compute-addresses/0"/imm32
