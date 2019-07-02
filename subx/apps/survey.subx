@@ -615,14 +615,14 @@ test-compute-offsets:
 
 compute-addresses:  # segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
-    #   s : (address segment-info) = segments->data + 4  # skip key
+    #   s : (address segment-info) = segments->data
     #   max = segments->data + segments->write
     #   while true
     #     if (s >= max) break
     #     s->address &= 0xfffff000  # clear last 12 bits for p_align
     #     s->address += (s->file-offset & 0x00000fff)
     #     s += 16  # size of row
-    #   l : (address label-info) = labels->data + 4  # skip key
+    #   l : (address label-info) = labels->data
     #   max = labels->data + labels->write
     #   while true
     #     if (l >= max) break
@@ -670,33 +670,33 @@ $compute-addresses:segment-loop:
 $compute-addresses:segment-break:
     # ESI = labels
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
-    # l/EAX = labels->data + 4
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy ESI+16 to EAX
+    # lrow/EAX = labels->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy ESI+12 to EAX
     # max/ECX = labels->data + labels->write
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
     01/add                          3/mod/direct    1/rm32/ECX    .           .             .           6/r32/ESI   .               .                 # add ESI to ECX
 $compute-addresses:label-loop:
-    # if (l >= max) break
+    # if (lrow >= max) break
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
     73/jump-if-greater-or-equal-unsigned  $compute-addresses:end/disp8
-    # seg-name/EDX = l->segment-name
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    # label-seg/EDX : (address label-info) = get-or-insert(labels, seg-name, row-size=16)
+    # seg-name/EDX = lrow->segment-name
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *EAX to EDX
+    # label-seg/EDX : (address label-info) = get-or-insert(segments, seg-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     52/push-EDX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # EBX = label-seg->address
     8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy *EDX to EBX
-    # EBX += l->segment-offset
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   4/disp8         .                 # add *(EAX+4) to EBX
-    # l->address = EBX
-    89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to *EAX
-    # l += 16  # size of row
+    # EBX += lrow->segment-offset
+    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   8/disp8         .                 # add *(EAX+8) to EBX
+    # lrow->address = EBX
+    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy EBX to *(EAX+12)
+    # lrow += 16  # size of row
     05/add-to-EAX  0x10/imm32
     eb/jump  $compute-addresses:label-loop/disp8
 $compute-addresses:end:
@@ -792,6 +792,7 @@ test-compute-addresses:
     e8/call  stream-add4/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # component under test
     # checks
     # . check-trace-contains("segment 'a' starts at address 0x1074", msg)
     # . . push args
