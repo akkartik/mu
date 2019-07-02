@@ -415,6 +415,9 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         # labels occupy no space, so no need to increment offsets
     #         continue
     #       if slice-equal?(word-slice, "==")
+    #         seg = get-or-insert(segments, curr-segment-name)
+    #         seg->size = file-offset - seg->starting-offset
+    #         trace("segment '", curr-segment-name, "' has size 0x", seg->size)
     #         curr-segment-name = next-word(line)
     #         if slice-empty?(curr-segment-name)
     #           abort
@@ -425,7 +428,6 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         seg->starting-address = parse-hex-int(segment-start)
     #         seg->starting-offset = file-offset
     #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->starting-offset)
-    #         trace("segment '", curr-segment-name, "' has size 0x", seg->starting-offset)
     #         segment-offset = 0
     #       else
     #         width = compute-width(word-slice)
