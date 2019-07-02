@@ -424,7 +424,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         segment-start = next-word(line)
     #         if slice-empty?(segment-start)
     #           abort
-    #         seg = insert(segments, curr-segment-name)
+    #         seg = get-or-insert(segments, curr-segment-name)
     #         seg->starting-address = parse-hex-int(segment-start)
     #         seg->starting-offset = file-offset
     #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->starting-offset)
@@ -619,8 +619,11 @@ compute-addresses:  # segments : (address stream {string, segment-info}), labels
     # pseudocode:
     #   s : (address segment-info) = segments->data
     #   max = segments->data + segments->write
+    #   num-segments = segments->write / 16
+    #   starting-offset = 0x34 + (num-segments * 0x20)
     #   while true
     #     if (s >= max) break
+    #     s->file-offset += starting-offset
     #     s->address &= 0xfffff000  # clear last 12 bits for p_align
     #     s->address += (s->file-offset & 0x00000fff)
     #     trace-sssns("segment " s->key " starts at address " s->address)
@@ -729,15 +732,16 @@ $compute-addresses:end:
 test-compute-addresses:
     # segments:
     #   - 'a': {0x1000, 0, 5}
-    #   - 'b': {0x500, 0, 1}
-    #   - 'c': {0x5444, 0, 12}
+    #   - 'b': {0x2018, 5, 1}
+    #   - 'c': {0x5444, 6, 12}
     # labels:
     #   - 'l1': {'a', 3, 0}
     #   - 'l2': {'b', 0, 0}
     #
     # trace contains (in any order):
     #   segment 'a' starts at address 0x1074
-    #   segment 'b' starts at address 0x579
+    #   segment 'b' starts at address 0x2079
+    #   segment 'c' starts at address 0x5085
     #   label 'l1' is at address 0x1077
     #   label 'l2' is at address 0x579
     #
