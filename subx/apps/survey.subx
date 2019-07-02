@@ -793,6 +793,14 @@ test-compute-addresses:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # component under test
+    # . compute-addresses(segments, labels)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  compute-addresses/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # checks
     # . check-trace-contains("segment 'a' starts at address 0x1074", msg)
     # . . push args
@@ -971,6 +979,10 @@ test-trace-sssns:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . *Trace-stream->write = 0
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # clear *EAX
     # trace-sssns("A" "b" "c " 3 " e")
     # . . push args
     68/push  " e"/imm32
@@ -1074,6 +1086,10 @@ test-trace-snsns:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . *Trace-stream->write = 0
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # clear *EAX
     # trace-snsns("A " 2 " c " 3 " e")
     # . . push args
     68/push  " e"/imm32
@@ -1177,6 +1193,10 @@ test-trace-slsls:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . *Trace-stream->write = 0
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # clear *EAX
     # (EAX..ECX) = "b"
     b8/copy-to-EAX  "b"/imm32
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
@@ -1298,6 +1318,10 @@ test-trace-slsns:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . *Trace-stream->write = 0
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Trace-stream/disp32               # copy *Trace-stream to EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # clear *EAX
     # (EAX..ECX) = "b"
     b8/copy-to-EAX  "b"/imm32
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
