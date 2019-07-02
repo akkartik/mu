@@ -647,8 +647,16 @@ compute-addresses:  # segments : (address stream {string, segment-info}), labels
     52/push-EDX
     53/push-EBX
     56/push-ESI
+    57/push-EDI
     # ESI = segments
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # starting-offset/EDI = 0x34 + (num-segments * 0x20)  # make room for ELF headers
+    # . EDI = segments->write / 16 (row-size)
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           7/r32/EDI   .               .                 # copy *ESI to EDI
+    c1/shift    5/subop/logic-right 3/mod/direct    7/rm32/EDI    .           .             .           .           .               4/imm8            # shift EDI right by 4 bits, while padding zeroes
+    # . EDI = (EDI * 0x20) + 0x34
+    c1/shift    4/subop/left        3/mod/direct    7/rm32/EDI    .           .             .           .           .               5/imm8            # shift EDI left by 5 bits
+    81          0/subop/add         3/mod/direct    7/rm32/EDI    .           .             .           .           .               0x34/imm32        # add to EDI
     # srow/EAX = segments->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy ESI+12 to EAX
     # max/ECX = segments->data + segments->write
@@ -658,6 +666,8 @@ $compute-addresses:segment-loop:
     # if (srow >= max) break
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
     73/jump-if-greater-or-equal-unsigned  $compute-addresses:segment-break/disp8
+    # s->file-offset += starting-offset
+    01/add                          1/mod/*+disp8   0/rm32/EAX    .           .             .           7/r32/EDI   8/disp8         .                 # add EDI to *(EAX+8)
     # clear last 12 bits of s->address for p_align=0x1000
     # . EDX = s->address
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(EAX+4) to EDX
@@ -719,6 +729,7 @@ $compute-addresses:label-loop:
     eb/jump  $compute-addresses:label-loop/disp8
 $compute-addresses:end:
     # . restore registers
+    5f/pop-to-EDI
     5e/pop-to-ESI
     5b/pop-to-EBX
     5a/pop-to-EDX
@@ -738,10 +749,10 @@ test-compute-addresses:
     #   - 'l1': {'a', 3, 0}
     #   - 'l2': {'b', 0, 0}
     #
-    # trace contains (in any order):
-    #   segment 'a' starts at address 0x1074
-    #   segment 'b' starts at address 0x2079
-    #   segment 'c' starts at address 0x5085
+    # trace contains in any order (comments in parens):
+    #   segment 'a' starts at address 0x00001094.  (0x34 + 0x20 for each segment)
+    #   segment 'b' starts at address 0x00002099.  (0x018 discarded)
+    #   segment 'c' starts at address 0x0000509a.  (0x444 discarded)
     #   label 'l1' is at address 0x1077
     #   label 'l2' is at address 0x579
     #
@@ -847,34 +858,42 @@ test-compute-addresses:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # }}}
-    # . check-trace-contains("segment 'a' starts at address 0x1074", msg)
+    # . check-trace-contains("segment 'a' starts at address 0x00001094.", msg)
     # . . push args
     68/push  "F - test-compute-addresses/0"/imm32
-    68/push  "segment 'a' starts at address 0x1074"/imm32
+    68/push  "segment 'a' starts at address 0x00001094."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("segment 'b' starts at address 0x579", msg)
+    # . check-trace-contains("segment 'b' starts at address 0x00002099.", msg)
     # . . push args
     68/push  "F - test-compute-addresses/1"/imm32
-    68/push  "segment 'data' starts at address 0x579"/imm32
+    68/push  "segment 'b' starts at address 0x00002099."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("label 'l1' is at address 0x1077", msg)
+    # . check-trace-contains("segment 'c' starts at address 0x0000509a.", msg)
     # . . push args
     68/push  "F - test-compute-addresses/2"/imm32
-    68/push  "label 'l1' is at address 0x1077"/imm32
+    68/push  "segment 'c' starts at address 0x0000509a."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("label 'l2' is at address 0x579", msg)
+    # . check-trace-contains("label 'l1' is at address 0x00001097.", msg)
     # . . push args
     68/push  "F - test-compute-addresses/3"/imm32
-    68/push  "label 'l2' is at address 0x579"/imm32
+    68/push  "label 'l1' is at address 0x00001097."/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . check-trace-contains("label 'l2' is at address 0x00002099.", msg)
+    # . . push args
+    68/push  "F - test-compute-addresses/4"/imm32
+    68/push  "label 'l2' is at address 0x00002099."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
