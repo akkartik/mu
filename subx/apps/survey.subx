@@ -438,9 +438,140 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    57/push-EDI
+    # cur-segment-name = {0, 0}
+    #c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:cur-segment-name/disp32  0/imm32        # copy to *compute-offsets:word-slice
+    #c7          0/subop/copy        1/mod/*+disp8  5/rm32/.disp32             .             .           . 4/disp8   compute-offsets:cur-segment-name/disp32  0/imm32        # copy to *(compute-offsets:word-slice+4)
+    # file-offset = 0
+    b8/copy-to-EAX  0/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32      # copy EAX to *cur-segment-name
+    # segment-offset = 0
+    b8/copy-to-EAX  0/imm32
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:segment-offset/disp32      # copy EAX to *cur-segment-name
+    # var heap/ECX : (address allocation-descriptor) = {0, 0}
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # heap = new-segment(512)
+    # . . push args
+    51/push-ECX
+    68/push  0x200/imm32
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # EAX = new-stream(512, 1)
+    68/push  1/imm32
+    68/push  0x200/imm32
+    51/push-ECX
+    e8/call  new-stream/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # line/ECX = EAX
+    8b/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+$compute-offsets:line-loop:
+    # clear-stream(line/ECX)
+    51/push-ECX
+    e8/call  clear-stream/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # read-line-buffered(in, line/ECX)
+    51/push-ECX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    e8/call  read-line-buffered/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # if(line->write == 0)
+    # . EAX = line/ECX->write
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
+    # . line->write/EAX == 0 ?
+    3d/compare-EAX-and  0/imm32
+    # . if so, break
+    0f 84/jump-if-equal  $compute-offsets:end/disp32
+$compute-offsets:word-loop:
+    # var word-slice/EDX = {0, 0}
+    #c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:word-slice/disp32  0/imm32        # copy to *compute-offsets:word-slice
+    #c7          0/subop/copy        1/mod/*+disp8  5/rm32/.disp32             .             .           . 4/disp8   compute-offsets:word-slice/disp32  0/imm32        # copy to *(compute-offsets:word-slice+4)
+    ba/copy-to-EDX  compute-offsets:word-slice/imm32
+    # next-word(line/ECX, word-slice/EDX)
+    52/push-EDX
+    51/push-ECX
+    e8/call  next-word/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # if slice-empty?(word/EDX) break
+    # . EAX = slice-empty?(word/EDX)
+    52/push-EDX
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . EAX == 1 ?
+    3d/compare-EAX-and  1/imm32
+    # . if so, break
+    #74/jump-if-equal  $compute-offsets:word-loop:end/disp8
+    # if slice-starts-with?(word-slice, "#") continue
+    68/push  "#"/imm32
+    52/push-EDX
+    e8/call  slice-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . EAX == 1 ?
+    3d/compare-EAX-and  1/imm32
+    # . if so, continue
+    74/jump-if-equal  $compute-offsets:word-loop/disp8
+#TODO: implement is-label? and it's block
+    # if slice-equal?(word-slice/EDX, "==")
+    # . EAX = slice-equal?(word-slice/EDX, "==")
+    68/push  "=="/imm32
+    52/push-EDX
+    e8/call  slice-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . EAX == 0 ?
+    3d/compare-EAX-and  0/imm32
+    # . if so, goto else
+    74/jump-if-equal  $compute-offsets:else/disp8
+    # . or fallthrough
+    # next-word(line/ECX, curr-segment-name)
+    68/push  compute-offsets:curr-segment-name/imm32
+    51/push-ECX
+    e8/call  next-word/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$compute-offsets:else:
+    # width/EAX = compute-width(word-slice/EDX)
+    52/push-EDX
+    e8/call compute-width/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # segment-offset += width
+    # . EBX = *segment-offset
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:segment-offset/disp32 # copy *segment-offset to EBX
+    # . *segment-offset/EBX += EAX/width
+    03/add                          3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # add EAX to EBX
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:segment-offset/disp32 # copy EBX to *compute-offsets:segment-offset
+    # file-offset += width
+    # . EBX = *file-offset
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy *file-offset to EBX
+    # . *file-offset/EBX += EAX/width
+    03/add                          3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # add EAX to EBX
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy EBX to *compute-offsets:file-offset
+    e9/jump  $compute-offsets:line-loop/disp32
 $compute-offsets:end:
     # . reclaim locals
     # . restore registers
+
+    5f/pop-to-EDI
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -1678,6 +1809,11 @@ $p_align:
   # compute the starting address for each segment
   0x1000/imm32
 
+compute-offsets:curr-segment-name: 0/imm32/start 0/imm32/end
+compute-offsets:file-offset: 0/imm32
+compute-offsets:segment-offset: 0/imm32
+compute-offsets:word-slice: 0/imm32/start 0/imm32/end
+
 _test-label-slice-start:
   41/A
   41/A
@@ -1685,6 +1821,5 @@ _test-label-slice-start:
 _test-label-slice-end2:
   3A/:
 _test-label-slice-end1:
-
 
 # . . vim:nowrap:textwidth=0
