@@ -76,7 +76,7 @@ if ('onhashchange' in window) {
 <span id="L14" class="LineNr"> 14 </span><span class="subxComment"># because checking for it would require the function being tested! Breakage</span>
 <span id="L15" class="LineNr"> 15 </span><span class="subxComment"># would cause tests to not run, rather than to fail as we'd like.)</span>
 <span id="L16" class="LineNr"> 16 </span>
-<span id="L17" class="LineNr"> 17 </span>== code
+<span id="L17" class="LineNr"> 17 </span>== code 0x09000000
 <span id="L18" class="LineNr"> 18 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
 <span id="L19" class="LineNr"> 19 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
 <span id="L20" class="LineNr"> 20 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
@@ -142,22 +142,22 @@ if ('onhashchange' in window) {
 <span id="L80" class="LineNr"> 80 </span>    <span class="subxComment"># c2 = *s2</span>
 <span id="L81" class="LineNr"> 81 </span>    8a/copy-byte                    0/mod/indirect  6/rm32/ESI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/BL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ESI to BL</span>
 <span id="L82" class="LineNr"> 82 </span>    <span class="subxComment"># if (c1 == 0) return false</span>
-<span id="L83" class="LineNr"> 83 </span>    3d/compare-EAX  0/imm32
+<span id="L83" class="LineNr"> 83 </span>    3d/compare-EAX-and  0/imm32
 <span id="L84" class="LineNr"> 84 </span>    74/jump-if-equal  $kernel-string-equal?:false/disp8
 <span id="L85" class="LineNr"> 85 </span>    <span class="subxComment"># if (c1 != c2) return false</span>
 <span id="L86" class="LineNr"> 86 </span>    39/compare                      3/mod/direct    0/rm32/EAX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/EBX  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare EAX and EBX</span>
 <span id="L87" class="LineNr"> 87 </span>    75/jump-if-not-equal  $kernel-string-equal?:false/disp8
 <span id="L88" class="LineNr"> 88 </span>    <span class="subxComment"># ++i</span>
-<span id="L89" class="LineNr"> 89 </span>    41/inc-ECX
+<span id="L89" class="LineNr"> 89 </span>    41/increment-ECX
 <span id="L90" class="LineNr"> 90 </span>    <span class="subxComment"># ++s1</span>
-<span id="L91" class="LineNr"> 91 </span>    47/inc-EDI
+<span id="L91" class="LineNr"> 91 </span>    47/increment-EDI
 <span id="L92" class="LineNr"> 92 </span>    <span class="subxComment"># ++s2</span>
-<span id="L93" class="LineNr"> 93 </span>    46/inc-ESI
+<span id="L93" class="LineNr"> 93 </span>    46/increment-ESI
 <span id="L94" class="LineNr"> 94 </span>    eb/jump  $kernel-string-equal?:loop/disp8
 <span id="L95" class="LineNr"> 95 </span><span class="Constant">$kernel-string-equal?:break</span>:
 <span id="L96" class="LineNr"> 96 </span>    <span class="subxComment"># return *s1 == 0</span>
 <span id="L97" class="LineNr"> 97 </span>    8a/copy-byte                    0/mod/indirect  7/rm32/EDI   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *EDI to AL</span>
-<span id="L98" class="LineNr"> 98 </span>    3d/compare-EAX  0/imm32
+<span id="L98" class="LineNr"> 98 </span>    3d/compare-EAX-and  0/imm32
 <span id="L99" class="LineNr"> 99 </span>    75/jump-if-not-equal  $kernel-string-equal?:false/disp8
 <span id="L100" class="LineNr">100 </span><span class="Constant">$kernel-string-equal?:true</span>:
 <span id="L101" class="LineNr">101 </span>    b8/copy-to-EAX  1/imm32
@@ -401,7 +401,7 @@ if ('onhashchange' in window) {
 <span id="L339" class="LineNr">339 </span>    5d/pop-to-EBP
 <span id="L340" class="LineNr">340 </span>    c3/return
 <span id="L341" class="LineNr">341 </span>
-<span id="L342" class="LineNr">342 </span>== data
+<span id="L342" class="LineNr">342 </span>== data 0x0a000000
 <span id="L343" class="LineNr">343 </span>
 <span id="L344" class="LineNr">344 </span><span class="SpecialChar">Newline</span>:
 <span id="L345" class="LineNr">345 </span>    <span class="subxComment"># size</span>

@@ -44,8 +44,10 @@ Emulated runs generate a trace that permits [time-travel debugging](https://gith
   $ ./subx --debug translate examples/factorial.subx -o examples/factorial
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
+
   $ ./subx --debug --trace run examples/factorial
   saving trace to 'last_run'
+
   $ ../browse_trace/browse_trace last_run  # text-mode debugger UI
   ```
 
@@ -101,10 +103,11 @@ a few registers:
 * Six general-purpose 32-bit registers: EAX, EBX, ECX, EDX, ESI and EDI
 * Two additional 32-bit registers: ESP and EBP (I suggest you only use these to
   manage the call stack.)
-* Three 1-bit _flag_ registers for conditional branching:
+* Four 1-bit _flag_ registers for conditional branching:
   - zero/equal flag ZF
   - sign flag SF
   - overflow flag OF
+  - carry flag CF
 
 SubX programs consist of instructions like `89/copy`, `01/add`, `3d/compare`
 and `52/push-ECX` which modify these registers as well as a byte-addressable
@@ -152,19 +155,19 @@ _addressing mode_. This is a 2-bit argument that can take 4 possible values,
 and it determines what other arguments are required, and how to interpret
 them.
 
-* If `/mod` is `3`: the operand is the register described by the 3-bit `/rm32`
-  argument similarly to `/r32` above.
+* If `/mod` is `3`: the operand is in the register described by the 3-bit
+  `/rm32` argument similarly to `/r32` above.
 
-* If `/mod` is `0`: the operand is the address provided in the register
+* If `/mod` is `0`: the operand is in the address provided in the register
   described by `/rm32`. That's `*rm32` in C syntax.
 
-* If `/mod` is `1`: the operand is the address provided by adding the register
-  in `/rm32` with the (1-byte) displacement. That's `*(rm32 + disp8)` in C
-  syntax.
+* If `/mod` is `1`: the operand is in the address provided by adding the
+  register in `/rm32` with the (1-byte) displacement. That's `*(rm32 + disp8)`
+  in C syntax.
 
-* If `/mod` is `2`: the operand is the address provided by adding the register
-  in `/rm32` with the (4-byte) displacement. That's `*(/rm32 + disp32)` in C
-  syntax.
+* If `/mod` is `2`: the operand is in the address provided by adding the
+  register in `/rm32` with the (4-byte) displacement. That's `*(/rm32 +
+  disp32)` in C syntax.
 
 In the last three cases, one exception occurs when the `/rm32` argument
 contains `4`. Rather than encoding register `ESP`, it means the address is
@@ -215,9 +218,10 @@ This program sums the first 10 natural numbers. By convention I use horizontal
 tabstops to help read instructions, dots to help follow the long lines,
 comments before groups of instructions to describe their high-level purpose,
 and comments at the end of complex instructions to state the low-level
-operation they perform. Numbers are always in hexadecimal (base 16); the '0x'
-prefix is optional, and I tend to include it as a reminder when numbers look
-like decimal numbers or words.
+operation they perform. Numbers are always in hexadecimal (base 16) and must
+start with a digit ('0'..'9'); use the '0x' prefix when a number starts with a
+letter ('a'..'f'). I tend to also include it as a reminder when numbers look
+like decimal numbers.
 
 Try running this example now:
 
@@ -337,9 +341,9 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
 
   1. [Converting ascii hex bytes to binary.](http://akkartik.github.io/mu/html/subx/apps/hex.subx.html) (✓)
   2. [Packing bitfields for x86 instructions into bytes.](http://akkartik.github.io/mu/html/subx/apps/pack.subx.html) (✓)
-  3. [Combining segments with the same name.](apps/assort.subx) (✓)
-  4. Support for string literals. (10% complete)
-  5. Replacing addresses with labels.
+  3. [Combining segments with the same name.](http://akkartik.github.io/mu/html/subx/apps/assort.subx.html) (✓)
+  4. [Support for string literals.](http://akkartik.github.io/mu/html/subx/apps/dquotes.subx.html) (✓)
+  5. [Replacing addresses with labels.](https://github.com/akkartik/mu/pull/34) (10% complete)
 
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)

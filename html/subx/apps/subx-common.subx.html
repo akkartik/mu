@@ -67,7 +67,7 @@ if ('onhashchange' in window) {
 <span id="L7" class="LineNr">  7 </span>
 <span id="L8" class="LineNr">  8 </span><span class="subxComment"># write an entire stream's contents to a buffered-file</span>
 <span id="L9" class="LineNr">  9 </span><span class="subxComment"># ways to do this:</span>
-<span id="L10" class="LineNr"> 10 </span><span class="subxComment">#   - construct a 'maximal slice' and pass it to write-slice</span>
+<span id="L10" class="LineNr"> 10 </span><span class="subxComment">#   - construct a 'maximal slice' and pass it to write-slice-buffered</span>
 <span id="L11" class="LineNr"> 11 </span><span class="subxComment">#   - flush the buffered-file and pass the stream directly to its fd (disabling buffering)</span>
 <span id="L12" class="LineNr"> 12 </span><span class="subxComment"># we'll go with the first way for now</span>
 <span id="L13" class="LineNr"> 13 </span><span class="subxFunction">write-stream-data</span>:  <span class="subxComment"># f : (address buffered-file), s : (address stream) -&gt; &lt;void&gt;</span>
@@ -90,12 +90,12 @@ if ('onhashchange' in window) {
 <span id="L30" class="LineNr"> 30 </span>    50/push-EAX
 <span id="L31" class="LineNr"> 31 </span>    <span class="subxS1Comment"># . ECX = ESP</span>
 <span id="L32" class="LineNr"> 32 </span>    89/copy                         3/mod/direct    1/rm32/ECX   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/ESP  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ESP to ECX</span>
-<span id="L33" class="LineNr"> 33 </span>    <span class="subxComment"># write-slice(f, slice)</span>
+<span id="L33" class="LineNr"> 33 </span>    <span class="subxComment"># write-slice-buffered(f, slice)</span>
 <span id="L34" class="LineNr"> 34 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L35" class="LineNr"> 35 </span>    51/push-ECX
 <span id="L36" class="LineNr"> 36 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(EBP+8)</span>
 <span id="L37" class="LineNr"> 37 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L38" class="LineNr"> 38 </span>    e8/call  <a href='../072slice.subx.html#L707'>write-slice</a>/disp32
+<span id="L38" class="LineNr"> 38 </span>    e8/call  <a href='../072slice.subx.html#L707'>write-slice-buffered</a>/disp32
 <span id="L39" class="LineNr"> 39 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L40" class="LineNr"> 40 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to ESP</span>
 <span id="L41" class="LineNr"> 41 </span><span class="Constant">$write-stream-data:end</span>:
@@ -169,7 +169,7 @@ if ('onhashchange' in window) {
 <span id="L109" class="LineNr">109 </span>    68/push  <span class="Constant">&quot;abcd&quot;</span>/imm32
 <span id="L110" class="LineNr">110 </span>    68/push  <a href='subx-common.subx.html#L160'>_test-output-stream</a>/imm32
 <span id="L111" class="LineNr">111 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L112" class="LineNr">112 </span>    e8/call  <a href='../058stream-equal.subx.html#L199'>check-stream-equal</a>/disp32
+<span id="L112" class="LineNr">112 </span>    e8/call  <a href='../058stream-equal.subx.html#L200'>check-stream-equal</a>/disp32
 <span id="L113" class="LineNr">113 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L114" class="LineNr">114 </span>    81          0/subop/add         3/mod/direct    4/rm32/ESP   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to ESP</span>
 <span id="L115" class="LineNr">115 </span>    <span class="subxS1Comment"># . epilog</span>

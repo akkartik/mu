@@ -131,9 +131,13 @@ test `uname` = 'Linux'  &&  examples/ex12
 echo handle
 ./subx translate 0*.subx apps/handle.subx  -o apps/handle
 [ "$1" != record ]  &&  git diff --exit-code apps/handle
-./subx run apps/handle 2>&1  |grep -q 'lookup failed'
+./subx run apps/handle > handle.out 2>&1  ||  true
+grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
+grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
 test `uname` = 'Linux'  &&  {
-  apps/handle test 2>&1  |grep -q 'lookup failed'
+  apps/handle > handle.out 2>&1  ||  true
+  grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
+  grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
 }
 
 echo factorial
@@ -197,6 +201,16 @@ echo assort
 echo
 test `uname` = 'Linux'  &&  {
   apps/assort test
+  echo
+}
+
+echo dquotes
+./subx translate 0*.subx apps/subx-common.subx apps/dquotes.subx  -o apps/dquotes
+[ "$1" != record ]  &&  git diff --exit-code apps/dquotes
+./subx run apps/dquotes test
+echo
+test `uname` = 'Linux'  &&  {
+  apps/dquotes test
   echo
 }
 
