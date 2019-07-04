@@ -492,7 +492,7 @@ $compute-offsets:line-loop:
     # . line->write/EAX == 0 ?
     3d/compare-EAX-and  0/imm32
     # . if so, break
-    0f 84/jump-if-equal  $compute-offsets:end/disp32
+    0f 84/jump-if-equal  $compute-offsets:line-loop:break/disp32
 $compute-offsets:word-loop:
     # var word-slice/EDX = {0, 0}
     #c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:word-slice/disp32  0/imm32        # copy to *compute-offsets:word-slice
@@ -513,7 +513,7 @@ $compute-offsets:word-loop:
     # . EAX == 1 ?
     3d/compare-EAX-and  1/imm32
     # . if so, break
-    #74/jump-if-equal  $compute-offsets:word-loop:end/disp8
+    0f 84/jump-if-equal  $compute-offsets:line-loop:break/disp32
     # if slice-starts-with?(word-slice, "#") continue
     68/push  "#"/imm32
     52/push-EDX
@@ -524,7 +524,49 @@ $compute-offsets:word-loop:
     3d/compare-EAX-and  1/imm32
     # . if so, continue
     74/jump-if-equal  $compute-offsets:word-loop/disp8
-#TODO: implement is-label? and it's block
+$compute-offsets:label:
+    # if is-label?(word-slice/EDX)
+    # . EAX = is-label?(word-slice/EDX)
+    52/push-EDX
+    e8/call  is-label?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . EAX == 0 ?
+    3d/compare-EAX-and  0/imm32
+    # . if so, goto segment check
+    74/jump-if-equal  $compute-offsets:segment/disp8
+    # . else fallthrough
+    # x = insert(labels, curr-segment-name)
+    # . EAX = get-or-insert(labels, word-slice/EDX, row-size=16)
+    # . . push args
+    68/push  0x10/imm32/row-size
+    52/push-EDX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  get-or-insert/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # trace-snsns("label '" word-slice/EDX "' is in segment '" current-segment-name "'")
+    # . . push args
+    68/push  "label '"/imm32
+    52/push-EDX
+    68/push  "' is in segment '"/imm32
+    68/push  compute-offsets:curr-segment-name/imm32
+    68/push  "'"/imm32
+    # . . call
+    e8/call  trace-snsns/disp32
+    # trace-snsns("label '" word-slice/EDX "' is in segment '" current-segment-name "'")
+    # . . push args
+    68/push  "label '"/imm32
+    52/push-EDX
+    68/push  "' is at offset 0x"/imm32
+    68/push  compute-offsets:file-offset/disp32
+    68/push  ""/imm32
+    # . . call
+    e8/call  trace-snsns/disp32
+    # continue
+    74/jump-if-equal  $compute-offsets:word-loop/disp8
+$compute-offsets:segment:
     # if slice-equal?(word-slice/EDX, "==")
     # . EAX = slice-equal?(word-slice/EDX, "==")
     68/push  "=="/imm32
@@ -561,6 +603,7 @@ $compute-offsets:else:
     # . *file-offset/EBX += EAX/width
     03/add                          3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # add EAX to EBX
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy EBX to *compute-offsets:file-offset
+$compute-offsets:line-loop:break:
     e9/jump  $compute-offsets:line-loop/disp32
 $compute-offsets:end:
     # . reclaim locals
