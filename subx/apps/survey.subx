@@ -541,7 +541,7 @@ $compute-offsets:label:
     # . . push args
     68/push  0x10/imm32/row-size
     52/push-EDX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
@@ -567,7 +567,6 @@ $compute-offsets:label:
     # continue
     0f 84/jump-if-equal  $compute-offsets:word-loop/disp32
 $compute-offsets:segment:
-    # TODO: implement the rest of this block
     # if slice-equal?(word-slice/EDX, "==")
     # . EAX = slice-equal?(word-slice/EDX, "==")
     68/push  "=="/imm32
@@ -578,14 +577,110 @@ $compute-offsets:segment:
     # . EAX == 0 ?
     3d/compare-EAX-and  0/imm32
     # . if so, goto else
-    74/jump-if-equal  $compute-offsets:else/disp8
+    0f 84/jump-if-equal  $compute-offsets:else/disp32
     # . or fallthrough
+    # seg/EAX = get-or-insert(segments, curr-segment-name, row-size=16)
+    # . push args
+    68/push  0x10/imm32/row-size
+    68/push  compute-offsets:curr-segment-name/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . call
+    e8/call  get-or-insert/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # seg->size/EBX = file-offset - seg->starting-offset
+    # . save ECX
+    51/push-ECX
+    # . EBX = *file-offset
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy *file-offset to EBX
+    # . ECX = seg->starting-offset
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/EBX   4/disp8         .                 # copy *(EAX+4) to ECX
+    # . EBX -= ECX
+    29/subtract                     3/mod/direct    3/rm32/EBX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EBX
+    # . seg->size = EBX
+    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   8/disp8         .                 # copy EBX to *(EAX+8)
+    # . restore ECX
+    59/pop-to-ECX
+    # trace-slsns("segment '", curr-segment-name, "' has size 0x", seg->size/EBX, "")
+    # . push args
+    68/push  "segment '"/imm32
+    68/push  compute-offsets:curr-segment-name/imm32
+    68/push  "' has size 0x"/imm32
+    53/push-EBX
+    68/push  ""/imm32
+    # . call
+    e8/call  trace-slsns/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # next-word(line/ECX, curr-segment-name)
     68/push  compute-offsets:curr-segment-name/imm32
     51/push-ECX
     e8/call  next-word/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # if slice-empty?(curr-segment-name) abort
+    # . EAX = slice-empty?(curr-segment-name)
+    68/push  compute-offsets:curr-segment-name/imm32
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . EAX == 1 ?
+    3d/compare-EAX-and  1/imm32
+    # . if so, abort
+    0f 84/jump-if-equal  $compute-offsets:abort/disp32
+    # segment-start/EBX = {0, 0}
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
+    # next-word(line/ECX, segment-start/EBX)
+    53/push-EBX
+    51/push-ECX
+    e8/call  next-word/disp32
+    # . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # if slice-empty?(segment-start/EBX) abort
+    # . EAX = slice-empty?(segment-start/EBX)
+    53/push-EBX
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . EAX == 1 ?
+    3d/compare-EAX-and  1/imm32
+    # . if so, abort
+    0f 84/jump-if-equal  $compute-offsets:abort/disp32
+    # save segment-start/EBX (and prep for parse-hex-int call)
+    53/push-EBX
+    # seg/EBX = get-or-insert(segments, curr-segment-name, row-size=16)
+    # . push args
+    68/push  0x10/imm32/row-size
+    68/push  compute-offsets:curr-segment-name/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . EBX = EAX
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
+    # seg->address = parse-hex-int(segment-start (already on stack))
+    # . EAX = parse-hex-int(segment-start)
+    e8/call  parse-hex-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . seg->address = EAX
+    89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
+    # seg->file-offset = *file-offset/EAX
+    # . EAX = *file-offset
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32 # copy *file-offset to EAX
+    89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EBX+4)
+    # trace-slsns("segment '", curr-segment-name, "' has size 0x", seg->size/EBX, "")
+    # . push args
+    68/push  "segment '"/imm32
+    68/push  compute-offsets:curr-segment-name/imm32
+    68/push  "' is at file offset size 0x"/imm32
+    53/push-EAX
+    68/push  ""/imm32
+    # . call
+    e8/call  trace-slsns/disp32
+    # . discard args
+    # segment-offset = 0
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     compute-offsets:segment-offset/disp32  0/imm32           # copy to *segment-offset
+    eb/jump $compute-offsets:line-loop:break/disp8
 $compute-offsets:else:
     # width/EAX = compute-width(word-slice/EDX)
     52/push-EDX
@@ -619,6 +714,20 @@ $compute-offsets:end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+$compute-offsets:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "'==' must be followed by segment name and segment-start\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 test-compute-offsets:
     # input:
