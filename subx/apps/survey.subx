@@ -397,11 +397,11 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #   var curr-segment-name = 0
     #   var file-offset = 0, segment-offset = 0
     #   var line = new-stream(512, 1)
-    #   while true
+    #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line-buffered(in, line)
     #     if (line->write == 0) break               # end of file
-    #     while true
+    #     while true                                # word loop
     #       var word-slice = next-word(line)
     #       if slice-empty?(word-slice)             # end of line
     #         break
@@ -480,7 +480,7 @@ $compute-offsets:line-loop:
     e8/call  clear-stream/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # read-line-buffered(in, line/ECX)
+    # read-line-buffered(in, line/EAX)
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     e8/call  read-line-buffered/disp32
@@ -488,11 +488,11 @@ $compute-offsets:line-loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # if(line->write == 0)
     # . EAX = line/ECX->write
-    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
     # . line->write/EAX == 0 ?
     3d/compare-EAX-and  0/imm32
     # . if so, break
-    0f 84/jump-if-equal  $compute-offsets:line-loop:break/disp32
+    0f 84/jump-if-equal  $compute-offsets:end/disp32
 $compute-offsets:word-loop:
     # var word-slice/EDX = {0, 0}
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:word-slice/disp32  0/imm32        # copy to *compute-offsets:word-slice
@@ -512,8 +512,8 @@ $compute-offsets:word-loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . EAX == 1 ?
     3d/compare-EAX-and  1/imm32
-    # . if so, break
-    0f 84/jump-if-equal  $compute-offsets:line-loop:break/disp32
+    # . if so, break (go to top of outer loop)
+    0f 84/jump-if-equal  $compute-offsets:line-loop/disp32
     # if slice-starts-with?(word-slice, "#") continue
     68/push  "#"/imm32
     52/push-EDX
@@ -565,7 +565,7 @@ $compute-offsets:label:
     # . . call
     e8/call  trace-snsns/disp32
     # continue
-    0f 84/jump-if-equal  $compute-offsets:word-loop/disp32
+    e9/jump  $compute-offsets:word-loop/disp32
 $compute-offsets:segment:
     # if slice-equal?(word-slice/EDX, "==")
     # . EAX = slice-equal?(word-slice/EDX, "==")
@@ -604,7 +604,7 @@ $compute-offsets:segment:
     # . EBX = *file-offset
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy *file-offset to EBX
     # . ECX = seg->starting-offset
-    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/EBX   4/disp8         .                 # copy *(EAX+4) to ECX
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EAX+4) to ECX
     # . EBX -= ECX
     29/subtract                     3/mod/direct    3/rm32/EBX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EBX
     # . seg->size = EBX
@@ -700,7 +700,7 @@ $compute-offsets:construct-next-segment:
     # . discard args
     # segment-offset = 0
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     compute-offsets:segment-offset/disp32  0/imm32           # copy to *segment-offset
-    eb/jump $compute-offsets:line-loop:break/disp8
+    e9/jump $compute-offsets:line-loop/disp32
 $compute-offsets:else:
     # EAX = slice-to-string(curr-segment-name)
     52/push-EDX
@@ -725,8 +725,7 @@ $compute-offsets:else:
     # . *file-offset/EBX += EAX/width
     03/add                          3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # add EAX to EBX
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy EBX to *compute-offsets:file-offset
-$compute-offsets:line-loop:break:
-    e9/jump  $compute-offsets:line-loop/disp32
+    e9/jump $compute-offsets:line-loop/disp32
 $compute-offsets:end:
     # . reclaim locals
     # . restore registers
