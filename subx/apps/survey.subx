@@ -1232,6 +1232,38 @@ test-compute-addresses:
 emit-output:  # in : (address buffered-file), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
     #   emit-headers(out, segments, labels)
+    #   emit-segments(in, out, segments, labels)
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # emit-headers(out, segments, labels)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8       .                # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8       .                # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8        .                # push *(EBP+12)
+    # . . call
+    e8/call  emit-headers/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # emit-segments(in, out, segments, labels)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8       .                # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8       .                # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-segments/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+$emit-output:end:
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-segments:  # in : (address buffered-file), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+    # pseudocode:
     #   var offset-of-next-instruction = 0
     #   var line = new-stream(512, 1)
     #   while true
@@ -1273,9 +1305,230 @@ emit-output:  # in : (address buffered-file), out : (address buffered-file), seg
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
-$emit-output:end:
+$emit-segments:end:
     # . reclaim locals
     # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-segments:
+    # input:
+    #   in:
+    #     == a 0x1000
+    #     ab cd ef gh
+    #     ij x/imm32
+    #     == b 0x2000
+    #     00
+    #     x:
+    #       34
+    #   segments:
+    #     - 'a': {0x1074, 0, 5}
+    #     - 'b': {0x2079, 5, 1}
+    #   labels:
+    #     - 'l1': {'a', 3, 0x1077}
+    #     - 'l2': {'b', 1, 0x207a}
+    #
+    # output:
+    #   ab cd ef gh
+    #   ij 19 20 00 00
+    #   00
+    #   34
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-input-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-input-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . var segments/ECX = stream(10 * 16)
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xa0/imm32        # subtract from ESP
+    68/push  0xa0/imm32/length
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # . var labels/EDX = stream(512 * 16)
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x2000/imm32      # subtract from ESP
+    68/push  0x2000/imm32/length
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # initialize input
+    # . write(_test-input-stream, "== a 0x1000\n")
+    # . . push args
+    68/push  "== a 0x1000\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-input-stream, "ab cd ef gh\n")
+    # . . push args
+    68/push  "ab cd ef gh\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-input-stream, "ij x/imm32\n")
+    # . . push args
+    68/push  "ij x/imm32\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-input-stream, "== b 0x2000\n")
+    # . . push args
+    68/push  "== b 0x2000\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-input-stream, "00\n")
+    # . . push args
+    68/push  "00\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-input-stream, "x:\n")
+    # . . push args
+    68/push  "x:\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write(_test-input-stream, "34\n")
+    # . . push args
+    68/push  "34\n"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . stream-add4(segments, "a", 0x1074, 0, 5)
+    68/push  5/imm32/segment-size
+    68/push  0/imm32/file-offset
+    68/push  0x1074/imm32/start-address
+    68/push  "a"/imm32/segment-name
+    51/push-ECX
+    # . . call
+    e8/call  stream-add4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # . stream-add4(segments, "b", 0x2079, 5, 1)
+    68/push  1/imm32/segment-size
+    68/push  5/imm32/file-offset
+    68/push  0x2079/imm32/start-address
+    68/push  "b"/imm32/segment-name
+    51/push-ECX
+    # . . call
+    e8/call  stream-add4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # . stream-add4(labels, "l1", "a", 3, 0x1077)
+    68/push  0x1077/imm32/label-address
+    68/push  3/imm32/segment-offset
+    68/push  "a"/imm32/segment-name
+    68/push  "l1"/imm32/label-name
+    52/push-EDX
+    # . . call
+    e8/call  stream-add4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # . stream-add4(labels, "l2", "b", 1, 0x207a)
+    68/push  0x207a/imm32/label-address
+    68/push  1/imm32/segment-offset
+    68/push  "b"/imm32/segment-name
+    68/push  "l2"/imm32/label-name
+    52/push-EDX
+    # . . call
+    e8/call  stream-add4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # component under test
+    # . emit-segments(_test-input-buffered-file, _test-output-buffered-file, segments, labels)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-buffered-file/imm32
+    # . . call
+    e8/call  emit-segments/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    # checks
+    # . check-next-stream-line-equal(_test-output-stream, "ab cd ef gh", msg)
+    # . . push args
+    68/push  "F - test-emit-segments/0"/imm32
+    68/push  "ab cd ef gh"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . check-next-stream-line-equal(_test-output-stream, "ij 19 20 00 00", msg)
+    # . . push args
+    68/push  "F - test-emit-segments/1"/imm32
+    68/push  "ij 19 20 00 00"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . check-next-stream-line-equal(_test-output-stream, "00", msg)
+    # . . push args
+    68/push  "F - test-emit-segments/2"/imm32
+    68/push  "00"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . check-next-stream-line-equal(_test-output-stream, "34", msg)
+    # . . push args
+    68/push  "F - test-emit-segments/3"/imm32
+    68/push  "34"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
