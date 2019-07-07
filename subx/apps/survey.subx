@@ -1228,6 +1228,123 @@ test-compute-addresses:
     5d/pop-to-EBP
     c3/return
 
+emit-output:  # in : (address buffered-file), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+    # pseudocode:
+    #   emit-headers(out, segments, labels)
+    #   var offset-of-next-instruction = 0
+    #   var line = new-stream(512, 1)
+    #   while true
+    #     clear-stream(line)
+    #     read-line-buffered(in, line)
+    #     if (line->write == 0) break               # end of file
+    #     offset-of-next-instruction += num-bytes(line)
+    #     while true
+    #       var word-slice = next-word(line)
+    #       if slice-empty?(word-slice)             # end of line
+    #         break
+    #       if slice-starts-with?(word-slice, "#")  # comment
+    #         break
+    #       if is-label?(word-slice)                # no need for label declarations anymore
+    #         break
+    #       if slice-equal?(word-slice, "==")
+    #         break                                 # no need for segment header lines
+    #       if length(word-slice) == 2
+    #         write-slice-buffered(out, word-slice)
+    #         write-buffered(out, " ")
+    #         continue
+    #       datum = next-token(word-slice, "/")
+    #       info = get(labels, datum)
+    #       if has-metadata?(word-slice, "imm8")
+    #         abort  # label should never go to imm8
+    #       else if has-metadata?(word-slice, "imm32")
+    #         emit(out, info->address, 4)
+    #       else if has-metadata?(word-slice, "disp8")
+    #         value = info->offset - offset-of-next-instruction
+    #         emit(out, value, 1)
+    #       else if has-metadata?(word-slice, "disp32")
+    #         value = info->offset - offset-of-next-instruction
+    #         emit(out, value, 4)
+    #       else
+    #         abort
+    #     write-buffered(out, "\n")
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-output:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-headers:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+    # pseudocode:
+    #   emit-elf-header(out, segments, labels)
+    #   curr-segment = segments->data
+    #   max = segments->data + segments->write
+    #   while true
+    #     if (curr-segment >= max) break
+    #     emit-elf-program-header-entry(curr-segment)
+    #     curr-segment += 20                        # size of a row
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-headers:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-elf-header:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+    # pseudocode
+    #   *Elf_e_entry = get(labels, "Entry")->address
+    #   *Elf_e_phnum = segments->write / 20         # size of a row
+    #   write(out, Elf_header)
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-elf-header:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+emit-elf-program-header-entry:  # curr-segment : {string, segment-info}
+    # pseudocode:
+    #   *Elf_p_offset = curr-segment->file-offset
+    #   *Elf_p_vaddr = curr-segment->address
+    #   *Elf_p_paddr = curr-segment->address
+    #   *Elf_p_filesz = curr-segment->size
+    #   *Elf_p_memsz = curr-segment->size
+    #   if curr-segment->name == "code"
+    #     *Elf_p_flags = 5  # r-x
+    #   else
+    #     *Elf_p_flags = 6  # rw-
+    #   write(out, Elf_program_header_entry)
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$emit-elf-program-header-entry:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
 # - some helpers for tests
 
 stream-add4:  # in : (address stream byte), key : address, val1 : address, val2 : address, val3 : address
@@ -1766,123 +1883,6 @@ test-trace-slsns:
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
-emit-output:  # in : (address buffered-file), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
-    # pseudocode:
-    #   emit-headers(out, segments, labels)
-    #   var offset-of-next-instruction = 0
-    #   var line = new-stream(512, 1)
-    #   while true
-    #     clear-stream(line)
-    #     read-line-buffered(in, line)
-    #     if (line->write == 0) break               # end of file
-    #     offset-of-next-instruction += num-bytes(line)
-    #     while true
-    #       var word-slice = next-word(line)
-    #       if slice-empty?(word-slice)             # end of line
-    #         break
-    #       if slice-starts-with?(word-slice, "#")  # comment
-    #         break
-    #       if is-label?(word-slice)                # no need for label declarations anymore
-    #         break
-    #       if slice-equal?(word-slice, "==")
-    #         break                                 # no need for segment header lines
-    #       if length(word-slice) == 2
-    #         write-slice-buffered(out, word-slice)
-    #         write-buffered(out, " ")
-    #         continue
-    #       datum = next-token(word-slice, "/")
-    #       info = get(labels, datum)
-    #       if has-metadata?(word-slice, "imm8")
-    #         abort  # label should never go to imm8
-    #       else if has-metadata?(word-slice, "imm32")
-    #         emit(out, info->address, 4)
-    #       else if has-metadata?(word-slice, "disp8")
-    #         value = info->offset - offset-of-next-instruction
-    #         emit(out, value, 1)
-    #       else if has-metadata?(word-slice, "disp32")
-    #         value = info->offset - offset-of-next-instruction
-    #         emit(out, value, 4)
-    #       else
-    #         abort
-    #     write-buffered(out, "\n")
-    #
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-$emit-output:end:
-    # . reclaim locals
-    # . restore registers
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
-emit-headers:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
-    # pseudocode:
-    #   emit-elf-header(out, segments, labels)
-    #   curr-segment = segments->data
-    #   max = segments->data + segments->write
-    #   while true
-    #     if (curr-segment >= max) break
-    #     emit-elf-program-header-entry(curr-segment)
-    #     curr-segment += 20                        # size of a row
-    #
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-$emit-headers:end:
-    # . reclaim locals
-    # . restore registers
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
-emit-elf-header:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
-    # pseudocode
-    #   *Elf_e_entry = get(labels, "Entry")->address
-    #   *Elf_e_phnum = segments->write / 20         # size of a row
-    #   write(out, Elf_header)
-    #
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-$emit-elf-header:end:
-    # . reclaim locals
-    # . restore registers
-    # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
-    c3/return
-
-emit-elf-program-header-entry:  # curr-segment : {string, segment-info}
-    # pseudocode:
-    #   *Elf_p_offset = curr-segment->file-offset
-    #   *Elf_p_vaddr = curr-segment->address
-    #   *Elf_p_paddr = curr-segment->address
-    #   *Elf_p_filesz = curr-segment->size
-    #   *Elf_p_memsz = curr-segment->size
-    #   if curr-segment->name == "code"
-    #     *Elf_p_flags = 5  # r-x
-    #   else
-    #     *Elf_p_flags = 6  # rw-
-    #   write(out, Elf_program_header_entry)
-    #
-    # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-$emit-elf-program-header-entry:end:
-    # . reclaim locals
-    # . restore registers
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
