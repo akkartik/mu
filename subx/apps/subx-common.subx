@@ -1178,10 +1178,12 @@ compute-width-of-slice: # s : (address slice) -> EAX : int
     51/push-ECX
     # ECX = s
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
-    # if has-metadata?(word, "imm32") or has-metadata?(word, "disp32"): return 4
+    # if (has-metadata?(word, "imm32")) return 4
     # . EAX = has-metadata?(word, "imm32")
+    # . . push args
     68/push  "imm32"/imm32
     51/push-ECX
+    # . . call
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -1189,9 +1191,12 @@ compute-width-of-slice: # s : (address slice) -> EAX : int
     3d/compare-EAX-and  1/imm32
     b8/copy-to-EAX  4/imm32         # ZF is set, so we can overwrite EAX now
     74/jump-if-equal  $compute-width-of-slice:end/disp8
-    # . has-metadata?(word, "disp32")
+    # if (has-metadata?(word, "disp32")) return 4
+    # . EAX = has-metadata?(word, "disp32")
+    # . . push args
     68/push  "disp32"/imm32
     51/push-ECX
+    # . . call
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -1199,10 +1204,12 @@ compute-width-of-slice: # s : (address slice) -> EAX : int
     3d/compare-EAX-and  1/imm32
     b8/copy-to-EAX  4/imm32         # ZF is set, so we can overwrite EAX now
     74/jump-if-equal  $compute-width-of-slice:end/disp8
-    # if has-metadata?(word, "imm16") or has-metadata?(word, "disp16"): return 2
-    # . has-metadata?(word, "imm16")
+    # if (has-metadata?(word, "imm16")) return 2
+    # . EAX = has-metadata?(word, "imm16")
+    # . . push args
     68/push  "imm16"/imm32
     51/push-ECX
+    # . . call
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -1210,9 +1217,12 @@ compute-width-of-slice: # s : (address slice) -> EAX : int
     3d/compare-EAX-and  1/imm32
     b8/copy-to-EAX  2/imm32         # ZF is set, so we can overwrite EAX now
     74/jump-if-equal  $compute-width-of-slice:end/disp8
-    # . has-metadata?(word, "disp16")
+    # if (has-metadata?(word, "disp16")) return 2
+    # . EAX = has-metadata?(word, "disp16")
+    # . . push args
     68/push  "disp16"/imm32
     51/push-ECX
+    # . . call
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -1220,7 +1230,7 @@ compute-width-of-slice: # s : (address slice) -> EAX : int
     3d/compare-EAX-and  1/imm32
     b8/copy-to-EAX  2/imm32         # ZF is set, so we can overwrite EAX now
     74/jump-if-equal  $compute-width-of-slice:end/disp8
-    # else: return 1
+    # otherwise return 1
     b8/copy-to-EAX  1/imm32
 $compute-width-of-slice:end:
     # . restore registers
