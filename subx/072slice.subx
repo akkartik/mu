@@ -181,9 +181,14 @@ test-slice-equal:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
@@ -212,9 +217,14 @@ test-slice-equal-false:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-4/imm32/end
-    68/push  _test-slice-data-1/imm32/start
+    # (EAX..ECX) = "bcd"
+    b8/copy-to-EAX  "bcd"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
@@ -243,9 +253,14 @@ test-slice-equal-too-long:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-4/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abcd"
+    b8/copy-to-EAX  "Abcd"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
@@ -274,9 +289,14 @@ test-slice-equal-too-short:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-1/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "A"
+    b8/copy-to-EAX  "A"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
@@ -306,8 +326,8 @@ test-slice-equal-empty:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # var slice/ECX
-    68/push  _test-slice-data-0/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    68/push  0/imm32/end
+    68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "Abc")
     # . . push args
@@ -336,9 +356,14 @@ test-slice-equal-with-empty:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-2/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Ab"
+    b8/copy-to-EAX  "Ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "")
     # . . push args
@@ -368,8 +393,8 @@ test-slice-equal-empty-with-empty:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # var slice/ECX
-    68/push  _test-slice-data-0/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    68/push  0/imm32/end
+    68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, "")
     # . . push args
@@ -398,9 +423,14 @@ test-slice-equal-with-null:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-2/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Ab"
+    b8/copy-to-EAX  "Ab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-equal?(ECX, 0)
     # . . push args
@@ -516,9 +546,14 @@ test-slice-starts-with-single-character:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-starts-with?(ECX, "A")
     # . . push args
@@ -547,9 +582,14 @@ test-slice-starts-with-empty-string:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-starts-with?(ECX, "")
     # . . push args
@@ -578,9 +618,14 @@ test-slice-starts-with-multiple-characters:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-starts-with?(ECX, "Ab")
     # . . push args
@@ -609,9 +654,14 @@ test-slice-starts-with-entire-string:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-starts-with?(ECX, "Abc")
     # . . push args
@@ -640,9 +690,14 @@ test-slice-starts-with-fails:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-starts-with?(ECX, "Abd")
     # . . push args
@@ -671,9 +726,14 @@ test-slice-starts-with-fails-2:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-starts-with?(ECX, "Ac")
     # . . push args
@@ -783,9 +843,14 @@ test-write-slice:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # var slice/ECX = "Abc"
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write-slice(_test-stream, slice)
     # . . push args
@@ -908,9 +973,14 @@ test-write-slice-buffered:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # var slice/ECX = "Abc"
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write-slice-buffered(_test-buffered-file, slice)
     # . . push args
@@ -1035,9 +1105,14 @@ test-slice-to-string:
     e8/call  new-segment/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # var slice/ECX = "Abc"
-    68/push  _test-slice-data-3/imm32/end
-    68/push  _test-slice-data-0/imm32/start
+    # (EAX..ECX) = "Abc"
+    b8/copy-to-EAX  "Abc"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = slice-to-string(heap, slice)
     # . . push args
@@ -1094,17 +1169,5 @@ test-slice-to-string:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
-
-== data
-
-_test-slice-data-0:
-    41/A
-_test-slice-data-1:
-    62/b
-_test-slice-data-2:
-    63/c
-_test-slice-data-3:
-    64/d
-_test-slice-data-4:
 
 # . . vim:nowrap:textwidth=0

@@ -373,9 +373,14 @@ test-get-or-insert-slice:
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # EDX : (address slice) = "code"
-    68/push  _test-code-segment-end/imm32/end
-    68/push  _test-code-segment/imm32/start
+    # (EAX..EDX) = "code"
+    b8/copy-to-EAX  "code"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
+    05/add-to-EAX  4/imm32
+    # var slice/EDX = {EAX, EDX}
+    52/push-EDX
+    50/push-EAX
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
 $test-get-or-insert-slice:first-call:
     # - start with an empty table, insert one key, verify that it was inserted
@@ -461,9 +466,15 @@ $test-get-or-insert-slice:second-call:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-get-or-insert-slice:third-call:
     # - insert a new key, verify that it was inserted
-    # EDX : (address slice) = "data"
-    c7          0/subop/copy        0/mod/indirect  2/rm32/EDX    .           .             .           .           .               _test-data-segment/imm32  # copy to *EDX
-    c7          0/subop/copy        1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         _test-data-segment-end/imm32  # copy to *(EDX+4)
+    # (EAX..EDX) = "data"
+    b8/copy-to-EAX  "data"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
+    05/add-to-EAX  4/imm32
+    # var slice/EDX = {EAX, EDX}
+    52/push-EDX
+    50/push-EAX
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
     # EAX = get-or-insert-slice(table, "data" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
@@ -1373,9 +1384,14 @@ test-is-label?:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
 $test-is-label?:true:
-    # var slice/ECX = slice("AAA:")
-    68/push  _test-label-slice-end1/imm32
-    68/push  _test-label-slice-start/imm32
+    # (EAX..ECX) = "AAA:"
+    b8/copy-to-EAX  "AAA:"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # is-label?(slice/ECX)
     51/push-ECX
@@ -1392,9 +1408,14 @@ $test-is-label?:true:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $test-is-label?:false:
-    # var slice/ECX = slice("AAA")
-    68/push  _test-label-slice-end2/imm32
-    68/push  _test-label-slice-start/imm32
+    # (EAX..ECX) = "AAA"
+    b8/copy-to-EAX  "AAA"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # is-label?(slice/ECX)
     51/push-ECX
@@ -1493,20 +1514,8 @@ _test-output-buffered-file:
     # data
     00 00 00 00 00 00  # 6 bytes
 
-_test-code-segment:
-  63/c 6f/o 64/d 65/e
-_test-code-segment-end:
-
 _test-data-segment:
   64/d 61/a 74/t 61/a
 _test-data-segment-end:
-
-_test-label-slice-start:
-  41/A
-  41/A
-  41/A
-_test-label-slice-end2:
-  3A/:
-_test-label-slice-end1:
 
 # . . vim:nowrap:textwidth=0
