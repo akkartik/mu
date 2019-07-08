@@ -121,7 +121,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # var word-slice/EDX = {0, 0}
-    68/push  0/imm32/end
+    68/push  0/imm32/limit
     68/push  0/imm32/curr
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
     # new-data-segment/EDI = new-stream(Heap, Segment-size, 1)
@@ -1032,7 +1032,7 @@ test-emit-string-literal-data:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = '"abc"/d'
-    68/push  _test-slice-abc-end/imm32
+    68/push  _test-slice-abc-limit/imm32
     68/push  _test-slice-abc/imm32
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # emit-string-literal-data(_test-output-stream, slice)
@@ -1096,8 +1096,8 @@ test-emit-string-literal-data-empty:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = '""'
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # emit-string-literal-data(_test-output-stream, slice)
     # . . push args
@@ -1161,7 +1161,7 @@ test-emit-string-literal-data-no-metadata-for-non-alphanumerics:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = '"a b"'
-    68/push  _test-slice-a-space-b-end/imm32
+    68/push  _test-slice-a-space-b-limit/imm32
     68/push  _test-slice-a-space-b/imm32
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # emit-string-literal-data(_test-output-stream, slice)
@@ -1225,7 +1225,7 @@ test-emit-string-literal-data-handles-escape-sequences:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = '"a\"b"'
-    68/push  _test-slice-a-dquote-b-end/imm32
+    68/push  _test-slice-a-dquote-b-limit/imm32
     68/push  _test-slice-a-dquote-b/imm32
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # emit-string-literal-data(_test-output-stream, slice)
@@ -1628,8 +1628,8 @@ test-emit-metadata-in-string-literal:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = "\"abc/def\"/ghi"
-    68/push  _test-slice-literal-string-with-end/imm32
-    68/push  _test-slice-literal-string/imm32/start
+    68/push  _test-slice-literal-string-with-limit/imm32
+    68/push  _test-slice-literal-string/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # emit-metadata(_test-output-buffered-file, slice)
     # . . push args
@@ -1795,8 +1795,8 @@ test-next-word-or-string:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write(_test-input-stream, "  ab")
     # . . push args
@@ -1868,8 +1868,8 @@ test-next-word-or-string-returns-whole-comment:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write(_test-input-stream, "  # a")
     # . . push args
@@ -1941,8 +1941,8 @@ test-next-word-or-string-returns-empty-string-on-eof:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write nothing to _test-input-stream
     # next-word-or-string(_test-input-stream, slice)
@@ -1983,8 +1983,8 @@ test-next-word-or-string-returns-whole-string:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write(_test-input-stream, " \"a b\"/imm32 ")
     # . . push args
@@ -2046,8 +2046,8 @@ test-next-word-or-string-returns-string-with-escapes:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write(_test-input-stream, " \"a\\\"b\"/x")
     # . . push args
@@ -2661,15 +2661,15 @@ Slash:
 _test-slice-abc:
   22/dquote 61/a 62/b 63/c 22/dquote  # "abc"
   2f/slash 64/d
-_test-slice-abc-end:
+_test-slice-abc-limit:
 
 _test-slice-a-space-b:
   22/dquote 61/a 20/space 62/b 22/dquote  # "a b"
-_test-slice-a-space-b-end:
+_test-slice-a-space-b-limit:
 
 _test-slice-a-dquote-b:
   22/dquote 61/a 5c/backslash 22/dquote 62/b 22/dquote  # "a\"b"
-_test-slice-a-dquote-b-end:
+_test-slice-a-dquote-b-limit:
 
 # "abc/def"/ghi
 _test-slice-literal-string:
@@ -2678,6 +2678,6 @@ _test-slice-literal-string:
   2f/slash 64/d 65/e 66/f  # /def
   22/dquote
   2f/slash 67/g 68/h 69/i  # /ghi
-_test-slice-literal-string-with-end:
+_test-slice-literal-string-with-limit:
 
 # . . vim:nowrap:textwidth=0

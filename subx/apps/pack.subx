@@ -132,7 +132,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # var word-slice/EDX = {0, 0}
-    68/push  0/imm32/end
+    68/push  0/imm32/limit
     68/push  0/imm32/curr
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
     # var in-code?/EBX = false
@@ -960,8 +960,8 @@ convert-data:  # line : (address stream byte), out : (address buffered-file) -> 
     51/push-ECX
     52/push-EDX
     # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
@@ -1873,8 +1873,8 @@ convert-instruction:  # line : (address stream byte), out : (address buffered-fi
     51/push-ECX
     52/push-EDX
     # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # next-word(line, word-slice)
     # . . push args
@@ -2030,12 +2030,12 @@ emit-opcodes:  # line : (address stream byte), out : (address buffered-file) -> 
     52/push-EDX
     53/push-EBX
     # var op1/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # var op2/EDX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
     # rewind-stream(line)
     # . . push args
@@ -2321,8 +2321,8 @@ emit-modrm:  # line : (address stream byte), out : (address buffered-file) -> <v
     56/push-ESI
     57/push-EDI
     # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # var has-modrm?/EDX = false
     31/xor                          3/mod/direct    2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # clear EDX
@@ -2632,8 +2632,8 @@ emit-sib:  # line : (address stream byte), out : (address buffered-file) -> <voi
     56/push-ESI
     57/push-EDI
     # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # var has-sib?/EDX = false
     31/xor                          3/mod/direct    2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # clear EDX
@@ -2905,8 +2905,8 @@ emit-disp:  # line : (address stream byte), out : (address buffered-file) -> <vo
     51/push-ECX
     52/push-EDX
     # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # rewind-stream(line)
     # . . push args
@@ -3126,8 +3126,8 @@ emit-imm:  # line : (address stream byte), out : (address buffered-file) -> <voi
     51/push-ECX
     52/push-EDX
     # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # rewind-stream(line)
     # . . push args
@@ -5850,8 +5850,8 @@ emit:  # out : (address buffered-file), word : (address slice), width : int -> <
     # ESI = word
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     # var name/EDI : (address slice) = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    7/rm32/EDI    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDI
     # datum = next-token-from-slice(word->start, word->end, '/')
     # . . push args
@@ -6835,8 +6835,8 @@ parse-datum-of-word:  # word : (address slice) -> value/EAX
     # ESI = word
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # slice = next-token-from-slice(word->start, word->end, '/')
     # . . push args

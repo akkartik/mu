@@ -612,8 +612,8 @@ test-next-word:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write(_test-stream, "  ab")
     # . . push args
@@ -675,8 +675,8 @@ test-next-word-returns-whole-comment:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write(_test-stream, "  # a")
     # . . push args
@@ -738,8 +738,8 @@ test-next-word-returns-empty-string-on-eof:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # var slice/ECX = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # write nothing to _test-stream
     # next-word(_test-stream, slice)
@@ -902,8 +902,8 @@ has-metadata?:  # word : (address slice), s : (address string) -> EAX : boolean
     # EDX = word->end
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           2/r32/EDX   4/disp8         .                 # copy *(ESI+4) to EDX
     # var twig/EDI : (address slice) = {0, 0}
-    68/push  0/imm32/end
-    68/push  0/imm32/start
+    68/push  0/imm32/limit
+    68/push  0/imm32/curr
     89/copy                         3/mod/direct    7/rm32/EDI    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDI
     # next-token-from-slice(word->start, word->end, '/', twig)
     # . . push args
