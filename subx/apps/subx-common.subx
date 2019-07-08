@@ -1350,13 +1350,13 @@ is-label?: # word : (address slice) -> EAX : boolean
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   8/disp8         .                 # copy *(EBP+8) to ECX
     # ECX = word->end
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ECX+4) to ECX
-    # *(word->end - 1) == ':'
+    # return *(word->end - 1) == ':'
     # . EAX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     # . EAX = *((char *) word->end - 1)
     8a/copy-byte                    1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/AL    -1/disp8         .                 # copy byte at *(ECX-1) to AL
-    # . (word->end - 1)/EAX == ':'
-    3d/compare-EAX-and  3A/imm32/colon
+    # . return (EAX == ':')
+    3d/compare-EAX-and  0x3a/imm32/colon
     b8/copy-to-EAX  1/imm32/true
     74/jump-if-equal  $is-label?:end/disp8
     b8/copy-to-EAX  0/imm32/false
