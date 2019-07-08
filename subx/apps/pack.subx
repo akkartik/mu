@@ -246,10 +246,7 @@ $convert:check2:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # if (slice-equal?(word-slice, "=="))
-    #   word-slice = next-word(line)
-    #   in-code? = slice-equal?(word-slice, "code")
-    #   write-stream-data(out, line)
+    # if (!slice-equal?(word-slice, "==")) goto next check
     # . EAX = slice-equal?(word-slice, "==")
     # . . push args
     68/push  "=="/imm32
@@ -261,7 +258,7 @@ $convert:check2:
     # . if (EAX == 0) goto check3
     3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $convert:check3/disp32
-    # . next-word(line, word-slice)
+    # word-slice = next-word(line)
     # . . push args
     52/push-EDX
     51/push-ECX
@@ -311,7 +308,7 @@ $convert:check2:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # . in-code? = slice-equal?(word-slice, "code")
+    # in-code? = slice-equal?(word-slice, "code")
     # . . push args
     68/push  "code"/imm32
     52/push-EDX
@@ -321,7 +318,7 @@ $convert:check2:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . . in-code? = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # . goto pass-through
+    # write-stream-data(out, line)
     eb/jump  $convert:pass-through/disp8
 $convert:check3:
     # else rewind-stream(line)
