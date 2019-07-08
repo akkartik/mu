@@ -347,7 +347,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #       if slice-starts-with?(word-slice, "#")  # comment
     #         continue
     #       if is-label?(word-slice)
-    #         x : (address number) = insert(labels, name)
+    #         x : (address number) = get-or-insert(labels, name)
     #         *x = segment-offset
     #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'")
     #         trace("label '", word-slice, "' is at offset 0x", file-offset)
@@ -464,19 +464,18 @@ $compute-offsets:word-loop:
     # . if so, continue
     74/jump-if-equal  $compute-offsets:word-loop/disp8
 $compute-offsets:label:
-    # if is-label?(word-slice/EDX)
+    # if (!is-label?(word-slice/EDX)) goto next check
     # . EAX = is-label?(word-slice/EDX)
+    # . . push args
     52/push-EDX
+    # . . call
     e8/call  is-label?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . EAX == 0 ?
+    # . if (EAX == 0) goto next check
     3d/compare-EAX-and  0/imm32
-    # . if so, goto segment check
     74/jump-if-equal  $compute-offsets:segment/disp8
-    # . else fallthrough
-    # x = insert(labels, word-slice)
-    # . EAX = get-or-insert(labels, word-slice/EDX, row-size=16)
+    # x/EAX = get-or-insert(labels, word-slice)
     # . . push args
     68/push  0x10/imm32/row-size
     52/push-EDX
