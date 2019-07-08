@@ -1153,50 +1153,13 @@ compute-width: # word : (address array byte) -> EAX : int
     51/push-ECX
     50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # if has-metadata?(word, "imm32") or has-metadata?(word, "disp32"): return 4
-    # . has-metadata?(word, "imm32")
-    68/push  "imm32"/imm32
+    # return compute-width-of-slice(ECX)
+    # . . push args
     51/push-ECX
-    e8/call  has-metadata?/disp32
+    # . . call
+    e8/call  compute-width-of-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if EAX: return 4
-    3d/compare-EAX-and  1/imm32
-    b8/copy-to-EAX  4/imm32         # ZF is set, so we can overwrite EAX now
-    74/jump-if-equal  $compute-width:end/disp8
-    # . has-metadata?(word, "disp32")
-    68/push  "disp32"/imm32
-    51/push-ECX
-    e8/call  has-metadata?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if EAX: return 4
-    3d/compare-EAX-and  1/imm32
-    b8/copy-to-EAX  4/imm32         # ZF is set, so we can overwrite EAX now
-    74/jump-if-equal  $compute-width:end/disp8
-    # if has-metadata?(word, "imm16") or has-metadata?(word, "disp16"): return 2
-    # . has-metadata?(word, "imm16")
-    68/push  "imm16"/imm32
-    51/push-ECX
-    e8/call  has-metadata?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if EAX: return 2
-    3d/compare-EAX-and  1/imm32
-    b8/copy-to-EAX  2/imm32         # ZF is set, so we can overwrite EAX now
-    74/jump-if-equal  $compute-width:end/disp8
-    # . has-metadata?(word, "disp16")
-    68/push  "disp16"/imm32
-    51/push-ECX
-    e8/call  has-metadata?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if EAX: return 2
-    3d/compare-EAX-and  1/imm32
-    b8/copy-to-EAX  2/imm32         # ZF is set, so we can overwrite EAX now
-    74/jump-if-equal  $compute-width:end/disp8
-    # else: return 1
-    b8/copy-to-EAX  1/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $compute-width:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
