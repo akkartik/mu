@@ -317,6 +317,20 @@ test-convert-computes-addresses:
     5d/pop-to-EBP
     c3/return
 
+# global scratch space for compute-offsets in the data segment
+== data
+
+compute-offsets:curr-segment-name: 0/imm32/curr
+compute-offsets:curr-segment-name:end: 0/imm32/limit
+compute-offsets:file-offset: 0/imm32
+compute-offsets:segment-offset: 0/imm32
+compute-offsets:word-slice: 0/imm32/curr
+compute-offsets:word-slice:end: 0/imm32/limit
+compute-offsets:heap: 0/imm32/curr
+compute-offsets:heap:end: 0/imm32/limit
+
+== code
+
 compute-offsets:  # in : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
     #   var curr-segment-name = 0
@@ -2697,14 +2711,5 @@ $p_align:
   # we hold this constant; changing it will require adjusting the way we
   # compute the starting address for each segment
   0x1000/imm32
-
-compute-offsets:curr-segment-name: 0/imm32/curr
-compute-offsets:curr-segment-name:end: 0/imm32/limit
-compute-offsets:file-offset: 0/imm32
-compute-offsets:segment-offset: 0/imm32
-compute-offsets:word-slice: 0/imm32/curr
-compute-offsets:word-slice:end: 0/imm32/limit
-compute-offsets:heap: 0/imm32/curr
-compute-offsets:heap:end: 0/imm32/limit
 
 # . . vim:nowrap:textwidth=0
