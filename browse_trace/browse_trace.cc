@@ -273,6 +273,7 @@ int main(int argc, char* argv[]) {
         search(Current_search_pattern, opposite(Current_search_direction));
     }
   }
+  tb_clear();
   tb_shutdown();
   return 0;
 }

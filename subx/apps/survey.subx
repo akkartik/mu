@@ -417,7 +417,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #       if slice-equal?(word-slice, "==")
     #         if curr-segment-name != 0
     #           seg = get-or-insert(segments, curr-segment-name)
-    #           seg->size = file-offset - seg->starting-offset
+    #           seg->size = *file-offset - seg->starting-offset
     #           trace("segment '", curr-segment-name, "' has size 0x", seg->size)
     #         curr-segment-name = next-word(line)
     #         if slice-empty?(curr-segment-name)
@@ -427,13 +427,13 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #           abort
     #         seg = get-or-insert(segments, curr-segment-name)
     #         seg->starting-address = parse-hex-int(segment-start)
-    #         seg->starting-offset = file-offset
+    #         seg->starting-offset = *file-offset
     #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->starting-offset)
     #         segment-offset = 0
     #       else
     #         width = compute-width(word-slice)
-    #         segment-offset += width
-    #         file-offset += width
+    #         *segment-offset += width
+    #         *file-offset += width
     #
     # . prolog
     55/push-EBP
@@ -445,7 +445,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     53/push-EBX
     56/push-ESI
     57/push-EDI
-    # cur-segment-name = {0, 0}
+    # curr-segment-name = {0, 0}
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:curr-segment-name/disp32  0/imm32        # copy to *compute-offsets:word-slice
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:curr-segment-name:end/disp32  0/imm32    # copy to *(compute-offsets:word-slice+4)
     # file-offset = 0
@@ -536,7 +536,7 @@ $compute-offsets:label:
     # . if so, goto segment check
     74/jump-if-equal  $compute-offsets:segment/disp8
     # . else fallthrough
-    # x = insert(labels, curr-segment-name)
+    # x = insert(labels, word-slice)
     # . EAX = get-or-insert(labels, word-slice/EDX, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
@@ -546,24 +546,28 @@ $compute-offsets:label:
     e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # trace-snsns("label '" word-slice/EDX "' is in segment '" current-segment-name "'")
+    # trace-slsls("label '" word-slice/EDX "' is in segment '" current-segment-name "'")
     # . . push args
-    68/push  "label '"/imm32
-    52/push-EDX
-    68/push  "' is in segment '"/imm32
-    68/push  compute-offsets:curr-segment-name/imm32
     68/push  "'"/imm32
-    # . . call
-    e8/call  trace-snsns/disp32
-    # trace-snsns("label '" word-slice/EDX "' is in segment '" current-segment-name "'")
-    # . . push args
-    68/push  "label '"/imm32
+    68/push  compute-offsets:curr-segment-name/imm32
+    68/push  "' is in segment '"/imm32
     52/push-EDX
-    68/push  "' is at offset 0x"/imm32
-    68/push  compute-offsets:file-offset/imm32
-    68/push  ""/imm32
+    68/push  "label '"/imm32
     # . . call
-    e8/call  trace-snsns/disp32
+    e8/call  trace-slsls/disp32
+    # trace-slsns("label '" word-slice/EDX "' is at offset '" *file-offset/EAX "'")
+    # . . EAX = file-offset
+    b8/copy-to-EAX compute-offsets:file-offset/imm32
+    # . . EAX = *file-offset/EAX
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
+    # . . push args
+    68/push  "."/imm32
+    50/push-EAX
+    68/push  "' is at offset "/imm32
+    52/push-EDX
+    68/push  "label '"/imm32
+    # . . call
+    e8/call  trace-slsns/disp32
     # continue
     e9/jump  $compute-offsets:word-loop/disp32
 $compute-offsets:segment:
@@ -613,9 +617,9 @@ $compute-offsets:segment:
     59/pop-to-ECX
     # trace-slsns("segment '", curr-segment-name, "' has size 0x", seg->size/EBX, "")
     # . push args
-    68/push  ""/imm32
+    68/push  "."/imm32
     53/push-EBX
-    68/push  "' has size 0x"/imm32
+    68/push  "' has size "/imm32
     68/push  compute-offsets:curr-segment-name/imm32
     68/push  "segment '"/imm32
     # . call
@@ -686,13 +690,14 @@ $compute-offsets:construct-next-segment:
     89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
     # seg->file-offset = *file-offset/EAX
     # . EAX = *file-offset
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32 # copy *file-offset to EAX
+    b8/copy-to-EAX  compute-offsets:file-offset/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
     89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EBX+4)
-    # trace-slsns("segment '", curr-segment-name, "' has size 0x", seg->size/EBX, "")
+    # trace-slsns("segment '", curr-segment-name, "' is at file offset ", seg->file-offset/EAX, "")
     # . push args
-    68/push  ""/imm32
-    53/push-EAX
-    68/push  "' is at file offset size 0x"/imm32
+    68/push  "."/imm32
+    50/push-EAX
+    68/push  "' is at file offset "/imm32
     68/push  compute-offsets:curr-segment-name/imm32
     68/push  "segment '"/imm32
     # . call
@@ -869,10 +874,10 @@ test-compute-offsets:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32        # add to ESP
     # check trace
-    # . check-trace-contains("segment 'code' is at file offset 0x0", msg)
+    # . check-trace-contains("segment 'code' is at file offset 0x00000000.", msg)
     # . . push args
     68/push  "F - test-compute-offsets/0"/imm32
-    68/push  "segment 'code' is at file offset 0x0"/imm32
+    68/push  "segment 'code' is at file offset 0x00000000."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -915,6 +920,32 @@ test-compute-offsets:
     68/push  "label 'x' is at offset 0x0"/imm32
     # . . call
     e8/call  check-trace-contains/disp32
+     # dump *Trace-stream {{{
+     # . write(2/stderr, "^")
+     # . . push args
+     68/push  "^"/imm32
+     68/push  2/imm32/stderr
+     # . . call
+     e8/call  write/disp32
+     # . . discard args
+     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+     # . write-stream(2/stderr, *Trace-stream)
+     # . . push args
+     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+     68/push  2/imm32/stderr
+     # . . call
+     e8/call  write-stream/disp32
+     # . . discard args
+     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+     # . write(2/stderr, "$\n")
+     # . . push args
+     68/push  "$\n"/imm32
+     68/push  2/imm32/stderr
+     # . . call
+     e8/call  write/disp32
+     # . . discard args
+     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+     # }}}
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . epilog
