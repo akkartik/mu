@@ -627,18 +627,26 @@ allocated memory for it.)_
 #### writing to disk
 * `write`: string -> file
   - Can also be used to cat a string into a stream.
-  - Will abort the entire program if there isn't enough room.
+  - Will abort the entire program if destination is a stream and doesn't have
+    enough room.
 * `write-stream`: stream -> file
   - Can also be used to cat one stream into another.
-  - Will abort the entire program if there isn't enough room.
+  - Will abort the entire program if destination is a stream and doesn't have
+    enough room.
+* `write-slice`: slice -> stream
+  - Will abort the entire program if there isn't enough room in the
+    destination stream.
 * `append-byte`: int -> stream
-  - Will abort the entire program if there isn't enough room.
+  - Will abort the entire program if there isn't enough room in the
+    destination stream.
 * `append-byte-hex`: int -> stream
   - textual representation in hex, no '0x' prefix
-  - Will abort the entire program if there isn't enough room.
+  - Will abort the entire program if there isn't enough room in the
+    destination stream.
 * `print-int32`: int -> stream
   - textual representation in hex, including '0x' prefix
-  - Will abort the entire program if there isn't enough room.
+  - Will abort the entire program if there isn't enough room in the
+    destination stream.
 * `write-buffered`: string -> buffered-file
 * `write-slice-buffered`: slice -> buffered-file
 * `flush`: buffered-file
