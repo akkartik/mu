@@ -373,8 +373,8 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #           abort
     #         seg = get-or-insert-slice(segments, curr-segment-name)
     #         seg->starting-address = parse-hex-int(segment-start)
-    #         seg->starting-offset = *file-offset
-    #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->starting-offset)
+    #         seg->file-offset = *file-offset
+    #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->file-offset)
     #         segment-offset = 0
     #       else
     #         width = compute-width-of-slice(word-slice)
@@ -400,12 +400,15 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     # segment-offset = 0
     b8/copy-to-EAX  0/imm32
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:segment-offset/disp32      # copy EAX to *segment-offset
-    # line/ECX = new-stream(heap, 512, 1)
+    # line/ECX = new-stream(512, 1)
+    # . EAX = new-stream(512, 1)
+    # . . push args
     68/push  1/imm32
     68/push  0x200/imm32
     68/push  Heap/imm32
+    # . . call
     e8/call  new-stream/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . line/ECX = EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
@@ -415,18 +418,15 @@ $compute-offsets:line-loop:
     e8/call  clear-stream/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # read-line-buffered(in, line/EAX)
+    # read-line-buffered(in, line/ECX)
     51/push-ECX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     e8/call  read-line-buffered/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # if(line->write == 0)
-    # . EAX = line/ECX->write
+    # if (line->write == 0) break
     8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
-    # . line->write/EAX == 0 ?
     3d/compare-EAX-and  0/imm32
-    # . if so, break
     0f 84/jump-if-equal  $compute-offsets:end/disp32
 $compute-offsets:word-loop:
     # var word-slice/EDX = {0, 0}
@@ -512,11 +512,9 @@ $compute-offsets:segment:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . EAX == 0 ?
+    # . if (EAX == 0) goto next check
     3d/compare-EAX-and  0/imm32
-    # . if so, goto else
     0f 84/jump-if-equal  $compute-offsets:else/disp32
-    # . or fallthrough
     # if (curr-segment-name->start == 0) goto construct-next-segment
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:curr-segment-name/disp32 # copy *curr-segment-name to EAX
     3d/compare-EAX-and  0/imm32
@@ -530,12 +528,12 @@ $compute-offsets:segment:
     e8/call  get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # seg->size/EBX = file-offset - seg->starting-offset
+    # seg->size/EBX = file-offset - seg->file-offset
     # . save ECX
     51/push-ECX
     # . EBX = *file-offset
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy *file-offset to EBX
-    # . ECX = seg->starting-offset
+    # . ECX = seg->file-offset
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EAX+4) to ECX
     # . EBX -= ECX
     29/subtract                     3/mod/direct    3/rm32/EBX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EBX
@@ -543,16 +541,16 @@ $compute-offsets:segment:
     89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   8/disp8         .                 # copy EBX to *(EAX+8)
     # . restore ECX
     59/pop-to-ECX
-    # trace-slsns("segment '", curr-segment-name, "' has size 0x", seg->size/EBX, "")
-    # . push args
+    # trace-slsns("segment '", curr-segment-name, "' has size 0x", seg->size/EBX, ".")
+    # . . push args
     68/push  "."/imm32
     53/push-EBX
     68/push  "' has size "/imm32
     68/push  compute-offsets:curr-segment-name/imm32
     68/push  "segment '"/imm32
-    # . call
+    # . . call
     e8/call  trace-slsns/disp32
-    # . discard args
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
 $compute-offsets:construct-next-segment:
     # next-word(line/ECX, curr-segment-name)
@@ -606,7 +604,7 @@ $compute-offsets:construct-next-segment:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . seg->address = EAX
     89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
-    # seg->file-offset = *file-offset/EAX
+    # seg->file-offset = *file-offset
     # . EAX = *file-offset
     b8/copy-to-EAX  compute-offsets:file-offset/imm32
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
