@@ -326,8 +326,6 @@ compute-offsets:file-offset: 0/imm32
 compute-offsets:segment-offset: 0/imm32
 compute-offsets:word-slice: 0/imm32/start
 compute-offsets:word-slice:end: 0/imm32/end
-compute-offsets:heap: 0/imm32/start
-compute-offsets:heap:end: 0/imm32/end
 
 == code
 
@@ -393,12 +391,9 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     # segment-offset = 0
     b8/copy-to-EAX  0/imm32
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:segment-offset/disp32      # copy EAX to *segment-offset
-    # var heap : (address allocation-descriptor) = {0, 0}
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:heap/disp32  0/imm32        # copy to *compute-offsets:word-slice
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:heap:end/disp32  0/imm32    # copy to *(compute-offsets:word-slice+4)
     # new-segment(1024, heap)
     # . . push args
-    68/push  compute-offsets:heap/imm32
+    68/push  Heap/imm32
     68/push  0x400/imm32
     # . . call
     e8/call  new-segment/disp32
@@ -407,7 +402,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     # line/ECX = new-stream(heap, 512, 1)
     68/push  1/imm32
     68/push  0x200/imm32
-    68/push  compute-offsets:heap/imm32
+    68/push  Heap/imm32
     e8/call  new-stream/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
@@ -527,7 +522,7 @@ $compute-offsets:segment:
     74/jump-if-equal  $compute-offsets:construct-next-segment/disp8
     # EAX = slice-to-string(curr-segment-name)
     68/push  compute-offsets:curr-segment-name/imm32
-    68/push  compute-offsets:heap/imm32
+    68/push  Heap/imm32
     e8/call  slice-to-string/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -605,7 +600,7 @@ $compute-offsets:construct-next-segment:
     53/push-EBX
     # EAX = slice-to-string(curr-segment-name)
     68/push  compute-offsets:curr-segment-name/imm32
-    68/push  compute-offsets:heap/imm32
+    68/push  Heap/imm32
     e8/call  slice-to-string/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
@@ -647,7 +642,7 @@ $compute-offsets:construct-next-segment:
 $compute-offsets:else:
     # EAX = slice-to-string(curr-segment-name)
     52/push-EDX
-    68/push  compute-offsets:heap/imm32
+    68/push  Heap/imm32
     e8/call  slice-to-string/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
