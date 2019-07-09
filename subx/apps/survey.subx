@@ -398,8 +398,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     b8/copy-to-EAX  0/imm32
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32      # copy EAX to *file-offset
     # segment-offset = 0
-    b8/copy-to-EAX  0/imm32
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:segment-offset/disp32      # copy EAX to *segment-offset
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32        # copy to *compute-offsets:word-slice
     # line/ECX = new-stream(512, 1)
     # . EAX = new-stream(512, 1)
     # . . push args
@@ -605,9 +604,7 @@ $compute-offsets:construct-next-segment:
     # . seg->address = EAX
     89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
     # seg->file-offset = *file-offset
-    # . EAX = *file-offset
-    b8/copy-to-EAX  compute-offsets:file-offset/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32 # copy *file-offset to EAX
     89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EBX+4)
     # trace-slsns("segment '", curr-segment-name, "' is at file offset ", seg->file-offset/EAX, "")
     # . push args
@@ -631,17 +628,9 @@ $compute-offsets:else:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # segment-offset += width
-    # . EBX = *segment-offset
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:segment-offset/disp32 # copy *segment-offset to EBX
-    # . *segment-offset/EBX += EAX/width
-    03/add                          3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # add EAX to EBX
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:segment-offset/disp32 # copy EBX to *compute-offsets:segment-offset
+    01/add                          0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:segment-offset/disp32 # add EAX to *segment-offset
     # file-offset += width
-    # . EBX = *file-offset
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy *file-offset to EBX
-    # . *file-offset/EBX += EAX/width
-    03/add                          3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # add EAX to EBX
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   compute-offsets:file-offset/disp32 # copy EBX to *compute-offsets:file-offset
+    01/add                          0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32 # add EAX to *file-offset
     e9/jump $compute-offsets:line-loop/disp32
 $compute-offsets:end:
     # . reclaim locals
