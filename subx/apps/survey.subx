@@ -337,7 +337,7 @@ compute-offsets:word-slice:end:
 
 compute-offsets:  # in : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
-    #   var curr-segment-name = 0
+    #   var curr-segment-name : (address slice) = {0, 0}
     #   var file-offset = 0, segment-offset = 0
     #   var line = new-stream(512, 1)
     #   while true                                  # line loop
@@ -358,9 +358,9 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         # labels occupy no space, so no need to increment offsets
     #         continue
     #       if slice-equal?(word-slice, "==")
-    #         if curr-segment-name != 0
-    #           seg = get-or-insert(segments, curr-segment-name)
-    #           seg->size = *file-offset - seg->starting-offset
+    #         if !slice-empty?(curr-segment-name)
+    #           seg = get-or-insert-slice(segments, curr-segment-name)
+    #           seg->size = *file-offset - seg->file-offset
     #           trace("segment '", curr-segment-name, "' has size 0x", seg->size)
     #         curr-segment-name = next-word(line)
     #         if slice-empty?(curr-segment-name)
@@ -368,7 +368,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         segment-start = next-word(line)
     #         if slice-empty?(segment-start)
     #           abort
-    #         seg = get-or-insert(segments, curr-segment-name)
+    #         seg = get-or-insert-slice(segments, curr-segment-name)
     #         seg->starting-address = parse-hex-int(segment-start)
     #         seg->starting-offset = *file-offset
     #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->starting-offset)
@@ -522,24 +522,18 @@ $compute-offsets:segment:
     # . if so, goto else
     0f 84/jump-if-equal  $compute-offsets:else/disp32
     # . or fallthrough
-    # if curr-segment-name == 0, goto construct-next-segment
+    # if (curr-segment-name->start == 0) goto construct-next-segment
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:curr-segment-name/disp32 # copy *curr-segment-name to EAX
     3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $compute-offsets:construct-next-segment/disp8
-    # EAX = slice-to-string(curr-segment-name)
-    68/push  compute-offsets:curr-segment-name/imm32
-    68/push  Heap/imm32
-    e8/call  slice-to-string/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # seg/EAX = get-or-insert(segments, (string) curr-segment-name/EAX, row-size=16)
-    # . push args
+    # seg/EAX = get-or-insert-slice(segments, curr-segment-name, row-size=16)
+    # . . push args
     68/push  0x10/imm32/row-size
-    50/push-EAX
+    68/push  compute-offsets:curr-segment-name/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    # . call
-    e8/call  get-or-insert/disp32
-    # . discard args
+    # . . call
+    e8/call  get-or-insert-slice/disp32
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # seg->size/EBX = file-offset - seg->starting-offset
     # . save ECX
@@ -604,17 +598,12 @@ $compute-offsets:construct-next-segment:
     0f 84/jump-if-equal  $compute-offsets:abort/disp32
     # save segment-start/EBX (and prep for parse-hex-int call)
     53/push-EBX
-    # EAX = slice-to-string(curr-segment-name)
-    68/push  compute-offsets:curr-segment-name/imm32
-    68/push  Heap/imm32
-    e8/call  slice-to-string/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # seg/EBX = get-or-insert(segments, (string) curr-segment-name/EAX, row-size=16)
-    # . push args
+    # seg/EBX = get-or-insert-slice(segments, curr-segment-name, row-size=16)
+    # . . push args
     68/push  0x10/imm32/row-size
-    50/push-EAX
+    68/push  compute-offsets:curr-segment-name/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
