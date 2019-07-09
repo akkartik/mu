@@ -262,13 +262,13 @@ parse-array-of-ints:  # ad : (address allocation-descriptor), s : (address strin
     #   var slice = {s->data, 0}
     #   out = result->data
     #   while true
-    #     if (slice->curr >= end) break
-    #     slice->curr = skip-chars-matching-in-slice(slice->curr, end, ' ')
-    #     if (slice->curr >= end) break
-    #     slice->end = skip-chars-not-matching-in-slice(slice->curr, end, ' ')
+    #     if (slice->start >= end) break
+    #     slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
+    #     if (slice->start >= end) break
+    #     slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
     #     *out = parse-hex-int(slice)
     #     out += 4
-    #     slice->curr = slice->end
+    #     slice->start = slice->end
     #   return result
     #
     # . prolog
@@ -344,7 +344,7 @@ $parse-array-of-ints:break1:
 $parse-array-of-ints:pass2:
     # var slice/ECX = {s->data, 0}
     # . push 0
-    68/push  0/imm32/limit
+    68/push  0/imm32/end
     # . push s->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy ESI+4 to ECX
     51/push-ECX
@@ -353,11 +353,11 @@ $parse-array-of-ints:pass2:
     # out/EBX = result->data
     8d/copy-address                 1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy EAX+4 to EBX
 $parse-array-of-ints:loop2:
-    # if (slice->curr >= end) break
+    # if (slice->start >= end) break
     39/compare                      0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare *ECX with EDX
     73/jump-if-greater-or-equal-unsigned  $parse-array-of-ints:end/disp8
-    # slice->curr = skip-chars-matching-in-slice(slice->curr, end, ' ')
-    # . EAX = skip-chars-matching-in-slice(slice->curr, end, ' ')
+    # slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
+    # . EAX = skip-chars-matching-in-slice(slice->start, end, ' ')
     # . . push args
     68/push  0x20/imm32/space
     52/push-EDX
@@ -366,12 +366,12 @@ $parse-array-of-ints:loop2:
     e8/call  skip-chars-matching-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . slice->curr = EAX
+    # . slice->start = EAX
     89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ECX
-    # if (slice->curr >= end) break
+    # if (slice->start >= end) break
     39/compare                      0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare *ECX with EDX
     73/jump-if-greater-or-equal-unsigned  $parse-array-of-ints:end/disp8
-    # slice->end = skip-chars-not-matching-in-slice(slice->curr, end, ' ')
+    # slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
     # . EAX = skip-chars-not-matching-in-slice(curr, end, ' ')
     # . . push args
     68/push  0x20/imm32/space
@@ -395,7 +395,7 @@ $parse-array-of-ints:loop2:
     89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
     # out += 4
     81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
-    # slice->curr = slice->end
+    # slice->start = slice->end
     8b/copy                         1/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
     89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ECX
     81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX

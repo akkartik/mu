@@ -320,14 +320,14 @@ test-convert-computes-addresses:
 # global scratch space for compute-offsets in the data segment
 == data
 
-compute-offsets:curr-segment-name: 0/imm32/curr
-compute-offsets:curr-segment-name:end: 0/imm32/limit
+compute-offsets:curr-segment-name: 0/imm32/start
+compute-offsets:curr-segment-name:end: 0/imm32/end
 compute-offsets:file-offset: 0/imm32
 compute-offsets:segment-offset: 0/imm32
-compute-offsets:word-slice: 0/imm32/curr
-compute-offsets:word-slice:end: 0/imm32/limit
-compute-offsets:heap: 0/imm32/curr
-compute-offsets:heap:end: 0/imm32/limit
+compute-offsets:word-slice: 0/imm32/start
+compute-offsets:word-slice:end: 0/imm32/end
+compute-offsets:heap: 0/imm32/start
+compute-offsets:heap:end: 0/imm32/end
 
 == code
 
@@ -2137,8 +2137,8 @@ num-bytes:  # line : (address stream) -> EAX : int
     # var result/EAX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     # var word-slice/ECX = {0, 0}
-    68/push  0/imm32/limit
-    68/push  0/imm32/curr
+    68/push  0/imm32/end
+    68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
