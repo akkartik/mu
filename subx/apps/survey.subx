@@ -374,7 +374,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->starting-offset)
     #         segment-offset = 0
     #       else
-    #         width = compute-width(word-slice)
+    #         width = compute-width-of-slice(word-slice)
     #         *segment-offset += width
     #         *file-offset += width
     #
@@ -635,16 +635,12 @@ $compute-offsets:construct-next-segment:
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     compute-offsets:segment-offset/disp32  0/imm32           # copy to *segment-offset
     e9/jump $compute-offsets:line-loop/disp32
 $compute-offsets:else:
-    # EAX = slice-to-string(curr-segment-name)
+    # width/EAX = compute-width-of-slice(word-slice)
+    # . . push args
     52/push-EDX
-    68/push  Heap/imm32
-    e8/call  slice-to-string/disp32
+    # . . call
+    e8/call compute-width-of-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # width/EAX = compute-width(word/EAX)
-    50/push-EAX
-    e8/call compute-width/disp32
-    # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # segment-offset += width
     # . EBX = *segment-offset
