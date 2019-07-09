@@ -444,20 +444,18 @@ $compute-offsets:word-loop:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . EAX == 1 ?
-    3d/compare-EAX-and  1/imm32
-    # . if so, break (go to top of outer loop)
-    0f 84/jump-if-equal  $compute-offsets:line-loop/disp32
+    # . if (EAX != 0) break
+    3d/compare-EAX-and  0/imm32
+    0f 85/jump-if-not-equal  $compute-offsets:line-loop/disp32
     # if slice-starts-with?(word-slice, "#") continue
     68/push  "#"/imm32
     52/push-EDX
     e8/call  slice-starts-with?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . EAX == 1 ?
-    3d/compare-EAX-and  1/imm32
-    # . if so, continue
-    74/jump-if-equal  $compute-offsets:word-loop/disp8
+    # . if (EAX != 0) continue
+    3d/compare-EAX-and  0/imm32
+    75/jump-if-not-equal  $compute-offsets:word-loop/disp8
 $compute-offsets:label:
     # if (!is-label?(word-slice/EDX)) goto next check
     # . EAX = is-label?(word-slice/EDX)
@@ -564,10 +562,9 @@ $compute-offsets:construct-next-segment:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . EAX == 1 ?
-    3d/compare-EAX-and  1/imm32
-    # . if so, abort
-    0f 84/jump-if-equal  $compute-offsets:abort/disp32
+    # . if (EAX != 0) abort
+    3d/compare-EAX-and  0/imm32
+    0f 85/jump-if-not-equal  $compute-offsets:abort/disp32
     # next-word(line/ECX, segment-start)
     68/push  compute-offsets:segment-start/imm32
     51/push-ECX
@@ -580,10 +577,9 @@ $compute-offsets:construct-next-segment:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . EAX == 1 ?
-    3d/compare-EAX-and  1/imm32
-    # . if so, abort
-    0f 84/jump-if-equal  $compute-offsets:abort/disp32
+    # . if (EAX != 0) abort
+    3d/compare-EAX-and  0/imm32
+    0f 85/jump-if-not-equal  $compute-offsets:abort/disp32
     # seg/EBX = get-or-insert-slice(segments, curr-segment-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
