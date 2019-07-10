@@ -24,6 +24,7 @@ get-or-insert:  # table : (address stream {string, _}), key : (address string), 
     #     curr += row-size
     #   if table->write >= table->length
     #     abort
+    #   zero-out(max, row-size)
     #   *max = key
     #   table->write += row-size
     #   return max+4
@@ -72,6 +73,14 @@ $get-or-insert:not-found:
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
     3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
     73/jump-if-greater-or-equal-unsigned  $get-or-insert:abort/disp8
+    # zero-out(max, row-size)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    52/push-EDX
+    # . . call
+    e8/call  zero-out/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # *max = key
     # . EAX = key
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
@@ -258,6 +267,7 @@ $test-get-or-insert:end:
 # scan 'table' for a row with a key 'key' and return the address of the corresponding value
 # if no row is found, save 'key' in the next available row
 # if there are no rows free, abort
+# WARNING: leaks memory
 # TODO: pass in an allocation descriptor
 get-or-insert-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
     # pseudocode:
@@ -269,6 +279,7 @@ get-or-insert-slice:  # table : (address stream {string, _}), key : (address sli
     #     curr += row-size
     #   if table->write >= table->length
     #     abort
+    #   zero-out(max, row-size)
     #   *max = slice-to-string(Heap, key)
     #   table->write += row-size
     #   return max+4
@@ -317,6 +328,14 @@ $get-or-insert-slice:not-found:
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
     3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
     7d/jump-if-greater-or-equal  $get-or-insert-slice:abort/disp8
+    # zero-out(max, row-size)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    52/push-EDX
+    # . . call
+    e8/call  zero-out/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # *max = slice-to-string(Heap, key)
     # . EAX = slice-to-string(Heap, key)
     # . . push args
