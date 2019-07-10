@@ -1103,7 +1103,6 @@ case 0xff: {
     }
     default:
       cerr << "unrecognized subop for ff: " << HEXBYTE << NUM(subop) << '\n';
-      DUMP("");
       exit(1);
     // End Op ff Subops
   }
