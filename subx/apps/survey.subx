@@ -354,8 +354,8 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #       if slice-starts-with?(word-slice, "#")  # comment
     #         continue
     #       if is-label?(word-slice)
-    #         x : (address number) = get-or-insert(labels, name)
-    #         *x = segment-offset
+    #         x : (address label-info) = get-or-insert(labels, name)
+    #         x->segment-offset = segment-offset
     #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'")
     #         trace("label '", word-slice, "' is at offset 0x", file-offset)
     #         # labels occupy no space, so no need to increment offsets
@@ -474,7 +474,11 @@ $compute-offsets:label:
     e8/call  get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # TODO: *x = segment-offset
+    # x->segment-offset = segment-offset
+    # . EBX = segment-offset
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32
+    # . x->segment-offset = EBX
+    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy EBX to *(EAX+4)
     # trace-slsls("label '" word-slice/EDX "' is in segment '" current-segment-name "'")
     # . . push args
     68/push  "'"/imm32
