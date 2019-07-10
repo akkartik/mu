@@ -25,6 +25,7 @@
 #     aborts if not found
 #   get-or-insert-slice(stream, slice, row-size)
 #     inserts if not found
+# Beware: the '-slice' variants leak memory on every call.
 
 # 'table' is a stream of (key, value) rows
 # keys are always strings (addresses; size 4 bytes)
@@ -193,6 +194,7 @@ $test-get:end:
 # values may be any type, but rows (key+value) always occupy 'row-size' bytes
 # scan 'table' for a row with a key 'key' and return the address of the corresponding value
 # if no row is found, abort
+# WARNING: leaks memory
 get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
     # pseudocode:
     #   curr = table->data
