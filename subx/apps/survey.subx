@@ -871,7 +871,7 @@ compute-addresses:  # segments : (address stream {string, segment-info}), labels
     #   while true
     #     if (lrow >= max) break
     #     seg-name : (address string) = lrow->segment-name
-    #     label-seg : (address segment-info) = get-or-insert(segments, seg-name, row-size=16)
+    #     label-seg : (address segment-info) = get(segments, seg-name, row-size=16)
     #     lrow->address = label-seg->address + lrow->segment-offset
     #     trace-sssns("label " lrow->key " is at address " lrow->address)
     #     lrow += 16  # row-size
@@ -947,16 +947,16 @@ $compute-addresses:label-loop:
     73/jump-if-greater-or-equal-unsigned  $compute-addresses:end/disp8
     # seg-name/EDX = lrow->segment-name
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           2/r32/EDX   4/disp8         .                 # copy *EAX to EDX
-    # label-seg/EDX : (address segment-info) = get-or-insert(segments, seg-name, row-size=16)
+    # label-seg/EDX : (address segment-info) = get(segments, seg-name, row-size=16)
     # . save EAX
     50/push-EAX
-    # . EAX = get-or-insert(segments, seg-name, row-size=16)
+    # . EAX = get(segments, seg-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
-    e8/call  get-or-insert/disp32
+    e8/call  get/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . EDX = EAX
@@ -1218,7 +1218,7 @@ emit-segments:  # in : (address buffered-file), out : (address buffered-file), s
     #         write-buffered(out, " ")
     #         continue
     #       datum = next-token-from-slice(word-slice->start, word-slice->end, "/")
-    #       info = get-or-insert-slice(labels, datum)
+    #       info = get-slice(labels, datum)
     #       if has-metadata?(word-slice, "imm8")
     #         abort  # label should never go to imm8
     #       else if has-metadata?(word-slice, "imm32")
@@ -1490,14 +1490,14 @@ $emit-segments:check-metadata:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # info/ESI = get-or-insert-slice(labels, datum, row-size=16)
-    # . EAX = get-or-insert-slice(labels, datum, row-size=16)
+    # info/ESI = get-slice(labels, datum, row-size=16)
+    # . EAX = get-slice(labels, datum, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     57/push-EDI
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
     # . . call
-    e8/call  get-or-insert-slice/disp32
+    e8/call  get-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . ESI = EAX
@@ -2008,7 +2008,7 @@ $emit-headers:end:
 
 emit-elf-header:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode
-    #   *Elf_e_entry = get-or-insert(labels, "Entry")->address
+    #   *Elf_e_entry = get(labels, "Entry")->address
     #   *Elf_e_phnum = segments->write / 20         # size of a row
     #   emit-hex-array(out, Elf_header)
     #
@@ -2019,16 +2019,16 @@ emit-elf-header:  # out : (address buffered-file), segments : (address stream {s
     50/push-EAX
     51/push-ECX
     52/push-EDX  # just because we need to call idiv
-    # *Elf_e_entry = get-or-insert(labels, "Entry")->address
+    # *Elf_e_entry = get(labels, "Entry")->address
     # . EAX = labels
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
-    # . label-info/EAX = get-or-insert(labels, "Entry", row-size=16)
+    # . label-info/EAX = get(labels, "Entry", row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     68/push  "Entry"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     # . . call
-    e8/call  get-or-insert/disp32
+    e8/call  get/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . EAX = label-info->address
