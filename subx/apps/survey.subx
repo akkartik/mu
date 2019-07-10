@@ -392,13 +392,12 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     56/push-ESI
     57/push-EDI
     # curr-segment-name = {0, 0}
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:curr-segment-name/disp32  0/imm32        # copy to *compute-offsets:word-slice
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:curr-segment-name:end/disp32  0/imm32    # copy to *(compute-offsets:word-slice+4)
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:curr-segment-name/disp32  0/imm32         # copy to *compute-offsets:curr-segment-name
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:curr-segment-name:end/disp32  0/imm32     # copy to *(compute-offsets:curr-segment-name+4)
     # file-offset = 0
-    b8/copy-to-EAX  0/imm32
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32      # copy EAX to *file-offset
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:file-offset/disp32  0/imm32               # copy to *compute-offsets:word-slice
     # segment-offset = 0
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32        # copy to *compute-offsets:word-slice
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32            # copy to *compute-offsets:word-slice
     # line/ECX = new-stream(512, 1)
     # . EAX = new-stream(512, 1)
     # . . push args
@@ -428,9 +427,7 @@ $compute-offsets:line-loop:
     3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $compute-offsets:end/disp32
 $compute-offsets:word-loop:
-    # var word-slice/EDX = {0, 0}
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:word-slice/disp32  0/imm32        # copy to *compute-offsets:word-slice
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:word-slice:end/disp32  0/imm32    # copy to *(compute-offsets:word-slice+4)
+    # EDX = word-slice
     ba/copy-to-EDX  compute-offsets:word-slice/imm32
     # next-word(line/ECX, word-slice/EDX)
     52/push-EDX
