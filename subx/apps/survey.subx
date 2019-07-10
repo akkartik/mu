@@ -1967,9 +1967,43 @@ emit-headers:  # out : (address buffered-file), segments : (address stream {stri
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    # emit-elf-header(out, segments, labels)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-elf-header/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # EAX = segments
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    # ECX = segments->write
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    # curr-segment/EAX = segments->data
+    8d/copy-address                 1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy EAX+12 to EAX
+    # max/ECX = segments->data + segments->write
+    01/add                          3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # add EAX to ECX
+$emit-headers:loop:
+    # if (curr-segment >= max) break
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
+    73/jump-if-greater-or-equal-unsigned  $emit-headers:end/disp8
+    # emit-elf-program-header-entry(curr-segment)
+    # . . push args
+    50/push-EAX
+    # . . call
+    e8/call  emit-elf-program-header-entry/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # curr-segment += 20                        # size of a row
+    81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x14/imm32        # add to EAX
+    eb/jump  $emit-headers:loop/disp8
 $emit-headers:end:
-    # . reclaim locals
     # . restore registers
+    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -1977,17 +2011,57 @@ $emit-headers:end:
 
 emit-elf-header:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode
-    #   *Elf_e_entry = get(labels, "Entry")->address
+    #   *Elf_e_entry = get-or-insert(labels, "Entry")->address
     #   *Elf_e_phnum = segments->write / 20         # size of a row
-    #   write(out, Elf_header)
+    #   emit-hex-array(out, Elf_header)
     #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX  # just because we need to call idiv
+    # *Elf_e_entry = get-or-insert(labels, "Entry")->address
+    # . EAX = labels
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
+    # . label-info/EAX = get-or-insert(labels, "Entry", row-size=16)
+    # . . push args
+    68/push  0x10/imm32/row-size
+    68/push  "Entry"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    # . . call
+    e8/call  get-or-insert/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . EAX = label-info->address
+    8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EAX+8) to EAX
+    # . *Elf_e_entry = EAX
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_e_entry/disp32                # copy EAX to *Elf_e_entry
+    # *Elf_e_phnum = segments->write / 0x20
+    # . EAX = segments
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
+    # . len/EAX = segments->write
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
+    # . EAX = len / 0x20  (destroying EDX)
+    b9/copy-to-ECX  0x20/imm32
+    31/xor                          3/mod/direct    2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # clear EDX
+    f7          7/subop/idiv        3/mod/direct    1/rm32/ECX    .           .             .           .           .               .                 # divide EDX:EAX by ECX, storing quotient in EAX and remainder in EDX
+    # . *Elf_e_phnum = EAX
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_e_phnum/disp32                # copy EAX to *Elf_e_phnum
+    # emit-hex-array(out, Elf_header)
+    # . . push args
+    68/push  Elf_header/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-hex-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $emit-elf-header:end:
-    # . reclaim locals
     # . restore registers
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -2004,15 +2078,66 @@ emit-elf-program-header-entry:  # curr-segment : {string, segment-info}
     #     *Elf_p_flags = 5  # r-x
     #   else
     #     *Elf_p_flags = 6  # rw-
-    #   write(out, Elf_program_header_entry)
+    #   emit-hex-array(out, Elf_program_header_entry)
     #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
+    50/push-EAX
+    56/push-ESI
+    # ESI = curr-segment
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    # *Elf_p_offset = curr-segment->file-offset
+    # . EAX = curr-segment->file-offset
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(ESI+8) to EAX
+    # . *Elf_p_offset = EAX
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_p_offset/disp32               # copy EAX to *Elf_p_offset
+    # *Elf_p_vaddr = curr-segment->address
+    # . EAX = curr-segment->address
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ESI+4) to EAX
+    # . *Elf_p_vaddr = EAX
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_p_vaddr/disp32                # copy EAX to *Elf_p_vaddr
+    # *Elf_p_paddr = curr-segment->address
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_p_paddr/disp32                # copy EAX to *Elf_p_paddr
+    # *Elf_p_filesz = curr-segment->size
+    # . EAX = curr-segment->size
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(ESI+12) to EAX
+    # . *Elf_p_filesz = EAX
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_p_filesz/disp32               # copy EAX to *Elf_p_filesz
+    # *Elf_p_memsz = curr-segment->size
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_p_memsz/disp32                # copy EAX to *Elf_p_memsz
+    # if (!string-equal?(curr-segment->name, "code") goto next check
+    # . EAX = curr-segment->name
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
+    # . EAX = string-equal?(curr-segment->name, "code")
+    # . . push args
+    68/push  "code"/imm32
+    50/push-EAX
+    # . . call
+    e8/call  string-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . if (EAX == 0) goto next check
+    3d/compare-EAX-and  0/imm32
+    74/jump-if-equal  $emit-elf-program-header-entry:data/disp8
+    # *Elf_p_flags = rw-
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Elf_p_flags/disp32  6/imm32       # copy to *Elf_p_flags
+$emit-elf-program-header-entry:data:
+    # otherwise *Elf_p_flags = r-x
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Elf_p_flags/disp32  5/imm32       # copy to *Elf_p_flags
+    # emit-hex-array(out, Elf_program_header_entry)
+    # . . push args
+    68/push  Elf_program_header_entry/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  emit-hex-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $emit-elf-program-header-entry:end:
-    # . reclaim locals
     # . restore registers
+    5e/pop-to-ESI
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
