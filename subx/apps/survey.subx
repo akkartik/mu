@@ -671,6 +671,7 @@ test-compute-offsets:
     #   == code 0x1
     #   ab x/imm32
     #   == data 0x1000
+    #   00
     #   x:
     #     34
     #
@@ -679,8 +680,8 @@ test-compute-offsets:
     #   segment 'code' has size 0x5
     #   segment 'data' is at file offset 0x5
     #   label 'x' is in segment 'data'
-    #   label 'x' is at segment offset 0x0
-    #   segment 'data' has size 0x1
+    #   label 'x' is at segment offset 0x1
+    #   segment 'data' has size 0x2
     #
     # . prolog
     55/push-EBP
@@ -805,10 +806,10 @@ test-compute-offsets:
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("segment 'data' has size 0x00000001.", msg)
+    # . check-trace-contains("segment 'data' has size 0x00000002.", msg)
     # . . push args
     68/push  "F - test-compute-offsets/3"/imm32
-    68/push  "segment 'data' has size 0x00000001."/imm32
+    68/push  "segment 'data' has size 0x00000002."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -821,10 +822,10 @@ test-compute-offsets:
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("label 'x' is at segment offset 0x00000000.", msg)
+    # . check-trace-contains("label 'x' is at segment offset 0x00000001.", msg)
     # . . push args
     68/push  "F - test-compute-offsets/5"/imm32
-    68/push  "label 'x' is at segment offset 0x00000000."/imm32
+    68/push  "label 'x' is at segment offset 0x00000001."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
