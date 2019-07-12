@@ -358,7 +358,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         x : (address label-info) = get-or-insert(labels, name)
     #         x->segment-offset = segment-offset
     #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'")
-    #         trace("label '", word-slice, "' is at offset 0x", file-offset)
+    #         trace("label '", word-slice, "' is at segment offset 0x", segment-offset)
     #         # labels occupy no space, so no need to increment offsets
     #         continue
     #       if slice-equal?(word-slice, "==")
@@ -493,15 +493,15 @@ $compute-offsets:label:
     e8/call  trace-slsls/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
-    # trace-slsns("label '" word-slice/EDX "' is at offset '" *file-offset/EAX "'")
+    # trace-slsns("label '" word-slice/EDX "' is at segment offset '" *file-offset/EAX "'")
     # . . EAX = file-offset
-    b8/copy-to-EAX compute-offsets:file-offset/imm32
+    b8/copy-to-EAX compute-offsets:segment-offset/imm32
     # . . EAX = *file-offset/EAX
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
     # . . push args
     68/push  "."/imm32
     50/push-EAX
-    68/push  "' is at offset "/imm32
+    68/push  "' is at segment offset "/imm32
     52/push-EDX
     68/push  "label '"/imm32
     # . . call
@@ -679,7 +679,7 @@ test-compute-offsets:
     #   segment 'code' has size 0x5
     #   segment 'data' is at file offset 0x5
     #   label 'x' is in segment 'data'
-    #   label 'x' is at offset 0x5
+    #   label 'x' is at segment offset 0x0
     #   segment 'data' has size 0x1
     #
     # . prolog
@@ -821,10 +821,10 @@ test-compute-offsets:
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("label 'x' is at offset 0x00000005.", msg)
+    # . check-trace-contains("label 'x' is at segment offset 0x00000000.", msg)
     # . . push args
     68/push  "F - test-compute-offsets/5"/imm32
-    68/push  "label 'x' is at offset 0x00000005."/imm32
+    68/push  "label 'x' is at segment offset 0x00000000."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
