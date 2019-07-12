@@ -354,6 +354,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #       if slice-starts-with?(word-slice, "#")  # comment
     #         continue
     #       if is-label?(word-slice)
+    #         strip trailing ':' from word-slice
     #         x : (address label-info) = get-or-insert(labels, name)
     #         x->segment-offset = segment-offset
     #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'")
@@ -465,8 +466,8 @@ $compute-offsets:label:
     # . if (EAX == 0) goto next check
     3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $compute-offsets:segment/disp8
-    # word-slice->end--
-    ff          1/subop/dec        1/mod/*+disp8    2/rm32/EDX    .           .             .           .           4/disp8         .                 # decrement *(EDX+4)
+    # strip trailing ':' from word-slice
+    ff          1/subop/decrement   1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # decrement *(EDX+4)
     # x/EAX = get-or-insert-slice(labels, word-slice)
     # . . push args
     68/push  0x10/imm32/row-size
