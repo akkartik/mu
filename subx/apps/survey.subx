@@ -357,15 +357,15 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         strip trailing ':' from word-slice
     #         x : (address label-info) = get-or-insert(labels, name)
     #         x->segment-offset = segment-offset
-    #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'")
-    #         trace("label '", word-slice, "' is at segment offset 0x", segment-offset)
+    #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'.")
+    #         trace("label '", word-slice, "' is at segment offset ", segment-offset, ".")
     #         # labels occupy no space, so no need to increment offsets
     #         continue
     #       if slice-equal?(word-slice, "==")
     #         if !slice-empty?(curr-segment-name)
     #           seg = get-or-insert-slice(segments, curr-segment-name)
     #           seg->size = *file-offset - seg->file-offset
-    #           trace("segment '", curr-segment-name, "' has size 0x", seg->size)
+    #           trace("segment '", curr-segment-name, "' has size ", seg->size)
     #         curr-segment-name = next-word(line)
     #         if slice-empty?(curr-segment-name)
     #           abort
@@ -375,7 +375,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         seg = get-or-insert-slice(segments, curr-segment-name)
     #         seg->starting-address = parse-hex-int(segment-start)
     #         seg->file-offset = *file-offset
-    #         trace("segment '", curr-segment-name, "' is at file offset 0x", seg->file-offset)
+    #         trace("segment '", curr-segment-name, "' is at file offset ", seg->file-offset)
     #         segment-offset = 0
     #       else
     #         width = compute-width-of-slice(word-slice)
@@ -482,9 +482,9 @@ $compute-offsets:label:
     8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32
     # . x->segment-offset = EBX
     89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy EBX to *(EAX+4)
-    # trace-slsls("label '" word-slice/EDX "' is in segment '" current-segment-name "'")
+    # trace-slsls("label '" word-slice/EDX "' is in segment '" current-segment-name "'.")
     # . . push args
-    68/push  "'"/imm32
+    68/push  "'."/imm32
     68/push  compute-offsets:curr-segment-name/imm32
     68/push  "' is in segment '"/imm32
     52/push-EDX
@@ -493,7 +493,7 @@ $compute-offsets:label:
     e8/call  trace-slsls/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
-    # trace-slsns("label '" word-slice/EDX "' is at segment offset '" *file-offset/EAX "'")
+    # trace-slsns("label '" word-slice/EDX "' is at segment offset " *segment-offset/EAX ".")
     # . . EAX = file-offset
     b8/copy-to-EAX compute-offsets:segment-offset/imm32
     # . . EAX = *file-offset/EAX
@@ -547,7 +547,7 @@ $compute-offsets:segment:
     89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   8/disp8         .                 # copy EBX to *(EAX+8)
     # . restore ECX
     59/pop-to-ECX
-    # trace-slsns("segment '", curr-segment-name, "' has size 0x", seg->size, ".")
+    # trace-slsns("segment '", curr-segment-name, "' has size ", seg->size, ".")
     # . . push args
     68/push  "."/imm32
     53/push-EBX
@@ -676,12 +676,12 @@ test-compute-offsets:
     #     34
     #
     # trace contains (in any order):
-    #   segment 'code' is at file offset 0x0
-    #   segment 'code' has size 0x5
-    #   segment 'data' is at file offset 0x5
-    #   label 'x' is in segment 'data'
-    #   label 'x' is at segment offset 0x1
-    #   segment 'data' has size 0x2
+    #   segment 'code' is at file offset 0x0.
+    #   segment 'code' has size 0x5.
+    #   segment 'data' is at file offset 0x5.
+    #   segment 'data' has size 0x2.
+    #   label 'x' is in segment 'data'.
+    #   label 'x' is at segment offset 0x1.
     #
     # . prolog
     55/push-EBP
