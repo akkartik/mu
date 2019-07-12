@@ -332,7 +332,7 @@ compute-offsets:word-slice:
   0/imm32/start
 compute-offsets:word-slice:end:
   0/imm32/end
-compute-offsets:segment-start:  # slice
+compute-offsets:segment-tmp:  # slice
   0/imm32/start
   0/imm32/end
 
@@ -367,11 +367,11 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         curr-segment-name = next-word(line)
     #         if slice-empty?(curr-segment-name)
     #           abort
-    #         segment-start = next-word(line)
-    #         if slice-empty?(segment-start)
+    #         segment-tmp = next-word(line)
+    #         if slice-empty?(segment-tmp)
     #           abort
     #         seg = get-or-insert-slice(segments, curr-segment-name)
-    #         seg->starting-address = parse-hex-int(segment-start)
+    #         seg->starting-address = parse-hex-int(segment-tmp)
     #         seg->file-offset = *file-offset
     #         trace("segment '", curr-segment-name, "' is at file offset ", seg->file-offset)
     #         segment-offset = 0
@@ -695,15 +695,15 @@ $compute-offsets:construct-next-segment:
     # . if (EAX != 0) abort
     3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $compute-offsets:abort/disp32
-    # next-word(line/ECX, segment-start)
-    68/push  compute-offsets:segment-start/imm32
+    # next-word(line/ECX, segment-tmp)
+    68/push  compute-offsets:segment-tmp/imm32
     51/push-ECX
     e8/call  next-word/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # if slice-empty?(segment-start) abort
-    # . EAX = slice-empty?(segment-start)
-    68/push  compute-offsets:segment-start/imm32
+    # if slice-empty?(segment-tmp) abort
+    # . EAX = slice-empty?(segment-tmp)
+    68/push  compute-offsets:segment-tmp/imm32
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
@@ -721,9 +721,9 @@ $compute-offsets:construct-next-segment:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . EBX = EAX
     89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    # seg->address = parse-hex-int(segment-start)
-    # . EAX = parse-hex-int(segment-start)
-    68/push  compute-offsets:segment-start/imm32
+    # seg->address = parse-hex-int(segment-tmp)
+    # . EAX = parse-hex-int(segment-tmp)
+    68/push  compute-offsets:segment-tmp/imm32
     e8/call  parse-hex-int/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
