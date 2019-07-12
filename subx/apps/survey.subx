@@ -335,6 +335,15 @@ compute-offsets:segment-tmp:  # slice
 == code
 
 compute-offsets:  # in : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+    # skeleton:
+    #   for lines in 'in'
+    #     for words in line
+    #       switch word
+    #         case 1
+    #         case 2
+    #         ...
+    #         default
+    #
     # pseudocode:
     #   curr-segment-name : (address string) = 0
     #   var line = new-stream(512, 1)
@@ -710,7 +719,7 @@ $compute-offsets:case-label:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # . if (EAX == 0) goto next case
     3d/compare-EAX-and  0/imm32
-    74/jump-if-equal  $compute-offsets:case-final/disp8
+    74/jump-if-equal  $compute-offsets:case-default/disp8
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # decrement *(EDX+4)
     # x/EAX = get-or-insert-slice(labels, word-slice, row-size=16)
@@ -755,7 +764,7 @@ $compute-offsets:case-label:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # continue
     e9/jump  $compute-offsets:word-loop/disp32
-$compute-offsets:case-final:
+$compute-offsets:case-default:
     # width/EAX = compute-width-of-slice(word-slice)
     # . . push args
     52/push-EDX
