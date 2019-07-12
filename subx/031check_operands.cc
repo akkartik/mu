@@ -626,8 +626,12 @@ map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_0f;
 //// Class D: just op and disp32
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
 //  0     0     1      |0       0     0     0
+put_new(Permitted_operands_0f, "82", 0x10);
+put_new(Permitted_operands_0f, "83", 0x10);
 put_new(Permitted_operands_0f, "84", 0x10);
 put_new(Permitted_operands_0f, "85", 0x10);
+put_new(Permitted_operands_0f, "86", 0x10);
+put_new(Permitted_operands_0f, "87", 0x10);
 put_new(Permitted_operands_0f, "8c", 0x10);
 put_new(Permitted_operands_0f, "8d", 0x10);
 put_new(Permitted_operands_0f, "8e", 0x10);
