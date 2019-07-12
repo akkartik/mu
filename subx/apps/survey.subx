@@ -346,17 +346,9 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #       word-slice = next-word(line)
     #       if slice-empty?(word-slice)             # end of line
     #         break
-    #       if slice-starts-with?(word-slice, "#")  # comment
+    #       else if slice-starts-with?(word-slice, "#")  # comment
     #         continue
-    #       if is-label?(word-slice)
-    #         strip trailing ':' from word-slice
-    #         x : (address label-info) = get-or-insert(labels, name)
-    #         x->segment-offset = segment-offset
-    #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'.")
-    #         trace("label '", word-slice, "' is at segment offset ", segment-offset, ".")
-    #         # labels occupy no space, so no need to increment offsets
-    #         continue
-    #       if slice-equal?(word-slice, "==")
+    #       else if slice-equal?(word-slice, "==")
     #         if curr-segment-name != 0
     #           seg = get-or-insert(segments, curr-segment-name)
     #           seg->size = *file-offset - seg->file-offset
@@ -373,6 +365,14 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #         seg->file-offset = *file-offset
     #         trace("segment '", curr-segment-name, "' is at file offset ", seg->file-offset)
     #         segment-offset = 0
+    #         break  (next line)
+    #       else if is-label?(word-slice)
+    #         strip trailing ':' from word-slice
+    #         x : (address label-info) = get-or-insert(labels, name)
+    #         x->segment-offset = segment-offset
+    #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'.")
+    #         trace("label '", word-slice, "' is at segment offset ", segment-offset, ".")
+    #         # labels occupy no space, so no need to increment offsets
     #       else
     #         width = compute-width-of-slice(word-slice)
     #         *segment-offset += width
@@ -421,7 +421,7 @@ $compute-offsets:line-loop:
     # if (line->write == 0) break
     8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
     3d/compare-EAX-and  0/imm32
-    0f 84/jump-if-equal  $compute-offsets:break/disp32
+    0f 84/jump-if-equal  $compute-offsets:break-line-loop/disp32
 $compute-offsets:word-loop:
     # EDX = word-slice
     ba/copy-to-EDX  compute-offsets:word-slice/imm32
@@ -530,73 +530,17 @@ $compute-offsets:check0:
     # . if (EAX != 0) continue
     3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $compute-offsets:word-loop/disp32
-$compute-offsets:label:
-    # if (!is-label?(word-slice/EDX)) goto next check
-    # . EAX = is-label?(word-slice/EDX)
-    # . . push args
-    52/push-EDX
-    # . . call
-    e8/call  is-label?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if (EAX == 0) goto next check
-    3d/compare-EAX-and  0/imm32
-    74/jump-if-equal  $compute-offsets:segment/disp8
-    # strip trailing ':' from word-slice
-    ff          1/subop/decrement   1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # decrement *(EDX+4)
-    # x/EAX = get-or-insert-slice(labels, word-slice, row-size=16)
-    # . . push args
-    68/push  0x10/imm32/row-size
-    52/push-EDX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
-    # . . call
-    e8/call  get-or-insert-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # x->segment-offset = segment-offset
-    # . EBX = segment-offset
-    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32
-    # . x->segment-offset = EBX
-    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy EBX to *(EAX+4)
-    # trace-slsss("label '" word-slice/EDX "' is in segment '" current-segment-name "'.")
-    # . . push args
-    68/push  "'."/imm32
-    56/push-ESI
-    68/push  "' is in segment '"/imm32
-    52/push-EDX
-    68/push  "label '"/imm32
-    # . . call
-    e8/call  trace-slsss/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
-    # trace-slsns("label '" word-slice/EDX "' is at segment offset " *segment-offset/EAX ".")
-    # . . EAX = file-offset
-    b8/copy-to-EAX compute-offsets:segment-offset/imm32
-    # . . EAX = *file-offset/EAX
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
-    # . . push args
-    68/push  "."/imm32
-    50/push-EAX
-    68/push  "' is at segment offset "/imm32
-    52/push-EDX
-    68/push  "label '"/imm32
-    # . . call
-    e8/call  trace-slsns/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
-    # continue
-    e9/jump  $compute-offsets:word-loop/disp32
-$compute-offsets:segment:
-    # if (!slice-equal?(word-slice/EDX, "==")) goto next check
+$compute-offsets:case-segment-header:
+    # if (!slice-equal?(word-slice/EDX, "==")) goto next case
     # . EAX = slice-equal?(word-slice/EDX, "==")
     68/push  "=="/imm32
     52/push-EDX
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX == 0) goto next check
+    # . if (EAX == 0) goto next case
     3d/compare-EAX-and  0/imm32
-    0f 84/jump-if-equal  $compute-offsets:else/disp32
+    0f 84/jump-if-equal  $compute-offsets:case-label/disp32
     # if (curr-segment-name == 0) goto construct-next-segment
     81          7/subop/compare     3/mod/direct    6/rm32/ESI    .           .             .           .           .               0/imm32           # compare ESI
     74/jump-if-equal  $compute-offsets:construct-next-segment/disp8
@@ -753,8 +697,65 @@ $compute-offsets:update-curr-segment-name:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # segment-offset = 0
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     compute-offsets:segment-offset/disp32  0/imm32           # copy to *segment-offset
+    # break
     e9/jump $compute-offsets:line-loop/disp32
-$compute-offsets:else:
+$compute-offsets:case-label:
+    # if (!is-label?(word-slice/EDX)) goto next case
+    # . EAX = is-label?(word-slice/EDX)
+    # . . push args
+    52/push-EDX
+    # . . call
+    e8/call  is-label?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . if (EAX == 0) goto next case
+    3d/compare-EAX-and  0/imm32
+    74/jump-if-equal  $compute-offsets:case-final/disp8
+    # strip trailing ':' from word-slice
+    ff          1/subop/decrement   1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # decrement *(EDX+4)
+    # x/EAX = get-or-insert-slice(labels, word-slice, row-size=16)
+    # . . push args
+    68/push  0x10/imm32/row-size
+    52/push-EDX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    # . . call
+    e8/call  get-or-insert-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # x->segment-offset = segment-offset
+    # . EBX = segment-offset
+    8f          0/subop/pop         0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32
+    # . x->segment-offset = EBX
+    89/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy EBX to *(EAX+4)
+    # trace-slsss("label '" word-slice/EDX "' is in segment '" current-segment-name "'.")
+    # . . push args
+    68/push  "'."/imm32
+    56/push-ESI
+    68/push  "' is in segment '"/imm32
+    52/push-EDX
+    68/push  "label '"/imm32
+    # . . call
+    e8/call  trace-slsss/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # trace-slsns("label '" word-slice/EDX "' is at segment offset " *segment-offset/EAX ".")
+    # . . EAX = file-offset
+    b8/copy-to-EAX compute-offsets:segment-offset/imm32
+    # . . EAX = *file-offset/EAX
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
+    # . . push args
+    68/push  "."/imm32
+    50/push-EAX
+    68/push  "' is at segment offset "/imm32
+    52/push-EDX
+    68/push  "label '"/imm32
+    # . . call
+    e8/call  trace-slsns/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # continue
+    e9/jump  $compute-offsets:word-loop/disp32
+$compute-offsets:case-final:
     # width/EAX = compute-width-of-slice(word-slice)
     # . . push args
     52/push-EDX
@@ -767,7 +768,7 @@ $compute-offsets:else:
     # file-offset += width
     01/add                          0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   compute-offsets:file-offset/disp32 # add EAX to *file-offset
     e9/jump $compute-offsets:word-loop/disp32
-$compute-offsets:break:
+$compute-offsets:break-line-loop:
     # seg/EAX = get-or-insert(segments, curr-segment-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
