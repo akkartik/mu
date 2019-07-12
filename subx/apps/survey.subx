@@ -320,19 +320,19 @@ test-convert-computes-addresses:
 # global scratch space for compute-offsets in the data segment
 == data
 
-compute-offsets:curr-segment-name:
+compute-offsets:curr-segment-name:  # slice
   0/imm32/start
 compute-offsets:curr-segment-name:end:
   0/imm32/end
-compute-offsets:file-offset:
+compute-offsets:file-offset:  # int
   0/imm32
-compute-offsets:segment-offset:
+compute-offsets:segment-offset:  # int
   0/imm32
 compute-offsets:word-slice:
   0/imm32/start
 compute-offsets:word-slice:end:
   0/imm32/end
-compute-offsets:segment-start:
+compute-offsets:segment-start:  # slice
   0/imm32/start
   0/imm32/end
 
@@ -340,15 +340,13 @@ compute-offsets:segment-start:
 
 compute-offsets:  # in : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
-    #   var curr-segment-name : (address slice) = {0, 0}
-    #   var file-offset = 0, segment-offset = 0
     #   var line = new-stream(512, 1)
     #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line-buffered(in, line)
     #     if (line->write == 0) break               # end of file
     #     while true                                # word loop
-    #       var word-slice = next-word(line)
+    #       word-slice = next-word(line)
     #       if slice-empty?(word-slice)             # end of line
     #         break
     #       if slice-starts-with?(word-slice, "#")  # comment
