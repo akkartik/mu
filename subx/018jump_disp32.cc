@@ -57,7 +57,7 @@ void test_je_disp32_success() {
 case 0x84: {  // jump disp32 if ZF
   const int32_t offset = next32();
   if (ZF) {
-    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << offset << end();
     EIP += offset;
   }
   break;
@@ -108,7 +108,7 @@ void test_jne_disp32_success() {
 case 0x85: {  // jump disp32 unless ZF
   const int32_t offset = next32();
   if (!ZF) {
-    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << offset << end();
     EIP += offset;
   }
   break;
@@ -161,7 +161,7 @@ void test_jg_disp32_success() {
 case 0x8f: {  // jump disp32 if !SF and !ZF
   const int32_t offset = next32();
   if (!ZF && SF == OF) {
-    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << offset << end();
     EIP += offset;
   }
   break;
@@ -215,7 +215,7 @@ void test_jge_disp32_success() {
 case 0x8d: {  // jump disp32 if !SF
   const int32_t offset = next32();
   if (SF == OF) {
-    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << offset << end();
     EIP += offset;
   }
   break;
@@ -269,7 +269,7 @@ void test_jl_disp32_success() {
 case 0x8c: {  // jump disp32 if SF and !ZF
   const int32_t offset = next32();
   if (SF != OF) {
-    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << offset << end();
     EIP += offset;
   }
   break;
@@ -344,7 +344,7 @@ void test_jle_disp32_lesser() {
 case 0x8e: {  // jump disp32 if SF or ZF
   const int32_t offset = next32();
   if (ZF || SF != OF) {
-    trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();
+    trace(Callstack_depth+1, "run") << "jump " << offset << end();
     EIP += offset;
   }
   break;
