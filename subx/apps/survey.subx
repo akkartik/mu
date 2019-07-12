@@ -465,6 +465,8 @@ $compute-offsets:label:
     # . if (EAX == 0) goto next check
     3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $compute-offsets:segment/disp8
+    # word-slice->end--
+    ff          1/subop/dec        1/mod/*+disp8    2/rm32/EDX    .           .             .           .           4/disp8         .                 # decrement *(EDX+4)
     # x/EAX = get-or-insert-slice(labels, word-slice)
     # . . push args
     68/push  0x10/imm32/row-size
@@ -786,10 +788,10 @@ test-compute-offsets:
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("segment 'code' has size 0x5", msg)
+    # . check-trace-contains("segment 'code' has size 0x00000005", msg)
     # . . push args
     68/push  "F - test-compute-offsets/1"/imm32
-    68/push  "segment 'code' has size 0x5"/imm32
+    68/push  "segment 'code' has size 0x00000005."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
@@ -797,31 +799,31 @@ test-compute-offsets:
     # . check-trace-contains("segment 'data' is at file offset 0x5", msg)
     # . . push args
     68/push  "F - test-compute-offsets/2"/imm32
-    68/push  "segment 'data' is at file offset 0x5"/imm32
+    68/push  "segment 'data' is at file offset 0x00000005."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("segment 'data' has size 0x1", msg)
+    # . check-trace-contains("segment 'data' has size 0x00000001.", msg)
     # . . push args
     68/push  "F - test-compute-offsets/3"/imm32
-    68/push  "segment 'data' has size 0x1"/imm32
+    68/push  "segment 'data' has size 0x00000001."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("label 'x' is in segment 'data'", msg)
+    # . check-trace-contains("label 'x' is in segment 'data'.", msg)
     # . . push args
     68/push  "F - test-compute-offsets/4"/imm32
-    68/push  "label 'x' is in segment 'data'"/imm32
+    68/push  "label 'x' is in segment 'data'."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . check-trace-contains("label 'x' is at offset 0x0", msg)
+    # . check-trace-contains("label 'x' is at offset 0x00000000.", msg)
     # . . push args
     68/push  "F - test-compute-offsets/5"/imm32
-    68/push  "label 'x' is at offset 0x0"/imm32
+    68/push  "label 'x' is at offset 0x00000000."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
     # dump *Trace-stream {{{
