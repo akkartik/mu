@@ -135,129 +135,6 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-#?     # dump segments {{{
-#?     # . write(2/stderr, "initial segments: ")
-#?     # . . push args
-#?     68/push  "initial segments: "/imm32
-#?     68/push  2/imm32/stderr
-#?     # . . call
-#?     e8/call  write/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . clear-stream(Stderr+4)
-#?     # . . spill
-#?     50/push-EAX
-#?     # . . push args
-#?     b8/copy-to-EAX  Stderr/imm32
-#?     05/add-to-EAX  4/imm32
-#?     50/push-EAX
-#?     # . . call
-#?     e8/call  clear-stream/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . . restore
-#?     58/pop-to-EAX
-#?     # . print-int32-buffered(Stderr, segments)
-#?     # . . push args
-#?     51/push-ECX
-#?     68/push  Stderr/imm32
-#?     # . . call
-#?     e8/call  print-int32-buffered/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . . restore
-#?     58/pop-to-EAX
-#?     # . flush(Stderr)
-#?     # . . push args
-#?     68/push  Stderr/imm32
-#?     # . . call
-#?     e8/call  flush/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write(2/stderr, "\n")
-#?     # . . push args
-#?     68/push  "\n"/imm32
-#?     68/push  2/imm32/stderr
-#?     # . . call
-#?     e8/call  write/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # }}}
-#?     # dump segments[0].name {{{
-#?     # . write(2/stderr, "initial segments[0].name: ")
-#?     # . . push args
-#?     68/push  "initial segments[0].name: "/imm32
-#?     68/push  2/imm32/stderr
-#?     # . . call
-#?     e8/call  write/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . clear-stream(Stderr+4)
-#?     # . . spill
-#?     50/push-EAX
-#?     # . . push args
-#?     b8/copy-to-EAX  Stderr/imm32
-#?     05/add-to-EAX  4/imm32
-#?     50/push-EAX
-#?     # . . call
-#?     e8/call  clear-stream/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . . restore
-#?     58/pop-to-EAX
-#?     # . print-int32-buffered(Stderr, &curr-segment)
-#?     # . . spill
-#?     50/push-EAX
-#?     # . . push args
-#?     8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy ECX+12 to EAX
-#?     50/push-EAX
-#?     68/push  Stderr/imm32
-#?     # . . call
-#?     e8/call  print-int32-buffered/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . . restore
-#?     58/pop-to-EAX
-#?     # . flush(Stderr)
-#?     # . . push args
-#?     68/push  Stderr/imm32
-#?     # . . call
-#?     e8/call  flush/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write(2/stderr, " -> ")
-#?     # . . push args
-#?     68/push  " -> "/imm32
-#?     68/push  2/imm32/stderr
-#?     # . . call
-#?     e8/call  write/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . print-int32-buffered(Stderr, curr-segment->name)
-#?     # . . push args
-#?     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
-#?     68/push  Stderr/imm32
-#?     # . . call
-#?     e8/call  print-int32-buffered/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # . flush(Stderr)
-#?     # . . push args
-#?     68/push  Stderr/imm32
-#?     # . . call
-#?     e8/call  flush/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-#?     # . write(2/stderr, "\n")
-#?     # . . push args
-#?     68/push  "\n"/imm32
-#?     68/push  2/imm32/stderr
-#?     # . . call
-#?     e8/call  write/disp32
-#?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-#?     # }}}
-# segments: bdff ff2c
     # compute-offsets(in, segments, labels)
     # . . push args
     52/push-EDX
@@ -2511,7 +2388,6 @@ emit-headers:  # out : (address buffered-file), segments : (address stream {stri
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-#segments correct here: bdff ff2c
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  emit-elf-header/disp32
@@ -2696,52 +2572,6 @@ emit-elf-program-header-entry:  # curr-segment : (address {string, segment-info}
     56/push-ESI
     # ESI = curr-segment
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # dump curr-segment->name {{{
-    # . write(2/stderr, "emit ph entry: segment->name: ")
-    # . . push args
-    68/push  "emit ph entry: segment->name: "/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . clear-stream(Stderr+4)
-    # . . save EAX
-    50/push-EAX
-    # . . push args
-    b8/copy-to-EAX  Stderr/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
-    # . . call
-    e8/call  clear-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . . restore EAX
-    58/pop-to-EAX
-    # . print-int32-buffered(Stderr, curr-segment->name)
-    # . . push args
-    ff          6/subop/push        0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # push *EDX
-    68/push  Stderr/imm32
-    # . . call
-    e8/call  print-int32-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . flush(Stderr)
-    # . . push args
-    68/push  Stderr/imm32
-    # . . call
-    e8/call  flush/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . write(2/stderr, "\n")
-    # . . push args
-    68/push  "\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # }}}
     # *Elf_p_offset = curr-segment->file-offset
     # . EAX = curr-segment->file-offset
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(ESI+8) to EAX
