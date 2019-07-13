@@ -23,9 +23,8 @@
 #     inserts if not found
 #   get-slice(stream, slice, row-size)
 #     aborts if not found
-#   get-or-insert-slice(stream, slice, row-size)
+#   leaky-get-or-insert-slice(stream, slice, row-size)
 #     inserts if not found
-# Beware: the '-slice' variants leak memory on every call.
 
 # 'table' is a stream of (key, value) rows
 # keys are always strings (addresses; size 4 bytes)
@@ -194,7 +193,6 @@ $test-get:end:
 # values may be any type, but rows (key+value) always occupy 'row-size' bytes
 # scan 'table' for a row with a key 'key' and return the address of the corresponding value
 # if no row is found, abort
-# WARNING: leaks memory
 get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
     # pseudocode:
     #   curr = table->data
@@ -641,7 +639,7 @@ $test-get-or-insert:end:
 # if there are no rows free, abort
 # WARNING: leaks memory
 # TODO: pass in an allocation descriptor
-get-or-insert-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
+leaky-get-or-insert-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -670,10 +668,10 @@ get-or-insert-slice:  # table : (address stream {string, _}), key : (address sli
     # max/EDX = table->data + table->write
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
-$get-or-insert-slice:search-loop:
+$leaky-get-or-insert-slice:search-loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    73/jump-if-greater-or-equal-unsigned  $get-or-insert-slice:not-found/disp8
+    73/jump-if-greater-or-equal-unsigned  $leaky-get-or-insert-slice:not-found/disp8
     # if (slice-equal?(key, *curr)) return curr+4
     # . EAX = slice-equal?(key, *curr)
     # . . push args
@@ -685,21 +683,21 @@ $get-or-insert-slice:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . if (EAX != 0) return EAX = curr+4
     3d/compare-EAX-and  0/imm32
-    74/jump-if-equal  $get-or-insert-slice:mismatch/disp8
+    74/jump-if-equal  $leaky-get-or-insert-slice:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
-    eb/jump  $get-or-insert-slice:end/disp8
-$get-or-insert-slice:mismatch:
+    eb/jump  $leaky-get-or-insert-slice:end/disp8
+$leaky-get-or-insert-slice:mismatch:
     # curr += row-size
     03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
     # loop
-    eb/jump  $get-or-insert-slice:search-loop/disp8
-$get-or-insert-slice:not-found:
+    eb/jump  $leaky-get-or-insert-slice:search-loop/disp8
+$leaky-get-or-insert-slice:not-found:
     # result/EAX = 0
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     # if (table->write >= table->length) abort
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
     3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
-    7d/jump-if-greater-or-equal  $get-or-insert-slice:abort/disp8
+    7d/jump-if-greater-or-equal  $leaky-get-or-insert-slice:abort/disp8
     # zero-out(max, row-size)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
@@ -729,7 +727,7 @@ $get-or-insert-slice:not-found:
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy EDX to EAX
     # . EAX += 4
     05/add-to-EAX  4/imm32
-$get-or-insert-slice:end:
+$leaky-get-or-insert-slice:end:
     # . restore registers
     5e/pop-to-ESI
     5a/pop-to-EDX
@@ -739,10 +737,10 @@ $get-or-insert-slice:end:
     5d/pop-to-EBP
     c3/return
 
-$get-or-insert-slice:abort:
+$leaky-get-or-insert-slice:abort:
     # . _write(2/stderr, error)
     # . . push args
-    68/push  "get-or-insert-slice: too many segments"/imm32
+    68/push  "leaky-get-or-insert-slice: too many segments"/imm32
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
@@ -754,7 +752,7 @@ $get-or-insert-slice:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-test-get-or-insert-slice:
+test-leaky-get-or-insert-slice:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -773,21 +771,21 @@ test-get-or-insert-slice:
     52/push-EDX
     50/push-EAX
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-$test-get-or-insert-slice:first-call:
+$test-leaky-get-or-insert-slice:first-call:
     # - start with an empty table, insert one key, verify that it was inserted
-    # EAX = get-or-insert-slice(table, "code" slice, 8 bytes per row)
+    # EAX = leaky-get-or-insert-slice(table, "code" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     52/push-EDX
     51/push-ECX
     # . . call
-    e8/call  get-or-insert-slice/disp32
+    e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-ints-equal(EAX - table->data, 4, msg)  # first row's value slot returned
     # . check-ints-equal(EAX - table, 16, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/0"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/0"/imm32
     68/push  0x10/imm32
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     50/push-EAX
@@ -795,10 +793,10 @@ $test-get-or-insert-slice:first-call:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-slice:check2:
+$test-leaky-get-or-insert-slice:check2:
     # check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/1"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/1"/imm32
     68/push  8/imm32/row-size
     ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
@@ -807,28 +805,28 @@ $test-get-or-insert-slice:check2:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-string-equal(*table->data, "code", msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/2"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/2"/imm32
     68/push  "code"/imm32
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-slice:second-call:
+$test-leaky-get-or-insert-slice:second-call:
     # - insert the same key again, verify that it was reused
-    # EAX = get-or-insert-slice(table, "code" slice, 8 bytes per row)
+    # EAX = leaky-get-or-insert-slice(table, "code" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     52/push-EDX
     51/push-ECX
     # . . call
-    e8/call  get-or-insert-slice/disp32
+    e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-ints-equal(EAX - table->data, 4, msg)
     # . check-ints-equal(EAX - table, 16, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/3"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/3"/imm32
     68/push  0x10/imm32
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     50/push-EAX
@@ -839,7 +837,7 @@ $test-get-or-insert-slice:second-call:
     # no new row inserted
     # . check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/4"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/4"/imm32
     68/push  8/imm32/row-size
     ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
@@ -848,14 +846,14 @@ $test-get-or-insert-slice:second-call:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-string-equal(*table->data, "code", msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/5"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/5"/imm32
     68/push  "code"/imm32
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-slice:third-call:
+$test-leaky-get-or-insert-slice:third-call:
     # - insert a new key, verify that it was inserted
     # (EAX..EDX) = "data"
     b8/copy-to-EAX  "data"/imm32
@@ -866,20 +864,20 @@ $test-get-or-insert-slice:third-call:
     52/push-EDX
     50/push-EAX
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # EAX = get-or-insert-slice(table, "data" slice, 8 bytes per row)
+    # EAX = leaky-get-or-insert-slice(table, "data" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     52/push-EDX
     51/push-ECX
     # . . call
-    e8/call  get-or-insert-slice/disp32
+    e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # table gets a new row
     # check-ints-equal(EAX - table->data, 12, msg)  # second row's value slot returned
     # . check-ints-equal(EAX - table, 24, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/6"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/6"/imm32
     68/push  0x18/imm32
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     50/push-EAX
@@ -889,7 +887,7 @@ $test-get-or-insert-slice:third-call:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # check-ints-equal(table->write, 2 rows = 16, msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/7"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/7"/imm32
     68/push  0x10/imm32/two-rows
     ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
     # . . call
@@ -899,14 +897,14 @@ $test-get-or-insert-slice:third-call:
     # check-string-equal(*table->data+8, "data", msg)
     # check-string-equal(*(table+20), "data", msg)
     # . . push args
-    68/push  "F - test-get-or-insert-slice/8"/imm32
+    68/push  "F - test-leaky-get-or-insert-slice/8"/imm32
     68/push  "data"/imm32
     ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0x14/disp8      .                 # push *(ECX+20)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-get-or-insert-slice:end:
+$test-leaky-get-or-insert-slice:end:
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP

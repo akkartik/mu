@@ -723,13 +723,13 @@ $compute-offsets:case-label:
     74/jump-if-equal  $compute-offsets:case-default/disp8
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # decrement *(EDX+4)
-    # x/EAX = get-or-insert-slice(labels, word-slice, row-size=16)
+    # x/EAX = leaky-get-or-insert-slice(labels, word-slice, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
     # . . call
-    e8/call  get-or-insert-slice/disp32
+    e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
 $compute-offsets:save-label-offset:
