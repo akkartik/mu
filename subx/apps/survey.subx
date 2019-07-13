@@ -2375,7 +2375,7 @@ emit-headers:  # out : (address buffered-file), segments : (address stream {stri
     #   max = segments->data + segments->write
     #   while true
     #     if (curr-segment >= max) break
-    #     emit-elf-program-header-entry(curr-segment)
+    #     emit-elf-program-header-entry(out, curr-segment)
     #     curr-segment += 20                        # size of a row
     #
     # . prolog
@@ -2474,13 +2474,14 @@ $emit-headers:loop:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # emit-elf-program-header-entry(curr-segment)
+    # emit-elf-program-header-entry(out, curr-segment)
     # . . push args
     50/push-EAX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  emit-elf-program-header-entry/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # curr-segment += 20                        # size of a row
     81          0/subop/add         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0x14/imm32        # add to EAX
     e9/jump  $emit-headers:loop/disp32
@@ -2551,7 +2552,7 @@ $emit-elf-header:end:
     5d/pop-to-EBP
     c3/return
 
-emit-elf-program-header-entry:  # curr-segment : (address {string, segment-info})
+emit-elf-program-header-entry:  # out : (address buffered-file), curr-segment : (address {string, segment-info})
     # pseudocode:
     #   *Elf_p_offset = curr-segment->file-offset
     #   *Elf_p_vaddr = curr-segment->address
@@ -2571,7 +2572,7 @@ emit-elf-program-header-entry:  # curr-segment : (address {string, segment-info}
     50/push-EAX
     56/push-ESI
     # ESI = curr-segment
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
     # *Elf_p_offset = curr-segment->file-offset
     # . EAX = curr-segment->file-offset
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(ESI+8) to EAX
