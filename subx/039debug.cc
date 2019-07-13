@@ -95,11 +95,10 @@ if (!Watch_this_effective_address.empty()) {
 //: Not a general mechanism; by the time you get here you're willing to hack
 //: on the emulator.
 :(after "Run One Instruction")
-if (contains_key(Symbol_name, EIP) && get(Symbol_name, EIP) == "$dump-stream-at-ESI")
-  dump_stream_at_ESI();
+if (contains_key(Symbol_name, EIP) && get(Symbol_name, EIP) == "$dump-stream-at-EAX")
+  dump_stream_at(Reg[EAX].u);
 :(code)
-void dump_stream_at_ESI() {
-  uint32_t stream_start = Reg[ESI].i;
+void dump_stream_at(uint32_t stream_start) {
   int32_t stream_length = read_mem_i32(stream_start + 8);
   dbg << "stream length: " << std::dec << stream_length << end();
   for (int i = 0;  i < stream_length + 12;  ++i)
