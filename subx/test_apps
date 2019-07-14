@@ -184,6 +184,16 @@ test `uname` = 'Linux'  &&  {
   echo
 }
 
+echo survey
+./subx translate 0*.subx apps/subx-common.subx apps/survey.subx  -o apps/survey
+[ "$1" != record ]  &&  git diff --exit-code apps/survey
+./subx run apps/survey test
+echo
+test `uname` = 'Linux'  &&  {
+  apps/survey test
+  echo
+}
+
 echo pack
 ./subx translate 0*.subx apps/subx-common.subx apps/pack.subx  -o apps/pack
 [ "$1" != record ]  &&  git diff --exit-code apps/pack
