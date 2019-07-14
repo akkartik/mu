@@ -23,7 +23,7 @@ is-hex-int?:  # in : (address slice) -> EAX : boolean
     # if s is empty return false
     b8/copy-to-EAX  0/imm32/false
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $is-hex-int?:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $is-hex-int?:end/disp8
     # skip past leading '-'
     # . if (*curr == '-') ++curr
     31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
@@ -44,7 +44,7 @@ $is-hex-int?:initial-0:
 $is-hex-int?:initial-0x:
     # . if (curr >= in->end) return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $is-hex-int?:true/disp8
+    73/jump-if-greater-or-equal-unsigned  $is-hex-int?:true/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           3/r32/BL    .               .                 # copy byte at *ECX to BL
@@ -55,7 +55,7 @@ $is-hex-int?:initial-0x:
 $is-hex-int?:loop:
     # if (curr >= in->end) return true
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $is-hex-int?:true/disp8
+    73/jump-if-greater-or-equal-unsigned  $is-hex-int?:true/disp8
     # EAX = is-hex-digit?(*curr)
     # . . push args
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
@@ -88,9 +88,14 @@ test-is-hex-int:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "34"
-    68/push  _test-slice-hex-int-end/imm32
-    68/push  _test-slice-hex-int/imm32
+    # (EAX..ECX) = "34"
+    b8/copy-to-EAX  "34"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -117,9 +122,14 @@ test-is-hex-int-handles-letters:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "34a"
-    68/push  _test-slice-hex-int-letters-end/imm32
-    68/push  _test-slice-hex-int-letters/imm32
+    # (EAX..ECX) = "34a"
+    b8/copy-to-EAX  "34a"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -146,9 +156,14 @@ test-is-hex-int-with-trailing-char:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "34q"
-    68/push  _test-slice-digits-and-char-end/imm32
-    68/push  _test-slice-digits-and-char/imm32
+    # (EAX..ECX) = "34q"
+    b8/copy-to-EAX  "34q"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -175,9 +190,14 @@ test-is-hex-int-with-leading-char:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "q34"
-    68/push  _test-slice-char-and-digits-end/imm32
-    68/push  _test-slice-char-and-digits/imm32
+    # (EAX..ECX) = "q34"
+    b8/copy-to-EAX  "q34"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -205,8 +225,8 @@ test-is-hex-int-empty:
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # var slice/ECX = ""
-    68/push  _test-slice-empty-end/imm32
-    68/push  _test-slice-empty/imm32
+    68/push  0/imm32
+    68/push  0/imm32
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -233,9 +253,14 @@ test-is-hex-int-handles-0x-prefix:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "0x3a"
-    68/push  _test-slice-hex-int-with-0x-prefix-end/imm32
-    68/push  _test-slice-hex-int-with-0x-prefix/imm32
+    # (EAX..ECX) = "0x3a"
+    b8/copy-to-EAX  "0x3a"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -262,9 +287,14 @@ test-is-hex-int-handles-negative:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "-34a"
-    68/push  _test-slice-hex-int-letters-end/imm32
-    68/push  _test-slice-hex-int-letters-negative/imm32
+    # (EAX..ECX) = "-34a"
+    b8/copy-to-EAX  "-34a"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -291,9 +321,14 @@ test-is-hex-int-handles-negative-0x-prefix:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "-0x3a"
-    68/push  _test-slice-hex-int-with-0x-prefix-end/imm32
-    68/push  _test-slice-hex-int-with-0x-prefix-negative/imm32
+    # (EAX..ECX) = "-0x3a"
+    b8/copy-to-EAX  "-0x3a"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = is-hex-int?(slice)
     # . . push args
@@ -356,7 +391,7 @@ $parse-hex-int:initial-0:
 $parse-hex-int:initial-0x:
     # . if (curr >= in->end) return result
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $parse-hex-int:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $parse-hex-int:end/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
@@ -367,7 +402,7 @@ $parse-hex-int:initial-0x:
 $parse-hex-int:loop:
     # if (curr >= in->end) break
     39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
-    7d/jump-if-greater-or-equal  $parse-hex-int:negate/disp8
+    73/jump-if-greater-or-equal-unsigned  $parse-hex-int:negate/disp8
     # EAX = from-hex-char(*curr)
     # . . copy arg to EAX
     8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
@@ -400,9 +435,14 @@ test-parse-hex-int-single-digit:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "a"
-    68/push  _test-slice-hex-int-single-letter-end/imm32
-    68/push  _test-slice-hex-int-single-letter/imm32
+    # (EAX..ECX) = "a"
+    b8/copy-to-EAX  "a"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = parse-hex-int(slice)
     # . . push args
@@ -429,9 +469,14 @@ test-parse-hex-int-multi-digit:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "34a"
-    68/push  _test-slice-hex-int-letters-end/imm32
-    68/push  _test-slice-hex-int-letters/imm32
+    # (EAX..ECX) = "34a"
+    b8/copy-to-EAX  "34a"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = parse-hex-int(slice)
     # . . push args
@@ -458,9 +503,14 @@ test-parse-hex-int-0x-prefix:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "0x34"
-    68/push  _test-slice-hex-int-with-0x-prefix-end/imm32
-    68/push  _test-slice-hex-int-with-0x-prefix/imm32
+    # (EAX..ECX) = "0x34"
+    b8/copy-to-EAX  "0x34"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = parse-hex-int(slice)
     # . . push args
@@ -487,9 +537,14 @@ test-parse-hex-int-zero:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "0"
-    68/push  _test-slice-hex-int-zero-end/imm32
-    68/push  _test-slice-hex-int-zero/imm32
+    # (EAX..ECX) = "0"
+    b8/copy-to-EAX  "0"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = parse-hex-int(slice)
     # . . push args
@@ -516,9 +571,14 @@ test-parse-hex-int-0-prefix:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "03"
-    68/push  _test-slice-hex-int-with-0-prefix-end/imm32
-    68/push  _test-slice-hex-int-with-0-prefix/imm32
+    # (EAX..ECX) = "03"
+    b8/copy-to-EAX  "03"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = parse-hex-int(slice)
     # . . push args
@@ -545,9 +605,14 @@ test-parse-hex-int-negative:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var slice/ECX = "-03"
-    68/push  _test-slice-hex-int-negative-with-0-prefix-end/imm32
-    68/push  _test-slice-hex-int-negative-with-0-prefix/imm32
+    # (EAX..ECX) = "-03"
+    b8/copy-to-EAX  "-03"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # var slice/ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
     # EAX = parse-hex-int(slice)
     # . . push args
@@ -729,7 +794,7 @@ test-hex-above-f:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     c3/return
 
-from-hex-char:  # in/EAX : byte -> out/EAX : num
+from-hex-char:  # in/EAX : byte -> out/EAX : nibble
     # no error checking; accepts argument in EAX
     # if (EAX <= '9') return EAX - '0'
     3d/compare-EAX-with  0x39/imm32/9
@@ -752,51 +817,5 @@ $to-hex-char:else:
     # otherwise return EAX + 'a' - 10
     05/add-to-EAX  0x57/imm32/a-10
     c3/return
-
-== data
-
-_test-slice-empty:
-  # nothing
-_test-slice-empty-end:
-
-_test-slice-hex-int:
-  33/3 34/4
-_test-slice-hex-int-end:
-
-_test-slice-hex-int-letters-negative:
-  2d/-
-_test-slice-hex-int-letters:
-  33/3 34/4 61/a
-_test-slice-hex-int-letters-end:
-
-_test-slice-hex-int-single-letter:
-  61/a
-_test-slice-hex-int-single-letter-end:
-
-_test-slice-char-and-digits:
-  71/q 33/3 34/4
-_test-slice-char-and-digits-end:
-
-_test-slice-digits-and-char:
-  33/3 34/4 71/q
-_test-slice-digits-and-char-end:
-
-_test-slice-hex-int-with-0x-prefix-negative:
-  2d/-
-_test-slice-hex-int-with-0x-prefix:
-  30/0 78/x 33/3 34/4
-_test-slice-hex-int-with-0x-prefix-end:
-
-_test-slice-hex-int-zero:
-  30/0
-_test-slice-hex-int-zero-end:
-
-_test-slice-hex-int-with-0-prefix:
-  30/0 33/3
-_test-slice-hex-int-with-0-prefix-end:
-
-_test-slice-hex-int-negative-with-0-prefix:
-  2d/- 30/0 33/3
-_test-slice-hex-int-negative-with-0-prefix-end:
 
 # . . vim:nowrap:textwidth=0

@@ -5,13 +5,6 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-#? Entry:  # run a single test, while debugging
-#?     e8/call test-next-stream-line-equal-stops-at-newline/disp32
-#?     # syscall(exit, Num-test-failures)
-#?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
-#?     b8/copy-to-EAX  1/imm32/exit
-#?     cd/syscall  0x80/imm8
-
 # compare all the data in a stream (ignoring the read pointer)
 stream-data-equal?:  # f : (address stream), s : (address string) -> EAX : boolean
     # . prolog
@@ -26,7 +19,7 @@ stream-data-equal?:  # f : (address stream), s : (address string) -> EAX : boole
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # EAX = f->write
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
-    # max/EDX = f->data + f->write
+    # maxf/EDX = f->data + f->write
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  0/index/EAX   .           2/r32/EDX   0xc/disp8       .                 # copy ESI+EAX+12 to EDX
     # currf/ESI = f->data
     81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               0xc/imm32         # add to ESI
@@ -42,9 +35,9 @@ $stream-data-equal?:compare-lengths:
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
 $stream-data-equal?:loop:
-    # if (curr >= max) return true
+    # if (currf >= maxf) return true
     39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # compare ESI with EDX
-    7d/jump-if-greater-or-equal  $stream-data-equal?:true/disp8
+    73/jump-if-greater-or-equal-unsigned  $stream-data-equal?:true/disp8
     # AL = *currs
     8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/AL    .               .                 # copy byte at *ESI to AL
     # CL = *curr

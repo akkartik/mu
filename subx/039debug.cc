@@ -74,9 +74,9 @@ Watch_points.clear();
 :(code)
 void dump_watch_points() {
   if (Watch_points.empty()) return;
-  dbg << "watch points:" << end();
+  trace(Callstack_depth, "dbg") << "watch points:" << end();
   for (map<string, uint32_t>::iterator p = Watch_points.begin();  p != Watch_points.end();  ++p)
-    dbg << "  " << p->first << ": " << HEXWORD << p->second << " -> " << HEXWORD << read_mem_u32(p->second) << end();
+    trace(Callstack_depth, "dbg") << "  " << p->first << ": " << HEXWORD << p->second << " -> " << HEXWORD << read_mem_u32(p->second) << end();
 }
 
 :(before "End Globals")
@@ -89,6 +89,20 @@ if (contains_key(Symbol_name, EIP) && starts_with(get(Symbol_name, EIP), "$watch
 if (!Watch_this_effective_address.empty()) {
   dbg << "now watching " << HEXWORD << addr << " for " << Watch_this_effective_address << end();
   put(Watch_points, Watch_this_effective_address, addr);
+}
+
+//: Special label that dumps regions of memory.
+//: Not a general mechanism; by the time you get here you're willing to hack
+//: on the emulator.
+:(after "Run One Instruction")
+if (contains_key(Symbol_name, EIP) && get(Symbol_name, EIP) == "$dump-stream-at-EAX")
+  dump_stream_at(Reg[EAX].u);
+:(code)
+void dump_stream_at(uint32_t stream_start) {
+  int32_t stream_length = read_mem_i32(stream_start + 8);
+  dbg << "stream length: " << std::dec << stream_length << end();
+  for (int i = 0;  i < stream_length + 12;  ++i)
+    dbg << "0x" << HEXWORD << (stream_start+i) << ": " << HEXBYTE << NUM(read_mem_u8(stream_start+i)) << end();
 }
 
 //: helpers

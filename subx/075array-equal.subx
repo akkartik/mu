@@ -1,0 +1,629 @@
+# Comparing arrays of numbers.
+
+== code
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+Entry:
+    # initialize heap
+    # . Heap = new-segment(64KB)
+    # . . push args
+    68/push  Heap/imm32
+    68/push  0x10000/imm32/64KB
+    # . . call
+    e8/call  new-segment/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+
+    e8/call  run-tests/disp32  # 'run-tests' is a function created automatically by SubX. It calls all functions that start with 'test-'.
+$array-equal-main:end:
+    # syscall(exit, Num-test-failures)
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+
+array-equal?:  # a : (address array int), b : (address array int) -> EAX : boolean
+    # pseudocode:
+    #   lena = a->length
+    #   if (lena != b->length) return false
+    #   i = 0
+    #   curra = a->data
+    #   currb = b->data
+    #   while i < lena
+    #     i1 = *curra
+    #     i2 = *currb
+    #     if (c1 != c2) return false
+    #     i+=4, curra+=4, currb+=4
+    #   return true
+    #
+    # registers:
+    #   i: ECX
+    #   lena: EDX
+    #   curra: ESI
+    #   currb: EDI
+    #   i1: EAX
+    #   i2: EBX
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    57/push-EDI
+    # ESI = a
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # EDI = b
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to EDI
+    # lena/EDX = a->length
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
+$array-equal?:lengths:
+    # if (lena != b->length) return false
+    39/compare                      0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # compare *EDI and EDX
+    75/jump-if-not-equal  $array-equal?:false/disp8
+    # curra/ESI = a->data
+    81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
+    # currb/EDI = b->data
+    81          0/subop/add         3/mod/direct    7/rm32/EDI    .           .             .           .           .               4/imm32           # add to EDI
+    # i/ECX = i1/EAX = i2/EBX = 0
+    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
+$array-equal?:loop:
+    # if (i >= lena) return true
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    7d/jump-if-greater-or-equal  $array-equal?:true/disp8
+    # i1 = *curra
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
+    # i2 = *currb
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           3/r32/EBX   .               .                 # copy *EDI to EBX
+    # if (i1 != i2) return false
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
+    75/jump-if-not-equal  $array-equal?:false/disp8
+    # i += 4
+    81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
+    # currs += 4
+    81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               4/imm32           # add to ESI
+    # currb += 4
+    81          0/subop/add         3/mod/direct    7/rm32/EDI    .           .             .           .           .               4/imm32           # add to EDI
+    eb/jump  $array-equal?:loop/disp8
+$array-equal?:true:
+    b8/copy-to-EAX  1/imm32
+    eb/jump  $array-equal?:end/disp8
+$array-equal?:false:
+    b8/copy-to-EAX  0/imm32
+$array-equal?:end:
+    # . restore registers
+    5f/pop-to-EDI
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-compare-empty-with-empty-array:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ECX = []
+    68/push  0/imm32/size
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # var EDX = []
+    68/push  0/imm32/size
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # EAX = array-equal?(ECX, EDX)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  array-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-compare-empty-with-empty-array"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-compare-empty-with-non-empty-array:  # also checks length-mismatch code path
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ECX = [1]
+    68/push  1/imm32
+    68/push  4/imm32/size
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # var EDX = []
+    68/push  0/imm32/size
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # EAX = array-equal?(ECX, EDX)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  array-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-compare-empty-with-non-empty-array"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-compare-equal-arrays:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ECX = [1, 2, 3]
+    68/push  3/imm32
+    68/push  2/imm32
+    68/push  1/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # var EDX = [1, 2, 3]
+    68/push  3/imm32
+    68/push  2/imm32
+    68/push  1/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # EAX = array-equal?(ECX, EDX)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  array-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-compare-equal-arrays"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-compare-inequal-arrays-equal-lengths:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ECX = [1, 4, 3]
+    68/push  3/imm32
+    68/push  4/imm32
+    68/push  1/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # var EDX = [1, 2, 3]
+    68/push  3/imm32
+    68/push  2/imm32
+    68/push  1/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # EAX = array-equal?(ECX, EDX)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  array-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-compare-inequal-arrays-equal-lengths"/imm32
+    68/push  0/imm32/false
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+parse-array-of-ints:  # ad : (address allocation-descriptor), s : (address string) -> result/EAX : (address array int)
+    # pseudocode
+    #   end = s->data + s->length
+    #   curr = s->data
+    #   size = 0
+    #   while true
+    #     if (curr >= end) break
+    #     curr = skip-chars-matching-in-slice(curr, end, ' ')
+    #     if (curr >= end) break
+    #     curr = skip-chars-not-matching-in-slice(curr, end, ' ')
+    #     ++size
+    #   result = allocate(ad, (size+1)*4)
+    #   result->size = (size+1)*4
+    #   var slice = {s->data, 0}
+    #   out = result->data
+    #   while true
+    #     if (slice->start >= end) break
+    #     slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
+    #     if (slice->start >= end) break
+    #     slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
+    #     *out = parse-hex-int(slice)
+    #     out += 4
+    #     slice->start = slice->end
+    #   return result
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    56/push-ESI
+    57/push-EDI
+    # ESI = s
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
+    # curr/ECX = s->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy ESI+4 to ECX
+    # end/EDX = s->data + s->length
+    # . EDX = s->length
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
+    # . EDX += curr
+    01/add                          3/mod/direct    2/rm32/EDX    .           .             .           1/r32/ECX   .               .                 # add ECX to EDX
+    # size/EBX = 0
+    31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
+$parse-array-of-ints:loop1:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    73/jump-if-greater-or-equal-unsigned  $parse-array-of-ints:break1/disp8
+    # curr = skip-chars-matching-in-slice(curr, end, ' ')
+    # . EAX = skip-chars-matching-in-slice(curr, end, ' ')
+    # . . push args
+    68/push  0x20/imm32/space
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  skip-chars-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . ECX = EAX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    73/jump-if-greater-or-equal-unsigned  $parse-array-of-ints:break1/disp8
+    # curr = skip-chars-not-matching-in-slice(curr, end, ' ')
+    # . EAX = skip-chars-not-matching-in-slice(curr, end, ' ')
+    # . . push args
+    68/push  0x20/imm32/space
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  skip-chars-not-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . ECX = EAX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
+    # size += 4
+    81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
+    eb/jump  $parse-array-of-ints:loop1/disp8
+$parse-array-of-ints:break1:
+    # result/EDI = allocate(ad, size+4)
+    # . EAX = allocate(ad, size+4)
+    # . . push args
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to EAX
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . EDI = EAX
+    89/copy                         3/mod/direct    7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy EAX to EDI
+    # result->size = size
+    89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to *EAX
+$parse-array-of-ints:pass2:
+    # var slice/ECX = {s->data, 0}
+    # . push 0
+    68/push  0/imm32/end
+    # . push s->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy ESI+4 to ECX
+    51/push-ECX
+    # . bookmark
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # out/EBX = result->data
+    8d/copy-address                 1/mod/*+disp8   0/rm32/EAX    .           .             .           3/r32/EBX   4/disp8         .                 # copy EAX+4 to EBX
+$parse-array-of-ints:loop2:
+    # if (slice->start >= end) break
+    39/compare                      0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare *ECX with EDX
+    73/jump-if-greater-or-equal-unsigned  $parse-array-of-ints:end/disp8
+    # slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
+    # . EAX = skip-chars-matching-in-slice(slice->start, end, ' ')
+    # . . push args
+    68/push  0x20/imm32/space
+    52/push-EDX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    # . . call
+    e8/call  skip-chars-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . slice->start = EAX
+    89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ECX
+    # if (slice->start >= end) break
+    39/compare                      0/mod/indirect  1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare *ECX with EDX
+    73/jump-if-greater-or-equal-unsigned  $parse-array-of-ints:end/disp8
+    # slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
+    # . EAX = skip-chars-not-matching-in-slice(curr, end, ' ')
+    # . . push args
+    68/push  0x20/imm32/space
+    52/push-EDX
+    50/push-EAX
+    # . . call
+    e8/call  skip-chars-not-matching-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . slice->end = EAX
+    89/copy                         1/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(ECX+4)
+    # *out = parse-hex-int(slice)
+    # . EAX = parse-hex-int(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  parse-hex-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # *out = EAX
+    89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
+    # out += 4
+    81          0/subop/add         3/mod/direct    3/rm32/EBX    .           .             .           .           .               4/imm32           # add to EBX
+    # slice->start = slice->end
+    8b/copy                         1/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
+    89/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ECX
+    81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
+    eb/jump  $parse-array-of-ints:loop2/disp8
+$parse-array-of-ints:end:
+    # return EDI
+    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           7/r32/EDI   .               .                 # copy EDI to EAX
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . restore registers
+    5f/pop-to-EDI
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-parse-array-of-ints:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ECX = [1, 2, 3]
+    68/push  3/imm32
+    68/push  2/imm32
+    68/push  1/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = parse-array-of-ints(Heap, "1 2 3")
+    # . . push args
+    68/push  "1 2 3"/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  parse-array-of-ints/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # EAX = array-equal?(ECX, EAX)
+    # . . push args
+    50/push-EAX
+    51/push-ECX
+    # . . call
+    e8/call  array-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-parse-array-of-ints"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-parse-array-of-ints-empty:
+    # - empty string = empty array
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # EAX = parse-array-of-ints(Heap, "")
+    # . . push args
+    68/push  ""/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  parse-array-of-ints/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(*EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-parse-array-of-ints-empty"/imm32
+    68/push  0/imm32/size
+    ff          6/subop/push        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # push *EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-parse-array-of-ints-just-whitespace:
+    # - just whitespace = empty array
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # EAX = parse-array-of-ints(Heap, " ")
+    # . . push args
+    68/push  " "/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  parse-array-of-ints/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(*EAX, 0, msg)
+    # . . push args
+    68/push  "F - test-parse-array-of-ints-empty"/imm32
+    68/push  0/imm32/size
+    ff          6/subop/push        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # push *EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-parse-array-of-ints-extra-whitespace:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ECX = [1, 2, 3]
+    68/push  3/imm32
+    68/push  2/imm32
+    68/push  1/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX = parse-array-of-ints(Heap, " 1 2  3  ")
+    # . . push args
+    68/push  " 1 2  3  "/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  parse-array-of-ints/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # EAX = array-equal?(ECX, EAX)
+    # . . push args
+    50/push-EAX
+    51/push-ECX
+    # . . call
+    e8/call  array-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-parse-array-of-ints-extra-whitespace"/imm32
+    68/push  1/imm32/true
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# helper for later tests
+# compare an array with a string representation of an array literal
+check-array-equal:  # a : (address array int), expected : (address string), msg : (address string)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    # var b/ECX = parse-array-of-ints(Heap, expected)
+    # . EAX = parse-array-of-ints(Heap, expected)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    68/push  Heap/imm32
+    # . . call
+    e8/call  parse-array-of-ints/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . b = EAX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
+    # EAX = array-equal?(a, b)
+    # . . push args
+    51/push-ECX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  array-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(EAX, 1, msg)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    68/push  1/imm32
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$check-array-equal:end:
+    # . restore registers
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-check-array-equal:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var ECX = [1, 2, 3]
+    68/push  3/imm32
+    68/push  2/imm32
+    68/push  1/imm32
+    68/push  0xc/imm32/size
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # check-array-equal(ECX, "1 2 3", "msg")
+    # . . push args
+    68/push  "F - test-check-array-equal"/imm32
+    68/push  "1 2 3"/imm32
+    51/push-ECX
+    # . . call
+    e8/call  check-array-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+== data
+
+Heap:
+  # curr
+  0/imm32
+  # limit
+  0/imm32
+
+# . . vim:nowrap:textwidth=0

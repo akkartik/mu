@@ -1,14 +1,9 @@
+# Some tokenization primitives.
+
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
-
-#? Entry:  # run a single test, while debugging
-#? e8/call test-next-token-from-slice/disp32
-#?     # syscall(exit, Num-test-failures)
-#?     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
-#?     b8/copy-to-EAX  1/imm32/exit
-#?     cd/syscall  0x80/imm8
 
 # extract the next run of characters that are different from a given 'delimiter' (skipping multiple delimiters if necessary)
 # on reaching end of file, return an empty interval
@@ -698,7 +693,7 @@ skip-chars-matching-in-slice:  # curr : (address byte), end : (address byte), de
 $skip-chars-matching-in-slice:loop:
     # if (curr >= end) break
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
-    7d/jump-if-greater-or-equal  $skip-chars-matching-in-slice:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $skip-chars-matching-in-slice:end/disp8
     # if (*curr != delimiter) break
     8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/BL    .               .                 # copy byte at *EAX to BL
     39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare EBX and EDX
@@ -724,7 +719,7 @@ test-skip-chars-matching-in-slice:
     05/add-to-EAX  4/imm32
     # EAX = skip-chars-matching-in-slice(EAX, ECX, 0x20/space)
     # . . push args
-    68/push  0x20/imm32
+    68/push  0x20/imm32/space
     51/push-ECX
     50/push-EAX
     # . . call
@@ -753,7 +748,7 @@ test-skip-chars-matching-in-slice-none:
     05/add-to-EAX  4/imm32
     # EAX = skip-chars-matching-in-slice(EAX, ECX, 0x20/space)
     # . . push args
-    68/push  0x20/imm32
+    68/push  0x20/imm32/space
     51/push-ECX
     50/push-EAX
     # . . call
@@ -794,7 +789,7 @@ skip-chars-not-matching-in-slice:  # curr : (address byte), end : (address byte)
 $skip-chars-not-matching-in-slice:loop:
     # if (curr >= end) break
     39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
-    7d/jump-if-greater-or-equal  $skip-chars-not-matching-in-slice:end/disp8
+    73/jump-if-greater-or-equal-unsigned  $skip-chars-not-matching-in-slice:end/disp8
     # if (*curr == delimiter) break
     8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/BL    .               .                 # copy byte at *EAX to BL
     39/compare                      3/mod/direct    3/rm32/EBX    .           .             .           2/r32/EDX   .               .                 # compare EBX and EDX
@@ -820,7 +815,7 @@ test-skip-chars-not-matching-in-slice:
     05/add-to-EAX  4/imm32
     # EAX = skip-chars-not-matching-in-slice(EAX, ECX, 0x20/space)
     # . . push args
-    68/push  0x20/imm32
+    68/push  0x20/imm32/space
     51/push-ECX
     50/push-EAX
     # . . call
@@ -849,7 +844,7 @@ test-skip-chars-not-matching-in-slice-none:
     05/add-to-EAX  4/imm32
     # EAX = skip-chars-not-matching-in-slice(EAX, ECX, 0x20/space)
     # . . push args
-    68/push  0x20/imm32
+    68/push  0x20/imm32/space
     51/push-ECX
     50/push-EAX
     # . . call
@@ -878,7 +873,7 @@ test-skip-chars-not-matching-in-slice-all:
     05/add-to-EAX  4/imm32
     # EAX = skip-chars-not-matching-in-slice(EAX, ECX, 0x20/space)
     # . . push args
-    68/push  0x20/imm32
+    68/push  0x20/imm32/space
     51/push-ECX
     50/push-EAX
     # . . call

@@ -1,0 +1,22 @@
+#!/usr/bin/env zsh
+# Either run the test with the given name, or rerun the most recently run test.
+# Intended to be called from within Vim. Check out the vimrc.vim file.
+
+if [[ $2 == 'test-'* ]]
+then
+  TEST_NAME=$2 envsubst '$TEST_NAME' < run_one_test.subx > /tmp/run_one_test.subx
+  FILES=$(ls [0-9]*.subx apps/subx-common.subx $1 |sort |uniq)
+  echo $FILES > /tmp/last_run_files
+elif [[ -e /tmp/last_run_files ]]
+then
+  FILES=`cat /tmp/last_run_files`
+else
+  echo "no test found"
+  exit 0  # don't open trace
+fi
+
+set -e
+                                      # turn newlines into spaces
+CFLAGS=$CFLAGS ./subx --debug translate $(echo $FILES) /tmp/run_one_test.subx -o /tmp/a.elf
+
+./subx --debug --trace run /tmp/a.elf

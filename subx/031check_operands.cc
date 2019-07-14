@@ -225,12 +225,11 @@ void init_permitted_operands() {
   put(Permitted_operands, "87", 0x01);
   // copy address (lea)
   put(Permitted_operands, "8d", 0x01);
-  // pop
-  put(Permitted_operands, "8f", 0x01);
 
   //// Class N: op, ModR/M and subop (not r32)
   //  imm32 imm8  disp32 |disp16  disp8 subop modrm
   //  0     0     0      |0       0     1     1
+  put(Permitted_operands, "8f", 0x03);  // pop
   put(Permitted_operands, "d3", 0x03);  // shift
   put(Permitted_operands, "f7", 0x03);  // test/not/mul/div
   put(Permitted_operands, "ff", 0x03);  // jump/push/call
@@ -627,8 +626,12 @@ map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_0f;
 //// Class D: just op and disp32
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
 //  0     0     1      |0       0     0     0
+put_new(Permitted_operands_0f, "82", 0x10);
+put_new(Permitted_operands_0f, "83", 0x10);
 put_new(Permitted_operands_0f, "84", 0x10);
 put_new(Permitted_operands_0f, "85", 0x10);
+put_new(Permitted_operands_0f, "86", 0x10);
+put_new(Permitted_operands_0f, "87", 0x10);
 put_new(Permitted_operands_0f, "8c", 0x10);
 put_new(Permitted_operands_0f, "8d", 0x10);
 put_new(Permitted_operands_0f, "8e", 0x10);
