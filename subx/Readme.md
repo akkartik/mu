@@ -337,13 +337,7 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
 
 ## Roadmap and status
 
-* Bootstrapping a SubX-\>ELF translator in SubX
-
-  1. [Converting ascii hex bytes to binary.](http://akkartik.github.io/mu/html/subx/apps/hex.subx.html) (✓)
-  2. [Packing bitfields for x86 instructions into bytes.](http://akkartik.github.io/mu/html/subx/apps/pack.subx.html) (✓)
-  3. [Combining segments with the same name.](http://akkartik.github.io/mu/html/subx/apps/assort.subx.html) (✓)
-  4. [Support for string literals.](http://akkartik.github.io/mu/html/subx/apps/dquotes.subx.html) (✓)
-  5. [Replacing addresses with labels.](https://github.com/akkartik/mu/pull/34) (10% complete)
+* Bootstrapping a SubX-\>ELF translator in SubX (90% complete; now in testing)
 
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
