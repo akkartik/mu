@@ -2619,7 +2619,7 @@ $emit-headers:end:
 emit-elf-header:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode
     #   *Elf_e_entry = get(labels, "Entry")->address
-    #   *Elf_e_phnum = segments->write / 20         # size of a row
+    #   *Elf_e_phnum = segments->write / 16         # size of a row
     #   emit-hex-array(out, Elf_header)
     #
     # . prolog
@@ -2645,13 +2645,13 @@ emit-elf-header:  # out : (address buffered-file), segments : (address stream {s
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EAX+8) to EAX
     # . *Elf_e_entry = EAX
     89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/EAX   Elf_e_entry/disp32                # copy EAX to *Elf_e_entry
-    # *Elf_e_phnum = segments->write / 0x20
+    # *Elf_e_phnum = segments->write / 0x10
     # . EAX = segments
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
     # . len/EAX = segments->write
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
-    # . EAX = len / 0x20  (destroying EDX)
-    b9/copy-to-ECX  0x20/imm32
+    # . EAX = len / 0x10  (destroying EDX)
+    b9/copy-to-ECX  0x10/imm32
     31/xor                          3/mod/direct    2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # clear EDX
     f7          7/subop/idiv        3/mod/direct    1/rm32/ECX    .           .             .           .           .               .                 # divide EDX:EAX by ECX, storing quotient in EAX and remainder in EDX
     # . *Elf_e_phnum = EAX
