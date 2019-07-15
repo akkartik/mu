@@ -489,7 +489,7 @@ compute-offsets:  # in : (address buffered-file), segments : (address stream {st
     #       if slice-empty?(word-slice)             # end of line
     #         break
     #       else if slice-starts-with?(word-slice, "#")  # comment
-    #         continue
+    #         break                                 # end of line
     #       else if slice-equal?(word-slice, "==")
     #         if curr-segment-name != 0
     #           seg = get-or-insert(segments, curr-segment-name)
@@ -565,6 +565,39 @@ $compute-offsets:line-loop:
     8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
     3d/compare-EAX-and  0/imm32
     0f 84/jump-if-equal  $compute-offsets:break-line-loop/disp32
+#?     # dump line {{{
+#?     # . write(2/stderr, "LL: ")
+#?     # . . push args
+#?     68/push  "LL: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # write-stream(2/stderr, line)
+#?     # . . push args
+#?     51/push-ECX
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . rewind-stream(line)
+#?     # . . push args
+#?     51/push-ECX
+#?     # . . call
+#?     e8/call  rewind-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # }}}
 $compute-offsets:word-loop:
     # EDX = word-slice
     ba/copy-to-EDX  compute-offsets:word-slice/imm32
@@ -575,9 +608,9 @@ $compute-offsets:word-loop:
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # dump word-slice and maybe curr-segment-name {{{
-#?     # . write(2/stderr, "AA: ")
+#?     # . write(2/stderr, "w: ")
 #?     # . . push args
-#?     68/push  "AA: "/imm32
+#?     68/push  "w: "/imm32
 #?     68/push  2/imm32/stderr
 #?     # . . call
 #?     e8/call  write/disp32
@@ -621,7 +654,7 @@ $compute-offsets:word-loop:
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # . if (curr-segment-name == 0) print curr-segment-name
 #?     81          7/subop/compare     3/mod/direct    6/rm32/ESI    .           .             .           .           .               0/imm32           # compare ESI
-#?     74/jump-if-equal  $compute-offsets:check0/disp8
+#?     74/jump-if-equal  $compute-offsets:case-empty/disp8
 #?     # . write(2/stderr, "segment at start of word: ")
 #?     # . . push args
 #?     68/push  "segment at start of word: "/imm32
@@ -654,7 +687,7 @@ $compute-offsets:word-loop:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-$compute-offsets:check0:
+$compute-offsets:case-empty:
     # if slice-empty?(word/EDX) break
     # . EAX = slice-empty?(word/EDX)
     52/push-EDX
@@ -664,15 +697,16 @@ $compute-offsets:check0:
     # . if (EAX != 0) break
     3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $compute-offsets:line-loop/disp32
+$compute-offsets:case-comment:
     # if slice-starts-with?(word-slice, "#") continue
     68/push  "#"/imm32
     52/push-EDX
     e8/call  slice-starts-with?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) continue
+    # . if (EAX != 0) break
     3d/compare-EAX-and  0/imm32
-    0f 85/jump-if-not-equal  $compute-offsets:word-loop/disp32
+    0f 85/jump-if-not-equal  $compute-offsets:line-loop/disp32
 $compute-offsets:case-segment-header:
     # if (!slice-equal?(word-slice/EDX, "==")) goto next case
     # . EAX = slice-equal?(word-slice/EDX, "==")
@@ -1027,7 +1061,7 @@ $compute-offsets:abort:
 test-compute-offsets:
     # input:
     #   == code 0x1
-    #   ab x/imm32
+    #   ab x/imm32  # skip comment
     #   == data 0x1000
     #   00
     #   x:
@@ -1098,9 +1132,9 @@ test-compute-offsets:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . write(_test-input-stream, "ab x/imm32\n")
+    # . write(_test-input-stream, "ab x/imm32  # skip comment\n")
     # . . push args
-    68/push  "ab x/imm32\n"/imm32
+    68/push  "ab x/imm32  # skip comment\n"/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
