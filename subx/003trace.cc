@@ -168,6 +168,15 @@ ostream& operator<<(ostream& os, end /*unused*/) {
   return os;
 }
 
+//: Fatal error.
+:(before "End Types")
+struct die {};
+:(code)
+ostream& operator<<(ostream& /*unused*/, die /*unused*/) {
+  if (Trace_stream) Trace_stream->newline();
+  exit(1);
+}
+
 :(before "End trace_stream Methods")
 void newline();
 :(code)

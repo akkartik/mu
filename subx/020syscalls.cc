@@ -119,8 +119,7 @@ uint32_t new_segment(uint32_t length) {
   uint32_t result = (Segments_allocated_above - length) & 0xff000000;  // same number of zeroes as SEGMENT_ALIGNMENT
   if (result <= START_HEAP) {
     raise << "Allocated too many segments; the VM ran out of memory. "
-          << "Maybe SEGMENT_ALIGNMENT can be smaller?\n" << end();
-    exit(1);
+          << "Maybe SEGMENT_ALIGNMENT can be smaller?\n" << die();
   }
   Mem.push_back(vma(result, result+length));
   Segments_allocated_above = result;

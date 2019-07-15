@@ -94,8 +94,7 @@ void push(uint32_t val) {
     raise << "The stack overflowed its segment. "
           << "Maybe SPACE_FOR_SEGMENT should be larger? "
           << "Or you need to carve out an exception for the stack segment "
-          << "to be larger.\n" << end();
-    exit(1);
+          << "to be larger.\n" << die();
   }
   trace(Callstack_depth+1, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
   trace(Callstack_depth+1, "run") << "pushing value 0x" << HEXWORD << val << end();
@@ -180,14 +179,6 @@ ostream& operator<<(ostream& os, perr /*unused*/) {
   if (errno)
     os << ": " << strerror(errno);
   return os;
-}
-
-:(before "End Types")
-struct die {};
-:(code)
-ostream& operator<<(ostream& /*unused*/, die /*unused*/) {
-  if (Trace_stream) Trace_stream->newline();
-  exit(1);
 }
 
 :(before "End Includes")

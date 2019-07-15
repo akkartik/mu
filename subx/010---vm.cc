@@ -202,8 +202,7 @@ inline uint8_t* mem_addr_u8(uint32_t addr) {
   }
   if (result == NULL) {
     if (Trace_file) Trace_file.flush();
-    raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
-    exit(1);
+    raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << die();
   }
   return result;
 }
