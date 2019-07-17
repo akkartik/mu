@@ -2753,11 +2753,13 @@ emit-elf-program-header-entry:  # out : (address buffered-file), curr-segment : 
     # . if (EAX == 0) goto next check
     3d/compare-EAX-and  0/imm32
     74/jump-if-equal  $emit-elf-program-header-entry:data/disp8
-    # *Elf_p_flags = rw-
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Elf_p_flags/disp32  6/imm32       # copy to *Elf_p_flags
-$emit-elf-program-header-entry:data:
-    # otherwise *Elf_p_flags = r-x
+    # *Elf_p_flags = r-x
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Elf_p_flags/disp32  5/imm32       # copy to *Elf_p_flags
+    eb/jump  $emit-elf-program-header-entry:really-emit/disp8
+$emit-elf-program-header-entry:data:
+    # otherwise *Elf_p_flags = rw-
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Elf_p_flags/disp32  6/imm32       # copy to *Elf_p_flags
+$emit-elf-program-header-entry:really-emit:
     # emit-hex-array(out, Elf_program_header_entry)
     # . . push args
     68/push  Elf_program_header_entry/imm32

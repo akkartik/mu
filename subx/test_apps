@@ -10,6 +10,8 @@ test `uname` = 'Linux'  &&  echo 'testing native runs as well'
 
 CFLAGS=$CFLAGS ./build
 
+echo "== translating and running using C++"
+
 echo ex1
 ./subx translate examples/ex1.subx  -o examples/ex1
 [ "$1" != record ]  &&  git diff --exit-code examples/ex1
@@ -222,6 +224,14 @@ echo
 test `uname` = 'Linux'  &&  {
   apps/dquotes test
   echo
+}
+
+echo "== translating using SubX"
+
+echo ex1
+cat examples/ex1.subx |subx_bin run apps/dquotes |subx_bin run apps/assort |subx_bin run apps/pack |subx_bin run apps/survey |subx_bin run apps/hex |diff examples/ex1 -
+test `uname` = 'Linux'  &&  {
+  cat examples/ex1.subx |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex1 -
 }
 
 exit 0
