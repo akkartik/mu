@@ -130,18 +130,6 @@ echo ex12
 ./subx run examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
 test `uname` = 'Linux'  &&  examples/ex12
 
-echo handle
-./subx translate 0*.subx apps/handle.subx  -o apps/handle
-[ "$1" != record ]  &&  git diff --exit-code apps/handle
-./subx run apps/handle > handle.out 2>&1  ||  true
-grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
-grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
-test `uname` = 'Linux'  &&  {
-  apps/handle > handle.out 2>&1  ||  true
-  grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
-  grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
-}
-
 echo factorial
 ./subx translate 0*.subx apps/factorial.subx  -o apps/factorial
 [ "$1" != record ]  &&  git diff --exit-code apps/factorial
@@ -174,6 +162,18 @@ echo
 test `uname` = 'Linux'  &&  {
   apps/crenshaw2-1b test
   echo
+}
+
+echo handle
+./subx translate 0*.subx apps/handle.subx  -o apps/handle
+[ "$1" != record ]  &&  git diff --exit-code apps/handle
+./subx run apps/handle > handle.out 2>&1  ||  true
+grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
+grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
+test `uname` = 'Linux'  &&  {
+  apps/handle > handle.out 2>&1  ||  true
+  grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
+  grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
 }
 
 echo hex
@@ -232,6 +232,24 @@ echo ex1
 cat examples/ex1.subx |subx_bin run apps/dquotes |subx_bin run apps/assort |subx_bin run apps/pack |subx_bin run apps/survey |subx_bin run apps/hex |diff examples/ex1 -
 test `uname` = 'Linux'  &&  {
   cat examples/ex1.subx |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex1 -
+}
+
+echo ex2
+cat examples/ex2.subx |subx_bin run apps/dquotes |subx_bin run apps/assort |subx_bin run apps/pack |subx_bin run apps/survey |subx_bin run apps/hex |diff examples/ex2 -
+test `uname` = 'Linux'  &&  {
+  cat examples/ex2.subx |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex2 -
+}
+
+echo ex4
+cat examples/ex4.subx |subx_bin run apps/dquotes |subx_bin run apps/assort |subx_bin run apps/pack |subx_bin run apps/survey |subx_bin run apps/hex |diff examples/ex4 -
+test `uname` = 'Linux'  &&  {
+  cat examples/ex4.subx |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex4 -
+}
+
+echo ex7
+cat examples/ex7.subx |subx_bin run apps/dquotes |subx_bin run apps/assort |subx_bin run apps/pack |subx_bin run apps/survey |subx_bin run apps/hex |diff examples/ex7 -
+test `uname` = 'Linux'  &&  {
+  cat examples/ex7.subx |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex7 -
 }
 
 exit 0
