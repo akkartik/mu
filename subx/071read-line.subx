@@ -217,4 +217,175 @@ test-read-line-buffered-reads-final-line-until-Eof:
     # end
     c3/return
 
+# read bytes from 'f' until (and including) a newline and store them into 's'
+# 's' fails to grow if and only if no data found
+# just abort if 's' is too small
+read-line:  # f : (address stream), s : (address stream byte) -> <void>
+    # pseudocode:
+    #   while true
+    #     if (s->write >= s->length) abort
+    #     if (f->read >= f->write) break
+    #     AL = f->data[f->read]
+    #     s->data[s->write] = AL
+    #     ++f->read
+    #     ++s->write
+    #     if (AL == '\n') break
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    56/push-ESI
+    57/push-EDI
+    # ESI = f
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # ECX = f->read
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ESI+4) to ECX
+    # EDI = s
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   0xc/disp8       .                 # copy *(EBP+12) to EDI
+    # EDX = s->write
+    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # copy *EDI to EDX
+$read-line:loop:
+    # if (s->write >= s->length) abort
+    3b/compare                      1/mod/*+disp8   7/rm32/EDI    .           .             .           2/r32/EDX   8/disp8         .                 # compare EDX with *(EDI+8)
+    0f 8d/jump-if-greater-or-equal  $read-line:abort/disp32
+    # if (f->read >= f->write) break
+    3b/compare                      0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # compare ECX with *ESI
+    7d/jump-if-greater-or-equal  $read-line:end/disp8
+    # AL = f->data[f->read]
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
+    # s->data[s->write] = AL
+    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  2/index/EDX   .           0/r32/AL    0xc/disp8       .                 # copy AL to *(EDI+EDX+12)
+    # ++f->read
+    41/increment-ECX
+    # ++s->write
+    42/increment-EDX
+    # if (AL == '\n') return
+    3d/compare-EAX-and  0xa/imm32
+    0f 85/jump-if-not-equal  $read-line:loop/disp32
+$read-line:end:
+    # save f->read
+    89/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(ESI+4)
+    # save s->write
+    89/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           2/r32/EDX   .               .                 # copy EDX to *EDI
+    # . restore registers
+    5f/pop-to-EDI
+    5e/pop-to-ESI
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+$read-line:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "read-line: line too long\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-read-line:
+    # - check that read-line stops at a newline
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-tmp-stream)
+    # . . push args
+    68/push  _test-tmp-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # write(_test-stream, "ab\ncd")
+    # . . push args
+    68/push  "ab\ncd"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # read a line from _test-stream into _test-tmp-stream
+    # . EAX = read-line(_test-stream, _test-tmp-stream)
+    # . . push args
+    68/push  _test-tmp-stream/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  read-line/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-next-stream-line-equal(_test-tmp-stream, "ab", msg)
+    # . . push args
+    68/push  "F - test-read-line"/imm32
+    68/push  "ab"/imm32
+    68/push  _test-tmp-stream/imm32
+    # . . call
+    e8/call  check-next-stream-line-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
+test-read-line-reads-final-line-until-Eof:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-tmp-stream)
+    # . . push args
+    68/push  _test-tmp-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # write(_test-stream, "cd")
+    # . . push args
+    68/push  "cd"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # read a line from _test-stream into _test-tmp-stream
+    # . EAX = read-line(_test-stream, _test-tmp-stream)
+    # . . push args
+    68/push  _test-tmp-stream/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  read-line/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-stream-equal(_test-tmp-stream, "cd", msg)
+    # . . push args
+    68/push  "F - test-read-line-reads-final-line-until-Eof"/imm32
+    68/push  "cd"/imm32
+    68/push  _test-tmp-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
 # . . vim:nowrap:textwidth=0
