@@ -2301,7 +2301,7 @@ emit-modrm:  # line : (address stream byte), out : (address buffered-file) -> <v
     #       has-modrm? = true
     #   if has-modrm?
     #     var modrm = mod & 0b11
-    #     modrm <<= 2
+    #     modrm <<= 3
     #     modrm |= r32 & 0b111
     #     modrm <<= 3
     #     modrm |= rm32 & 0b111
@@ -2336,7 +2336,6 @@ emit-modrm:  # line : (address stream byte), out : (address buffered-file) -> <v
     e8/call  rewind-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-$emit-modrm:loop:
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
 #?     # . . push args
@@ -2362,7 +2361,15 @@ $emit-modrm:loop:
 #?     e8/call  write/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . rewind-stream(line)
+#?     # . . push args
+#?     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+#?     # . . call
+#?     e8/call  rewind-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 #?     # }}}
+$emit-modrm:loop:
     # next-word(line, word-slice)
     # . . push args
     51/push-ECX
@@ -2558,8 +2565,8 @@ $emit-modrm:break:
 $emit-modrm:calculate:
     # modrm/EBX = mod & 0b11
     81          4/subop/and         3/mod/direct    3/rm32/EBX    .           .             .           .           .               3/imm32/0b11      # bitwise and of EBX
-    # modrm <<= 2
-    c1/shift    4/subop/left        3/mod/direct    3/rm32/EBX    .           .             .           .           .               2/imm8            # shift EBX left by 2 bits
+    # modrm <<= 3
+    c1/shift    4/subop/left        3/mod/direct    3/rm32/EBX    .           .             .           .           .               3/imm8            # shift EBX left by 3 bits
     # modrm |= r32 & 0b111
     81          4/subop/and         3/mod/direct    7/rm32/EDI    .           .             .           .           .               7/imm32/0b111     # bitwise and of EDI
     09/or                           3/mod/direct    3/rm32/EBX    .           .             .           7/r32/EDI   .               .                 # EBX = bitwise OR with EDI
@@ -4410,6 +4417,99 @@ test-convert-instruction-emits-modrm-byte:
     # . . push args
     68/push  "F - test-convert-instruction-emits-modrm-byte"/imm32
     68/push  "8b 08  # 8b/copy 0/mod 0/rm32 1/r32"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-convert-instruction-emits-modrm-byte-with-non-zero-mod:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # initialize input
+    # . write(_test-input-stream, "01/add 3/mod/direct 3/rm32/EBX 1/r32/ECX")
+    # . . push args
+    68/push  "01/add 3/mod/direct 3/rm32/EBX 1/r32/ECX"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # convert-instruction(_test-input-stream, _test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  convert-instruction/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # dump output {{{
+#?     # . write(2/stderr, "out: ")
+#?     # . . push args
+#?     68/push  "out: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check output
+    # . check-stream-equal(_test-output-stream, "# abcd", msg)
+    # . . push args
+    68/push  "F - test-convert-instruction-foo"/imm32
+    68/push  "01 cb  # 01/add 3/mod/direct 3/rm32/EBX 1/r32/ECX"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32

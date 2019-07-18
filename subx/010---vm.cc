@@ -203,7 +203,6 @@ inline uint8_t* mem_addr_u8(uint32_t addr) {
   if (result == NULL) {
     if (Trace_file) Trace_file.flush();
     raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
-    DUMP("");
     exit(1);
   }
   return result;
@@ -224,7 +223,6 @@ inline uint32_t* mem_addr_u32(uint32_t addr) {
     if (Trace_file) Trace_file.flush();
     raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
     raise << "The entire 4-byte word should be initialized and lie in a single segment.\n" << end();
-    DUMP("");
     exit(1);
   }
   return result;
