@@ -340,16 +340,16 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
 * Bootstrapping a SubX-\>ELF translator in SubX
   ✓ examples/ex1
   ✓ examples/ex2
-  - examples/ex3
+  ✓ examples/ex3
   ✓ examples/ex4
-  - examples/ex5
+  ✓ examples/ex5
   - examples/ex6
   ✓ examples/ex7
-  - examples/ex8
-  - examples/ex9
-  - examples/ex10
+  ✓ examples/ex8
+  ✓ examples/ex9
+  ✓ examples/ex10
   - examples/ex11
-  - examples/ex12
+  ✓ examples/ex12
   - apps/factorial.subx
   - apps/crenshaw2-1.subx
   - apps/crenshaw2-1b.subx
