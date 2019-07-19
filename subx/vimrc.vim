@@ -85,7 +85,11 @@ command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
 "   can't avoid the function because that disables the wait for <CR> prompt
 " known issue:
 "   cursor on '#' causes error
-noremap <Leader>t {j0:call RunTestMoveCursorAndMaybeOpenTrace("<C-r><C-w>")<CR>
+noremap <Leader>t {j0:call RunTestMoveCursor("<C-r><C-w>")<CR>
+function RunTestMoveCursor(arg)
+  exec "!run_one_test.sh ".expand("%")." ".a:arg
+  exec "normal \<C-o>"
+endfunction
 function RunTestMoveCursorAndMaybeOpenTrace(arg)
   exec "!run_one_test.sh ".expand("%")." ".a:arg
   exec "normal \<C-o>"
@@ -93,3 +97,10 @@ function RunTestMoveCursorAndMaybeOpenTrace(arg)
     noautocmd vertical split last_run
   endif
 endfunction
+
+set switchbuf=useopen
+if exists("&splitvertical")
+  command! -nargs=0 T badd last_run | sbuffer last_run
+else
+  command! -nargs=0 T badd last_run | vert sbuffer last_run
+endif
