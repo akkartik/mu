@@ -1,0 +1,29 @@
+#!/bin/sh
+# Translate SubX using the self-hosted translator.
+#
+# Possible knobs:
+#   Whether to run a phase directly or emulated.
+#     Just always emulate for now since we debug on non-Linux.
+#   Whether to stop after a phase.
+#     Just always run all phases, but print out phases so it's clear where an error happens.
+#   Whether to trace a phase. Whether to always trace or rerun with tracing enabled after an error.
+#     Leave tracing to other scripts. We save intermediate files so it's easy to rerun a single phase afterwards.
+#   Whether to run a phase with debug information. (Need to juggle multiple sets of debug files.)
+#     Again, that's for subsequent scripts.
+
+set -e
+set -v
+
+build
+
+cat $*          |./subx_bin run apps/dquotes  > a.dquotes
+
+cat a.dquotes   |./subx_bin run apps/assort   > a.assort
+
+cat a.assort    |./subx_bin run apps/pack     > a.pack
+
+cat a.pack      |./subx_bin run apps/survey   > a.survey
+
+cat a.survey    |./subx_bin run apps/hex      > a.elf
+
+xxd a.elf                                     > a.xxd
