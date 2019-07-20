@@ -343,7 +343,7 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   ✓ examples/ex3
   ✓ examples/ex4
   ✓ examples/ex5
-  - examples/ex6
+  ✓ examples/ex6
   ✓ examples/ex7
   ✓ examples/ex8
   ✓ examples/ex9
