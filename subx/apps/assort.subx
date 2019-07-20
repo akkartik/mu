@@ -25,10 +25,10 @@
 
 Entry:
     # initialize heap
-    # . Heap = new-segment(64KB)
+    # . Heap = new-segment(1MB)
     # . . push args
     68/push  Heap/imm32
-    68/push  0x10000/imm32/64KB
+    68/push  0x100000/imm32/1MB
     # . . call
     e8/call  new-segment/disp32
     # . . discard args
@@ -525,6 +525,13 @@ $read-segments:check0:
 #?     e8/call  write-stream/disp32
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . rewind-stream(line)
+#?     # . . push args
+#?     51/push-ECX
+#?     # . . call
+#?     e8/call  rewind-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 #?     # . write(2/stderr, "$\n")
 #?     # . . push args
 #?     68/push  "$\n"/imm32
@@ -703,6 +710,39 @@ $read-segments:check-for-segment-header:
     89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to *EAX
     # fall through
 $read-segments:regular-line:
+#?     # dump line {{{
+#?     # . write(2/stderr, "regular line: ")
+#?     # . . push args
+#?     68/push  "regular line: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . rewind-stream(line)
+#?     # . . push args
+#?     51/push-ECX
+#?     # . . call
+#?     e8/call  rewind-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # . write-stream(2/stderr, line)
+#?     # . . push args
+#?     51/push-ECX
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # rewind-stream(line)
     # . . push args
     51/push-ECX
@@ -799,6 +839,6 @@ $write-segments:end:
 == data
 
 Segment-size:
-  0x1000/imm32/4KB
+  0x8000/imm32/4KB
 
 # . . vim:nowrap:textwidth=0
