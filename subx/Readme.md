@@ -338,18 +338,18 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
 ## Roadmap and status
 
 * Bootstrapping a SubX-\>ELF translator in SubX
-  ✓ examples/ex1
-  ✓ examples/ex2
-  ✓ examples/ex3
-  ✓ examples/ex4
-  ✓ examples/ex5
-  ✓ examples/ex6
-  ✓ examples/ex7
-  ✓ examples/ex8
-  ✓ examples/ex9
-  ✓ examples/ex10
-  - examples/ex11
-  ✓ examples/ex12
+  - examples/ex1.subx (✓)
+  - examples/ex2.subx (✓)
+  - examples/ex3.subx (✓)
+  - examples/ex4.subx (✓)
+  - examples/ex5.subx (✓)
+  - examples/ex6.subx (✓)
+  - examples/ex7.subx (✓)
+  - examples/ex8.subx (✓)
+  - examples/ex9.subx (✓)
+  - examples/ex10.subx (✓)
+  - examples/ex11.subx
+  - examples/ex12.subx (✓)
   - apps/factorial.subx
   - apps/crenshaw2-1.subx
   - apps/crenshaw2-1b.subx
