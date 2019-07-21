@@ -1,6 +1,6 @@
                           Initial   -tests/whitespace/comments
 ## Lines in source
-standard library           7712     1814
+standard library           9597     2316
 apps/crenshaw2-1b.subx      798      176
 apps/crenshaw2-1.subx       601      180
 apps/factorial.subx         107       28
