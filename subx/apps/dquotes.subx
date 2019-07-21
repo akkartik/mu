@@ -2,11 +2,11 @@
 # Replace them with references to new variables in the data segment.
 #
 # To run (from the subx/ directory):
-#   $ ./subx translate *.subx apps/dquote.subx -o apps/dquote
+#   $ ./subx translate *.subx apps/dquotes.subx -o apps/dquotes
 #   $ cat x
 #   == code
 #   ab "cd ef"/imm32
-#   $ cat x  |./subx run apps/dquote
+#   $ cat x  |./subx run apps/dquotes
 #   == code
 #   ab __string1/imm32
 #   == data
@@ -84,7 +84,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   var new-data-segment = new-stream(Heap, Segment-size, 1)
-    #   write-stream(new-data-segment, "== data\n")
+    #   write(new-data-segment, "== data\n")
     #   while true
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -196,7 +196,7 @@ $convert:check-for-comment:
     3d/compare-EAX-and  0x23/imm32/hash
     74/jump-if-equal  $convert:word-loop/disp8
 $convert:check-for-string-literal:
-    3d/compare-EAX-and  0x22/imm32/hash
+    3d/compare-EAX-and  0x22/imm32/dquote
     75/jump-if-not-equal  $convert:regular-word/disp8
 $convert:string-literal:
     # process-string-literal(word-slice, out, new-data-segment)

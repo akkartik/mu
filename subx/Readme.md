@@ -348,7 +348,7 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   - examples/ex8.subx (✓)
   - examples/ex9.subx (✓)
   - examples/ex10.subx (✓)
-  - examples/ex11.subx
+  - examples/ex11.subx (✓)
   - examples/ex12.subx (✓)
   - apps/factorial.subx
   - apps/crenshaw2-1.subx
@@ -359,6 +359,7 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   - apps/pack.subx
   - apps/assort.subx
   - apps/dquotes.subx
+  - apps/tests.subx
 
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
