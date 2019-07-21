@@ -120,6 +120,14 @@ $get:abort:
     e8/call  _write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . _write(2/stderr, "\n")
+    # . . push args
+    68/push  "\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . syscall(exit, 1)
     bb/copy-to-EBX  1/imm32
     b8/copy-to-EAX  1/imm32/exit
@@ -289,6 +297,14 @@ $get-slice:abort:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . _write(2/stderr, "\n")
+    # . . push args
+    68/push  "\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . syscall(exit, 1)
     bb/copy-to-EBX  1/imm32
     b8/copy-to-EAX  1/imm32/exit
@@ -494,7 +510,7 @@ $get-or-insert:end:
 $get-or-insert:abort:
     # . _write(2/stderr, error)
     # . . push args
-    68/push  "get-or-insert: table is full"/imm32
+    68/push  "get-or-insert: table is full\n"/imm32
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
@@ -755,7 +771,7 @@ $leaky-get-or-insert-slice:end:
 $leaky-get-or-insert-slice:abort:
     # . _write(2/stderr, error)
     # . . push args
-    68/push  "leaky-get-or-insert-slice: table is full"/imm32
+    68/push  "leaky-get-or-insert-slice: table is full\n"/imm32
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
