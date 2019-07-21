@@ -852,7 +852,12 @@ emit-string-literal-data:  # out : (address stream), word : (address slice)
     #     if (curr >= word->end) break
     #     c = *curr
     #     if (c == '"') break
-    #     if (c == '\') ++curr, c = *curr
+    #     if (c == '\') {
+    #       ++curr
+    #       c = *curr
+    #       if (c == 'n')
+    #         c = newline
+    #     }
     #     append-byte-hex(out, c)
     #     if c is alphanumeric:
     #       write(out, "/")
@@ -908,22 +913,26 @@ $emit-string-literal-data:loop-init:
 $emit-string-literal-data:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # compare EDX with ESI
-    73/jump-if-greater-or-equal-unsigned  $emit-string-literal-data:end/disp8
+    0f 83/jump-if-greater-or-equal-unsigned  $emit-string-literal-data:end/disp32
     # CL = *curr
     8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           1/r32/CL    .               .                 # copy byte at *EDX to CL
-    # if (ECX == '"') break
+    # if (c == '"') break
     81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x22/imm32/dquote # compare ECX
     74/jump-if-equal  $emit-string-literal-data:end/disp8
-    # if (ECX == '\') ++curr, ECX = *curr
+    # if (c != '\') goto emit
     81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x5c/imm32/backslash  # compare ECX
     75/jump-if-not-equal  $emit-string-literal-data:emit/disp8
-    # . ++curr
+    # ++curr
     42/increment-EDX
-    # . if (curr >= max) break
+    # if (curr >= max) break
     39/compare                      3/mod/direct    2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # compare EDX with ESI
     73/jump-if-greater-or-equal-unsigned  $emit-string-literal-data:end/disp8
-    # . CL = *curr
+    # c = *curr
     8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           1/r32/CL    .               .                 # copy byte at *EDX to CL
+    # if (c == 'n') c = newline
+    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0x6e/imm32/n      # compare ECX
+    75/jump-if-not-equal  $emit-string-literal-data:emit/disp8
+    b9/copy-to-ECX  0x0a/imm32/newline
 $emit-string-literal-data:emit:
     # append-byte-hex(out, CL)
     # . . push args
@@ -971,7 +980,7 @@ $emit-string-literal-data:char-done:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # ++curr
     42/increment-EDX
-    eb/jump $emit-string-literal-data:loop/disp8
+    e9/jump $emit-string-literal-data:loop/disp32
 $emit-string-literal-data:end:
     # . restore registers
     5e/pop-to-ESI
@@ -1266,6 +1275,70 @@ test-emit-string-literal-data-handles-escape-sequences:
     # . . push args
     68/push  "F - test-emit-string-literal-data-handles-escape-sequences"/imm32
     68/push  "0x00000003/imm32 61/a 22 62/b "/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-string-literal-data-handles-newline-escape:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = '"a\nb"'
+    68/push  _test-slice-a-newline-b-limit/imm32
+    68/push  _test-slice-a-newline-b/imm32
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # emit-string-literal-data(_test-output-stream, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  emit-string-literal-data/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # dump output {{{
+#?     # . write(2/stderr, "result: ^")
+#?     # . . push args
+#?     68/push  "result: ^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # . check-stream-equal(_test-output-stream, "3/imm32 61/a 0a 62/b ", msg)
+    # . . push args
+    68/push  "F - test-emit-string-literal-data-handles-newline-escape"/imm32
+    68/push  "0x00000003/imm32 61/a 0a 62/b "/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
@@ -2667,6 +2740,10 @@ _test-slice-a-space-b-limit:
 _test-slice-a-dquote-b:
   22/dquote 61/a 5c/backslash 22/dquote 62/b 22/dquote  # "a\"b"
 _test-slice-a-dquote-b-limit:
+
+_test-slice-a-newline-b:
+  22/dquote 61/a 5c/backslash 6e/n 62/b 22/dquote  # "a\nb"
+_test-slice-a-newline-b-limit:
 
 # "abc/def"/ghi
 _test-slice-literal-string:
