@@ -22,15 +22,6 @@ apps/assort               22506     5342
 apps/dquotes              27186     5849
 apps/survey               42791    11258
 
-## Translation speed
-Emulated:
-  - 35 LoC: 7.5s
-  - 84 LoC: 16.8s
-  - 219 LoC: 43.5s (error after 4/5 phases)
-
-Native:
-  - less than 0.1s for layers 049-052
-
 # lines per test (including whitespace/comments)
                           num tests     num lines     lines/test
 apps/crenshaw2-1.subx        2            585          292.5
