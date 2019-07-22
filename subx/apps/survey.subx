@@ -136,16 +136,24 @@ convert:  # infile : (address buffered-file), out : (address buffered-file) -> <
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # var labels/EDX = stream(512 * 16)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x2000/imm32      # subtract from ESP
-    68/push  0x2000/imm32/length
+    # var labels/EDX = stream(1024 * 16)
+    # . data
+    2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/ESP   Max-labels/disp32                 # subtract *Max-labels from ESP
+    # . length
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Max-labels/disp32                 # push *Max-labels
+    # . read
     68/push  0/imm32/read
+    # . write
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
     # var in/ESI = stream(Input-size * 1)
+    # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/ESP   Input-size/disp32                 # subtract *Input-size from ESP
+    # . length
     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Input-size/disp32                 # push *Input-size
+    # . read
     68/push  0/imm32/read
+    # . write
     68/push  0/imm32/write
     89/copy                         3/mod/direct    6/rm32/ESI    .           .             .           4/r32/ESP   .               .                 # copy ESP to ESI
 #?     # dump labels->write {{{
