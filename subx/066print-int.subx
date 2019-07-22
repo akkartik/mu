@@ -5,6 +5,18 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
+to-hex-char:  # in/EAX : nibble -> out/EAX : byte
+    # no error checking; accepts argument in EAX
+    # if (EAX <= 9) return EAX + '0'
+    3d/compare-EAX-with  0x9/imm32/9
+    7f/jump-if-greater  $to-hex-char:else/disp8
+    05/add-to-EAX  0x30/imm32/0
+    c3/return
+$to-hex-char:else:
+    # otherwise return EAX + 'a' - 10
+    05/add-to-EAX  0x57/imm32/a-10
+    c3/return
+
 append-byte-hex:  # f : (address stream), n : int -> <void>
     # . prolog
     55/push-EBP
