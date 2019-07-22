@@ -109,6 +109,15 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
 $convert:read:
+#?     # print("read\n") {{{
+#?     # . . push args
+#?     68/push  "read\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # read-segments(in, table)
     # . . push args
     51/push-ECX
@@ -118,6 +127,15 @@ $convert:read:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $convert:write:
+#?     # print("write\n") {{{
+#?     # . . push args
+#?     68/push  "write\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # write-segments(out, table)
     # . . push args
     51/push-ECX
@@ -550,6 +568,15 @@ $read-segments:check0:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $read-segments:check1:
+#?     # print("check1\n") {{{
+#?     # . . push args
+#?     68/push  "check1\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # if (slice-empty?(word-slice)) continue
     # . EAX = slice-empty?(word-slice)
     # . . push args
@@ -562,6 +589,15 @@ $read-segments:check1:
     3d/compare-EAX-and  0/imm32
     0f 85/jump-if-not-equal  $read-segments:loop/disp32
 $read-segments:check-for-comment:
+#?     # print("check for comment\n") {{{
+#?     # . . push args
+#?     68/push  "check for comment\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # if (slice-starts-with?(word-slice, "#")) continue
     # . start/ESI = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # copy *ECX to ESI
@@ -572,6 +608,15 @@ $read-segments:check-for-comment:
     3d/compare-EAX-and  0x23/imm32/hash
     0f 84/jump-if-equal  $read-segments:loop/disp32
 $read-segments:check-for-segment-header:
+#?     # print("check for segment header\n") {{{
+#?     # . . push args
+#?     68/push  "check for segment header\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
 #?     # dump word-slice {{{
 #?     # . write(2/stderr, "AA: ")
 #?     # . . push args
@@ -710,6 +755,15 @@ $read-segments:check-for-segment-header:
     89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to *EAX
     # fall through
 $read-segments:regular-line:
+#?     # print("regular line\n") {{{
+#?     # . . push args
+#?     68/push  "regular line\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
 #?     # dump line {{{
 #?     # . write(2/stderr, "regular line: ")
 #?     # . . push args
@@ -750,6 +804,15 @@ $read-segments:regular-line:
     e8/call  rewind-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # print("write stream\n") {{{
+#?     # . . push args
+#?     68/push  "write stream\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # write-stream(curr-segment, line)
     # . . push args
     51/push-ECX
@@ -759,6 +822,15 @@ $read-segments:regular-line:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # loop
+#?     # print("loop\n") {{{
+#?     # . . push args
+#?     68/push  "loop\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     e9/jump  $read-segments:loop/disp32
 $read-segments:break:
 $read-segments:end:
