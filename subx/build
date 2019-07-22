@@ -102,12 +102,12 @@ grep -h "^[^[:space:]#].*) {$" subx.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |upda
 grep -h "^\s*void test_" subx.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |update test_list
 grep -h "^\s*void test_" subx.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
 
+older_than subx_bin subx.cc *_list && {
+  $CXX $CFLAGS subx.cc -o subx_bin
+}
+
 if [ $# -eq 0 ]
 then
-
-  older_than subx_bin subx.cc *_list && {
-    $CXX $CFLAGS subx.cc -o subx_bin
-  }
 
   # simple example programs
   for n in `seq 1 12`
