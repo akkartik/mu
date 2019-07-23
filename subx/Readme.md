@@ -350,16 +350,18 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   - examples/ex10.subx (✓)
   - examples/ex11.subx (✓)
   - examples/ex12.subx (✓)
-  - apps/factorial.subx
-  - apps/crenshaw2-1.subx
-  - apps/crenshaw2-1b.subx
-  - apps/handle.subx
+  - apps/factorial.subx (✓)
+  - apps/crenshaw2-1.subx (✓)
+  - apps/crenshaw2-1b.subx (✓)
+  - apps/handle.subx (✓)
   - apps/hex.subx
   - apps/survey.subx
   - apps/pack.subx
   - apps/assort.subx
   - apps/dquotes.subx
   - apps/tests.subx
+
+  SubX in SubX: `tests |dquotes |assort |pack |survey |hex`
 
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
