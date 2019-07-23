@@ -37,7 +37,7 @@ void compute_segment_starts(program& p) {
     if (curr.start >= 0x08000000) {
       // valid address for user space, so assume we're creating a real ELF binary, not just running a test
       curr.start &= 0xfffff000;  // same number of zeros as the p_align used when emitting the ELF binary
-      curr.start |= p_offset;
+      curr.start |= (p_offset & 0xfff);
       trace(99, "transform") << "segment " << i << " begins at address 0x" << HEXWORD << curr.start << end();
     }
     p_offset += size_of(curr);
