@@ -109,10 +109,13 @@ older_than subx_bin subx.cc *_list && {
 if [ $# -eq 0 ]
 then
 
+  # Assumption: SubX programs don't need to be retranslated every time we
+  # rebuild the C++ bootstrap.
+
   # simple example programs
   for n in `seq 1 12`
   do
-    older_than examples/ex$n examples/ex$n.subx subx_bin && {
+    older_than examples/ex$n examples/ex$n.subx && {
       ./subx_bin translate examples/ex$n.subx -o examples/ex$n
     }
   done
