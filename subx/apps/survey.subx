@@ -1799,13 +1799,111 @@ test-compute-addresses:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . check-ints-equal(labels->write, 0x20, msg)
     # . . push args
-    68/push  "F - test-compute-addresses-maintains-labels-write-index"/imm32
+    68/push  "F - test-compute-addresses/maintains-labels-write-index"/imm32
     68/push  0x20/imm32/2-entries
     ff          6/subop/push        0/mod/indirect  2/rm32/EDX    .           .             .           .           .               .                 # push *EDX
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-compute-addresses-large-segments:
+    # input:
+    #   segments:
+    #     - 'a': {0x1000, 0, 0x5604}
+    #     - 'b': {0x2018, 0x5604, 1}
+    #   labels:
+    #     - 'l1': {'a', 3, 0}
+    #
+    # trace contains in any order (comments in parens):
+    #   segment 'a' starts at address 0x00001074.  (0x34 + 0x20 for each segment)
+    #   segment 'b' starts at address 0x00002678.  (0x018 discarded; last 3 nibbles from 0x1074 + 0x5604)
+    #   label 'l1' is at address 0x00001077.       (0x1074 + segment-offset 3)
+    #
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . var segments/ECX = stream(10 * 16)
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xa0/imm32        # subtract from ESP
+    68/push  0xa0/imm32/length
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # . var labels/EDX = stream(512 * 16)
+    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x2000/imm32      # subtract from ESP
+    68/push  0x2000/imm32/length
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    # . stream-add4(segments, "a", 0x1000, 0, 0x5604)
+    68/push  0x5604/imm32/segment-size
+    68/push  0/imm32/file-offset
+    68/push  0x1000/imm32/start-address
+    68/push  "a"/imm32/segment-name
+    51/push-ECX
+    # . . call
+    e8/call  stream-add4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # . stream-add4(segments, "b", 0x2018, 0x5604, 1)
+    68/push  1/imm32/segment-size
+    68/push  0x5604/imm32/file-offset
+    68/push  0x2018/imm32/start-address
+    68/push  "b"/imm32/segment-name
+    51/push-ECX
+    # . . call
+    e8/call  stream-add4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # . stream-add4(labels, "l1", "a", 3, 0)
+    68/push  0/imm32/label-address
+    68/push  3/imm32/segment-offset
+    68/push  "a"/imm32/segment-name
+    68/push  "l1"/imm32/label-name
+    52/push-EDX
+    # . . call
+    e8/call  stream-add4/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # component under test
+    # . compute-addresses(segments, labels)
+    # . . push args
+    52/push-EDX
+    51/push-ECX
+    # . . call
+    e8/call  compute-addresses/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # checks
+    # . check-trace-contains("segment 'a' starts at address 0x00001074.", msg)
+    # . . push args
+    68/push  "F - test-compute-addresses-large-segments/0"/imm32
+    68/push  "segment 'a' starts at address 0x00001074."/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . check-trace-contains("segment 'b' starts at address 0x00002678.", msg)
+    # . . push args
+    68/push  "F - test-compute-addresses-large-segments/1"/imm32
+    68/push  "segment 'b' starts at address 0x00002678."/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . check-trace-contains("label 'l1' is at address 0x00001077.", msg)
+    # . . push args
+    68/push  "F - test-compute-addresses-large-segments/3"/imm32
+    68/push  "label 'l1' is at address 0x00001077."/imm32
+    # . . call
+    e8/call  check-trace-contains/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
