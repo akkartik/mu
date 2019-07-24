@@ -337,31 +337,12 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
 
 ## Roadmap and status
 
-* Bootstrapping a SubX-\>ELF translator in SubX
-  - examples/ex1.subx (✓)
-  - examples/ex2.subx (✓)
-  - examples/ex3.subx (✓)
-  - examples/ex4.subx (✓)
-  - examples/ex5.subx (✓)
-  - examples/ex6.subx (✓)
-  - examples/ex7.subx (✓)
-  - examples/ex8.subx (✓)
-  - examples/ex9.subx (✓)
-  - examples/ex10.subx (✓)
-  - examples/ex11.subx (✓)
-  - examples/ex12.subx (✓)
-  - apps/factorial.subx (✓)
-  - apps/crenshaw2-1.subx (✓)
-  - apps/crenshaw2-1b.subx (✓)
-  - apps/handle.subx (✓)
-  - apps/hex.subx
-  - apps/survey.subx
-  - apps/pack.subx
-  - apps/assort.subx
-  - apps/dquotes.subx
-  - apps/tests.subx
+* Self-hosting. (✓)
 
-  SubX in SubX: `tests |dquotes |assort |pack |survey |hex`
+  `tests |dquotes |assort |pack |survey |hex`
+
+* A script to package SubX together with a minimal Linux kernel image
+  (compiled from source, of course).
 
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
@@ -370,11 +351,15 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   - Files
   - Concurrency, and a framework for testing blocking code
 
-* Using the trace in [white-box tests](https://git.sr.ht/~akkartik/basic-whitebox-test/tree/master/Readme.md)
-  for performance, fault tolerance, etc.
-
 * Higher-level notations. Like programming languages, but with thinner
   implementations that you can -- and are expected to! -- modify.
+  - syntax for addressing modes: `%reg`, `*reg`, `*(reg+disp)`,
+    `*(reg+reg+disp)`, `*(reg+reg<<n + disp)`
+  - function calls in a single line, using addressing modes for arguments
+  - syntax for controlling a type checker, akin to the top-level Mu language
+  - a register allocation _verifier_. Programmer provides registers for
+    variables; verifier checks that register reads are for the same type that
+    was last written -- across all control flow paths.
 
 ## Running
 
