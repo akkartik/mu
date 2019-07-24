@@ -117,7 +117,7 @@ convert:  # infile : (address buffered-file), out : (address buffered-file) -> <
     #   var in : (address stream byte) = stream(4096)
     #   slurp(infile, in)
     #   var segments = new-stream(10 rows, 16 bytes each)
-    #   var labels = new-stream(512 rows, 16 bytes each)
+    #   var labels = new-stream(Max-labels rows, 16 bytes each)
     #   compute-offsets(in, segments, labels)
     #   compute-addresses(segments, labels)
     #   rewind-stream(in)
@@ -136,7 +136,7 @@ convert:  # infile : (address buffered-file), out : (address buffered-file) -> <
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # var labels/EDX = stream(1024 * 16)
+    # var labels/EDX = stream(Max-labels * 16)
     # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/ESP   Max-labels/disp32                 # subtract *Max-labels from ESP
     # . length
