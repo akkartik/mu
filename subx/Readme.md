@@ -59,6 +59,29 @@ covered by automated tests. SubX's tagline: tests before syntax.
   $ ./subx run apps/factorial test
   ```
 
+You can use SubX to translate itself. For example, running natively on Linux:
+
+  ```sh
+  # generate translator phases using C++
+  $ ./subx translate 0*.subx apps/subx-common.subx apps/hex.subx    -o hex
+  $ ./subx translate 0*.subx apps/subx-common.subx apps/survey.subx -o survey
+  $ ./subx translate 0*.subx apps/subx-common.subx apps/pack.subx   -o pack
+  $ ./subx translate 0*.subx apps/subx-common.subx apps/assort.subx -o assort
+  $ ./subx translate 0*.subx apps/subx-common.subx apps/dquotes.subx -o dquotes
+  $ ./subx translate 0*.subx apps/subx-common.subx apps/tests.subx  -o tests
+  $ chmod +x hex survey pack assort dquotes tests
+
+  # use the new translator phases to translate subx programs (including translator phases!)
+  $ cat examples/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
+  $ chmod +x a.elf
+  $ ./a.elf
+  $ echo $?
+  42
+  ```
+
+(For running emulated on other platforms, see the `translate` script. You'll
+need 16GB RAM for translating some of the larger programs.)
+
 You can use it to learn about the x86 processor that (almost certainly) runs
 your computer. (See below.)
 
