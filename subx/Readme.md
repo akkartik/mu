@@ -71,7 +71,7 @@ You can use SubX to translate itself. For example, running natively on Linux:
   $ ./subx translate 0*.subx apps/subx-common.subx apps/tests.subx  -o tests
   $ chmod +x hex survey pack assort dquotes tests
 
-  # use the new translator phases to translate subx programs (including translator phases!)
+  # use the new translator phases to translate subx programs
   $ cat examples/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
   $ chmod +x a.elf
   $ ./a.elf
