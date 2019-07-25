@@ -93,9 +93,9 @@ void check_valid_name(const string& s) {
     return;
   }
   if (isdigit(s.at(0)))
-    raise << "'" << s << "' starts with a digit, and so can be confused with a negative number; use a different name.\n" << end();
+    raise << "'" << s << "' starts with a digit, and so can be confused with a number; use a different name.\n" << end();
   if (SIZE(s) == 2)
-    raise << "'" << s << "' is two characters long which can look like raw hex bytes at a glance; use a different name\n" << end();
+    raise << "'" << s << "' is two characters long, which can look like raw hex bytes at a glance; use a different name\n" << end();
 }
 
 //: Now that that's done, let's start using names as labels.
@@ -329,7 +329,7 @@ void test_label_too_short() {
       "  05  0x0d0c0b0a/imm32\n"
   );
   CHECK_TRACE_CONTENTS(
-      "error: 'xz' is two characters long which can look like raw hex bytes at a glance; use a different name\n"
+      "error: 'xz' is two characters long, which can look like raw hex bytes at a glance; use a different name\n"
   );
 }
 
