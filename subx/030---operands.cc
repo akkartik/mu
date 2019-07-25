@@ -503,7 +503,7 @@ string to_string(const line& inst) {
 
 int32_t parse_int(const string& s) {
   if (s.empty()) return 0;
-  if (std::any_of(s.begin(), s.end(), isupper)) {
+  if (contains_uppercase(s)) {
     raise << "uppercase hex not allowed: " << s << '\n' << end();
     return 0;
   }

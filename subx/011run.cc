@@ -300,7 +300,7 @@ const segment* find(const program& p, const string& segment_name) {
 }
 
 uint8_t hex_byte(const string& s) {
-  if (std::any_of(s.begin(), s.end(), isupper)) {
+  if (contains_uppercase(s)) {
     raise << "uppercase hex not allowed: " << s << '\n' << end();
     return 0;
   }
@@ -458,4 +458,10 @@ string to_string(const word& w) {
   for (int i = 0;  i < SIZE(w.metadata);  ++i)
     out << " /" << w.metadata.at(i);
   return out.str();
+}
+
+bool contains_uppercase(const string& s) {
+  for (int i = 0;  i < SIZE(s);  ++i)
+    if (isupper(s.at(i))) return true;
+  return false;
 }

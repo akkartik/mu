@@ -11,6 +11,7 @@ test "$CXX" || export CXX=c++
 test "$CC" || export CC=cc
 test "$CFLAGS" || export CFLAGS="-g -O2"
 export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+export CXXFLAGS="-std=c++98 $CFLAGS"  # CI has an ancient version; don't expect recent dialects
 
 # Outline:
 # [0-9]*.cc -> mu.cc -> .build/*.cc -> .build/*.o -> .build/mu_bin
@@ -106,7 +107,7 @@ noisy_cd() {
 }
 
 older_than enumerate/enumerate enumerate/enumerate.cc && {
-  $CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
+  $CXX $CXXFLAGS enumerate/enumerate.cc -o enumerate/enumerate
 }
 
 older_than tangle/tangle tangle/*.cc && {
@@ -128,7 +129,7 @@ older_than tangle/tangle tangle/*.cc && {
     grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
     # }
     # Now that we have all the _lists, compile 'tangle'
-    $CXX $CFLAGS boot.cc -o tangle
+    $CXX $CXXFLAGS boot.cc -o tangle
     ./tangle test
   noisy_cd ..  # no effect; just to show us returning to the parent directory
 }
@@ -140,7 +141,7 @@ older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle && {
 }
 
 older_than cleave/cleave cleave/cleave.cc && {
-  $CXX $CFLAGS cleave/cleave.cc -o cleave/cleave
+  $CXX $CXXFLAGS cleave/cleave.cc -o cleave/cleave
   rm -rf .build
 }
 
@@ -164,7 +165,7 @@ older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
     for f in mu_*.cc
     do
       older_than `echo $f  |sed 's/\.cc$/.o/'` $f header global_declarations_list function_list test_list && {
-        $CXX $CFLAGS -c $f
+        $CXX $CXXFLAGS -c $f
       }
     done
   noisy_cd ../termbox
@@ -178,7 +179,7 @@ older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
       ar rcs libtermbox.a *.o
     }
   noisy_cd ..
-  $CXX $CFLAGS .build/*.o termbox/libtermbox.a -o .build/mu_bin
+  $CXX $CXXFLAGS .build/*.o termbox/libtermbox.a -o .build/mu_bin
   cp .build/mu_bin .
 }
 

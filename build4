@@ -25,6 +25,7 @@ test "$CXX" || export CXX=c++
 test "$CC" || export CC=cc
 test "$CFLAGS" || export CFLAGS="-g -O2"
 export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+export CXXFLAGS="-std=c++98 $CFLAGS"  # CI has an ancient version; don't expect recent dialects
 
 # Outline:
 # [0-9]*.cc -> mu.cc -> .build/*.cc -> .build/*.o -> .build/mu_bin
@@ -129,7 +130,7 @@ mv_if_exists enumerate/enumerate $TMP
   wait_for_all enumerate/enumerate.cc
   older_than $TMP enumerate/enumerate.cc && {
     echo "building enumerate"
-    $CXX $CFLAGS enumerate/enumerate.cc -o $TMP  ||  quit
+    $CXX $CXXFLAGS enumerate/enumerate.cc -o $TMP  ||  quit
     echo "done building enumerate"
   }
   mv $TMP enumerate/enumerate
@@ -159,7 +160,7 @@ mv_if_exists tangle/tangle $TMP
       grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
       # }
       # Now that we have all the _lists, compile 'tangle'
-      $CXX $CFLAGS boot.cc -o $TMP  ||  quit
+      $CXX $CXXFLAGS boot.cc -o $TMP  ||  quit
       $TMP test
     cd ..
     echo "done building tangle"
@@ -191,7 +192,7 @@ mv_if_exists cleave/cleave $TMP
   wait_for_all cleave/cleave.cc
   older_than $TMP cleave/cleave.cc && {
     echo "building cleave"
-    $CXX $CFLAGS cleave/cleave.cc -o $TMP  ||  quit
+    $CXX $CXXFLAGS cleave/cleave.cc -o $TMP  ||  quit
     rm -rf .build
     echo "done building cleave"
   }
@@ -229,7 +230,7 @@ mv_if_exists mu_bin $TMP
         (
           older_than $TMP $f header global_declarations_list function_list test_list && {
             echo "building $OBJ"
-            $CXX $CFLAGS -c $f -o $TMP  ||  quit
+            $CXX $CXXFLAGS -c $f -o $TMP  ||  quit
             echo "done building $OBJ"
           }
           mv $TMP $OBJ
@@ -272,7 +273,7 @@ mv_if_exists mu_bin $TMP
     echo wait_for_all $MU_OBJS termbox/libtermbox.a
     wait_for_all $MU_OBJS termbox/libtermbox.a
     echo "building .build/mu_bin"
-    $CXX $CFLAGS $MU_OBJS termbox/libtermbox.a -o $TMP  ||  quit
+    $CXX $CXXFLAGS $MU_OBJS termbox/libtermbox.a -o $TMP  ||  quit
     echo "done building .build/mu_bin"
     echo "done building mu_bin"
   }

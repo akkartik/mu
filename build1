@@ -14,13 +14,14 @@ test "$CXX" || export CXX=c++
 test "$CC" || export CC=cc
 test "$CFLAGS" || export CFLAGS="-g -O2"
 export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+export CXXFLAGS="-std=c++98 $CFLAGS"  # CI has an ancient version; don't expect recent dialects
 
 # Outline:
 # [0-9]*.cc -> mu.cc -> mu_bin
 # (layers)   |        |
 #          tangle   $CXX
 
-$CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
+$CXX $CXXFLAGS enumerate/enumerate.cc -o enumerate/enumerate
 
 cd tangle
   # auto-generate various lists (ending in '_list' by convention) {
@@ -40,7 +41,7 @@ cd tangle
   grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  > test_name_list
   # }
   # Now that we have all the _lists, compile 'tangle'
-  $CXX $CFLAGS boot.cc -o tangle
+  $CXX $CXXFLAGS boot.cc -o tangle
   ./tangle test
 cd ..
 
@@ -60,7 +61,7 @@ grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  > funct
 # auto-generate list of tests to run
 grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  > test_list
 grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  > test_name_list
-$CXX $CFLAGS mu.cc termbox/libtermbox.a -o mu_bin
+$CXX $CXXFLAGS mu.cc termbox/libtermbox.a -o mu_bin
 
 ## [0-9]*.mu -> core.mu
 
