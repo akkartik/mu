@@ -100,10 +100,6 @@ void run(const string& text_bytes) {
 :(before "End Types")
 struct program {
   vector<segment> segments;
-  // random ideas for other things we may eventually need
-  //map<name, address> globals;
-  //vector<recipe> recipes;
-  //map<string, type_info> types;
 };
 :(before "struct program")
 struct segment {
