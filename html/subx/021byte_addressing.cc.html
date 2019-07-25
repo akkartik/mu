@@ -73,7 +73,7 @@ if ('onhashchange' in window) {
 <span id="L14" class="LineNr"> 14 </span>  <span class="Normal">case</span> <span class="Constant">5</span>: <span class="Identifier">return</span> <span class="Constant">&quot;CH&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// second lowest byte of ECX</span>
 <span id="L15" class="LineNr"> 15 </span>  <span class="Normal">case</span> <span class="Constant">6</span>: <span class="Identifier">return</span> <span class="Constant">&quot;DH&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// second lowest byte of EDX</span>
 <span id="L16" class="LineNr"> 16 </span>  <span class="Normal">case</span> <span class="Constant">7</span>: <span class="Identifier">return</span> <span class="Constant">&quot;BH&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// second lowest byte of EBX</span>
-<span id="L17" class="LineNr"> 17 </span>  <span class="Normal">default</span>: <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;invalid 8-bit register &quot;</span> &lt;&lt; r &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>  <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<span id="L17" class="LineNr"> 17 </span>  <span class="Normal">default</span>: <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;invalid 8-bit register &quot;</span> &lt;&lt; r &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>  <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span id="L18" class="LineNr"> 18 </span>  <span class="Delimiter">}</span>
 <span id="L19" class="LineNr"> 19 </span><span class="Delimiter">}</span>
 <span id="L20" class="LineNr"> 20 </span>
@@ -97,7 +97,7 @@ if ('onhashchange' in window) {
 <span id="L38" class="LineNr"> 38 </span><span class="Delimiter">}</span>
 <span id="L39" class="LineNr"> 39 </span>
 <span id="L40" class="LineNr"> 40 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L41" class="LineNr"> 41 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L355'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;88&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy r8 to r8/m8-at-r32&quot;</span><span class="Delimiter">);</span>
+<span id="L41" class="LineNr"> 41 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;88&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy r8 to r8/m8-at-r32&quot;</span><span class="Delimiter">);</span>
 <span id="L42" class="LineNr"> 42 </span>
 <span id="L43" class="LineNr"> 43 </span><span class="Delimiter">:(code)</span>
 <span id="L44" class="LineNr"> 44 </span><span class="Normal">void</span> <a href='021byte_addressing.cc.html#L44'>test_copy_r8_to_mem_at_r32</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -111,7 +111,7 @@ if ('onhashchange' in window) {
 <span id="L52" class="LineNr"> 52 </span>      <span class="Constant">&quot;== data 0x2000\n&quot;</span>
 <span id="L53" class="LineNr"> 53 </span>      <span class="Constant">&quot;f0 cc bb aa\n&quot;</span>
 <span id="L54" class="LineNr"> 54 </span>  <span class="Delimiter">);</span>
-<span id="L55" class="LineNr"> 55 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L55" class="LineNr"> 55 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L56" class="LineNr"> 56 </span>      <span class="Constant">&quot;run: copy BL to r8/m8-at-r32\n&quot;</span>
 <span id="L57" class="LineNr"> 57 </span>      <span class="Constant">&quot;run: effective address is 0x00002000 (EAX)\n&quot;</span>
 <span id="L58" class="LineNr"> 58 </span>      <span class="Constant">&quot;run: storing 0xab\n&quot;</span>
@@ -121,21 +121,21 @@ if ('onhashchange' in window) {
 <span id="L62" class="LineNr"> 62 </span>
 <span id="L63" class="LineNr"> 63 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L64" class="LineNr"> 64 </span><span class="Normal">case</span> <span class="Constant">0x88</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy r8 to r/m8</span>
-<span id="L65" class="LineNr"> 65 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L338'>next</a><span class="Delimiter">();</span>
+<span id="L65" class="LineNr"> 65 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L339'>next</a><span class="Delimiter">();</span>
 <span id="L66" class="LineNr"> 66 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> rsrc = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
 <span id="L67" class="LineNr"> 67 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy &quot;</span> &lt;&lt; <a href='021byte_addressing.cc.html#L7'>rname_8bit</a><span class="Delimiter">(</span>rsrc<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to r8/m8-at-r32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L68" class="LineNr"> 68 </span>  <span class="Comment">// use unsigned to zero-extend 8-bit value to 32 bits</span>
 <span id="L69" class="LineNr"> 69 </span>  <span class="Normal">uint8_t</span>* dest = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint8_t</span>*&gt;<span class="Delimiter">(</span><a href='021byte_addressing.cc.html#L21'>effective_byte_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">));</span>
 <span id="L70" class="LineNr"> 70 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span>* src = <a href='021byte_addressing.cc.html#L33'>reg_8bit</a><span class="Delimiter">(</span>rsrc<span class="Delimiter">);</span>
 <span id="L71" class="LineNr"> 71 </span>  *dest = *src<span class="Delimiter">;</span>
-<span id="L72" class="LineNr"> 72 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L407'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span>*dest<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L72" class="LineNr"> 72 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L411'>NUM</a><span class="Delimiter">(</span>*dest<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L73" class="LineNr"> 73 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L74" class="LineNr"> 74 </span><span class="Delimiter">}</span>
 <span id="L75" class="LineNr"> 75 </span>
 <span id="L76" class="LineNr"> 76 </span><span class="Comment">//:</span>
 <span id="L77" class="LineNr"> 77 </span>
 <span id="L78" class="LineNr"> 78 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L79" class="LineNr"> 79 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L355'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;8a&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy r8/m8-at-r32 to r8&quot;</span><span class="Delimiter">);</span>
+<span id="L79" class="LineNr"> 79 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;8a&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy r8/m8-at-r32 to r8&quot;</span><span class="Delimiter">);</span>
 <span id="L80" class="LineNr"> 80 </span>
 <span id="L81" class="LineNr"> 81 </span><span class="Delimiter">:(code)</span>
 <span id="L82" class="LineNr"> 82 </span><span class="Normal">void</span> <a href='021byte_addressing.cc.html#L82'>test_copy_mem_at_r32_to_r8</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -149,7 +149,7 @@ if ('onhashchange' in window) {
 <span id="L90" class="LineNr"> 90 </span>      <span class="Constant">&quot;== data 0x2000\n&quot;</span>
 <span id="L91" class="LineNr"> 91 </span>      <span class="Constant">&quot;ab ff ff ff\n&quot;</span>  <span class="Comment">// 0xab with more data in following bytes</span>
 <span id="L92" class="LineNr"> 92 </span>  <span class="Delimiter">);</span>
-<span id="L93" class="LineNr"> 93 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L93" class="LineNr"> 93 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L94" class="LineNr"> 94 </span>      <span class="Constant">&quot;run: copy r8/m8-at-r32 to BL\n&quot;</span>
 <span id="L95" class="LineNr"> 95 </span>      <span class="Constant">&quot;run: effective address is 0x00002000 (EAX)\n&quot;</span>
 <span id="L96" class="LineNr"> 96 </span>      <span class="Constant">&quot;run: storing 0xab\n&quot;</span>
@@ -160,16 +160,16 @@ if ('onhashchange' in window) {
 <span id="L101" class="LineNr">101 </span>
 <span id="L102" class="LineNr">102 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L103" class="LineNr">103 </span><span class="Normal">case</span> <span class="Constant">0x8a</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy r/m8 to r8</span>
-<span id="L104" class="LineNr">104 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L338'>next</a><span class="Delimiter">();</span>
+<span id="L104" class="LineNr">104 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L339'>next</a><span class="Delimiter">();</span>
 <span id="L105" class="LineNr">105 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> rdest = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
 <span id="L106" class="LineNr">106 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy r8/m8-at-r32 to &quot;</span> &lt;&lt; <a href='021byte_addressing.cc.html#L7'>rname_8bit</a><span class="Delimiter">(</span>rdest<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L107" class="LineNr">107 </span>  <span class="Comment">// use unsigned to zero-extend 8-bit value to 32 bits</span>
 <span id="L108" class="LineNr">108 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span>* src = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint8_t</span>*&gt;<span class="Delimiter">(</span><a href='021byte_addressing.cc.html#L21'>effective_byte_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">));</span>
 <span id="L109" class="LineNr">109 </span>  <span class="Normal">uint8_t</span>* dest = <a href='021byte_addressing.cc.html#L33'>reg_8bit</a><span class="Delimiter">(</span>rdest<span class="Delimiter">);</span>
-<span id="L110" class="LineNr">110 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L407'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span>*src<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L110" class="LineNr">110 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L411'>NUM</a><span class="Delimiter">(</span>*src<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L111" class="LineNr">111 </span>  *dest = *src<span class="Delimiter">;</span>
 <span id="L112" class="LineNr">112 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> rdest_32bit = rdest &amp; <span class="Constant">0x3</span><span class="Delimiter">;</span>
-<span id="L113" class="LineNr">113 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <a href='013direct_addressing.cc.html#L136'>rname</a><span class="Delimiter">(</span>rdest_32bit<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; now contains 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXWORD</a> &lt;&lt; <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[rdest_32bit]<span class="Delimiter">.</span>u &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L113" class="LineNr">113 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <a href='013direct_addressing.cc.html#L136'>rname</a><span class="Delimiter">(</span>rdest_32bit<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; now contains 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L409'>HEXWORD</a> &lt;&lt; <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[rdest_32bit]<span class="Delimiter">.</span>u &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L114" class="LineNr">114 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L115" class="LineNr">115 </span><span class="Delimiter">}</span>
 <span id="L116" class="LineNr">116 </span>
@@ -183,7 +183,7 @@ if ('onhashchange' in window) {
 <span id="L124" class="LineNr">124 </span>      <span class="Constant">&quot;  8a     f3                                      \n&quot;</span>  <span class="Comment">// copy just the byte at *EBX to 8-bit register '6'</span>
 <span id="L125" class="LineNr">125 </span>      <span class="Comment">// ModR/M in binary: 11 (direct mode) 110 (dest 8-bit 'register 6') 011 (src EBX)</span>
 <span id="L126" class="LineNr">126 </span>  <span class="Delimiter">);</span>
-<span id="L127" class="LineNr">127 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L127" class="LineNr">127 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L128" class="LineNr">128 </span>      <span class="Comment">// ensure 8-bit register '6' is DH, not ESI</span>
 <span id="L129" class="LineNr">129 </span>      <span class="Constant">&quot;run: copy r8/m8-at-r32 to DH\n&quot;</span>
 <span id="L130" class="LineNr">130 </span>      <span class="Constant">&quot;run: storing 0x44\n&quot;</span>
@@ -195,7 +195,7 @@ if ('onhashchange' in window) {
 <span id="L136" class="LineNr">136 </span><span class="Comment">//:</span>
 <span id="L137" class="LineNr">137 </span>
 <span id="L138" class="LineNr">138 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L139" class="LineNr">139 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L355'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;c6&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm8 to r8/m8-at-r32 (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L139" class="LineNr">139 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;c6&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm8 to r8/m8-at-r32 (mov)&quot;</span><span class="Delimiter">);</span>
 <span id="L140" class="LineNr">140 </span>
 <span id="L141" class="LineNr">141 </span><span class="Delimiter">:(code)</span>
 <span id="L142" class="LineNr">142 </span><span class="Normal">void</span> <a href='021byte_addressing.cc.html#L142'>test_copy_imm8_to_mem_at_r32</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -208,7 +208,7 @@ if ('onhashchange' in window) {
 <span id="L149" class="LineNr">149 </span>      <span class="Constant">&quot;== data 0x2000\n&quot;</span>
 <span id="L150" class="LineNr">150 </span>      <span class="Constant">&quot;f0 cc bb aa\n&quot;</span>
 <span id="L151" class="LineNr">151 </span>  <span class="Delimiter">);</span>
-<span id="L152" class="LineNr">152 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L152" class="LineNr">152 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L153" class="LineNr">153 </span>      <span class="Constant">&quot;run: copy imm8 to r8/m8-at-r32\n&quot;</span>
 <span id="L154" class="LineNr">154 </span>      <span class="Constant">&quot;run: effective address is 0x00002000 (EAX)\n&quot;</span>
 <span id="L155" class="LineNr">155 </span>      <span class="Constant">&quot;run: storing 0xdd\n&quot;</span>
@@ -218,19 +218,19 @@ if ('onhashchange' in window) {
 <span id="L159" class="LineNr">159 </span>
 <span id="L160" class="LineNr">160 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L161" class="LineNr">161 </span><span class="Normal">case</span> <span class="Constant">0xc6</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy imm8 to r/m8</span>
-<span id="L162" class="LineNr">162 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L338'>next</a><span class="Delimiter">();</span>
-<span id="L163" class="LineNr">163 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> src = <a href='010---vm.cc.html#L338'>next</a><span class="Delimiter">();</span>
+<span id="L162" class="LineNr">162 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> modrm = <a href='010---vm.cc.html#L339'>next</a><span class="Delimiter">();</span>
+<span id="L163" class="LineNr">163 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> src = <a href='010---vm.cc.html#L339'>next</a><span class="Delimiter">();</span>
 <span id="L164" class="LineNr">164 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy imm8 to r8/m8-at-r32&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L165" class="LineNr">165 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;imm8 is 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span>src<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L165" class="LineNr">165 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;imm8 is 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L409'>HEXWORD</a> &lt;&lt; <a href='010---vm.cc.html#L411'>NUM</a><span class="Delimiter">(</span>src<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L166" class="LineNr">166 </span>  <span class="Normal">const</span> <span class="Normal">uint8_t</span> subop = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>  <span class="Comment">// middle 3 'reg opcode' bits</span>
 <span id="L167" class="LineNr">167 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>subop != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L168" class="LineNr">168 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized subop for opcode c6: &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; (only 0/copy currently implemented)\n&quot;</span><span class="Delimiter">;</span>
+<span id="L168" class="LineNr">168 </span>    cerr &lt;&lt; <span class="Constant">&quot;unrecognized subop for opcode c6: &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L411'>NUM</a><span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; (only 0/copy currently implemented)\n&quot;</span><span class="Delimiter">;</span>
 <span id="L169" class="LineNr">169 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L170" class="LineNr">170 </span>  <span class="Delimiter">}</span>
 <span id="L171" class="LineNr">171 </span>  <span class="Comment">// use unsigned to zero-extend 8-bit value to 32 bits</span>
 <span id="L172" class="LineNr">172 </span>  <span class="Normal">uint8_t</span>* dest = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint8_t</span>*&gt;<span class="Delimiter">(</span><a href='021byte_addressing.cc.html#L21'>effective_byte_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">));</span>
 <span id="L173" class="LineNr">173 </span>  *dest = src<span class="Delimiter">;</span>
-<span id="L174" class="LineNr">174 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L407'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span>*dest<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L174" class="LineNr">174 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L411'>NUM</a><span class="Delimiter">(</span>*dest<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L175" class="LineNr">175 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L176" class="LineNr">176 </span><span class="Delimiter">}</span>
 </pre>

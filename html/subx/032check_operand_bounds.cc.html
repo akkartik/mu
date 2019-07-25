@@ -66,7 +66,7 @@ if ('onhashchange' in window) {
 <span id="L6" class="LineNr">  6 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L7" class="LineNr">  7 </span>      <span class="Constant">&quot;01/add 4/mod 3/rm32 1/r32\n&quot;</span>  <span class="Comment">// add ECX to EBX</span>
 <span id="L8" class="LineNr">  8 </span>  <span class="Delimiter">);</span>
-<span id="L9" class="LineNr">  9 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L9" class="LineNr">  9 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L10" class="LineNr"> 10 </span>      <span class="Constant">&quot;error: '4/mod' too large to fit in bitfield mod\n&quot;</span>
 <span id="L11" class="LineNr"> 11 </span>  <span class="Delimiter">);</span>
 <span id="L12" class="LineNr"> 12 </span><span class="Delimiter">}</span>
@@ -89,7 +89,7 @@ if ('onhashchange' in window) {
 <span id="L29" class="LineNr"> 29 </span>
 <span id="L30" class="LineNr"> 30 </span><span class="Delimiter">:(before &quot;Pack Operands(segment code)&quot;)</span>
 <span id="L31" class="LineNr"> 31 </span>check_operand_bounds<span class="Delimiter">(</span>code<span class="Delimiter">);</span>
-<span id="L32" class="LineNr"> 32 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L32" class="LineNr"> 32 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L33" class="LineNr"> 33 </span><span class="Delimiter">:(code)</span>
 <span id="L34" class="LineNr"> 34 </span><span class="Normal">void</span> check_operand_bounds<span class="Delimiter">(</span><span class="Normal">const</span> segment&amp; code<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L35" class="LineNr"> 35 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;-- check operand bounds&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -97,7 +97,7 @@ if ('onhashchange' in window) {
 <span id="L37" class="LineNr"> 37 </span>    <span class="Normal">const</span> line&amp; inst = code<span class="Delimiter">.</span><a href='011run.cc.html#L112'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 <span id="L38" class="LineNr"> 38 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <a href='031check_operands.cc.html#L310'>first_operand</a><span class="Delimiter">(</span>inst<span class="Delimiter">);</span>  j &lt; <a href='001help.cc.html#L165'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span>
 <span id="L39" class="LineNr"> 39 </span>      check_operand_bounds<span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">));</span>
-<span id="L40" class="LineNr"> 40 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// stop at the first mal-formed instruction</span>
+<span id="L40" class="LineNr"> 40 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// stop at the first mal-formed instruction</span>
 <span id="L41" class="LineNr"> 41 </span>  <span class="Delimiter">}</span>
 <span id="L42" class="LineNr"> 42 </span><span class="Delimiter">}</span>
 <span id="L43" class="LineNr"> 43 </span>
@@ -109,17 +109,17 @@ if ('onhashchange' in window) {
 <span id="L49" class="LineNr"> 49 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>x &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L50" class="LineNr"> 50 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first == <span class="Constant">&quot;disp8&quot;</span> || p<span class="Delimiter">-&gt;</span>first == <span class="Constant">&quot;disp16&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L51" class="LineNr"> 51 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &gt;= p<span class="Delimiter">-&gt;</span>second/<span class="Constant">2</span><span class="Delimiter">)</span>
-<span id="L52" class="LineNr"> 52 </span>          <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' too large to fit in signed bitfield &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L52" class="LineNr"> 52 </span>          <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' too large to fit in signed bitfield &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L53" class="LineNr"> 53 </span>      <span class="Delimiter">}</span>
 <span id="L54" class="LineNr"> 54 </span>      <span class="Normal">else</span> <span class="Delimiter">{</span>
 <span id="L55" class="LineNr"> 55 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &gt;= p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">)</span>
-<span id="L56" class="LineNr"> 56 </span>          <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' too large to fit in bitfield &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L56" class="LineNr"> 56 </span>          <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' too large to fit in bitfield &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L57" class="LineNr"> 57 </span>      <span class="Delimiter">}</span>
 <span id="L58" class="LineNr"> 58 </span>    <span class="Delimiter">}</span>
 <span id="L59" class="LineNr"> 59 </span>    <span class="Normal">else</span> <span class="Delimiter">{</span>
 <span id="L60" class="LineNr"> 60 </span>      <span class="Comment">// hacky? assuming bound is a power of 2</span>
 <span id="L61" class="LineNr"> 61 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>x &lt; -<span class="Constant">1</span>*<span class="Normal">static_cast</span>&lt;<span class="Normal">int32_t</span>&gt;<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second/<span class="Constant">2</span><span class="Delimiter">))</span>
-<span id="L62" class="LineNr"> 62 </span>        <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' too large to fit in bitfield &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L62" class="LineNr"> 62 </span>        <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' too large to fit in bitfield &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L63" class="LineNr"> 63 </span>    <span class="Delimiter">}</span>
 <span id="L64" class="LineNr"> 64 </span>  <span class="Delimiter">}</span>
 <span id="L65" class="LineNr"> 65 </span><span class="Delimiter">}</span>
@@ -138,7 +138,7 @@ if ('onhashchange' in window) {
 <span id="L78" class="LineNr"> 78 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L79" class="LineNr"> 79 </span>      <span class="Constant">&quot;c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX 0x100/imm8&quot;</span>  <span class="Comment">// shift EBX left</span>
 <span id="L80" class="LineNr"> 80 </span>  <span class="Delimiter">);</span>
-<span id="L81" class="LineNr"> 81 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L81" class="LineNr"> 81 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L82" class="LineNr"> 82 </span>      <span class="Constant">&quot;error: '0x100/imm8' too large to fit in bitfield imm8\n&quot;</span>
 <span id="L83" class="LineNr"> 83 </span>  <span class="Delimiter">);</span>
 <span id="L84" class="LineNr"> 84 </span><span class="Delimiter">}</span>
@@ -157,7 +157,7 @@ if ('onhashchange' in window) {
 <span id="L97" class="LineNr"> 97 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L98" class="LineNr"> 98 </span>      <span class="Constant">&quot;c1/shift 4/subop/left 3/mod/direct 1/rm32/ECX -0x81/imm8&quot;</span>  <span class="Comment">// shift EBX left</span>
 <span id="L99" class="LineNr"> 99 </span>  <span class="Delimiter">);</span>
-<span id="L100" class="LineNr">100 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L100" class="LineNr">100 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L101" class="LineNr">101 </span>      <span class="Constant">&quot;error: '-0x81/imm8' too large to fit in bitfield imm8\n&quot;</span>
 <span id="L102" class="LineNr">102 </span>  <span class="Delimiter">);</span>
 <span id="L103" class="LineNr">103 </span><span class="Delimiter">}</span>
@@ -177,7 +177,7 @@ if ('onhashchange' in window) {
 <span id="L117" class="LineNr">117 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L118" class="LineNr">118 </span>      <span class="Constant">&quot;01/add 1/mod/*+disp8 3/rm32 1/r32 0x80/disp8\n&quot;</span>  <span class="Comment">// add ECX to *(EBX+0x80)</span>
 <span id="L119" class="LineNr">119 </span>  <span class="Delimiter">);</span>
-<span id="L120" class="LineNr">120 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L120" class="LineNr">120 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L121" class="LineNr">121 </span>      <span class="Constant">&quot;error: '0x80/disp8' too large to fit in signed bitfield disp8\n&quot;</span>
 <span id="L122" class="LineNr">122 </span>  <span class="Delimiter">);</span>
 <span id="L123" class="LineNr">123 </span><span class="Delimiter">}</span>
@@ -197,7 +197,7 @@ if ('onhashchange' in window) {
 <span id="L137" class="LineNr">137 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L138" class="LineNr">138 </span>      <span class="Constant">&quot;01/add 1/mod/*+disp8 3/rm32 1/r32 -0x81/disp8\n&quot;</span>  <span class="Comment">// add ECX to *(EBX-0x81)</span>
 <span id="L139" class="LineNr">139 </span>  <span class="Delimiter">);</span>
-<span id="L140" class="LineNr">140 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L140" class="LineNr">140 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L141" class="LineNr">141 </span>      <span class="Constant">&quot;error: '-0x81/disp8' too large to fit in bitfield disp8\n&quot;</span>
 <span id="L142" class="LineNr">142 </span>  <span class="Delimiter">);</span>
 <span id="L143" class="LineNr">143 </span><span class="Delimiter">}</span>

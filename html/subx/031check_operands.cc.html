@@ -68,21 +68,21 @@ if ('onhashchange' in window) {
 <span id="L7" class="LineNr">  7 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L8" class="LineNr">  8 </span>      <span class="Constant">&quot;cd\n&quot;</span>  <span class="Comment">// interrupt ??</span>
 <span id="L9" class="LineNr">  9 </span>  <span class="Delimiter">);</span>
-<span id="L10" class="LineNr"> 10 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L10" class="LineNr"> 10 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L11" class="LineNr"> 11 </span>      <span class="Constant">&quot;error: 'cd' (software interrupt): missing imm8 operand\n&quot;</span>
 <span id="L12" class="LineNr"> 12 </span>  <span class="Delimiter">);</span>
 <span id="L13" class="LineNr"> 13 </span><span class="Delimiter">}</span>
 <span id="L14" class="LineNr"> 14 </span>
 <span id="L15" class="LineNr"> 15 </span><span class="Delimiter">:(before &quot;Pack Operands(segment code)&quot;)</span>
 <span id="L16" class="LineNr"> 16 </span>check_operands<span class="Delimiter">(</span>code<span class="Delimiter">);</span>
-<span id="L17" class="LineNr"> 17 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L17" class="LineNr"> 17 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L18" class="LineNr"> 18 </span>
 <span id="L19" class="LineNr"> 19 </span><span class="Delimiter">:(code)</span>
 <span id="L20" class="LineNr"> 20 </span><span class="Normal">void</span> check_operands<span class="Delimiter">(</span><span class="Normal">const</span> segment&amp; code<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L21" class="LineNr"> 21 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;-- check operands&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L22" class="LineNr"> 22 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L165'>SIZE</a><span class="Delimiter">(</span>code<span class="Delimiter">.</span><a href='011run.cc.html#L112'>lines</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L23" class="LineNr"> 23 </span>    check_operands<span class="Delimiter">(</span>code<span class="Delimiter">.</span><a href='011run.cc.html#L112'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-<span id="L24" class="LineNr"> 24 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// stop at the first mal-formed instruction</span>
+<span id="L24" class="LineNr"> 24 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// stop at the first mal-formed instruction</span>
 <span id="L25" class="LineNr"> 25 </span>  <span class="Delimiter">}</span>
 <span id="L26" class="LineNr"> 26 </span><span class="Delimiter">}</span>
 <span id="L27" class="LineNr"> 27 </span>
@@ -331,16 +331,16 @@ if ('onhashchange' in window) {
 <span id="L270" class="LineNr">270 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L270'>compare_bitvector</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">,</span> <span class="Normal">uint8_t</span> expected<span class="Delimiter">,</span> <span class="Normal">const</span> word&amp; op<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L271" class="LineNr">271 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='030---operands.cc.html#L416'>all_hex_bytes</a><span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &amp;&amp; <a href='031check_operands.cc.html#L306'>has_operands</a><span class="Delimiter">(</span>inst<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// deliberately programming in raw hex; we'll raise a warning elsewhere</span>
 <span id="L272" class="LineNr">272 </span>  <span class="Normal">uint8_t</span> bitvector = <a href='031check_operands.cc.html#L296'>compute_expected_operand_bitvector</a><span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-<span id="L273" class="LineNr">273 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
+<span id="L273" class="LineNr">273 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
 <span id="L274" class="LineNr">274 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>bitvector == expected<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// all good with this instruction</span>
 <span id="L275" class="LineNr">275 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='031check_operands.cc.html#L76'>NUM_OPERAND_TYPES</a><span class="Delimiter">;</span>  ++i<span class="Delimiter">,</span> bitvector &gt;&gt;= <span class="Constant">1</span><span class="Delimiter">,</span> expected &gt;&gt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L276" class="LineNr">276 </span><span class="CommentedCode">//?     cerr &lt;&lt; &quot;comparing &quot; &lt;&lt; HEXBYTE &lt;&lt; NUM(bitvector) &lt;&lt; &quot; with &quot; &lt;&lt; NUM(expected) &lt;&lt; '\n';</span>
 <span id="L277" class="LineNr">277 </span>    <span class="Normal">if</span> <span class="Delimiter">((</span>bitvector &amp; <span class="Constant">0x1</span><span class="Delimiter">)</span> == <span class="Delimiter">(</span>expected &amp; <span class="Constant">0x1</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// all good with this operand</span>
 <span id="L278" class="LineNr">278 </span>    <span class="Normal">const</span> string&amp; optype = <span class="Special"><a href='031check_operands.cc.html#L79'>Operand_type_name</a></span><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 <span id="L279" class="LineNr">279 </span>    <span class="Normal">if</span> <span class="Delimiter">((</span>bitvector &amp; <span class="Constant">0x1</span><span class="Delimiter">)</span> &gt; <span class="Delimiter">(</span>expected &amp; <span class="Constant">0x1</span><span class="Delimiter">))</span>
-<span id="L280" class="LineNr">280 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L280" class="LineNr">280 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L281" class="LineNr">281 </span>    <span class="Normal">else</span>
-<span id="L282" class="LineNr">282 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L282" class="LineNr">282 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L283" class="LineNr">283 </span>    <span class="Comment">// continue giving all errors for a single instruction</span>
 <span id="L284" class="LineNr">284 </span>  <span class="Delimiter">}</span>
 <span id="L285" class="LineNr">285 </span>  <span class="Comment">// ignore settings in any unused bits</span>
@@ -348,9 +348,9 @@ if ('onhashchange' in window) {
 <span id="L287" class="LineNr">287 </span>
 <span id="L288" class="LineNr">288 </span>string <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span><span class="Normal">const</span> word&amp; op<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L289" class="LineNr">289 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_hex_byte<span class="Delimiter">(</span>op<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-<span id="L290" class="LineNr">290 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L355'>Name</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<span id="L290" class="LineNr">290 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span id="L291" class="LineNr">291 </span>  <span class="Comment">// strip stuff in parens from the name</span>
-<span id="L292" class="LineNr">292 </span>  <span class="Normal">const</span> string&amp; s = get<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L355'>Name</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">);</span>
+<span id="L292" class="LineNr">292 </span>  <span class="Normal">const</span> string&amp; s = get<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">);</span>
 <span id="L293" class="LineNr">293 </span>  <span class="Identifier">return</span> <span class="Constant">&quot; (&quot;</span>+s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> s<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot; (&quot;</span><span class="Delimiter">))</span>+<span class="Constant">')'</span><span class="Delimiter">;</span>
 <span id="L294" class="LineNr">294 </span><span class="Delimiter">}</span>
 <span id="L295" class="LineNr">295 </span>
@@ -359,7 +359,7 @@ if ('onhashchange' in window) {
 <span id="L298" class="LineNr">298 </span>  <span class="Normal">uint32_t</span> bitvector = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L299" class="LineNr">299 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Comment">/*</span><span class="Comment">skip op</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L165'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L300" class="LineNr">300 </span>    bitvector = bitvector | <a href='031check_operands.cc.html#L323'>expected_bit_for_received_operand</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> operands_found<span class="Delimiter">,</span> inst<span class="Delimiter">);</span>
-<span id="L301" class="LineNr">301 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span> <a href='031check_operands.cc.html#L100'>INVALID_OPERANDS</a><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
+<span id="L301" class="LineNr">301 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span> <a href='031check_operands.cc.html#L100'>INVALID_OPERANDS</a><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
 <span id="L302" class="LineNr">302 </span>  <span class="Delimiter">}</span>
 <span id="L303" class="LineNr">303 </span>  <span class="Identifier">return</span> bitvector<span class="Delimiter">;</span>
 <span id="L304" class="LineNr">304 </span><span class="Delimiter">}</span>
@@ -391,11 +391,11 @@ if ('onhashchange' in window) {
 <span id="L330" class="LineNr">330 </span>      expected_metadata = <span class="Constant">&quot;modrm&quot;</span><span class="Delimiter">;</span>
 <span id="L331" class="LineNr">331 </span>    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span><span class="Special"><a href='031check_operands.cc.html#L80'>Operand_type</a></span><span class="Delimiter">,</span> curr<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// ignore unrecognized metadata</span>
 <span id="L332" class="LineNr">332 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>found<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L333" class="LineNr">333 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' has conflicting operand types; it should have only one\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L333" class="LineNr">333 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; w<span class="Delimiter">.</span>original &lt;&lt; <span class="Constant">&quot;' has conflicting operand types; it should have only one\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L334" class="LineNr">334 </span>      <span class="Identifier">return</span> <a href='031check_operands.cc.html#L100'>INVALID_OPERANDS</a><span class="Delimiter">;</span>
 <span id="L335" class="LineNr">335 </span>    <span class="Delimiter">}</span>
 <span id="L336" class="LineNr">336 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>instruction_operands<span class="Delimiter">.</span>find<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> != instruction_operands<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L337" class="LineNr">337 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': duplicate &quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L337" class="LineNr">337 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': duplicate &quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L338" class="LineNr">338 </span>      <span class="Identifier">return</span> <a href='031check_operands.cc.html#L100'>INVALID_OPERANDS</a><span class="Delimiter">;</span>
 <span id="L339" class="LineNr">339 </span>    <span class="Delimiter">}</span>
 <span id="L340" class="LineNr">340 </span>    instruction_operands<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
@@ -411,7 +411,7 @@ if ('onhashchange' in window) {
 <span id="L350" class="LineNr">350 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L351" class="LineNr">351 </span>      <span class="Constant">&quot;cd/software-interrupt 80/imm8/imm32\n&quot;</span>
 <span id="L352" class="LineNr">352 </span>  <span class="Delimiter">);</span>
-<span id="L353" class="LineNr">353 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L353" class="LineNr">353 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L354" class="LineNr">354 </span>      <span class="Constant">&quot;error: '80/imm8/imm32' has conflicting operand types; it should have only one\n&quot;</span>
 <span id="L355" class="LineNr">355 </span>  <span class="Delimiter">);</span>
 <span id="L356" class="LineNr">356 </span><span class="Delimiter">}</span>
@@ -425,7 +425,7 @@ if ('onhashchange' in window) {
 <span id="L364" class="LineNr">364 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L365" class="LineNr">365 </span>      <span class="Constant">&quot;81 0/add/subop       3/rm32/ebx 1/imm32\n&quot;</span>
 <span id="L366" class="LineNr">366 </span>  <span class="Delimiter">);</span>
-<span id="L367" class="LineNr">367 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L367" class="LineNr">367 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L368" class="LineNr">368 </span>      <span class="Constant">&quot;error: '81 0/add/subop 3/rm32/ebx 1/imm32' (combine rm32 with imm32 based on subop): missing mod operand\n&quot;</span>
 <span id="L369" class="LineNr">369 </span>  <span class="Delimiter">);</span>
 <span id="L370" class="LineNr">370 </span><span class="Delimiter">}</span>
@@ -439,7 +439,7 @@ if ('onhashchange' in window) {
 <span id="L378" class="LineNr">378 </span>    <a href='031check_operands.cc.html#L432'>check_operand_metadata_present</a><span class="Delimiter">(</span>inst<span class="Delimiter">,</span> <span class="Constant">&quot;subop&quot;</span><span class="Delimiter">,</span> op<span class="Delimiter">);</span>
 <span id="L379" class="LineNr">379 </span>    <a href='031check_operands.cc.html#L437'>check_operand_metadata_absent</a><span class="Delimiter">(</span>inst<span class="Delimiter">,</span> <span class="Constant">&quot;r32&quot;</span><span class="Delimiter">,</span> op<span class="Delimiter">,</span> <span class="Constant">&quot;should be replaced by subop&quot;</span><span class="Delimiter">);</span>
 <span id="L380" class="LineNr">380 </span>  <span class="Delimiter">}</span>
-<span id="L381" class="LineNr">381 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L381" class="LineNr">381 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L382" class="LineNr">382 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>metadata<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> <span class="Constant">&quot;rm32&quot;</span><span class="Delimiter">).</span>data != <span class="Constant">&quot;4&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L383" class="LineNr">383 </span>  <span class="Comment">// SIB byte checks</span>
 <span id="L384" class="LineNr">384 </span>  <span class="Normal">uint8_t</span> mod = <a href='011run.cc.html#L302'>hex_byte</a><span class="Delimiter">(</span>metadata<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> <span class="Constant">&quot;mod&quot;</span><span class="Delimiter">).</span>data<span class="Delimiter">);</span>
@@ -459,7 +459,7 @@ if ('onhashchange' in window) {
 <span id="L398" class="LineNr">398 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L398'>compare_bitvector_modrm</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">,</span> <span class="Normal">uint8_t</span> expected<span class="Delimiter">,</span> <span class="Normal">const</span> word&amp; op<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L399" class="LineNr">399 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='030---operands.cc.html#L416'>all_hex_bytes</a><span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &amp;&amp; <a href='031check_operands.cc.html#L306'>has_operands</a><span class="Delimiter">(</span>inst<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// deliberately programming in raw hex; we'll raise a warning elsewhere</span>
 <span id="L400" class="LineNr">400 </span>  <span class="Normal">uint8_t</span> bitvector = <a href='031check_operands.cc.html#L296'>compute_expected_operand_bitvector</a><span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-<span id="L401" class="LineNr">401 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
+<span id="L401" class="LineNr">401 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
 <span id="L402" class="LineNr">402 </span>  <span class="Comment">// update 'expected' bitvector for the additional exception</span>
 <span id="L403" class="LineNr">403 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>has_operand_metadata<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> <span class="Constant">&quot;mod&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
 <span id="L404" class="LineNr">404 </span>    <span class="Normal">int32_t</span> mod = <a href='011run.cc.html#L448'>parse_int</a><span class="Delimiter">(</span>metadata<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> <span class="Constant">&quot;mod&quot;</span><span class="Delimiter">).</span>data<span class="Delimiter">);</span>
@@ -482,9 +482,9 @@ if ('onhashchange' in window) {
 <span id="L421" class="LineNr">421 </span>    <span class="Normal">if</span> <span class="Delimiter">((</span>bitvector &amp; <span class="Constant">0x1</span><span class="Delimiter">)</span> == <span class="Delimiter">(</span>expected &amp; <span class="Constant">0x1</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// all good with this operand</span>
 <span id="L422" class="LineNr">422 </span>    <span class="Normal">const</span> string&amp; optype = <span class="Special"><a href='031check_operands.cc.html#L79'>Operand_type_name</a></span><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 <span id="L423" class="LineNr">423 </span>    <span class="Normal">if</span> <span class="Delimiter">((</span>bitvector &amp; <span class="Constant">0x1</span><span class="Delimiter">)</span> &gt; <span class="Delimiter">(</span>expected &amp; <span class="Constant">0x1</span><span class="Delimiter">))</span>
-<span id="L424" class="LineNr">424 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L424" class="LineNr">424 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L425" class="LineNr">425 </span>    <span class="Normal">else</span>
-<span id="L426" class="LineNr">426 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L426" class="LineNr">426 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L427" class="LineNr">427 </span>    <span class="Comment">// continue giving all errors for a single instruction</span>
 <span id="L428" class="LineNr">428 </span>  <span class="Delimiter">}</span>
 <span id="L429" class="LineNr">429 </span>  <span class="Comment">// ignore settings in any unused bits</span>
@@ -492,12 +492,12 @@ if ('onhashchange' in window) {
 <span id="L431" class="LineNr">431 </span>
 <span id="L432" class="LineNr">432 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L432'>check_operand_metadata_present</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; type<span class="Delimiter">,</span> <span class="Normal">const</span> word&amp; op<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L433" class="LineNr">433 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!has_operand_metadata<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> type<span class="Delimiter">))</span>
-<span id="L434" class="LineNr">434 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; type &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L434" class="LineNr">434 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; type &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L435" class="LineNr">435 </span><span class="Delimiter">}</span>
 <span id="L436" class="LineNr">436 </span>
 <span id="L437" class="LineNr">437 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L437'>check_operand_metadata_absent</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; type<span class="Delimiter">,</span> <span class="Normal">const</span> word&amp; op<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; msg<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L438" class="LineNr">438 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>has_operand_metadata<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> type<span class="Delimiter">))</span>
-<span id="L439" class="LineNr">439 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; type &lt;&lt; <span class="Constant">&quot; operand (&quot;</span> &lt;&lt; msg &lt;&lt; <span class="Constant">&quot;)\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L439" class="LineNr">439 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L288'>maybe_name</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; type &lt;&lt; <span class="Constant">&quot; operand (&quot;</span> &lt;&lt; msg &lt;&lt; <span class="Constant">&quot;)\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L440" class="LineNr">440 </span><span class="Delimiter">}</span>
 <span id="L441" class="LineNr">441 </span>
 <span id="L442" class="LineNr">442 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L442'>test_modrm_with_displacement</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -507,7 +507,7 @@ if ('onhashchange' in window) {
 <span id="L446" class="LineNr">446 </span>      <span class="Comment">// just avoid null pointer</span>
 <span id="L447" class="LineNr">447 </span>      <span class="Constant">&quot;8b/copy 1/mod/lookup+disp8 0/rm32/EAX 2/r32/EDX 4/disp8\n&quot;</span>  <span class="Comment">// copy *(EAX+4) to EDX</span>
 <span id="L448" class="LineNr">448 </span>  <span class="Delimiter">);</span>
-<span id="L449" class="LineNr">449 </span>  <a href='003trace.cc.html#L285'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L449" class="LineNr">449 </span>  <a href='003trace.cc.html#L294'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L450" class="LineNr">450 </span><span class="Delimiter">}</span>
 <span id="L451" class="LineNr">451 </span>
 <span id="L452" class="LineNr">452 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L452'>test_check_missing_disp8</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -516,7 +516,7 @@ if ('onhashchange' in window) {
 <span id="L455" class="LineNr">455 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L456" class="LineNr">456 </span>      <span class="Constant">&quot;89/copy 1/mod/lookup+disp8 0/rm32/EAX 1/r32/ECX\n&quot;</span>  <span class="Comment">// missing disp8</span>
 <span id="L457" class="LineNr">457 </span>  <span class="Delimiter">);</span>
-<span id="L458" class="LineNr">458 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L458" class="LineNr">458 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L459" class="LineNr">459 </span>      <span class="Constant">&quot;error: '89/copy 1/mod/lookup+disp8 0/rm32/EAX 1/r32/ECX' (copy r32 to rm32): missing disp8 operand\n&quot;</span>
 <span id="L460" class="LineNr">460 </span>  <span class="Delimiter">);</span>
 <span id="L461" class="LineNr">461 </span><span class="Delimiter">}</span>
@@ -527,7 +527,7 @@ if ('onhashchange' in window) {
 <span id="L466" class="LineNr">466 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L467" class="LineNr">467 </span>      <span class="Constant">&quot;8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX\n&quot;</span>  <span class="Comment">// missing disp32</span>
 <span id="L468" class="LineNr">468 </span>  <span class="Delimiter">);</span>
-<span id="L469" class="LineNr">469 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L469" class="LineNr">469 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L470" class="LineNr">470 </span>      <span class="Constant">&quot;error: '8b/copy 0/mod/indirect 5/rm32/.disp32 2/r32/EDX' (copy rm32 to r32): missing <a href='040---tests.cc.html#L84'>disp32</a> operand\n&quot;</span>
 <span id="L471" class="LineNr">471 </span>  <span class="Delimiter">);</span>
 <span id="L472" class="LineNr">472 </span><span class="Delimiter">}</span>
@@ -538,7 +538,7 @@ if ('onhashchange' in window) {
 <span id="L477" class="LineNr">477 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L478" class="LineNr">478 </span>      <span class="Constant">&quot;01/add 0/mod 3/mod\n&quot;</span>
 <span id="L479" class="LineNr">479 </span>  <span class="Delimiter">);</span>
-<span id="L480" class="LineNr">480 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L480" class="LineNr">480 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L481" class="LineNr">481 </span>      <span class="Constant">&quot;error: '01/add 0/mod 3/mod' has conflicting mod operands\n&quot;</span>
 <span id="L482" class="LineNr">482 </span>  <span class="Delimiter">);</span>
 <span id="L483" class="LineNr">483 </span><span class="Delimiter">}</span>
@@ -549,7 +549,7 @@ if ('onhashchange' in window) {
 <span id="L488" class="LineNr">488 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L489" class="LineNr">489 </span>      <span class="Constant">&quot;01/add 0/mod 3/rm32/r32\n&quot;</span>
 <span id="L490" class="LineNr">490 </span>  <span class="Delimiter">);</span>
-<span id="L491" class="LineNr">491 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L491" class="LineNr">491 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L492" class="LineNr">492 </span>      <span class="Constant">&quot;error: '3/rm32/r32' has conflicting operand types; it should have only one\n&quot;</span>
 <span id="L493" class="LineNr">493 </span>  <span class="Delimiter">);</span>
 <span id="L494" class="LineNr">494 </span><span class="Delimiter">}</span>
@@ -560,7 +560,7 @@ if ('onhashchange' in window) {
 <span id="L499" class="LineNr">499 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L500" class="LineNr">500 </span>      <span class="Constant">&quot;81 0/add/subop 0/mod            1/imm32\n&quot;</span>
 <span id="L501" class="LineNr">501 </span>  <span class="Delimiter">);</span>
-<span id="L502" class="LineNr">502 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L502" class="LineNr">502 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L503" class="LineNr">503 </span>      <span class="Constant">&quot;error: '81 0/add/subop 0/mod 1/imm32' (combine rm32 with imm32 based on subop): missing rm32 operand\n&quot;</span>
 <span id="L504" class="LineNr">504 </span>  <span class="Delimiter">);</span>
 <span id="L505" class="LineNr">505 </span><span class="Delimiter">}</span>
@@ -571,7 +571,7 @@ if ('onhashchange' in window) {
 <span id="L510" class="LineNr">510 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L511" class="LineNr">511 </span>      <span class="Constant">&quot;81             0/mod 3/rm32/ebx 1/imm32\n&quot;</span>
 <span id="L512" class="LineNr">512 </span>  <span class="Delimiter">);</span>
-<span id="L513" class="LineNr">513 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L513" class="LineNr">513 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L514" class="LineNr">514 </span>      <span class="Constant">&quot;error: '81 0/mod 3/rm32/ebx 1/imm32' (combine rm32 with imm32 based on subop): missing subop operand\n&quot;</span>
 <span id="L515" class="LineNr">515 </span>  <span class="Delimiter">);</span>
 <span id="L516" class="LineNr">516 </span><span class="Delimiter">}</span>
@@ -582,7 +582,7 @@ if ('onhashchange' in window) {
 <span id="L521" class="LineNr">521 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L522" class="LineNr">522 </span>      <span class="Constant">&quot;81 0/add/subop 0/mod/indirect 4/rm32/use-sib 1/imm32\n&quot;</span>
 <span id="L523" class="LineNr">523 </span>  <span class="Delimiter">);</span>
-<span id="L524" class="LineNr">524 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L524" class="LineNr">524 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L525" class="LineNr">525 </span>      <span class="Constant">&quot;error: '81 0/add/subop 0/mod/indirect 4/rm32/use-sib 1/imm32' (combine rm32 with imm32 based on subop): missing base operand\n&quot;</span>
 <span id="L526" class="LineNr">526 </span>  <span class="Delimiter">);</span>
 <span id="L527" class="LineNr">527 </span><span class="Delimiter">}</span>
@@ -593,7 +593,7 @@ if ('onhashchange' in window) {
 <span id="L532" class="LineNr">532 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L533" class="LineNr">533 </span>      <span class="Constant">&quot;81 0/add/subop 0/mod/indirect 4/rm32/use-sib 0/base 1/imm32\n&quot;</span>
 <span id="L534" class="LineNr">534 </span>  <span class="Delimiter">);</span>
-<span id="L535" class="LineNr">535 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L535" class="LineNr">535 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L536" class="LineNr">536 </span>      <span class="Constant">&quot;error: '81 0/add/subop 0/mod/indirect 4/rm32/use-sib 0/base 1/imm32' (combine rm32 with imm32 based on subop): missing index operand\n&quot;</span>
 <span id="L537" class="LineNr">537 </span>  <span class="Delimiter">);</span>
 <span id="L538" class="LineNr">538 </span><span class="Delimiter">}</span>
@@ -604,7 +604,7 @@ if ('onhashchange' in window) {
 <span id="L543" class="LineNr">543 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L544" class="LineNr">544 </span>      <span class="Constant">&quot;81 0/add/subop 0/mod/indirect 4/rm32/use-sib 2/index 3/scale 1/imm32\n&quot;</span>
 <span id="L545" class="LineNr">545 </span>  <span class="Delimiter">);</span>
-<span id="L546" class="LineNr">546 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L546" class="LineNr">546 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L547" class="LineNr">547 </span>      <span class="Constant">&quot;error: '81 0/add/subop 0/mod/indirect 4/rm32/use-sib 2/index 3/scale 1/imm32' (combine rm32 with imm32 based on subop): missing base operand\n&quot;</span>
 <span id="L548" class="LineNr">548 </span>  <span class="Delimiter">);</span>
 <span id="L549" class="LineNr">549 </span><span class="Delimiter">}</span>
@@ -615,7 +615,7 @@ if ('onhashchange' in window) {
 <span id="L554" class="LineNr">554 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L555" class="LineNr">555 </span>      <span class="Constant">&quot;89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 4/disp8\n&quot;</span>
 <span id="L556" class="LineNr">556 </span>  <span class="Delimiter">);</span>
-<span id="L557" class="LineNr">557 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L557" class="LineNr">557 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L558" class="LineNr">558 </span>      <span class="Constant">&quot;error: '89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 4/disp8' (copy r32 to rm32): unexpected disp8 operand\n&quot;</span>
 <span id="L559" class="LineNr">559 </span>  <span class="Delimiter">);</span>
 <span id="L560" class="LineNr">560 </span><span class="Delimiter">}</span>
@@ -626,7 +626,7 @@ if ('onhashchange' in window) {
 <span id="L565" class="LineNr">565 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L566" class="LineNr">566 </span>      <span class="Constant">&quot;89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 1/r32\n&quot;</span>
 <span id="L567" class="LineNr">567 </span>  <span class="Delimiter">);</span>
-<span id="L568" class="LineNr">568 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L568" class="LineNr">568 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L569" class="LineNr">569 </span>      <span class="Constant">&quot;error: '89/copy 0/mod/indirect 0/rm32/EAX 1/r32/ECX 1/r32': duplicate r32 operand\n&quot;</span>
 <span id="L570" class="LineNr">570 </span>  <span class="Delimiter">);</span>
 <span id="L571" class="LineNr">571 </span><span class="Delimiter">}</span>
@@ -636,7 +636,7 @@ if ('onhashchange' in window) {
 <span id="L575" class="LineNr">575 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L576" class="LineNr">576 </span>      <span class="Constant">&quot;81 0/add/subop 3/mod/indirect 4/rm32/use-sib 1/imm32\n&quot;</span>
 <span id="L577" class="LineNr">577 </span>  <span class="Delimiter">);</span>
-<span id="L578" class="LineNr">578 </span>  <a href='003trace.cc.html#L285'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L578" class="LineNr">578 </span>  <a href='003trace.cc.html#L294'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L579" class="LineNr">579 </span><span class="Delimiter">}</span>
 <span id="L580" class="LineNr">580 </span>
 <span id="L581" class="LineNr">581 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L581'>test_extra_modrm</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -645,7 +645,7 @@ if ('onhashchange' in window) {
 <span id="L584" class="LineNr">584 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L585" class="LineNr">585 </span>      <span class="Constant">&quot;59/pop-to-ECX  3/mod/direct 1/rm32/ECX 4/r32/ESP\n&quot;</span>
 <span id="L586" class="LineNr">586 </span>  <span class="Delimiter">);</span>
-<span id="L587" class="LineNr">587 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L587" class="LineNr">587 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L588" class="LineNr">588 </span>      <span class="Constant">&quot;error: '59/pop-to-ECX 3/mod/direct 1/rm32/ECX 4/r32/ESP' (pop top of stack to ECX): unexpected modrm operand\n&quot;</span>
 <span id="L589" class="LineNr">589 </span>  <span class="Delimiter">);</span>
 <span id="L590" class="LineNr">590 </span><span class="Delimiter">}</span>
@@ -655,19 +655,19 @@ if ('onhashchange' in window) {
 <span id="L594" class="LineNr">594 </span><span class="Normal">void</span> check_operands_0f<span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L595" class="LineNr">595 </span>  assert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>data == <span class="Constant">&quot;0f&quot;</span><span class="Delimiter">);</span>
 <span id="L596" class="LineNr">596 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L165'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L597" class="LineNr">597 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;opcode '0f' requires a second opcode\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L597" class="LineNr">597 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;opcode '0f' requires a second opcode\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L598" class="LineNr">598 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L599" class="LineNr">599 </span>  <span class="Delimiter">}</span>
 <span id="L600" class="LineNr">600 </span>  <a href='011run.cc.html#L126'>word</a> op = <a href='031check_operands.cc.html#L41'>preprocess_op</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
-<span id="L601" class="LineNr">601 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name_0f</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L602" class="LineNr">602 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;unknown 2-byte opcode '0f &quot;</span> &lt;&lt; op<span class="Delimiter">.</span>data &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L601" class="LineNr">601 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L357'>Name_0f</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L602" class="LineNr">602 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;unknown 2-byte opcode '0f &quot;</span> &lt;&lt; op<span class="Delimiter">.</span>data &lt;&lt; <span class="Constant">&quot;'\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L603" class="LineNr">603 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L604" class="LineNr">604 </span>  <span class="Delimiter">}</span>
 <span id="L605" class="LineNr">605 </span>  check_operands_0f<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> op<span class="Delimiter">);</span>
 <span id="L606" class="LineNr">606 </span><span class="Delimiter">}</span>
 <span id="L607" class="LineNr">607 </span>
 <span id="L608" class="LineNr">608 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L608'>check_operands_f3</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; <span class="Comment">/*</span><span class="Comment">unused</span><span class="Comment">*/</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L609" class="LineNr">609 </span>  <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;no supported opcodes starting with f3\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L609" class="LineNr">609 </span>  <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;no supported opcodes starting with f3\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L610" class="LineNr">610 </span><span class="Delimiter">}</span>
 <span id="L611" class="LineNr">611 </span>
 <span id="L612" class="LineNr">612 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L612'>test_check_missing_disp32_operand</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -676,7 +676,7 @@ if ('onhashchange' in window) {
 <span id="L615" class="LineNr">615 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L616" class="LineNr">616 </span>      <span class="Constant">&quot;  0f 84  # jmp if ZF to ??\n&quot;</span>
 <span id="L617" class="LineNr">617 </span>  <span class="Delimiter">);</span>
-<span id="L618" class="LineNr">618 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L618" class="LineNr">618 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L619" class="LineNr">619 </span>      <span class="Constant">&quot;error: '0f 84' (jump <a href='040---tests.cc.html#L84'>disp32</a> bytes away if equal, if <a href='010---vm.cc.html#L83'>ZF</a> is set): missing <a href='040---tests.cc.html#L84'>disp32</a> operand\n&quot;</span>
 <span id="L620" class="LineNr">620 </span>  <span class="Delimiter">);</span>
 <span id="L621" class="LineNr">621 </span><span class="Delimiter">}</span>
@@ -714,16 +714,16 @@ if ('onhashchange' in window) {
 <span id="L653" class="LineNr">653 </span><span class="Normal">void</span> <a href='031check_operands.cc.html#L653'>compare_bitvector_0f</a><span class="Delimiter">(</span><span class="Normal">const</span> line&amp; inst<span class="Delimiter">,</span> <span class="Normal">uint8_t</span> expected<span class="Delimiter">,</span> <span class="Normal">const</span> word&amp; op<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L654" class="LineNr">654 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='030---operands.cc.html#L416'>all_hex_bytes</a><span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &amp;&amp; <a href='031check_operands.cc.html#L306'>has_operands</a><span class="Delimiter">(</span>inst<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// deliberately programming in raw hex; we'll raise a warning elsewhere</span>
 <span id="L655" class="LineNr">655 </span>  <span class="Normal">uint8_t</span> bitvector = <a href='031check_operands.cc.html#L296'>compute_expected_operand_bitvector</a><span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-<span id="L656" class="LineNr">656 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
+<span id="L656" class="LineNr">656 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// duplicate operand type</span>
 <span id="L657" class="LineNr">657 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>bitvector == expected<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// all good with this instruction</span>
 <span id="L658" class="LineNr">658 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='031check_operands.cc.html#L76'>NUM_OPERAND_TYPES</a><span class="Delimiter">;</span>  ++i<span class="Delimiter">,</span> bitvector &gt;&gt;= <span class="Constant">1</span><span class="Delimiter">,</span> expected &gt;&gt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L659" class="LineNr">659 </span><span class="CommentedCode">//?     cerr &lt;&lt; &quot;comparing &quot; &lt;&lt; HEXBYTE &lt;&lt; NUM(bitvector) &lt;&lt; &quot; with &quot; &lt;&lt; NUM(expected) &lt;&lt; '\n';</span>
 <span id="L660" class="LineNr">660 </span>    <span class="Normal">if</span> <span class="Delimiter">((</span>bitvector &amp; <span class="Constant">0x1</span><span class="Delimiter">)</span> == <span class="Delimiter">(</span>expected &amp; <span class="Constant">0x1</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// all good with this operand</span>
 <span id="L661" class="LineNr">661 </span>    <span class="Normal">const</span> string&amp; optype = <span class="Special"><a href='031check_operands.cc.html#L79'>Operand_type_name</a></span><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 <span id="L662" class="LineNr">662 </span>    <span class="Normal">if</span> <span class="Delimiter">((</span>bitvector &amp; <span class="Constant">0x1</span><span class="Delimiter">)</span> &gt; <span class="Delimiter">(</span>expected &amp; <span class="Constant">0x1</span><span class="Delimiter">))</span>
-<span id="L663" class="LineNr">663 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L671'>maybe_name_0f</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L663" class="LineNr">663 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L671'>maybe_name_0f</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: unexpected &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L664" class="LineNr">664 </span>    <span class="Normal">else</span>
-<span id="L665" class="LineNr">665 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L671'>maybe_name_0f</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L665" class="LineNr">665 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; <a href='031check_operands.cc.html#L671'>maybe_name_0f</a><span class="Delimiter">(</span>op<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: missing &quot;</span> &lt;&lt; optype &lt;&lt; <span class="Constant">&quot; operand\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L666" class="LineNr">666 </span>    <span class="Comment">// continue giving all errors for a single instruction</span>
 <span id="L667" class="LineNr">667 </span>  <span class="Delimiter">}</span>
 <span id="L668" class="LineNr">668 </span>  <span class="Comment">// ignore settings in any unused bits</span>
@@ -731,9 +731,9 @@ if ('onhashchange' in window) {
 <span id="L670" class="LineNr">670 </span>
 <span id="L671" class="LineNr">671 </span>string <a href='031check_operands.cc.html#L671'>maybe_name_0f</a><span class="Delimiter">(</span><span class="Normal">const</span> word&amp; op<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L672" class="LineNr">672 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_hex_byte<span class="Delimiter">(</span>op<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-<span id="L673" class="LineNr">673 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name_0f</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<span id="L673" class="LineNr">673 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L357'>Name_0f</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span id="L674" class="LineNr">674 </span>  <span class="Comment">// strip stuff in parens from the name</span>
-<span id="L675" class="LineNr">675 </span>  <span class="Normal">const</span> string&amp; s = get<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name_0f</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">);</span>
+<span id="L675" class="LineNr">675 </span>  <span class="Normal">const</span> string&amp; s = get<span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L357'>Name_0f</a></span><span class="Delimiter">,</span> op<span class="Delimiter">.</span>data<span class="Delimiter">);</span>
 <span id="L676" class="LineNr">676 </span>  <span class="Identifier">return</span> <span class="Constant">&quot; (&quot;</span>+s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> s<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot; (&quot;</span><span class="Delimiter">))</span>+<span class="Constant">')'</span><span class="Delimiter">;</span>
 <span id="L677" class="LineNr">677 </span><span class="Delimiter">}</span>
 <span id="L678" class="LineNr">678 </span>

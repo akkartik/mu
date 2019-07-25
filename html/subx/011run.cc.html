@@ -130,7 +130,7 @@ if ('onhashchange' in window) {
 <span id="L70" class="LineNr"> 70 </span>      <span class="Comment">// and are otherwise ignored.</span>
 <span id="L71" class="LineNr"> 71 </span>  <span class="Delimiter">);</span>
 <span id="L72" class="LineNr"> 72 </span>  <span class="Comment">// This program, when run, causes the following events in the trace:</span>
-<span id="L73" class="LineNr"> 73 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L73" class="LineNr"> 73 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L74" class="LineNr"> 74 </span>      <span class="Constant">&quot;load: 0x00000001 -&gt; b8\n&quot;</span>
 <span id="L75" class="LineNr"> 75 </span>      <span class="Constant">&quot;load: 0x00000002 -&gt; 0a\n&quot;</span>
 <span id="L76" class="LineNr"> 76 </span>      <span class="Constant">&quot;load: 0x00000003 -&gt; 0b\n&quot;</span>
@@ -146,13 +146,13 @@ if ('onhashchange' in window) {
 <span id="L86" class="LineNr"> 86 </span>  <a href='011run.cc.html#L101'>program</a> p<span class="Delimiter">;</span>
 <span id="L87" class="LineNr"> 87 </span>  istringstream in<span class="Delimiter">(</span>text_bytes<span class="Delimiter">);</span>
 <span id="L88" class="LineNr"> 88 </span>  parse<span class="Delimiter">(</span>in<span class="Delimiter">,</span> p<span class="Delimiter">);</span>
-<span id="L89" class="LineNr"> 89 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// if any stage raises errors, stop immediately</span>
+<span id="L89" class="LineNr"> 89 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// if any stage raises errors, stop immediately</span>
 <span id="L90" class="LineNr"> 90 </span>  transform<span class="Delimiter">(</span>p<span class="Delimiter">);</span>
-<span id="L91" class="LineNr"> 91 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L91" class="LineNr"> 91 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L92" class="LineNr"> 92 </span>  <a href='011run.cc.html#L260'>load</a><span class="Delimiter">(</span>p<span class="Delimiter">);</span>
-<span id="L93" class="LineNr"> 93 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L93" class="LineNr"> 93 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L94" class="LineNr"> 94 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>EIP &lt; <span class="Special"><a href='010---vm.cc.html#L171'>End_of_program</a></span><span class="Delimiter">)</span>
-<span id="L95" class="LineNr"> 95 </span>    <a href='010---vm.cc.html#L277'>run_one_instruction</a><span class="Delimiter">();</span>
+<span id="L95" class="LineNr"> 95 </span>    <a href='010---vm.cc.html#L278'>run_one_instruction</a><span class="Delimiter">();</span>
 <span id="L96" class="LineNr"> 96 </span><span class="Delimiter">}</span>
 <span id="L97" class="LineNr"> 97 </span>
 <span id="L98" class="LineNr"> 98 </span><span class="SalientComment">//:: core data structures</span>
@@ -226,8 +226,8 @@ if ('onhashchange' in window) {
 <span id="L166" class="LineNr">166 </span>          curr_segment = &amp;out<span class="Delimiter">.</span><a href='011run.cc.html#L102'>segments</a><span class="Delimiter">.</span>back<span class="Delimiter">();</span>
 <span id="L167" class="LineNr">167 </span>          curr_segment<span class="Delimiter">-&gt;</span><a href='011run.cc.html#L110'>name</a> = segment_name<span class="Delimiter">;</span>
 <span id="L168" class="LineNr">168 </span>          curr_segment<span class="Delimiter">-&gt;</span>start = seg_start<span class="Delimiter">;</span>
-<span id="L169" class="LineNr">169 </span>          <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L170" class="LineNr">170 </span>          <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;starts at address 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXWORD</a> &lt;&lt; curr_segment<span class="Delimiter">-&gt;</span>start &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L169" class="LineNr">169 </span>          <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L170" class="LineNr">170 </span>          <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;starts at address 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L409'>HEXWORD</a> &lt;&lt; curr_segment<span class="Delimiter">-&gt;</span>start &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L171" class="LineNr">171 </span>        <span class="Delimiter">}</span>
 <span id="L172" class="LineNr">172 </span>        <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// skip rest of line</span>
 <span id="L173" class="LineNr">173 </span>      <span class="Delimiter">}</span>
@@ -257,7 +257,7 @@ if ('onhashchange' in window) {
 <span id="L197" class="LineNr">197 </span><span class="Normal">void</span> <a href='011run.cc.html#L197'>flush</a><span class="Delimiter">(</span>segment* s<span class="Delimiter">,</span> vector&lt;line&gt;&amp; <a href='011run.cc.html#L112'>lines</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L198" class="LineNr">198 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='011run.cc.html#L112'>lines</a><span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L199" class="LineNr">199 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L200" class="LineNr">200 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;input does not start with a '==' section header\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L200" class="LineNr">200 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;input does not start with a '==' section header\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L201" class="LineNr">201 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L202" class="LineNr">202 </span>  <span class="Delimiter">}</span>
 <span id="L203" class="LineNr">203 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;flushing segment&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -278,7 +278,7 @@ if ('onhashchange' in window) {
 <span id="L218" class="LineNr">218 </span><span class="Normal">void</span> <a href='011run.cc.html#L218'>sanity_check_program_segment</a><span class="Delimiter">(</span><span class="Normal">const</span> program&amp; p<span class="Delimiter">,</span> <span class="Normal">uint32_t</span> addr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L219" class="LineNr">219 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L165'>SIZE</a><span class="Delimiter">(</span>p<span class="Delimiter">.</span><a href='011run.cc.html#L102'>segments</a><span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L220" class="LineNr">220 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">.</span><a href='011run.cc.html#L102'>segments</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>start == addr<span class="Delimiter">)</span>
-<span id="L221" class="LineNr">221 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;can't have multiple segments starting at address 0x&quot;</span> &lt;&lt; HEXWORD &lt;&lt; addr &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L221" class="LineNr">221 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;can't have multiple segments starting at address 0x&quot;</span> &lt;&lt; HEXWORD &lt;&lt; addr &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L222" class="LineNr">222 </span>  <span class="Delimiter">}</span>
 <span id="L223" class="LineNr">223 </span><span class="Delimiter">}</span>
 <span id="L224" class="LineNr">224 </span>
@@ -297,7 +297,7 @@ if ('onhashchange' in window) {
 <span id="L237" class="LineNr">237 </span>      <span class="Constant">&quot;== segment2 0xee\n&quot;</span>
 <span id="L238" class="LineNr">238 </span>      <span class="Constant">&quot;cd\n&quot;</span>
 <span id="L239" class="LineNr">239 </span>  <span class="Delimiter">);</span>
-<span id="L240" class="LineNr">240 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L240" class="LineNr">240 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L241" class="LineNr">241 </span>      <span class="Constant">&quot;error: can't have multiple segments starting at address 0x000000ee\n&quot;</span>
 <span id="L242" class="LineNr">242 </span>  <span class="Delimiter">);</span>
 <span id="L243" class="LineNr">243 </span><span class="Delimiter">}</span>
@@ -319,7 +319,7 @@ if ('onhashchange' in window) {
 <span id="L259" class="LineNr">259 </span>
 <span id="L260" class="LineNr">260 </span><span class="Normal">void</span> <a href='011run.cc.html#L260'>load</a><span class="Delimiter">(</span><span class="Normal">const</span> program&amp; p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L261" class="LineNr">261 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>find<span class="Delimiter">(</span>p<span class="Delimiter">,</span> <span class="Constant">&quot;code&quot;</span><span class="Delimiter">)</span> == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L262" class="LineNr">262 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;no code to run\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L262" class="LineNr">262 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;no code to run\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L263" class="LineNr">263 </span>    <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L264" class="LineNr">264 </span>  <span class="Delimiter">}</span>
 <span id="L265" class="LineNr">265 </span>  <span class="Comment">// Ensure segments are disjoint.</span>
@@ -329,17 +329,17 @@ if ('onhashchange' in window) {
 <span id="L269" class="LineNr">269 </span>    <span class="Normal">uint32_t</span> addr = seg<span class="Delimiter">.</span>start<span class="Delimiter">;</span>
 <span id="L270" class="LineNr">270 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!already_allocated<span class="Delimiter">(</span>addr<span class="Delimiter">))</span>
 <span id="L271" class="LineNr">271 </span>      <span class="Special"><a href='010---vm.cc.html#L157'>Mem</a></span><span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>vma<span class="Delimiter">(</span>seg<span class="Delimiter">.</span>start<span class="Delimiter">));</span>
-<span id="L272" class="LineNr">272 </span>    <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;loading segment &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXWORD</a> &lt;&lt; addr &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L272" class="LineNr">272 </span>    <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;loading segment &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L409'>HEXWORD</a> &lt;&lt; addr &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L273" class="LineNr">273 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; <a href='001help.cc.html#L165'>SIZE</a><span class="Delimiter">(</span>seg<span class="Delimiter">.</span><a href='011run.cc.html#L112'>lines</a><span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L274" class="LineNr">274 </span>      <span class="Normal">const</span> line&amp; l = seg<span class="Delimiter">.</span><a href='011run.cc.html#L112'>lines</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
 <span id="L275" class="LineNr">275 </span>      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> k = <span class="Constant">0</span><span class="Delimiter">;</span>  k &lt; <a href='001help.cc.html#L165'>SIZE</a><span class="Delimiter">(</span>l<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">);</span>  ++k<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L276" class="LineNr">276 </span>        <span class="Normal">const</span> word&amp; w = l<span class="Delimiter">.</span><a href='011run.cc.html#L121'>words</a><span class="Delimiter">.</span>at<span class="Delimiter">(</span>k<span class="Delimiter">);</span>
 <span id="L277" class="LineNr">277 </span>        <span class="Normal">uint8_t</span> val = <a href='011run.cc.html#L302'>hex_byte</a><span class="Delimiter">(</span>w<span class="Delimiter">.</span>data<span class="Delimiter">);</span>
-<span id="L278" class="LineNr">278 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L278" class="LineNr">278 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L279" class="LineNr">279 </span>        assert<span class="Delimiter">(</span>overlap<span class="Delimiter">.</span>find<span class="Delimiter">(</span>addr<span class="Delimiter">)</span> == overlap<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
-<span id="L280" class="LineNr">280 </span>        <a href='010---vm.cc.html#L244'>write_mem_u8</a><span class="Delimiter">(</span>addr<span class="Delimiter">,</span> val<span class="Delimiter">);</span>
+<span id="L280" class="LineNr">280 </span>        <a href='010---vm.cc.html#L245'>write_mem_u8</a><span class="Delimiter">(</span>addr<span class="Delimiter">,</span> val<span class="Delimiter">);</span>
 <span id="L281" class="LineNr">281 </span>        overlap<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>addr<span class="Delimiter">);</span>
-<span id="L282" class="LineNr">282 </span>        <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXWORD</a> &lt;&lt; addr &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L407'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L410'>NUM</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L179'>read_mem_u8</a><span class="Delimiter">(</span>addr<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L282" class="LineNr">282 </span>        <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Constant">99</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L409'>HEXWORD</a> &lt;&lt; addr &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXBYTE</a> &lt;&lt; <a href='010---vm.cc.html#L411'>NUM</a><span class="Delimiter">(</span><a href='010---vm.cc.html#L179'>read_mem_u8</a><span class="Delimiter">(</span>addr<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L283" class="LineNr">283 </span>        ++addr<span class="Delimiter">;</span>
 <span id="L284" class="LineNr">284 </span>      <span class="Delimiter">}</span>
 <span id="L285" class="LineNr">285 </span>    <span class="Delimiter">}</span>
@@ -364,11 +364,11 @@ if ('onhashchange' in window) {
 <span id="L304" class="LineNr">304 </span>  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L305" class="LineNr">305 </span>  in &gt;&gt; std::hex &gt;&gt; result<span class="Delimiter">;</span>
 <span id="L306" class="LineNr">306 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!in || !in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L307" class="LineNr">307 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;token '&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' is not a hex byte\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L307" class="LineNr">307 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;token '&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' is not a hex byte\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L308" class="LineNr">308 </span>    <span class="Identifier">return</span> <span class="cSpecial">'\0'</span><span class="Delimiter">;</span>
 <span id="L309" class="LineNr">309 </span>  <span class="Delimiter">}</span>
 <span id="L310" class="LineNr">310 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>result &gt; <span class="Constant">0xff</span> || result &lt; -<span class="Constant">0x8f</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L311" class="LineNr">311 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;token '&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' is not a hex byte\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L311" class="LineNr">311 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;token '&quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot;' is not a hex byte\n&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L312" class="LineNr">312 </span>    <span class="Identifier">return</span> <span class="cSpecial">'\0'</span><span class="Delimiter">;</span>
 <span id="L313" class="LineNr">313 </span>  <span class="Delimiter">}</span>
 <span id="L314" class="LineNr">314 </span>  <span class="Identifier">return</span> <span class="Normal">static_cast</span>&lt;<span class="Normal">uint8_t</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
@@ -380,7 +380,7 @@ if ('onhashchange' in window) {
 <span id="L320" class="LineNr">320 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L321" class="LineNr">321 </span>      <span class="Constant">&quot;01 cab\n&quot;</span>
 <span id="L322" class="LineNr">322 </span>  <span class="Delimiter">);</span>
-<span id="L323" class="LineNr">323 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L323" class="LineNr">323 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L324" class="LineNr">324 </span>      <span class="Constant">&quot;error: token 'cab' is not a hex byte\n&quot;</span>
 <span id="L325" class="LineNr">325 </span>  <span class="Delimiter">);</span>
 <span id="L326" class="LineNr">326 </span><span class="Delimiter">}</span>
@@ -391,7 +391,7 @@ if ('onhashchange' in window) {
 <span id="L331" class="LineNr">331 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L332" class="LineNr">332 </span>      <span class="Constant">&quot;01 cx\n&quot;</span>
 <span id="L333" class="LineNr">333 </span>  <span class="Delimiter">);</span>
-<span id="L334" class="LineNr">334 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L334" class="LineNr">334 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L335" class="LineNr">335 </span>      <span class="Constant">&quot;error: token 'cx' is not a hex byte\n&quot;</span>
 <span id="L336" class="LineNr">336 </span>  <span class="Delimiter">);</span>
 <span id="L337" class="LineNr">337 </span><span class="Delimiter">}</span>
@@ -401,7 +401,7 @@ if ('onhashchange' in window) {
 <span id="L341" class="LineNr">341 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L342" class="LineNr">342 </span>      <span class="Constant">&quot;01 -02\n&quot;</span>
 <span id="L343" class="LineNr">343 </span>  <span class="Delimiter">);</span>
-<span id="L344" class="LineNr">344 </span>  <a href='003trace.cc.html#L285'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L344" class="LineNr">344 </span>  <a href='003trace.cc.html#L294'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L345" class="LineNr">345 </span><span class="Delimiter">}</span>
 <span id="L346" class="LineNr">346 </span>
 <span id="L347" class="LineNr">347 </span><span class="Normal">void</span> <a href='011run.cc.html#L347'>test_negative_number_too_small</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -410,7 +410,7 @@ if ('onhashchange' in window) {
 <span id="L350" class="LineNr">350 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L351" class="LineNr">351 </span>      <span class="Constant">&quot;01 -12345\n&quot;</span>
 <span id="L352" class="LineNr">352 </span>  <span class="Delimiter">);</span>
-<span id="L353" class="LineNr">353 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L353" class="LineNr">353 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L354" class="LineNr">354 </span>      <span class="Constant">&quot;error: token '-12345' is not a hex byte\n&quot;</span>
 <span id="L355" class="LineNr">355 </span>  <span class="Delimiter">);</span>
 <span id="L356" class="LineNr">356 </span><span class="Delimiter">}</span>
@@ -420,7 +420,7 @@ if ('onhashchange' in window) {
 <span id="L360" class="LineNr">360 </span>      <span class="Constant">&quot;== code 0x1\n&quot;</span>
 <span id="L361" class="LineNr">361 </span>      <span class="Constant">&quot;0x01 -0x02\n&quot;</span>
 <span id="L362" class="LineNr">362 </span>  <span class="Delimiter">);</span>
-<span id="L363" class="LineNr">363 </span>  <a href='003trace.cc.html#L285'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L363" class="LineNr">363 </span>  <a href='003trace.cc.html#L294'>CHECK_TRACE_COUNT</a><span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L364" class="LineNr">364 </span><span class="Delimiter">}</span>
 <span id="L365" class="LineNr">365 </span>
 <span id="L366" class="LineNr">366 </span><span class="Normal">void</span> <a href='011run.cc.html#L366'>test_repeated_segment_merges_data</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -430,7 +430,7 @@ if ('onhashchange' in window) {
 <span id="L370" class="LineNr">370 </span>      <span class="Constant">&quot;== code\n&quot;</span>  <span class="Comment">// again</span>
 <span id="L371" class="LineNr">371 </span>      <span class="Constant">&quot;33 44\n&quot;</span>
 <span id="L372" class="LineNr">372 </span>  <span class="Delimiter">);</span>
-<span id="L373" class="LineNr">373 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L373" class="LineNr">373 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L374" class="LineNr">374 </span>      <span class="Constant">&quot;parse: new segment 'code'\n&quot;</span>
 <span id="L375" class="LineNr">375 </span>      <span class="Constant">&quot;parse: appending to segment 'code'\n&quot;</span>
 <span id="L376" class="LineNr">376 </span>      <span class="Comment">// first segment</span>
@@ -447,7 +447,7 @@ if ('onhashchange' in window) {
 <span id="L387" class="LineNr">387 </span>  <a href='011run.cc.html#L396'>parse_and_load</a><span class="Delimiter">(</span>
 <span id="L388" class="LineNr">388 </span>      <span class="Constant">&quot;01 02\n&quot;</span>
 <span id="L389" class="LineNr">389 </span>  <span class="Delimiter">);</span>
-<span id="L390" class="LineNr">390 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L390" class="LineNr">390 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L391" class="LineNr">391 </span>      <span class="Constant">&quot;error: input does not start with a '==' section header\n&quot;</span>
 <span id="L392" class="LineNr">392 </span>  <span class="Delimiter">);</span>
 <span id="L393" class="LineNr">393 </span><span class="Delimiter">}</span>
@@ -457,21 +457,21 @@ if ('onhashchange' in window) {
 <span id="L397" class="LineNr">397 </span>  <a href='011run.cc.html#L101'>program</a> p<span class="Delimiter">;</span>
 <span id="L398" class="LineNr">398 </span>  istringstream in<span class="Delimiter">(</span>text_bytes<span class="Delimiter">);</span>
 <span id="L399" class="LineNr">399 </span>  parse<span class="Delimiter">(</span>in<span class="Delimiter">,</span> p<span class="Delimiter">);</span>
-<span id="L400" class="LineNr">400 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L253'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// if any stage raises errors, stop immediately</span>
+<span id="L400" class="LineNr">400 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='003trace.cc.html#L262'>trace_contains_errors</a><span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// if any stage raises errors, stop immediately</span>
 <span id="L401" class="LineNr">401 </span>  <a href='011run.cc.html#L260'>load</a><span class="Delimiter">(</span>p<span class="Delimiter">);</span>
 <span id="L402" class="LineNr">402 </span><span class="Delimiter">}</span>
 <span id="L403" class="LineNr">403 </span>
 <span id="L404" class="LineNr">404 </span><span class="SalientComment">//:: run</span>
 <span id="L405" class="LineNr">405 </span>
 <span id="L406" class="LineNr">406 </span><span class="Delimiter">:(before &quot;End Initialize Op Names&quot;)</span>
-<span id="L407" class="LineNr">407 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L355'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;b8&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L13'>EAX</a> (mov)&quot;</span><span class="Delimiter">);</span>
+<span id="L407" class="LineNr">407 </span><a href='001help.cc.html#L261'>put_new</a><span class="Delimiter">(</span><span class="Special"><a href='010---vm.cc.html#L356'>Name</a></span><span class="Delimiter">,</span> <span class="Constant">&quot;b8&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;copy imm32 to <a href='010---vm.cc.html#L13'>EAX</a> (mov)&quot;</span><span class="Delimiter">);</span>
 <span id="L408" class="LineNr">408 </span>
 <span id="L409" class="LineNr">409 </span><span class="Comment">//: our first opcode</span>
 <span id="L410" class="LineNr">410 </span>
 <span id="L411" class="LineNr">411 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L412" class="LineNr">412 </span><span class="Normal">case</span> <span class="Constant">0xb8</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy imm32 to EAX</span>
 <span id="L413" class="LineNr">413 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span> src = <a href='011run.cc.html#L432'>next32</a><span class="Delimiter">();</span>
-<span id="L414" class="LineNr">414 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L408'>HEXWORD</a> &lt;&lt; src &lt;&lt; <span class="Constant">&quot; to EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L414" class="LineNr">414 </span>  <a href='003trace.cc.html#L96'>trace</a><span class="Delimiter">(</span><span class="Special">Callstack_depth</span>+<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy imm32 0x&quot;</span> &lt;&lt; <a href='010---vm.cc.html#L409'>HEXWORD</a> &lt;&lt; src &lt;&lt; <span class="Constant">&quot; to EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L415" class="LineNr">415 </span>  <span class="Special"><a href='010---vm.cc.html#L28'>Reg</a></span>[EAX]<span class="Delimiter">.</span>i = src<span class="Delimiter">;</span>
 <span id="L416" class="LineNr">416 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L417" class="LineNr">417 </span><span class="Delimiter">}</span>
@@ -483,7 +483,7 @@ if ('onhashchange' in window) {
 <span id="L423" class="LineNr">423 </span>      <span class="Comment">// op     ModR/M  SIB   displacement  immediate</span>
 <span id="L424" class="LineNr">424 </span>      <span class="Constant">&quot;  b8                                 0a 0b 0c 0d \n&quot;</span>  <span class="Comment">// copy 0x0d0c0b0a to EAX</span>
 <span id="L425" class="LineNr">425 </span>  <span class="Delimiter">);</span>
-<span id="L426" class="LineNr">426 </span>  <a href='003trace.cc.html#L281'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
+<span id="L426" class="LineNr">426 </span>  <a href='003trace.cc.html#L290'>CHECK_TRACE_CONTENTS</a><span class="Delimiter">(</span>
 <span id="L427" class="LineNr">427 </span>      <span class="Constant">&quot;run: copy imm32 0x0d0c0b0a to EAX\n&quot;</span>
 <span id="L428" class="LineNr">428 </span>  <span class="Delimiter">);</span>
 <span id="L429" class="LineNr">429 </span><span class="Delimiter">}</span>
@@ -513,7 +513,7 @@ if ('onhashchange' in window) {
 <span id="L453" class="LineNr">453 </span>    <span class="Normal">int32_t</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L454" class="LineNr">454 </span>    in &gt;&gt; result<span class="Delimiter">;</span>
 <span id="L455" class="LineNr">455 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!in || !in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L456" class="LineNr">456 </span>      <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;not a number: &quot;</span> &lt;&lt; s &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L456" class="LineNr">456 </span>      <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;not a number: &quot;</span> &lt;&lt; s &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L457" class="LineNr">457 </span>      <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L458" class="LineNr">458 </span>    <span class="Delimiter">}</span>
 <span id="L459" class="LineNr">459 </span>    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
@@ -521,7 +521,7 @@ if ('onhashchange' in window) {
 <span id="L461" class="LineNr">461 </span>  <span class="Normal">uint32_t</span> uresult = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L462" class="LineNr">462 </span>  in &gt;&gt; uresult<span class="Delimiter">;</span>
 <span id="L463" class="LineNr">463 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!in || !in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span id="L464" class="LineNr">464 </span>    <a href='003trace.cc.html#L217'>raise</a> &lt;&lt; <span class="Constant">&quot;not a number: &quot;</span> &lt;&lt; s &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L464" class="LineNr">464 </span>    <a href='003trace.cc.html#L226'>raise</a> &lt;&lt; <span class="Constant">&quot;not a number: &quot;</span> &lt;&lt; s &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L465" class="LineNr">465 </span>    <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L466" class="LineNr">466 </span>  <span class="Delimiter">}</span>
 <span id="L467" class="LineNr">467 </span>  <span class="Identifier">return</span> <span class="Normal">static_cast</span>&lt;<span class="Normal">int32_t</span>&gt;<span class="Delimiter">(</span>uresult<span class="Delimiter">);</span>
