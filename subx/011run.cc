@@ -444,34 +444,3 @@ string to_string(const word& w) {
     out << " /" << w.metadata.at(i);
   return out.str();
 }
-
-int32_t parse_int(const string& s) {
-  if (s.empty()) return 0;
-  istringstream in(s);
-  in >> std::hex;
-  if (s.at(0) == '-') {
-    int32_t result = 0;
-    in >> result;
-    if (!in || !in.eof()) {
-      raise << "not a number: " << s << '\n' << end();
-      return 0;
-    }
-    return result;
-  }
-  uint32_t uresult = 0;
-  in >> uresult;
-  if (!in || !in.eof()) {
-    raise << "not a number: " << s << '\n' << end();
-    return 0;
-  }
-  return static_cast<int32_t>(uresult);
-}
-:(before "End Unit Tests")
-void test_parse_int() {
-  CHECK_EQ(0, parse_int("0"));
-  CHECK_EQ(0, parse_int("0x0"));
-  CHECK_EQ(0, parse_int("0x0"));
-  CHECK_EQ(16, parse_int("10"));  // hex always
-  CHECK_EQ(-1, parse_int("-1"));
-  CHECK_EQ(-1, parse_int("0xffffffff"));
-}
