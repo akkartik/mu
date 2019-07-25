@@ -298,44 +298,27 @@ test `uname` = 'Linux'  &&  {
   cat examples/ex10.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex10 -
 }
 
-# native run only because emulated run times out on travis-ci.org
-test `uname` = 'Linux'  &&  {
-  echo ex11
-  cat examples/ex11.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex11 -
-}
+# SubX translator phases only run natively. Emulated run times out on travis-ci.org.
+test `uname` = 'Linux'  ||  exit 0
 
-# native run only because emulated run times out on travis-ci.org
-test `uname` = 'Linux'  &&  {
-  echo ex12
-  cat examples/ex12.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex12 -
-}
+echo ex11
+cat examples/ex11.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex11 -
+
+echo ex12
+cat examples/ex12.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex12 -
+
+# Larger apps that use the standard library.
 
 echo factorial
-cat 0*.subx apps/factorial.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff apps/factorial -
-test `uname` = 'Linux'  &&  {
-  cat 0*.subx apps/factorial.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/factorial -
-}
-
+cat 0*.subx apps/factorial.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/factorial -
 echo crenshaw2-1
-cat 0*.subx apps/crenshaw2-1.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff apps/crenshaw2-1 -
-test `uname` = 'Linux'  &&  {
-  cat 0*.subx apps/crenshaw2-1.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/crenshaw2-1 -
-}
-
+cat 0*.subx apps/crenshaw2-1.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/crenshaw2-1 -
 echo crenshaw2-1b
-cat 0*.subx apps/crenshaw2-1b.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff apps/crenshaw2-1b -
-test `uname` = 'Linux'  &&  {
-  cat 0*.subx apps/crenshaw2-1b.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/crenshaw2-1b -
-}
-
+cat 0*.subx apps/crenshaw2-1b.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/crenshaw2-1b -
 echo handle
-cat 0*.subx apps/handle.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff apps/handle -
-test `uname` = 'Linux'  &&  {
-  cat 0*.subx apps/handle.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/handle -
-}
+cat 0*.subx apps/handle.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/handle -
 
-# SubX translator phases only  run natively. Emulated run times out on travis-ci.org.
-test `uname` = 'Linux'  || exit 0
+# Phases of the self-hosted SubX translator.
 
 echo hex
 cat 0*.subx apps/subx-common.subx apps/hex.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff apps/hex -
