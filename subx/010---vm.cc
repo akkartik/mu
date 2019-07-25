@@ -156,17 +156,6 @@ void sanity_check(uint32_t start, uint32_t end) {
 // RAM is made of VMAs.
 vector<vma> Mem;
 :(code)
-// The first 3 VMAs are special. When loading ELF binaries in later layers,
-// we'll assume that the first VMA is for code, the second is for data
-// (including the heap), and the third for the stack.
-void grow_code_segment(uint32_t new_end_address) {
-  assert(!Mem.empty());
-  Mem.at(0).grow_until(new_end_address);
-}
-void grow_data_segment(uint32_t new_end_address) {
-  assert(SIZE(Mem) > 1);
-  Mem.at(1).grow_until(new_end_address);
-}
 :(before "End Globals")
 uint32_t End_of_program = 0;  // when the program executes past this address in tests we'll stop the test
 // The stack grows downward. Can't increase its size for now.

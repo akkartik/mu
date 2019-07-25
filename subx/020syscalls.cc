@@ -72,10 +72,6 @@ void process_int80() {
     trace(Callstack_depth+1, "run") << "result: " << Reg[EAX].i << end();
     if (Reg[EAX].i == -1) raise << "rename: " << strerror(errno) << '\n' << end();
     break;
-  case 45:  // brk: modify size of data segment
-    trace(Callstack_depth+1, "run") << "grow data segment to " << Reg[EBX].u << end();
-    grow_data_segment(/*new end address*/Reg[EBX].u);
-    break;
   case 90:  // mmap: allocate memory outside existing segment allocations
     trace(Callstack_depth+1, "run") << "mmap: allocate new segment" << end();
     // Ignore most arguments for now: address hint, protection flags, sharing flags, fd, offset.
