@@ -411,6 +411,17 @@ void test_pack_flags_bad_hex() {
   );
 }
 
+void test_pack_flags_uppercase_hex() {
+  Hide_errors = true;
+  run(
+      "== code 0x1\n"
+      "b9 0xAb/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: uppercase hex not allowed: 0xAb\n"
+  );
+}
+
 //:: helpers
 
 bool all_hex_bytes(const line& inst) {
@@ -425,7 +436,7 @@ bool is_hex_byte(const word& curr) {
     return false;
   if (SIZE(curr.data) != 2)
     return false;
-  if (curr.data.find_first_not_of("0123456789abcdefABCDEF") != string::npos)
+  if (curr.data.find_first_not_of("0123456789abcdef") != string::npos)
     return false;
   return true;
 }
@@ -492,6 +503,10 @@ string to_string(const line& inst) {
 
 int32_t parse_int(const string& s) {
   if (s.empty()) return 0;
+  if (std::any_of(s.begin(), s.end(), isupper)) {
+    raise << "uppercase hex not allowed: " << s << '\n' << end();
+    return 0;
+  }
   istringstream in(s);
   in >> std::hex;
   if (s.at(0) == '-') {

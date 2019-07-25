@@ -300,6 +300,10 @@ const segment* find(const program& p, const string& segment_name) {
 }
 
 uint8_t hex_byte(const string& s) {
+  if (std::any_of(s.begin(), s.end(), isupper)) {
+    raise << "uppercase hex not allowed: " << s << '\n' << end();
+    return 0;
+  }
   istringstream in(s);
   int result = 0;
   in >> std::hex >> result;
@@ -389,6 +393,17 @@ void test_error_on_missing_segment_header() {
   );
   CHECK_TRACE_CONTENTS(
       "error: input does not start with a '==' section header\n"
+  );
+}
+
+void test_error_on_uppercase_hex() {
+  Hide_errors = true;
+  parse_and_load(
+      "== code\n"
+      "01 Ab\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: uppercase hex not allowed: Ab\n"
   );
 }
 
