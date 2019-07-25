@@ -19,9 +19,12 @@
 //: Later layers may add more conventions partitioning the space of names. But
 //: the above rules will remain inviolate.
 
-//: One special label: the address to start running the program at.
+//: One special label is 'Entry', the address to start running the program at.
+//: It can be non-unique; the last declaration overrides earlier ones.
+//: It must exist in a program. Otherwise we don't know where to start running
+//: programs.
 
-void test_entry_label() {
+void test_Entry_label() {
   run(
       "== code 0x1\n"
       "05 0x0d0c0b0a/imm32\n"
@@ -33,15 +36,6 @@ void test_entry_label() {
   );
   CHECK_TRACE_DOESNT_CONTAIN("run: 0x00000001 opcode: 05");
 }
-
-:(before "End Globals")
-uint32_t Entry_address = 0;
-:(before "End Reset")
-Entry_address = 0;
-:(before "End Initialize EIP")
-if (Entry_address) EIP = Entry_address;
-:(after "Override e_entry")
-if (Entry_address) e_entry = Entry_address;
 
 :(before "End looks_like_hex_int(s) Detectors")
 if (SIZE(s) == 2) return true;
@@ -131,7 +125,7 @@ void rewrite_labels(program& p) {
   if (trace_contains_errors()) return;
   replace_labels_with_displacements(code, byte_index);
   if (contains_key(byte_index, "Entry"))
-    Entry_address = code.start + get(byte_index, "Entry");
+    p.entry = code.start + get(byte_index, "Entry");
 }
 
 void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& byte_index) {
@@ -360,6 +354,43 @@ void test_label_negative_hex() {
   );
   CHECK_TRACE_CONTENTS(
       "error: '-a' starts with '-', which can be confused with a negative number; use a different name\n"
+  );
+}
+
+//: As said up top, the 'Entry' label is special.
+//: It can be non-unique; the last declaration overrides earlier ones.
+//: It must exist in a program. Otherwise we don't know where to start running
+//: programs.
+
+void test_duplicate_Entry_label() {
+  transform(
+      "== code 0x1\n"
+      "Entry:\n"
+      "Entry:\n"
+      "    05  0x0d0c0b0a/imm32\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN_ERRORS();
+}
+
+// This test could do with some refactoring.
+// We're duplicating the flow inside `subx translate`, but without
+// reading/writing files.
+// We can't just use run(string) because most of our tests allow programs
+// without 'Entry' labels, as a convenience.
+void test_programs_without_Entry_label() {
+  Hide_errors = true;
+  program p;
+  istringstream in(
+      "== code 0x1\n"
+      "05 0x0d0c0b0a/imm32\n"
+      "05 0x0d0c0b0a/imm32\n"
+  );
+  parse(in, p);
+  transform(p);
+  ostringstream dummy;
+  save_elf(p, dummy);
+  CHECK_TRACE_CONTENTS(
+      "error: no 'Entry' label found\n"
   );
 }
 

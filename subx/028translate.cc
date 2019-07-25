@@ -75,10 +75,14 @@ void print_translate_usage() {
 // write out a program to a bare-bones ELF file
 void save_elf(const program& p, const string& filename) {
   ofstream out(filename.c_str(), ios::binary);
+  save_elf(p, out);
+  out.close();
+}
+
+void save_elf(const program& p, ostream& out) {
   write_elf_header(out, p);
   for (size_t i = 0;  i < p.segments.size();  ++i)
     write_segment(p.segments.at(i), out);
-  out.close();
 }
 
 void write_elf_header(ostream& out, const program& p) {
@@ -100,7 +104,9 @@ void write_elf_header(ostream& out, const program& p) {
   // e_version
   O(0x01); O(0x00); O(0x00); O(0x00);
   // e_entry
-  uint32_t e_entry = find(p, "code")->start;
+  if (p.entry == 0)
+    raise << "no 'Entry' label found\n" << end();
+  uint32_t e_entry = p.entry;
   // Override e_entry
   emit(e_entry);
   // e_phoff -- immediately after ELF header

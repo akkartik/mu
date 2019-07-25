@@ -16,8 +16,8 @@ put_new(Help, "syntax",
   "the segment and a (sometimes approximate) starting address in memory.\n"
   "The name 'code' is special; instructions to execute should always go here.\n"
   "\n"
-  "The resulting binary starts running from the start of the segment by default.\n"
-  "To start elsewhere in the code segment, define a special label called 'Entry'.\n"
+  "The resulting binary starts running code from a label called 'Entry'\n"
+  "in the code segment.\n"
   "\n"
   "Segments with the same name get merged together. This rule helps keep functions and\n"
   "their data close together in .subx files.\n"
@@ -91,6 +91,10 @@ void run(const string& text_bytes) {
   if (trace_contains_errors()) return;
   load(p);
   if (trace_contains_errors()) return;
+  if (p.entry)
+    EIP = p.entry;
+  else
+    EIP = find(p, "code")->start;  // just in unit tests
   while (EIP < End_of_program)
     run_one_instruction();
 }
@@ -99,7 +103,9 @@ void run(const string& text_bytes) {
 
 :(before "End Types")
 struct program {
+  uint32_t entry;
   vector<segment> segments;
+  program() { entry = 0; }
 };
 :(before "struct program")
 struct segment {
@@ -281,8 +287,6 @@ void load(const program& p) {
     }
     if (seg.name == "code") {
       End_of_program = addr;
-      EIP = seg.start;
-      // End Initialize EIP
     }
   }
 }
