@@ -28,8 +28,6 @@ put_new(Help, "syntax",
   "at runtime, but can be handy when rewriting macros.\n"
   "\n"
   "Check out the examples in the examples/ directory.\n"
-  "Programming in machine code can be annoying, but let's see if we can make\n"
-  "it nice enough to be able to write a compiler in it.\n"
 );
 :(before "End Help Contents")
 cerr << "  syntax\n";

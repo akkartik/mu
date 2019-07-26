@@ -84,8 +84,10 @@ void init_operand_type_help() {
     "  - sib.pdf: volume 2, table 2-3, \"32-bit addressing with the SIB byte.\".\n"
   );
   put(Help, "subop",
-    "Additional 3-bit operand for determining the instruction when the opcode is 81, 8f or ff.\n"
-    "Can't coexist with operand of type 'r32' in a single instruction, because the two use the same bits.\n"
+    "Additional 3-bit operand for determining the instruction when the opcode\n"
+    "is 81, 8f, d3, f7 or ff.\n"
+    "Can't coexist with operand of type 'r32' in a single instruction, because\n"
+    "the two use the same bits.\n"
   );
   put(Help, "r32",
     "3-bit operand specifying a register operand used directly, without any further addressing modes.\n"
