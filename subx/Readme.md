@@ -10,7 +10,7 @@ SubX is a simple, minimalist stack for programming your computer.
 
 SubX is designed:
 
-* to explore ways to turn arbitrary manual tests into reproducible automated tests,
+* to enable automation of arbitrary manual tests
 * to be easy to implement in itself, and
 * to help learn and teach the x86 instruction set.
 
