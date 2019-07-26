@@ -79,8 +79,13 @@ You can use SubX to translate itself. For example, running natively on Linux:
   42
   ```
 
-(For running emulated on other platforms, see the `translate` script. You'll
-need 16GB RAM for translating some of the larger programs.)
+This is just a demonstration; in practice you would use the `ntranslate`
+script. For running emulated on other platforms, use the `translate` script.
+You'll need 16GB RAM for translating some of the larger programs in emulated
+mode. Requirements for native translation are, of course, minimal.
+
+To my knowledge the original C++ and new self-hosted translators always
+generate identical binaries. Please [report bugs](mailto:mu@akkartik.com)!
 
 You can use it to learn about the x86 processor that (almost certainly) runs
 your computer. (See below.)
