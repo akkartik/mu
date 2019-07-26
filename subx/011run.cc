@@ -91,10 +91,12 @@ void run(const string& text_bytes) {
   if (trace_contains_errors()) return;
   load(p);
   if (trace_contains_errors()) return;
+  // convenience to keep tests concise: 'Entry' label need not be provided
+  // not allowed in real programs
   if (p.entry)
     EIP = p.entry;
   else
-    EIP = find(p, "code")->start;  // just in unit tests
+    EIP = find(p, "code")->start;
   while (EIP < End_of_program)
     run_one_instruction();
 }

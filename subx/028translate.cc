@@ -80,6 +80,10 @@ void save_elf(const program& p, const string& filename) {
 }
 
 void save_elf(const program& p, ostream& out) {
+  if (p.entry == 0) {
+    raise << "no 'Entry' label found\n" << end();
+    return;
+  }
   write_elf_header(out, p);
   for (size_t i = 0;  i < p.segments.size();  ++i)
     write_segment(p.segments.at(i), out);
@@ -104,8 +108,6 @@ void write_elf_header(ostream& out, const program& p) {
   // e_version
   O(0x01); O(0x00); O(0x00); O(0x00);
   // e_entry
-  if (p.entry == 0)
-    raise << "no 'Entry' label found\n" << end();
   uint32_t e_entry = p.entry;
   // Override e_entry
   emit(e_entry);
