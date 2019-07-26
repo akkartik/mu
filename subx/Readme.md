@@ -77,15 +77,23 @@ You can use SubX to translate itself. For example, running natively on Linux:
   $ ./a.elf
   $ echo $?
   42
+
+  # or, automating the above steps
+  $ ./ntranslate ex1.subx
+  $ chmod +x a.elf
+  $ ./a.elf
+  $ echo $?
+  42
   ```
 
-This is just a demonstration; in practice you would use the `ntranslate`
-script. For running emulated on other platforms, use the `translate` script.
-You'll need 16GB RAM for translating some of the larger programs in emulated
-mode. Requirements for native translation are, of course, minimal.
+Or, running in a VM on other platforms:
 
-To my knowledge the original C++ and new self-hosted translators always
-generate identical binaries. Please [report bugs](mailto:mu@akkartik.com)!
+  ```
+  $ ./translate ex1.subx  # generates identical a.elf to above
+  $ ./subx run a.elf
+  $ echo $?
+  42
+  ```
 
 You can use it to learn about the x86 processor that (almost certainly) runs
 your computer. (See below.)
