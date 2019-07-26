@@ -80,10 +80,16 @@ void save_elf(const program& p, const string& filename) {
 }
 
 void save_elf(const program& p, ostream& out) {
+  // validation: stay consistent with the self-hosted translator
   if (p.entry == 0) {
     raise << "no 'Entry' label found\n" << end();
     return;
   }
+  if (find(p, "data") == NULL) {
+    raise << "must include a 'data' segment\n" << end();
+    return;
+  }
+  // processing
   write_elf_header(out, p);
   for (size_t i = 0;  i < p.segments.size();  ++i)
     write_segment(p.segments.at(i), out);
