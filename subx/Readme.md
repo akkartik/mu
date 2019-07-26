@@ -62,7 +62,7 @@ covered by automated tests. SubX's tagline: tests before syntax.
 You can use SubX to translate itself. For example, running natively on Linux:
 
   ```sh
-  # generate translator phases using C++
+  # generate translator phases using the C++ translator
   $ ./subx translate 0*.subx apps/subx-common.subx apps/hex.subx    -o hex
   $ ./subx translate 0*.subx apps/subx-common.subx apps/survey.subx -o survey
   $ ./subx translate 0*.subx apps/subx-common.subx apps/pack.subx   -o pack
@@ -71,7 +71,7 @@ You can use SubX to translate itself. For example, running natively on Linux:
   $ ./subx translate 0*.subx apps/subx-common.subx apps/tests.subx  -o tests
   $ chmod +x hex survey pack assort dquotes tests
 
-  # use the new translator phases to translate subx programs
+  # use the generated translator phases to translate SubX programs
   $ cat examples/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
   $ chmod +x a.elf
   $ ./a.elf
