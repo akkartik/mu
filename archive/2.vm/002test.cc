@@ -70,13 +70,6 @@ if (Run_tests) {
   return 0;
 }
 
-:(after "End Main")
-//: Raise other unrecognized sub-commands as errors.
-//: We couldn't do this until now because we want `./subx test` to always
-//: succeed, no matter how many layers are included in the build.
-cerr << "nothing to do\n";
-return 1;
-
 :(code)
 void run_test(size_t i) {
   if (i >= sizeof(Tests)/sizeof(Tests[0])) {
