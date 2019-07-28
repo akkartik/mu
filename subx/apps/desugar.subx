@@ -62,28 +62,6 @@ $main:end:
     cd/syscall  0x80/imm8
 
 convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
-    # pseudocode:
-    #   var line = new-stream(512, 1)
-    #   var in-code? = false
-    #   while true
-    #     clear-stream(line)
-    #     read-line-buffered(in, line)
-    #     if (line->write == 0) break             # end of file
-    #     var word-slice = next-word(line)
-    #     if slice-empty?(word-slice)             # whitespace
-    #       write-stream-data(out, line)
-    #     else if (slice-equal?(word-slice, "=="))
-    #       word-slice = next-word(line)
-    #       in-code? = slice-equal?(word-slice, "code")
-    #       write-stream-data(out, line)
-    #     else if (in-code?)
-    #       rewind-stream(line)
-    #       convert-instruction(line, out)
-    #     else
-    #       rewind-stream(line)
-    #       convert-data(line, out)
-    #   flush(out)
-    #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
