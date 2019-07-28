@@ -7,7 +7,7 @@
 Goals (in priority order):
 
 * [Reward curiosity.](http://akkartik.name/about)
-  * Easy to build, easy to run. [Minimal dependencies](http://akkartik.name/post/libraries2),
+  * Easy to build, easy to run. [Minimal dependencies](https://news.ycombinator.com/item?id=16882140#16882555),
     so that installation is always painless.
   * All design decisions comprehensible to a single individual. (On demand.)
   * All design decisions comprehensible without needing to talk to anyone.
