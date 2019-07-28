@@ -398,32 +398,6 @@ translating the corresponding `.subx` file. The binary should also be natively
 runnable on a Linux system running on Intel x86 processors, either 32- or
 64-bit. If either of these invariants is broken it's a bug on my part.
 
-## Roadmap and status
-
-* Self-hosting. (✓)
-
-  `tests |dquotes |assort |pack |survey |hex`
-
-* A script to package SubX together with a minimal Linux kernel image
-  (compiled from source, of course).
-
-* Testable, dependency-injected vocabulary of primitives
-  - Streams: `read()`, `write()`. (✓)
-  - `exit()` (✓)
-  - Sockets
-  - Files
-  - Concurrency, and a framework for testing blocking code
-
-* Higher-level notations. Like programming languages, but with thinner
-  implementations that you can -- and are expected to! -- modify.
-  - syntax for addressing modes: `%reg`, `*reg`, `*(reg+disp)`,
-    `*(reg+reg+disp)`, `*(reg+reg<<n + disp)`
-  - function calls in a single line, using addressing modes for arguments
-  - syntax for controlling a type checker, like [prototype 2](https://github.com/akkartik/mu/tree/master/archive/2.vm).
-  - a register allocation _verifier_. Programmer provides registers for
-    variables; verifier checks that register reads are for the same type that
-    was last written -- across all control flow paths.
-
 ## Running
 
 `subx` currently has the following sub-commands:
@@ -798,6 +772,28 @@ can replicate:
 
 * There would be a stronger culture of reviewing the code for programs you use
   or libraries you depend on. [More eyeballs would make more bugs shallow.](https://en.wikipedia.org/wiki/Linus%27s_Law)
+
+To falsify these hypotheses, here's a roadmap of planned features:
+
+* A script to package SubX together with a minimal Linux kernel image
+  (compiled from source, of course).
+
+* Testable, dependency-injected vocabulary of primitives
+  - Streams: `read()`, `write()`. (✓)
+  - `exit()` (✓)
+  - Sockets
+  - Files
+  - Concurrency, and a framework for testing blocking code
+
+* Higher-level notations. Like programming languages, but with thinner
+  implementations that you can -- and are expected to! -- modify.
+  - syntax for addressing modes: `%reg`, `*reg`, `*(reg+disp)`,
+    `*(reg+reg+disp)`, `*(reg+reg<<n + disp)`
+  - function calls in a single line, using addressing modes for arguments
+  - syntax for controlling a type checker, like [prototype 2](https://github.com/akkartik/mu/tree/master/archive/2.vm).
+  - a register allocation _verifier_. Programmer provides registers for
+    variables; verifier checks that register reads are for the same type that
+    was last written -- across all control flow paths.
 
 ## Credits
 
