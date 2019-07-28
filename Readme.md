@@ -376,7 +376,7 @@ be built up incrementally out of multiple [_layers_](http://akkartik.name/post/w
 
 The data segment consists of labels as before and byte values. Referring to
 data labels in either `code` segment instructions or `data` segment values
-(using the `imm32` metadata either way) yields their address.
+yields their address.
 
 Automatic tests are an important part of SubX, and there's a simple mechanism
 to provide a test harness: all functions that start with `test-` are called in
