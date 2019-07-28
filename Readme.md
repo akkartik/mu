@@ -128,13 +128,6 @@ Or, running in a VM on other platforms:
   42
   ```
 
-You can use it to learn about the x86 processor that (almost certainly) runs
-your computer. (See below.)
-
-You can read its tiny zero-dependency internals and understand how they work.
-You can hack on it, and its thorough tests will raise the alarm when you break
-something.
-
 ## What it looks like
 
 Here is the first example we ran above, a program that just returns 42:
