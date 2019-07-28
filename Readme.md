@@ -7,20 +7,19 @@
 Goals (in priority order):
 
 * [Reward curiosity.](http://akkartik.name/about)
-  * Easy to build, easy to run.
+  * Easy to build, easy to run. [Minimal dependencies](http://akkartik.name/post/libraries2),
+    so that installation is always painless.
   * All design decisions comprehensible to a single individual. (On demand.)
   * All design decisions comprehensible without needing to talk to anyone.
     (I always love talking to you, but I try hard to make myself redundant.)
   * [A globally comprehensible _codebase_ rather than locally clean code.](http://akkartik.name/post/readable-bad)
+  * Clear error messages over expressive syntax.
 * Safe.
   * Thorough test coverage. If you break something you should immediately see
     an error message. If you can manually test for something you should be
     able to write an automated test for it.
   * Memory leaks over memory corruption.
-  * Clear error messages over expressive syntax.
 * Teach the computer bottom-up.
-* [Minimal dependencies](http://akkartik.name/post/libraries2), so that
-  installation is always painless.
 
 Non-goals:
 * Efficiency. Clear programs over fast programs.
