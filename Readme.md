@@ -790,7 +790,7 @@ To falsify these hypotheses, here's a roadmap of planned features:
   - syntax for addressing modes: `%reg`, `*reg`, `*(reg+disp)`,
     `*(reg+reg+disp)`, `*(reg+reg<<n + disp)`
   - function calls in a single line, using addressing modes for arguments
-  - syntax for controlling a type checker, like [prototype 2](https://github.com/akkartik/mu/tree/master/archive/2.vm).
+  - syntax for controlling a type checker, like [the mu1 prototype](https://github.com/akkartik/mu1).
   - a register allocation _verifier_. Programmer provides registers for
     variables; verifier checks that register reads are for the same type that
     was last written -- across all control flow paths.
