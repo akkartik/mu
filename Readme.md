@@ -594,7 +594,7 @@ But those are big goals. Here are the syscalls I have so far:
   of clobbering outside array bounds.
 
   One bit of weirdness here: in tests we do a redundant copy from one stream
-  to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/subx/058read.subx.html)
+  to another. See [the comments before the implementation](http://akkartik.github.io/mu/html/060read.subx.html)
   for a discussion of alternative interfaces.
 
 * `stop`: takes two arguments:
@@ -604,7 +604,7 @@ But those are big goals. Here are the syscalls I have so far:
   - `value` is the status code to `exit()` with.
 
   For more details on exit descriptors and how to create one, see [the
-  comments before the implementation](http://akkartik.github.io/mu/html/subx/057stop.subx.html).
+  comments before the implementation](http://akkartik.github.io/mu/html/059stop.subx.html).
 
 * `new-segment`
 
@@ -740,7 +740,7 @@ from a slice:
 ## Resources
 
 * [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
-  (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/subx/cheatsheet.pdf))
+  (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/cheatsheet.pdf))
 * [Concise reference for the x86 ISA](https://c9x.me/x86)
 * [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
 - [&ldquo;Bootstrapping a compiler from nothing&rdquo;](http://web.archive.org/web/20061108010907/http://www.rano.org/bcompiler.html) by Edmund Grumley-Evans.
