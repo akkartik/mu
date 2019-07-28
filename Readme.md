@@ -121,7 +121,7 @@ You can use SubX to translate itself. For example, running natively on Linux:
 
 Or, running in a VM on other platforms:
 
-  ```
+  ```sh
   $ ./translate ex1.subx  # generates identical a.elf to above
   $ ./subx run a.elf
   $ echo $?
