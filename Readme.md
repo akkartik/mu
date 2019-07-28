@@ -1,4 +1,4 @@
-# Mu: a _human-scale_ computer
+# Mu: a human-scale computer
 
 * Not designed to operate in large clusters providing services for millions of
   people.
