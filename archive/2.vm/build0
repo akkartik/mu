@@ -1,0 +1,46 @@
+#!/bin/sh
+# Compile mu from scratch.
+
+set -v
+set -e  # stop immediately on error
+
+cd ../../tangle
+  # auto-generate various lists (ending in '_list' by convention) {
+  # list of types
+  {
+    grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'
+    grep -h "^typedef " [0-9]*.cc
+  }  > type_list
+  # list of function declarations, so I can define them in any order
+  grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  > function_list
+  # list of code files to compile
+  ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  > file_list
+  # list of test files to compile
+  ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  > test_file_list
+  # list of tests to run
+  grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  > test_list
+  grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  > test_name_list
+  # }
+  # Now that we have all the _lists, compile 'tangle'
+  g++ -std=c++98 -g -O2 boot.cc -o tangle
+  ./tangle test
+cd ../archive/2.vm
+
+cd termbox
+  gcc -g -O2 -c termbox.c
+  gcc -g -O2 -c utf8.c
+  ar rcs libtermbox.a *.o
+cd ..
+
+../../tangle/tangle [0-9]*.cc > mu.cc
+# auto-generate function declarations, so I can define them in any order
+# functions start out unindented, have all args on the same line, and end in ') {'
+#
+#                                      \/ ignore struct/class methods
+grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  > function_list
+# auto-generate list of tests to run
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  > test_list
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  > test_name_list
+g++ -std=c++98 -g -O2 mu.cc termbox/libtermbox.a -o mu_bin
+
+cat [0-9]*.mu > core.mu

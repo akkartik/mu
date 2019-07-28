@@ -1,0 +1,175 @@
+#!/bin/sh
+# Alternative to build1 that tries to avoid redoing redundant work.
+# Also splits compilation into multiple .cc files (see 'cleave' below).
+# Faster than build1 for recompiling after small changes.
+#
+# For details on the basic form of this script, see https://notabug.org/akkartik/basic-build.
+
+set -e  # stop immediately on error
+
+# Some environment variables that can be passed in. For example, to turn off
+# optimization:
+#   $ CFLAGS=-g ./build2
+test "$CXX" || export CXX=c++
+test "$CC" || export CC=cc
+test "$CFLAGS" || export CFLAGS="-g -O2"
+export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+export CXXFLAGS="-std=c++98 $CFLAGS"  # CI has an ancient version; don't expect recent dialects
+
+# Outline:
+# [0-9]*.cc -> mu.cc -> .build/*.cc -> .build/*.o -> .build/mu_bin
+# (layers)   |        |              |             |
+#          tangle  cleave          $CXX          $CXX
+
+# can also be called with a layer to only build until
+#   $ ./build2 --until 050
+UNTIL_LAYER=${2:-zzz}
+
+# there's two mechanisms for fast builds here:
+# - if a command is quick to run, always run it but update the result only on any change
+# - otherwise run it only if the output is 'older_than' the inputs
+#
+# avoid combining both mechanisms for a single file
+# otherwise you'll see spurious messages about files being updated
+# risk: a file may unnecessarily update without changes, causing unnecessary work downstream
+
+# return 1 if $1 is older than _any_ of the remaining args
+older_than() {
+  local target=$1
+  shift
+  if [ ! -e $target ]
+  then
+#?     echo "$target doesn't exist"
+    echo "updating $target" >&2
+    return 0  # success
+  fi
+  local f
+  for f in $*
+  do
+    if [ $f -nt $target ]
+    then
+      echo "updating $target" >&2
+      return 0  # success
+    fi
+  done
+  return 1  # failure
+}
+
+# redirect to $1, unless it's already identical
+update() {
+  if [ ! -e $1 ]
+  then
+    cat > $1
+  else
+    cat > $1.tmp
+    diff -q $1 $1.tmp >/dev/null  &&  rm $1.tmp  ||  mv $1.tmp $1
+  fi
+}
+
+update_cp() {
+  if [ ! -e $2/$1 ]
+  then
+    cp $1 $2
+  elif [ $1 -nt $2/$1 ]
+  then
+    cp $1 $2
+  fi
+}
+
+noisy_cd() {
+  cd $1
+  echo "-- `pwd`" >&2
+}
+
+older_than ../../enumerate/enumerate ../../enumerate/enumerate.cc && {
+  $CXX $CXXFLAGS ../../enumerate/enumerate.cc -o ../../enumerate/enumerate
+}
+
+older_than ../../tangle/tangle tangle/*.cc && {
+  noisy_cd ../../tangle
+    # auto-generate various lists (ending in '_list' by convention) {
+    # list of types
+    {
+      grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'
+      grep -h "^typedef " [0-9]*.cc
+    }  |update type_list
+    # list of function declarations, so I can define them in any order
+    grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  |update function_list
+    # list of code files to compile
+    ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  |update file_list
+    # list of test files to compile
+    ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  |update test_file_list
+    # list of tests to run
+    grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update test_list
+    grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
+    # }
+    # Now that we have all the _lists, compile 'tangle'
+    $CXX $CXXFLAGS boot.cc -o tangle
+    ./tangle test
+  noisy_cd ../archive/2.vm  # no effect; just to show us returning to the parent directory
+}
+
+LAYERS=$(../../enumerate/enumerate --until $UNTIL_LAYER  |grep '\.cc$')
+older_than mu.cc $LAYERS ../../enumerate/enumerate ../../tangle/tangle && {
+  # no update here; rely on 'update' calls downstream
+  ../../tangle/tangle $LAYERS  > mu.cc
+}
+
+older_than ../../cleave/cleave ../../cleave/cleave.cc && {
+  $CXX $CXXFLAGS ../../cleave/cleave.cc -o ../../cleave/cleave
+  rm -rf .build
+}
+
+mkdir -p .build
+# auto-generate function declarations, so I can define them in any order
+# functions start out unindented, have all args on the same line, and end in ') {'
+#
+#                                      \/ ignore struct/class methods
+grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |update .build/function_list
+# auto-generate list of tests to run
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |update .build/test_list
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update .build/test_name_list
+mkdir -p .build/termbox
+update_cp termbox/termbox.h .build/termbox
+
+older_than mu_bin mu.cc *_list ../../cleave/cleave termbox/* && {
+  ../../cleave/cleave mu.cc .build
+  noisy_cd .build
+    # create the list of global variable declarations from the corresponding definitions
+    grep ';' global_definitions_list  |sed 's/[=(].*/;/'  |sed 's/^[^\/# ]/extern &/'  |sed 's/^extern extern /extern /'  |update global_declarations_list
+    for f in mu_*.cc
+    do
+      older_than `echo $f  |sed 's/\.cc$/.o/'` $f header global_declarations_list function_list test_list && {
+        $CXX $CXXFLAGS -c $f
+      }
+    done
+  noisy_cd ../termbox
+    older_than utf8.o utf8.c && {
+      $CC $CFLAGS -c utf8.c
+    }
+    older_than termbox.o termbox.c termbox.h input.inl output.inl bytebuffer.inl && {
+      $CC $CFLAGS -c termbox.c
+    }
+    older_than libtermbox.a *.o && {
+      ar rcs libtermbox.a *.o
+    }
+  noisy_cd ..
+  $CXX $CXXFLAGS .build/*.o termbox/libtermbox.a -o .build/mu_bin
+  cp .build/mu_bin .
+}
+
+## [0-9]*.mu -> core.mu
+
+MU_LAYERS=$(../../enumerate/enumerate --until $UNTIL_LAYER  |grep '\.mu$') || exit 0  # ok if no .mu files
+cat $MU_LAYERS  |update core.mu
+
+exit 0
+
+# scenarios considered:
+#   0 status when nothing needs updating
+#   no output when nothing needs updating
+#     no output for mu.cc when .mu files modified
+#     touch mu.cc but don't modify it; no output on second build
+#     touch a .cc layer but don't modify it; no output on second build
+#   only a single layer is recompiled when changing a C++ function
+#   stop immediately after failure in tangle

@@ -129,6 +129,21 @@ struct trace_line {
   }
 };
 
+string unescape_newline(string& s) {
+  std::stringstream ss;
+  for (int i = 0;  i < SIZE(s);  ++i) {
+    if (s.at(i) == '\n')
+      ss << "\\n";
+    else
+      ss << s.at(i);
+  }
+  return ss.str();
+}
+
+void dump_trace_line(ostream& s, trace_line& t) {
+  s << std::setw(4) << t.depth << ' ' << t.label << ": " << unescape_newline(t.contents) << '\n';
+}
+
 //: Starting a new trace line.
 :(before "End trace_stream Methods")
 ostream& stream(string label) {
@@ -140,6 +155,7 @@ ostream& stream(int depth, string label) {
   curr_stream = new ostringstream;
   curr_label = label;
   curr_depth = depth;
+  (*curr_stream) << std::hex;  // printing addresses is the common case
   return *curr_stream;
 }
 
@@ -150,6 +166,15 @@ struct end {};
 ostream& operator<<(ostream& os, end /*unused*/) {
   if (Trace_stream) Trace_stream->newline();
   return os;
+}
+
+//: Fatal error.
+:(before "End Types")
+struct die {};
+:(code)
+ostream& operator<<(ostream& /*unused*/, die /*unused*/) {
+  if (Trace_stream) Trace_stream->newline();
+  exit(1);
 }
 
 :(before "End trace_stream Methods")
@@ -163,7 +188,7 @@ void trace_stream::newline() {
     // maybe incrementally dump trace
     trace_line& t = past_lines.back();
     if (should_incrementally_print_trace()) {
-      cerr       << std::setw(4) << t.depth << ' ' << t.label << ": " << t.contents << '\n';
+      dump_trace_line(cerr, t);
     }
     // End trace Commit
   }
@@ -195,21 +220,29 @@ lease_tracer::~lease_tracer() {
   Trace_stream = NULL;
 }
 
-//:: == Errors using traces
+//:: == Errors and warnings using traces
 
 :(before "End Includes")
-#define raise  (!Trace_stream ? (scroll_to_bottom_and_close_console(),++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+#define raise  (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+#define warn (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Warn_depth, "warn"))
 
-//: Print errors to the screen by default.
+//: Print errors and warnings to the screen by default.
 :(before "struct trace_stream")  // include constants in all cleaved compilation units
 const int Error_depth = 0;
+const int Warn_depth = 1;
 :(before "End Globals")
-int Hide_errors = false;  // if set, don't print errors to screen
+int Hide_errors = false;  // if set, don't print errors or warnings to screen
+int Hide_warnings = false;  // if set, don't print warnings to screen
 :(before "End Reset")
 Hide_errors = false;
+Hide_warnings = false;
+//: Never dump warnings in tests
+:(before "End Test Setup")
+Hide_warnings = true;
 :(code)
 bool trace_stream::should_incrementally_print_trace() {
   if (!Hide_errors && curr_depth == Error_depth) return true;
+  if (!Hide_warnings && !Hide_errors && curr_depth == Warn_depth) return true;
   // End Incremental Trace Print Conditions
   return false;
 }
@@ -235,20 +268,6 @@ bool trace_contains_errors() {
 // to indicate that it isn't an inviolable invariant.
 #define assert_for_now assert
 #define raise_for_now raise
-
-//: Automatically close the console in some situations.
-:(before "End One-time Setup")
-atexit(scroll_to_bottom_and_close_console);
-:(code)
-void scroll_to_bottom_and_close_console() {
-  if (!tb_is_active()) return;
-  // leave the screen in a relatively clean state
-  tb_set_cursor(tb_width()-1, tb_height()-1);
-  cout << "\r\n";
-  tb_shutdown();
-}
-:(before "End Includes")
-#include "termbox/termbox.h"
 
 //:: == Other assertions on traces
 //: Primitives:
@@ -306,7 +325,8 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   split_label_contents(expected_lines.at(curr_expected_line), &label, &contents);
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
     if (label != p->label) continue;
-    if (contents != trim(p->contents)) continue;
+    string t = trim(p->contents);
+    if (contents != unescape_newline(t)) continue;
     ++curr_expected_line;
     while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
@@ -426,7 +446,6 @@ vector<string> split_first(string s, string delim) {
 ofstream Trace_file;
 :(before "End Commandline Options(*arg)")
 else if (is_equal(*arg, "--trace")) {
-  Trace_stream = new trace_stream;
   cerr << "saving trace to 'last_run'\n";
   Trace_file.open("last_run");
   // Add a dummy line up top; otherwise the `browse_trace` tool currently has
@@ -435,7 +454,7 @@ else if (is_equal(*arg, "--trace")) {
 }
 :(before "End trace Commit")
 if (Trace_file) {
-  Trace_file << std::setw(4) << t.depth << ' ' << t.label << ": " << t.contents << '\n';
+  dump_trace_line(Trace_file, t);
 }
 :(before "End One-time Setup")
 atexit(cleanup_main);
@@ -452,7 +471,7 @@ string readable_contents(string label) {
   label = trim(label);
   for (vector<trace_line>::iterator p = past_lines.begin();  p != past_lines.end();  ++p)
     if (label.empty() || label == p->label)
-      output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
+      dump_trace_line(output, *p);
   return output.str();
 }
 
