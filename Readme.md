@@ -1,20 +1,54 @@
-## SubX: A minimalist assembly language for a subset of the x86 ISA
+# Mu: a _human-scale_ computer
 
-SubX is a simple, minimalist stack for programming your computer.
+* Not designed to operate in large clusters providing services for millions of
+  people.
+* Designed for _you_, to run one computer. (Or a few.)
+
+Goals (in priority order):
+
+* [Reward curiosity.](http://akkartik.name/about)
+  * Easy to build, easy to run.
+  * All design decisions comprehensible to a single individual. (On demand.)
+  * All design decisions comprehensible without needing to talk to anyone.
+    (I always love talking to you, but I try hard to make myself redundant.)
+  * [A globally comprehensible _codebase_ rather than locally clean code.](http://akkartik.name/post/readable-bad)
+* Safe.
+  * Thorough test coverage. If you break something you should immediately see
+    an error message. If you can manually test for something you should be
+    able to write an automated test for it.
+  * Memory leaks over memory corruption.
+  * Clear error messages over expressive syntax.
+* Teach the computer bottom-up.
+* [Minimal dependencies](http://akkartik.name/post/libraries2), so that
+  installation is always painless.
+
+Non-goals:
+* Efficiency. Clear programs over fast programs.
+* Portability. Runs on any computer as long as it's x86.
+* Compatibility. The goal is to get off mainstream stacks, not to perpetuate
+  them. Sometimes the right long-term solution is to [bump the major version number](http://akkartik.name/post/versioning).
+* Syntax. Mu code is meant to be comprehended by [running, not just reading](http://akkartik.name/post/comprehension).
+  For now it's a thin veneer over machine code. I'm working on memory safety
+  before expressive syntax.
+
+What I have so far: a self-hosted tool (SubX) for writing thoroughly tested
+x86 machine code atop a bare Linux kernel. Eventually you will be able to
+program in higher-level notations. Eventually Mu won't need Linux or C.
+Eventually the OS interfaces for screen, keyboard, file system and network
+will be _dependency-injected_ so that tests can easily insert a fake screen,
+keyboard, file system or network.
+
+The rest of this Readme describes SubX.
+
+## SubX is a simple, minimalist stack for programming your computer.
 
   ```sh
   $ git clone https://github.com/akkartik/mu
-  $ cd mu/subx
+  $ cd mu
   $ ./subx  # print out a help message
   ```
 
-SubX is designed:
-
-* to enable automation of arbitrary manual tests
-* to be easy to implement in itself, and
-* to help learn and teach the x86 instruction set.
-
-It requires a Unix-like environment with a C++ compiler (Linux or BSD or Mac
+SubX requires a Unix-like environment with a C++ compiler (Linux or BSD or Mac
 OS). Running `subx` will transparently compile it as necessary.
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
@@ -101,12 +135,6 @@ your computer. (See below.)
 You can read its tiny zero-dependency internals and understand how they work.
 You can hack on it, and its thorough tests will raise the alarm when you break
 something.
-
-Eventually you will be able to program in higher-level notations. But you'll
-always have tests as guardrails and traces for inspecting runs. The entire
-stack will always be designed for others to comprehend. You'll always be
-empowered to understand how things work, and change what doesn't work for you.
-You'll always be expected to make small changes during upgrades.
 
 ## What it looks like
 
@@ -392,7 +420,7 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   - syntax for addressing modes: `%reg`, `*reg`, `*(reg+disp)`,
     `*(reg+reg+disp)`, `*(reg+reg<<n + disp)`
   - function calls in a single line, using addressing modes for arguments
-  - syntax for controlling a type checker, akin to the top-level Mu language
+  - syntax for controlling a type checker, like [prototype 2](https://github.com/akkartik/mu/tree/master/archive/2.vm).
   - a register allocation _verifier_. Programmer provides registers for
     variables; verifier checks that register reads are for the same type that
     was last written -- across all control flow paths.
@@ -736,6 +764,16 @@ from a slice:
 * `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `EAX`)
 * `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `EAX`)
 
+## Resources
+
+* [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
+  (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/subx/cheatsheet.pdf))
+* [Concise reference for the x86 ISA](https://c9x.me/x86)
+* [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
+- [&ldquo;Bootstrapping a compiler from nothing&rdquo;](http://web.archive.org/web/20061108010907/http://www.rano.org/bcompiler.html) by Edmund Grumley-Evans.
+- [&ldquo;Creating tiny ELF executables&rdquo;](https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html) by Brian Raiter.
+- [StoneKnifeForth](https://github.com/kragen/stoneknifeforth) by [Kragen Sitaker](http://canonical.org/~kragen).
+
 ## Conclusion
 
 The hypothesis of Mu and SubX is that designing the entire system to be
@@ -762,16 +800,43 @@ can replicate:
 * There would be a stronger culture of reviewing the code for programs you use
   or libraries you depend on. [More eyeballs would make more bugs shallow.](https://en.wikipedia.org/wiki/Linus%27s_Law)
 
-## Resources
+## Credits
 
-* [Single-page cheatsheet for the x86 ISA](https://net.cs.uni-bonn.de/fileadmin/user_upload/plohmann/x86_opcode_structure_and_instruction_overview.pdf)
-  (pdf; [cached local copy](https://github.com/akkartik/mu/blob/master/subx/cheatsheet.pdf))
-* [Concise reference for the x86 ISA](https://c9x.me/x86)
-* [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf) (pdf)
+Mu builds on many ideas that have come before, especially:
+
+- [Peter Naur](http://akkartik.name/naur.pdf) for articulating the paramount
+  problem of programming: communicating a codebase to others;
+- [Christopher Alexander](http://www.amazon.com/Notes-Synthesis-Form-Harvard-Paperbacks/dp/0674627512)
+  and [Richard Gabriel](http://dreamsongs.net/Files/PatternsOfSoftware.pdf) for
+  the intellectual tools for reasoning about the higher order design of a
+  codebase;
+- Unix and C for showing us how to co-evolve language and OS, and for teaching
+  the (much maligned, misunderstood and underestimated) value of concise
+  *implementation* in addition to a clean interface;
+- Donald Knuth's [literate programming](http://www.literateprogramming.com/knuthweb.pdf)
+  for liberating "code for humans to read" from the tyranny of compiler order;
+- [David Parnas](http://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
+  and others for highlighting the value of separating concerns and stepwise
+  refinement;
+- [Lisp](http://www.paulgraham.com/rootsoflisp.html) for showing the power of
+  dynamic languages, late binding and providing the right primitives *a la
+  carte*, especially lisp macros;
+- The folklore of debugging by print and the trace facility in many lisp
+  systems;
+- Automated tests for showing the value of developing programs inside an
+  elaborate harness;
+- [Python doctest](http://docs.python.org/2/library/doctest.html) for
+  exemplifying interactive documentation that doubles as tests;
+- [ReStructuredText](https://en.wikipedia.org/wiki/ReStructuredText)
+  and [its antecedents](https://en.wikipedia.org/wiki/Setext) for showing that
+  markup can be clean;
+- BDD for challenging us all to write tests at a higher level;
+- JavaScript and CSS for demonstrating the power of a DOM for complex
+  structured documents.
+- Rust for demonstrating that a system-programming language can be safe.
+- Forth for demonstrating that ergonomics don't require grammar.
+
+## Coda
+
 * [Some details on the unconventional organization of this project.](http://akkartik.name/post/four-repos)
-
-## Inspirations
-
-* [&ldquo;Creating tiny ELF executables&rdquo;](https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html)
-* [&ldquo;Bootstrapping a compiler from nothing&rdquo;](http://web.archive.org/web/20061108010907/http://www.rano.org/bcompiler.html)
-* Forth implementations like [StoneKnifeForth](https://github.com/kragen/stoneknifeforth)
+* Previous prototypes: [mu0](https://github.com/akkartik/mu0), [mu1](https://github.com/akkartik/mu1).
