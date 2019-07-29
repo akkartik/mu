@@ -30,9 +30,10 @@ Non-goals:
   For now it's a thin veneer over machine code. I'm working on memory safety
   before expressive syntax.
 
-What I have so far: a self-hosted tool (SubX) for writing thoroughly tested
-x86 machine code atop a bare Linux kernel. Eventually you will be able to
-program in higher-level notations. Eventually Mu won't need Linux or C.
+So far I have a self-hosted tool (SubX) for writing thoroughly tested x86
+machine code atop a bare Linux kernel.
+Eventually you will be able to program in higher-level notations.
+Eventually Mu won't need Linux or C.
 Eventually the OS interfaces for screen, keyboard, file system and network
 will be _dependency-injected_ so that tests can easily insert a fake screen,
 keyboard, file system or network.
