@@ -767,7 +767,7 @@ can replicate:
 * There would be a stronger culture of reviewing the code for programs you use
   or libraries you depend on. [More eyeballs would make more bugs shallow.](https://en.wikipedia.org/wiki/Linus%27s_Law)
 
-To falsify these hypotheses, here's a roadmap of planned features:
+To falsify these hypotheses, here's a roadmap of the next few planned features:
 
 * A script to package SubX together with a minimal Linux kernel image
   (compiled from source, of course).
@@ -775,9 +775,9 @@ To falsify these hypotheses, here's a roadmap of planned features:
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
   - `exit()` (✓)
-  - Sockets
-  - Files
+  - Client-like non-blocking socket/file primitives: `load`, `save`
   - Concurrency, and a framework for testing blocking code
+  - Server-like blocking socket/file primitives
 
 * Higher-level notations. Like programming languages, but with thinner
   implementations that you can -- and are expected to! -- modify.
