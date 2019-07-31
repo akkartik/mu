@@ -1,2 +1,2 @@
-Larger programs than in the subx/examples/ subdirectory, combining the
-techniques demonstrated there.
+Larger programs than in the examples/ subdirectory, combining the techniques
+demonstrated there.
