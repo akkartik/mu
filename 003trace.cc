@@ -64,7 +64,7 @@
 //:
 //:   "Programming properly should be regarded as an activity by which
 //:   programmers form a mental model, rather than as production of a program."
-//:   -- Peter Naur (http://alistair.cockburn.us/ASD+book+extract%3A+%22Naur,+Ehn,+Musashi%22)
+//:   -- Peter Naur (http://akkartik.name/naur.pdf)
 
 //:: == Core data structures
 

@@ -34,7 +34,6 @@ augroup END
 "   opening a second file in a new or existing window (shouldn't mess up existing highlighting)
 "   reloading an existing file (shouldn't mess up existing highlighting)
 
-" assumes CWD is subx/
 command! -nargs=1 E call EditSubx("edit", <f-args>)
 if exists("&splitvertical")
   command! -nargs=1 S call EditSubx("vert split", <f-args>)
