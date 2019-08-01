@@ -232,7 +232,7 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
     51/push-ECX
-    # if slice-equal?(word, "%eax") return "0"
+    # if slice-equal?(word, "%eax") return reg 0
     # . EAX = slice-equal?(word, "%eax")
     68/push  "%eax"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -241,10 +241,10 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . return "0"
-    b9/copy-to-ECX  "0"/imm32
+    b9/copy-to-ECX  "3/mod/direct 0/rm32/EAX"/imm32
     3d/compare-EAX-and  1/imm32
     0f 84/jump-if-equal  $desugar-register:end/disp32
-    # if slice-equal?(word, "%ecx") return "1"
+    # if slice-equal?(word, "%ecx") return reg 1
     # . EAX = slice-equal?(word, "%ecx")
     68/push  "%ecx"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -253,10 +253,10 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . return "1"
-    b9/copy-to-ECX  "1"/imm32
+    b9/copy-to-ECX  "3/mod/direct 1/rm32/ECX"/imm32
     3d/compare-EAX-and  1/imm32
     0f 84/jump-if-equal  $desugar-register:end/disp32
-    # if slice-equal?(word, "%edx") return "2"
+    # if slice-equal?(word, "%edx") return reg 2
     # . EAX = slice-equal?(word, "%edx")
     68/push  "%edx"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -265,10 +265,10 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . return "2"
-    b9/copy-to-ECX  "2"/imm32
+    b9/copy-to-ECX  "3/mod/direct 2/rm32/EDX"/imm32
     3d/compare-EAX-and  1/imm32
     0f 84/jump-if-equal  $desugar-register:end/disp32
-    # if slice-equal?(word, "%ebx") return "3"
+    # if slice-equal?(word, "%ebx") return reg 3
     # . EAX = slice-equal?(word, "%ebx")
     68/push  "%ebx"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -276,11 +276,11 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "3"
-    b9/copy-to-ECX  "3"/imm32
+    # . if (EAX != 0) return reg 3
+    b9/copy-to-ECX  "3/mod/direct 3/rm32/EBX"/imm32
     3d/compare-EAX-and  1/imm32
     74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "%esp") return "4"
+    # if slice-equal?(word, "%esp") return reg 4
     # . EAX = slice-equal?(word, "%esp")
     68/push  "%esp"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -288,11 +288,11 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "4"
-    b9/copy-to-ECX  "4"/imm32
+    # . if (EAX != 0) return reg 4
+    b9/copy-to-ECX  "3/mod/direct 4/rm32/ESP"/imm32
     3d/compare-EAX-and  1/imm32
     74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "%ebp") return "5"
+    # if slice-equal?(word, "%ebp") return reg 5
     # . EAX = slice-equal?(word, "%ebp")
     68/push  "%ebp"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -300,11 +300,11 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "5"
-    b9/copy-to-ECX  "5"/imm32
+    # . if (EAX != 0) return reg 5
+    b9/copy-to-ECX  "3/mod/direct 5/rm32/EBP"/imm32
     3d/compare-EAX-and  1/imm32
     74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "%esi") return "6"
+    # if slice-equal?(word, "%esi") return reg 6
     # . EAX = slice-equal?(word, "%esi")
     68/push  "%esi"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -312,11 +312,11 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "6"
-    b9/copy-to-ECX  "6"/imm32
+    # . if (EAX != 0) return reg 6
+    b9/copy-to-ECX  "3/mod/direct 6/rm32/ESI"/imm32
     3d/compare-EAX-and  1/imm32
     74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "%edi") return "7"
+    # if slice-equal?(word, "%edi") return reg 7
     # . EAX = slice-equal?(word, "%edi")
     68/push  "%edi"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -324,14 +324,14 @@ desugar-register: # word : (address slice) -> register : (address byte array)
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "7"
-    b9/copy-to-ECX  "7"/imm32
+    # . if (EAX != 0) return reg 7
+    b9/copy-to-ECX  "3/mod/direct 7/rm32/EDI"/imm32
     3d/compare-EAX-and  1/imm32
     74/jump-if-equal  $desugar-register:end/disp8
-    # else, fail
+    # fail
     eb/jump  $desugar-register:abort/disp8
 $desugar-register:end:
-    # put return value in EAX
+    # return ECX
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy ECX to EAX
     # . restore registers
     59/pop-to-ECX
@@ -379,7 +379,7 @@ $test-desugar-register-1:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
     # string-equal?(expected, result/EAX)
     50/push-EAX
-    68/push  "0"/imm32
+    68/push  "3/mod/direct 0/rm32/EAX"/imm32
     e8/call  string-equal?/disp32
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32         # add to ESP
     # check-ints-equal(EAX, 1, msg)
@@ -407,7 +407,7 @@ $test-desugar-register-2:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
     # string-equal?(expected, result/EAX)
     50/push-EAX
-    68/push  "7"/imm32
+    68/push  "3/mod/direct 7/rm32/EDI"/imm32
     e8/call  string-equal?/disp32
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32         # add to ESP
     # check-ints-equal(EAX, 1, msg)
