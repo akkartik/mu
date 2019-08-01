@@ -12,7 +12,7 @@ void test_transform_literal_string() {
   CHECK_TRACE_CONTENTS(
       "transform: -- move literal strings to data segment\n"
       "transform: adding global variable '__subx_global_1' containing \"test\"\n"
-      "transform: instruction after transform: 'b8 __subx_global_1'\n"
+      "transform: line after transform: 'b8 __subx_global_1'\n"
   );
 }
 
@@ -32,33 +32,40 @@ Next_auto_global = 1;
 void transform_literal_strings(program& p) {
   trace(3, "transform") << "-- move literal strings to data segment" << end();
   if (p.segments.empty()) return;
-  segment& code = *find(p, "code");
-  segment& data = *find(p, "data");
-  for (int i = 0;  i < SIZE(code.lines);  ++i) {
-    line& inst = code.lines.at(i);
-    for (int j = 0;  j < SIZE(inst.words);  ++j) {
-      word& curr = inst.words.at(j);
-      if (curr.data.at(0) != '"') continue;
-      ostringstream global_name;
-      global_name << "__subx_global_" << Next_auto_global;
-      ++Next_auto_global;
-      add_global_to_data_segment(global_name.str(), curr, data);
-      curr.data = global_name.str();
+  vector<line> new_lines;
+  for (int s = 0;  s < SIZE(p.segments);  ++s) {
+    segment& seg = p.segments.at(s);
+    trace(99, "transform") << "segment '" << seg.name << "'" << end();
+    for (int i = 0;  i < SIZE(seg.lines);  ++i) {
+//?       cerr << seg.name << '/' << i << '\n';
+      line& line = seg.lines.at(i);
+      for (int j = 0;  j < SIZE(line.words);  ++j) {
+        word& curr = line.words.at(j);
+        if (curr.data.at(0) != '"') continue;
+        ostringstream global_name;
+        global_name << "__subx_global_" << Next_auto_global;
+        ++Next_auto_global;
+        add_global_to_data_segment(global_name.str(), curr, new_lines);
+        curr.data = global_name.str();
+      }
+      trace(99, "transform") << "line after transform: '" << data_to_string(line) << "'" << end();
     }
-    trace(99, "transform") << "instruction after transform: '" << data_to_string(inst) << "'" << end();
   }
+  segment* data = find(p, "data");
+  if (data)
+    data->lines.insert(data->lines.end(), new_lines.begin(), new_lines.end());
 }
 
-void add_global_to_data_segment(const string& name, const word& value, segment& data) {
+void add_global_to_data_segment(const string& name, const word& value, vector<line>& out) {
   trace(99, "transform") << "adding global variable '" << name << "' containing " << value.data << end();
   // emit label
-  data.lines.push_back(label(name));
+  out.push_back(label(name));
   // emit size for size-prefixed array
-  data.lines.push_back(line());
-  emit_hex_bytes(data.lines.back(), SIZE(value.data)-/*skip quotes*/2, 4/*bytes*/);
+  out.push_back(line());
+  emit_hex_bytes(out.back(), SIZE(value.data)-/*skip quotes*/2, 4/*bytes*/);
   // emit data byte by byte
-  data.lines.push_back(line());
-  line& curr = data.lines.back();
+  out.push_back(line());
+  line& curr = out.back();
   for (int i = /*skip start quote*/1;  i < SIZE(value.data)-/*skip end quote*/1;  ++i) {
     char c = value.data.at(i);
     curr.words.push_back(word());
@@ -81,6 +88,21 @@ void test_instruction_with_string_literal() {
   );
   // no other words
   CHECK_TRACE_COUNT("parse2", 3);
+}
+
+void test_string_literal_in_data_segment() {
+  run(
+      "== code 0x1\n"
+      "b8/copy  X/imm32\n"
+      "== data 0x2000\n"
+      "X:\n"
+      "\"test\"/imm32\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "transform: -- move literal strings to data segment\n"
+      "transform: adding global variable '__subx_global_1' containing \"test\"\n"
+      "transform: line after transform: '__subx_global_1'\n"
+  );
 }
 
 :(before "End Line Parsing Special-cases(line_data -> l)")

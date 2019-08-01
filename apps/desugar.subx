@@ -157,21 +157,13 @@ $convert:check-for-register-literal:
 $convert:register-literal:
     # ++word-slice->start
     4b/increment-EBX
-    # EAX = desugar-register(word-slice)
+    # desugar-register(word-slice, out)
     # . . push args
     52/push-EDX
     # . . call
     e8/call  desugar-register/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # write-buffered(out, EAX)
-    # . . push args
-    50/push-EAX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    # . . call
-    e8/call  write-buffered/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # continue
     eb/jump  $convert:next-word/disp8
 $convert:regular-word:
@@ -227,201 +219,237 @@ $convert:end:
     5d/pop-to-EBP
     c3/return
 
-desugar-register: # word : (address slice) -> register : (address byte array)
-    # ECX holds return value
+desugar-register: # word : (address slice), out : (address buffered-file)
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # . save registers
-    51/push-ECX
-    # if slice-equal?(word, "eax") return reg 0
-    # . EAX = slice-equal?(word, "eax")
-    68/push  "eax"/imm32
+    50/push-EAX
+    # reg-num/EAX = get-slice(Registers, word, row-size=8)
+    # . . push args
+    68/push  8/imm32/row-size
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    68/push  Registers/imm32
     # . . call
-    e8/call  slice-equal?/disp32
+    e8/call  get-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # write-buffered(out, "3/mod/direct ")
+    # . . push args
+    68/push  "3/mod/direct "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "0"
-    b9/copy-to-ECX  "3/mod/direct 0/rm32/EAX"/imm32
-    3d/compare-EAX-and  1/imm32
-    0f 84/jump-if-equal  $desugar-register:end/disp32
-    # if slice-equal?(word, "ecx") return reg 1
-    # . EAX = slice-equal?(word, "ecx")
-    68/push  "ecx"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # print-int32-buffered(out, *EAX)
+    # . . push args
+    ff          6/subop/push        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # push *EAX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  slice-equal?/disp32
+    e8/call  print-int32-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "1"
-    b9/copy-to-ECX  "3/mod/direct 1/rm32/ECX"/imm32
-    3d/compare-EAX-and  1/imm32
-    0f 84/jump-if-equal  $desugar-register:end/disp32
-    # if slice-equal?(word, "edx") return reg 2
-    # . EAX = slice-equal?(word, "edx")
-    68/push  "edx"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # write-buffered(out, "/rm32")
+    # . . push args
+    68/push  "/rm32"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  slice-equal?/disp32
+    e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . return "2"
-    b9/copy-to-ECX  "3/mod/direct 2/rm32/EDX"/imm32
-    3d/compare-EAX-and  1/imm32
-    0f 84/jump-if-equal  $desugar-register:end/disp32
-    # if slice-equal?(word, "ebx") return reg 3
-    # . EAX = slice-equal?(word, "ebx")
-    68/push  "ebx"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    # . . call
-    e8/call  slice-equal?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return reg 3
-    b9/copy-to-ECX  "3/mod/direct 3/rm32/EBX"/imm32
-    3d/compare-EAX-and  1/imm32
-    74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "esp") return reg 4
-    # . EAX = slice-equal?(word, "esp")
-    68/push  "esp"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    # . . call
-    e8/call  slice-equal?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return reg 4
-    b9/copy-to-ECX  "3/mod/direct 4/rm32/ESP"/imm32
-    3d/compare-EAX-and  1/imm32
-    74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "ebp") return reg 5
-    # . EAX = slice-equal?(word, "ebp")
-    68/push  "ebp"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    # . . call
-    e8/call  slice-equal?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return reg 5
-    b9/copy-to-ECX  "3/mod/direct 5/rm32/EBP"/imm32
-    3d/compare-EAX-and  1/imm32
-    74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "esi") return reg 6
-    # . EAX = slice-equal?(word, "esi")
-    68/push  "esi"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    # . . call
-    e8/call  slice-equal?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return reg 6
-    b9/copy-to-ECX  "3/mod/direct 6/rm32/ESI"/imm32
-    3d/compare-EAX-and  1/imm32
-    74/jump-if-equal  $desugar-register:end/disp8
-    # if slice-equal?(word, "edi") return reg 7
-    # . EAX = slice-equal?(word, "edi")
-    68/push  "edi"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    # . . call
-    e8/call  slice-equal?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return reg 7
-    b9/copy-to-ECX  "3/mod/direct 7/rm32/EDI"/imm32
-    3d/compare-EAX-and  1/imm32
-    74/jump-if-equal  $desugar-register:end/disp8
-    # fail
-    eb/jump  $desugar-register:abort/disp8
 $desugar-register:end:
-    # return ECX
-    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy ECX to EAX
     # . restore registers
-    59/pop-to-ECX
+    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
-$desugar-register:abort:
-    # . _write(2/stderr, error)
-    # . . push args
-    68/push  "unknown symbol to desugar\n"/imm32
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    52/push-EDX
-    68/push  2/imm32/stderr
-    # . . call
-    e8/call  _write/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . syscall(exit, 1)
-    bb/copy-to-EBX  1/imm32
-    b8/copy-to-EAX  1/imm32/exit
-    cd/syscall  0x80/imm8
 
 test-desugar-register:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-$test-desugar-register-1:
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "eax"
     b8/copy-to-EAX  "eax"/imm32
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
     05/add-to-EAX  4/imm32
-    # var slice/ECX = {EAX, ECX}
+    # . ECX = {EAX, ECX}
     51/push-ECX
     50/push-EAX
     89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # result/EAX = desugar-register(str/ECX)
-    51/push-ECX
-    e8/call  desugar-register/disp32
-    # . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
-    # string-equal?(expected, result/EAX)
-    50/push-EAX
-    68/push  "3/mod/direct 0/rm32/EAX"/imm32
-    e8/call  string-equal?/disp32
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32         # add to ESP
-    # check-ints-equal(EAX, 1, msg)
+    # desugar-register(str, _test-output-buffered-file)
     # . . push args
-    68/push  "F - test-desugar-register 1"/imm32
-    68/push  1/imm32/true
-    50/push-EAX
+    68/push  _test-output-buffered-file/imm32
+    51/push-ECX
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  desugar-register/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-$test-desugar-register-2:
-    b8/copy-to-EAX  "edi"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
-    05/add-to-EAX  4/imm32
-    # var slice/ECX = {EAX, ECX}
-    51/push-ECX
-    50/push-EAX
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # result/EAX = desugar-register(str/ECX)
-    51/push-ECX
-    e8/call  desugar-register/disp32
-    # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
-    # string-equal?(expected, result/EAX)
-    50/push-EAX
-    68/push  "3/mod/direct 7/rm32/EDI"/imm32
-    e8/call  string-equal?/disp32
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32         # add to ESP
-    # check-ints-equal(EAX, 1, msg)
+    # . flush(_test-output-buffered-file)
     # . . push args
-    68/push  "F - test-desugar-register 1"/imm32
-    68/push  1/imm32/true
-    50/push-EAX
+    68/push  _test-output-buffered-file/imm32
     # . . call
-    e8/call  check-ints-equal/disp32
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # dump output {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-stream-equal(_test-output-stream, "3/mod/direct 0/rm32", msg)
+    # . . push args
+    68/push  "F - test-desugar-register/0"/imm32
+    68/push  "3/mod/direct 0x00000000/rm32"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
+test-desugar-register-2:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = "edi"
+    b8/copy-to-EAX  "edi"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # . ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # desugar-register(str/ECX, _test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    51/push-ECX
+    # . . call
+    e8/call  desugar-register/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # dump output {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-stream-equal(_test-output-stream, "3/mod/direct 7/rm32", msg)
+    # . . push args
+    68/push  "F - test-desugar-register/1"/imm32
+    68/push  "3/mod/direct 0x00000007/rm32"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+== data
+Registers:  # (table string int)
+  # a table is a stream
+  0x40/imm32/write
+  0/imm32/read
+  0x40/imm32/length
+  # data
+  "eax"/imm32  0/imm32
+  "ecx"/imm32  1/imm32
+  "edx"/imm32  2/imm32
+  "ebx"/imm32  3/imm32
+  "esp"/imm32  4/imm32
+  "ebp"/imm32  5/imm32
+  "esi"/imm32  6/imm32
+  "edi"/imm32  7/imm32
+
+# . . vim:nowrap:textwidth=0
