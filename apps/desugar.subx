@@ -39,22 +39,14 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $main:end/disp8
 $run-main:
     # - otherwise convert stdin
-    # var ed/EAX : exit-descriptor
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
-    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
-    # configure ed to really exit()
-    # . ed->target = 0
-    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
-    # return convert(Stdin, 1/stdout, 2/stderr, ed)
+    # return convert(Stdin, Stdout)
     # . . push args
-    50/push-EAX/ed
-    68/push  Stderr/imm32
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
     e8/call  convert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x8/imm32         # add to ESP
     # . syscall(exit, 0)
     bb/copy-to-EBX  0/imm32
 $main:end:
@@ -62,6 +54,26 @@ $main:end:
     cd/syscall  0x80/imm8
 
 convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+    # pseudocode:
+    #   var line = new-stream(512, 1)
+    #   while true
+    #     clear-stream(line)
+    #     read-line-buffered(in, line)
+    #     if (line->write == 0) break               # end of file
+    #     while true
+    #       var word-slice = next-word(line)
+    #       if slice-empty?(word-slice)             # end of line
+    #         break
+    #       if slice-starts-with?(word-slice, "#")  # comment
+    #         continue
+    #       if slice-starts-with?(word-slice, '%')  # register literal <== what we're here for
+    #         desugar-register(word-slice, out)
+    #       else
+    #         write-slice-buffered(out, word-slice)
+    #       write(out, " ")
+    #     write(out, "\n")
+    #   flush(out)
+    #
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -80,9 +92,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # var in-code?/EBX = false
-    31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
-$convert:loop:
+$convert:line-loop:
     # clear-stream(line)
     # . . push args
     51/push-ECX
@@ -98,6 +108,11 @@ $convert:loop:
     e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+$convert:check0:
+    # if (line->write == 0) break
+    81          7/subop/compare     0/mod/indirect  1/rm32/ECX    .           .             .           .           .               0/imm32           # compare *ECX
+    0f 84/jump-if-equal  $convert:break/disp32
+$convert:word-loop:
     # next-word(line, word-slice)
     # . . push args
     52/push-EDX
@@ -106,12 +121,8 @@ $convert:loop:
     e8/call  next-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-$convert:check0:
-    # if (line->write == 0) break
-    81          7/subop/compare     0/mod/indirect  1/rm32/ECX    .           .             .           .           .               0/imm32           # compare *ECX
-    0f 84/jump-if-equal  $convert:break/disp32
 $convert:check1:
-    # if (slice-empty?(word-slice)) write-stream-data(out, line)
+    # if (slice-empty?(word-slice)) break
     # . EAX = slice-empty?(word-slice)
     # . . push args
     52/push-EDX
@@ -119,44 +130,73 @@ $convert:check1:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if (EAX != 0) write-stream-data(out, line)
+    # . if (EAX != 0) break
     3d/compare-EAX-and  0/imm32
-    0f 85/jump-if-not-equal  $convert:pass-through/disp32
-$convert:check2:
-    # if (!slice-starts-with?(word-slice, "%") goto pass-through
-    # . EAX = slice-starts-with?(word-slice, "%")
+    0f 85/jump-if-not-equal  $convert:next-line/disp32
+$convert:check-for-comment:
+    # if (slice-starts-with?(word-slice, "#")) continue
+    # . start/EBX = word-slice->start
+    8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/EBX   .               .                 # copy *EDX to EBX
+    # . c/EAX = *start
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/AL    .               .                 # copy byte at *EBX to AL
+    # . if (EAX == '#') continue
+    3d/compare-EAX-and  0x23/imm32/hash
+    74/jump-if-equal  $convert:word-loop/disp8
+$convert:check-for-register-literal:
+    # if (!slice-starts-with?(word-slice, "%")) goto next check
+    3d/compare-EAX-and  0x25/imm32/percent
+    75/jump-if-not-equal  $convert:regular-word/disp8
+$convert:register-literal:
+    # EAX = desugar-register(word-slice)
     # . . push args
-    68/push  "%"/imm32
     52/push-EDX
     # . . call
-    e8/call  slice-starts-with?/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    3d/compare-EAX-and  1/imm32
-    75/jump-if-not-equal  $convert:pass-through/disp8
-    # else: write(desugar-register(word/EDX))
-    # . EAX = desugar-register(word/EDX)
-    52/push-EDX
     e8/call  desugar-register/disp32
+    # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . write(register-string/EAX)
-    50/push-EAX
-    68/push 1/imm32
-    e8/call  write/disp32
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # loop
-    e9/jump  $convert:loop/disp32
-$convert:pass-through:
-    # write-stream-data(out, line)
+    # write-buffered(out, EAX)
     # . . push args
-    51/push-ECX
+    50/push-EAX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     # . . call
-    e8/call  write-stream-data/disp32
+    e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . loop
-    e9/jump  $convert:loop/disp32
+    # continue
+    eb/jump  $convert:next-word/disp8
+$convert:regular-word:
+    # write-slice-buffered(out, word-slice)
+    # . . push args
+    52/push-EDX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-slice-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # fall through
+$convert:next-word:
+    # write-buffered(out, " ")
+    # . . push args
+    68/push  " "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # loop
+    eb/jump  $convert:word-loop/disp8
+$convert:next-line:
+    # write-buffered(out, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # loop
+    e9/jump  $convert:line-loop/disp32
 $convert:break:
     # flush(out)
     # . . push args
