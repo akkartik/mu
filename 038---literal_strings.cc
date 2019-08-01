@@ -26,6 +26,8 @@ Transform.push_back(transform_literal_strings);
 
 :(before "End Globals")
 int Next_auto_global = 1;
+:(before "End Reset")
+Next_auto_global = 1;
 :(code)
 void transform_literal_strings(program& p) {
   trace(3, "transform") << "-- move literal strings to data segment" << end();
@@ -133,6 +135,7 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
         if (c == '"') break;
       }
       result.words.back().data = d.str();
+      result.words.back().original = d.str();
       // slurp metadata
       ostringstream m;
       while (!isspace(in.peek()) && has_data(in)) {  // peek can sometimes trigger eof(), so do it first
