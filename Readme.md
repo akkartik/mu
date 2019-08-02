@@ -229,10 +229,10 @@ them.
 In the last three cases, one exception occurs when the `/rm32` argument
 contains `4`. Rather than encoding register `ESP`, it means the address is
 provided by three _whole new_ arguments (`/base`, `/index` and `/scale`) in a
-_totally_ different way:
+_totally_ different way (where `<<` is the left-shift operator):
 
   ```
-  reg/mem = *(/base + /index * (2 ^ /scale))
+  reg/mem = *(base + (index << scale))
   ```
 
 (There are a couple more exceptions ☹; see [Table 2-2](modrm.pdf) and [Table 2-3](sib.pdf)
