@@ -2,9 +2,22 @@
 
 * Not designed to operate in large clusters providing services for millions of
   people.
-* Designed for _you_, to run one computer. (Or a few.)
+* Designed for _you_, to run one computer. (Or a few.) Running the code you
+  want to run, and nothing else.
 
-Goals (in priority order):
+  ```sh
+  $ git clone https://github.com/akkartik/mu
+  $ cd mu
+  # package up a "hello world" binary and Linux kernel into mu.iso
+  $ ./gen_iso examples/ex6.subx
+  # wait a few minutes, mostly for the kernel to compile
+  $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
+  # print the message followed by kernel panic
+  ```
+
+## Goals
+
+In priority order:
 
 * [Reward curiosity.](http://akkartik.name/about)
   * Easy to build, easy to run. [Minimal dependencies](https://news.ycombinator.com/item?id=16882140#16882555),
@@ -21,7 +34,8 @@ Goals (in priority order):
   * Memory leaks over memory corruption.
 * Teach the computer bottom-up.
 
-Non-goals:
+## Non-goals
+
 * Efficiency. Clear programs over fast programs.
 * Portability. Runs on any computer as long as it's x86.
 * Compatibility. The goal is to get off mainstream stacks, not to perpetuate
@@ -30,49 +44,41 @@ Non-goals:
   For now it's a thin veneer over machine code. I'm working on memory safety
   before expressive syntax.
 
-So far I have a self-hosted tool (SubX) for writing thoroughly tested x86
-machine code atop a bare Linux kernel.
-Eventually you will be able to program in higher-level notations.
-Eventually Mu won't need Linux or C.
-Eventually the OS interfaces for screen, keyboard, file system and network
-will be _dependency-injected_ so that tests can easily insert a fake screen,
-keyboard, file system or network.
+## What works so far
 
-The rest of this Readme describes SubX.
-
-## SubX is a simple, minimalist stack for programming your computer.
+You get a thin syntax called SubX for programming in (a subset of) x86 machine
+code. Here's a program (`examples/ex1.subx`) that returns 42:
 
   ```sh
-  $ git clone https://github.com/akkartik/mu
-  $ cd mu
-  $ ./subx  # print out a help message
+  bb/copy-to-EBX  0x2a/imm32  # 42 in hex
+  b8/copy-to-EAX  1/imm32/exit
+  cd/syscall  0x80/imm8
   ```
 
-SubX requires a Unix-like environment with a C++ compiler (Linux or BSD or Mac
-OS). Running `subx` will transparently compile it as necessary.
-
-[![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
-
-You can generate native ELF binaries with it that run on a bare Linux
-kernel. No other dependencies needed.
+You can generate tiny zero-dependency ELF binaries with it that run on Linux.
 
   ```sh
-  $ ./subx translate examples/ex1.subx -o examples/ex1
+  $ ./subx translate examples/ex1.subx -o examples/ex1  # on Linux or BSD or Mac
   $ ./examples/ex1  # only on Linux
   $ echo $?
   42
  ```
 
+Generating the binary requires a C++ compiler (any version). Running `subx`
+will transparently invoke the compiler as necessary.
+
+[![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
+
 You can run the generated binaries on an interpreter/VM for better error
 messages.
 
   ```sh
-  $ ./subx run examples/ex1  # on Linux or BSD or OS X
+  $ ./subx run examples/ex1  # on Linux or BSD or Mac
   $ echo $?
   42
   ```
 
-Emulated runs generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
+Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
 
   ```sh
   $ ./subx --debug translate examples/factorial.subx -o examples/factorial
@@ -85,8 +91,8 @@ Emulated runs generate a trace that permits [time-travel debugging](https://gith
   $ ../browse_trace/browse_trace last_run  # text-mode debugger UI
   ```
 
-You can write tests for your assembly programs. The entire stack is thoroughly
-covered by automated tests. SubX's tagline: tests before syntax.
+You can write tests for your programs. The entire stack is thoroughly covered
+by automated tests. SubX's tagline: tests before syntax.
 
   ```sh
   $ ./subx test
@@ -129,9 +135,28 @@ Or, running in a VM on other platforms:
   42
   ```
 
+Finally, as described at the top, you can turn it into a bootable disk image
+containing just your code and a Linux kernel. You can run the disk image on a
+cloud server that supports custom images. [Instructions for Linode.](http://akkartik.name/post/iso-on-linode)
+
+  ```sh
+  $ sudo apt install build-essential wget libelf-dev xorriso
+  $ ./gen_iso examples/ex6.subx
+  $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
+  ```
+
+Some caveats for `gen_iso` which was only created 2019-08-09:
+
+* It can take a while, mostly to compile the Linux kernel. In my tests,
+  generating the ISO takes 40 minutes on a computer with 1 core and 2GB RAM.
+  With 4 cores and 8GB RAM it takes 6 minutes.
+
+* It currently works on Ubuntu 18.04 but not 19.04. This is because it uses a
+  kernel version that doesn't work with the default settings of gcc 8.
+
 ## What it looks like
 
-Here is the first example we ran above, a program that just returns 42:
+Here is the above example again:
 
   ```sh
   bb/copy-to-EBX  0x2a/imm32  # 42 in hex

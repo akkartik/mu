@@ -1,0 +1,89 @@
+#!/bin/sh
+# Build one or more .subx files into an ELF binary, and package it up into a
+# bootable ISO image.
+#
+# Must be run on Linux.
+#
+# Dependencies:
+#   apt install build-essential flex bison libelf-dev libssl-dev xorriso
+#
+# Based on http://minimal.linux-bg.org (GPLv3)
+
+set -e
+
+if [ $# -eq 0 ]
+then
+  echo "Usage: `basename $0` file.subx ..."
+  exit 1
+fi
+
+echo "=== constructing initramfs out of SubX binary"
+./ntranslate $*
+mv a.elf init
+chmod +x init
+rm -rf tmp/isoimage
+mkdir -p tmp/isoimage/boot
+echo init | cpio -R root:root -H newc -o | xz -9 --check=none > tmp/isoimage/boot/rootfs.xz
+
+if [ ! -d kernel ]
+then
+  echo "=== downloading kernel"
+  test -f tmp/linux-4.14.12.tar.xz  ||  wget https://kernel.org/pub/linux/kernel/v4.x/linux-4.14.12.tar.xz -P tmp
+  echo "=== unpacking kernel"
+  tar xf tmp/linux-4.14.12.tar.xz
+  mv linux-4.14.12 kernel
+fi
+
+echo "=== building kernel"
+( cd kernel
+
+  make mrproper -j $NUM_JOBS
+  make defconfig -j $NUM_JOBS
+  sed -i "s/.*CONFIG_DEFAULT_HOSTNAME.*/CONFIG_DEFAULT_HOSTNAME=\"mu\"/" .config
+  # enable overlay support, e.g. merge ro and rw directories (3.18+).
+  sed -i "s/.*CONFIG_OVERLAY_FS.*/CONFIG_OVERLAY_FS=y/" .config
+  # enable overlayfs redirection (4.10+).
+  echo "CONFIG_OVERLAY_FS_REDIRECT_DIR=y" >> .config
+  # turn on inodes index feature (4.13+).
+  echo "CONFIG_OVERLAY_FS_INDEX=y" >> .config
+  # disable all kernel compression options
+  sed -i "s/.*\\(CONFIG_KERNEL_.*\\)=y/\\#\\ \\1 is not set/" .config
+  # enable the VESA framebuffer for graphics support
+  sed -i "s/.*CONFIG_FB_VESA.*/CONFIG_FB_VESA=y/" .config
+  # disable boot logo
+  sed -i "s/.*CONFIG_LOGO_LINUX_CLUT224.*/\\# CONFIG_LOGO_LINUX_CLUT224 is not set/" .config
+  sed -i "s/.*CONFIG_EFI_STUB.*/CONFIG_EFI_STUB=y/" .config
+  # request that the firmware clear the contents of RAM after reboot (4.14+)
+  echo "CONFIG_RESET_ATTACK_MITIGATION=y" >> .config
+  echo "CONFIG_APPLE_PROPERTIES=n" >> .config
+
+  if [ "`grep "CONFIG_X86_64=y" .config`" = "CONFIG_X86_64=y" ]
+  then
+    echo "CONFIG_EFI_MIXED=y" >> .config
+  fi
+
+  make bzImage -j $(grep ^processor /proc/cpuinfo | wc -l)
+)
+cp kernel/arch/x86/boot/bzImage tmp/isoimage/boot/kernel.xz
+
+echo "=== downloading syslinux"
+test -f tmp/syslinux-6.03.tar.xz  ||  wget https://kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz -P tmp
+echo "=== unpacking syslinux"
+tar xf tmp/syslinux-*.tar.xz -C tmp
+
+mkdir -p tmp/isoimage/boot/syslinux
+cp syslinux.cfg \
+   tmp/syslinux-*/bios/core/isolinux.bin \
+   tmp/syslinux-*/bios/com32/elflink/ldlinux/ldlinux.c32 \
+   tmp/isoimage/boot/syslinux
+
+echo "=== generating ISO"
+# 'hybrid' ISO can also be used on non-optical media such as a disk or USB stick
+xorriso -as mkisofs \
+  -isohybrid-mbr tmp/syslinux-*/bios/mbr/isohdpfx.bin \
+  -c boot/syslinux/boot.cat \
+  -b boot/syslinux/isolinux.bin \
+    -no-emul-boot \
+    -boot-load-size 4 \
+    -boot-info-table \
+  tmp/isoimage -o mu.iso
