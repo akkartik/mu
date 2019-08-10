@@ -15,6 +15,8 @@
   # print the message followed by kernel panic
   ```
 
+[![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
+
 ## Goals
 
 In priority order:
@@ -64,10 +66,8 @@ You can generate tiny zero-dependency ELF binaries with it that run on Linux.
   42
  ```
 
-Generating the binary requires a C++ compiler (any version). Running `subx`
-will transparently invoke the compiler as necessary.
-
-[![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
+(Running `subx` requires a C++ compiler, transparently invoking it as
+necessary.)
 
 You can run the generated binaries on an interpreter/VM for better error
 messages.
@@ -147,7 +147,8 @@ cloud server that supports custom images. [Instructions for Linode.](http://akka
 
 (`gen_iso` only came into existence 2019-08-09, and has a flabby laundry list
 of dependencies that I will gradually prune. It currently takes 12 minutes to
-run, mostly to compile its fork of the Linux kernel.)
+run on a single core with 8 GB RAM, mostly to compile its fork of the Linux
+kernel.)
 
 ## What it looks like
 
