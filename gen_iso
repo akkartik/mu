@@ -27,41 +27,13 @@ echo init | cpio -R root:root -H newc -o | xz -9 --check=none > tmp/isoimage/boo
 
 if [ ! -d kernel ]
 then
-  echo "=== downloading kernel"
-  test -f tmp/linux-4.14.12.tar.xz  ||  wget https://kernel.org/pub/linux/kernel/v4.x/linux-4.14.12.tar.xz -P tmp
-  echo "=== unpacking kernel"
-  tar xf tmp/linux-4.14.12.tar.xz
-  mv linux-4.14.12 kernel
+  echo "=== cloning kernel"
+  git clone https://github.com/akkartik/kernel
 fi
 
 echo "=== building kernel"
+cp kernel.config kernel/.config
 ( cd kernel
-
-  make mrproper -j $NUM_JOBS
-  make defconfig -j $NUM_JOBS
-  sed -i "s/.*CONFIG_DEFAULT_HOSTNAME.*/CONFIG_DEFAULT_HOSTNAME=\"mu\"/" .config
-  # enable overlay support, e.g. merge ro and rw directories (3.18+).
-  sed -i "s/.*CONFIG_OVERLAY_FS.*/CONFIG_OVERLAY_FS=y/" .config
-  # enable overlayfs redirection (4.10+).
-  echo "CONFIG_OVERLAY_FS_REDIRECT_DIR=y" >> .config
-  # turn on inodes index feature (4.13+).
-  echo "CONFIG_OVERLAY_FS_INDEX=y" >> .config
-  # disable all kernel compression options
-  sed -i "s/.*\\(CONFIG_KERNEL_.*\\)=y/\\#\\ \\1 is not set/" .config
-  # enable the VESA framebuffer for graphics support
-  sed -i "s/.*CONFIG_FB_VESA.*/CONFIG_FB_VESA=y/" .config
-  # disable boot logo
-  sed -i "s/.*CONFIG_LOGO_LINUX_CLUT224.*/\\# CONFIG_LOGO_LINUX_CLUT224 is not set/" .config
-  sed -i "s/.*CONFIG_EFI_STUB.*/CONFIG_EFI_STUB=y/" .config
-  # request that the firmware clear the contents of RAM after reboot (4.14+)
-  echo "CONFIG_RESET_ATTACK_MITIGATION=y" >> .config
-  echo "CONFIG_APPLE_PROPERTIES=n" >> .config
-
-  if [ "`grep "CONFIG_X86_64=y" .config`" = "CONFIG_X86_64=y" ]
-  then
-    echo "CONFIG_EFI_MIXED=y" >> .config
-  fi
-
   make bzImage -j $(grep ^processor /proc/cpuinfo | wc -l)
 )
 cp kernel/arch/x86/boot/bzImage tmp/isoimage/boot/kernel.xz

@@ -10,7 +10,7 @@
   $ cd mu
   # package up a "hello world" binary and Linux kernel into mu.iso
   $ ./gen_iso examples/ex6.subx
-  # wait a few minutes, mostly for the kernel to compile
+  # try it out
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
   # print the message followed by kernel panic
   ```
@@ -140,19 +140,14 @@ containing just your code and a Linux kernel. You can run the disk image on a
 cloud server that supports custom images. [Instructions for Linode.](http://akkartik.name/post/iso-on-linode)
 
   ```sh
-  $ sudo apt install build-essential wget libelf-dev xorriso
+  $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
   $ ./gen_iso examples/ex6.subx
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
   ```
 
-Some caveats for `gen_iso` which was only created 2019-08-09:
-
-* It can take a while, mostly to compile the Linux kernel. In my tests,
-  generating the ISO takes 40 minutes on a computer with 1 core and 2GB RAM.
-  With 4 cores and 8GB RAM it takes 6 minutes.
-
-* It currently works on Ubuntu 18.04 but not 19.04. This is because it uses a
-  kernel version that doesn't work with the default settings of gcc 8.
+(`gen_iso` only came into existence 2019-08-09, and has a flabby laundry list
+of dependencies that I will gradually prune. It currently takes 12 minutes to
+run, mostly to compile its fork of the Linux kernel.)
 
 ## What it looks like
 
