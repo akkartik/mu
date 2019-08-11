@@ -790,9 +790,6 @@ can replicate:
 
 To falsify these hypotheses, here's a roadmap of the next few planned features:
 
-* A script to package SubX together with a minimal Linux kernel image
-  (compiled from source, of course).
-
 * Testable, dependency-injected vocabulary of primitives
   - Streams: `read()`, `write()`. (✓)
   - `exit()` (✓)
@@ -809,6 +806,8 @@ To falsify these hypotheses, here's a roadmap of the next few planned features:
   - a register allocation _verifier_. Programmer provides registers for
     variables; verifier checks that register reads are for the same type that
     was last written -- across all control flow paths.
+
+* Gradually streamline the bundled kernel, stripping away code we don't need.
 
 ## Credits
 
