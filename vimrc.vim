@@ -86,11 +86,11 @@ command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
 "   cursor on '#' causes error
 noremap <Leader>t {j0:call RunTestMoveCursor("<C-r><C-w>")<CR>
 function RunTestMoveCursor(arg)
-  exec "!run_one_test.sh ".expand("%")." ".a:arg
+  exec "!./run_one_test ".expand("%")." ".a:arg
   exec "normal \<C-o>"
 endfunction
 function RunTestMoveCursorAndMaybeOpenTrace(arg)
-  exec "!run_one_test.sh ".expand("%")." ".a:arg
+  exec "!./run_one_test ".expand("%")." ".a:arg
   exec "normal \<C-o>"
   if v:shell_error
     noautocmd vertical split last_run
