@@ -188,7 +188,7 @@ a few registers:
   - carry flag CF
 
 SubX programs consist of instructions like `89/copy`, `01/add`, `3d/compare`
-and `52/push-ECX` which modify these registers as well as a byte-addressable
+and `51/push-ECX` which modify these registers as well as a byte-addressable
 memory. For a complete list of supported instructions, run `subx help opcodes`.
 
 (SubX doesn't support floating-point registers yet. Intel processors support
