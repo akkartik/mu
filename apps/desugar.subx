@@ -14,15 +14,16 @@
 
 Entry:  # run tests if necessary, convert stdin if not
     # initialize heap
-    # . Heap = new-segment(64KB)
+    # . Heap = new-segment(Heap-size)
     # . . push args
     68/push  Heap/imm32
-    68/push  0x10000/imm32/64KB
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Heap-size/disp32                  # push *Heap-size
     # . . call
     e8/call  new-segment/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 
+    # run tests if necessary, convert stdin if not
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
     # - if argc > 1 and argv[1] == "test", then return run_tests()
@@ -46,7 +47,7 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $main:end/disp8
 $run-main:
     # - otherwise convert stdin
-    # return convert(Stdin, Stdout)
+    # convert(Stdin, Stdout)
     # . . push args
     68/push  Stdout/imm32
     68/push  Stdin/imm32
@@ -155,17 +156,64 @@ $convert:check-for-register-literal:
     3d/compare-EAX-and  0x25/imm32/percent
     75/jump-if-not-equal  $convert:regular-word/disp8
 $convert:register-literal:
+#?     # dump word-slice {{{
+#?     # . write(2/stderr, "w: ")
+#?     # . . push args
+#?     68/push  "w: "/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . clear-stream(Stderr+4)
+#?     # . . save EAX
+#?     50/push-EAX
+#?     # . . push args
+#?     b8/copy-to-EAX  Stderr/imm32
+#?     05/add-to-EAX  4/imm32
+#?     50/push-EAX
+#?     # . . call
+#?     e8/call  clear-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # . . restore EAX
+#?     58/pop-to-EAX
+#?     # . write-slice-buffered(Stderr, word-slice)
+#?     # . . push args
+#?     52/push-EDX
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  write-slice-buffered/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . flush(Stderr)
+#?     # . . push args
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  flush/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
     # ++word-slice->start
-    4b/increment-EBX
+    ff          0/subop/increment   0/mod/indirect  2/rm32/EDX    .           .             .           .           .               .                 # increment *EDX
     # desugar-register(word-slice, out)
     # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     52/push-EDX
     # . . call
     e8/call  desugar-register/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # continue
-    eb/jump  $convert:next-word/disp8
+    e9/jump  $convert:next-word/disp32
 $convert:regular-word:
     # write-slice-buffered(out, word-slice)
     # . . push args
@@ -186,7 +234,7 @@ $convert:next-word:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # loop
-    eb/jump  $convert:word-loop/disp8
+    e9/jump  $convert:word-loop/disp32
 $convert:next-line:
     # write-buffered(out, "\n")
     # . . push args
