@@ -227,13 +227,14 @@ desugar-register: # word : (address slice), out : (address buffered-file)
     50/push-EAX
     # reg-num/EAX = get-slice(Registers, word, row-size=8)
     # . . push args
+    68/push  "Registers"/imm32
     68/push  8/imm32/row-size
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     68/push  Registers/imm32
     # . . call
     e8/call  get-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # write-buffered(out, "3/mod/direct ")
     # . . push args
     68/push  "3/mod/direct "/imm32

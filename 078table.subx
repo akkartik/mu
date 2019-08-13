@@ -1,7 +1,4 @@
-# - managing tables
-# SubX has rudimentary support for tables.
-#
-# Each table is a stream of (key, value) rows.
+# A table is a stream of (key, value) rows.
 #
 # Each row consists of a 4-byte key (address to a string) and a variable-size
 # value.
@@ -9,13 +6,14 @@
 # Accessing the table performs a linear scan for a key string, and always
 # requires passing in the row size.
 #
-# Table primitives have the form <variant>(stream, <arg>, row-size) -> address/EAX
+# Table primitives have the form <variant>(stream, <arg>, row-size, ...) -> address/EAX
 #
 # The following table shows available options for <variant>:
 #   if not found:           | arg=string              arg=slice
 #   ------------------------+---------------------------------------------------
 #   abort                   | get                     get-slice
 #   insert key              | get-or-insert           leaky-get-or-insert-slice
+# Some variants may take extra args.
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -23,7 +21,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # if no row is found, abort
-get:  # table : (address stream {string, _}), key : (address string), row-size : int -> EAX : (address _)
+get:  # table : (address stream {string, _}), key : (address string), row-size : int, abort-message-prefix : (address string) -> EAX : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -81,9 +79,17 @@ $get:end:
     c3/return
 
 $get:abort:
+    # . _write(2/stderr, abort-message-prefix)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . _write(2/stderr, error)
     # . . push args
-    68/push  "get: key not found: "/imm32
+    68/push  ": get: key not found: "/imm32
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
@@ -189,7 +195,7 @@ $test-get:end:
     c3/return
 
 # if no row is found, abort
-get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
+get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int, abort-message-prefix : (address string) -> EAX : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -247,6 +253,14 @@ $get-slice:end:
     c3/return
 
 $get-slice:abort:
+    # . _write(2/stderr, abort-message-prefix)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . _write(2/stderr, error)
     # . . push args
     68/push  "get-slice: key not found: "/imm32
