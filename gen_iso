@@ -1,0 +1,61 @@
+#!/bin/sh
+# Build one or more .subx files into an ELF binary, and package it up into a
+# bootable ISO image.
+#
+# Must be run on Linux.
+#
+# Dependencies:
+#   apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
+#
+# Based on http://minimal.linux-bg.org (GPLv3)
+
+set -e
+
+if [ $# -eq 0 ]
+then
+  echo "Usage: `basename $0` file.subx ..."
+  exit 1
+fi
+
+echo "=== constructing initramfs out of SubX binary"
+./ntranslate $*
+mv a.elf init
+chmod +x init
+rm -rf tmp/isoimage
+mkdir -p tmp/isoimage/boot
+echo init | cpio -R root:root -H newc -o | xz -9 --check=none > tmp/isoimage/boot/rootfs.xz
+
+if [ ! -d kernel ]
+then
+  echo "=== cloning kernel"
+  git clone https://github.com/akkartik/kernel
+fi
+
+echo "=== building kernel"
+cp kernel.config kernel/.config
+( cd kernel
+  make bzImage -j $(grep ^processor /proc/cpuinfo | wc -l)
+)
+cp kernel/arch/x86/boot/bzImage tmp/isoimage/boot/kernel.xz
+
+echo "=== downloading syslinux"
+test -f tmp/syslinux-6.03.tar.xz  ||  wget https://kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz -P tmp
+echo "=== unpacking syslinux"
+tar xf tmp/syslinux-*.tar.xz -C tmp
+
+mkdir -p tmp/isoimage/boot/syslinux
+cp syslinux.cfg \
+   tmp/syslinux-*/bios/core/isolinux.bin \
+   tmp/syslinux-*/bios/com32/elflink/ldlinux/ldlinux.c32 \
+   tmp/isoimage/boot/syslinux
+
+echo "=== generating ISO"
+# 'hybrid' ISO can also be used on non-optical media such as a disk or USB stick
+xorriso -as mkisofs \
+  -isohybrid-mbr tmp/syslinux-*/bios/mbr/isohdpfx.bin \
+  -c boot/syslinux/boot.cat \
+  -b boot/syslinux/isolinux.bin \
+    -no-emul-boot \
+    -boot-load-size 4 \
+    -boot-info-table \
+  tmp/isoimage -o mu.iso
