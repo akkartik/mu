@@ -922,7 +922,7 @@ $test-leaky-get-or-insert-slice:end:
     5d/pop-to-EBP
     c3/return
 
-# if no row is found, stop using 'ed'
+# if no row is found, stop(ed)
 get-or-stop:  # table : (address stream {string, _}), key : (address string), row-size : int,
               # abort-message-prefix : (address string), err : (address buffered-file), ed : (address exit-descriptor)
               # -> EAX : (address _)
@@ -994,7 +994,7 @@ $get-or-stop:stop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . write-buffered(err, error)
     # . . push args
-    68/push  ": get: key not found: "/imm32
+    68/push  ": get-or-stop: key not found: "/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
     # . . call
     e8/call  write-buffered/disp32
@@ -1018,7 +1018,7 @@ $get-or-stop:stop:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . stop(ed, 1)
     # . . push args
-    bb/copy-to-EBX  1/imm32
+    68/push  1/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x1c/disp8      .                 # push *(EBP+28)
     # . . call
     e8/call  stop/disp32
@@ -1035,7 +1035,7 @@ test-get-or-stop:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # - setup
+    # setup
     # . clear-stream(_test-error-stream)
     # . . push args
     68/push  _test-error-stream/imm32
@@ -1093,6 +1093,7 @@ $test-get-or-stop:success:
     e8/call  get-or-stop/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x18/imm32        # add to ESP
+$test-get-or-stop:success-assertion:
     # check-ints-equal(EAX - table->data, 4, msg)
     # . check-ints-equal(EAX - table, 16, msg)
     # . . push args
@@ -1100,6 +1101,34 @@ $test-get-or-stop:success:
     68/push  0x10/imm32
     29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
     50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+$test-get-or-stop:failure:
+    # EAX = get-or-stop(table, "data", row-size=8, msg, _test-error-buffered-file, ed)
+    # . . push args
+    52/push-EDX/ed
+    68/push  _test-error-buffered-file/imm32
+    68/push  "foo"/imm32
+    68/push  8/imm32/row-size
+    68/push  "data"/imm32
+    51/push-ECX
+    # . . call
+    e8/call  get-or-stop/disp32
+    # registers except ESP may be clobbered at this point
+    # restore register args, discard others
+    59/pop-to-ECX
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    5a/pop-to-EDX
+$test-get-or-stop:failure-assertion:
+    # check that get-or-stop tried to call stop(1)
+    # . check-ints-equal(ed->value, 2, msg)
+    # . . push args
+    68/push  "F - test-get-or-stop/1"/imm32
+    68/push  2/imm32
+    # . . push ed->value
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # push *(EDX+4)
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
