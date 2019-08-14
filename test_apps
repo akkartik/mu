@@ -6,7 +6,8 @@
 set -e
 cd `dirname $0`
 
-test `uname` = 'Linux'  &&  echo 'testing native runs as well'
+test `uname` = 'Linux'  &&  NATIVE=1
+test $NATIVE  &&  echo 'testing native runs'
 
 ./build
 
@@ -17,7 +18,7 @@ echo ex1
 [ "$1" != record ]  &&  git diff --exit-code examples/ex1
 ./subx run examples/ex1  ||  ret=$?
 test $ret -eq 42  # life, the universe and everything
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex1  ||  ret=$?
   test $ret -eq 42  # life, the universe and everything
 }
@@ -27,7 +28,7 @@ echo ex2
 [ "$1" != record ]  &&  git diff --exit-code examples/ex2
 ./subx run examples/ex2  ||  ret=$?
 test $ret -eq 2  # 1 + 1
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex2  ||  ret=$?
   test $ret -eq 2  # 1 + 1
 }
@@ -37,7 +38,7 @@ echo ex3
 [ "$1" != record ]  &&  git diff --exit-code examples/ex3
 ./subx run examples/ex3  ||  ret=$?
 test $ret -eq 55  # 1 + 2 + ... + 10
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex3  ||  ret=$?
   test $ret -eq 55  # 1 + 2 + ... + 10
 }
@@ -47,7 +48,7 @@ echo ex4
 [ "$1" != record ]  &&  git diff --exit-code examples/ex4
 echo a | ./subx run examples/ex4 >ex4.out  ||  true
 test `cat ex4.out` = 'a'
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   echo a | examples/ex4 >ex4.out  ||  true
   test `cat ex4.out` = 'a'
 }
@@ -57,7 +58,7 @@ echo ex5
 [ "$1" != record ]  &&  git diff --exit-code examples/ex5
 echo a | ./subx run examples/ex5 >ex5.out  ||  true
 test `cat ex5.out` = 'a'
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   echo a | examples/ex5 >ex5.out  ||  true
   test `cat ex5.out` = 'a'
 }
@@ -67,7 +68,7 @@ echo ex6
 [ "$1" != record ]  &&  git diff --exit-code examples/ex6
 ./subx run examples/ex6 >ex6.out  ||  true
 test "`cat ex6.out`" = 'Hello, world!'
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex6 >ex6.out  ||  true
   test "`cat ex6.out`" = 'Hello, world!'
 }
@@ -77,7 +78,7 @@ echo ex7
 [ "$1" != record ]  &&  git diff --exit-code examples/ex7
 ./subx run examples/ex7  ||  ret=$?
 test $ret -eq 97  # 'a'
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex7  ||  ret=$?
   test $ret -eq 97  # 'a'
 }
@@ -87,7 +88,7 @@ echo ex8
 [ "$1" != record ]  && git diff --exit-code examples/ex8
 ./subx run examples/ex8 abcd  ||  ret=$?
 test $ret -eq 4  # length('abcd')
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex8 abcd  ||  ret=$?
   test $ret -eq 4  # length('abcd')
 }
@@ -97,7 +98,7 @@ echo ex9
 [ "$1" != record ]  && git diff --exit-code examples/ex9
 ./subx run examples/ex9 z x  ||  ret=$?
 test $ret -eq 2  # 'z' - 'x'
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex9 z x  ||  ret=$?
   test $ret -eq 2  # 'z' - 'x'
 }
@@ -108,7 +109,7 @@ echo ex10
 ./subx run examples/ex10 abc abc  ||  ret=$?
 test $ret -eq 1  # equal
 ./subx run examples/ex10 abc abcd  # 0; not equal
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex10 abc abc  ||  ret=$?
   test $ret -eq 1  # equal
   examples/ex10 abc abcd  # 0; not equal
@@ -119,7 +120,7 @@ echo ex11
 [ "$1" != record ]  && git diff --exit-code examples/ex11
 ./subx run examples/ex11
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   examples/ex11
   echo
 }
@@ -128,7 +129,7 @@ echo ex12
 ./subx translate examples/ex12.subx  -o examples/ex12
 [ "$1" != record ]  && git diff --exit-code examples/ex12
 ./subx run examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
-test `uname` = 'Linux'  &&  examples/ex12
+test $NATIVE  &&  examples/ex12
 
 echo factorial
 ./subx translate 0*.subx apps/factorial.subx  -o apps/factorial
@@ -137,7 +138,7 @@ echo factorial
 test $ret -eq 120  # factorial(5)
 ./subx run apps/factorial test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/factorial  ||  ret=$?
   test $ret -eq 120  # factorial(5)
   apps/factorial test
@@ -149,7 +150,7 @@ echo crenshaw2-1
 [ "$1" != record ]  &&  git diff --exit-code apps/crenshaw2-1
 ./subx run apps/crenshaw2-1 test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/crenshaw2-1 test
   echo
 }
@@ -159,7 +160,7 @@ echo crenshaw2-1b
 [ "$1" != record ]  &&  git diff --exit-code apps/crenshaw2-1b
 ./subx run apps/crenshaw2-1b test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/crenshaw2-1b test
   echo
 }
@@ -170,7 +171,7 @@ echo handle
 ./subx run apps/handle > handle.out 2>&1  ||  true
 grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
 grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/handle > handle.out 2>&1  ||  true
   grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
   grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
@@ -181,7 +182,7 @@ echo hex
 [ "$1" != record ]  &&  git diff --exit-code apps/hex
 ./subx run apps/hex test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/hex test
   echo
 }
@@ -191,7 +192,7 @@ echo survey
 [ "$1" != record ]  &&  git diff --exit-code apps/survey
 ./subx run apps/survey test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/survey test
   echo
 }
@@ -201,7 +202,7 @@ echo pack
 [ "$1" != record ]  &&  git diff --exit-code apps/pack
 ./subx run apps/pack test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/pack test
   echo
 }
@@ -211,7 +212,7 @@ echo assort
 [ "$1" != record ]  &&  git diff --exit-code apps/assort
 ./subx run apps/assort test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/assort test
   echo
 }
@@ -221,7 +222,7 @@ echo dquotes
 [ "$1" != record ]  &&  git diff --exit-code apps/dquotes
 ./subx run apps/dquotes test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/dquotes test
   echo
 }
@@ -231,7 +232,7 @@ echo tests
 [ "$1" != record ]  &&  git diff --exit-code apps/tests
 ./subx run apps/tests test
 echo
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   apps/tests test
   echo
 }
@@ -240,66 +241,66 @@ echo "== translating using SubX"
 
 echo ex1
 cat examples/ex1.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex1 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex1.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex1 -
 }
 
 echo ex2
 cat examples/ex2.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex2 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex2.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex2 -
 }
 
 echo ex3
 cat examples/ex3.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex3 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex3.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex3 -
 }
 
 echo ex4
 cat examples/ex4.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex4 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex4.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex4 -
 }
 
 echo ex5
 cat examples/ex5.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex5 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex5.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex5 -
 }
 
 echo ex6
 cat examples/ex6.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex6 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex6.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex6 -
 }
 
 echo ex7
 cat examples/ex7.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex7 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex7.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex7 -
 }
 
 echo ex8
 cat examples/ex8.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex8 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex8.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex8 -
 }
 
 echo ex9
 cat examples/ex9.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex9 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex9.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex9 -
 }
 
 echo ex10
 cat examples/ex10.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex10 -
-test `uname` = 'Linux'  &&  {
+test $NATIVE  &&  {
   cat examples/ex10.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex10 -
 }
 
 # Only native runs beyond this point. Emulated runs time out on travis-ci.org.
-test `uname` = 'Linux'  ||  exit 0
+test $NATIVE  ||  exit 0
 
 echo ex11
 cat examples/ex11.subx |apps/tests |apps/dquotes |apps/assort |apps/pack |apps/survey |apps/hex |diff examples/ex11 -
