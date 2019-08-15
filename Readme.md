@@ -328,19 +328,18 @@ distinguish between code and data. Correspondingly, SubX programs consist of a
 series of segments, each starting with a header line: `==` followed by a name
 and approximate starting address.
 
-All code must lie in a segment called 'code'. Execution begins at the start of
-the `code` segment by default.
+All code must lie in a segment called 'code'.
 
-You can reuse segment names:
+Segments can be added to.
 
-```
-== code
+```sh
+== code 0x09000000  # first mention requires starting address
 ...A...
 
-== data
+== data 0x0a000000
 ...B...
 
-== code
+== code             # no address necessary when adding
 ...C...
 ```
 
