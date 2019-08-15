@@ -18,7 +18,8 @@
 
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {
-  START_TRACING_UNTIL_END_OF_SCOPE;
+  // Outside of tests, traces must be explicitly requested.
+  if (Trace_file.is_open()) Trace_stream = new trace_stream;
   reset();
   // Begin subx translate
   program p;

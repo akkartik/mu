@@ -5,7 +5,8 @@
 :(before "End Main")
 assert(argc > 1);
 if (is_equal(argv[1], "run")) {
-  START_TRACING_UNTIL_END_OF_SCOPE;
+  // Outside of tests, traces must be explicitly requested.
+  if (Trace_file.is_open()) Trace_stream = new trace_stream;
   trace(2, "run") << "=== Starting to run" << end();
   assert(argc > 2);
   reset();
