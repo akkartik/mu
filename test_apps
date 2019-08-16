@@ -12,6 +12,8 @@ CFLAGS=$CFLAGS ./build
 
 echo "== translating and running using C++"
 
+# example programs
+
 echo ex1
 ./subx translate examples/ex1.subx  -o examples/ex1
 [ "$1" != record ]  &&  git diff --exit-code examples/ex1
@@ -130,6 +132,8 @@ echo ex12
 ./subx run examples/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
 test `uname` = 'Linux'  &&  examples/ex12
 
+# Larger apps that use the standard library.
+
 echo factorial
 ./subx translate 0*.subx apps/factorial.subx  -o apps/factorial
 [ "$1" != record ]  &&  git diff --exit-code apps/factorial
@@ -175,6 +179,8 @@ test `uname` = 'Linux'  &&  {
   grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
   grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
 }
+
+# Phases of the self-hosted SubX translator.
 
 echo hex
 ./subx translate 0*.subx apps/subx-common.subx apps/hex.subx  -o apps/hex
@@ -236,7 +242,21 @@ test `uname` = 'Linux'  &&  {
   echo
 }
 
+# Higher-level syntax.
+
+echo desugar
+./subx translate 0*.subx apps/subx-common.subx apps/desugar.subx  -o apps/desugar
+[ "$1" != record ]  &&  git diff --exit-code apps/desugar
+./subx run apps/desugar test
+echo
+test `uname` = 'Linux'  &&  {
+  apps/desugar test
+  echo
+}
+
 echo "== translating using SubX"
+
+# example programs
 
 echo ex1
 cat examples/ex1.subx |./subx_bin run apps/tests |./subx_bin run apps/dquotes |./subx_bin run apps/assort |./subx_bin run apps/pack |./subx_bin run apps/survey |./subx_bin run apps/hex |diff examples/ex1 -
