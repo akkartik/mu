@@ -65,6 +65,8 @@ $main:end:
     b8/copy-to-EAX  1/imm32/exit
     cd/syscall  0x80/imm8
 
+# error messages considered:
+#   *x + 34                 -> error: base+disp addressing must be within '()'
 convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
@@ -73,7 +75,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #     read-line-buffered(in, line)
     #     if (line->write == 0) break                     # end of file
     #     while true
-    #       var word-slice = next-word(line)
+    #       var word-slice = next-word-or-expression(line)
     #       if slice-empty?(word-slice)                   # end of line
     #         break
     #       if slice-starts-with?(word-slice, "#")        # comment
@@ -81,7 +83,10 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #       if slice-starts-with?(word-slice, '%')        # direct mode
     #         emit-direct-mode(word-slice, out)
     #       else if slice-starts-with?(word-slice, '*')   # indirect mode
-    #         emit-indirect-mode(word-slice, out)
+    #         base, index, scale, disp = parse-effective-address(word-slice)
+    #         emit-indirect-mode(out, base, index, scale, disp)
+    #       else if slice-starts-with?(word-slice, '+')
+    #         abort("base+disp addressing must be within '()'")
     #       else
     #         write-slice-buffered(out, word-slice)
     #       write(out, " ")
@@ -510,7 +515,60 @@ test-emit-direct-mode-2:
     5d/pop-to-EBP
     c3/return
 
+# (re)compute the bounds of the next word or parenthetical expression in the line
+# return empty string on reaching end of file
+#
+# error messages considered:
+#   * ...                   -> error: no space after '*'
+#   *(...                   -> error: *(...) expression must be all on a single line
+next-word-or-expression:  # line : (address stream byte), out : (address slice)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+$next-word-or-expression:end:
+    # . restore registers
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# Grammar:
+#   *reg                    -> 0/mod reg/rm32
+#   *(reg)                  -> 0/mod reg/rm32
+#   *(reg+disp)             -> 2/mod reg/rm32
+#   *(reg1+reg2<<s)         -> 2/mod 4/rm32 reg1/base reg2/index s/scale 0/disp32
+#   *(reg1+reg2<<s+disp)    -> 2/mod 4/rm32 reg1/base reg2/index s/scale disp/disp32
+# Intermediate structure: base, index, scale, disp
+# Default values: base: 0, index: 4 (none), scale: 0, disp: 0
 # beware: modifies 'word'
+parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale/EDX, disp/EBX
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    56/push-ESI
+    # ESI = word
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to ESI
+    # ++word->start
+    ff          0/subop/increment   0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # increment *ESI
+    # initialize defaults
+    b8/copy-to-EAX  0/imm32
+    b9/copy-to-ECX  4/imm32/no-index
+    ba/copy-to-EDX  0/imm32/.scale
+    bb/copy-to-EBX  0/imm32/disp
+$parse-effective-address:end:
+    # . restore registers
+    5e/pop-to-ESI
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+# Code generation:
+#   if index is none and disp is 0, then mod = 0 and rm32 = base
+#   if index is none, then mod = 2 and rm32 = base and disp32 = disp
+#   if index is not none, then mod = 2 and rm32 = 4 and base = base and index = index and disp32 = disp
 emit-indirect-mode: # word : (address slice), out : (address buffered-file)
     # . prolog
     55/push-EBP
