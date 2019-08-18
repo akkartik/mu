@@ -1,9 +1,10 @@
 # Mu: a human-scale computer
 
-* Not designed to operate in large clusters providing services for millions of
-  people.
-* Designed for _you_, to run one computer. (Or a few.) Running the code you
-  want to run, and nothing else.
+Not designed to operate in large clusters providing services for millions of
+people.
+
+Designed for _you_, to run one computer. (Or a few.) Running the code you want
+to run, and nothing else.
 
   ```sh
   $ git clone https://github.com/akkartik/mu
