@@ -841,9 +841,11 @@ Mu builds on many ideas that have come before, especially:
   markup can be clean;
 - BDD for challenging us all to write tests at a higher level;
 - JavaScript and CSS for demonstrating the power of a DOM for complex
-  structured documents.
-- Rust for demonstrating that a system-programming language can be safe.
-- Forth for demonstrating that ergonomics don't require grammar.
+  structured documents;
+- Rust for demonstrating that a system-programming language can be safe;
+- Forth for demonstrating that ergonomics don't require grammar; and
+- [Minimal Linux Live](http://minimal.linux-bg.org) for teaching how to create
+  a bootable disk image.
 
 ## Coda
 
