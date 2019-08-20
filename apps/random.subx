@@ -1,0 +1,62 @@
+# Repeatedly read 32-bit numbers from /dev/random, print them to stdout.
+#
+# To run:
+#   $ ./subx translate 0*.subx apps/random.subx -o apps/random
+#   $ ./subx run apps/random
+
+== code 0x09000000
+#   instruction                     effective address                                                   register    displacement    immediate
+# . op          subop               mod             rm32          base        index         scale       r32
+# . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
+
+Entry:
+    # stream/ESI = syscall(open, "/dev/null", O_RDONLY, 0)  # we can't use 'fd' because it looks like a hex byte
+    bb/copy-to-EBX  Filename/imm32
+    b9/copy-to-ECX  0/imm32/rdonly
+    ba/copy-to-EDX  0x180/imm32/fixed-perms
+    b8/copy-to-EAX  5/imm32/open
+    cd/syscall  0x80/imm8
+    # . stream = EAX
+    89/copy                         3/mod/direct    6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy EAX to ESI
+
+$loop:
+
+    # syscall(read, Stream, N, 4)
+    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           6/r32/ESI   .               .                 # copy ESI to EBX
+    b9/copy-to-ECX  N/imm32
+    ba/copy-to-EDX  4/imm32/size
+    b8/copy-to-EAX  3/imm32/read
+    cd/syscall  0x80/imm8
+
+    # print-int32-buffered(Stdout, *N)
+    # . . push args
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           N/disp32                          # push *N
+    68/push  Stdout/imm32
+    # . . call
+    e8/call  print-int32-buffered/disp32
+
+    # write-buffered(Stdout, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  Stdout/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+
+    eb/jump  $loop/disp8
+
+    # syscall(exit, 0)
+    bb/copy-to-EBX  0/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+
+== data 0x0a000000
+
+N:
+    0/imm32
+Filename:
+    2f 64 65 76 2f 72 61 6e 64 6f 6d 00
+#   /  d  e  v  /  r  a  n  d  o  m  null
+
+# . . vim:nowrap:textwidth=0
