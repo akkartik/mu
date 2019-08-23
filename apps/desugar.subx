@@ -86,7 +86,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #         base, index, scale, disp = parse-effective-address(word-slice)
     #         emit-indirect-mode(out, base, index, scale, disp)
     #       else if slice-starts-with?(word-slice, '+')
-    #         abort("base+disp addressing must be within '()'")
+    #         abort("'+' only permitted within '*(...)'")
     #       else
     #         write-slice-buffered(out, word-slice)
     #       write(out, " ")
@@ -960,7 +960,7 @@ test-next-word-or-expression-returns-whole-expression:
 # Grammar:
 #   *reg                    -> 0/mod reg/rm32
 #   *(reg)                  -> 0/mod reg/rm32
-#   *(reg+disp)             -> 2/mod reg/rm32
+#   *(reg+disp)             -> 2/mod reg/rm32 disp/disp32
 #   *(reg1+reg2<<s)         -> 2/mod 4/rm32 reg1/base reg2/index s/scale 0/disp32
 #   *(reg1+reg2<<s+disp)    -> 2/mod 4/rm32 reg1/base reg2/index s/scale disp/disp32
 # Intermediate structure: base, index, scale, disp
@@ -974,7 +974,7 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     56/push-ESI
     # ESI = word
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to ESI
-    # ++word->start
+    # skip '*'
     ff          0/subop/increment   0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # increment *ESI
     # initialize defaults
     b8/copy-to-EAX  0/imm32
