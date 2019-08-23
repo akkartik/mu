@@ -19,6 +19,16 @@
 # 5.
 #   $ echo "ab *(eax+ecx+4)"  |  ./subx run apps/desugar
 #   ab 2/mod 4/rm32 0/base 1/index 0/scale 4/disp32
+#
+# 6.
+#   $ echo "ab *(eax+ecx<<2+4)"  |  ./subx run apps/desugar
+#   ab 2/mod 4/rm32 0/base 1/index 2/scale 4/disp32
+#
+# Addition isn't commutative here. Template must always be (base+index<<scale+disp),
+# though some components are optional as described above.
+#
+# No metadata allowed inside '*(...)'.
+# Whitespace inside '*(...)' is ok.
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -1056,6 +1066,39 @@ test-next-word-or-expression-returns-whole-expression:
 # Default values: base: 0, index: 4 (none), scale: 0, disp: 0
 # beware: modifies 'word'
 parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale/EDX, disp/EBX
+    # pseudocode:
+    #   ++word->start to skip '*'
+    #   initialize defaults: base=0, index=4, scale=0, disp=0
+    #   if (*word->start != '(') {
+    #     base = get-slice(Registers, word, row-size=8)
+    #     return
+    #   }
+    #   # compound expressions
+    #   skip whitespace
+    #   read register into base
+    #   skip whitespace
+    #   if (*word->start == ')') goto end
+    #   if (*word->start != '+') goto error2
+    #   ++word->start to skip '+'
+    #   skip whitespace
+    #   read register into index
+    #   skip whitespace
+    #   if (*word->start == ')') goto end
+    #   if (*word->start == '<') {
+    #     ++word->start to skip '<'
+    #     if (*word->start != '<') goto error3
+    #     ++word->start to skip '<'
+    #     skip whitespace
+    #     read register into scale
+    #     skip whitespace
+    #     if (*word->start == ')') goto end
+    #   }
+    #   if (*word->start != '+') goto error4
+    #   ++word->start to skip '+'
+    #   skip whitespace
+    #   read register into disp
+    #   skip whitespace
+    #   if (*word->start != ')') goto error5
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -1097,6 +1140,31 @@ $parse-effective-address:simple-register:
 $parse-effective-address:compound-expression:
     # ++word->start to skip '('
     ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
+    # skip whitespace
+    # read register into base
+    # skip whitespace
+    # if (*word->start == ')') goto end
+    # if (*word->start != '+') goto error2
+    # ++word->start
+    # skip whitespace
+    # read register into index
+    # skip whitespace
+    # if (*word->start == ')') goto end
+    # if (*word->start == '<') {
+    #   ++word->start to skip '<'
+    #   if (*word->start != '<') goto error3
+    #   ++word->start to skip '<'
+    #   skip whitespace
+    #   read register into scale
+    #   skip whitespace
+    #   if (*word->start == ')') goto end
+    # }
+    # if (*word->start != '+') goto error4
+    # ++word->start to skip '+'
+    # skip whitespace
+    # read register into disp
+    # skip whitespace
+    # if (*word->start != ')') goto error5
 $parse-effective-address:end:
     # return base in EAX
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           7/r32/EDI   .               .                 # copy EDI to EAX
