@@ -1,15 +1,24 @@
 # Desugar a few kinds of syntax.
 #
 # 1.
-#   $ echo "ab %eax" |./subx run apps/desugar
+#   $ echo "ab %eax"  |  ./subx run apps/desugar
 #   ab 3/mod 0/rm32
 #
 # 2.
-#   $ echo "ab *eax" |./subx run apps/desugar
+#   $ echo "ab *eax"  |  ./subx run apps/desugar
 #   ab 0/mod 0/rm32
 #
 # 3.
-#   ...
+#   $ echo "ab *(eax+4)"  |  ./subx run apps/desugar
+#   ab 2/mod 0/rm32 4/disp32
+#
+# 4.
+#   $ echo "ab *(eax+ecx)"  |  ./subx run apps/desugar
+#   ab 0/mod 4/rm32 0/base 1/index 0/scale
+#
+# 5.
+#   $ echo "ab *(eax+ecx+4)"  |  ./subx run apps/desugar
+#   ab 2/mod 4/rm32 0/base 1/index 0/scale 4/disp32
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -1069,7 +1078,6 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     81          4/subop/and         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xff/imm32        # bitwise and of EAX
     3d/compare-EAX-and  0x28/imm32/open-paren
     74/jump-if-equal  $parse-effective-address:compound-expression/disp8
-#?     ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
 $parse-effective-address:simple-register:
     # base = get-slice(Registers, word, row-size=8)
     # . EAX = get-slice(Registers, word, row-size=8)
@@ -1087,6 +1095,8 @@ $parse-effective-address:simple-register:
     # return
     eb/jump  $parse-effective-address:end/disp8
 $parse-effective-address:compound-expression:
+    # ++word->start to skip '('
+    ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
 $parse-effective-address:end:
     # return base in EAX
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           7/r32/EDI   .               .                 # copy EDI to EAX
