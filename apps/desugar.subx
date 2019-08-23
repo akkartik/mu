@@ -228,6 +228,23 @@ $convert:check-for-indirect-mode:
     3d/compare-EAX-and  0x2a/imm32/asterisk
     75/jump-if-not-equal  $convert:check-for-invalid-addition/disp8
 $convert:indirect-mode:
+    # spill registers
+    50/push-EAX
+    51/push-ECX
+    52/push-EDX
+    53/push-EBX
+    # base/EAX, index/ECX, scale/EDX, disp/EBX = parse-effective-address(word-slice)
+    # . . push args
+    52/push-EDX
+    # . . call
+    e8/call  parse-effective-address/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # restore registers
+    5b/pop-to-EBX
+    5a/pop-to-EDX
+    59/pop-to-ECX
+    58/pop-to-EAX
     # emit-indirect-mode(word-slice, out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
@@ -1036,17 +1053,100 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     # . save registers
     56/push-ESI
     # ESI = word
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to ESI
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
     # skip '*'
-    ff          0/subop/increment   0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # increment *ESI
+    ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
     # initialize defaults
     b8/copy-to-EAX  0/imm32
     b9/copy-to-ECX  4/imm32/no-index
     ba/copy-to-EDX  0/imm32/.scale
     bb/copy-to-EBX  0/imm32/disp
+    # if (*word->start == '(') goto next check
+    81          7/subop/compare     0/mod/indirect  6/rm32/ESI    .           .             .           .           .               0x28/imm32/open-paren  # compare *ESI
+    74/jump-if-equal  $parse-effective-address:compound-expression/disp8
+#?     ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
+$parse-effective-address:simple-register:
+    # base = get-slice(Registers, word, row-size=8)
+    # . EAX = get-slice(Registers, word, row-size=8)
+    # . . push args
+    68/push  "Registers"/imm32
+    68/push  8/imm32/row-size
+    56/push-ESI
+    68/push  Registers/imm32
+    # . . call
+    e8/call  get-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    # . base = *EAX
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # copy *EAX to EAX
+    # return
+    eb/jump  $parse-effective-address:end/disp8
+$parse-effective-address:compound-expression:
 $parse-effective-address:end:
     # . restore registers
     5e/pop-to-ESI
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-parse-effective-address-simple:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "*esi"
+    b8/copy-to-EAX  "*esi"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # . ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX, ECX, EDX, EBX = parse-effective-address(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  parse-effective-address/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # slice clobbered beyond this point
+    # check-ints-equal(EAX, 6, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-simple/base"/imm32
+    68/push  6/imm32/ESI
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(ECX, 4, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-simple/index"/imm32
+    68/push  4/imm32/none
+    51/push-ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(EDX, 0, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-simple/scale"/imm32
+    68/push  0/imm32/none
+    52/push-EDX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(EBX, 0, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-simple/displacement"/imm32
+    68/push  0/imm32/none
+    53/push-EBX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
