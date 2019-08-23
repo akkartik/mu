@@ -226,7 +226,7 @@ $convert:direct-mode:
 $convert:check-for-indirect-mode:
     # if (!slice-starts-with?(word-slice, "*")) goto next check
     3d/compare-EAX-and  0x2a/imm32/asterisk
-    75/jump-if-not-equal  $convert:regular-word/disp8
+    75/jump-if-not-equal  $convert:check-for-invalid-addition/disp8
 $convert:indirect-mode:
     # emit-indirect-mode(word-slice, out)
     # . . push args
@@ -238,6 +238,14 @@ $convert:indirect-mode:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # continue
     e9/jump  $convert:next-word/disp32
+$convert:check-for-invalid-addition:
+    # if (slice-starts-with?(word-slice, "+")) goto error1
+    3d/compare-EAX-and  0x2b/imm32/plus
+    74/jump-if-equal  $convert:error1/disp8
+$convert:check-for-invalid-left-shift:
+    # if (slice-starts-with?(word-slice, "<")) goto error1
+    3d/compare-EAX-and  0x3c/imm32/less-than
+    74/jump-if-equal  $convert:error1/disp8
 $convert:regular-word:
     # write-slice-buffered(out, word-slice)
     # . . push args
@@ -290,6 +298,61 @@ $convert:end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
+$convert:error1:
+    # print(stderr, "error: '" EAX "' only permitted within '*(...)' in '" line "'")
+    # . write-buffered(Stderr, "error: '")
+    # . . push args
+    68/push  "error: '"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-byte-buffered(Stderr, EAX)
+    # . . push args
+    50/push-EAX
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-byte-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(Stderr, "' only permitted within '*(...)' in '")
+    # . . push args
+    68/push  "' only permitted within '*(...)' in '"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-stream-data(Stderr, line)
+    # . . push args
+    51/push-ECX
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-stream-data/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(Stderr, "'")
+    # . . push args
+    68/push  "'"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 # beware: modifies 'word'
 emit-direct-mode:  # word : (address slice), out : (address buffered-file)
