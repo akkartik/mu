@@ -259,19 +259,22 @@ $convert:indirect-mode:
     e8/call  parse-effective-address/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # emit-indirect-mode(out, base, index, scale, disp)
+    # . . push args
+    53/push-EBX
+    52/push-EDX
+    51/push-ECX
+    50/push-EAX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    # . . call
+    e8/call  emit-indirect-mode/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # restore registers
     5b/pop-to-EBX
     5a/pop-to-EDX
     59/pop-to-ECX
     58/pop-to-EAX
-    # emit-indirect-mode(word-slice, out)
-    # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    52/push-EDX
-    # . . call
-    e8/call  emit-indirect-mode/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
     # continue
     e9/jump  $convert:next-word/disp32
 $convert:check-for-invalid-addition:
@@ -1115,7 +1118,8 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     b9/copy-to-ECX  4/imm32/no-index
     ba/copy-to-EDX  0/imm32/.scale
     bb/copy-to-EBX  0/imm32/disp
-    # if (*word->start == '(') goto next check
+$parse-effective-address:check-for-simple-register:
+    # if (*word->start == '(') goto compound expression
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
     8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/AL    .               .                 # copy byte at *EAX to AL
     81          4/subop/and         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xff/imm32        # bitwise and of EAX
@@ -1363,39 +1367,22 @@ test-parse-effective-address-base:
 #   if index is none and disp is 0, then mod = 0 and rm32 = base
 #   if index is none, then mod = 2 and rm32 = base and disp32 = disp
 #   if index is not none, then mod = 2 and rm32 = 4 and base = base and index = index and disp32 = disp
-emit-indirect-mode:  # word : (address slice), out : (address buffered-file)
+emit-indirect-mode:  # out : (address buffered-file), base : int, index : int, scale : int, disp : int
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # . save registers
-    50/push-EAX
-    # ++word->start
-    # . EAX = word
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    # . ++(*EAX)
-    ff          0/subop/increment   0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # increment *EAX
-    # reg-num/EAX = get-slice(Registers, word, row-size=8)
-    # . . push args
-    68/push  "Registers"/imm32
-    68/push  8/imm32/row-size
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
-    68/push  Registers/imm32
-    # . . call
-    e8/call  get-slice/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # write-buffered(out, "0/mod/indirect ")
     # . . push args
     68/push  "0/mod/indirect "/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # print-int32-buffered(out, *EAX)
+    # print-int32-buffered(out, base)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # push *EAX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  print-int32-buffered/disp32
     # . . discard args
@@ -1403,14 +1390,12 @@ emit-indirect-mode:  # word : (address slice), out : (address buffered-file)
     # write-buffered(out, "/rm32")
     # . . push args
     68/push  "/rm32"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 $emit-indirect-mode:end:
-    # . restore registers
-    58/pop-to-EAX
     # . epilog
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
@@ -1437,23 +1422,17 @@ test-emit-indirect-mode:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # var slice/ECX = "*eax"
-    b8/copy-to-EAX  "*eax"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
-    05/add-to-EAX  4/imm32
-    # . ECX = {EAX, ECX}
-    51/push-ECX
-    50/push-EAX
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit-indirect-mode(str, _test-output-buffered-file)
-    # . . push args
+    # emit-indirect-mode(_test-output-buffered-file, 0, 4/none, 0, 0)
+    # . . write args
+    68/push  0/imm32/.disp
+    68/push  0/imm32/.scale
+    68/push  4/imm32/.index/none
+    68/push  0/imm32/.base
     68/push  _test-output-buffered-file/imm32
-    51/push-ECX
     # . . call
     e8/call  emit-indirect-mode/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -1522,23 +1501,17 @@ test-emit-indirect-mode-2:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # var slice/ECX = "*edi"
-    b8/copy-to-EAX  "*edi"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
-    05/add-to-EAX  4/imm32
-    # . ECX = {EAX, ECX}
-    51/push-ECX
-    50/push-EAX
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # emit-indirect-mode(str/ECX, _test-output-buffered-file)
-    # . . push args
+    # emit-indirect-mode(_test-output-buffered-file, 6, 4/none, 0, 0)
+    # . . write args
+    68/push  0/imm32/.disp
+    68/push  0/imm32/.scale
+    68/push  4/imm32/.index/none
+    68/push  7/imm32/.base
     68/push  _test-output-buffered-file/imm32
-    51/push-ECX
     # . . call
     e8/call  emit-indirect-mode/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -1574,7 +1547,7 @@ test-emit-indirect-mode-2:
 #?     # }}}
     # check-stream-equal(_test-output-stream, "0/mod/indirect 7/rm32", msg)
     # . . push args
-    68/push  "F - test-emit-indirect-mode/1"/imm32
+    68/push  "F - test-emit-indirect-mode/0"/imm32
     68/push  "0/mod/indirect 0x00000007/rm32"/imm32
     68/push  _test-output-stream/imm32
     # . . call
