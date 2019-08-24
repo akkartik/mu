@@ -461,6 +461,95 @@ test-skip-chars-matching-none:
     # end
     c3/return
 
+skip-chars-matching-whitespace:  # in : (address stream)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    50/push-EAX
+    51/push-ECX
+    53/push-EBX
+    56/push-ESI
+    # ESI = in
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
+    # ECX = in->read
+    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ESI+4) to ECX
+    # EBX = in->write
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           3/r32/EBX   .               .                 # copy *ESI to EBX
+$skip-chars-matching-whitespace:loop:
+    # if (in->read >= in->write) break
+    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           3/r32/EBX   .               .                 # compare ECX with EBX
+    7d/jump-if-greater-or-equal  $skip-chars-matching-whitespace:end/disp8
+    # EAX = in->data[in->read]
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
+    # if (EAX == ' ') goto body
+    3d/compare-EAX-and  0x20/imm32/space
+    74/jump-if-equal  $skip-chars-matching-whitespace:body/disp8
+    # if (EAX == '\n') goto body
+    3d/compare-EAX-and  0x0a/imm32/newline
+    74/jump-if-equal  $skip-chars-matching-whitespace:body/disp8
+    # if (EAX == '\t') goto body
+    3d/compare-EAX-and  0x09/imm32/tab
+    74/jump-if-equal  $skip-chars-matching-whitespace:body/disp8
+    # if (EAX != '\r') break
+    3d/compare-EAX-and  0x0d/imm32/cr
+    75/jump-if-not-equal  $skip-chars-matching-whitespace:end/disp8
+$skip-chars-matching-whitespace:body:
+    # ++in->read
+    41/increment-ECX
+    eb/jump  $skip-chars-matching-whitespace:loop/disp8
+$skip-chars-matching-whitespace:end:
+    # persist in->read
+    89/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy ECX to *(ESI+4)
+    # . restore registers
+    5e/pop-to-ESI
+    5b/pop-to-EBX
+    59/pop-to-ECX
+    58/pop-to-EAX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-skip-chars-matching-whitespace:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # write(_test-stream, " \nab")
+    # . . push args
+    68/push  " \nab"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # skip-chars-matching-whitespace(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-matching-whitespace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(_test-stream->read, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching-whitespace"/imm32
+    68/push  2/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-EAX  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
 # minor fork of 'skip-chars-matching'
 skip-chars-not-matching:  # in : (address stream), delimiter : byte
     # . prolog
@@ -674,6 +763,44 @@ $skip-chars-not-matching-whitespace:end:
     5d/pop-to-EBP
     c3/return
 
+test-skip-chars-not-matching-whitespace:
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # write(_test-stream, "ab\n")
+    # . . push args
+    68/push  "ab\n"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # skip-chars-not-matching-whitespace(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  skip-chars-not-matching-whitespace/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # check-ints-equal(_test-stream->read, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-whitespace"/imm32
+    68/push  2/imm32
+    # . . push *_test-stream->read
+    b8/copy-to-EAX  _test-stream/imm32
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/EAX    .           .             .           .           4/disp8         .                 # push *(EAX+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
 skip-chars-matching-in-slice:  # curr : (address byte), end : (address byte), delimiter : byte -> curr/EAX
     # . prolog
     55/push-EBP
@@ -758,6 +885,78 @@ test-skip-chars-matching-in-slice-none:
     # check-ints-equal(ECX-EAX, 2, msg)
     # . . push args
     68/push  "F - test-skip-chars-matching-in-slice-none"/imm32
+    68/push  2/imm32
+    # . . push ECX-EAX
+    29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from ECX
+    51/push-ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
+skip-chars-matching-whitespace-in-slice:  # in : (address stream)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    53/push-EBX
+    # EAX = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    # ECX = end
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy *(EBP+12) to ECX
+    # EBX = 0
+    31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
+$skip-chars-matching-whitespace-in-slice:loop:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
+    0f 83/jump-if-greater-or-equal-unsigned  $skip-chars-matching-in-slice:end/disp32
+    # EBX = *curr
+    8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/BL    .               .                 # copy byte at *EAX to BL
+    # if (*curr == ' ') goto body
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x20/imm32/space  # compare EBX
+    74/jump-if-equal  $skip-chars-matching-whitespace-in-slice:body/disp8
+    # if (*curr == '\n') goto body
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x0a/imm32/newline  # compare EBX
+    74/jump-if-equal  $skip-chars-matching-whitespace-in-slice:body/disp8
+    # if (*curr == '\t') goto body
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x09/imm32/tab    # compare EBX
+    74/jump-if-equal  $skip-chars-matching-whitespace-in-slice:body/disp8
+    # if (*curr != '\r') break
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x0d/imm32/cr     # compare EBX
+    75/jump-if-not-equal  $skip-chars-matching-whitespace-in-slice:end/disp8
+$skip-chars-matching-whitespace-in-slice:body:
+    # ++curr
+    40/increment-EAX
+    eb/jump  $skip-chars-matching-whitespace-in-slice:loop/disp8
+$skip-chars-matching-whitespace-in-slice:end:
+    # . restore registers
+    5b/pop-to-EBX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-skip-chars-matching-whitespace-in-slice:
+    # (EAX..ECX) = " \nab"
+    b8/copy-to-EAX  " \nab"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # EAX = skip-chars-matching-whitespace-in-slice(EAX, ECX)
+    # . . push args
+    51/push-ECX
+    50/push-EAX
+    # . . call
+    e8/call  skip-chars-matching-whitespace-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(ECX-EAX, 2, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-matching-whitespace-in-slice"/imm32
     68/push  2/imm32
     # . . push ECX-EAX
     29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from ECX
@@ -884,6 +1083,77 @@ test-skip-chars-not-matching-in-slice-all:
     # . . push args
     68/push  "F - test-skip-chars-not-matching-in-slice-all"/imm32
     68/push  0/imm32
+    # . . push ECX-EAX
+    29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from ECX
+    51/push-ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # end
+    c3/return
+
+skip-chars-not-matching-whitespace-in-slice:  # in : (address stream)
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # . save registers
+    51/push-ECX
+    53/push-EBX
+    # EAX = curr
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    # ECX = end
+    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy *(EBP+12) to ECX
+    # EBX = 0
+    31/xor                          3/mod/direct    3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # clear EBX
+$skip-chars-not-matching-whitespace-in-slice:loop:
+    # if (curr >= end) break
+    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # compare EAX with ECX
+    0f 83/jump-if-greater-or-equal-unsigned  $skip-chars-not-matching-in-slice:end/disp32
+    # EBX = *curr
+    8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/BL    .               .                 # copy byte at *EAX to BL
+    # if (*curr == ' ') break
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x20/imm32/space  # compare EBX
+    74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # if (*curr == '\n') break
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x0a/imm32/newline  # compare EBX
+    74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # if (*curr == '\t') break
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x09/imm32/tab    # compare EBX
+    74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # if (*curr == '\r') break
+    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0x0d/imm32/cr     # compare EBX
+    74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
+    # ++curr
+    40/increment-EAX
+    eb/jump  $skip-chars-not-matching-whitespace-in-slice:loop/disp8
+$skip-chars-not-matching-whitespace-in-slice:end:
+    # . restore registers
+    5b/pop-to-EBX
+    59/pop-to-ECX
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-skip-chars-not-matching-whitespace-in-slice:
+    # (EAX..ECX) = "ab\n"
+    b8/copy-to-EAX  "ab\n"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # EAX = skip-chars-not-matching-whitespace-in-slice(EAX, ECX)
+    # . . push args
+    51/push-ECX
+    50/push-EAX
+    # . . call
+    e8/call  skip-chars-not-matching-whitespace-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(ECX-EAX, 1, msg)
+    # . . push args
+    68/push  "F - test-skip-chars-not-matching-whitespace-in-slice"/imm32
+    68/push  1/imm32
     # . . push ECX-EAX
     29/subtract                     3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # subtract EAX from ECX
     51/push-ECX
