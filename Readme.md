@@ -13,7 +13,7 @@ to run, and nothing else.
   $ ./gen_iso examples/ex6.subx
   # try it out
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
-  # print the message followed by kernel panic
+  # print the message
   ```
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
