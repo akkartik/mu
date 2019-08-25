@@ -2235,15 +2235,21 @@ emit-indirect-mode:  # out : (address buffered-file), base : int, index : int, s
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # write-buffered(out, "0/mod/indirect ")
+$emit-indirect-mode:check-for-sib:
+    # if (index == 4/none) goto next check
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      4/imm32           # compare *(EBP+16)
+    0f 84/jump-if-equal  $emit-indirect-mode:check-for-disp/disp32
+$emit-indirect-mode:emit-sib:
+    # emit(out, "2/mod/indirect 4/rm32/sib " base "/base " index "/index " scale "/scale " disp "/disp32")
+    # . write-buffered(out, "2/mod/*+disp32 4/rm32/sib ")
     # . . push args
-    68/push  "0/mod/indirect "/imm32
+    68/push  "2/mod/*+disp32 4/rm32/sib "/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # print-int32-buffered(out, base)
+    # . print-int32-buffered(out, base)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -2251,7 +2257,129 @@ emit-indirect-mode:  # out : (address buffered-file), base : int, index : int, s
     e8/call  print-int32-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # write-buffered(out, "/rm32")
+    # . write-buffered(out, "/base ")
+    # . . push args
+    68/push  "/base "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, index)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(out, "/index ")
+    # . . push args
+    68/push  "/index "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, scale)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(out, "/scale ")
+    # . . push args
+    68/push  "/scale "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, disp)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(out, "/disp32")
+    # . . push args
+    68/push  "/disp32"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    e9/jump  $emit-indirect-mode:end/disp32
+$emit-indirect-mode:check-for-disp:
+    # if (disp == 0) goto next check
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      0/imm32           # compare *(EBP+24)
+    74/jump-if-equal  $emit-indirect-mode:emit-indirect/disp8
+$emit-indirect-mode:emit-disp:
+    # emit(out, "2/mod/*+disp32 " base "/rm32 " disp "/disp32")
+    # . write-buffered(out, "2/mod/*+disp32 ")
+    # . . push args
+    68/push  "2/mod/*+disp32 "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, base)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(out, "/rm32 ")
+    # . . push args
+    68/push  "/rm32 "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, disp)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(out, "/disp32")
+    # . . push args
+    68/push  "/disp32"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    eb/jump  $emit-indirect-mode:end/disp8
+$emit-indirect-mode:emit-indirect:
+    # emit(out, "0/mod/indirect " base "/rm32")
+    # . write-buffered(out, "0/mod/indirect ")
+    # . . push args
+    68/push  "0/mod/indirect "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, base)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(out, "/rm32")
     # . . push args
     68/push  "/rm32"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -2332,7 +2460,7 @@ test-emit-indirect-mode:
 #?     # }}}
     # check-stream-equal(_test-output-stream, "0/mod/indirect 0/rm32", msg)
     # . . push args
-    68/push  "F - test-emit-indirect-mode/0"/imm32
+    68/push  "F - test-emit-indirect-mode"/imm32
     68/push  "0/mod/indirect 0x00000000/rm32"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -2411,8 +2539,166 @@ test-emit-indirect-mode-2:
 #?     # }}}
     # check-stream-equal(_test-output-stream, "0/mod/indirect 7/rm32", msg)
     # . . push args
-    68/push  "F - test-emit-indirect-mode/0"/imm32
+    68/push  "F - test-emit-indirect-mode-2"/imm32
     68/push  "0/mod/indirect 0x00000007/rm32"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-indirect-mode-with-disp:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # emit-indirect-mode(_test-output-buffered-file, 6, 4/none, 0, 4)
+    # . . write args
+    68/push  4/imm32/.disp
+    68/push  0/imm32/.scale
+    68/push  4/imm32/.index/none
+    68/push  6/imm32/.base
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  emit-indirect-mode/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # dump output {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-stream-equal(_test-output-stream, "2/mod/*+disp32 6/rm32 4/disp32", msg)
+    # . . push args
+    68/push  "F - test-emit-indirect-mode-with-disp"/imm32
+    68/push  "2/mod/*+disp32 0x00000006/rm32 0x00000004/disp32"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-emit-indirect-mode-with-sib:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-EAX  _test-output-buffered-file/imm32
+    05/add-to-EAX  4/imm32
+    50/push-EAX
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # emit-indirect-mode(_test-output-buffered-file, 6/base, 1/index, 2/scale, 4/disp)
+    # . . write args
+    68/push  4/imm32/.disp
+    68/push  2/imm32/.scale
+    68/push  1/imm32/.index
+    68/push  6/imm32/.base
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  emit-indirect-mode/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x14/imm32        # add to ESP
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     # dump output {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     # }}}
+    # check-stream-equal(_test-output-stream, "2/mod/indirect 4/rm32/sib 6/base 1/index 2/scale 4/disp", msg)
+    # . . push args
+    68/push  "F - test-emit-indirect-mode-with-sib"/imm32
+    68/push  "2/mod/*+disp32 4/rm32/sib 0x00000006/base 0x00000001/index 0x00000002/scale 0x00000004/disp32"/imm32
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  check-stream-equal/disp32
