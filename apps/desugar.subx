@@ -1804,7 +1804,7 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     #   skip whitespace
     #   if (*word->start == ')') goto end
     #   if (*word->start == '-') goto displacement
-    #   if (*word->start != '+') goto error2
+    #   if (*word->start != '+') goto error1
     #   ++word->start to skip '+'
     #   skip whitespace
     #   if next 3 characters don't make a register, goto displacement
@@ -1813,18 +1813,18 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     #   if (*word->start == ')') goto end
     #   if (*word->start == '<') {
     #     ++word->start to skip '<'
-    #     if (*word->start != '<') goto error3
+    #     if (*word->start != '<') goto error2
     #     ++word->start to skip '<'
     #     skip whitespace
     #     read integer into scale
     #     skip whitespace
     #     if (*word->start == ')') goto end
     #   }
-    #   if (*word->start not in '+' '-') goto error4
+    #   if (*word->start not in '+' '-') goto error3
     # displacement:
     #   read integer into disp
     #   skip whitespace
-    #   if (*word->start != ')') goto error5
+    #   if (*word->start != ')') goto error4
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -1907,7 +1907,9 @@ $parse-effective-address:compound-expression:
     # if (*word->start == '-') goto displacement
     3d/compare-EAX-and  0x2d/imm32/minus
     0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
-    # if (*word->start != '+') goto error2
+    # if (*word->start != '+') goto error1
+    3d/compare-EAX-and  0x2b/imm32/plus
+    0f 85/jump-if-not-equal  $parse-effective-address:error1/disp32
 $parse-effective-address:check-for-index:
     # ++word->start to skip '+'
     ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
@@ -1978,14 +1980,19 @@ $parse-effective-address:index:
     8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/AL    .               .                 # copy byte at *EAX to AL
     81          4/subop/and         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xff/imm32        # bitwise and of EAX
     3d/compare-EAX-and  0x29/imm32/close-paren
-    74/jump-if-equal  $parse-effective-address:end/disp8
+    0f 84/jump-if-equal  $parse-effective-address:end/disp32
 $parse-effective-address:check-for-scale:
     # if (*word->start != '<') goto next check
     3d/compare-EAX-and  0x3c/imm32/less-than
     75/jump-if-not-equal  $parse-effective-address:check-for-displacement/disp8
     # ++word->start to skip '<'
     ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
-    # if (*word->start != '<') goto error3
+    # if (*word->start != '<') goto error2
+    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
+    8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/AL    .               .                 # copy byte at *EAX to AL
+    81          4/subop/and         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xff/imm32        # bitwise and of EAX
+    3d/compare-EAX-and  0x3c/imm32/less-than
+    0f 85/jump-if-not-equal  $parse-effective-address:error2/disp32
     # ++word->start to skip '<'
     ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
     # skip whitespace
@@ -2027,7 +2034,12 @@ $parse-effective-address:scale:
     3d/compare-EAX-and  0x29/imm32/close-paren
     74/jump-if-equal  $parse-effective-address:end/disp8
 $parse-effective-address:check-for-displacement:
-    # if (*word->start not in '+' '-') goto error4
+    # if (*word->start not in '+' '-') goto error3
+    3d/compare-EAX-and  0x2b/imm32/plus
+    74/jump-if-equal  $parse-effective-address:displacement/disp8
+    3d/compare-EAX-and  0x2d/imm32/minus
+    74/jump-if-equal  $parse-effective-address:displacement/disp8
+    e9/jump  $parse-effective-address:error3/disp32
 $parse-effective-address:displacement:
     # read integer into disp
     # . EAX = next-hex-int(word)
@@ -2050,7 +2062,11 @@ $parse-effective-address:displacement:
     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
     # . word->start = EAX
     89/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ESI
-    # if (*word->start != ')') goto error5
+    # if (*word->start != ')') goto error4
+    8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/AL    .               .                 # copy byte at *EAX to AL
+    81          4/subop/and         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xff/imm32        # bitwise and of EAX
+    3d/compare-EAX-and  0x29/imm32/close-paren
+    0f 85/jump-if-not-equal  $parse-effective-address:error4/disp32
 $parse-effective-address:end:
     # return base in EAX
     89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           7/r32/EDI   .               .                 # copy EDI to EAX
@@ -2061,6 +2077,162 @@ $parse-effective-address:end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
+$parse-effective-address:error1:
+    # print(stderr, "error: unexpected character: " EAX "\n")
+    # . write-buffered(Stderr, "error: unexpected character: ")
+    # . . push args
+    68/push  "error: unexpected character: "/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, EAX)
+    # . . push args
+    50/push-EAX
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(Stderr, "\n")
+    # . . push args
+    68/push  "\n"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$parse-effective-address:error2:
+    # print(stderr, "error: '<' can only be followed by '<' but got: " EAX "\n")
+    # . write-buffered(Stderr, "error: '<' can only be followed by '<' but got: ")
+    # . . push args
+    68/push  "error: '<' can only be followed by '<' but got: "/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, EAX)
+    # . . push args
+    50/push-EAX
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(Stderr, "\n")
+    # . . push args
+    68/push  "\n"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$parse-effective-address:error3:
+    # print(stderr, "error: unexpected character before displacement: " EAX "\n")
+    # . write-buffered(Stderr, "error: unexpected character before displacement: ")
+    # . . push args
+    68/push  "error: unexpected character before displacement: "/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, EAX)
+    # . . push args
+    50/push-EAX
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(Stderr, "\n")
+    # . . push args
+    68/push  "\n"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$parse-effective-address:error4:
+    # print(stderr, "error: unexpected character after displacement: " EAX "; expected ')' to wrap up\n")
+    # . write-buffered(Stderr, "error: unexpected character after displacement: ")
+    # . . push args
+    68/push  "error: unexpected character after displacement: "/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . print-int32-buffered(out, EAX)
+    # . . push args
+    50/push-EAX
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  print-int32-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . write-buffered(Stderr, "; expected ')' to wrap up\n")
+    # . . push args
+    68/push  "; expected ')' to wrap up\n"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . syscall(exit, 1)
+    bb/copy-to-EBX  1/imm32
+    b8/copy-to-EAX  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 # assumes 'in' starts with a register name, and returns pointer to its code
 # side-effect: modifies 'in' to scan past the initial register name
