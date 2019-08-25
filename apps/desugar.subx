@@ -1497,6 +1497,7 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     #   if (*word->start != '+') goto error2
     #   ++word->start to skip '+'
     #   skip whitespace
+    #   if next 3 characters don't make a register, goto displacement
     #   read register into index
     #   skip whitespace
     #   if (*word->start == ')') goto end
@@ -1509,10 +1510,9 @@ parse-effective-address:  # word : (address slice) -> base/EAX, index/ECX, scale
     #     skip whitespace
     #     if (*word->start == ')') goto end
     #   }
-    #   if (*word->start != '+') goto error4
-    #   ++word->start to skip '+'
-    #   skip whitespace
-    #   read register into disp
+    #   if (*word->start not in '+' '-') goto error4
+    # displacement:
+    #   read integer into disp
     #   skip whitespace
     #   if (*word->start != ')') goto error5
     # . prolog
@@ -1553,7 +1553,7 @@ $parse-effective-address:simple-register:
     # . base = *EAX
     8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           7/r32/EDI   .               .                 # copy *EAX to EDI
     # return
-    eb/jump  $parse-effective-address:end/disp8
+    e9/jump  $parse-effective-address:end/disp32
 $parse-effective-address:compound-expression:
     # ++word->start to skip '('
     ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
@@ -1593,24 +1593,93 @@ $parse-effective-address:compound-expression:
     8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/AL    .               .                 # copy byte at *EAX to AL
     81          4/subop/and         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xff/imm32        # bitwise and of EAX
     3d/compare-EAX-and  0x29/imm32/close-paren
-    74/jump-if-equal  $parse-effective-address:end/disp8
+    0f 84/jump-if-equal  $parse-effective-address:end/disp32
     # if (*word->start != '+') goto error2
-    # ++word->start
+$parse-effective-address:check-for-index:
+    # ++word->start to skip '+'
+    ff          0/subop/increment   0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # increment *ESI
     # skip whitespace
+    # . EAX = skip-chars-matching-whitespace-in-slice(word->start, word->end)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # push *(ESI+4)
+    ff          6/subop/push        0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # push *ESI
+    # . . call
+    e8/call  skip-chars-matching-whitespace-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . word->start = EAX
+    89/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ESI
+$parse-effective-address:resolve-ambiguity:
+    # if next 3 characters don't make a register, goto displacement
+    # . spill ECX
+    51/push-ECX
+    # . var tmp/ECX = {word->start, word->start+3}
+    # . . ECX = word->start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy EAX to ECX
+    # . . EAX = word->start+3
+    05/add-to-EAX  3/imm32
+    # . . push
+    50/push-EAX
+    51/push-ECX
+    # . . copy ESP to ECX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # . EAX = maybe-get-slice(Register, tmp, row-size=8)
+    # . . push args
+    68/push  8/imm32/row-size
+    51/push-ECX
+    68/push  Registers/imm32
+    # . . call
+    e8/call  maybe-get-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . reclaim tmp
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . restore ECX
+    59/pop-to-ECX
+    # . if (EAX == 0) goto displacement
+    3d/compare-EAX-and  0/imm32
+    0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
+$parse-effective-address:index:
     # read register into index
+    # . EAX = next-register(word)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    # . . call
+    e8/call  next-register/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # . ECX = *EAX
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    # skip whitespace
+    # . EAX = skip-chars-matching-whitespace-in-slice(word->start, word->end)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/ESI    .           .             .           .           4/disp8         .                 # push *(ESI+4)
+    ff          6/subop/push        0/mod/indirect  6/rm32/ESI    .           .             .           .           .               .                 # push *ESI
+    # . . call
+    e8/call  skip-chars-matching-whitespace-in-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # . word->start = EAX
+    89/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy EAX to *ESI
+    # if (*word->start == ')') goto end
+    8a/copy-byte                    0/mod/indirect  0/rm32/EAX    .           .             .           0/r32/AL    .               .                 # copy byte at *EAX to AL
+    81          4/subop/and         3/mod/direct    0/rm32/EAX    .           .             .           .           .               0xff/imm32        # bitwise and of EAX
+    3d/compare-EAX-and  0x29/imm32/close-paren
+    74/jump-if-equal  $parse-effective-address:end/disp8
+$parse-effective-address:check-for-scale:
+    # if (*word->start != '<') goto displacement
+    # ++word->start to skip '<'
+    # if (*word->start != '<') goto error3
+    # ++word->start to skip '<'
+    # skip whitespace
+$parse-effective-address:scale:
+    # read register into scale
     # skip whitespace
     # if (*word->start == ')') goto end
-    # if (*word->start == '<') {
-    #   ++word->start to skip '<'
-    #   if (*word->start != '<') goto error3
-    #   ++word->start to skip '<'
-    #   skip whitespace
-    #   read register into scale
-    #   skip whitespace
-    #   if (*word->start == ')') goto end
-    # }
+$parse-effective-address:check-for-displacement:
     # if (*word->start not in '+' '-') goto error4
-    # read int into disp
+$parse-effective-address:displacement:
+    # read integer into disp
     # . EAX = next-hex-int(word)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
@@ -1869,8 +1938,68 @@ test-parse-effective-address-base-displacement:
     5d/pop-to-EBP
     c3/return
 
-#? test-parse-effective-address-base-index:
-#? 
+test-parse-effective-address-base-index:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # var slice/ECX = "*(esi+ecx)"
+    b8/copy-to-EAX  "*(esi+ecx)"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # copy *EAX to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  1/index/ECX   .           1/r32/ECX   4/disp8         .                 # copy EAX+ECX+4 to ECX
+    05/add-to-EAX  4/imm32
+    # . ECX = {EAX, ECX}
+    51/push-ECX
+    50/push-EAX
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # EAX, ECX, EDX, EBX = parse-effective-address(slice)
+    # . . push args
+    51/push-ECX
+    # . . call
+    e8/call  parse-effective-address/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # slice clobbered beyond this point
+    # check-ints-equal(EAX, 6, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-base-index/base"/imm32
+    68/push  6/imm32/ESI
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(ECX, 1, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-base-index/index"/imm32
+    68/push  1/imm32/none
+    51/push-ECX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(EDX, 0, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-base-index/scale"/imm32
+    68/push  0/imm32/none
+    52/push-EDX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(EBX, 0, msg)
+    # . . push args
+    68/push  "F - test-parse-effective-address-base-index/displacement"/imm32
+    68/push  0/imm32
+    53/push-EBX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
 #? test-parse-effective-address-base-index-scale:
 #? 
 #? test-parse-effective-address-base-index-scale-displacement:
@@ -2398,7 +2527,7 @@ test-skip-until-close-paren-in-slice-stops-at-end:
     5d/pop-to-EBP
     c3/return
 
-# assumes 'in' starts with a '+' or '-', optional whitespace, and an unsigned integer
+# assumes 'in' starts with optional '+' or '-', optional whitespace, and an unsigned integer
 # returns the value of the integer
 # side-effect: modifies 'in' to skip past the integer
 next-hex-int:  # in : (address slice) -> result/EAX
@@ -2434,7 +2563,7 @@ $next-hex-int:positive:
 $next-hex-int:negative:
     # else if (*curr == '-') ++curr, negate = true
     3d/compare-EAX-and  0x2d/imm32/-
-    75/jump-if-not-equal  $next-hex-int:abort/disp8
+    75/jump-if-not-equal  $next-hex-int:skip-whitespace/disp8
     # . ++curr
     41/increment-ECX
     # . negate = true
