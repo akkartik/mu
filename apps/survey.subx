@@ -61,7 +61,6 @@ Entry:
     # run tests if necessary, convert stdin if not
     # . prolog
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # initialize heap
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # . argc > 1
     81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
@@ -1215,6 +1214,7 @@ $compute-offsets:end:
     89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
     5d/pop-to-EBP
     c3/return
+
 $compute-offsets:abort:
     # . _write(2/stderr, error)
     # . . push args
@@ -1435,7 +1435,7 @@ compute-addresses:  # segments : (address stream {string, segment-info}), labels
     #   while true
     #     if (lrow >= max) break
     #     seg-name : (address string) = lrow->segment-name
-    #     label-seg : (address segment-info) = get(segments, seg-name, row-size=16)
+    #     label-seg : (address segment-info) = get(segments, seg-name)
     #     lrow->address = label-seg->address + lrow->segment-offset
     #     trace-sssns("label " lrow->key " is at address " lrow->address)
     #     lrow += 16  # row-size
@@ -1589,18 +1589,19 @@ $compute-addresses:label-loop:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # label-seg/EDX : (address segment-info) = get(segments, seg-name, row-size=16)
+    # label-seg/EDX : (address segment-info) = get(segments, seg-name, row-size=16, "segment table")
     # . save EAX
     50/push-EAX
     # . EAX = get(segments, seg-name, row-size=16)
     # . . push args
+    68/push  "segment table"/imm32
     68/push  0x10/imm32/row-size
     52/push-EDX
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
     # . . call
     e8/call  get/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # . EDX = EAX
     89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EDX
     # . restore EAX
@@ -2264,16 +2265,17 @@ $emit-segments:check-metadata:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
 #?     # }}}
-    # info/ESI = get-slice(labels, datum, row-size=16)
-    # . EAX = get-slice(labels, datum, row-size=16)
+    # info/ESI = get-slice(labels, datum, row-size=16, "label table")
+    # . EAX = get-slice(labels, datum, row-size=16, "label table")
     # . . push args
+    68/push  "label table"/imm32
     68/push  0x10/imm32/row-size
     57/push-EDI
     ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
     # . . call
     e8/call  get-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # . ESI = EAX
     89/copy                         3/mod/direct    6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy EAX to ESI
 $emit-segments:check-global-variable:
@@ -3377,15 +3379,16 @@ emit-elf-header:  # out : (address buffered-file), segments : (address stream {s
     # *Elf_e_entry = get(labels, "Entry")->address
     # . EAX = labels
     8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
-    # . label-info/EAX = get(labels, "Entry", row-size=16)
+    # . label-info/EAX = get(labels, "Entry", row-size=16, "label table")
     # . . push args
+    68/push  "label table"/imm32
     68/push  0x10/imm32/row-size
     68/push  "Entry"/imm32
     50/push-EAX
     # . . call
     e8/call  get/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
     # . EAX = label-info->address
     8b/copy                         1/mod/*+disp8   0/rm32/EAX    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EAX+8) to EAX
     # . *Elf_e_entry = EAX

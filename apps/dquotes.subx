@@ -196,6 +196,7 @@ $convert:check-for-comment:
     3d/compare-EAX-and  0x23/imm32/hash
     74/jump-if-equal  $convert:word-loop/disp8
 $convert:check-for-string-literal:
+    # if (slice-starts-with?(word-slice, '"')) continue
     3d/compare-EAX-and  0x22/imm32/dquote
     75/jump-if-not-equal  $convert:regular-word/disp8
 $convert:string-literal:
@@ -1759,7 +1760,7 @@ test-emit-metadata-in-string-literal:
     5d/pop-to-EBP
     c3/return
 
-# (re)compute the bounds of the next word in the line
+# (re)compute the bounds of the next word or string literal in the line
 # return empty string on reaching end of file
 next-word-or-string:  # line : (address stream byte), out : (address slice)
     # . prolog
@@ -1798,7 +1799,7 @@ $next-word-or-string:check-for-comment:
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ESI+4) to ECX
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/EAX   0xc/disp8       .                 # copy ESI+ECX+12 to EAX
     89/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EDI
-    # if line->data[line->read] == '#'
+    # if (line->data[line->read] != '#') goto next check
     # . EAX = line->data[line->read]
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
@@ -1816,7 +1817,7 @@ $next-word-or-string:comment:
     # return
     eb/jump  $next-word-or-string:end/disp8
 $next-word-or-string:check-for-string-literal:
-    # if line->data[line->read] == '"'
+    # if (line->data[line->read] != '"') goto next check
     # . EAX = line->data[line->read]
     31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
