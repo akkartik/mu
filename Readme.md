@@ -1,9 +1,10 @@
 # Mu: a human-scale computer
 
-* Not designed to operate in large clusters providing services for millions of
-  people.
-* Designed for _you_, to run one computer. (Or a few.) Running the code you
-  want to run, and nothing else.
+Not designed to operate in large clusters providing services for millions of
+people.
+
+Designed for _you_, to run one computer. (Or a few.) Running the code you want
+to run, and nothing else.
 
   ```sh
   $ git clone https://github.com/akkartik/mu
@@ -12,7 +13,7 @@
   $ ./gen_iso examples/ex6.subx
   # try it out
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
-  # print the message followed by kernel panic
+  # print the message
   ```
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
@@ -328,19 +329,18 @@ distinguish between code and data. Correspondingly, SubX programs consist of a
 series of segments, each starting with a header line: `==` followed by a name
 and approximate starting address.
 
-All code must lie in a segment called 'code'. Execution begins at the start of
-the `code` segment by default.
+All code must lie in a segment called 'code'.
 
-You can reuse segment names:
+Segments can be added to.
 
-```
-== code
+```sh
+== code 0x09000000  # first mention requires starting address
 ...A...
 
-== data
+== data 0x0a000000
 ...B...
 
-== code
+== code             # no address necessary when adding
 ...C...
 ```
 
@@ -841,9 +841,11 @@ Mu builds on many ideas that have come before, especially:
   markup can be clean;
 - BDD for challenging us all to write tests at a higher level;
 - JavaScript and CSS for demonstrating the power of a DOM for complex
-  structured documents.
-- Rust for demonstrating that a system-programming language can be safe.
-- Forth for demonstrating that ergonomics don't require grammar.
+  structured documents;
+- Rust for demonstrating that a system-programming language can be safe;
+- Forth for demonstrating that ergonomics don't require grammar; and
+- [Minimal Linux Live](http://minimal.linux-bg.org) for teaching how to create
+  a bootable disk image.
 
 ## Coda
 
