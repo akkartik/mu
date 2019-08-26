@@ -12,22 +12,23 @@
 #     Again, that's for subsequent scripts.
 
 set -e
-set -v
 
 ./build
 
-echo `cat $* |grep -v '^\s*#\|^\s*$' |wc -l` lines
-
+echo "  tests"
 cat $*          |apps/tests    > a.tests
 
+echo "  dquotes"
 cat a.tests     |apps/dquotes  > a.dquotes
 
+echo "  assort"
 cat a.dquotes   |apps/assort   > a.assort
 
+echo "  pack"
 cat a.assort    |apps/pack     > a.pack
 
+echo "  survey"
 cat a.pack      |apps/survey   > a.survey
 
+echo "  hex"
 cat a.survey    |apps/hex      > a.elf
-
-xxd a.elf                      > a.xxd
