@@ -1371,7 +1371,7 @@ $next-word-or-expression:check0:
     # . return out = {0, 0}
     c7          0/subop/copy        0/mod/direct    7/rm32/EDI    .           .             .           .           .               0/imm32           # copy to *EDI
     c7          0/subop/copy        1/mod/*+disp8   7/rm32/EDI    .           .             .           .           4/disp8         0/imm32           # copy to *(EDI+4)
-    eb/jump  $next-word-or-expression:end/disp8
+    e9/jump  $next-word-or-expression:end/disp32
 $next-word-or-expression:check-for-comment:
     # out->start = &line->data[line->read]
     8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(ESI+4) to ECX
@@ -1383,7 +1383,7 @@ $next-word-or-expression:check-for-comment:
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
     # . compare
     3d/compare-EAX-and  0x23/imm32/pound
-    75/jump-if-not-equal  $next-word-or-expression:check-for-paren/disp8
+    75/jump-if-not-equal  $next-word-or-expression:check-for-string-literal/disp8
 $next-word-or-expression:comment:
     # out->end = &line->data[line->write]
     8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # copy *ESI to EAX
@@ -1394,6 +1394,24 @@ $next-word-or-expression:comment:
     89/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(ESI+4)
     # return
     eb/jump  $next-word-or-expression:end/disp8
+$next-word-or-expression:check-for-string-literal:
+    # if (line->data[line->read] != '"') goto next check
+    # . EAX = line->data[line->read]
+    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/ESI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ESI+ECX+12) to AL
+    # . compare
+    3d/compare-EAX-and  0x22/imm32/dquote
+    75/jump-if-not-equal  $next-word-or-expression:check-for-paren/disp8
+$next-word-or-expression:string-literal:
+    # skip-string(line)
+    # . . push args
+    56/push-ESI
+    # . . call
+    e8/call  skip-string/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # skip rest of word
+    eb/jump  $next-word-or-expression:regular-word/disp8
 $next-word-or-expression:check-for-paren:
     # if (line->data[line->read] != '*') goto next check
     # . EAX = line->data[line->read]
@@ -1676,7 +1694,7 @@ test-next-word-or-expression-returns-whole-comment:
     5d/pop-to-EBP
     c3/return
 
-test-next-word-or-expression-returns-empty-expression-on-eof:
+test-next-word-or-expression-returns-empty-slice-on-eof:
     # . prolog
     55/push-EBP
     89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
@@ -1708,6 +1726,132 @@ test-next-word-or-expression-returns-empty-expression-on-eof:
     # . . push slice->end - slice->start
     8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
     2b/subtract                     0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # subtract *ECX from EAX
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-next-word-or-expression-returns-string-literal:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = {0, 0}
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # write(_test-input-stream, " \"a b\"/imm32 ")
+    # . . push args
+    68/push  " \"a b\"/imm32 "/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # next-word-or-expression(_test-input-stream, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  next-word-or-expression/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(slice->start - _test-input-stream->data, 1, msg)
+    # . check-ints-equal(slice->start - _test-input-stream, 13, msg)
+    # . . push args
+    68/push  "F - test-next-word-or-expression-returns-string-literal: start"/imm32
+    68/push  0xd/imm32
+    # . . push slice->start - _test-input-stream
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+    81          5/subop/subtract    3/mod/direct    0/rm32/EAX    .           .             .           .           .               _test-input-stream/imm32 # subtract from EAX
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(slice->end - _test-input-stream->data, 12, msg)
+    # . check-ints-equal(slice->end - _test-input-stream, 24, msg)
+    # . . push args
+    68/push  "F - test-next-word-or-expression-returns-string-literal: end"/imm32
+    68/push  0x18/imm32
+    # . . push slice->end - _test-input-stream
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
+    81          5/subop/subtract    3/mod/direct    0/rm32/EAX    .           .             .           .           .               _test-input-stream/imm32 # subtract from EAX
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
+    5d/pop-to-EBP
+    c3/return
+
+test-next-word-or-expression-returns-string-with-escapes:
+    # . prolog
+    55/push-EBP
+    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    # var slice/ECX = {0, 0}
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    # write(_test-input-stream, " \"a\\\"b\"/x")
+    # . . push args
+    68/push  " \"a\\\"b\"/x"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # next-word-or-expression(_test-input-stream, slice)
+    # . . push args
+    51/push-ECX
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  next-word-or-expression/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    # check-ints-equal(slice->start - _test-input-stream->data, 1, msg)
+    # . check-ints-equal(slice->start - _test-input-stream, 13, msg)
+    # . . push args
+    68/push  "F - test-next-word-or-expression-returns-string-with-escapes: start"/imm32
+    68/push  0xd/imm32
+    # . . push slice->start - _test-input-stream
+    8b/copy                         0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/EAX   .               .                 # copy *ECX to EAX
+    81          5/subop/subtract    3/mod/direct    0/rm32/EAX    .           .             .           .           .               _test-input-stream/imm32 # subtract from EAX
+    50/push-EAX
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    # check-ints-equal(slice->end - _test-input-stream->data, 9, msg)
+    # . check-ints-equal(slice->end - _test-input-stream, 21, msg)
+    # . . push args
+    68/push  "F - test-next-word-or-expression-returns-string-with-escapes: end"/imm32
+    68/push  0x15/imm32
+    # . . push slice->end - _test-input-stream
+    8b/copy                         1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ECX+4) to EAX
+    81          5/subop/subtract    3/mod/direct    0/rm32/EAX    .           .             .           .           .               _test-input-stream/imm32 # subtract from EAX
     50/push-EAX
     # . . call
     e8/call  check-ints-equal/disp32
