@@ -18,78 +18,78 @@
 
 Entry:
     # syscall(creat, Filename)
-    bb/copy-to-EBX  Filename/imm32
-    b9/copy-to-ECX  0x180/imm32/fixed-perms
-    b8/copy-to-EAX  8/imm32/creat
+    bb/copy-to-ebx  Filename/imm32
+    b9/copy-to-ecx  0x180/imm32/fixed-perms
+    b8/copy-to-eax  8/imm32/creat
     cd/syscall  0x80/imm8
 
     # stream = syscall(open, Filename, O_WRONLY, 0)  # we can't use 'fd' because it looks like a hex byte
-    bb/copy-to-EBX  Filename/imm32
-    b9/copy-to-ECX  1/imm32/wronly
-    ba/copy-to-EDX  0x180/imm32/fixed-perms
-    b8/copy-to-EAX  5/imm32/open
+    bb/copy-to-ebx  Filename/imm32
+    b9/copy-to-ecx  1/imm32/wronly
+    ba/copy-to-edx  0x180/imm32/fixed-perms
+    b8/copy-to-eax  5/imm32/open
     cd/syscall  0x80/imm8
     # save stream
-    bb/copy-to-EBX  Stream/imm32
-    89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
+    bb/copy-to-ebx  Stream/imm32
+    89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
 
     # syscall(write, Stream, "a", 1)
     # . load stream
-    bb/copy-to-EBX  Stream/imm32
-    8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # copy *EBX to EBX
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
     # .
-    b9/copy-to-ECX  A/imm32
-    ba/copy-to-EDX  1/imm32/size
-    b8/copy-to-EAX  4/imm32/write
+    b9/copy-to-ecx  A/imm32
+    ba/copy-to-edx  1/imm32/size
+    b8/copy-to-eax  4/imm32/write
     cd/syscall  0x80/imm8
 
     # syscall(close, Stream)
     # . load stream
-    bb/copy-to-EBX  Stream/imm32
-    8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # copy *EBX to EBX
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
     # .
-    b8/copy-to-EAX  6/imm32/close
+    b8/copy-to-eax  6/imm32/close
     cd/syscall  0x80/imm8
 
     # stream = syscall(open, Filename, O_RDONLY, 0)
-    bb/copy-to-EBX  Filename/imm32
-    b9/copy-to-ECX  0/imm32/rdonly
-    ba/copy-to-EDX  0x180/imm32/fixed-perms
-    b8/copy-to-EAX  5/imm32/open
+    bb/copy-to-ebx  Filename/imm32
+    b9/copy-to-ecx  0/imm32/rdonly
+    ba/copy-to-edx  0x180/imm32/fixed-perms
+    b8/copy-to-eax  5/imm32/open
     cd/syscall  0x80/imm8
     # . save Stream
-    bb/copy-to-EBX  Stream/imm32
-    89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
+    bb/copy-to-ebx  Stream/imm32
+    89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
 
     # syscall(read, Stream, B, 1)
     # . load stream
-    bb/copy-to-EBX  Stream/imm32
-    8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # copy *EBX to EBX
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
     # .
-    b9/copy-to-ECX  B/imm32
-    ba/copy-to-EDX  1/imm32/size
-    b8/copy-to-EAX  3/imm32/read
+    b9/copy-to-ecx  B/imm32
+    ba/copy-to-edx  1/imm32/size
+    b8/copy-to-eax  3/imm32/read
     cd/syscall  0x80/imm8
 
     # syscall(close, Stream)
     # . load stream
-    bb/copy-to-EBX  Stream/imm32
-    8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # copy *EBX to EBX
+    bb/copy-to-ebx  Stream/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
     #
-    b8/copy-to-EAX  6/imm32/close
+    b8/copy-to-eax  6/imm32/close
     cd/syscall  0x80/imm8
 
     # syscall(unlink, filename)
-    bb/copy-to-EBX  Filename/imm32
-    b8/copy-to-EAX  0xa/imm32/unlink
+    bb/copy-to-ebx  Filename/imm32
+    b8/copy-to-eax  0xa/imm32/unlink
     cd/syscall  0x80/imm8
 
     # syscall(exit, b)
     # . load b
-    bb/copy-to-EBX  B/imm32
-    8b/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           3/r32/EBX   .               .                 # copy *EBX to EBX
+    bb/copy-to-ebx  B/imm32
+    8b/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # copy *ebx to ebx
     #
-    b8/copy-to-EAX  1/imm32/exit
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 == data 0x0a000000

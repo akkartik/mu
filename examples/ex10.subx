@@ -14,57 +14,57 @@
 
 Entry:  # return argv-equal(argv[1], argv[2])
 #       At the start of a SubX program:
-#         argc: *ESP
-#         argv[0]: *(ESP+4)
-#         argv[1]: *(ESP+8)
+#         argc: *esp
+#         argv[0]: *(esp+4)
+#         argv[1]: *(esp+8)
 #         ...
     # . prolog
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # argv-equal(argv[1], argv[2])
     # . . push argv[2]
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . push argv[1]
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call argv-equal/disp32
-    # syscall(exit, EAX)
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    b8/copy-to-EAX  1/imm32/exit
+    # syscall(exit, eax)
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 # compare two null-terminated ascii strings
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
-argv-equal:  # (s1, s2) : null-terminated ascii strings -> EAX : boolean
-    # initialize s1 (ECX) and s2 (EDX)
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           1/r32/ECX   4/disp8         .                 # copy *(ESP+4) to ECX
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   8/disp8         .                 # copy *(ESP+8) to EDX
+argv-equal:  # (s1, s2) : null-terminated ascii strings -> eax : boolean
+    # initialize s1 (ecx) and s2 (edx)
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           1/r32/ecx   4/disp8         .                 # copy *(esp+4) to ecx
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           2/r32/edx   8/disp8         .                 # copy *(esp+8) to edx
 $argv-equal:loop:
-    # c1/EAX, c2/EBX = *s1, *s2
-    b8/copy-to-EAX  0/imm32
-    8a/copy-byte                    0/mod/indirect  1/rm32/ECX    .           .             .           0/r32/AL    .               .                 # copy byte at *ECX to AL
-    bb/copy-to-EBX  0/imm32
-    8a/copy-byte                    0/mod/indirect  2/rm32/EDX    .           .             .           3/r32/BL    .               .                 # copy byte at *EDX to BL
+    # c1/eax, c2/ebx = *s1, *s2
+    b8/copy-to-eax  0/imm32
+    8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
+    bb/copy-to-ebx  0/imm32
+    8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           3/r32/BL    .               .                 # copy byte at *edx to BL
     # if (c1 == 0) break
-    3d/compare-EAX-and  0/imm32
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $argv-equal:break/disp8
     # if (c1 != c2) return false
-    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
     75/jump-if-not-equal  $argv-equal:false/disp8
     # ++s1, ++s2
-    41/increment-ECX
-    42/increment-EDX
+    41/increment-ecx
+    42/increment-edx
     # end while
     eb/jump  $argv-equal:loop/disp8
 $argv-equal:break:
     # if (c2 == 0) return true
-    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0/imm32           # compare EBX
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
     75/jump-if-not-equal  $argv-equal:false/disp8
 $argv-equal:success:
-    b8/copy-to-EAX  1/imm32
+    b8/copy-to-eax  1/imm32
     c3/return
     # return false
 $argv-equal:false:
-    b8/copy-to-EAX  0/imm32
+    b8/copy-to-eax  0/imm32
     c3/return
 
 == data 0x0a000000

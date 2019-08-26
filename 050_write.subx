@@ -7,50 +7,50 @@
 
 Entry:  # just exit; can't test _write just yet
     # . syscall(exit, 0)
-    bb/copy-to-EBX  0/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  0/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 _write:  # fd : int, s : (address array byte) -> <void>
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    50/push-EAX
-    51/push-ECX
-    52/push-EDX
-    53/push-EBX
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
     # syscall(write, fd, (data) s+4, (size) *s)
-    # . fd : EBX
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   8/disp8         .                 # copy *(EBP+8) to EBX
-    # . data : ECX = s+4
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy *(EBP+12) to ECX
-    81          0/subop/add         3/mod/direct    1/rm32/ECX    .           .             .           .           .               4/imm32           # add to ECX
-    # . size : EDX = *s
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
-    8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           2/r32/EDX   .               .                 # copy *EDX to EDX
+    # . fd : ebx
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
+    # . data : ecx = s+4
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
+    81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # add to ecx
+    # . size : edx = *s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+    8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
     # . syscall
-    b8/copy-to-EAX  4/imm32/write
+    b8/copy-to-eax  4/imm32/write
     cd/syscall  0x80/imm8
-    # if (EAX < 0) abort
-    3d/compare-EAX-with  0/imm32
+    # if (eax < 0) abort
+    3d/compare-eax-with  0/imm32
     0f 8c/jump-if-lesser  $_write:abort/disp32
 $_write:end:
     # . restore registers
-    5b/pop-to-EBX
-    5a/pop-to-EDX
-    59/pop-to-ECX
-    58/pop-to-EAX
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $_write:abort:
     # can't write a message here for risk of an infinite loop, so we'll use a special exit code instead
     # . syscall(exit, 255)
-    bb/copy-to-EBX  0xff/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  0xff/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
 

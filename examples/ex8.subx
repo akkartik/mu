@@ -8,11 +8,11 @@
 #   3  # length of 'abc'
 #
 # At the start of a SubX program:
-#   argc: *ESP
-#   argv[0]: *(ESP+4)
-#   argv[1]: *(ESP+8)
+#   argc: *esp
+#   argv[0]: *(esp+4)
+#   argv[1]: *(esp+8)
 #   ...
-# Locals start from ESP-4 downwards.
+# Locals start from esp-4 downwards.
 
 == code 0x09000000
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -21,39 +21,39 @@
 
 Entry:
     # . prolog
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # EAX = ascii-length(argv[1])
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # eax = ascii-length(argv[1])
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  ascii-length/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 
-    # exit(EAX)
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
-    b8/copy-to-EAX  1/imm32/exit
+    # exit(eax)
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
-ascii-length:  # s : (address array byte) -> n/EAX
-    # EDX = s
-    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none  .           2/r32/EDX   4/disp8         .                 # copy *(ESP+4) to EDX
-    # var result/EAX = 0
-    b8/copy-to-EAX  0/imm32
+ascii-length:  # s : (address array byte) -> n/eax
+    # edx = s
+    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           2/r32/edx   4/disp8         .                 # copy *(esp+4) to edx
+    # var result/eax = 0
+    b8/copy-to-eax  0/imm32
 $ascii-length:loop:
-    # var c/ECX = *s
-    8a/copy-byte                    0/mod/*         2/rm32/EDX    .           .             .           1/r32/CL    .               .                 # copy byte at *EDX to CL
+    # var c/ecx = *s
+    8a/copy-byte                    0/mod/*         2/rm32/edx    .           .             .           1/r32/CL    .               .                 # copy byte at *edx to CL
     # if (c == '\0') break
-    81          7/subop/compare     3/mod/direct    1/rm32/ECX    .           .             .           .           .               0/imm32           # compare ECX
+    81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0/imm32           # compare ecx
     74/jump-if-equal  $ascii-length:end/disp8
     # ++s
-    42/increment-EDX
+    42/increment-edx
     # ++result
-    40/increment-EAX
+    40/increment-eax
     # loop
     eb/jump  $ascii-length:loop/disp8
 $ascii-length:end:
-    # return EAX
+    # return eax
     c3/return
 
 == data 0x0a000000

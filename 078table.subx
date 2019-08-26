@@ -6,7 +6,7 @@
 # Accessing the table performs a linear scan for a key string, and always
 # requires passing in the row size.
 #
-# Table primitives have the form <variant>(stream, <arg>, row-size, ...) -> address/EAX
+# Table primitives have the form <variant>(stream, <arg>, row-size, ...) -> address/eax
 #
 # The following table shows available options for <variant>:
 #   if not found:           | arg=string              arg=slice
@@ -23,7 +23,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # if no row is found, abort
-get:  # table : (address stream {string, _}), key : (address string), row-size : int, abort-message-prefix : (address string) -> EAX : (address _)
+get:  # table : (address stream {string, _}), key : (address string), row-size : int, abort-message-prefix : (address string) -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -34,61 +34,61 @@ get:  # table : (address stream {string, _}), key : (address string), row-size :
     #   abort
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get:search-loop:
     # if (curr >= max) abort
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $get:abort/disp8
     # if (string-equal?(key, *curr)) return curr+4
-    # . EAX = string-equal?(key, *curr)
+    # . eax = string-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  string-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $get:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get:end/disp8
 $get:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $get:search-loop/disp8
 $get:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $get:abort:
     # . _write(2/stderr, abort-message-prefix)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x14/disp8      .                 # push *(ebp+20)
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . _write(2/stderr, error)
     # . . push args
     68/push  ": get: key not found: "/imm32
@@ -96,15 +96,15 @@ $get:abort:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . _write(2/stderr, key)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . _write(2/stderr, "\n")
     # . . push args
     68/push  "\n"/imm32
@@ -112,92 +112,92 @@ $get:abort:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
-    bb/copy-to-EBX  1/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
 
 test-get:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with a couple of keys
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # insert(table, "data", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "data"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get:check1:
-    # EAX = get(table, "code", 8 bytes per row)
+    # eax = get(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-get/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get:check2:
-    # EAX = get(table, "data", 8 bytes per row)
+    # eax = get(table, "data", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "data"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 12, msg)
-    # . check-ints-equal(EAX - table, 24, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 12, msg)
+    # . check-ints-equal(eax - table, 24, msg)
     # . . push args
     68/push  "F - test-get/1"/imm32
     68/push  0x18/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get:end:
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # if no row is found, abort
-get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int, abort-message-prefix : (address string) -> EAX : (address _)
+get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int, abort-message-prefix : (address string) -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -208,61 +208,61 @@ get-slice:  # table : (address stream {string, _}), key : (address slice), row-s
     #   abort
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-slice:search-loop:
     # if (curr >= max) abort
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $get-slice:abort/disp8
     # if (slice-equal?(key, *curr)) return curr+4
-    # . EAX = slice-equal?(key, *curr)
+    # . eax = slice-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  slice-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $get-slice:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-slice:end/disp8
 $get-slice:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $get-slice:search-loop/disp8
 $get-slice:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $get-slice:abort:
     # . _write(2/stderr, abort-message-prefix)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x14/disp8      .                 # push *(ebp+20)
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . _write(2/stderr, error)
     # . . push args
     68/push  ": get-slice: key not found: "/imm32
@@ -270,22 +270,22 @@ $get-slice:abort:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write-slice-buffered(Stderr, key)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     68/push  Stderr/imm32
     # . . call
     e8/call  write-slice-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . flush(Stderr)
     # . . push args
     68/push  Stderr/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . _write(2/stderr, "\n")
     # . . push args
     68/push  "\n"/imm32
@@ -293,106 +293,106 @@ $get-slice:abort:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
-    bb/copy-to-EBX  1/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
 
 test-get-slice:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with a couple of keys
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # insert(table, "data", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "data"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-slice:check1:
-    # (EAX..EDX) = "code"
-    b8/copy-to-EAX  "code"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
-    05/add-to-EAX  4/imm32
-    # var slice/EDX = {EAX, EDX}
-    52/push-EDX
-    50/push-EAX
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # EAX = get-slice(table, "code", 8 bytes per row)
+    # (eax..edx) = "code"
+    b8/copy-to-eax  "code"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
+    05/add-to-eax  4/imm32
+    # var slice/edx = {eax, edx}
+    52/push-edx
+    50/push-eax
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # eax = get-slice(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  get-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)  # first row's value slot returned
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)  # first row's value slot returned
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-get-slice/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-slice:check2:
-    # (EAX..EDX) = "data"
-    b8/copy-to-EAX  "data"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
-    05/add-to-EAX  4/imm32
-    # var slice/EDX = {EAX, EDX}
-    52/push-EDX
-    50/push-EAX
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # EAX = get-slice(table, "data" slice, 8 bytes per row)
+    # (eax..edx) = "data"
+    b8/copy-to-eax  "data"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
+    05/add-to-eax  4/imm32
+    # var slice/edx = {eax, edx}
+    52/push-edx
+    50/push-eax
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # eax = get-slice(table, "data" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  get-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 12, msg)
-    # . check-ints-equal(EAX - table, 24, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 12, msg)
+    # . check-ints-equal(eax - table, 24, msg)
     # . . push args
     68/push  "F - test-get-slice/1"/imm32
     68/push  0x18/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-slice:end:
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # if no row is found, save 'key' to the next available row
@@ -400,7 +400,7 @@ $test-get-slice:end:
 # return the address of the value
 # Beware: assume keys are immutable; they're inserted by reference
 # TODO: pass in an allocation descriptor
-get-or-insert:  # table : (address stream {string, _}), key : (address string), row-size : int -> EAX : (address _)
+get-or-insert:  # table : (address stream {string, _}), key : (address string), row-size : int -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -416,80 +416,80 @@ get-or-insert:  # table : (address stream {string, _}), key : (address string), 
     #   return max+4
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-or-insert:search-loop:
     # if (curr >= max) break
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $get-or-insert:not-found/disp8
     # if (string-equal?(key, *curr)) return curr+4
-    # . EAX = string-equal?(key, *curr)
+    # . eax = string-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  string-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $get-or-insert:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-or-insert:end/disp8
 $get-or-insert:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $get-or-insert:search-loop/disp8
 $get-or-insert:not-found:
-    # result/EAX = 0
-    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    # result/eax = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     # if (table->write >= table->length) abort
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
-    3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
     73/jump-if-greater-or-equal-unsigned  $get-or-insert:abort/disp8
     # zero-out(max, row-size)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
-    52/push-EDX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    52/push-edx
     # . . call
     e8/call  zero-out/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # *max = key
-    # . EAX = key
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0xc/disp8       .                 # copy *(EBP+12) to EAX
-    # . *max = EAX
-    89/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EDX
+    # . eax = key
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
+    # . *max = eax
+    89/copy                         0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to *edx
     # table->write += row-size
-    # . EAX = row-size
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
-    # . table->write += EAX
-    01/add                          0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # add EAX to *ESI
+    # . eax = row-size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    # . table->write += eax
+    01/add                          0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # add eax to *esi
     # return max+4
-    # . EAX = max
-    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy EDX to EAX
-    # . EAX += 4
-    05/add-to-EAX  4/imm32
+    # . eax = max
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy edx to eax
+    # . eax += 4
+    05/add-to-eax  4/imm32
 $get-or-insert:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $get-or-insert:abort:
@@ -500,158 +500,158 @@ $get-or-insert:abort:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
-    bb/copy-to-EBX  1/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
 
 test-get-or-insert:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
 $test-get-or-insert:first-call:
     # - start with an empty table, insert one key, verify that it was inserted
-    # EAX = get-or-insert(table, "code", 8 bytes per row)
+    # eax = get-or-insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)  # first row's value slot returned
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)  # first row's value slot returned
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-get-or-insert/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-or-insert:check2:
     # check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-get-or-insert/1"/imm32
     68/push  8/imm32/row-size
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data, "code", msg)
     # . . push args
     68/push  "F - test-get-or-insert/2"/imm32
     68/push  "code"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-or-insert:second-call:
     # - insert the same key again, verify that it was reused
-    # EAX = get-or-insert(table, "code", 8 bytes per row)
+    # eax = get-or-insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-get-or-insert/3"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # no new row inserted
     # . check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-get-or-insert/4"/imm32
     68/push  8/imm32/row-size
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data, "code", msg)
     # . . push args
     68/push  "F - test-get-or-insert/5"/imm32
     68/push  "code"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-or-insert:third-call:
     # - insert a new key, verify that it was inserted
-    # EAX = get-or-insert(table, "data", 8 bytes per row)
+    # eax = get-or-insert(table, "data", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "data"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # table gets a new row
-    # check-ints-equal(EAX - table->data, 12, msg)  # second row's value slot returned
-    # . check-ints-equal(EAX - table, 24, msg)
+    # check-ints-equal(eax - table->data, 12, msg)  # second row's value slot returned
+    # . check-ints-equal(eax - table, 24, msg)
     # . . push args
     68/push  "F - test-get-or-insert/6"/imm32
     68/push  0x18/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-ints-equal(table->write, 2 rows = 16, msg)
     # . . push args
     68/push  "F - test-get-or-insert/7"/imm32
     68/push  0x10/imm32/two-rows
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data+8, "data", msg)
     # check-string-equal(*(table+20), "data", msg)
     # . . push args
     68/push  "F - test-get-or-insert/8"/imm32
     68/push  "data"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0x14/disp8      .                 # push *(ECX+20)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0x14/disp8      .                 # push *(ecx+20)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-or-insert:end:
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # if no row is found, save 'key' in the next available row
 # if there are no rows free, abort
 # WARNING: leaks memory
 # TODO: pass in an allocation descriptor
-leaky-get-or-insert-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
+leaky-get-or-insert-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -667,86 +667,86 @@ leaky-get-or-insert-slice:  # table : (address stream {string, _}), key : (addre
     #   return max+4
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $leaky-get-or-insert-slice:search-loop:
     # if (curr >= max) break
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $leaky-get-or-insert-slice:not-found/disp8
     # if (slice-equal?(key, *curr)) return curr+4
-    # . EAX = slice-equal?(key, *curr)
+    # . eax = slice-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  slice-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $leaky-get-or-insert-slice:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $leaky-get-or-insert-slice:end/disp8
 $leaky-get-or-insert-slice:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $leaky-get-or-insert-slice:search-loop/disp8
 $leaky-get-or-insert-slice:not-found:
-    # result/EAX = 0
-    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
+    # result/eax = 0
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     # if (table->write >= table->length) abort
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           1/r32/ECX   .               .                 # copy *ESI to ECX
-    3b/compare                      1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(ESI+8)
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
     7d/jump-if-greater-or-equal  $leaky-get-or-insert-slice:abort/disp8
     # zero-out(max, row-size)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x10/disp8      .                 # push *(EBP+16)
-    52/push-EDX
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    52/push-edx
     # . . call
     e8/call  zero-out/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # *max = slice-to-string(Heap, key)
-    # . EAX = slice-to-string(Heap, key)
+    # . eax = slice-to-string(Heap, key)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     68/push  Heap/imm32
     # . . call
     e8/call  slice-to-string/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . *max = EAX
-    89/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EDX
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . *max = eax
+    89/copy                         0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to *edx
     # table->write += row-size
-    # . EAX = row-size
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   0x10/disp8      .                 # copy *(EBP+16) to EAX
-    # . table->write += EAX
-    01/add                          0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/EAX   .               .                 # add EAX to *ESI
+    # . eax = row-size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    # . table->write += eax
+    01/add                          0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # add eax to *esi
     # return max+4
-    # . EAX = max
-    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy EDX to EAX
-    # . EAX += 4
-    05/add-to-EAX  4/imm32
+    # . eax = max
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy edx to eax
+    # . eax += 4
+    05/add-to-eax  4/imm32
 $leaky-get-or-insert-slice:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $leaky-get-or-insert-slice:abort:
@@ -757,175 +757,175 @@ $leaky-get-or-insert-slice:abort:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
-    bb/copy-to-EBX  1/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
 
 test-leaky-get-or-insert-slice:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # (EAX..EDX) = "code"
-    b8/copy-to-EAX  "code"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
-    05/add-to-EAX  4/imm32
-    # var slice/EDX = {EAX, EDX}
-    52/push-EDX
-    50/push-EAX
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # (eax..edx) = "code"
+    b8/copy-to-eax  "code"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
+    05/add-to-eax  4/imm32
+    # var slice/edx = {eax, edx}
+    52/push-edx
+    50/push-eax
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
 $test-leaky-get-or-insert-slice:first-call:
     # - start with an empty table, insert one key, verify that it was inserted
-    # EAX = leaky-get-or-insert-slice(table, "code" slice, 8 bytes per row)
+    # eax = leaky-get-or-insert-slice(table, "code" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)  # first row's value slot returned
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)  # first row's value slot returned
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-leaky-get-or-insert-slice:check2:
     # check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/1"/imm32
     68/push  8/imm32/row-size
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data, "code", msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/2"/imm32
     68/push  "code"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-leaky-get-or-insert-slice:second-call:
     # - insert the same key again, verify that it was reused
-    # EAX = leaky-get-or-insert-slice(table, "code" slice, 8 bytes per row)
+    # eax = leaky-get-or-insert-slice(table, "code" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/3"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # no new row inserted
     # . check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/4"/imm32
     68/push  8/imm32/row-size
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data, "code", msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/5"/imm32
     68/push  "code"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-leaky-get-or-insert-slice:third-call:
     # - insert a new key, verify that it was inserted
-    # (EAX..EDX) = "data"
-    b8/copy-to-EAX  "data"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
-    05/add-to-EAX  4/imm32
-    # var slice/EDX = {EAX, EDX}
-    52/push-EDX
-    50/push-EAX
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # EAX = leaky-get-or-insert-slice(table, "data" slice, 8 bytes per row)
+    # (eax..edx) = "data"
+    b8/copy-to-eax  "data"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
+    05/add-to-eax  4/imm32
+    # var slice/edx = {eax, edx}
+    52/push-edx
+    50/push-eax
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # eax = leaky-get-or-insert-slice(table, "data" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # table gets a new row
-    # check-ints-equal(EAX - table->data, 12, msg)  # second row's value slot returned
-    # . check-ints-equal(EAX - table, 24, msg)
+    # check-ints-equal(eax - table->data, 12, msg)  # second row's value slot returned
+    # . check-ints-equal(eax - table, 24, msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/6"/imm32
     68/push  0x18/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-ints-equal(table->write, 2 rows = 16, msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/7"/imm32
     68/push  0x10/imm32/two-rows
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data+8, "data", msg)
     # check-string-equal(*(table+20), "data", msg)
     # . . push args
     68/push  "F - test-leaky-get-or-insert-slice/8"/imm32
     68/push  "data"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0x14/disp8      .                 # push *(ECX+20)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0x14/disp8      .                 # push *(ecx+20)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-leaky-get-or-insert-slice:end:
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # if no row is found, stop(ed)
 get-or-stop:  # table : (address stream {string, _}), key : (address string), row-size : int,
               # abort-message-prefix : (address string), err : (address buffered-file), ed : (address exit-descriptor)
-              # -> EAX : (address _)
+              # -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -937,104 +937,104 @@ get-or-stop:  # table : (address stream {string, _}), key : (address string), ro
     #   stop(ed)
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-or-stop:search-loop:
     # if (curr >= max) stop(ed)
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $get-or-stop:stop/disp8
     # if (string-equal?(key, *curr)) return curr+4
-    # . EAX = string-equal?(key, *curr)
+    # . eax = string-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  string-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $get-or-stop:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-or-stop:end/disp8
 $get-or-stop:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $get-or-stop:search-loop/disp8
 $get-or-stop:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $get-or-stop:stop:
     # . write-buffered(err, abort-message-prefix)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x14/disp8      .                 # push *(ebp+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write-buffered(err, error)
     # . . push args
     68/push  ": get-or-stop: key not found: "/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write-buffered(err, key)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write-buffered(err, "\n")
     # . . push args
     68/push  "\n"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . stop(ed, 1)
     # . . push args
     68/push  1/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x1c/disp8      .                 # push *(EBP+28)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x1c/disp8      .                 # push *(ebp+28)
     # . . call
     e8/call  stop/disp32
     # never gets here
 $get-or-stop:terminus:
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # syscall(exit, 1)
-    b8/copy-to-EAX  1/imm32/exit
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 test-get-or-stop:
-    # This test uses exit-descriptors. Use EBP for setting up local variables.
+    # This test uses exit-descriptors. Use ebp for setting up local variables.
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
     # . clear-stream(_test-error-stream)
     # . . push args
@@ -1042,85 +1042,85 @@ test-get-or-stop:
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(_test-error-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-error-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
+    b8/copy-to-eax  _test-error-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # var ed/EDX : (address exit-descriptor)
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var ed/edx : (address exit-descriptor)
     68/push  0/imm32
     68/push  0/imm32
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
     # size 'ed' for the calls to 'get-or-stop'
     # . tailor-exit-descriptor(ed, 24)
     # . . push args
     68/push  0x18/imm32/nbytes-of-args-for-get-or-stop
-    52/push-EDX
+    52/push-edx
     # . . call
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-or-stop:success:
-    # EAX = get-or-stop(table, "code", row-size=8, msg, _test-error-buffered-file, ed)
+    # eax = get-or-stop(table, "code", row-size=8, msg, _test-error-buffered-file, ed)
     # . . push args
-    52/push-EDX/ed
+    52/push-edx/ed
     68/push  _test-error-buffered-file/imm32
     68/push  "foo"/imm32/abort-prefix
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-stop/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x18/imm32        # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x18/imm32        # add to esp
 $test-get-or-stop:success-assertion:
-    # check-ints-equal(EAX - table->data, 4, msg)
-    # . check-ints-equal(EAX - table, 16, msg)
+    # check-ints-equal(eax - table->data, 4, msg)
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-get-or-stop/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-or-stop:failure:
-    # EAX = get-or-stop(table, "data", row-size=8, msg, _test-error-buffered-file, ed)
+    # eax = get-or-stop(table, "data", row-size=8, msg, _test-error-buffered-file, ed)
     # . . push args
-    52/push-EDX/ed
+    52/push-edx/ed
     68/push  _test-error-buffered-file/imm32
     68/push  "foo"/imm32/abort-prefix
     68/push  8/imm32/row-size
     68/push  "data"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-stop/disp32
-    # registers except ESP may be clobbered at this point
+    # registers except esp may be clobbered at this point
     # restore register args, discard others
-    59/pop-to-ECX
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
-    5a/pop-to-EDX
+    59/pop-to-ecx
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    5a/pop-to-edx
 $test-get-or-stop:failure-assertion:
     # check that get-or-stop tried to call stop(1)
     # . check-ints-equal(ed->value, 2, msg)
@@ -1128,22 +1128,22 @@ $test-get-or-stop:failure-assertion:
     68/push  "F - test-get-or-stop/1"/imm32
     68/push  2/imm32
     # . . push ed->value
-    ff          6/subop/push        1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # push *(EDX+4)
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-or-stop:end:
     # . epilog
-    # don't restore ESP from EBP; manually reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x24/imm32        # add to ESP
-    5d/pop-to-EBP
+    # don't restore esp from ebp; manually reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x24/imm32        # add to esp
+    5d/pop-to-ebp
     c3/return
 
 # if no row is found, stop(ed)
 get-slice-or-stop:  # table : (address stream {string, _}), key : (address slice), row-size : int,
                     # abort-message-prefix : (address string), err : (address buffered-file), ed : (address exit-descriptor)
-                    # -> EAX : (address _)
+                    # -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -1155,104 +1155,104 @@ get-slice-or-stop:  # table : (address stream {string, _}), key : (address slice
     #   stop(ed)
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-slice-or-stop:search-loop:
     # if (curr >= max) stop(ed)
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $get-slice-or-stop:stop/disp8
     # if (slice-equal?(key, *curr)) return curr+4
-    # . EAX = slice-equal?(key, *curr)
+    # . eax = slice-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  slice-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $get-slice-or-stop:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-slice-or-stop:end/disp8
 $get-slice-or-stop:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $get-slice-or-stop:search-loop/disp8
 $get-slice-or-stop:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $get-slice-or-stop:stop:
     # . write-buffered(err, abort-message-prefix)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x14/disp8      .                 # push *(EBP+20)
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x14/disp8      .                 # push *(ebp+20)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write-buffered(err, error)
     # . . push args
     68/push  ": get-slice-or-stop: key not found: "/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write-slice-buffered(err, key)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-slice-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write-buffered(err, "\n")
     # . . push args
     68/push  "\n"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x18/disp8      .                 # push *(EBP+24)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      .                 # push *(ebp+24)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . stop(ed, 1)
     # . . push args
     68/push  1/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0x1c/disp8      .                 # push *(EBP+28)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x1c/disp8      .                 # push *(ebp+28)
     # . . call
     e8/call  stop/disp32
     # never gets here
 $get-slice-or-stop:terminus:
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # syscall(exit, 1)
-    b8/copy-to-EAX  1/imm32/exit
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 test-get-slice-or-stop:
-    # This test uses exit-descriptors. Use EBP for setting up local variables.
+    # This test uses exit-descriptors. Use ebp for setting up local variables.
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
     # . clear-stream(_test-error-stream)
     # . . push args
@@ -1260,108 +1260,108 @@ test-get-slice-or-stop:
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(_test-error-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-error-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
+    b8/copy-to-eax  _test-error-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # var ed/EDX : (address exit-descriptor)
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var ed/edx : (address exit-descriptor)
     68/push  0/imm32
     68/push  0/imm32
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # var slice/EBX = "code"
-    # . (EAX..EBX) = "code"
-    b8/copy-to-EAX  "code"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy *EAX to EBX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  3/index/EBX   .           3/r32/EBX   4/disp8         .                 # copy EAX+EBX+4 to EBX
-    05/add-to-EAX  4/imm32
-    # . EBX = {EAX, EBX}
-    53/push-EBX
-    50/push-EAX
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBX
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # var slice/ebx = "code"
+    # . (eax..ebx) = "code"
+    b8/copy-to-eax  "code"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy *eax to ebx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  3/index/ebx   .           3/r32/ebx   4/disp8         .                 # copy eax+ebx+4 to ebx
+    05/add-to-eax  4/imm32
+    # . ebx = {eax, ebx}
+    53/push-ebx
+    50/push-eax
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
     # size 'ed' for the calls to 'get-or-stop' (define no locals past this point)
     # . tailor-exit-descriptor(ed, 24)
     # . . push args
     68/push  0x18/imm32/nbytes-of-args-for-get-or-stop
-    52/push-EDX
+    52/push-edx
     # . . call
     e8/call  tailor-exit-descriptor/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-slice-or-stop:success:
-    # EAX = get-slice-or-stop(table, slice, row-size=8, msg, _test-error-buffered-file, ed)
+    # eax = get-slice-or-stop(table, slice, row-size=8, msg, _test-error-buffered-file, ed)
     # . . push args
-    52/push-EDX/ed
+    52/push-edx/ed
     68/push  _test-error-buffered-file/imm32
     68/push  "foo"/imm32/abort-prefix
     68/push  8/imm32/row-size
-    53/push-EBX/slice
-    51/push-ECX
+    53/push-ebx/slice
+    51/push-ecx
     # . . call
     e8/call  get-slice-or-stop/disp32
-    # registers except ESP may be clobbered at this point
+    # registers except esp may be clobbered at this point
     # restore register args, discard others
-    59/pop-to-ECX
-    5b/pop-to-EBX
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    5a/pop-to-EDX
+    59/pop-to-ecx
+    5b/pop-to-ebx
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    5a/pop-to-edx
 $test-get-slice-or-stop:success-assertion:
-    # check-ints-equal(EAX - table->data, 4, msg)  # first row's value slot returned
-    # . check-ints-equal(EAX - table, 16, msg)
+    # check-ints-equal(eax - table->data, 4, msg)  # first row's value slot returned
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-get-slice-or-stop/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-slice-or-stop:failure:
     # slice = "segment2"
-    # . *EBX = "segment2"->data
-    b8/copy-to-EAX  "segment2"/imm32
-    05/add-to-EAX  4/imm32
-    89/copy                         0/mod/indirect  3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to *EBX
-    # . *(EBX+4) = "segment2"->data + len("segment2")
-    05/add-to-EAX  8/imm32/strlen
-    89/copy                         1/mod/*+disp8   3/rm32/EBX    .           .             .           0/r32/EAX   4/disp8         .                 # copy EAX to *(EBX+4)
-    # EAX = get-slice-or-stop(table, slice, row-size=8, msg, _test-error-buffered-file, ed)
+    # . *ebx = "segment2"->data
+    b8/copy-to-eax  "segment2"/imm32
+    05/add-to-eax  4/imm32
+    89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
+    # . *(ebx+4) = "segment2"->data + len("segment2")
+    05/add-to-eax  8/imm32/strlen
+    89/copy                         1/mod/*+disp8   3/rm32/ebx    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(ebx+4)
+    # eax = get-slice-or-stop(table, slice, row-size=8, msg, _test-error-buffered-file, ed)
     # . . push args
-    52/push-EDX/ed
+    52/push-edx/ed
     68/push  _test-error-buffered-file/imm32
     68/push  "foo"/imm32/abort-prefix
     68/push  8/imm32/row-size
-    53/push-EBX/slice
-    51/push-ECX
+    53/push-ebx/slice
+    51/push-ecx
     # . . call
     e8/call  get-slice-or-stop/disp32
-    # registers except ESP may be clobbered at this point
+    # registers except esp may be clobbered at this point
     # restore register args, discard others
-    59/pop-to-ECX
-    5b/pop-to-EBX
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    5a/pop-to-EDX
+    59/pop-to-ecx
+    5b/pop-to-ebx
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    5a/pop-to-edx
 $test-get-slice-or-stop:failure-assertion:
     # check that get-or-stop tried to call stop(1)
     # . check-ints-equal(ed->value, 2, msg)
@@ -1369,20 +1369,20 @@ $test-get-slice-or-stop:failure-assertion:
     68/push  "F - test-get-or-stop/1"/imm32
     68/push  2/imm32
     # . . push ed->value
-    ff          6/subop/push        1/mod/*+disp8   2/rm32/EDX    .           .             .           .           4/disp8         .                 # push *(EDX+4)
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-get-slice-or-stop:end:
     # . epilog
-    # don't restore ESP from EBP; manually reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x2c/imm32        # add to ESP
-    5d/pop-to-EBP
+    # don't restore esp from ebp; manually reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2c/imm32        # add to esp
+    5d/pop-to-ebp
     c3/return
 
 # if no row is found, return null (0)
-maybe-get:  # table : (address stream {string, _}), key : (address string), row-size : int -> EAX : (address _)
+maybe-get:  # table : (address stream {string, _}), key : (address string), row-size : int -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -1393,143 +1393,143 @@ maybe-get:  # table : (address stream {string, _}), key : (address string), row-
     #   return 0
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $maybe-get:search-loop:
     # if (curr >= max) return null
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $maybe-get:null/disp8
     # if (string-equal?(key, *curr)) return curr+4
-    # . EAX = string-equal?(key, *curr)
+    # . eax = string-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  string-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $maybe-get:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $maybe-get:end/disp8
 $maybe-get:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $maybe-get:search-loop/disp8
 $maybe-get:null:
-    b8/copy-to-EAX  0/imm32
+    b8/copy-to-eax  0/imm32
 $maybe-get:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 test-maybe-get:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with one row
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # EAX = get-or-insert(table, "code", 8 bytes per row)
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # eax = get-or-insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-maybe-get:success:
     # - check for the same key, verify that it was reused
-    # EAX = maybe-get(table, "code", 8 bytes per row)
+    # eax = maybe-get(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  maybe-get/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-maybe-get/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # no new row inserted
     # . check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-maybe-get/1"/imm32
     68/push  8/imm32/row-size
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data, "code", msg)
     # . . push args
     68/push  "F - test-maybe-get/2"/imm32
     68/push  "code"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-maybe-get:failure:
     # - search for a new key
-    # EAX = maybe-get(table, "data", 8 bytes per row)
+    # eax = maybe-get(table, "data", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "data"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  maybe-get/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX, 0, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax, 0, msg)
     # . . push args
     68/push  "F - test-maybe-get/3"/imm32
     68/push  0/imm32
-    50/push-EAX
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-maybe-get:end:
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # if no row is found, return null (0)
-maybe-get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> EAX : (address _)
+maybe-get-slice:  # table : (address stream {string, _}), key : (address slice), row-size : int -> eax : (address _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -1540,157 +1540,157 @@ maybe-get-slice:  # table : (address stream {string, _}), key : (address slice),
     #   return 0
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # curr/ECX = table->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/ESI    .           .             .           1/r32/ECX   0xc/disp8       .                 # copy ESI+12 to ECX
-    # max/EDX = table->data + table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ECX  2/index/EDX   .           2/r32/EDX   .               .                 # copy ECX+EDX to EDX
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # curr/ecx = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # max/edx = table->data + table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $maybe-get-slice:search-loop:
     # if (curr >= max) return null
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $maybe-get-slice:null/disp8
     # if (slice-equal?(key, *curr)) return curr+4
-    # . EAX = slice-equal?(key, *curr)
+    # . eax = slice-equal?(key, *curr)
     # . . push args
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  slice-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX != 0) return EAX = curr+4
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != 0) return eax = curr+4
+    3d/compare-eax-and  0/imm32
     74/jump-if-equal  $maybe-get-slice:mismatch/disp8
-    8d/copy-address                 1/mod/*+disp8   1/rm32/ECX    .           .             .           0/r32/EAX   4/disp8         .                 # copy ECX+4 to EAX
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $maybe-get-slice:end/disp8
 $maybe-get-slice:mismatch:
     # curr += row-size
-    03/add                          1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # add *(EBP+16) to ECX
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # add *(ebp+16) to ecx
     # loop
     eb/jump  $maybe-get-slice:search-loop/disp8
 $maybe-get-slice:null:
-    b8/copy-to-EAX  0/imm32
+    b8/copy-to-eax  0/imm32
 $maybe-get-slice:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 test-maybe-get-slice:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with one row
-    # var table/ECX : (address stream {string, number}) = stream(2 rows * 8 bytes)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # subtract from ESP
+    # var table/ecx : (address stream {string, number}) = stream(2 rows * 8 bytes)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # insert(table, "code", 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
     68/push  "code"/imm32
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  get-or-insert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-maybe-get-slice:success:
     # - check for the same key, verify that it was reused
-    # (EAX..EDX) = "code"
-    b8/copy-to-EAX  "code"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
-    05/add-to-EAX  4/imm32
-    # var slice/EDX = {EAX, EDX}
-    52/push-EDX
-    50/push-EAX
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # EAX = maybe-get-slice(table, "code" slice, 8 bytes per row)
+    # (eax..edx) = "code"
+    b8/copy-to-eax  "code"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
+    05/add-to-eax  4/imm32
+    # var slice/edx = {eax, edx}
+    52/push-edx
+    50/push-eax
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # eax = maybe-get-slice(table, "code" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  maybe-get-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX - table->data, 4, msg)
-    # . check-ints-equal(EAX - table, 16, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax - table->data, 4, msg)
+    # . check-ints-equal(eax - table, 16, msg)
     # . . push args
     68/push  "F - test-maybe-get-slice/0"/imm32
     68/push  0x10/imm32
-    29/subtract                     3/mod/direct    0/rm32/EAX    .           .             .           1/r32/ECX   .               .                 # subtract ECX from EAX
-    50/push-EAX
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # no new row inserted
     # . check-ints-equal(table->write, row-size = 8, msg)
     # . . push args
     68/push  "F - test-maybe-get-slice/1"/imm32
     68/push  8/imm32/row-size
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # check-string-equal(*table->data, "code", msg)
     # . . push args
     68/push  "F - test-maybe-get-slice/2"/imm32
     68/push  "code"/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ECX    .           .             .           .           0xc/disp8       .                 # push *(ECX+12)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
     # . . call
     e8/call  check-string-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-maybe-get-slice:failure:
     # - search for a new key
-    # (EAX..EDX) = "data"
-    b8/copy-to-EAX  "data"/imm32
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           2/r32/EDX   .               .                 # copy *EAX to EDX
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/EAX  2/index/EDX   .           2/r32/EDX   4/disp8         .                 # copy EAX+EDX+4 to EDX
-    05/add-to-EAX  4/imm32
-    # var slice/EDX = {EAX, EDX}
-    52/push-EDX
-    50/push-EAX
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
-    # EAX = maybe-get-slice(table, "data" slice, 8 bytes per row)
+    # (eax..edx) = "data"
+    b8/copy-to-eax  "data"/imm32
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
+    05/add-to-eax  4/imm32
+    # var slice/edx = {eax, edx}
+    52/push-edx
+    50/push-eax
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # eax = maybe-get-slice(table, "data" slice, 8 bytes per row)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  maybe-get-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # check-ints-equal(EAX, 0, msg)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(eax, 0, msg)
     # . . push args
     68/push  "F - test-maybe-get-slice/3"/imm32
     68/push  0/imm32
-    50/push-EAX
+    50/push-eax
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-maybe-get-slice:end:
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # . . vim:nowrap:textwidth=0

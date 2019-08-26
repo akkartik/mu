@@ -32,52 +32,52 @@ Entry:
     # . . call
     e8/call  new-segment/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 
     # run tests if necessary, convert stdin if not
     # . prolog
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # . argc > 1
-    81          7/subop/compare     1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0/disp8         1/imm32           # compare *EBP
+    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
     7e/jump-if-lesser-or-equal  $run-main/disp8
     # . argv[1] == "test"
     # . . push args
     68/push  "test"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  kernel-string-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . check result
-    3d/compare-EAX-and  1/imm32
+    3d/compare-eax-and  1/imm32
     75/jump-if-not-equal  $run-main/disp8
     # . run-tests()
     e8/call  run-tests/disp32
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/EBX   Num-test-failures/disp32          # copy *Num-test-failures to EBX
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
     eb/jump  $main:end/disp8
 $run-main:
     # - otherwise convert stdin
-    # var ed/EAX : exit-descriptor
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # subtract from ESP
-    89/copy                         3/mod/direct    0/rm32/EAX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EAX
+    # var ed/eax : exit-descriptor
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
     # . ed->target = 0
-    c7          0/subop/copy        0/mod/direct    0/rm32/EAX    .           .             .           .           .               0/imm32           # copy to *EAX
+    c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
     # return convert(Stdin, 1/stdout, 2/stderr, ed)
     # . . push args
-    50/push-EAX/ed
+    50/push-eax/ed
     68/push  Stderr/imm32
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
     e8/call  convert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x10/imm32        # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # . syscall(exit, 0)
-    bb/copy-to-EBX  0/imm32
+    bb/copy-to-ebx  0/imm32
 $main:end:
-    b8/copy-to-EAX  1/imm32/exit
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 # data structure:
@@ -91,23 +91,23 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #   write-segments(out, table)
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    # var table/ECX : (address stream byte) = stream(10 * 8)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x50/imm32        # subtract from ESP
+    51/push-ecx
+    # var table/ecx : (address stream byte) = stream(10 * 8)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x50/imm32        # subtract from esp
     68/push  0x50/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # clear-stream(table)
     # . . push args
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 $convert:read:
 #?     # print("read\n") {{{
 #?     # . . push args
@@ -116,16 +116,16 @@ $convert:read:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # read-segments(in, table)
     # . . push args
-    51/push-ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    51/push-ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  read-segments/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $convert:write:
 #?     # print("write\n") {{{
 #?     # . . push args
@@ -134,30 +134,30 @@ $convert:write:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # write-segments(out, table)
     # . . push args
-    51/push-ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    51/push-ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  write-segments/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $convert:end:
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x5c/imm32        # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x5c/imm32        # add to esp
     # . restore registers
-    59/pop-to-ECX
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 test-convert:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
     # . clear-stream(_test-input-stream)
     # . . push args
@@ -165,32 +165,32 @@ test-convert:
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(_test-input-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-input-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
+    b8/copy-to-eax  _test-input-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(_test-output-stream)
     # . . push args
     68/push  _test-output-stream/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(_test-output-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-output-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
+    b8/copy-to-eax  _test-output-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # initialize input (meta comments in parens)
     #   # comment 1
     #     # comment 2 indented
@@ -213,7 +213,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "  # comment 2 indented\n")
     # . . push args
     68/push  "  # comment 2 indented\n"/imm32
@@ -221,7 +221,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "== code 0x09000000\n")
     # . . push args
     68/push  "== code 0x09000000\n"/imm32
@@ -229,7 +229,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "# comment 3 inside a segment\n")
     # . . push args
     68/push  "# comment 3 inside a segment\n"/imm32
@@ -237,7 +237,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "1\n")
     # . . push args
     68/push  "1\n"/imm32
@@ -245,7 +245,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "\n")  # empty line
     # . . push args
     68/push  "\n"/imm32
@@ -253,7 +253,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "2 3 # comment 4 inline with other contents\n")
     # . . push args
     68/push  "2 3 # comment 4 inline with other contents\n"/imm32
@@ -261,7 +261,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "== data 0x0a000000\n")
     # . . push args
     68/push  "== data 0x0a000000\n"/imm32
@@ -269,7 +269,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "4 5/imm32\n")
     # . . push args
     68/push  "4 5/imm32\n"/imm32
@@ -277,7 +277,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "== code\n")
     # . . push args
     68/push  "== code\n"/imm32
@@ -285,7 +285,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "6 7\n")
     # . . push args
     68/push  "6 7\n"/imm32
@@ -293,7 +293,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "8 9\n")
     # . . push args
     68/push  "8 9\n"/imm32
@@ -301,7 +301,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "== code\n")
     # . . push args
     68/push  "== code\n"/imm32
@@ -309,7 +309,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "10 11\n")
     # . . push args
     68/push  "10 11\n"/imm32
@@ -317,7 +317,7 @@ test-convert:
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # convert(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
@@ -325,14 +325,14 @@ test-convert:
     # . . call
     e8/call  convert/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . flush(_test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check output
     #   == code 0x09000000
     #   1
@@ -350,7 +350,7 @@ test-convert:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . write-stream(2/stderr, _test-output-stream)
 #?     # . . push args
 #?     68/push  _test-output-stream/imm32
@@ -358,7 +358,7 @@ test-convert:
 #?     # . . call
 #?     e8/call  write-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . write(2/stderr, "$\n")
 #?     # . . push args
 #?     68/push  "$\n"/imm32
@@ -366,14 +366,14 @@ test-convert:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . rewind-stream(_test-output-stream)
 #?     # . . push args
 #?     68/push  _test-output-stream/imm32
 #?     # . . call
 #?     e8/call  rewind-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
     # . check-next-stream-line-equal(_test-output-stream, "== code 0x09000000", msg)
     # . . push args
@@ -383,7 +383,7 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "1", msg)
     # . . push args
     68/push  "F - test-convert/1"/imm32
@@ -392,7 +392,7 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "2 3 # comment 4 inline with other contents", msg)
     # . . push args
     68/push  "F - test-convert/2"/imm32
@@ -401,7 +401,7 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "6 7", msg)
     # . . push args
     68/push  "F - test-convert/3"/imm32
@@ -410,7 +410,7 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "8 9", msg)
     # . . push args
     68/push  "F - test-convert/4"/imm32
@@ -419,7 +419,7 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "10 11", msg)
     # . . push args
     68/push  "F - test-convert/5"/imm32
@@ -428,7 +428,7 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== data 0x0a000000", msg)
     # . . push args
     68/push  "F - test-convert/6"/imm32
@@ -437,7 +437,7 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "4 5/imm32", msg)
     # . . push args
     68/push  "F - test-convert/7"/imm32
@@ -446,10 +446,10 @@ test-convert:
     # . . call
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # beware: leaks memory (one name per segment read)
@@ -481,50 +481,50 @@ read-segments:  # in : (address buffered-file), table : (address stream {string,
     # we'll use the same address for them.
     #
     # registers:
-    #   line: ECX
-    #   word-slice and segment-name: EDX
-    #   segment-name and curr-segment: EBX
-    #   word-slice->start: ESI
-    #   temporary: EAX
+    #   line: ecx
+    #   word-slice and segment-name: edx
+    #   segment-name and curr-segment: ebx
+    #   word-slice->start: esi
+    #   temporary: eax
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    50/push-EAX
-    51/push-ECX
-    52/push-EDX
-    53/push-EBX
-    56/push-ESI
-    # var line/ECX : (address stream byte) = stream(512)
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x200/imm32       # subtract from ESP
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # var line/ecx : (address stream byte) = stream(512)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # var word-slice/EDX = {0, 0}
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var word-slice/edx = {0, 0}
     68/push  0/imm32/end
     68/push  0/imm32/start
-    89/copy                         3/mod/direct    2/rm32/EDX    .           .             .           4/r32/ESP   .               .                 # copy ESP to EDX
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
 $read-segments:loop:
     # clear-stream(line)
     # . . push args
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # read-line-buffered(in, line)
     # . . push args
-    51/push-ECX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    51/push-ecx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  read-line-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $read-segments:check0:
     # if (line->write == 0) break
-    81          7/subop/compare     0/mod/indirect  1/rm32/ECX    .           .             .           .           .               0/imm32           # compare *ECX
+    81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
     0f 84/jump-if-equal  $read-segments:break/disp32
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
@@ -534,22 +534,22 @@ $read-segments:check0:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . write-stream(2/stderr, line)
 #?     # . . push args
-#?     51/push-ECX
+#?     51/push-ecx
 #?     68/push  2/imm32/stderr
 #?     # . . call
 #?     e8/call  write-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . rewind-stream(line)
 #?     # . . push args
-#?     51/push-ECX
+#?     51/push-ecx
 #?     # . . call
 #?     e8/call  rewind-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # . write(2/stderr, "$\n")
 #?     # . . push args
 #?     68/push  "$\n"/imm32
@@ -557,16 +557,16 @@ $read-segments:check0:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # next-word(line, word-slice)
     # . . push args
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  next-word/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $read-segments:check1:
 #?     # print("check1\n") {{{
 #?     # . . push args
@@ -575,18 +575,18 @@ $read-segments:check1:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # if (slice-empty?(word-slice)) continue
-    # . EAX = slice-empty?(word-slice)
+    # . eax = slice-empty?(word-slice)
     # . . push args
-    52/push-EDX
+    52/push-edx
     # . . call
     e8/call  slice-empty?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . if (EAX != 0) continue
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . if (eax != 0) continue
+    3d/compare-eax-and  0/imm32
     0f 85/jump-if-not-equal  $read-segments:loop/disp32
 $read-segments:check-for-comment:
 #?     # print("check for comment\n") {{{
@@ -596,16 +596,16 @@ $read-segments:check-for-comment:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # if (slice-starts-with?(word-slice, "#")) continue
-    # . start/ESI = word-slice->start
-    8b/copy                         0/mod/indirect  2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # copy *ECX to ESI
-    # . c/EAX = *start
-    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-    8a/copy-byte                    0/mod/indirect  6/rm32/ESI    .           .             .           0/r32/AL    .               .                 # copy byte at *ESI to AL
-    # . if (EAX == '#') continue
-    3d/compare-EAX-and  0x23/imm32/hash
+    # . start/esi = word-slice->start
+    8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           6/r32/esi   .               .                 # copy *ecx to esi
+    # . c/eax = *start
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
+    # . if (eax == '#') continue
+    3d/compare-eax-and  0x23/imm32/hash
     0f 84/jump-if-equal  $read-segments:loop/disp32
 $read-segments:check-for-segment-header:
 #?     # print("check for segment header\n") {{{
@@ -615,7 +615,7 @@ $read-segments:check-for-segment-header:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
 #?     # dump word-slice {{{
 #?     # . write(2/stderr, "AA: ")
@@ -625,31 +625,31 @@ $read-segments:check-for-segment-header:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . clear-stream(Stderr+4)
 #?     # . . push args
-#?     b8/copy-to-EAX  Stderr/imm32
-#?     05/add-to-EAX  4/imm32
-#?     50/push-EAX
+#?     b8/copy-to-eax  Stderr/imm32
+#?     05/add-to-eax  4/imm32
+#?     50/push-eax
 #?     # . . call
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
-#?     52/push-EDX
+#?     52/push-edx
 #?     68/push  Stderr/imm32
 #?     # . . call
 #?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . flush(Stderr)
 #?     # . . push args
 #?     68/push  Stderr/imm32
 #?     # . . call
 #?     e8/call  flush/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # . write(2/stderr, "$\n")
 #?     # . . push args
 #?     68/push  "$\n"/imm32
@@ -657,28 +657,28 @@ $read-segments:check-for-segment-header:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # if !slice-equal?(word-slice, "==") goto next check
-    # . EAX = slice-equal?(word-slice, "==")
+    # . eax = slice-equal?(word-slice, "==")
     # . . push args
     68/push  "=="/imm32
-    52/push-EDX
+    52/push-edx
     # . . call
     e8/call  slice-equal?/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
-    # . if (EAX == 0) goto check3
-    3d/compare-EAX-and  0/imm32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax == 0) goto check3
+    3d/compare-eax-and  0/imm32
     0f 84/jump-if-equal  $read-segments:regular-line/disp32
     # segment-name = next-word(line)
     # . . push args
-    52/push-EDX
-    51/push-ECX
+    52/push-edx
+    51/push-ecx
     # . . call
     e8/call  next-word/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # dump segment name {{{
 #?     # . write(2/stderr, "AA: ")
 #?     # . . push args
@@ -687,31 +687,31 @@ $read-segments:check-for-segment-header:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . clear-stream(Stderr+4)
 #?     # . . push args
-#?     b8/copy-to-EAX  Stderr/imm32
-#?     05/add-to-EAX  4/imm32
-#?     50/push-EAX
+#?     b8/copy-to-eax  Stderr/imm32
+#?     05/add-to-eax  4/imm32
+#?     50/push-eax
 #?     # . . call
 #?     e8/call  clear-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # . write-slice-buffered(Stderr, word-slice)
 #?     # . . push args
-#?     52/push-EDX
+#?     52/push-edx
 #?     68/push  Stderr/imm32
 #?     # . . call
 #?     e8/call  write-slice-buffered/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . flush(Stderr)
 #?     # . . push args
 #?     68/push  Stderr/imm32
 #?     # . . call
 #?     e8/call  flush/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # . write(2/stderr, "$\n")
 #?     # . . push args
 #?     68/push  "$\n"/imm32
@@ -719,26 +719,26 @@ $read-segments:check-for-segment-header:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # segment-slot/EAX = leaky-get-or-insert-slice(table, segment-name, row-size=8)
+    # segment-slot/eax = leaky-get-or-insert-slice(table, segment-name, row-size=8)
     # . . push args
     68/push  8/imm32/row-size
-    52/push-EDX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           0xc/disp8       .                 # push *(EBP+12)
+    52/push-edx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # curr-segment = *segment-slot
-    8b/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy *EAX to EBX
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy *eax to ebx
     # if (curr-segment != 0) continue
-    81          7/subop/compare     3/mod/direct    3/rm32/EBX    .           .             .           .           .               0/imm32           # compare EBX
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
     0f 85/jump-if-not-equal  $read-segments:loop/disp32
     # curr-segment = new-stream(Heap, Segment-size, 1)
     # . save segment-slot
-    50/push-EAX
-    # . EAX = new-stream(Heap, Segment-size, 1)
+    50/push-eax
+    # . eax = new-stream(Heap, Segment-size, 1)
     # . . push args
     68/push  1/imm32
     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Segment-size/disp32               # push *Segment-size
@@ -746,13 +746,13 @@ $read-segments:check-for-segment-header:
     # . . call
     e8/call  new-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
-    # . curr-segment = EAX
-    89/copy                         3/mod/direct    3/rm32/EBX    .           .             .           0/r32/EAX   .               .                 # copy EAX to EBX
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . curr-segment = eax
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
     # . restore segment-slot
-    58/pop-to-EAX
+    58/pop-to-eax
     # *segment-slot = curr-segment
-    89/copy                         0/mod/indirect  0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # copy EBX to *EAX
+    89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy ebx to *eax
     # fall through
 $read-segments:regular-line:
 #?     # print("regular line\n") {{{
@@ -762,7 +762,7 @@ $read-segments:regular-line:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
 #?     # dump line {{{
 #?     # . write(2/stderr, "regular line: ")
@@ -772,22 +772,22 @@ $read-segments:regular-line:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . rewind-stream(line)
 #?     # . . push args
-#?     51/push-ECX
+#?     51/push-ecx
 #?     # . . call
 #?     e8/call  rewind-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # . write-stream(2/stderr, line)
 #?     # . . push args
-#?     51/push-ECX
+#?     51/push-ecx
 #?     68/push  2/imm32/stderr
 #?     # . . call
 #?     e8/call  write-stream/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . write(2/stderr, "$\n")
 #?     # . . push args
 #?     68/push  "$\n"/imm32
@@ -795,15 +795,15 @@ $read-segments:regular-line:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # rewind-stream(line)
     # . . push args
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  rewind-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # print("write stream\n") {{{
 #?     # . . push args
 #?     68/push  "write stream\n"/imm32
@@ -811,16 +811,16 @@ $read-segments:regular-line:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # write-stream(curr-segment, line)
     # . . push args
-    51/push-ECX
-    53/push-EBX
+    51/push-ecx
+    53/push-ebx
     # . . call
     e8/call  write-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # loop
 #?     # print("loop\n") {{{
 #?     # . . push args
@@ -829,22 +829,22 @@ $read-segments:regular-line:
 #?     # . . call
 #?     e8/call  write/disp32
 #?     # . . discard args
-#?     81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     e9/jump  $read-segments:loop/disp32
 $read-segments:break:
 $read-segments:end:
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0x214/imm32       # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x214/imm32       # add to esp
     # . restore registers
-    5e/pop-to-ESI
-    5b/pop-to-EBX
-    5a/pop-to-EDX
-    59/pop-to-ECX
-    58/pop-to-EAX
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 write-segments:  # out : (address buffered-file), table : (address stream {string, (address stream byte)})
@@ -858,54 +858,54 @@ write-segments:  # out : (address buffered-file), table : (address stream {strin
     #   flush(out)
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    50/push-EAX
-    52/push-EDX
-    56/push-ESI
-    # ESI = table
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   0xc/disp8       .                 # copy *(EBP+12) to ESI
-    # write/EDX = table->write
-    8b/copy                         0/mod/indirect  6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # copy *ESI to EDX
-    # curr/ESI = table->data
-    81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               0xc/imm32         # add to EAX
-    # max/EDX = curr + write
-    01/add                          3/mod/direct    2/rm32/EDX    .           .             .           6/r32/ESI   .               .                 # add ESI to EDX
+    50/push-eax
+    52/push-edx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # write/edx = table->write
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    # curr/esi = table->data
+    81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               0xc/imm32         # add to eax
+    # max/edx = curr + write
+    01/add                          3/mod/direct    2/rm32/edx    .           .             .           6/r32/esi   .               .                 # add esi to edx
 $write-segments:loop:
     # if (curr >= max) break
-    39/compare                      3/mod/direct    6/rm32/ESI    .           .             .           2/r32/EDX   .               .                 # compare ESI with EDX
+    39/compare                      3/mod/direct    6/rm32/esi    .           .             .           2/r32/edx   .               .                 # compare esi with edx
     73/jump-if-greater-or-equal-unsigned  $write-segments:break/disp8
-    # stream/EAX = table[i].stream
-    8b/copy                         1/mod/*+disp8   6/rm32/ESI    .           .             .           0/r32/EAX   4/disp8         .                 # copy *(ESI+4) to EAX
+    # stream/eax = table[i].stream
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     # write-stream-data(out, stream)
     # . . push args
-    50/push-EAX
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    50/push-eax
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  write-stream-data/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $write-segments:continue:
     # curr += 8
-    81          0/subop/add         3/mod/direct    6/rm32/ESI    .           .             .           .           .               8/imm32           # add to ESI
+    81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               8/imm32           # add to esi
     eb/jump  $write-segments:loop/disp8
 $write-segments:break:
     # flush(out)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/EBP    .           .             .           .           8/disp8         .                 # push *(EBP+8)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  flush/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 $write-segments:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    58/pop-to-EAX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    58/pop-to-eax
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # . . vim:nowrap:textwidth=0

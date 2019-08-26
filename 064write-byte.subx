@@ -30,77 +30,77 @@ Stdout:
 # Write lower byte of 'n' to 'f'.
 write-byte-buffered:  # f : (address buffered-file), n : int -> <void>
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    57/push-EDI
-    # EDI = f
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
-    # ECX = f->write
-    8b/copy                         1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   4/disp8         .                 # copy *(EDI+4) to ECX
+    51/push-ecx
+    57/push-edi
+    # edi = f
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # ecx = f->write
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(edi+4) to ecx
     # if (f->write >= f->length) flush and clear f's stream
-    3b/compare                      1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   0xc/disp8       .                 # compare ECX with *(EDI+12)
+    3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   0xc/disp8       .                 # compare ecx with *(edi+12)
     7c/jump-if-lesser  $write-byte-buffered:to-stream/disp8
     # . flush(f)
     # . . push args
-    57/push-EDI
+    57/push-edi
     # . . call
     e8/call  flush/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(stream = f+4)
     # . . push args
-    8d/copy-address                 1/mod/*+disp8   7/rm32/EDI    .           .             .           0/r32/EAX   4/disp8         .                 # copy EDI+4 to EAX
-    50/push-EAX
+    8d/copy-address                 1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy edi+4 to eax
+    50/push-eax
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
-    # . f->write must now be 0; update its cache at ECX
-    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . f->write must now be 0; update its cache at ecx
+    31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
 $write-byte-buffered:to-stream:
     # write to stream
     # f->data[f->write] = LSB(n)
-    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-    8a/copy-byte                    1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/AL    0xc/disp8       .                 # copy byte at *(EBP+12) to AL
-    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           0/r32/AL    0x10/disp8      .                 # copy AL to *(EDI+ECX+16)
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ebp+12) to AL
+    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/edi  1/index/ecx   .           0/r32/AL    0x10/disp8      .                 # copy AL to *(edi+ecx+16)
     # ++f->write
-    ff          0/subop/increment   1/mod/*+disp8   7/rm32/EDI    .           .             .           .           4/disp8         .                 # increment *(EDI+4)
+    ff          0/subop/increment   1/mod/*+disp8   7/rm32/edi    .           .             .           .           4/disp8         .                 # increment *(edi+4)
 $write-byte-buffered:end:
     # . restore registers
-    5f/pop-to-EDI
-    59/pop-to-ECX
+    5f/pop-to-edi
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 flush:  # f : (address buffered-file) -> <void>
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    50/push-EAX
-    51/push-ECX
-    # EAX = f
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
+    50/push-eax
+    51/push-ecx
+    # eax = f
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
     # write-stream(f->fd, data = f+4)
       # . . push args
-    8d/copy-address                 1/mod/*+disp8   0/rm32/EAX    .           .             .           1/r32/ECX   4/disp8         .                 # copy EAX+4 to ECX
-    51/push-ECX
-    ff          6/subop/push        0/mod/indirect  0/rm32/EAX    .           .             .           .           .               .                 # push *EAX
+    8d/copy-address                 1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy eax+4 to ecx
+    51/push-ecx
+    ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
       # . . call
     e8/call  write-stream/disp32
       # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $flush:end:
     # . restore registers
-    59/pop-to-ECX
-    58/pop-to-EAX
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 test-write-byte-buffered-single:
@@ -112,16 +112,16 @@ test-write-byte-buffered-single:
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(_test-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
+    b8/copy-to-eax  _test-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # write-byte-buffered(_test-buffered-file, 'A')
     # . . push args
     68/push  0x41/imm32
@@ -129,14 +129,14 @@ test-write-byte-buffered-single:
     # . . call
     e8/call  write-byte-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # flush(_test-buffered-file)
     # . . push args
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-stream-equal(_test-stream, "A", msg)
     # . . push args
     68/push  "F - test-write-byte-buffered-single"/imm32
@@ -145,7 +145,7 @@ test-write-byte-buffered-single:
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . end
     c3/return
 
@@ -158,27 +158,27 @@ test-write-byte-buffered-multiple-flushes:
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . clear-stream(_test-buffered-file+4)
     # . . push args
-    b8/copy-to-EAX  _test-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
+    b8/copy-to-eax  _test-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # fill up the buffer for _test-buffered-file
     # . write(_test-buffered-file+4, 'abcdef')
     # . . push args
     68/push  "abcdef"/imm32
-    b8/copy-to-EAX  _test-buffered-file/imm32
-    05/add-to-EAX  4/imm32
-    50/push-EAX
+    b8/copy-to-eax  _test-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
     # . . call
     e8/call  write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # write-byte-buffered(_test-buffered-file, 'g')
     # . . push args
     68/push  0x67/imm32
@@ -186,14 +186,14 @@ test-write-byte-buffered-multiple-flushes:
     # . . call
     e8/call  write-byte-buffered/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # flush(_test-buffered-file)
     # . . push args
     68/push  _test-buffered-file/imm32
     # . . call
     e8/call  flush/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # check-stream-equal(_test-stream, "abcdef", msg)
     # . . push args
     68/push  "F - test-write-byte-buffered-multiple-flushes: 1"/imm32
@@ -202,7 +202,7 @@ test-write-byte-buffered-multiple-flushes:
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . end
     c3/return
 
@@ -211,33 +211,33 @@ test-write-byte-buffered-multiple-flushes:
 # Write lower byte of 'n' to 'f'.
 append-byte:  # f : (address stream), n : int -> <void>
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    51/push-ECX
-    57/push-EDI
-    # EDI = f
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           7/r32/EDI   8/disp8         .                 # copy *(EBP+8) to EDI
-    # ECX = f->write
-    8b/copy                         0/mod/indirect  7/rm32/EDI    .           .             .           1/r32/ECX   .               .                 # copy *EDI to ECX
+    51/push-ecx
+    57/push-edi
+    # edi = f
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # ecx = f->write
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
     # if (f->write >= f->length) abort
-    3b/compare                      1/mod/*+disp8   7/rm32/EDI    .           .             .           1/r32/ECX   8/disp8         .                 # compare ECX with *(EDI+8)
+    3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(edi+8)
     7d/jump-if-greater-or-equal  $append-byte:abort/disp8
 $append-byte:to-stream:
     # write to stream
     # f->data[f->write] = LSB(n)
-    31/xor                          3/mod/direct    0/rm32/EAX    .           .             .           0/r32/EAX   .               .                 # clear EAX
-    8a/copy-byte                    1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/AL    0xc/disp8       .                 # copy byte at *(EBP+12) to AL
-    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/EDI  1/index/ECX   .           0/r32/AL    0xc/disp8       .                 # copy AL to *(EDI+ECX+12)
+    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
+    8a/copy-byte                    1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/AL    0xc/disp8       .                 # copy byte at *(ebp+12) to AL
+    88/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/edi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy AL to *(edi+ecx+12)
     # ++f->write
-    ff          0/subop/increment   0/mod/indirect  7/rm32/EDI    .           .             .           .           .               .                 # increment *EDI
+    ff          0/subop/increment   0/mod/indirect  7/rm32/edi    .           .             .           .           .               .                 # increment *edi
 $append-byte:end:
     # . restore registers
-    5f/pop-to-EDI
-    59/pop-to-ECX
+    5f/pop-to-edi
+    59/pop-to-ecx
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 $append-byte:abort:
@@ -248,10 +248,10 @@ $append-byte:abort:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . syscall(exit, 1)
-    bb/copy-to-EBX  1/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
 
@@ -264,7 +264,7 @@ test-append-byte-single:
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # append-byte(_test-stream, 'A')
     # . . push args
     68/push  0x41/imm32
@@ -272,7 +272,7 @@ test-append-byte-single:
     # . . call
     e8/call  append-byte/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check-stream-equal(_test-stream, "A", msg)
     # . . push args
     68/push  "F - test-append-byte-single"/imm32
@@ -281,7 +281,7 @@ test-append-byte-single:
     # . . call
     e8/call  check-stream-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . end
     c3/return
 

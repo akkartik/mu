@@ -7,8 +7,8 @@
 
 zero-out:  # start : address, len : int
     # pseudocode:
-    #   curr/ESI = start
-    #   i/ECX = 0
+    #   curr/esi = start
+    #   i/ecx = 0
     #   while true
     #     if (i >= len) break
     #     *curr = 0
@@ -16,69 +16,69 @@ zero-out:  # start : address, len : int
     #     ++i
     #
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    50/push-EAX
-    51/push-ECX
-    52/push-EDX
-    56/push-ESI
-    # curr/ESI = start
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           6/r32/ESI   8/disp8         .                 # copy *(EBP+8) to ESI
-    # i/ECX = 0
-    31/xor                          3/mod/direct    1/rm32/ECX    .           .             .           1/r32/ECX   .               .                 # clear ECX
-    # EDX = len
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           2/r32/EDX   0xc/disp8       .                 # copy *(EBP+12) to EDX
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # curr/esi = start
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # i/ecx = 0
+    31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+    # edx = len
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
 $zero-out:loop:
     # if (i >= len) break
-    39/compare                      3/mod/direct    1/rm32/ECX    .           .             .           2/r32/EDX   .               .                 # compare ECX with EDX
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     7d/jump-if-greater-or-equal  $zero-out:end/disp8
     # *curr = 0
-    c6          0/subop/copy        0/mod/direct    6/rm32/ESI    .           .             .           .           .               0/imm8            # copy byte to *ESI
+    c6          0/subop/copy        0/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm8            # copy byte to *esi
     # ++curr
-    46/increment-ESI
+    46/increment-esi
     # ++i
-    41/increment-ECX
+    41/increment-ecx
     eb/jump  $zero-out:loop/disp8
 $zero-out:end:
     # . restore registers
-    5e/pop-to-ESI
-    5a/pop-to-EDX
-    59/pop-to-ECX
-    58/pop-to-EAX
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 test-zero-out:
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
-    # region/ECX = 34, 35, 36, 37
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # region/ecx = 34, 35, 36, 37
     68/push  0x37363534/imm32
-    89/copy                         3/mod/direct    1/rm32/ECX    .           .             .           4/r32/ESP   .               .                 # copy ESP to ECX
-    # zero-out(ECX, 3)
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # zero-out(ecx, 3)
     # . . push args
     68/push  3/imm32/len
-    51/push-ECX
+    51/push-ecx
     # . . call
     e8/call  zero-out/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # first 3 bytes cleared, fourth left alone
-    # . check-ints-equal(*ECX, 0x37000000, msg)
+    # . check-ints-equal(*ecx, 0x37000000, msg)
     # . . push args
     68/push  "F - test-zero-out"/imm32
     68/push  0x37000000/imm32
-    ff          6/subop/push        0/mod/indirect  1/rm32/ECX    .           .             .           .           .               .                 # push *ECX
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 # . . vim:nowrap:textwidth=0

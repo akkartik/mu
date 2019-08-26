@@ -12,32 +12,32 @@
 Entry:
 
     # allocate x on the stack
-    81          5/subop/subtract    3/mod/direct    4/rm32/ESP    .           .             .           .           .               4/imm32           # subtract from ESP
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # subtract from esp
 
     # syscall(read, stdin, x, 1)
     # . fd = 0 (stdin)
-    bb/copy-to-EBX  0/imm32
+    bb/copy-to-ebx  0/imm32
     # . data = x (location to write result to)
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              1/r32/ECX   4/disp8         .                 # copy ESP+4 to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none              1/r32/ecx   4/disp8         .                 # copy esp+4 to ecx
     # . size = 1 character
-    ba/copy-to-EDX  1/imm32
+    ba/copy-to-edx  1/imm32
     # . syscall
-    b8/copy-to-EAX  3/imm32/read
+    b8/copy-to-eax  3/imm32/read
     cd/syscall  0x80/imm8
 
     # syscall(write, stdout, x, 1)
     # . fd = 1 (stdout)
-    bb/copy-to-EBX  1/imm32
+    bb/copy-to-ebx  1/imm32
     # . data = x (location to read from)
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    4/base/ESP  4/index/none              1/r32/ECX   4/disp8         .                 # copy ESP+4 to ECX
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none              1/r32/ecx   4/disp8         .                 # copy esp+4 to ecx
     # . size = 1 character
-    ba/copy-to-EDX  1/imm32
+    ba/copy-to-edx  1/imm32
     # . syscall
-    b8/copy-to-EAX  4/imm32/write
+    b8/copy-to-eax  4/imm32/write
     cd/syscall  0x80/imm8
 
-    # syscall(exit, EBX)
-    b8/copy-to-EAX  1/imm32/exit
+    # syscall(exit, ebx)
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 == data 0x0a000000

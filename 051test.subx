@@ -14,26 +14,26 @@ Entry:  # manual test
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               0xc/imm32         # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # syscall(exit, 0)
-    bb/copy-to-EBX  0/imm32
-    b8/copy-to-EAX  1/imm32/exit
+    bb/copy-to-ebx  0/imm32
+    b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 # print msg to stderr if a != b, otherwise print "."
 check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> <void>
     # . prolog
-    55/push-EBP
-    89/copy                         3/mod/direct    5/rm32/EBP    .           .             .           4/r32/ESP   .               .                 # copy ESP to EBP
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    50/push-EAX
-    51/push-ECX
-    53/push-EBX
-    # load first 2 args into EAX and EBX
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           0/r32/EAX   8/disp8         .                 # copy *(EBP+8) to EAX
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           3/r32/EBX   0xc/disp8       .                 # copy *(EBP+12) to EBX
-    # if (EAX == EBX) success
-    39/compare                      3/mod/direct    0/rm32/EAX    .           .             .           3/r32/EBX   .               .                 # compare EAX and EBX
+    50/push-eax
+    51/push-ecx
+    53/push-ebx
+    # load first 2 args into eax and ebx
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy *(ebp+12) to ebx
+    # if (eax == ebx) success
+    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
     75/jump-if-unequal  $check-ints-equal:else/disp8
     # . _write(2/stderr, '.')
     # . . push args
@@ -42,20 +42,20 @@ check-ints-equal:  # (a : int, b : int, msg : (address array byte)) -> <void>
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . return
     eb/jump  $check-ints-equal:end/disp8
     # otherwise print error message
 $check-ints-equal:else:
     # . _write(2/stderr, msg)
     # . . push args
-    8b/copy                         1/mod/*+disp8   5/rm32/EBP    .           .             .           1/r32/ECX   0x10/disp8      .                 # copy *(EBP+16) to ECX
-    51/push-ECX
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x10/disp8      .                 # copy *(ebp+16) to ecx
+    51/push-ecx
     68/push  2/imm32/stderr
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . _write(2/stderr, Newline)
     # . . push args
     68/push  Newline/imm32
@@ -63,17 +63,17 @@ $check-ints-equal:else:
     # . . call
     e8/call  _write/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/ESP    .           .             .           .           .               8/imm32           # add to ESP
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # increment Num-test-failures
     ff          0/subop/increment   0/mod/indirect  5/rm32/.disp32            .             .           .           Num-test-failures/disp32          # increment *Num-test-failures
 $check-ints-equal:end:
     # . restore registers
-    5b/pop-to-EBX
-    59/pop-to-ECX
-    58/pop-to-EAX
+    5b/pop-to-ebx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilog
-    89/copy                         3/mod/direct    4/rm32/ESP    .           .             .           5/r32/EBP   .               .                 # copy EBP to ESP
-    5d/pop-to-EBP
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
     c3/return
 
 == data
