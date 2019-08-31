@@ -53,8 +53,8 @@ You get a thin syntax called SubX for programming in (a subset of) x86 machine
 code. Here's a program (`examples/ex1.subx`) that returns 42:
 
   ```sh
-  bb/copy-to-EBX  0x2a/imm32  # 42 in hex
-  b8/copy-to-EAX  1/imm32/exit
+  bb/copy-to-ebx  0x2a/imm32  # 42 in hex
+  b8/copy-to-eax  1/imm32/exit
   cd/syscall  0x80/imm8
   ```
 
@@ -156,8 +156,8 @@ kernel.)
 Here is the above example again:
 
   ```sh
-  bb/copy-to-EBX  0x2a/imm32  # 42 in hex
-  b8/copy-to-EAX  1/imm32/exit
+  bb/copy-to-ebx  0x2a/imm32  # 42 in hex
+  b8/copy-to-eax  1/imm32/exit
   cd/syscall  0x80/imm8
   ```
 
@@ -167,7 +167,7 @@ performed) or _arguments_ (specifying the data the operation acts on). Any
 word can have extra _metadata_ attached to it after `/`. Some metadata is
 required (like the `/imm32` and `/imm8` above), but unrecognized metadata is
 silently skipped so you can attach comments to words (like the instruction
-name `/copy-to-EAX` above, or the `/exit` operand).
+name `/copy-to-eax` above, or the `/exit` operand).
 
 SubX doesn't provide much syntax (there aren't even the usual mnemonics for
 opcodes), but it _does_ provide error-checking. If you miss an operand or
@@ -179,17 +179,18 @@ small subset of the 32-bit x86 instruction set that likely runs on your
 computer. (Think of the name as short for "sub-x86".) Instructions operate on
 a few registers:
 
-* Six general-purpose 32-bit registers: EAX, EBX, ECX, EDX, ESI and EDI
-* Two additional 32-bit registers: ESP and EBP (I suggest you only use these to
-  manage the call stack.)
+* Six general-purpose 32-bit registers: `eax`, `ebx`, `ecx`, `edx`, `esi` and
+  `edi`
+* Two additional 32-bit registers: `esp` and `ebp` (I suggest you only use
+  these to manage the call stack.)
 * Four 1-bit _flag_ registers for conditional branching:
-  - zero/equal flag ZF
-  - sign flag SF
-  - overflow flag OF
-  - carry flag CF
+  - zero/equal flag `ZF`
+  - sign flag `SF`
+  - overflow flag `OF`
+  - carry flag `CF`
 
 SubX programs consist of instructions like `89/copy`, `01/add`, `3d/compare`
-and `51/push-ECX` which modify these registers as well as a byte-addressable
+and `51/push-ecx` which modify these registers as well as a byte-addressable
 memory. For a complete list of supported instructions, run `subx help opcodes`.
 
 (SubX doesn't support floating-point registers yet. Intel processors support
@@ -217,14 +218,14 @@ Most instructions operate on an operand in register or memory ('reg/mem'), and
 a second operand in a register. The register operand is specified fairly
 directly using the 3-bit `/r32` argument:
 
-  - 0 means register `EAX`
-  - 1 means register `ECX`
-  - 2 means register `EDX`
-  - 3 means register `EBX`
-  - 4 means register `ESP`
-  - 5 means register `EBP`
-  - 6 means register `ESI`
-  - 7 means register `EDI`
+  - 0 means register `eax`
+  - 1 means register `ecx`
+  - 2 means register `edx`
+  - 3 means register `ebx`
+  - 4 means register `esp`
+  - 5 means register `ebp`
+  - 6 means register `esi`
+  - 7 means register `edi`
 
 The reg/mem operand, however, gets complex. It can be specified by 1-7
 arguments, each ranging in size from 2 bits to 4 bytes.
@@ -249,7 +250,7 @@ them.
   /disp32)` in C syntax.
 
 In the last three cases, one exception occurs when the `/rm32` argument
-contains `4`. Rather than encoding register `ESP`, it means the address is
+contains `4`. Rather than encoding register `esp`, it means the address is
 provided by three _whole new_ arguments (`/base`, `/index` and `/scale`) in a
 _totally_ different way (where `<<` is the left-shift operator):
 
@@ -263,28 +264,28 @@ of the Intel manual for the complete story.)
 Phew, that was a lot to take in. Some examples to work through as you reread
 and digest it:
 
-1. To read directly from the EAX register, `/mod` must be `3` (direct mode),
+1. To read directly from the `eax` register, `/mod` must be `3` (direct mode),
    and `/rm32` must be `0`. There must be no `/base`, `/index` or `/scale`
    arguments.
 
-1. To read from `*EAX` (in C syntax), `/mod` must be `0` (indirect mode), and
+1. To read from `*eax` (in C syntax), `/mod` must be `0` (indirect mode), and
    the `/rm32` argument must be `0`. There must be no `/base`, `/index` or
    `/scale` arguments.
 
-1. To read from `*(EAX+4)`, `/mod` must be `1` (indirect + disp8 mode),
+1. To read from `*(eax+4)`, `/mod` must be `1` (indirect + disp8 mode),
    `/rm32` must be `0`, there must be no SIB byte, and there must be a single
    displacement byte containing `4`.
 
-1. To read from `*(EAX+ECX+4)`, one approach would be to set `/mod` to `1` as
+1. To read from `*(eax+ecx+4)`, one approach would be to set `/mod` to `1` as
    above, `/rm32` to `4` (SIB byte next), `/base` to `0`, `/index` to `1`
-   (ECX) and a single displacement byte to `4`. (What should the `scale` bits
+   (`ecx`) and a single displacement byte to `4`. (What should the `scale` bits
    be? Can you think of another approach?)
 
-1. To read from `*(EAX+ECX+1000)`, one approach would be:
+1. To read from `*(eax+ecx+1000)`, one approach would be:
    - `/mod`: `2` (indirect + disp32)
    - `/rm32`: `4` (`/base`, `/index` and `/scale` arguments required)
-   - `/base`: `0` (EAX)
-   - `/index`: `1` (ECX)
+   - `/base`: `0` (eax)
+   - `/index`: `1` (ecx)
    - `/disp32`: 4 bytes containing `1000`
 
 ## Putting it all together
@@ -631,7 +632,7 @@ But those are big goals. Here are the syscalls I have so far:
   and an integer `n`
 
   Allocates a contiguous range of memory that is guaranteed to be exclusively
-  available to the caller. Returns the starting address to the range in `EAX`.
+  available to the caller. Returns the starting address to the range in `eax`.
 
   An allocation descriptor tracks allocated vs available addresses in some
   contiguous range of memory. The int specifies the number of bytes to allocate.
@@ -728,14 +729,14 @@ allocated memory for it.)_
   its contents.
 
 #### reading/writing hex representations of integers
-* `is-hex-int?`: takes a slice argument, returns boolean result in `EAX`
-* `parse-hex-int`: takes a slice argument, returns int result in `EAX`
+* `is-hex-int?`: takes a slice argument, returns boolean result in `eax`
+* `parse-hex-int`: takes a slice argument, returns int result in `eax`
 * `is-hex-digit?`: takes a 32-bit word containing a single byte, returns
-  boolean result in `EAX`.
-* `from-hex-char`: takes a hexadecimal digit character in EAX, returns its
-  numeric value in `EAX`
-* `to-hex-char`: takes a single-digit numeric value in EAX, returns its
-  corresponding hexadecimal character in `EAX`
+  boolean result in `eax`.
+* `from-hex-char`: takes a hexadecimal digit character in `eax`, returns its
+  numeric value in `eax`
+* `to-hex-char`: takes a single-digit numeric value in `eax`, returns its
+  corresponding hexadecimal character in `eax`
 
 #### tokenization
 
@@ -749,8 +750,8 @@ from a slice:
   - Given a slice and a delimiter byte, returns a new slice inside the input
     that ends at the delimiter byte.
 
-* `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `EAX`)
-* `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `EAX`)
+* `skip-chars-matching-in-slice`: curr, end, delimiter byte -> new-curr (in `eax`)
+* `skip-chars-not-matching-in-slice`:  curr, end, delimiter byte -> new-curr (in `eax`)
 
 ## Resources
 
