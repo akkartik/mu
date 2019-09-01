@@ -1,33 +1,34 @@
-# Experimental syntax sugar for SubX programs.
+# Experimental syntax sugar for addressing modes that expand into /rm32 and
+# other related arguments.
 #
 # To run:
-#   $ ./subx translate 0*.subx apps/subx-common.subx apps/desugar.subx  -o apps/desugar
+#   $ ./subx translate 0*.subx apps/subx-common.subx apps/sigils.subx  -o apps/sigils
 #
-# We're experimenting with the following expressions:
+# We currently support the following notations:
 #
 # 1.
-#   $ echo "ab %eax"  |  ./subx run apps/desugar
-#   ab 3/mod 0/rm32
+#   $ echo '%eax'  |  ./subx run apps/sigils
+#   3/mod 0/rm32
 #
 # 2.
-#   $ echo "ab *eax"  |  ./subx run apps/desugar
-#   ab 0/mod 0/rm32
+#   $ echo '*eax'  |  ./subx run apps/sigils
+#   0/mod 0/rm32
 #
 # 3.
-#   $ echo "ab *(eax+4)"  |  ./subx run apps/desugar
-#   ab 2/mod 0/rm32 4/disp32
+#   $ echo '*(eax+4)'  |  ./subx run apps/sigils
+#   2/mod 0/rm32 4/disp32
 #
 # 4.
-#   $ echo "ab *(eax+ecx)"  |  ./subx run apps/desugar
-#   ab 0/mod 4/rm32 0/base 1/index 0/scale
+#   $ echo '*(eax+ecx)'  |  ./subx run apps/sigils
+#   0/mod 4/rm32 0/base 1/index 0/scale
 #
 # 5.
-#   $ echo "ab *(eax+ecx+4)"  |  ./subx run apps/desugar
-#   ab 2/mod 4/rm32 0/base 1/index 0/scale 4/disp32
+#   $ echo '*(eax+ecx+4)'  |  ./subx run apps/sigils
+#   2/mod 4/rm32 0/base 1/index 0/scale 4/disp32
 #
 # 6.
-#   $ echo "ab *(eax+ecx<<2+4)"  |  ./subx run apps/desugar
-#   ab 2/mod 4/rm32 0/base 1/index 2/scale 4/disp32
+#   $ echo '*(eax+ecx<<2+4)'  |  ./subx run apps/sigils
+#   2/mod 4/rm32 0/base 1/index 2/scale 4/disp32
 #
 # Addition isn't commutative here. Template must always be (base+index<<scale+disp),
 # though some components are optional as described above.
