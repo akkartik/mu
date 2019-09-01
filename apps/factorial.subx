@@ -50,10 +50,9 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     74/jump-if-equal  $run-main/disp8
     # run-tests()
     e8/call  run-tests/disp32
-    # eax = *Num-test-failures
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Num-test-failures/disp32          # copy *Num-test-failures to eax
-    # return
-    eb/jump  $main:end/disp8  # where eax will get copied to ebx
+    # return *Num-test-failures
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
+    eb/jump  $main:end/disp8
 $run-main:
     # - otherwise return factorial(5)
     # . . push args
@@ -62,9 +61,9 @@ $run-main:
     e8/call  factorial/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-$main:end:
     # syscall(exit, eax)
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+$main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
