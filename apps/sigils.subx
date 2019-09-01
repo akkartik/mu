@@ -112,7 +112,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #       if slice-starts-with?(word-slice, "#")        # comment
     #         continue
     #       if slice-starts-with?(word-slice, '%')        # direct mode
-    #         emit-direct-mode(word-slice, out)
+    #         emit-direct-mode(out, word-slice)
     #       else if slice-starts-with?(word-slice, '*')   # indirect mode
     #         base, index, scale, disp = parse-effective-address(word-slice)
     #         emit-indirect-mode(out, base, index, scale, disp)
@@ -244,10 +244,10 @@ $convert:direct-mode:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # emit-direct-mode(word-slice, out)
+    # emit-direct-mode(out, word-slice)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     52/push-edx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  emit-direct-mode/disp32
     # . . discard args
@@ -1272,14 +1272,14 @@ test-convert-register-indirect-mode-with-sib-byte-negative-displacement:
     5d/pop-to-ebp
     c3/return
 
-emit-direct-mode:  # word-slice : (address slice), out : (address buffered-file)
+emit-direct-mode:  # out : (address buffered-file), word-slice : (address slice)
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     50/push-eax
     # var local-slice/eax : (address slice) = {word-slice->start, word-slice->end}
-    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
     ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
@@ -1309,7 +1309,7 @@ emit-direct-mode:  # word-slice : (address slice), out : (address buffered-file)
     # write-buffered(out, "3/mod/direct ")
     # . . push args
     68/push  "3/mod/direct "/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
@@ -1317,7 +1317,7 @@ emit-direct-mode:  # word-slice : (address slice), out : (address buffered-file)
     # print-int32-buffered(out, *eax)
     # . . push args
     ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  print-int32-buffered/disp32
     # . . discard args
@@ -1325,7 +1325,7 @@ emit-direct-mode:  # word-slice : (address slice), out : (address buffered-file)
     # write-buffered(out, "/rm32")
     # . . push args
     68/push  "/rm32"/imm32
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  write-buffered/disp32
     # . . discard args
@@ -1370,10 +1370,10 @@ test-emit-direct-mode:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # emit-direct-mode(str, _test-output-buffered-file)
+    # emit-direct-mode(_test-output-buffered-file, str)
     # . . push args
-    68/push  _test-output-buffered-file/imm32
     51/push-ecx
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit-direct-mode/disp32
     # . . discard args
@@ -1455,10 +1455,10 @@ test-emit-direct-mode-2:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # emit-direct-mode(str/ecx, _test-output-buffered-file)
+    # emit-direct-mode(_test-output-buffered-file, str/ecx)
     # . . push args
-    68/push  _test-output-buffered-file/imm32
     51/push-ecx
+    68/push  _test-output-buffered-file/imm32
     # . . call
     e8/call  emit-direct-mode/disp32
     # . . discard args
