@@ -1,5 +1,6 @@
 #!/bin/bash
 # Regenerate html files.
+# If given a single argument, regenerate just that file.
 
 set -e
 
@@ -40,11 +41,13 @@ convert_html() {
 ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
 for f in *.cc
 do
+  test $# -gt 0  &&  test $1 != $f  &&  continue
   process $f
 done
 
 for f in examples/*.subx
 do
+  test $# -gt 0  &&  test $1 != $f  &&  continue
   ( cd examples
     ctags -x `basename $f` > /tmp/tags
   )
@@ -54,11 +57,13 @@ done
 ctags -x *.subx  > /tmp/tags
 for f in *.subx
 do
+  test $# -gt 0  &&  test $1 != $f  &&  continue
   process $f
 done
 
 for f in apps/*.subx
 do
+  test $# -gt 0  &&  test $1 != $f  &&  continue
   ( cd apps
     ctags -x ../*.subx `basename $f` > /tmp/tags
   )
