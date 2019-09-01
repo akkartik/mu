@@ -1272,19 +1272,21 @@ test-convert-register-indirect-mode-with-sib-byte-negative-displacement:
     5d/pop-to-ebp
     c3/return
 
-# BEWARE: modifies 'word-slice'
 emit-direct-mode:  # word-slice : (address slice), out : (address buffered-file)
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     50/push-eax
-    # ++word-slice->start
-    # . eax = word-slice
+    # var local-slice/eax : (address slice) = {word-slice->start, word-slice->end}
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
+    # ++local-slice->start
     # . ++(*eax)
     ff          0/subop/increment   0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # increment *eax
-    # word-slice = next-token-from-slice(word-slice->start, word-slice->end, "/")
+    # local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
     # . . push args
     50/push-eax
     68/push  0x2f/imm32/slash
@@ -1294,7 +1296,7 @@ emit-direct-mode:  # word-slice : (address slice), out : (address buffered-file)
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
-    # reg-num/eax = get-slice(Registers, word-slice, row-size=8)
+    # reg-num/eax = get-slice(Registers, local-slice, row-size=8)
     # . . push args
     68/push  "Registers"/imm32
     68/push  8/imm32/row-size
@@ -1329,6 +1331,8 @@ emit-direct-mode:  # word-slice : (address slice), out : (address buffered-file)
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $emit-direct-mode:end:
+    # reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . restore registers
     58/pop-to-eax
     # . epilog
@@ -2105,52 +2109,55 @@ test-next-word-or-expression-returns-whole-expression:
 #   *(reg1+reg2<<s+disp)    -> 2/mod 4/rm32 reg1/base reg2/index s/scale disp/disp32
 # Intermediate structure: base, index, scale, disp
 # Default values: base: 0, index: 4 (none), scale: 0, disp: 0
-# BEWARE: modifies 'word-slice'
 parse-effective-address:  # word-slice : (address slice) -> base/eax, index/ecx, scale/edx, disp/ebx
     # pseudocode:
-    #   ++word-slice->start to skip '*'
+    #   var local-slice = {word-slice->start, word-slice->end}
+    #   ++local-slice->start to skip '*'
     #   initialize defaults: base=0, index=4, scale=0, disp=0
-    #   if (*word-slice->start != '(') {
-    #     word-slice = next-token-from-slice(word-slice->start, word-slice->end, "/")
-    #     base = get-slice(Registers, word-slice, row-size=8)
+    #   if (*local-slice->start != '(') {
+    #     local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
+    #     base = get-slice(Registers, local-slice, row-size=8)
     #     return
     #   }
     #   # compound expressions
     #   skip whitespace
     #   read register into base
     #   skip whitespace
-    #   if (*word-slice->start == ')') goto end
-    #   if (*word-slice->start == '-') goto displacement
-    #   if (*word-slice->start != '+') goto error1
-    #   ++word-slice->start to skip '+'
+    #   if (*local-slice->start == ')') goto end
+    #   if (*local-slice->start == '-') goto displacement
+    #   if (*local-slice->start != '+') goto error1
+    #   ++local-slice->start to skip '+'
     #   skip whitespace
     #   if next 3 characters don't make a register, goto displacement
     #   read register into index
     #   skip whitespace
-    #   if (*word-slice->start == ')') goto end
-    #   if (*word-slice->start == '<') {
-    #     ++word-slice->start to skip '<'
-    #     if (*word-slice->start != '<') goto error2
-    #     ++word-slice->start to skip '<'
+    #   if (*local-slice->start == ')') goto end
+    #   if (*local-slice->start == '<') {
+    #     ++local-slice->start to skip '<'
+    #     if (*local-slice->start != '<') goto error2
+    #     ++local-slice->start to skip '<'
     #     skip whitespace
     #     read integer into scale
     #     skip whitespace
-    #     if (*word-slice->start == ')') goto end
+    #     if (*local-slice->start == ')') goto end
     #   }
-    #   if (*word-slice->start not in '+' '-') goto error3
+    #   if (*local-slice->start not in '+' '-') goto error3
     # displacement:
     #   read integer into disp
     #   skip whitespace
-    #   if (*word-slice->start != ')') goto error4
+    #   if (*local-slice->start != ')') goto error4
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     56/push-esi
     57/push-edi
-    # esi = word-slice
+    # var local-slice/esi : (address slice) = {word-slice->start, word-slice->end}
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # ++word-slice->start to skip '*'
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+    89/copy                         3/mod/direct    6/rm32/esi    .           .             .           4/r32/esp   .               .                 # copy esp to esi
+    # ++local-slice->start to skip '*'
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
     # initialize defaults
     # base is in edi; we'll move it to eax just before we return
@@ -2159,14 +2166,14 @@ parse-effective-address:  # word-slice : (address slice) -> base/eax, index/ecx,
     ba/copy-to-edx  0/imm32/.scale
     bb/copy-to-ebx  0/imm32/disp
 $parse-effective-address:check-for-simple-register:
-    # if (*word-slice->start == '(') goto compound expression
+    # if (*local-slice->start == '(') goto compound expression
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x28/imm32/open-paren
     74/jump-if-equal  $parse-effective-address:compound-expression/disp8
 $parse-effective-address:simple-register:
-    # word-slice = next-token-from-slice(word-slice->start, word-slice->end, "/")
+    # local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
     # . . push args
     56/push-esi
     68/push  0x2f/imm32/slash
@@ -2176,8 +2183,8 @@ $parse-effective-address:simple-register:
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
-    # base = get-slice(Registers, word-slice, row-size=8)
-    # . eax = get-slice(Registers, word-slice, row-size=8)
+    # base = get-slice(Registers, local-slice, row-size=8)
+    # . eax = get-slice(Registers, local-slice, row-size=8)
     # . . push args
     68/push  "Registers"/imm32
     68/push  8/imm32/row-size
@@ -2192,10 +2199,10 @@ $parse-effective-address:simple-register:
     # return
     e9/jump  $parse-effective-address:end/disp32
 $parse-effective-address:compound-expression:
-    # ++word-slice->start to skip '('
+    # ++local-slice->start to skip '('
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
     # skip whitespace
-    # . eax = skip-chars-matching-whitespace-in-slice(word-slice->start, word-slice->end)
+    # . eax = skip-chars-matching-whitespace-in-slice(local-slice->start, local-slice->end)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2203,12 +2210,12 @@ $parse-effective-address:compound-expression:
     e8/call  skip-chars-matching-whitespace-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . word-slice->start = eax
+    # . local-slice->start = eax
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to *esi
     # read register into base
-    # . eax = next-register(word-slice)
+    # . eax = next-register(local-slice)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    56/push-esi
     # . . call
     e8/call  next-register/disp32
     # . . discard args
@@ -2216,7 +2223,7 @@ $parse-effective-address:compound-expression:
     # . edi = *eax
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           7/r32/edi   .               .                 # copy *eax to edi
     # skip whitespace
-    # . eax = skip-chars-matching-whitespace-in-slice(word-slice->start, word-slice->end)
+    # . eax = skip-chars-matching-whitespace-in-slice(local-slice->start, local-slice->end)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2224,24 +2231,24 @@ $parse-effective-address:compound-expression:
     e8/call  skip-chars-matching-whitespace-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . word-slice->start = eax
+    # . local-slice->start = eax
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to *esi
-    # if (*word-slice->start == ')') goto end
+    # if (*local-slice->start == ')') goto end
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
     0f 84/jump-if-equal  $parse-effective-address:end/disp32
-    # if (*word-slice->start == '-') goto displacement
+    # if (*local-slice->start == '-') goto displacement
     3d/compare-eax-and  0x2d/imm32/minus
     0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
-    # if (*word-slice->start != '+') goto error1
+    # if (*local-slice->start != '+') goto error1
     3d/compare-eax-and  0x2b/imm32/plus
     0f 85/jump-if-not-equal  $parse-effective-address:error1/disp32
 $parse-effective-address:check-for-index:
-    # ++word-slice->start to skip '+'
+    # ++local-slice->start to skip '+'
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
     # skip whitespace
-    # . eax = skip-chars-matching-whitespace-in-slice(word-slice->start, word-slice->end)
+    # . eax = skip-chars-matching-whitespace-in-slice(local-slice->start, local-slice->end)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2249,16 +2256,16 @@ $parse-effective-address:check-for-index:
     e8/call  skip-chars-matching-whitespace-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . word-slice->start = eax
+    # . local-slice->start = eax
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to *esi
 $parse-effective-address:resolve-ambiguity:
     # if next 3 characters don't make a register, goto displacement
     # . spill ecx
     51/push-ecx
-    # . var tmp/ecx = {word-slice->start, word-slice->start+3}
-    # . . ecx = word-slice->start
+    # . var tmp/ecx = {local-slice->start, local-slice->start+3}
+    # . . ecx = local-slice->start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy eax to ecx
-    # . . eax = word-slice->start+3
+    # . . eax = local-slice->start+3
     05/add-to-eax  3/imm32
     # . . push
     50/push-eax
@@ -2283,9 +2290,9 @@ $parse-effective-address:resolve-ambiguity:
     0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
 $parse-effective-address:index:
     # read register into index
-    # . eax = next-register(word-slice)
+    # . eax = next-register(local-slice)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    56/push-esi
     # . . call
     e8/call  next-register/disp32
     # . . discard args
@@ -2293,7 +2300,7 @@ $parse-effective-address:index:
     # . ecx = *eax
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     # skip whitespace
-    # . eax = skip-chars-matching-whitespace-in-slice(word-slice->start, word-slice->end)
+    # . eax = skip-chars-matching-whitespace-in-slice(local-slice->start, local-slice->end)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2301,29 +2308,29 @@ $parse-effective-address:index:
     e8/call  skip-chars-matching-whitespace-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . word-slice->start = eax
+    # . local-slice->start = eax
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to *esi
-    # if (*word-slice->start == ')') goto end
+    # if (*local-slice->start == ')') goto end
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
     0f 84/jump-if-equal  $parse-effective-address:end/disp32
 $parse-effective-address:check-for-scale:
-    # if (*word-slice->start != '<') goto next check
+    # if (*local-slice->start != '<') goto next check
     3d/compare-eax-and  0x3c/imm32/less-than
     75/jump-if-not-equal  $parse-effective-address:check-for-displacement/disp8
-    # ++word-slice->start to skip '<'
+    # ++local-slice->start to skip '<'
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
-    # if (*word-slice->start != '<') goto error2
+    # if (*local-slice->start != '<') goto error2
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x3c/imm32/less-than
     0f 85/jump-if-not-equal  $parse-effective-address:error2/disp32
-    # ++word-slice->start to skip '<'
+    # ++local-slice->start to skip '<'
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
     # skip whitespace
-    # . eax = skip-chars-matching-whitespace-in-slice(word-slice->start, word-slice->end)
+    # . eax = skip-chars-matching-whitespace-in-slice(local-slice->start, local-slice->end)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2331,13 +2338,13 @@ $parse-effective-address:check-for-scale:
     e8/call  skip-chars-matching-whitespace-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . word-slice->start = eax
+    # . local-slice->start = eax
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to *esi
 $parse-effective-address:scale:
     # read positive integer into scale
-    # . eax = next-positive-hex-int(word-slice)
+    # . eax = next-positive-hex-int(local-slice)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    56/push-esi
     # . . call
     e8/call  next-positive-hex-int/disp32
     # . . discard args
@@ -2345,7 +2352,7 @@ $parse-effective-address:scale:
     # . edx = eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to edx
     # skip whitespace
-    # . eax = skip-chars-matching-whitespace-in-slice(word-slice->start, word-slice->end)
+    # . eax = skip-chars-matching-whitespace-in-slice(local-slice->start, local-slice->end)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2353,15 +2360,15 @@ $parse-effective-address:scale:
     e8/call  skip-chars-matching-whitespace-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . word-slice->start = eax
+    # . local-slice->start = eax
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to *esi
-    # if (*word-slice->start == ')') goto end
+    # if (*local-slice->start == ')') goto end
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
     74/jump-if-equal  $parse-effective-address:end/disp8
 $parse-effective-address:check-for-displacement:
-    # if (*word-slice->start not in '+' '-') goto error3
+    # if (*local-slice->start not in '+' '-') goto error3
     3d/compare-eax-and  0x2b/imm32/plus
     74/jump-if-equal  $parse-effective-address:displacement/disp8
     3d/compare-eax-and  0x2d/imm32/minus
@@ -2369,9 +2376,9 @@ $parse-effective-address:check-for-displacement:
     e9/jump  $parse-effective-address:error3/disp32
 $parse-effective-address:displacement:
     # read integer into disp
-    # . eax = next-hex-int(word-slice)
+    # . eax = next-hex-int(local-slice)
     # . . push args
-    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    56/push-esi
     # . . call
     e8/call  next-hex-int/disp32
     # . . discard args
@@ -2379,7 +2386,7 @@ $parse-effective-address:displacement:
     # . ebx = eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
     # skip whitespace
-    # . eax = skip-chars-matching-whitespace-in-slice(word-slice->start, word-slice->end)
+    # . eax = skip-chars-matching-whitespace-in-slice(local-slice->start, local-slice->end)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2387,9 +2394,9 @@ $parse-effective-address:displacement:
     e8/call  skip-chars-matching-whitespace-in-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . word-slice->start = eax
+    # . local-slice->start = eax
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to *esi
-    # if (*word-slice->start != ')') goto error4
+    # if (*local-slice->start != ')') goto error4
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
@@ -2397,6 +2404,8 @@ $parse-effective-address:displacement:
 $parse-effective-address:end:
     # return base in eax
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           7/r32/edi   .               .                 # copy edi to eax
+    # reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
