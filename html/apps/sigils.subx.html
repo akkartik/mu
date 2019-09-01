@@ -1114,19 +1114,19 @@ if ('onhashchange' in window) {
 <span id="L1272" class="LineNr">1272 </span>    5d/pop-to-ebp
 <span id="L1273" class="LineNr">1273 </span>    c3/return
 <span id="L1274" class="LineNr">1274 </span>
-<span id="L1275" class="LineNr">1275 </span><span class="subxComment"># BEWARE: modifies 'word'</span>
-<span id="L1276" class="LineNr">1276 </span><span class="subxFunction">emit-direct-mode</span>:  <span class="subxComment"># word : (address slice), out : (address buffered-file)</span>
+<span id="L1275" class="LineNr">1275 </span><span class="subxComment"># BEWARE: modifies 'word-slice'</span>
+<span id="L1276" class="LineNr">1276 </span><span class="subxFunction">emit-direct-mode</span>:  <span class="subxComment"># word-slice : (address slice), out : (address buffered-file)</span>
 <span id="L1277" class="LineNr">1277 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L1278" class="LineNr">1278 </span>    55/push-ebp
 <span id="L1279" class="LineNr">1279 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
 <span id="L1280" class="LineNr">1280 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L1281" class="LineNr">1281 </span>    50/push-eax
-<span id="L1282" class="LineNr">1282 </span>    <span class="subxComment"># ++word-&gt;start</span>
-<span id="L1283" class="LineNr">1283 </span>    <span class="subxS1Comment"># . eax = word</span>
+<span id="L1282" class="LineNr">1282 </span>    <span class="subxComment"># ++word-slice-&gt;start</span>
+<span id="L1283" class="LineNr">1283 </span>    <span class="subxS1Comment"># . eax = word-slice</span>
 <span id="L1284" class="LineNr">1284 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to eax</span>
 <span id="L1285" class="LineNr">1285 </span>    <span class="subxS1Comment"># . ++(*eax)</span>
 <span id="L1286" class="LineNr">1286 </span>    ff          0/subop/increment   0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *eax</span>
-<span id="L1287" class="LineNr">1287 </span>    <span class="subxComment"># word = next-token-from-slice(word-&gt;start, word-&gt;end, &quot;/&quot;)</span>
+<span id="L1287" class="LineNr">1287 </span>    <span class="subxComment"># word-slice = next-token-from-slice(word-slice-&gt;start, word-slice-&gt;end, &quot;/&quot;)</span>
 <span id="L1288" class="LineNr">1288 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L1289" class="LineNr">1289 </span>    50/push-eax
 <span id="L1290" class="LineNr">1290 </span>    68/push  0x2f/imm32/slash
@@ -1136,7 +1136,7 @@ if ('onhashchange' in window) {
 <span id="L1294" class="LineNr">1294 </span>    e8/call  <a href='../073next-token.subx.html#L163'>next-token-from-slice</a>/disp32
 <span id="L1295" class="LineNr">1295 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1296" class="LineNr">1296 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x10/imm32        <span class="subxComment"># add to esp</span>
-<span id="L1297" class="LineNr">1297 </span>    <span class="subxComment"># reg-num/eax = get-slice(Registers, word, row-size=8)</span>
+<span id="L1297" class="LineNr">1297 </span>    <span class="subxComment"># reg-num/eax = get-slice(Registers, word-slice, row-size=8)</span>
 <span id="L1298" class="LineNr">1298 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L1299" class="LineNr">1299 </span>    68/push  <span class="Constant">&quot;Registers&quot;</span>/imm32
 <span id="L1300" class="LineNr">1300 </span>    68/push  8/imm32/row-size
@@ -1897,52 +1897,52 @@ if ('onhashchange' in window) {
 <span id="L2105" class="LineNr">2105 </span><span class="subxComment">#   *(reg1+reg2&lt;&lt;s+disp)    -&gt; 2/mod 4/rm32 reg1/base reg2/index s/scale disp/disp32</span>
 <span id="L2106" class="LineNr">2106 </span><span class="subxComment"># Intermediate structure: base, index, scale, disp</span>
 <span id="L2107" class="LineNr">2107 </span><span class="subxComment"># Default values: base: 0, index: 4 (none), scale: 0, disp: 0</span>
-<span id="L2108" class="LineNr">2108 </span><span class="subxComment"># BEWARE: modifies 'word'</span>
-<span id="L2109" class="LineNr">2109 </span><span class="subxFunction">parse-effective-address</span>:  <span class="subxComment"># word : (address slice) -&gt; base/eax, index/ecx, scale/edx, disp/ebx</span>
+<span id="L2108" class="LineNr">2108 </span><span class="subxComment"># BEWARE: modifies 'word-slice'</span>
+<span id="L2109" class="LineNr">2109 </span><span class="subxFunction">parse-effective-address</span>:  <span class="subxComment"># word-slice : (address slice) -&gt; base/eax, index/ecx, scale/edx, disp/ebx</span>
 <span id="L2110" class="LineNr">2110 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L2111" class="LineNr">2111 </span>    <span class="subxComment">#   ++word-&gt;start to skip '*'</span>
+<span id="L2111" class="LineNr">2111 </span>    <span class="subxComment">#   ++word-slice-&gt;start to skip '*'</span>
 <span id="L2112" class="LineNr">2112 </span>    <span class="subxComment">#   initialize defaults: base=0, index=4, scale=0, disp=0</span>
-<span id="L2113" class="LineNr">2113 </span>    <span class="subxComment">#   if (*word-&gt;start != '(') {</span>
-<span id="L2114" class="LineNr">2114 </span>    <span class="subxComment">#     word = next-token-from-slice(word-&gt;start, word-&gt;end, &quot;/&quot;)</span>
-<span id="L2115" class="LineNr">2115 </span>    <span class="subxComment">#     base = get-slice(Registers, word, row-size=8)</span>
+<span id="L2113" class="LineNr">2113 </span>    <span class="subxComment">#   if (*word-slice-&gt;start != '(') {</span>
+<span id="L2114" class="LineNr">2114 </span>    <span class="subxComment">#     word-slice = next-token-from-slice(word-slice-&gt;start, word-slice-&gt;end, &quot;/&quot;)</span>
+<span id="L2115" class="LineNr">2115 </span>    <span class="subxComment">#     base = get-slice(Registers, word-slice, row-size=8)</span>
 <span id="L2116" class="LineNr">2116 </span>    <span class="subxComment">#     return</span>
 <span id="L2117" class="LineNr">2117 </span>    <span class="subxComment">#   }</span>
 <span id="L2118" class="LineNr">2118 </span>    <span class="subxComment">#   # compound expressions</span>
 <span id="L2119" class="LineNr">2119 </span>    <span class="subxComment">#   skip whitespace</span>
 <span id="L2120" class="LineNr">2120 </span>    <span class="subxComment">#   read register into base</span>
 <span id="L2121" class="LineNr">2121 </span>    <span class="subxComment">#   skip whitespace</span>
-<span id="L2122" class="LineNr">2122 </span>    <span class="subxComment">#   if (*word-&gt;start == ')') goto end</span>
-<span id="L2123" class="LineNr">2123 </span>    <span class="subxComment">#   if (*word-&gt;start == '-') goto displacement</span>
-<span id="L2124" class="LineNr">2124 </span>    <span class="subxComment">#   if (*word-&gt;start != '+') goto error1</span>
-<span id="L2125" class="LineNr">2125 </span>    <span class="subxComment">#   ++word-&gt;start to skip '+'</span>
+<span id="L2122" class="LineNr">2122 </span>    <span class="subxComment">#   if (*word-slice-&gt;start == ')') goto end</span>
+<span id="L2123" class="LineNr">2123 </span>    <span class="subxComment">#   if (*word-slice-&gt;start == '-') goto displacement</span>
+<span id="L2124" class="LineNr">2124 </span>    <span class="subxComment">#   if (*word-slice-&gt;start != '+') goto error1</span>
+<span id="L2125" class="LineNr">2125 </span>    <span class="subxComment">#   ++word-slice-&gt;start to skip '+'</span>
 <span id="L2126" class="LineNr">2126 </span>    <span class="subxComment">#   skip whitespace</span>
 <span id="L2127" class="LineNr">2127 </span>    <span class="subxComment">#   if next 3 characters don't make a register, goto displacement</span>
 <span id="L2128" class="LineNr">2128 </span>    <span class="subxComment">#   read register into index</span>
 <span id="L2129" class="LineNr">2129 </span>    <span class="subxComment">#   skip whitespace</span>
-<span id="L2130" class="LineNr">2130 </span>    <span class="subxComment">#   if (*word-&gt;start == ')') goto end</span>
-<span id="L2131" class="LineNr">2131 </span>    <span class="subxComment">#   if (*word-&gt;start == '&lt;') {</span>
-<span id="L2132" class="LineNr">2132 </span>    <span class="subxComment">#     ++word-&gt;start to skip '&lt;'</span>
-<span id="L2133" class="LineNr">2133 </span>    <span class="subxComment">#     if (*word-&gt;start != '&lt;') goto error2</span>
-<span id="L2134" class="LineNr">2134 </span>    <span class="subxComment">#     ++word-&gt;start to skip '&lt;'</span>
+<span id="L2130" class="LineNr">2130 </span>    <span class="subxComment">#   if (*word-slice-&gt;start == ')') goto end</span>
+<span id="L2131" class="LineNr">2131 </span>    <span class="subxComment">#   if (*word-slice-&gt;start == '&lt;') {</span>
+<span id="L2132" class="LineNr">2132 </span>    <span class="subxComment">#     ++word-slice-&gt;start to skip '&lt;'</span>
+<span id="L2133" class="LineNr">2133 </span>    <span class="subxComment">#     if (*word-slice-&gt;start != '&lt;') goto error2</span>
+<span id="L2134" class="LineNr">2134 </span>    <span class="subxComment">#     ++word-slice-&gt;start to skip '&lt;'</span>
 <span id="L2135" class="LineNr">2135 </span>    <span class="subxComment">#     skip whitespace</span>
 <span id="L2136" class="LineNr">2136 </span>    <span class="subxComment">#     read integer into scale</span>
 <span id="L2137" class="LineNr">2137 </span>    <span class="subxComment">#     skip whitespace</span>
-<span id="L2138" class="LineNr">2138 </span>    <span class="subxComment">#     if (*word-&gt;start == ')') goto end</span>
+<span id="L2138" class="LineNr">2138 </span>    <span class="subxComment">#     if (*word-slice-&gt;start == ')') goto end</span>
 <span id="L2139" class="LineNr">2139 </span>    <span class="subxComment">#   }</span>
-<span id="L2140" class="LineNr">2140 </span>    <span class="subxComment">#   if (*word-&gt;start not in '+' '-') goto error3</span>
+<span id="L2140" class="LineNr">2140 </span>    <span class="subxComment">#   if (*word-slice-&gt;start not in '+' '-') goto error3</span>
 <span id="L2141" class="LineNr">2141 </span>    <span class="subxComment"># displacement:</span>
 <span id="L2142" class="LineNr">2142 </span>    <span class="subxComment">#   read integer into disp</span>
 <span id="L2143" class="LineNr">2143 </span>    <span class="subxComment">#   skip whitespace</span>
-<span id="L2144" class="LineNr">2144 </span>    <span class="subxComment">#   if (*word-&gt;start != ')') goto error4</span>
+<span id="L2144" class="LineNr">2144 </span>    <span class="subxComment">#   if (*word-slice-&gt;start != ')') goto error4</span>
 <span id="L2145" class="LineNr">2145 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L2146" class="LineNr">2146 </span>    55/push-ebp
 <span id="L2147" class="LineNr">2147 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
 <span id="L2148" class="LineNr">2148 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L2149" class="LineNr">2149 </span>    56/push-esi
 <span id="L2150" class="LineNr">2150 </span>    57/push-edi
-<span id="L2151" class="LineNr">2151 </span>    <span class="subxComment"># esi = word</span>
+<span id="L2151" class="LineNr">2151 </span>    <span class="subxComment"># esi = word-slice</span>
 <span id="L2152" class="LineNr">2152 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L2153" class="LineNr">2153 </span>    <span class="subxComment"># ++word-&gt;start to skip '*'</span>
+<span id="L2153" class="LineNr">2153 </span>    <span class="subxComment"># ++word-slice-&gt;start to skip '*'</span>
 <span id="L2154" class="LineNr">2154 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
 <span id="L2155" class="LineNr">2155 </span>    <span class="subxComment"># initialize defaults</span>
 <span id="L2156" class="LineNr">2156 </span>    <span class="subxComment"># base is in edi; we'll move it to eax just before we return</span>
@@ -1951,14 +1951,14 @@ if ('onhashchange' in window) {
 <span id="L2159" class="LineNr">2159 </span>    ba/copy-to-edx  0/imm32/.scale
 <span id="L2160" class="LineNr">2160 </span>    bb/copy-to-ebx  0/imm32/disp
 <span id="L2161" class="LineNr">2161 </span><span class="Constant">$parse-effective-address:check-for-simple-register</span>:
-<span id="L2162" class="LineNr">2162 </span>    <span class="subxComment"># if (*word-&gt;start == '(') goto compound expression</span>
+<span id="L2162" class="LineNr">2162 </span>    <span class="subxComment"># if (*word-slice-&gt;start == '(') goto compound expression</span>
 <span id="L2163" class="LineNr">2163 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to eax</span>
 <span id="L2164" class="LineNr">2164 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2165" class="LineNr">2165 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2166" class="LineNr">2166 </span>    3d/compare-eax-and  0x28/imm32/open-paren
 <span id="L2167" class="LineNr">2167 </span>    74/jump-if-equal  $parse-effective-address:compound-expression/disp8
 <span id="L2168" class="LineNr">2168 </span><span class="Constant">$parse-effective-address:simple-register</span>:
-<span id="L2169" class="LineNr">2169 </span>    <span class="subxComment"># word = next-token-from-slice(word-&gt;start, word-&gt;end, &quot;/&quot;)</span>
+<span id="L2169" class="LineNr">2169 </span>    <span class="subxComment"># word-slice = next-token-from-slice(word-slice-&gt;start, word-slice-&gt;end, &quot;/&quot;)</span>
 <span id="L2170" class="LineNr">2170 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2171" class="LineNr">2171 </span>    56/push-esi
 <span id="L2172" class="LineNr">2172 </span>    68/push  0x2f/imm32/slash
@@ -1968,8 +1968,8 @@ if ('onhashchange' in window) {
 <span id="L2176" class="LineNr">2176 </span>    e8/call  <a href='../073next-token.subx.html#L163'>next-token-from-slice</a>/disp32
 <span id="L2177" class="LineNr">2177 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2178" class="LineNr">2178 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x10/imm32        <span class="subxComment"># add to esp</span>
-<span id="L2179" class="LineNr">2179 </span>    <span class="subxComment"># base = get-slice(Registers, word, row-size=8)</span>
-<span id="L2180" class="LineNr">2180 </span>    <span class="subxS1Comment"># . eax = get-slice(Registers, word, row-size=8)</span>
+<span id="L2179" class="LineNr">2179 </span>    <span class="subxComment"># base = get-slice(Registers, word-slice, row-size=8)</span>
+<span id="L2180" class="LineNr">2180 </span>    <span class="subxS1Comment"># . eax = get-slice(Registers, word-slice, row-size=8)</span>
 <span id="L2181" class="LineNr">2181 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2182" class="LineNr">2182 </span>    68/push  <span class="Constant">&quot;Registers&quot;</span>/imm32
 <span id="L2183" class="LineNr">2183 </span>    68/push  8/imm32/row-size
@@ -1984,10 +1984,10 @@ if ('onhashchange' in window) {
 <span id="L2192" class="LineNr">2192 </span>    <span class="subxComment"># return</span>
 <span id="L2193" class="LineNr">2193 </span>    e9/jump  $parse-effective-address:end/disp32
 <span id="L2194" class="LineNr">2194 </span><span class="Constant">$parse-effective-address:compound-expression</span>:
-<span id="L2195" class="LineNr">2195 </span>    <span class="subxComment"># ++word-&gt;start to skip '('</span>
+<span id="L2195" class="LineNr">2195 </span>    <span class="subxComment"># ++word-slice-&gt;start to skip '('</span>
 <span id="L2196" class="LineNr">2196 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
 <span id="L2197" class="LineNr">2197 </span>    <span class="subxComment"># skip whitespace</span>
-<span id="L2198" class="LineNr">2198 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L2198" class="LineNr">2198 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L2199" class="LineNr">2199 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2200" class="LineNr">2200 </span>    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(esi+4)</span>
 <span id="L2201" class="LineNr">2201 </span>    ff          6/subop/push        0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *esi</span>
@@ -1995,10 +1995,10 @@ if ('onhashchange' in window) {
 <span id="L2203" class="LineNr">2203 </span>    e8/call  <a href='../073next-token.subx.html#L899'>skip-chars-matching-whitespace-in-slice</a>/disp32
 <span id="L2204" class="LineNr">2204 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2205" class="LineNr">2205 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2206" class="LineNr">2206 </span>    <span class="subxS1Comment"># . word-&gt;start = eax</span>
+<span id="L2206" class="LineNr">2206 </span>    <span class="subxS1Comment"># . word-slice-&gt;start = eax</span>
 <span id="L2207" class="LineNr">2207 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *esi</span>
 <span id="L2208" class="LineNr">2208 </span>    <span class="subxComment"># read register into base</span>
-<span id="L2209" class="LineNr">2209 </span>    <span class="subxS1Comment"># . eax = next-register(word)</span>
+<span id="L2209" class="LineNr">2209 </span>    <span class="subxS1Comment"># . eax = next-register(word-slice)</span>
 <span id="L2210" class="LineNr">2210 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2211" class="LineNr">2211 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
 <span id="L2212" class="LineNr">2212 </span>    <span class="subxS2Comment"># . . call</span>
@@ -2008,7 +2008,7 @@ if ('onhashchange' in window) {
 <span id="L2216" class="LineNr">2216 </span>    <span class="subxS1Comment"># . edi = *eax</span>
 <span id="L2217" class="LineNr">2217 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to edi</span>
 <span id="L2218" class="LineNr">2218 </span>    <span class="subxComment"># skip whitespace</span>
-<span id="L2219" class="LineNr">2219 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L2219" class="LineNr">2219 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L2220" class="LineNr">2220 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2221" class="LineNr">2221 </span>    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(esi+4)</span>
 <span id="L2222" class="LineNr">2222 </span>    ff          6/subop/push        0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *esi</span>
@@ -2016,24 +2016,24 @@ if ('onhashchange' in window) {
 <span id="L2224" class="LineNr">2224 </span>    e8/call  <a href='../073next-token.subx.html#L899'>skip-chars-matching-whitespace-in-slice</a>/disp32
 <span id="L2225" class="LineNr">2225 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2226" class="LineNr">2226 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2227" class="LineNr">2227 </span>    <span class="subxS1Comment"># . word-&gt;start = eax</span>
+<span id="L2227" class="LineNr">2227 </span>    <span class="subxS1Comment"># . word-slice-&gt;start = eax</span>
 <span id="L2228" class="LineNr">2228 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *esi</span>
-<span id="L2229" class="LineNr">2229 </span>    <span class="subxComment"># if (*word-&gt;start == ')') goto end</span>
+<span id="L2229" class="LineNr">2229 </span>    <span class="subxComment"># if (*word-slice-&gt;start == ')') goto end</span>
 <span id="L2230" class="LineNr">2230 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2231" class="LineNr">2231 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2232" class="LineNr">2232 </span>    3d/compare-eax-and  0x29/imm32/close-paren
 <span id="L2233" class="LineNr">2233 </span>    0f 84/jump-if-equal  $parse-effective-address:end/disp32
-<span id="L2234" class="LineNr">2234 </span>    <span class="subxComment"># if (*word-&gt;start == '-') goto displacement</span>
+<span id="L2234" class="LineNr">2234 </span>    <span class="subxComment"># if (*word-slice-&gt;start == '-') goto displacement</span>
 <span id="L2235" class="LineNr">2235 </span>    3d/compare-eax-and  0x2d/imm32/minus
 <span id="L2236" class="LineNr">2236 </span>    0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
-<span id="L2237" class="LineNr">2237 </span>    <span class="subxComment"># if (*word-&gt;start != '+') goto error1</span>
+<span id="L2237" class="LineNr">2237 </span>    <span class="subxComment"># if (*word-slice-&gt;start != '+') goto error1</span>
 <span id="L2238" class="LineNr">2238 </span>    3d/compare-eax-and  0x2b/imm32/plus
 <span id="L2239" class="LineNr">2239 </span>    0f 85/jump-if-not-equal  $parse-effective-address:error1/disp32
 <span id="L2240" class="LineNr">2240 </span><span class="Constant">$parse-effective-address:check-for-index</span>:
-<span id="L2241" class="LineNr">2241 </span>    <span class="subxComment"># ++word-&gt;start to skip '+'</span>
+<span id="L2241" class="LineNr">2241 </span>    <span class="subxComment"># ++word-slice-&gt;start to skip '+'</span>
 <span id="L2242" class="LineNr">2242 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
 <span id="L2243" class="LineNr">2243 </span>    <span class="subxComment"># skip whitespace</span>
-<span id="L2244" class="LineNr">2244 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L2244" class="LineNr">2244 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L2245" class="LineNr">2245 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2246" class="LineNr">2246 </span>    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(esi+4)</span>
 <span id="L2247" class="LineNr">2247 </span>    ff          6/subop/push        0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *esi</span>
@@ -2041,16 +2041,16 @@ if ('onhashchange' in window) {
 <span id="L2249" class="LineNr">2249 </span>    e8/call  <a href='../073next-token.subx.html#L899'>skip-chars-matching-whitespace-in-slice</a>/disp32
 <span id="L2250" class="LineNr">2250 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2251" class="LineNr">2251 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2252" class="LineNr">2252 </span>    <span class="subxS1Comment"># . word-&gt;start = eax</span>
+<span id="L2252" class="LineNr">2252 </span>    <span class="subxS1Comment"># . word-slice-&gt;start = eax</span>
 <span id="L2253" class="LineNr">2253 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *esi</span>
 <span id="L2254" class="LineNr">2254 </span><span class="Constant">$parse-effective-address:resolve-ambiguity</span>:
 <span id="L2255" class="LineNr">2255 </span>    <span class="subxComment"># if next 3 characters don't make a register, goto displacement</span>
 <span id="L2256" class="LineNr">2256 </span>    <span class="subxS1Comment"># . spill ecx</span>
 <span id="L2257" class="LineNr">2257 </span>    51/push-ecx
-<span id="L2258" class="LineNr">2258 </span>    <span class="subxS1Comment"># . var tmp/ecx = {word-&gt;start, word-&gt;start+3}</span>
-<span id="L2259" class="LineNr">2259 </span>    <span class="subxS2Comment"># . . ecx = word-&gt;start</span>
+<span id="L2258" class="LineNr">2258 </span>    <span class="subxS1Comment"># . var tmp/ecx = {word-slice-&gt;start, word-slice-&gt;start+3}</span>
+<span id="L2259" class="LineNr">2259 </span>    <span class="subxS2Comment"># . . ecx = word-slice-&gt;start</span>
 <span id="L2260" class="LineNr">2260 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to ecx</span>
-<span id="L2261" class="LineNr">2261 </span>    <span class="subxS2Comment"># . . eax = word-&gt;start+3</span>
+<span id="L2261" class="LineNr">2261 </span>    <span class="subxS2Comment"># . . eax = word-slice-&gt;start+3</span>
 <span id="L2262" class="LineNr">2262 </span>    05/add-to-eax  3/imm32
 <span id="L2263" class="LineNr">2263 </span>    <span class="subxS2Comment"># . . push</span>
 <span id="L2264" class="LineNr">2264 </span>    50/push-eax
@@ -2075,7 +2075,7 @@ if ('onhashchange' in window) {
 <span id="L2283" class="LineNr">2283 </span>    0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
 <span id="L2284" class="LineNr">2284 </span><span class="Constant">$parse-effective-address:index</span>:
 <span id="L2285" class="LineNr">2285 </span>    <span class="subxComment"># read register into index</span>
-<span id="L2286" class="LineNr">2286 </span>    <span class="subxS1Comment"># . eax = next-register(word)</span>
+<span id="L2286" class="LineNr">2286 </span>    <span class="subxS1Comment"># . eax = next-register(word-slice)</span>
 <span id="L2287" class="LineNr">2287 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2288" class="LineNr">2288 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
 <span id="L2289" class="LineNr">2289 </span>    <span class="subxS2Comment"># . . call</span>
@@ -2085,7 +2085,7 @@ if ('onhashchange' in window) {
 <span id="L2293" class="LineNr">2293 </span>    <span class="subxS1Comment"># . ecx = *eax</span>
 <span id="L2294" class="LineNr">2294 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
 <span id="L2295" class="LineNr">2295 </span>    <span class="subxComment"># skip whitespace</span>
-<span id="L2296" class="LineNr">2296 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L2296" class="LineNr">2296 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L2297" class="LineNr">2297 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2298" class="LineNr">2298 </span>    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(esi+4)</span>
 <span id="L2299" class="LineNr">2299 </span>    ff          6/subop/push        0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *esi</span>
@@ -2093,29 +2093,29 @@ if ('onhashchange' in window) {
 <span id="L2301" class="LineNr">2301 </span>    e8/call  <a href='../073next-token.subx.html#L899'>skip-chars-matching-whitespace-in-slice</a>/disp32
 <span id="L2302" class="LineNr">2302 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2303" class="LineNr">2303 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2304" class="LineNr">2304 </span>    <span class="subxS1Comment"># . word-&gt;start = eax</span>
+<span id="L2304" class="LineNr">2304 </span>    <span class="subxS1Comment"># . word-slice-&gt;start = eax</span>
 <span id="L2305" class="LineNr">2305 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *esi</span>
-<span id="L2306" class="LineNr">2306 </span>    <span class="subxComment"># if (*word-&gt;start == ')') goto end</span>
+<span id="L2306" class="LineNr">2306 </span>    <span class="subxComment"># if (*word-slice-&gt;start == ')') goto end</span>
 <span id="L2307" class="LineNr">2307 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2308" class="LineNr">2308 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2309" class="LineNr">2309 </span>    3d/compare-eax-and  0x29/imm32/close-paren
 <span id="L2310" class="LineNr">2310 </span>    0f 84/jump-if-equal  $parse-effective-address:end/disp32
 <span id="L2311" class="LineNr">2311 </span><span class="Constant">$parse-effective-address:check-for-scale</span>:
-<span id="L2312" class="LineNr">2312 </span>    <span class="subxComment"># if (*word-&gt;start != '&lt;') goto next check</span>
+<span id="L2312" class="LineNr">2312 </span>    <span class="subxComment"># if (*word-slice-&gt;start != '&lt;') goto next check</span>
 <span id="L2313" class="LineNr">2313 </span>    3d/compare-eax-and  0x3c/imm32/less-than
 <span id="L2314" class="LineNr">2314 </span>    75/jump-if-not-equal  $parse-effective-address:check-for-displacement/disp8
-<span id="L2315" class="LineNr">2315 </span>    <span class="subxComment"># ++word-&gt;start to skip '&lt;'</span>
+<span id="L2315" class="LineNr">2315 </span>    <span class="subxComment"># ++word-slice-&gt;start to skip '&lt;'</span>
 <span id="L2316" class="LineNr">2316 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
-<span id="L2317" class="LineNr">2317 </span>    <span class="subxComment"># if (*word-&gt;start != '&lt;') goto error2</span>
+<span id="L2317" class="LineNr">2317 </span>    <span class="subxComment"># if (*word-slice-&gt;start != '&lt;') goto error2</span>
 <span id="L2318" class="LineNr">2318 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to eax</span>
 <span id="L2319" class="LineNr">2319 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2320" class="LineNr">2320 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2321" class="LineNr">2321 </span>    3d/compare-eax-and  0x3c/imm32/less-than
 <span id="L2322" class="LineNr">2322 </span>    0f 85/jump-if-not-equal  $parse-effective-address:error2/disp32
-<span id="L2323" class="LineNr">2323 </span>    <span class="subxComment"># ++word-&gt;start to skip '&lt;'</span>
+<span id="L2323" class="LineNr">2323 </span>    <span class="subxComment"># ++word-slice-&gt;start to skip '&lt;'</span>
 <span id="L2324" class="LineNr">2324 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
 <span id="L2325" class="LineNr">2325 </span>    <span class="subxComment"># skip whitespace</span>
-<span id="L2326" class="LineNr">2326 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L2326" class="LineNr">2326 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L2327" class="LineNr">2327 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2328" class="LineNr">2328 </span>    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(esi+4)</span>
 <span id="L2329" class="LineNr">2329 </span>    ff          6/subop/push        0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *esi</span>
@@ -2123,11 +2123,11 @@ if ('onhashchange' in window) {
 <span id="L2331" class="LineNr">2331 </span>    e8/call  <a href='../073next-token.subx.html#L899'>skip-chars-matching-whitespace-in-slice</a>/disp32
 <span id="L2332" class="LineNr">2332 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2333" class="LineNr">2333 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2334" class="LineNr">2334 </span>    <span class="subxS1Comment"># . word-&gt;start = eax</span>
+<span id="L2334" class="LineNr">2334 </span>    <span class="subxS1Comment"># . word-slice-&gt;start = eax</span>
 <span id="L2335" class="LineNr">2335 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *esi</span>
 <span id="L2336" class="LineNr">2336 </span><span class="Constant">$parse-effective-address:scale</span>:
 <span id="L2337" class="LineNr">2337 </span>    <span class="subxComment"># read positive integer into scale</span>
-<span id="L2338" class="LineNr">2338 </span>    <span class="subxS1Comment"># . eax = next-positive-hex-int(word)</span>
+<span id="L2338" class="LineNr">2338 </span>    <span class="subxS1Comment"># . eax = next-positive-hex-int(word-slice)</span>
 <span id="L2339" class="LineNr">2339 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2340" class="LineNr">2340 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
 <span id="L2341" class="LineNr">2341 </span>    <span class="subxS2Comment"># . . call</span>
@@ -2137,7 +2137,7 @@ if ('onhashchange' in window) {
 <span id="L2345" class="LineNr">2345 </span>    <span class="subxS1Comment"># . edx = eax</span>
 <span id="L2346" class="LineNr">2346 </span>    89/copy                         3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to edx</span>
 <span id="L2347" class="LineNr">2347 </span>    <span class="subxComment"># skip whitespace</span>
-<span id="L2348" class="LineNr">2348 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L2348" class="LineNr">2348 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L2349" class="LineNr">2349 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2350" class="LineNr">2350 </span>    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(esi+4)</span>
 <span id="L2351" class="LineNr">2351 </span>    ff          6/subop/push        0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *esi</span>
@@ -2145,15 +2145,15 @@ if ('onhashchange' in window) {
 <span id="L2353" class="LineNr">2353 </span>    e8/call  <a href='../073next-token.subx.html#L899'>skip-chars-matching-whitespace-in-slice</a>/disp32
 <span id="L2354" class="LineNr">2354 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2355" class="LineNr">2355 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2356" class="LineNr">2356 </span>    <span class="subxS1Comment"># . word-&gt;start = eax</span>
+<span id="L2356" class="LineNr">2356 </span>    <span class="subxS1Comment"># . word-slice-&gt;start = eax</span>
 <span id="L2357" class="LineNr">2357 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *esi</span>
-<span id="L2358" class="LineNr">2358 </span>    <span class="subxComment"># if (*word-&gt;start == ')') goto end</span>
+<span id="L2358" class="LineNr">2358 </span>    <span class="subxComment"># if (*word-slice-&gt;start == ')') goto end</span>
 <span id="L2359" class="LineNr">2359 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2360" class="LineNr">2360 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2361" class="LineNr">2361 </span>    3d/compare-eax-and  0x29/imm32/close-paren
 <span id="L2362" class="LineNr">2362 </span>    74/jump-if-equal  $parse-effective-address:end/disp8
 <span id="L2363" class="LineNr">2363 </span><span class="Constant">$parse-effective-address:check-for-displacement</span>:
-<span id="L2364" class="LineNr">2364 </span>    <span class="subxComment"># if (*word-&gt;start not in '+' '-') goto error3</span>
+<span id="L2364" class="LineNr">2364 </span>    <span class="subxComment"># if (*word-slice-&gt;start not in '+' '-') goto error3</span>
 <span id="L2365" class="LineNr">2365 </span>    3d/compare-eax-and  0x2b/imm32/plus
 <span id="L2366" class="LineNr">2366 </span>    74/jump-if-equal  $parse-effective-address:displacement/disp8
 <span id="L2367" class="LineNr">2367 </span>    3d/compare-eax-and  0x2d/imm32/minus
@@ -2161,7 +2161,7 @@ if ('onhashchange' in window) {
 <span id="L2369" class="LineNr">2369 </span>    e9/jump  $parse-effective-address:error3/disp32
 <span id="L2370" class="LineNr">2370 </span><span class="Constant">$parse-effective-address:displacement</span>:
 <span id="L2371" class="LineNr">2371 </span>    <span class="subxComment"># read integer into disp</span>
-<span id="L2372" class="LineNr">2372 </span>    <span class="subxS1Comment"># . eax = next-hex-int(word)</span>
+<span id="L2372" class="LineNr">2372 </span>    <span class="subxS1Comment"># . eax = next-hex-int(word-slice)</span>
 <span id="L2373" class="LineNr">2373 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2374" class="LineNr">2374 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
 <span id="L2375" class="LineNr">2375 </span>    <span class="subxS2Comment"># . . call</span>
@@ -2171,7 +2171,7 @@ if ('onhashchange' in window) {
 <span id="L2379" class="LineNr">2379 </span>    <span class="subxS1Comment"># . ebx = eax</span>
 <span id="L2380" class="LineNr">2380 </span>    89/copy                         3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to ebx</span>
 <span id="L2381" class="LineNr">2381 </span>    <span class="subxComment"># skip whitespace</span>
-<span id="L2382" class="LineNr">2382 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L2382" class="LineNr">2382 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L2383" class="LineNr">2383 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2384" class="LineNr">2384 </span>    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(esi+4)</span>
 <span id="L2385" class="LineNr">2385 </span>    ff          6/subop/push        0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># push *esi</span>
@@ -2179,9 +2179,9 @@ if ('onhashchange' in window) {
 <span id="L2387" class="LineNr">2387 </span>    e8/call  <a href='../073next-token.subx.html#L899'>skip-chars-matching-whitespace-in-slice</a>/disp32
 <span id="L2388" class="LineNr">2388 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2389" class="LineNr">2389 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2390" class="LineNr">2390 </span>    <span class="subxS1Comment"># . word-&gt;start = eax</span>
+<span id="L2390" class="LineNr">2390 </span>    <span class="subxS1Comment"># . word-slice-&gt;start = eax</span>
 <span id="L2391" class="LineNr">2391 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to *esi</span>
-<span id="L2392" class="LineNr">2392 </span>    <span class="subxComment"># if (*word-&gt;start != ')') goto error4</span>
+<span id="L2392" class="LineNr">2392 </span>    <span class="subxComment"># if (*word-slice-&gt;start != ')') goto error4</span>
 <span id="L2393" class="LineNr">2393 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2394" class="LineNr">2394 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2395" class="LineNr">2395 </span>    3d/compare-eax-and  0x29/imm32/close-paren
@@ -2372,7 +2372,7 @@ if ('onhashchange' in window) {
 <span id="L2580" class="LineNr">2580 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
 <span id="L2581" class="LineNr">2581 </span>    <span class="subxComment"># in-&gt;start += 3</span>
 <span id="L2582" class="LineNr">2582 </span>    81          0/subop/add         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              3/imm32           <span class="subxComment"># add to *esi</span>
-<span id="L2583" class="LineNr">2583 </span>    <span class="subxComment"># eax = get-slice(Registers, word, row-size=8)</span>
+<span id="L2583" class="LineNr">2583 </span>    <span class="subxComment"># eax = get-slice(Registers, reg-slice, row-size=8)</span>
 <span id="L2584" class="LineNr">2584 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L2585" class="LineNr">2585 </span>    68/push  <span class="Constant">&quot;next-register&quot;</span>/imm32
 <span id="L2586" class="LineNr">2586 </span>    68/push  8/imm32/row-size
@@ -3755,7 +3755,7 @@ if ('onhashchange' in window) {
 <span id="L4138" class="LineNr">4138 </span><span class="Constant">$next-hex-int:skip-whitespace</span>:
 <span id="L4139" class="LineNr">4139 </span>    <span class="subxComment"># spill eax</span>
 <span id="L4140" class="LineNr">4140 </span>    50/push-eax
-<span id="L4141" class="LineNr">4141 </span>    <span class="subxComment"># eax = skip-chars-matching-whitespace-in-slice(word-&gt;start, word-&gt;end)</span>
+<span id="L4141" class="LineNr">4141 </span>    <span class="subxComment"># eax = skip-chars-matching-whitespace-in-slice(word-slice-&gt;start, word-slice-&gt;end)</span>
 <span id="L4142" class="LineNr">4142 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L4143" class="LineNr">4143 </span>    52/push-edx
 <span id="L4144" class="LineNr">4144 </span>    51/push-ecx
@@ -3821,7 +3821,7 @@ if ('onhashchange' in window) {
 <span id="L4204" class="LineNr">4204 </span><span class="Constant">$next-hex-int:negate</span>:
 <span id="L4205" class="LineNr">4205 </span>    f7          3/subop/negate      3/mod/direct    7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># negate edi</span>
 <span id="L4206" class="LineNr">4206 </span><span class="Constant">$next-hex-int:end</span>:
-<span id="L4207" class="LineNr">4207 </span>    <span class="subxComment"># word-&gt;start = curr</span>
+<span id="L4207" class="LineNr">4207 </span>    <span class="subxComment"># word-slice-&gt;start = curr</span>
 <span id="L4208" class="LineNr">4208 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *esi</span>
 <span id="L4209" class="LineNr">4209 </span>    <span class="subxComment"># return edi</span>
 <span id="L4210" class="LineNr">4210 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy edi to eax</span>
@@ -4200,7 +4200,7 @@ if ('onhashchange' in window) {
 <span id="L4583" class="LineNr">4583 </span>    <span class="subxComment"># loop</span>
 <span id="L4584" class="LineNr">4584 </span>    eb/jump  $next-positive-hex-int:loop/disp8
 <span id="L4585" class="LineNr">4585 </span><span class="Constant">$next-positive-hex-int:end</span>:
-<span id="L4586" class="LineNr">4586 </span>    <span class="subxComment"># word-&gt;start = curr</span>
+<span id="L4586" class="LineNr">4586 </span>    <span class="subxComment"># word-slice-&gt;start = curr</span>
 <span id="L4587" class="LineNr">4587 </span>    89/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *esi</span>
 <span id="L4588" class="LineNr">4588 </span>    <span class="subxComment"># return edi</span>
 <span id="L4589" class="LineNr">4589 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy edi to eax</span>
