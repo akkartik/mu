@@ -30,6 +30,10 @@
 #   $ echo '*(eax+ecx<<2+4)'  |  ./subx run apps/sigils
 #   2/mod 4/rm32 0/base 1/index 2/scale 4/disp32
 #
+# 7.
+#   $ echo '*Foo'  |  ./subx run apps/sigils
+#   0/mod 5/rm32/.disp32 Foo/disp32
+#
 # Addition isn't commutative here. Template must always be (base+index<<scale+disp),
 # though some components are optional as described above.
 #
@@ -114,8 +118,11 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #       if slice-starts-with?(word-slice, '%')        # direct mode
     #         emit-direct-mode(out, word-slice)
     #       else if slice-starts-with?(word-slice, '*')   # indirect mode
-    #         base, index, scale, disp = parse-effective-address(word-slice)
-    #         emit-indirect-mode(out, base, index, scale, disp)
+    #         if disp32-mode?(word-slice)
+    #           emit-indirect-disp32(out, word-slice)
+    #         else
+    #           base, index, scale, disp = parse-effective-address(word-slice)
+    #           emit-indirect-mode(out, base, index, scale, disp)
     #       else if slice-starts-with?(word-slice, '+')
     #         abort("'+' only permitted within '*(...)'")
     #       else
@@ -258,6 +265,28 @@ $convert:check-for-indirect-mode:
     # if (!slice-starts-with?(word-slice, "*")) goto next check
     3d/compare-eax-and  0x2a/imm32/asterisk
     75/jump-if-not-equal  $convert:check-for-invalid-addition/disp8
+    # if (!disp32-mode?(word-slice)) goto indirect mode
+    # . eax = disp32-mode?(word-slice)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call  disp32-mode?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . if (eax == 0) goto indirect mode
+    3d/compare-eax-and  0/imm32
+    74/jump-if-equal  $convert:indirect-mode/disp8
+$convert:disp32-mode:
+    # emit-indirect-mode(out, word-slice)
+    # . . push args
+    52/push-edx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  emit-indirect-disp32/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # continue
+    e9/jump  $convert:next-word/disp32
 $convert:indirect-mode:
     # spill registers
     50/push-eax
@@ -1272,6 +1301,108 @@ test-convert-register-indirect-mode-with-sib-byte-negative-displacement:
     5d/pop-to-ebp
     c3/return
 
+test-convert-indirect-mode-without-register:
+    # . prolog
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-input-buffered-file+4)
+    # . . push args
+    b8/copy-to-eax  _test-input-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-eax  _test-output-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    50/push-eax
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # initialize input
+    # . write(_test-input-stream, "ab *Foo")
+    # . . push args
+    68/push  "ab *Foo"/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    68/push  _test-input-buffered-file/imm32
+    # . . call
+    e8/call  convert/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check that the line just passed through
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push  _test-output-buffered-file/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+#?     # dump _test-output-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push  _test-output-stream/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # }}}
+    # . check-stream-equal(_test-output-stream, "ab 0/mod/indirect 5/rm32/.disp32 Foo/disp32 \n", msg)
+    # . . push args
+    68/push  "F - test-convert-indirect-mode-without-register"/imm32
+    68/push  "ab 0/mod/indirect 5/rm32/.disp32 Foo/disp32 \n"/imm32
+    68/push  _test-output-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 emit-direct-mode:  # out : (address buffered-file), word-slice : (address slice)
     # . prolog
     55/push-ebp
@@ -1283,7 +1414,7 @@ emit-direct-mode:  # out : (address buffered-file), word-slice : (address slice)
     ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
     ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
-    # ++local-slice->start
+    # ++local-slice->start to skip '%'
     # . ++(*eax)
     ff          0/subop/increment   0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # increment *eax
     # local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
@@ -1314,7 +1445,7 @@ emit-direct-mode:  # out : (address buffered-file), word-slice : (address slice)
     e8/call  write-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # print-int32-buffered(out, *eax)
+    # print-int32-buffered(out, *reg-num)
     # . . push args
     ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
@@ -3769,6 +3900,112 @@ test-emit-indirect-mode-esp:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+disp32-mode?:  # in : (address slice) -> reg/eax : boolean
+    # . prolog
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    56/push-esi
+    57/push-edi
+    # var local-slice/esi : (address slice) = {in->start, in->end}
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+    89/copy                         3/mod/direct    6/rm32/esi    .           .             .           4/r32/esp   .               .                 # copy esp to esi
+    # ++local-slice->start to skip '*'
+    ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
+    # if (*local-slice->start == '(') return false
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
+    8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
+    81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
+    3d/compare-eax-and  0x28/imm32/open-paren
+    74/jump-if-equal  $disp32-mode?:false/disp8
+$disp32-mode?:check-for-register:
+    # local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
+    # . . push args
+    56/push-esi
+    68/push  0x2f/imm32/slash
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+    # . . call
+    e8/call  next-token-from-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # reg-num/eax = maybe-get-slice(Registers, local-slice, row-size=8)
+    # . . push args
+    68/push  8/imm32/row-size
+    56/push-esi
+    68/push  Registers/imm32
+    # . . cal
+    e8/call  maybe-get-slice/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # if (eax != 0) return false
+    3d/compare-eax-and  0/imm32
+    75/jump-if-not-equal  $disp32-mode?:false/disp8
+    # return true
+    b8/copy-to-eax  1/imm32/true
+    eb/jump  $disp32-mode?:end/disp8
+$disp32-mode?:false:
+    b8/copy-to-eax  0/imm32/false
+$disp32-mode?:end:
+    # reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+emit-indirect-disp32:  # out : (address buffered-file), word-slice : (address slice)
+    # . prolog
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    56/push-esi
+    # var local-slice/esi : (address slice) = {in->start, in->end}
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
+    89/copy                         3/mod/direct    6/rm32/esi    .           .             .           4/r32/esp   .               .                 # copy esp to esi
+    # ++local-slice->start to skip '*'
+    ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
+    # write-buffered(out, "0/mod/indirect 5/rm32/.disp32 ")
+    # . . push args
+    68/push  "0/mod/indirect 5/rm32/.disp32 "/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write-slice-buffered(out, local-slice)
+    # . . push args
+    56/push-esi
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  write-slice-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write-buffered(out, "/disp32")
+    # . . push args
+    68/push  "/disp32"/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$emit-indirect-disp32:end:
+    # reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . restore registers
+    5e/pop-to-esi
     # . epilog
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
