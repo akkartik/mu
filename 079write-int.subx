@@ -1,0 +1,119 @@
+# write-int: add a single int byte to a stream
+
+== code
+
+write-int:  # out : (address stream), n : int -> <void>
+    # . prolog
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    57/push-edi
+    # edi = out
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
+    # ecx = out->write
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
+    # if (out->write >= out->length) abort
+    3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(edi+8)
+    7d/jump-if-greater-or-equal  $write-int:abort/disp8
+$write-int:to-stream:
+    # out->data[out->write] = n
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
+    89/copy                         1/mod/*+disp8   4/rm32/sib    7/base/edi  1/index/ecx   .           0/r32/eax   0xc/disp8       .                 # copy eax to *(edi+ecx+12)
+    # out->write += 4
+    81          0/subop/add         0/mod/indirect  7/rm32/edi    .           .             .           .           .               4/imm32           # add to *edi
+$write-int:end:
+    # . restore registers
+    5f/pop-to-edi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$write-int:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "write-int: out of space\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-write-int-single:
+    # - check that write-int writes to first int of 'stream'
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write-int(_test-stream, "abcd")
+    # . . push args
+    68/push  0x64636261/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-stream-equal(_test-stream, "abcd", msg)
+    # . . push args
+    68/push  "F - test-write-int-single"/imm32
+    68/push  "abcd"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+test-write-byte-buffered-multiple:
+    # - check that write-int correctly appends multiple writes
+    # setup
+    # . clear-stream(_test-stream)
+    # . . push args
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # write-int(_test-stream, "abcd")
+    # . . push args
+    68/push  0x64636261/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write-int(_test-stream, "efgh")
+    # . . push args
+    68/push  0x68676665/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  write-int/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-stream-equal(_test-stream, "abcdefgh", msg)
+    # . . push args
+    68/push  "F - test-write-byte-buffered-multiple"/imm32
+    68/push  "abcdefgh"/imm32
+    68/push  _test-stream/imm32
+    # . . call
+    e8/call  check-stream-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . end
+    c3/return
+
+# . . vim:nowrap:textwidth=0
