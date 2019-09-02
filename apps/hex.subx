@@ -49,7 +49,7 @@ Entry:  # run tests if necessary, convert stdin if not
     74/jump-if-equal  $run-main/disp8
     # run-tests()
     e8/call  run-tests/disp32
-    # return *Num-test-failures
+    # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
     eb/jump  $main:end/disp8
 $run-main:
@@ -60,7 +60,7 @@ $run-main:
     # configure ed to really exit()
     # . ed->target = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # return convert(Stdin, 1/stdout, 2/stderr, ed)
+    # convert(Stdin, 1/stdout, 2/stderr, ed)
     # . . push args
     50/push-eax/ed
     68/push  Stderr/imm32
@@ -70,7 +70,7 @@ $run-main:
     e8/call  convert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
-    # . syscall(exit, 0)
+    # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
 $main:end:
     b8/copy-to-eax  1/imm32/exit
