@@ -851,6 +851,7 @@ emit-string-literal-data:  # out : (address stream), word : (address slice)
     #   print(out, "#{len}/imm32 ")
     #   curr = word->start
     #   ++curr  # skip '"'
+    #   idx = 0
     #   while true
     #     if (curr >= word->end) break
     #     c = *curr
@@ -867,6 +868,10 @@ emit-string-literal-data:  # out : (address stream), word : (address slice)
     #       append-byte(out, c)
     #     write(out, " ")
     #     ++curr
+    #     ++idx
+    #     if idx >= 0x40
+    #       idx = 0
+    #       write(out, "\n")
     #
     # . prolog
     55/push-ebp
@@ -875,9 +880,12 @@ emit-string-literal-data:  # out : (address stream), word : (address slice)
     50/push-eax
     51/push-ecx
     52/push-edx
+    53/push-ebx
     56/push-esi
     # esi = word
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
+    # idx/ebx = 0
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
     # curr/edx = word->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     # max/esi = word->end
@@ -921,7 +929,7 @@ $emit-string-literal-data:loop:
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           1/r32/CL    .               .                 # copy byte at *edx to CL
     # if (c == '"') break
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x22/imm32/dquote # compare ecx
-    74/jump-if-equal  $emit-string-literal-data:end/disp8
+    0f 84/jump-if-equal  $emit-string-literal-data:end/disp32
     # if (c != '\') goto emit
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x5c/imm32/backslash  # compare ecx
     75/jump-if-not-equal  $emit-string-literal-data:emit/disp8
@@ -929,7 +937,7 @@ $emit-string-literal-data:loop:
     42/increment-edx
     # if (curr >= max) break
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           6/r32/esi   .               .                 # compare edx with esi
-    73/jump-if-greater-or-equal-unsigned  $emit-string-literal-data:end/disp8
+    0f 83/jump-if-greater-or-equal-unsigned  $emit-string-literal-data:end/disp32
     # c = *curr
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           1/r32/CL    .               .                 # copy byte at *edx to CL
     # if (c == 'n') c = newline
@@ -983,10 +991,27 @@ $emit-string-literal-data:char-done:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # ++curr
     42/increment-edx
+    # ++ idx
+    43/increment-ebx
+    # if (idx < 0x40) continue
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x40/imm32        # compare ebx
+    7c/jump-if-lesser  $emit-string-literal-data:next-char/disp8
+    # idx = 0
+    31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
+    # write(out, "\n")
+    # . . push args
+    68/push  Newline/imm32
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$emit-string-literal-data:next-char:
     e9/jump $emit-string-literal-data:loop/disp32
 $emit-string-literal-data:end:
     # . restore registers
     5e/pop-to-esi
+    5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
