@@ -1650,6 +1650,32 @@ test-emit-direct-mode-2:
 #   * ...                   -> error: no space after '*'
 #   *(...                   -> error: *(...) expression must be all on a single line
 next-word-or-expression:  # line : (address stream byte), out : (address slice)
+    # pseudocode:
+    #   skip-chars-matching(line, ' ')
+    #   if line->read >= line->write              # end of line
+    #     out = {0, 0}
+    #     return
+    #   out->start = &line->data[line->read]
+    #   if line->data[line->read] == '#'          # comment
+    #     out.end = &line->data[line->write]
+    #     return
+    #   if line->data[line->read] == '"'          # string literal
+    #     skip-string(line)
+    #   else if line->data[line->read] == '*'     # expression
+    #     if line->data[line->read + 1] == ' '
+    #       abort
+    #     if line->data[line->read + 1] == '('
+    #       skip-until-close-paren(line)
+    #       if (line->data[line->read] != ')'
+    #         abort
+    #       ++line->data[line->read] to skip ')'
+    #   skip-chars-not-matching-whitespace(line)
+    #   out->end = &line->data[line->read]
+    #
+    # registers:
+    #   ecx: often line->read
+    #   eax: often line->data[line->read]
+    #
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1690,7 +1716,7 @@ $next-word-or-expression:check-for-comment:
     # . eax = line->data[line->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
-    # . compare
+    # . if (eax != '#') goto next check
     3d/compare-eax-and  0x23/imm32/pound
     75/jump-if-not-equal  $next-word-or-expression:check-for-string-literal/disp8
 $next-word-or-expression:comment:
@@ -1705,12 +1731,8 @@ $next-word-or-expression:comment:
     eb/jump  $next-word-or-expression:end/disp8
 $next-word-or-expression:check-for-string-literal:
     # if (line->data[line->read] != '"') goto next check
-    # . eax = line->data[line->read]
-    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
-    # . compare
     3d/compare-eax-and  0x22/imm32/dquote
-    75/jump-if-not-equal  $next-word-or-expression:check-for-paren/disp8
+    75/jump-if-not-equal  $next-word-or-expression:check-for-expression/disp8
 $next-word-or-expression:string-literal:
     # skip-string(line)
     # . . push args
@@ -1721,22 +1743,15 @@ $next-word-or-expression:string-literal:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # skip rest of word
     eb/jump  $next-word-or-expression:regular-word/disp8
-$next-word-or-expression:check-for-paren:
+$next-word-or-expression:check-for-expression:
     # if (line->data[line->read] != '*') goto next check
-    # . eax = line->data[line->read]
-    31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
-    # . compare
     3d/compare-eax-and  0x2a/imm32/asterisk
     75/jump-if-not-equal  $next-word-or-expression:regular-word/disp8
-    # if (line->data[line->read] == ' ') goto error1
+    # if (line->data[line->read + 1] == ' ') goto error1
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xd/disp8       .                 # copy byte at *(esi+ecx+12+1) to AL
-    # . compare
     3d/compare-eax-and  0x20/imm32/space
     74/jump-if-equal  $next-word-or-expression:error1/disp8
-    # if (line->data[line->read] != '(') goto regular word
-    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xd/disp8       .                 # copy byte at *(esi+ecx+12+1) to AL
-    # . compare
+    # if (line->data[line->read + 1] != '(') goto regular word
     3d/compare-eax-and  0x28/imm32/open-paren
     75/jump-if-not-equal  $next-word-or-expression:regular-word/disp8
 $next-word-or-expression:paren:
@@ -1748,9 +1763,10 @@ $next-word-or-expression:paren:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # if (line->data[line->read] != ')') goto error2
+    # . eax = line->data[line->read]
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
-    # . compare
+    # . if (eax != ')') goto error2
     3d/compare-eax-and  0x29/imm32/close-paren
     75/jump-if-not-equal  $next-word-or-expression:error2/disp8
     # skip ')'

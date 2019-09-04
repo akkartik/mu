@@ -213,4 +213,171 @@ $emit-call:end:
     5d/pop-to-ebp
     c3/return
 
+next-word-string-or-expression-without-metadata:  # line : (address stream), word-slice : (address slice)
+    # pseudocode:
+    #   skip-chars-matching(line, ' ')
+    #   if line->read >= line->write              # end of line
+    #     out = {0, 0}
+    #     return
+    #   out->start = &line->data[line->read]
+    #   if line->data[line->read] == '#'          # comment
+    #     out.end = &line->data[line->write]      # skip to end of line
+    #     return
+    #   if line->data[line->read] == '"'          # string literal
+    #     skip-string(line)
+    #     out.end = &line->data[line->read]         # no metadata
+    #     return
+    #   if line->data[line->read] == '*'          # expression
+    #     if line->data[line->read + 1] == ' '
+    #       abort
+    #     if line->data[line->read + 1] == '('
+    #       skip-until-close-paren(line)
+    #       if (line->data[line->read] != ')'
+    #         abort
+    #       ++line->data[line->read] to skip ')'
+    #     out->end = &line->data[line->read]
+    #     return
+    #   if line->data[line->read] == ')'
+    #     ++line->read to skip ')'
+    #     # make sure there's nothing else of importance
+    #     if line->read >= line->write
+    #       out = {0, 0}
+    #       return
+    #     if line->data[line->read] != ' '
+    #       abort
+    #     skip-chars-matching-whitespace(line)
+    #     if line->read >= line->write
+    #       out = {0, 0}
+    #       return
+    #     if line->data[line->read] != '#'        # only thing permitted after ')' is a comment
+    #       abort
+    #     out.end = &line->data[line->write]      # skip to end of line
+    #     return
+    #   # default case: read a word -- but no metadata
+    #   while true
+    #     if line->read >= line->write
+    #       break
+    #     if line->data[line->read] == ' '
+    #       break
+    #     if line->data[line->read] == '/'
+    #       abort
+    #     ++line->read
+    #   out.end = &line->data[line->read]
+    #
+    # registers:
+    #   ecx: often line->read
+    #   eax: often line->data[line->read]
+    #
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # skip-chars-matching(line, ' ')
+    # . . push args
+    68/push 0x20/imm32/space
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call skip-chars-matching/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+$next-word-string-or-expression-without-metadata:check0:
+    # if (line->read >= line->write) clear out and return
+    # . eax = line->read
+    8b/-> *(esi+4) 0/r32/eax
+    # . if (eax < line->write) goto next check
+    3b/compare *esi 0/r32/eax
+    7c/jump-if-lesser $next-word-string-or-expression-without-metadata:check-for-comment/disp8
+    # . return out = {0, 0}
+    c7 0/subop/copy *edi 0/imm32
+    c7 0/subop/copy *(edi+4) 0/imm32
+    e9/jump $next-word-string-or-expression-without-metadata:end/disp32
+$next-word-string-or-expression-without-metadata:check-for-comment:
+    # out->start = &line->data[line->read]
+    8b/-> *(esi+4) 1/r32/ecx
+    8d/copy-address *(esi+ecx+0xc) 0/r32/eax
+    89/<- *edi 0/r32/eax
+    # if (line->data[line->read] != '#') goto next check
+    # . eax = line->data[line->read]
+    31/xor %eax 0/r32/eax
+    8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
+    # . if (eax != '#') goto next check
+    3d/compare-eax-and 0x23/imm32/pound
+    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:check-for-string-literal/disp8
+$next-word-string-or-expression-without-metadata:comment:
+    # out->end = &line->data[line->write]
+    8b/-> *esi 0/r32/eax
+    8d/copy-address *(esi+eax+0xc) 0/r32/eax
+    89/<- *(edi+4) 0/r32/eax
+    # line->read = line->write  # skip rest of line
+    8b/-> *esi 0/r32/eax
+    89/<- *(esi+4) 0/r32/eax
+    # return
+    eb/jump $next-word-string-or-expression-without-metadata:end/disp8
+$next-word-string-or-expression-without-metadata:check-for-string-literal:
+    # if (line->data[line->read] != '"') goto next check
+    3d/compare-eax-and 0x22/imm32/dquote
+    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:check-for-expression/disp8
+$next-word-string-or-expression-without-metadata:string-literal:
+    # skip-string(line)
+    # . . push args
+    56/push-esi
+    # . . call
+    e8/call skip-string/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # out->end = &line->data[line->read]
+    8b/-> *(esi+4) 1/r32/ecx
+    8d/copy-address *(esi+ecx+0xc) 0/r32/eax
+    89/<- *(edi+4) 0/r32/eax
+    # return
+    eb/jump $next-word-string-or-expression-without-metadata:end/disp8
+$next-word-string-or-expression-without-metadata:check-for-expression:
+    # if (line->data[line->read] != '*') goto next check
+    3d/compare-eax-and 0x2a/imm32/asterisk
+    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:check-for-end-of-call/disp8
+    # if (line->data[line->read + 1] == ' ') goto error1
+    8a/copy-byte *(esi+ecx+0xd) 0/r32/AL
+    3d/compare-eax-and 0x20/imm32/space
+    74/jump-if-equal $next-word-string-or-expression-without-metadata:error1/disp8
+    # if (line->data[line->read] != '(') goto regular word
+    3d/compare-eax-and 0x28/imm32/open-paren
+    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:regular-word/disp8
+$next-word-string-or-expression-without-metadata:paren:
+    # skip-until-close-paren(line)
+    # . . push args
+    56/push-esi
+    # . . call
+    e8/call skip-until-close-paren/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # if (line->data[line->read] != ')') goto error2
+    # . eax = line->data[line->read]
+    8b/-> *(esi+4) 1/r32/ecx
+    8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
+    # . if (eax != ')') goto error2
+    3d/compare-eax-and 0x29/imm32/close-paren
+    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:error2/disp8
+    # skip ')'
+    ff 0/subop/increment *(esi+4)
+    # out->end = &line->data[line->read]
+    8b/-> *(esi+4) 1/r32/ecx
+    8d/copy-address *(esi+ecx+0xc) 0/r32/eax
+    89/<- *(edi+4) 0/r32/eax
+    # return
+    eb/jump $next-word-string-or-expression-without-metadata:end/disp8
+$next-word-string-or-expression-without-metadata:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 # . . vim:nowrap:textwidth=0
