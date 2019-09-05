@@ -75,6 +75,8 @@ endif
 command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
 
 " run test cursor around cursor
+" Unfortunately this only works with Linux at the moment.
+" Some compiler passes take too long to run in emulated mode.
 " this solution is unfortunate, but seems forced:
 "   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
 "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map

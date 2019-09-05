@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
 # Either run the test with the given name, or rerun the most recently run test.
 # Intended to be called from within Vim. Check out the vimrc.vim file.
+# Unfortunately this only works with Linux at the moment. Some compiler passes
+# take too long to run in emulated mode.
 
 if [[ $2 == 'test-'* ]]
 then
@@ -16,7 +18,11 @@ else
 fi
 
 set -e
-                                                   # turn newlines into spaces
-ONLY_CPP=1 CFLAGS=$CFLAGS ./subx --debug translate $(echo $FILES) /tmp/run_one_test.subx -o /tmp/a.elf
 
-ONLY_CPP=1 ./subx --debug --trace run /tmp/a.elf
+echo "$(date) translating"
+# can't just use ntranslate; we need good error messages in the debug cycle
+# so we run what we must natively, and emulate the rest
+cat $(echo $FILES) /tmp/run_one_test.subx  |apps/sigils   > a.sigils
+ONLY_CPP=1 CFLAGS=$CFLAGS ./subx --debug translate a.sigils -o a.elf
+echo "$(date) running"
+ONLY_CPP=1 CFLAGS=$CFLAGS ./subx --debug --trace run a.elf
