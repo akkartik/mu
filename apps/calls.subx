@@ -381,12 +381,15 @@ $next-word-string-or-expression-without-metadata:check-for-end-of-call:
     # . if (ecx >= line->write) return {0, 0}
     3b/compare *esi 1/r32/ecx
     0f 8d/jump-if-greater-or-equal $next-word-string-or-expression-without-metadata:return-eol/disp32
-    # if (line->data[line->read] != ' ') goto error3
+    # if (line->data[line->read] == '/') goto error3
     # . eax = line->data[line->read]
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
-    # . if (eax != ' ') goto error3
+    # . if (eax == '/') goto error3
+    3d/compare-eax-and 0x2f/imm32/slash
+    0f 84/jump-if-equal $next-word-string-or-expression-without-metadata:error3/disp32
+    # if (line->data[line->read] != ' ') goto error4
     3d/compare-eax-and 0x20/imm32/space
-    0f 85/jump-if-not-equal $next-word-string-or-expression-without-metadata:error3/disp32
+    0f 85/jump-if-not-equal $next-word-string-or-expression-without-metadata:error4/disp32
     # skip-chars-matching-whitespace(line)
     # . . push args
     56/push-esi
@@ -407,8 +410,8 @@ $next-word-string-or-expression-without-metadata:check-for-end-of-call:
     # . if (eax == '#') return out = {0, 0}
     3d/compare-eax-and 0x23/imm32/pound
     74/jump-if-equal $next-word-string-or-expression-without-metadata:return-eol/disp8
-    # otherwise goto error3
-    e9/jump $next-word-string-or-expression-without-metadata:error3/disp32
+    # otherwise goto error4
+    e9/jump $next-word-string-or-expression-without-metadata:error4/disp32
 $next-word-string-or-expression-without-metadata:regular-word-without-metadata:
     # if (line->read >= line->write) break
     # . ecx = line->read
@@ -423,9 +426,9 @@ $next-word-string-or-expression-without-metadata:regular-word-without-metadata:
     # . if (eax == ' ') break
     3d/compare-eax-and 0x20/imm32/space
     74/jump-if-equal $next-word-string-or-expression-without-metadata:regular-word-break/disp8
-    # if (line->data[line->read] == '/') goto error4
+    # if (line->data[line->read] == '/') goto error5
     3d/compare-eax-and 0x2f/imm32/slash
-    0f 84/jump-if-equal $next-word-string-or-expression-without-metadata:error4/disp32
+    0f 84/jump-if-equal $next-word-string-or-expression-without-metadata:error5/disp32
     # ++line->read
     ff 0/subop/increment *(esi+4)
     # loop
@@ -530,6 +533,45 @@ $next-word-string-or-expression-without-metadata:error2:
     # never gets here
 
 $next-word-string-or-expression-without-metadata:error3:
+    # print(stderr, "error: no metadata after calls; just use a comment (in '" line "')")
+    # . write-buffered(Stderr, "error: no metadata after calls; just use a comment (in '")
+    # . . push args
+    68/push  "error: no metadata after calls; just use a comment (in '"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-stream-data(Stderr, line)
+    # . . push args
+    56/push-esi
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-stream-data/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . write-buffered(Stderr, "')")
+    # . . push args
+    68/push  "')"/imm32
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  write-buffered/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . flush(Stderr)
+    # . . push args
+    68/push  Stderr/imm32
+    # . . call
+    e8/call  flush/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$next-word-string-or-expression-without-metadata:error4:
     # print(stderr, "error: unexpected text after end of call in '" line "'")
     # . write-buffered(Stderr, "error: unexpected text after end of call in '")
     # . . push args
@@ -568,7 +610,7 @@ $next-word-string-or-expression-without-metadata:error3:
     cd/syscall  0x80/imm8
     # never gets here
 
-$next-word-string-or-expression-without-metadata:error4:
+$next-word-string-or-expression-without-metadata:error5:
     # print(stderr, "error: no metadata anywhere in calls (in '" line "')")
     # . write-buffered(Stderr, "error: no metadata anywhere in calls (in '")
     # . . push args
@@ -975,6 +1017,116 @@ test-next-word-string-or-expression-without-metadata-returns-whole-expression:
     8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
     81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
     50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren:
+    # . prolog
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var slice/ecx = {0, 0}
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # write(_test-input-stream, " ) ")
+    # . . push args
+    68/push  " ) "/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # next-word-string-or-expression-without-metadata(_test-input-stream, slice)
+    # . . push args
+    51/push-ecx
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  next-word-string-or-expression-without-metadata/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(slice->start, 0, msg)
+    # . . push args
+    68/push  "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: start"/imm32
+    68/push  0/imm32
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(slice->end, 0, msg)
+    # . . push args
+    68/push  "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: end"/imm32
+    68/push  0/imm32
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . epilog
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+test-next-word-string-or-expression-without-metadata-handles-comment-after-trailing-close-paren:
+    # . prolog
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var slice/ecx = {0, 0}
+    68/push  0/imm32/end
+    68/push  0/imm32/start
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # write(_test-input-stream, " ) # abc ")
+    # . . push args
+    68/push  " ) # abc "/imm32
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # next-word-string-or-expression-without-metadata(_test-input-stream, slice)
+    # . . push args
+    51/push-ecx
+    68/push  _test-input-stream/imm32
+    # . . call
+    e8/call  next-word-string-or-expression-without-metadata/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-ints-equal(slice->start, 0, msg)
+    # . . push args
+    68/push  "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: start"/imm32
+    68/push  0/imm32
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(slice->end, 0, msg)
+    # . . push args
+    68/push  "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: end"/imm32
+    68/push  0/imm32
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
     # . . call
     e8/call  check-ints-equal/disp32
     # . . discard args
