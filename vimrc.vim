@@ -75,9 +75,6 @@ endif
 command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
 
 " run test cursor around cursor
-"   if test fails, open trace in split window
-"   if test passes, just show output and wait for <CR>
-"   don't move cursor in original window
 " this solution is unfortunate, but seems forced:
 "   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
 "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
