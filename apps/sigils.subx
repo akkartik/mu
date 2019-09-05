@@ -1698,10 +1698,10 @@ next-word-or-expression:  # line : (address stream byte), out : (address slice)
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $next-word-or-expression:check0:
     # if (line->read >= line->write) clear out and return
-    # . eax = line->read
-    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
-    # . if (eax < line->write) goto next check
-    3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # compare eax with *esi
+    # . ecx = line->read
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
+    # . if (ecx < line->write) goto next check
+    3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare ecx with *esi
     7c/jump-if-lesser  $next-word-or-expression:check-for-comment/disp8
     # . return out = {0, 0}
     c7          0/subop/copy        0/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32           # copy to *edi
@@ -1709,7 +1709,6 @@ $next-word-or-expression:check0:
     e9/jump  $next-word-or-expression:end/disp32
 $next-word-or-expression:check-for-comment:
     # out->start = &line->data[line->read]
-    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/eax   0xc/disp8       .                 # copy esi+ecx+12 to eax
     89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to *edi
     # if (line->data[line->read] != '#') goto next check
@@ -1835,7 +1834,7 @@ $next-word-or-expression:error1:
     # never gets here
 
 $next-word-or-expression:error2:
-    # print(stderr, "error: no space allowed after '*' in '" line "'")
+    # print(stderr, "error: *(...) expression must be all on a single line in '" line "'")
     # . write-buffered(Stderr, "error: *(...) expression must be all on a single line in '")
     # . . push args
     68/push  "error: *(...) expression must be all on a single line in '"/imm32
