@@ -669,7 +669,7 @@ test-next-word-string-or-expression-without-metadata:
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, "  ab")
     # . . push args
     68/push "  ab"/imm32
@@ -691,7 +691,7 @@ test-next-word-string-or-expression-without-metadata:
     68/push "F - test-next-word-string-or-expression-without-metadata/updates-stream-read-correctly"/imm32
     68/push 4/imm32
     b8/copy-to-eax _test-input-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    ff 6/subop/push *(eax+4)
     # . . call
     e8/call check-ints-equal/disp32
     # . . discard args
@@ -702,8 +702,8 @@ test-next-word-string-or-expression-without-metadata:
     68/push "F - test-next-word-string-or-expression-without-metadata: start"/imm32
     68/push 0xe/imm32
     # . . push slice->start - _test-input-stream
-    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *ecx 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -715,8 +715,8 @@ test-next-word-string-or-expression-without-metadata:
     68/push "F - test-next-word-string-or-expression-without-metadata: end"/imm32
     68/push 0x10/imm32
     # . . push slice->end - _test-input-stream
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *(ecx+4) 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -742,7 +742,7 @@ test-next-word-string-or-expression-without-metadata-returns-whole-comment:
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, "  # a")
     # . . push args
     68/push "  # a"/imm32
@@ -764,7 +764,7 @@ test-next-word-string-or-expression-without-metadata-returns-whole-comment:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-whole-comment/updates-stream-read-correctly"/imm32
     68/push 5/imm32
     b8/copy-to-eax _test-input-stream/imm32
-    ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
+    ff 6/subop/push *(eax+4)
     # . . call
     e8/call check-ints-equal/disp32
     # . . discard args
@@ -775,8 +775,8 @@ test-next-word-string-or-expression-without-metadata-returns-whole-comment:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-whole-comment: start"/imm32
     68/push 0xe/imm32
     # . . push slice->start - _test-input-stream
-    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *ecx 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -788,8 +788,8 @@ test-next-word-string-or-expression-without-metadata-returns-whole-comment:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-whole-comment: end"/imm32
     68/push 0x11/imm32
     # . . push slice->end - _test-input-stream
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *(ecx+4) 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -815,7 +815,7 @@ test-next-word-string-or-expression-without-metadata-returns-empty-slice-on-eof:
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write nothing to _test-input-stream
     # next-word-string-or-expression-without-metadata(_test-input-stream, slice)
     # . . push args
@@ -830,8 +830,8 @@ test-next-word-string-or-expression-without-metadata-returns-empty-slice-on-eof:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-empty-expression-on-eof"/imm32
     68/push 0/imm32
     # . . push slice->end - slice->start
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
-    2b/subtract                     0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # subtract *ecx from eax
+    8b/-> *(ecx+4) 0/r32/eax
+    2b/subtract-> *ecx 0/r32/eax  # subtract *ecx from eax
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -857,7 +857,7 @@ test-next-word-string-or-expression-without-metadata-returns-string-literal:
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, " \"a b\" ")
     # . . push args
     68/push " \"a b\" "/imm32
@@ -880,8 +880,8 @@ test-next-word-string-or-expression-without-metadata-returns-string-literal:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-string-literal: start"/imm32
     68/push 0xd/imm32
     # . . push slice->start - _test-input-stream
-    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *ecx 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -893,8 +893,8 @@ test-next-word-string-or-expression-without-metadata-returns-string-literal:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-string-literal: end"/imm32
     68/push 0x12/imm32
     # . . push slice->end - _test-input-stream
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *(ecx+4) 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -920,7 +920,7 @@ test-next-word-string-or-expression-without-metadata-returns-string-with-escapes
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, " \"a\\\"b\"")
     # . . push args
     68/push " \"a\\\"b\""/imm32
@@ -943,8 +943,8 @@ test-next-word-string-or-expression-without-metadata-returns-string-with-escapes
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-string-with-escapes: start"/imm32
     68/push 0xd/imm32
     # . . push slice->start - _test-input-stream
-    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *ecx 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -956,8 +956,8 @@ test-next-word-string-or-expression-without-metadata-returns-string-with-escapes
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-string-with-escapes: end"/imm32
     68/push 0x13/imm32
     # . . push slice->end - _test-input-stream
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *(ecx+4) 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -983,7 +983,7 @@ test-next-word-string-or-expression-without-metadata-returns-whole-expression:
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, " *(a b) ")
     # . . push args
     68/push " *(a b) "/imm32
@@ -1006,8 +1006,8 @@ test-next-word-string-or-expression-without-metadata-returns-whole-expression:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-whole-expression: start"/imm32
     68/push 0xd/imm32
     # . . push slice->start - _test-input-stream
-    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *ecx 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -1019,8 +1019,8 @@ test-next-word-string-or-expression-without-metadata-returns-whole-expression:
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-whole-expression: end"/imm32
     68/push 0x13/imm32
     # . . push slice->end - _test-input-stream
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *(ecx+4) 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -1046,7 +1046,7 @@ test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-clo
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, " ) ")
     # . . push args
     68/push " ) "/imm32
@@ -1067,7 +1067,7 @@ test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-clo
     # . . push args
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: start"/imm32
     68/push 0/imm32
-    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff 6/subop/push *ecx
     # . . call
     e8/call check-ints-equal/disp32
     # . . discard args
@@ -1076,7 +1076,7 @@ test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-clo
     # . . push args
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: end"/imm32
     68/push 0/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff 6/subop/push *(ecx+4)
     # . . call
     e8/call check-ints-equal/disp32
     # . . discard args
@@ -1101,7 +1101,7 @@ test-next-word-string-or-expression-without-metadata-handles-comment-after-trail
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, " ) # abc ")
     # . . push args
     68/push " ) # abc "/imm32
@@ -1122,7 +1122,7 @@ test-next-word-string-or-expression-without-metadata-handles-comment-after-trail
     # . . push args
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: start"/imm32
     68/push 0/imm32
-    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    ff 6/subop/push *ecx
     # . . call
     e8/call check-ints-equal/disp32
     # . . discard args
@@ -1131,7 +1131,7 @@ test-next-word-string-or-expression-without-metadata-handles-comment-after-trail
     # . . push args
     68/push "F - test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren: end"/imm32
     68/push 0/imm32
-    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff 6/subop/push *(ecx+4)
     # . . call
     e8/call check-ints-equal/disp32
     # . . discard args
@@ -1156,7 +1156,7 @@ test-next-word-string-or-expression-without-metadata-stops-at-close-paren:
     # var slice/ecx = {0, 0}
     68/push 0/imm32/end
     68/push 0/imm32/start
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    89/<- %ecx 4/r32/esp
     # write(_test-input-stream, " abc) # def")
     # . . push args
     68/push " abc) # def"/imm32
@@ -1179,8 +1179,8 @@ test-next-word-string-or-expression-without-metadata-stops-at-close-paren:
     68/push "F - test-next-word-string-or-expression-without-metadata-stops-at-close-paren: start"/imm32
     68/push 0xd/imm32
     # . . push slice->start - _test-input-stream
-    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *ecx 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
@@ -1192,8 +1192,8 @@ test-next-word-string-or-expression-without-metadata-stops-at-close-paren:
     68/push "F - test-next-word-string-or-expression-without-metadata-stops-at-close-paren: end"/imm32
     68/push 0x10/imm32
     # . . push slice->end - _test-input-stream
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to eax
-    81          5/subop/subtract    3/mod/direct    0/rm32/eax    .           .             .           .           .               _test-input-stream/imm32 # subtract from eax
+    8b/-> *(ecx+4) 0/r32/eax
+    81 5/subop/subtract %eax _test-input-stream/imm32
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
