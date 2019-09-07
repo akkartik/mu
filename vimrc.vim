@@ -87,11 +87,13 @@ if empty($TMUX)
   "   cursor on '#' causes error
   noremap <Leader>t {j0:call RunTestMoveCursor("<C-r><C-w>")<CR>
   function RunTestMoveCursor(arg)
-    exec "!./run_one_test ".expand("%")." ".a:arg
+    let l:arg = a:arg == "#" ? " " : a:arg  " Vim's '!' insists on interpreting '#' anywhere in its arg
+    exec "!./run_one_test ".expand("%")." ".l:arg
     exec "normal \<C-o>"
   endfunction
   function RunTestMoveCursorAndMaybeOpenTrace(arg)
-    exec "!./run_one_test ".expand("%")." ".a:arg
+    let l:arg = a:arg == "#" ? " " : a:arg  " Vim's '!' insists on interpreting '#' anywhere in its arg
+    exec "!./run_one_test ".expand("%")." ".l:arg
     exec "normal \<C-o>"
     if v:shell_error
       noautocmd vertical split last_run
@@ -102,7 +104,8 @@ else
   " assume the left-most window is for the shell
   noremap <Leader>t {j0:silent! call RunTestInFirstPane("<C-r><C-w>")<CR><C-o>
   function RunTestInFirstPane(arg)
-    call RunInFirstPane("./run_one_test ".expand("%")." ".a:arg)
+    let l:arg = a:arg == "#" ? " " : a:arg  " Vim's '!' insists on interpreting '#' anywhere in its arg
+    call RunInFirstPane("./run_one_test ".expand("%")." ".l:arg)
   endfunction
   function RunInFirstPane(arg)
     exec "!tmux select-pane -t :0.0"
