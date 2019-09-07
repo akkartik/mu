@@ -1,15 +1,18 @@
 #!/bin/sh
-# Translate SubX files with debug information.
+# Translate SubX files with debug information on Linux.
 #
 # Mu's core tooling has a gap:
-#   1. 'translate' can generate debug information, but syntax sugar passes
-#   (sigils and calls) have no C++ versions and take several minutes to run
-#   emulated.
-#   2. 'ntranslate' is fast, but you get no trace for runs and zero error-checking
-#   on the code emitted by sigils and calls. Which could still be buggy.
+#   0. The C++ translator 'subx translate' can generate debug information on
+#   Linux or BSD or Mac, but doesn't support any syntax sugar.
+#   1. The self-hosted translator 'translate' runs in emulated mode and can
+#   run on Linux or BSD or Mac. However, syntax sugar passes (sigils and
+#   calls) can be very slow to run emulated.
+#   2. The self-hosted translator 'ntranslate' runs natively on Linux. It is
+#   fast, but you get no trace for runs and zero error-checking on the code
+#   emitted by sigils and calls. Which could still be buggy.
 #
-# This script is a hack to get the best of both worlds. We run natively what
-# we must, and leverage as much debug information as possible. This arrangement
+# This script is a hack to get the best of all worlds. We run natively what we
+# must, and leverage as much debug information as possible. This arrangement
 # is snappy but requires Linux just like 'ntranslate'. You also are on your
 # own to mentally map desugared instructions in traces and error messages back
 # to the original sources.
