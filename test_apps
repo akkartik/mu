@@ -311,6 +311,17 @@ test `uname` = 'Linux'  &&  {
 test $EMULATED  &&  echo "skipping remaining runs in emulated mode"
 test $NATIVE  ||  exit 0
 
+echo calls
+cat 0*.subx apps/subx-common.subx apps/calls.subx  |  apps/sigils  > a.sigils
+./subx translate a.sigils -o apps/calls
+[ "$1" != record ]  &&  git diff --exit-code apps/calls
+./subx run apps/calls test
+echo
+test `uname` = 'Linux'  &&  {
+  apps/calls test
+  echo
+}
+
 echo "== translating using SubX"
 
 # example programs
@@ -333,7 +344,7 @@ done
 
 # Phases of the self-hosted SubX translator.
 
-for app in hex survey pack assort dquotes tests sigils
+for app in hex survey pack assort dquotes tests sigils calls
 do
   echo $app
   ./ntranslate 0*.subx apps/subx-common.subx apps/$app.subx

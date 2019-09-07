@@ -92,7 +92,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     #     write-buffered(out, "# . ")
     #     write-stream-data(out, line)
     #     # emit code
-    #     ++line->read  # skip '('
+    #     ++line->read to skip '('
     #     clear-stream(words)
     #     words = parse-line(line)
     #     emit-call(out, words)
@@ -102,12 +102,16 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    # var line/ecx : (address stream byte) = stream(512)
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # var line/esi : (address stream byte) = stream(512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
     68/push 0/imm32/read
     68/push 0/imm32/write
-    89/<- %ecx 4/r32/esp
+    89/<- %esi 4/r32/esp
     # var words/edx : (address stream slice) = stream(16, 8)
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/length
@@ -117,14 +121,14 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
 $convert:loop:
     # clear-stream(line)
     # . . push args
-    51/push-ecx
+    56/push-esi
     # . . call
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
     # read-line-buffered(in, line)
     # . . push args
-    51/push-ecx
+    56/push-esi
     ff 6/subop/push *(ebp+8)
     # . . call
     e8/call read-line-buffered/disp32
@@ -132,9 +136,80 @@ $convert:loop:
     81 0/subop/add %esp 8/imm32
 $convert:check0:
     # if (line->write == 0) break
-    81 7/subop/compare *ecx 0/imm32
+    81 7/subop/compare *esi 0/imm32
     0f 84/jump-if-equal $convert:break/disp32
-    # TODO
+    # skip-chars-matching-whitespace(line)
+    # . . push args
+    56/push-esi
+    # . . call
+    e8/call skip-chars-matching-whitespace/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # if (line->data[line->read] == '(') goto convert-call
+    # . ecx = line->read
+    8b/-> *(esi+4) 1/r32/ecx
+    # . eax = line->data[line->read]
+    31/xor %eax 0/r32/eax
+    8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
+    # . if (eax == '(') goto convert-call
+    3d/compare-eax-and 0x28/imm32/open-paren
+    74/jump-if-equal $convert:convert-call/disp8
+$convert:pass-through:
+    # write-stream-data(out, line)
+    # . . push args
+    56/push-esi
+    ff 6/subop/push *(ebp+0xc)
+    # . . call
+    e8/call write-stream-data/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # continue
+    eb/jump $convert:loop/disp8
+$convert:convert-call:
+    # - emit comment
+    # write-buffered(out, "# . ")
+    # . . push args
+    68/push "# . "/imm32
+    ff 6/subop/push *(ebp+0xc)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-stream-data(out, line)
+    # . . push args
+    56/push-esi
+    ff 6/subop/push *(ebp+0xc)
+    # . . call
+    e8/call write-stream-data/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # - emit code
+    # ++line->read to skip '('
+    ff 0/subop/increment *(esi+4)
+    # clear-stream(words)
+    # . . push args
+    52/push-edx
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # words = parse-line(line)
+    # . . push args
+    52/push-edx
+    56/push-esi
+    # . . call
+    e8/call parse-line/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # emit-call(out, words)
+    # . . push args
+    52/push-edx
+    ff 6/subop/push *(ebp+0xc)
+    # . . call
+    e8/call emit-call/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # loop
     e9/jump $convert:loop/disp32
 $convert:break:
     # flush(out)
@@ -148,6 +223,10 @@ $convert:end:
     # . reclaim locals
     81 0/subop/add %esp 0x298/imm32  # 0x20c + 0x8c
     # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilog
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -167,9 +246,102 @@ parse-line:  # line : (address stream byte), words : (address stream slice)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
+    # var word-slice/ecx : (address slice) = {0, 0}
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+$parse-line:loop:
+    # word-slice = next-word-string-or-expression-without-metadata(line)
+    # . . push args
+    51/push-ecx
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call next-word-string-or-expression-without-metadata/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+$parse-line:check1:
+    # if (slice-empty?(word-slice)) break
+    # . eax = slice-empty?(word-slice)
+    # . . push args
+    51/push-ecx
+    # . . call
+    e8/call slice-empty?/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . if (eax != 0) break
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $parse-line:end/disp32
+#?     # dump word-slice {{{
+#?     # . write(2/stderr, "w: ")
+#?     # . . push args
+#?     68/push "w: "/imm32
+#?     68/push 2/imm32/stderr
+#?     # . . call
+#?     e8/call write/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 8/imm32
+#?     # . clear-stream(Stderr+4)
+#?     # . . save eax
+#?     50/push-eax
+#?     # . . push args
+#?     b8/copy-to-eax Stderr/imm32
+#?     05/add-to-eax 4/imm32
+#?     50/push-eax
+#?     # . . call
+#?     e8/call clear-stream/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 4/imm32
+#?     # . . restore eax
+#?     58/pop-to-eax
+#?     # . write-slice-buffered(Stderr, word-slice)
+#?     # . . push args
+#?     51/push-ecx
+#?     68/push Stderr/imm32
+#?     # . . call
+#?     e8/call write-slice-buffered/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 8/imm32
+#?     # . flush(Stderr)
+#?     # . . push args
+#?     68/push Stderr/imm32
+#?     # . . call
+#?     e8/call flush/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 4/imm32
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push "$\n"/imm32
+#?     68/push 2/imm32/stderr
+#?     # . . call
+#?     e8/call write/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 8/imm32
+#?     # }}}
+$parse-line:write-word:
+    # write-int(words, word-slice->start)
+    # . . push args
+    ff 6/subop/push *ecx
+    ff 6/subop/push *(ebp+0xc)
+    # . . call
+    e8/call write-int/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-int(words, word-slice->end)
+    # . . push args
+    ff 6/subop/push *(ecx+4)
+    ff 6/subop/push *(ebp+0xc)
+    # . . call
+    e8/call write-int/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # loop
+    e9/jump $parse-line:loop/disp32
 $parse-line:end:
     # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
+    59/pop-to-ecx
     # . epilog
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -183,10 +355,10 @@ emit-call:  # out : (address buffered-file), words : (address stream slice)
     #   # emit pushes
     #   while true
     #     if (curr <= min) break
-    #     if *curr in '%' '*'
+    #     if *curr->start in '%' '*'
     #       write-buffered(out, "ff 6/subop/push ")
     #       write-slice-buffered(out, curr)
-    #       write-buffered(out, "/imm32\n")
+    #       write-buffered(out, "\n")
     #     else
     #       write-buffered(out, "68/push ")
     #       write-slice-buffered(out, curr)
@@ -205,9 +377,380 @@ emit-call:  # out : (address buffered-file), words : (address stream slice)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # esi = words
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # if (words->write < 8) abort
+    # . ecx = words->write - 8
+    8b/-> *esi 1/r32/ecx
+    81 5/subop/subtract %ecx 8/imm32
+    0f 8c/jump-if-lesser $emit-call:error1/disp32
+    # curr/ecx = &words->data[words->write-8]
+    8d/copy-address *(esi+ecx+0xc) 1/r32/ecx
+    # min/edx = words->data
+    8d/copy-address *(esi+0xc) 2/r32/edx
+    # - emit pushes
+$emit-call:push-loop:
+    # if (curr <= min) break
+    39/compare %ecx 2/r32/edx
+    0f 8e/jump-if-lesser-or-equal $emit-call:call-instruction/disp32
+    # if (*curr->start in '%' '*') goto push-rm32
+    # . eax = curr->start
+    8b/-> *ecx 0/r32/eax
+    # . eax = (byte)*eax
+    8b/-> *eax 0/r32/eax
+    81 4/subop/and %eax 0xff/imm32
+    # . if (eax == '%') goto push-rm32
+    3d/compare-eax-and 0x25/imm32/percent
+    74/jump-if-equal $emit-call:push-rm32/disp8
+    # . if (eax == '*') goto push-rm32
+    3d/compare-eax-and 0x2a/imm32/asterisk
+    74/jump-if-equal $emit-call:push-rm32/disp8
+$emit-call:push-imm32:
+    # write-buffered(out, "68/push ")
+    68/push "68/push "/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-slice-buffered(out, curr)
+    # . . push args
+    51/push-ecx
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-slice-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-buffered(out, "/imm32\n")
+    68/push "/imm32\n"/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # continue
+    eb/jump $emit-call:next-push/disp8
+$emit-call:push-rm32:
+    # write-buffered(out, "ff 6/subop/push ")
+    # . . push args
+    68/push "ff 6/subop/push "/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-slice-buffered(out, curr)
+    # . . push args
+    51/push-ecx
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-slice-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-buffered(out, "\n")
+    68/push Newline/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+$emit-call:next-push:
+    # curr -= 8
+    81 5/subop/subtract %ecx 8/imm32
+    # loop
+    e9/jump $emit-call:push-loop/disp32
+$emit-call:call-instruction:
+    # write-buffered(out, "e8/call ")
+    68/push "e8/call "/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-slice-buffered(out, curr)
+    # . . push args
+    51/push-ecx
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-slice-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-buffered(out, "/disp32\n")
+    68/push "/disp32\n"/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+$emit-call:pop-instruction:
+    # write-buffered(out, "81 0/subop/add %esp ")
+    68/push "81 0/subop/add %esp "/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # print-int32-buffered(out, words->write >> 1 - 4)
+    # . . push args
+    8b/-> *esi 0/r32/eax
+    c1/shift 7/subop/arith-right %eax 1/imm8
+    2d/subtract-from-eax 4/imm32
+    50/push-eax
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call print-int32-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # write-buffered(out, "/imm32\n")
+    68/push "/imm32\n"/imm32
+    ff 6/subop/push *(ebp+8)
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
 $emit-call:end:
-    # . reclaim locals
     # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$emit-call:error1:
+    # print(stderr, "error: calls.subx: '()' is not a valid call")
+    # . write-buffered(Stderr, "error: calls.subx: '()' is not a valid call")
+    # . . push args
+    68/push "error: calls.subx: '()' is not a valid call"/imm32
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . flush(Stderr)
+    # . . push args
+    68/push Stderr/imm32
+    # . . call
+    e8/call flush/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . syscall(exit, 1)
+    bb/copy-to-ebx 1/imm32
+    b8/copy-to-eax 1/imm32/exit
+    cd/syscall 0x80/imm8
+    # never gets here
+
+test-convert-passes-most-lines-through:
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push _test-input-stream/imm32
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . clear-stream(_test-input-buffered-file+4)
+    # . . push args
+    b8/copy-to-eax _test-input-buffered-file/imm32
+    05/add-to-eax 4/imm32
+    50/push-eax
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push _test-output-stream/imm32
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-eax _test-output-buffered-file/imm32
+    05/add-to-eax 4/imm32
+    50/push-eax
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . write(_test-input-stream, "== abcd 0x1\n")
+    # . . push args
+    68/push "== abcd 0x1\n"/imm32
+    68/push _test-input-stream/imm32
+    # . . call
+    e8/call write/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # . . push args
+    68/push _test-output-buffered-file/imm32
+    68/push _test-input-buffered-file/imm32
+    # . . call
+    e8/call convert/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # check that the line just passed through
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push _test-output-buffered-file/imm32
+    # . . call
+    e8/call flush/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . check-stream-equal(_test-output-stream, "== abcd 0x1\n", msg)
+    # . . push args
+    68/push "F - test-convert-passes-most-lines-through"/imm32
+    68/push "== abcd 0x1\n"/imm32
+    68/push _test-output-stream/imm32
+    # . . call
+    e8/call check-stream-equal/disp32
+    # . . discard args
+    81 0/subop/add %esp 0xc/imm32
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-processes-calls:
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    # . clear-stream(_test-input-stream)
+    # . . push args
+    68/push _test-input-stream/imm32
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . clear-stream(_test-input-buffered-file+4)
+    # . . push args
+    b8/copy-to-eax _test-input-buffered-file/imm32
+    05/add-to-eax 4/imm32
+    50/push-eax
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . clear-stream(_test-output-stream)
+    # . . push args
+    68/push _test-output-stream/imm32
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . clear-stream(_test-output-buffered-file+4)
+    # . . push args
+    b8/copy-to-eax _test-output-buffered-file/imm32
+    05/add-to-eax 4/imm32
+    50/push-eax
+    # . . call
+    e8/call clear-stream/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . write(_test-input-stream, "(foo %eax)\n")
+    # . . push args
+    68/push "(foo %eax)\n"/imm32
+    68/push _test-input-stream/imm32
+    # . . call
+    e8/call write/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # . . push args
+    68/push _test-output-buffered-file/imm32
+    68/push _test-input-buffered-file/imm32
+    # . . call
+    e8/call convert/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # check that the line just passed through
+    # . flush(_test-output-buffered-file)
+    # . . push args
+    68/push _test-output-buffered-file/imm32
+    # . . call
+    e8/call flush/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+#?     # dump _test-output-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push "^"/imm32
+#?     68/push 2/imm32/stderr
+#?     # . . call
+#?     e8/call write/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 8/imm32
+#?     # . write-stream(2/stderr, _test-output-stream)
+#?     # . . push args
+#?     68/push _test-output-stream/imm32
+#?     68/push 2/imm32/stderr
+#?     # . . call
+#?     e8/call write-stream/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 8/imm32
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push "$\n"/imm32
+#?     68/push 2/imm32/stderr
+#?     # . . call
+#?     e8/call write/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 8/imm32
+#?     # . rewind-stream(_test-output-stream)
+#?     # . . push args
+#?     68/push _test-output-stream/imm32
+#?     # . . call
+#?     e8/call rewind-stream/disp32
+#?     # . . discard args
+#?     81 0/subop/add %esp 4/imm32
+#?     # }}}
+    # . check-next-stream-line-equal(_test-output-stream, "# . (foo %eax)", msg)
+    # . . push args
+    68/push "F - test-convert-processes-calls: comment"/imm32
+    68/push "# . (foo %eax)"/imm32
+    68/push _test-output-stream/imm32
+    # . . call
+    e8/call check-next-stream-line-equal/disp32
+    # . . discard args
+    81 0/subop/add %esp 0xc/imm32
+    # . check-next-stream-line-equal(_test-output-stream, "ff 6/subop/push %eax", msg)
+    # . . push args
+    68/push "F - test-convert-processes-calls: arg 0"/imm32
+    68/push "ff 6/subop/push %eax"/imm32
+    68/push _test-output-stream/imm32
+    # . . call
+    e8/call check-next-stream-line-equal/disp32
+    # . . discard args
+    81 0/subop/add %esp 0xc/imm32
+    # . check-next-stream-line-equal(_test-output-stream, "e8/call foo/disp32", msg)
+    # . . push args
+    68/push "F - test-convert-processes-calls: call"/imm32
+    68/push "e8/call foo/disp32"/imm32
+    68/push _test-output-stream/imm32
+    # . . call
+    e8/call check-next-stream-line-equal/disp32
+    # . . discard args
+    81 0/subop/add %esp 0xc/imm32
+    # . check-next-stream-line-equal(_test-output-stream, "81 0/subop/add %esp 4/imm32", msg)
+    # . . push args
+    68/push "F - test-convert-processes-calls: pops"/imm32
+    68/push "81 0/subop/add %esp 0x00000004/imm32"/imm32
+    68/push _test-output-stream/imm32
+    # . . call
+    e8/call check-next-stream-line-equal/disp32
+    # . . discard args
+    81 0/subop/add %esp 0xc/imm32
     # . epilog
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -362,7 +905,7 @@ $next-word-string-or-expression-without-metadata:paren:
     # . if (eax != ')') goto error2
     3d/compare-eax-and 0x29/imm32/close-paren
     0f 85/jump-if-not-equal $next-word-string-or-expression-without-metadata:error2/disp32
-    # skip ')'
+    # ++line->read to skip ')'
     ff 0/subop/increment *(esi+4)
     # out->end = &line->data[line->read]
     8b/-> *(esi+4) 1/r32/ecx
@@ -1255,5 +1798,3 @@ test-next-word-string-or-expression-without-metadata-stops-at-close-paren:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
-
-# . . vim:nowrap:textwidth=0
