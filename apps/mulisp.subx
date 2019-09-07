@@ -7,10 +7,6 @@
 #   => 42
 #   ^D
 #   $
-#
-# Or, for emulated mode (veeery slow):
-#   $ cat 0*.subx apps/mulisp.subx  |  ./subx run apps/desugar > a.desugar
-#   $ ./subx translate a.desugar -o a.elf
 
 == code
 
@@ -39,8 +35,8 @@ $main:end:
     b8/copy-to-eax 1/imm32/exit
     cd/syscall 0x80/imm8
 
-# type val = nil | num | char | symbol | pair | array
-#     tag:    0     1     2       3       4       5
+# type cell = nil | num | char | symbol | pair | array | stream
+#     tag:    0     1     2       3       4       5       6
 # numbers start with a digit and are always in hex
 # characters start with a backslash
 # pairs start with '('
@@ -54,12 +50,12 @@ repl:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # . save registers
     50/push-eax
 $repl:loop:
-    (lisp-read Stdin)  # => eax
+    (lisp-read Stdin)  # => eax : (address cell)
     # if (eax == 0) break
     3d/compare-eax-and 0/imm32
     74/jump-if-equal $repl:end/disp8
     #
-    (lisp-eval %eax)  # => eax
+    (lisp-eval %eax)  # => eax : (address cell)
     (lisp-print Stdout %eax)
     # loop
     eb/jump $repl:loop/disp8
@@ -71,7 +67,7 @@ $repl:end:
     5d/pop-to-ebp
     c3/return
 
-lisp-read:  # in : (address buffered-file) -> eax : (address val)
+lisp-read:  # in : (address buffered-file) -> eax : (address cell)
     # . prolog
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -102,7 +98,7 @@ $lisp-read:end:
     5d/pop-to-ebp
     c3/return
 
-lisp-eval:  # in : (address val) -> eax : (address val)
+lisp-eval:  # in : (address cell) -> eax : (address cell)
     # . prolog
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -115,7 +111,7 @@ $lisp-eval:end:
     5d/pop-to-ebp
     c3/return
 
-lisp-print:  # out : (address buffered-file), x : (address val)
+lisp-print:  # out : (address buffered-file), x : (address cell)
     # . prolog
     55/push-ebp
     89/<- %ebp 4/r32/esp
