@@ -1,0 +1,26 @@
+#!/bin/sh
+# Translate SubX files with debug information.
+#
+# Mu's core tooling has a gap:
+#   1. 'translate' can generate debug information, but syntax sugar passes
+#   (sigils and calls) have no C++ versions and take several minutes to run
+#   emulated.
+#   2. 'ntranslate' is fast, but you get no trace for runs and zero error-checking
+#   on the code emitted by sigils and calls. Which could still be buggy.
+#
+# This script is a hack to get the best of both worlds. We run natively what
+# we must, and leverage as much debug information as possible. This arrangement
+# is snappy but requires Linux just like 'ntranslate'. You also are on your
+# own to mentally map desugared instructions in traces and error messages back
+# to the original sources.
+
+set -e
+
+echo "  calls"
+cat $*          |apps/calls           > a.calls
+echo "  sigils"
+cat a.calls     |apps/sigils          > a.sigils
+
+subx --debug translate a.sigils -o a.elf
+
+chmod +x a.elf
