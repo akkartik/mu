@@ -77,24 +77,41 @@ command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
 " run test cursor around cursor
 " Unfortunately this only works with Linux at the moment.
 " Some compiler passes take too long to run in emulated mode.
-" this solution is unfortunate, but seems forced:
-"   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
-"   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
-"   can't avoid the function because that disables the wait for <CR> prompt
-" known issue:
-"   cursor on '#' causes error
-noremap <Leader>t {j0:call RunTestMoveCursor("<C-r><C-w>")<CR>
-function RunTestMoveCursor(arg)
-  exec "!./run_one_test ".expand("%")." ".a:arg
-  exec "normal \<C-o>"
-endfunction
-function RunTestMoveCursorAndMaybeOpenTrace(arg)
-  exec "!./run_one_test ".expand("%")." ".a:arg
-  exec "normal \<C-o>"
-  if v:shell_error
-    noautocmd vertical split last_run
-  endif
-endfunction
+if empty($TMUX)
+  " hack: need to move cursor at outside function at start (`{j0`), but inside function at end (`<C-o>`)
+  " this solution is unfortunate, but seems forced:
+  "   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
+  "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
+  "   can't avoid the function because that disables the wait for <CR> prompt
+  " known issue:
+  "   cursor on '#' causes error
+  noremap <Leader>t {j0:call RunTestMoveCursor("<C-r><C-w>")<CR>
+  function RunTestMoveCursor(arg)
+    exec "!./run_one_test ".expand("%")." ".a:arg
+    exec "normal \<C-o>"
+  endfunction
+  function RunTestMoveCursorAndMaybeOpenTrace(arg)
+    exec "!./run_one_test ".expand("%")." ".a:arg
+    exec "normal \<C-o>"
+    if v:shell_error
+      noautocmd vertical split last_run
+    endif
+  endfunction
+else
+  " we have tmux; we don't need to show any output in the Vim pane so life is simpler
+  " assume the left-most window is for the shell
+  noremap <Leader>t {j0:silent! call RunTestInFirstPane("<C-r><C-w>")<CR><C-o>
+  function RunTestInFirstPane(arg)
+    call RunInFirstPane("./run_one_test ".expand("%")." ".a:arg)
+  endfunction
+  function RunInFirstPane(arg)
+    exec "!tmux select-pane -t :0.0"
+    exec "!tmux send-keys '".a:arg."' C-m"
+    exec "!tmux last-pane"
+    " for some reason my screen gets messed up, so force a redraw
+    exec "!tmux send-keys 'C-l'"
+  endfunction
+endif
 
 set switchbuf=useopen
 if exists("&splitvertical")
