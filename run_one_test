@@ -19,10 +19,5 @@ fi
 
 set -e
 
-echo "$(date) translating"
-# can't just use ntranslate; we need good error messages in the debug cycle
-# so we run what we must natively, and emulate the rest
-cat $(echo $FILES) /tmp/run_one_test.subx  |apps/sigils   > a.sigils
-ONLY_CPP=1 CFLAGS=$CFLAGS ./subx --debug translate a.sigils -o a.elf
-echo "$(date) running"
+./debug_translate $(echo $FILES) /tmp/run_one_test.subx
 ONLY_CPP=1 CFLAGS=$CFLAGS ./subx --debug --trace run a.elf
