@@ -1,7 +1,5 @@
 # Toy lisp interpreter
 #
-# Current status: repeatedly reads line of text and prints it out.
-#
 # To run:
 #   $ ./ntranslate 0*.subx apps/subx-common.subx apps/mulisp.subx
 #   $ ./a.elf
@@ -41,36 +39,100 @@ $main:end:
     b8/copy-to-eax 1/imm32/exit
     cd/syscall 0x80/imm8
 
+# type val = nil | num | char | symbol | pair | array
+#     tag:    0     1     2       3       4       5
+# numbers start with a digit and are always in hex
+# characters start with a backslash
+# pairs start with '('
+# arrays start with '['
+# symbols start with anything else but quote, backquote, unquote or splice
+
 repl:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # . prolog
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    51/push-ecx
-    # var s/ecx : (address stream)
+    50/push-eax
+$repl:loop:
+    (lisp-read Stdin)  # => eax
+    # if (eax == 0) break
+    3d/compare-eax-and 0/imm32
+    74/jump-if-equal $repl:end/disp8
+    #
+    (lisp-eval %eax)  # => eax
+    (lisp-print Stdout %eax)
+    # loop
+    eb/jump $repl:loop/disp8
+$repl:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+lisp-read:  # in : (address buffered-file) -> eax : (address val)
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    # var s/ecx : (address stream) = new-stream(512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/size
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
-$repl:loop:
+    #
     (clear-stream %ecx)
-    (read-line-buffered Stdin %ecx)
-    # if (s->write == 0) break
+    (read-line-buffered *(ebp+8) %ecx)
+    # if (s->write == 0) return null
     81 7/subop/compare *ecx 0/imm32
-    74/jump-if-equal $repl:end/disp8
-    # write(s)
-    (write-buffered Stdout "=> ")
-    (write-stream-data Stdout %ecx)
-    (flush Stdout)
-    # loop
-    eb/jump $repl:loop/disp8
-$repl:end:
+    75/jump-if-not-equal $lisp-read:loop/disp8
+    b8/copy-to-eax 0/imm32/eof
+    eb/jump $lisp-read:end/disp8
+$lisp-read:loop:
+    # return s
+    89/<- %eax 1/r32/ecx
+$lisp-read:end:
     # . reclaim locals
     81 0/subop/add %esp 0x20c/imm32
     # . restore registers
-    59/pop-to-ecx
     # . epilog
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+lisp-eval:  # in : (address val) -> eax : (address val)
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    8b/-> *(ebp+8) 0/r32/eax
+$lisp-eval:end:
+    # . restore registers
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+lisp-print:  # out : (address buffered-file), x : (address val)
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    # write(x)
+    (write-buffered Stdout "=> ")
+    (write-stream-data Stdout *(ebp+0xc))
+    (flush Stdout)
+$lisp-print:end:
+    # . restore registers
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+
+Nil:
+  0/imm32/tag
+  0/imm32/data
