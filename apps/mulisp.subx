@@ -1,0 +1,76 @@
+# Toy lisp interpreter
+#
+# Current status: repeatedly reads line of text and prints it out.
+#
+# To run:
+#   $ ./ntranslate 0*.subx apps/subx-common.subx apps/mulisp.subx
+#   $ ./a.elf
+#   42
+#   => 42
+#   ^D
+#   $
+#
+# Or, for emulated mode (veeery slow):
+#   $ cat 0*.subx apps/mulisp.subx  |  ./subx run apps/desugar > a.desugar
+#   $ ./subx translate a.desugar -o a.elf
+
+== code
+
+Entry:  # run tests if necessary, a REPL if not
+    # . prolog
+    89/<- %ebp 4/r32/esp
+    # initialize heap
+    (new-segment Heap-size Heap)
+    # if (argc <= 1) goto run-main
+    81 7/subop/compare *ebp 1/imm32
+    7e/jump-if-lesser-or-equal $run-main/disp8
+    # if (argv[1] != "test")) goto run-main
+    (kernel-string-equal? *(ebp+8) "test")  # => eax
+    3d/compare-eax-and 0/imm32
+    74/jump-if-equal $run-main/disp8
+    #
+    (run-tests)
+    # syscall(exit, *Num-test-failures)
+    8b/-> *Num-test-failures 3/r32/ebx
+    eb/jump $main:end/disp8
+$run-main:
+    (repl Stdin Stdout)
+    # syscall(exit, 0)
+    bb/copy-to-ebx 0/imm32
+$main:end:
+    b8/copy-to-eax 1/imm32/exit
+    cd/syscall 0x80/imm8
+
+repl:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var s/ecx : (address stream)
+    81 5/subop/subtract %esp 0x200/imm32
+    68/push 0x200/imm32/size
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %ecx 4/r32/esp
+$repl:loop:
+    (clear-stream %ecx)
+    (read-line-buffered Stdin %ecx)
+    # if (s->write == 0) break
+    81 7/subop/compare *ecx 0/imm32
+    74/jump-if-equal $repl:end/disp8
+    # write(s)
+    (write-buffered Stdout "=> ")
+    (write-stream-data Stdout %ecx)
+    (flush Stdout)
+    # loop
+    eb/jump $repl:loop/disp8
+$repl:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x20c/imm32
+    # . restore registers
+    59/pop-to-ecx
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
