@@ -91,14 +91,6 @@ if empty($TMUX)
     exec "!./run_one_test ".expand("%")." ".l:arg
     exec "normal \<C-o>"
   endfunction
-  function RunTestMoveCursorAndMaybeOpenTrace(arg)
-    let l:arg = a:arg == "#" ? " " : a:arg  " Vim's '!' insists on interpreting '#' anywhere in its arg
-    exec "!./run_one_test ".expand("%")." ".l:arg
-    exec "normal \<C-o>"
-    if v:shell_error
-      noautocmd vertical split last_run
-    endif
-  endfunction
 else
   " we have tmux; we don't need to show any output in the Vim pane so life is simpler
   " assume the left-most window is for the shell
