@@ -89,7 +89,7 @@ Emulated runs can generate a trace that permits [time-travel debugging](https://
   $ ./subx --debug --trace run examples/factorial
   saving trace to 'last_run'
 
-  $ ../browse_trace/browse_trace last_run  # text-mode debugger UI
+  $ ./browse_trace/browse_trace last_run  # text-mode debugger UI
   ```
 
 You can write tests for your programs. The entire stack is thoroughly covered
