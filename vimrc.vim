@@ -84,7 +84,7 @@ if empty($TMUX)
   "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
   "   can't avoid the function because that disables the wait for <CR> prompt
   " known issue:
-  "   cursor on '#' causes error
+  "   can't handle comments at start of current test
   noremap <Leader>t {j0:call RunTestMoveCursor("<C-r><C-w>")<CR>
   function RunTestMoveCursor(arg)
     let l:arg = a:arg == "#" ? " " : a:arg  " Vim's '!' insists on interpreting '#' anywhere in its arg
