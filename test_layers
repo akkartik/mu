@@ -20,9 +20,8 @@ done
 # add SubX files one at a time
 for f in [0-9]*.subx
 do
-  [ $f == *'memory_layout.subx' ]  &&  continue  # the very first .subx layer has no code
   echo "=== $f"
-  ./subx translate $(enumerate/enumerate --until $f |grep '\.subx$') -o a.elf
+  ./subx translate 049init.linux $(enumerate/enumerate --until $f |grep '\.subx$') -o a.elf
   ./subx run a.elf
   echo
   test `uname` = 'Linux'  &&  {
