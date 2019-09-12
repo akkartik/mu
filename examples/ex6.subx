@@ -5,13 +5,13 @@
 #   $ ./subx run examples/ex6
 #   Hello, world!
 
-== code 0x09000000
-#   instruction                     effective address                                                   register    displacement    immediate
+== code
+
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 Entry:
-    # syscall(write, stdout, X, Size)
+    # write(stdout, X, Size)
     # . fd = 1 (stdout)
     bb/copy-to-ebx  1/imm32
     # . initialize X (location to write result to)
@@ -19,14 +19,12 @@ Entry:
     # . initialize Size
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           2/r32/edx   Size/disp32     .                 # copy *Size to edx
     # . syscall
-    b8/copy-to-eax  4/imm32/write
-    cd/syscall  0x80/imm8
+    e8/call  syscall_write/disp32
 
-    # syscall(exit, ebx)
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    # exit(ebx)
+    e8/call  syscall_exit/disp32
 
-== data 0x0a000000
+== data
 
 Size:  # size of string
     0x0e/imm32  # 14

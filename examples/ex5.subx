@@ -4,7 +4,7 @@
 #   $ ./subx translate examples/ex5.subx -o examples/ex5
 #   $ ./subx run examples/ex5
 
-== code 0x09000000
+== code
 #   instruction                     effective address                                                   register    displacement    immediate
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
@@ -14,7 +14,7 @@ Entry:
     # allocate x on the stack
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # subtract from esp
 
-    # syscall(read, stdin, x, 1)
+    # read(stdin, x, 1)
     # . fd = 0 (stdin)
     bb/copy-to-ebx  0/imm32
     # . data = x (location to write result to)
@@ -22,8 +22,7 @@ Entry:
     # . size = 1 character
     ba/copy-to-edx  1/imm32
     # . syscall
-    b8/copy-to-eax  3/imm32/read
-    cd/syscall  0x80/imm8
+    e8/call  syscall_read/disp32
 
     # syscall(write, stdout, x, 1)
     # . fd = 1 (stdout)
@@ -36,10 +35,7 @@ Entry:
     b8/copy-to-eax  4/imm32/write
     cd/syscall  0x80/imm8
 
-    # syscall(exit, ebx)
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
-
-== data 0x0a000000
+    # exit(ebx)
+    e8/call  syscall_exit/disp32
 
 # . . vim:nowrap:textwidth=0

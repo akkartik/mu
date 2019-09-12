@@ -17,7 +17,7 @@
 #   ...
 # Locals start from esp-4 downwards.
 
-== code 0x09000000
+== code
 #   instruction                     effective address                                                   register    displacement    immediate
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
@@ -34,10 +34,9 @@ Entry:
     e8/call  ascii-difference/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # syscall(exit, eax)
+    # exit(eax)
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
+    e8/call  syscall_exit/disp32
 
 ascii-difference:  # (s1, s2) : null-terminated ascii strings
     # a = first letter of s1 (ecx)
@@ -49,7 +48,5 @@ ascii-difference:  # (s1, s2) : null-terminated ascii strings
     # a-b
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
     c3/return
-
-== data 0x0a000000
 
 # . . vim:nowrap:textwidth=0
