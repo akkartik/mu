@@ -9,10 +9,10 @@ to run, and nothing else.
   ```sh
   $ git clone https://github.com/akkartik/mu
   $ cd mu
-  # package up a "hello world" binary and Linux kernel into mu.iso
-  $ ./gen_iso examples/ex6.subx
+  # package up a "hello world" binary and kernel into mu_soso.iso
+  $ ./gen_soso_iso init.soso examples/ex6.subx
   # try it out
-  $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
+  $ qemu-system-i386 -cdrom mu_soso.iso
   # print the message
   ```
 
@@ -61,7 +61,7 @@ code. Here's a program (`examples/ex1.subx`) that returns 42:
 You can generate tiny zero-dependency ELF binaries with it that run on Linux.
 
   ```sh
-  $ ./subx translate examples/ex1.subx -o examples/ex1  # on Linux or BSD or Mac
+  $ ./subx translate init.linux examples/ex1.subx -o examples/ex1  # on Linux or BSD or Mac
   $ ./examples/ex1  # only on Linux
   $ echo $?
   42
@@ -82,7 +82,7 @@ messages.
 Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
 
   ```sh
-  $ ./subx --debug translate examples/factorial.subx -o examples/factorial
+  $ ./subx --debug translate init.linux examples/factorial.subx -o examples/factorial
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
 
@@ -104,23 +104,23 @@ You can use SubX to translate itself. For example, running natively on Linux:
 
   ```sh
   # generate translator phases using the C++ translator
-  $ ./subx translate 0*.subx apps/subx-common.subx apps/hex.subx    -o hex
-  $ ./subx translate 0*.subx apps/subx-common.subx apps/survey.subx -o survey
-  $ ./subx translate 0*.subx apps/subx-common.subx apps/pack.subx   -o pack
-  $ ./subx translate 0*.subx apps/subx-common.subx apps/assort.subx -o assort
-  $ ./subx translate 0*.subx apps/subx-common.subx apps/dquotes.subx -o dquotes
-  $ ./subx translate 0*.subx apps/subx-common.subx apps/tests.subx  -o tests
+  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/hex.subx    -o hex
+  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/survey.subx -o survey
+  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/pack.subx   -o pack
+  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/assort.subx -o assort
+  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/dquotes.subx -o dquotes
+  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/tests.subx  -o tests
   $ chmod +x hex survey pack assort dquotes tests
 
   # use the generated translator phases to translate SubX programs
-  $ cat examples/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
+  $ cat init.linux examples/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
   $ chmod +x a.elf
   $ ./a.elf
   $ echo $?
   42
 
   # or, automating the above steps
-  $ ./ntranslate ex1.subx
+  $ ./ntranslate init.linux ex1.subx
   $ chmod +x a.elf
   $ ./a.elf
   $ echo $?
@@ -130,26 +130,31 @@ You can use SubX to translate itself. For example, running natively on Linux:
 Or, running in a VM on other platforms:
 
   ```sh
-  $ ./translate ex1.subx  # generates identical a.elf to above
+  $ ./translate init.linux ex1.subx  # generates identical a.elf to above
   $ ./subx run a.elf
   $ echo $?
   42
   ```
 
-Finally, as described at the top, you can turn it into a bootable disk image
-containing just your code and a Linux kernel. You can run the disk image on a
-cloud server that supports custom images. [Instructions for Linode.](http://akkartik.name/post/iso-on-linode)
+As described at the start, you can package up SubX binaries with the minimal
+hobbyist OS [soso](https://github.com/ozkl/soso) and run them on Qemu.
+(Requires graphics. Currently doesn't work on a cloud server.)
+
+  ```sh
+  $ ./gen_soso_iso init.soso examples/ex6.subx
+  $ qemu-system-i386 -cdrom mu_soso.iso
+  ```
+
+You can also package up SubX binaries with a Linux kernel and run them on
+either Qemu or [a cloud server that supports custom images](http://akkartik.name/post/iso-on-linode).
+(Takes 12 minutes with 8GB RAM. Requires 12 million LoC of C for the Linux
+kernel; that number will gradually go down.)
 
   ```sh
   $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
-  $ ./gen_iso examples/ex6.subx
+  $ ./gen_linux_iso init.linux examples/ex6.subx
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
   ```
-
-(`gen_iso` only came into existence 2019-08-09, and has a flabby laundry list
-of dependencies that I will gradually prune. It currently takes 12 minutes to
-run on a single core with 8 GB RAM, mostly to compile its fork of the Linux
-kernel.)
 
 ## What it looks like
 
@@ -306,7 +311,7 @@ like decimal numbers.
 Try running this example now:
 
 ```sh
-$ ./subx translate examples/ex3.subx -o examples/ex3
+$ ./subx translate init.linux examples/ex3.subx -o examples/ex3
 $ ./subx run examples/ex3
 $ echo $?
 55
@@ -847,6 +852,7 @@ Mu builds on many ideas that have come before, especially:
 - Forth for demonstrating that ergonomics don't require grammar; and
 - [Minimal Linux Live](http://minimal.linux-bg.org) for teaching how to create
   a bootable disk image.
+- [Soso](https://github.com/ozkl/soso), a tiny hackable OS.
 
 ## Coda
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Build one or more .subx files into an ELF binary, and package it up into a
-# bootable ISO image.
+# bootable ISO image with a Linux kernel.
 #
 # Must be run on Linux.
 #
@@ -17,21 +17,23 @@ then
   exit 1
 fi
 
-echo "=== constructing initramfs out of SubX binary"
+echo "=== building SubX binary"
 ./ntranslate $*
 mv a.elf init
 chmod +x init
+
+echo "=== constructing initramfs out of SubX binary"
 rm -rf tmp/isoimage
 mkdir -p tmp/isoimage/boot
 echo init | cpio -R root:root -H newc -o | xz -9 --check=none > tmp/isoimage/boot/rootfs.xz
 
 if [ ! -d kernel ]
 then
-  echo "=== cloning kernel"
+  echo "=== cloning linux kernel"
   git clone https://github.com/akkartik/kernel
 fi
 
-echo "=== building kernel"
+echo "=== building linux kernel"
 ( cd kernel
   make bzImage -j $(grep ^processor /proc/cpuinfo | wc -l)
 )
@@ -48,7 +50,7 @@ cp syslinux.cfg \
    tmp/syslinux-*/bios/com32/elflink/ldlinux/ldlinux.c32 \
    tmp/isoimage/boot/syslinux
 
-echo "=== generating ISO"
+echo "=== generating mu-linux.iso"
 # 'hybrid' ISO can also be used on non-optical media such as a disk or USB stick
 xorriso -as mkisofs \
   -isohybrid-mbr tmp/syslinux-*/bios/mbr/isohdpfx.bin \
@@ -57,4 +59,4 @@ xorriso -as mkisofs \
     -no-emul-boot \
     -boot-load-size 4 \
     -boot-info-table \
-  tmp/isoimage -o mu.iso
+  tmp/isoimage -o mu_linux.iso

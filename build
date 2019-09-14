@@ -115,35 +115,37 @@ then
   # Assumption: SubX programs don't need to be retranslated every time we
   # rebuild the C++ bootstrap.
 
+  OS=${OS:-linux}
+
   # simple example programs
   for n in `seq 1 12`
   do
-    older_than examples/ex$n 049init.linux examples/ex$n.subx && {
-      ./subx_bin translate 049init.linux examples/ex$n.subx -o examples/ex$n
+    older_than examples/ex$n init.$OS examples/ex$n.subx && {
+      ./subx_bin translate init.$OS examples/ex$n.subx -o examples/ex$n
     }
   done
 
   # simple apps that use the standard library
   for app in factorial crenshaw2-1 crenshaw2-1b handle
   do
-    older_than apps/$app 049init.linux [0-9]*.subx && apps/$app.subx {
-      ./subx_bin translate 049init.linux [0-9]*.subx apps/$app.subx -o apps/$app
+    older_than apps/$app init.$OS [0-9]*.subx apps/$app.subx && {
+      ./subx_bin translate init.$OS [0-9]*.subx apps/$app.subx -o apps/$app
     }
   done
 
   # self-hosting translator
   for phase in hex survey pack assort dquotes tests
   do
-    older_than apps/$phase 049init.linux [0-9]*.subx apps/subx-common.subx apps/$phase.subx && {
-      ./subx_bin translate 049init.linux [0-9]*.subx apps/subx-common.subx apps/$phase.subx -o apps/$phase
+    older_than apps/$phase init.$OS [0-9]*.subx apps/subx-common.subx apps/$phase.subx && {
+      ./subx_bin translate init.$OS [0-9]*.subx apps/subx-common.subx apps/$phase.subx -o apps/$phase
     }
   done
 
   # higher-level syntax
   for phase in sigils
   do
-    older_than apps/$phase 049init.linux [0-9]*.subx apps/subx-common.subx apps/$phase.subx && {
-      ./subx_bin translate 049init.linux [0-9]*.subx apps/subx-common.subx apps/$phase.subx -o apps/$phase
+    older_than apps/$phase init.$OS [0-9]*.subx apps/subx-common.subx apps/$phase.subx && {
+      ./subx_bin translate init.$OS [0-9]*.subx apps/subx-common.subx apps/$phase.subx -o apps/$phase
     }
   done
 
