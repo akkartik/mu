@@ -9,7 +9,7 @@ to run, and nothing else.
   ```sh
   $ git clone https://github.com/akkartik/mu
   $ cd mu
-  # package up a "hello world" binary and kernel into mu_soso.iso
+  # package up a "hello world" binary and Soso kernel into mu_soso.iso
   $ ./gen_soso_iso init.soso examples/ex6.subx
   # try it out
   $ qemu-system-i386 -cdrom mu_soso.iso
@@ -137,7 +137,7 @@ Or, running in a VM on other platforms:
   ```
 
 As described at the start, you can package up SubX binaries with the minimal
-hobbyist OS [soso](https://github.com/ozkl/soso) and run them on Qemu.
+hobbyist OS [Soso](https://github.com/ozkl/soso) and run them on Qemu.
 (Requires graphics. Currently doesn't work on a cloud server.)
 
   ```sh
