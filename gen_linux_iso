@@ -27,17 +27,17 @@ rm -rf tmp/isoimage
 mkdir -p tmp/isoimage/boot
 echo init | cpio -R root:root -H newc -o | xz -9 --check=none > tmp/isoimage/boot/rootfs.xz
 
-if [ ! -d kernel ]
+if [ ! -d kernel.linux ]
 then
   echo "=== cloning linux kernel"
-  git clone https://github.com/akkartik/kernel
+  git clone https://github.com/akkartik/kernel kernel.linux
 fi
 
 echo "=== building linux kernel"
-( cd kernel
+( cd kernel.linux
   make bzImage -j $(grep ^processor /proc/cpuinfo | wc -l)
 )
-cp kernel/arch/x86/boot/bzImage tmp/isoimage/boot/kernel.xz
+cp *.linux/arch/x86/boot/bzImage tmp/isoimage/boot/kernel.xz
 
 echo "=== downloading syslinux"
 test -f tmp/syslinux-6.03.tar.xz  ||  wget https://kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz -P tmp
