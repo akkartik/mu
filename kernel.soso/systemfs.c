@@ -139,11 +139,11 @@ static FileSystemDirent *systemfs_readdir(FileSystemNode *node, uint32 index)
 
     FileSystemNode* child = node->firstChild;
 
-    //Screen_PrintF("systemfs_readdir-main:%s index:%d\n", node->name, index);
+    //printkf("systemfs_readdir-main:%s index:%d\n", node->name, index);
 
     while (NULL != child)
     {
-        //Screen_PrintF("systemfs_readdir-child:%s\n", child->name);
+        //printkf("systemfs_readdir-child:%s\n", child->name);
         if (counter == index)
         {
             strcpy(gDirent.name, child->name);
@@ -162,14 +162,14 @@ static FileSystemDirent *systemfs_readdir(FileSystemNode *node, uint32 index)
 
 static FileSystemNode *systemfs_finddir(FileSystemNode *node, char *name)
 {
-    //Screen_PrintF("systemfs_finddir-main:%s requestedName:%s\n", node->name, name);
+    //printkf("systemfs_finddir-main:%s requestedName:%s\n", node->name, name);
 
     FileSystemNode* child = node->firstChild;
     while (NULL != child)
     {
         if (strcmp(name, child->name) == 0)
         {
-            //Screen_PrintF("systemfs_finddir-found:%s\n", name);
+            //printkf("systemfs_finddir-found:%s\n", name);
             return child;
         }
 

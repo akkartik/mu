@@ -76,7 +76,7 @@ static BOOL keyboard_open(File *file, uint32 flags)
 
 static void keyboard_close(File *file)
 {
-    //Screen_PrintF("keyboard_close\n");
+    //printkf("keyboard_close\n");
 
     Reader* reader = (Reader*)file->privateData;
 

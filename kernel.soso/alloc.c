@@ -27,7 +27,7 @@ void *ksbrkPage(int n)
     int i;
 
     if ((gKernelHeap + (n * PAGESIZE_4M)) > (char *) KERN_HEAP_END) {
-        //Screen_PrintF("ERROR: ksbrk(): no virtual memory left for kernel heap !\n");
+        //printkf("ERROR: ksbrk(): no virtual memory left for kernel heap !\n");
         return (char *) -1;
     }
 
@@ -37,7 +37,7 @@ void *ksbrkPage(int n)
     {
         p_addr = getPageFrame4M();
 
-        //Screen_PrintF("DEBUG: ksbrkPage(): got 4M on physical %x\n", p_addr);
+        //printkf("DEBUG: ksbrkPage(): got 4M on physical %x\n", p_addr);
 
         if ((int)(p_addr) < 0)
         {
@@ -208,14 +208,14 @@ void *sbrk(Process* process, int nBytes)
     {
         int remainingInThePage = process->heapNextUnallocatedPageBegin - process->heapEnd;
 
-        //Screen_PrintF("sbrk:2: remainingInThePage:%d\n", remainingInThePage);
+        //printkf("sbrk:2: remainingInThePage:%d\n", remainingInThePage);
 
         if (nBytes > remainingInThePage)
         {
             int bytesNeededInNewPages = nBytes - remainingInThePage;
             int neededNewPageCount = (bytesNeededInNewPages / PAGESIZE_4M) + 1;
 
-            //Screen_PrintF("sbrk:3: neededNewPageCount:%d\n", neededNewPageCount);
+            //printkf("sbrk:3: neededNewPageCount:%d\n", neededNewPageCount);
 
             uint32 freePages = getFreePageCount();
             if ((uint32)neededNewPageCount + 1 > freePages)
@@ -232,14 +232,14 @@ void *sbrk(Process* process, int nBytes)
 
         int remainingInThePage = process->heapEnd - currentPageBegin;
 
-        //Screen_PrintF("sbrk:4: remainingInThePage:%d\n", remainingInThePage);
+        //printkf("sbrk:4: remainingInThePage:%d\n", remainingInThePage);
 
         if (-nBytes > remainingInThePage)
         {
             int bytesInPreviousPages = -nBytes - remainingInThePage;
             int neededNewPageCount = (bytesInPreviousPages / PAGESIZE_4M) + 1;
 
-            //Screen_PrintF("sbrk:5: neededNewPageCount:%d\n", neededNewPageCount);
+            //printkf("sbrk:5: neededNewPageCount:%d\n", neededNewPageCount);
 
             sbrkPage(process, -neededNewPageCount);
         }

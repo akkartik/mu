@@ -114,7 +114,7 @@ uint32* getPdFromReservedArea4K()
     int byte, bit;
     int page = -1;
 
-    //Screen_PrintF("DEBUG: getPdFromReservedArea4K() begin\n");
+    //printkf("DEBUG: getPdFromReservedArea4K() begin\n");
 
     for (byte = 0; byte < RAM_AS_4K_PAGES / 8; byte++)
     {
@@ -126,7 +126,7 @@ uint32* getPdFromReservedArea4K()
                 {
                     page = 8 * byte + bit;
                     SET_PAGEHEAP_USED(page);
-                    //Screen_PrintF("DEBUG: getPdFromReservedArea4K() found pageIndex:%d\n", page);
+                    //printkf("DEBUG: getPdFromReservedArea4K() found pageIndex:%d\n", page);
                     return (uint32 *) (page * PAGESIZE_4K);
                 }
             }
@@ -212,7 +212,7 @@ uint32 *copyPd(uint32* pd)
 
             uint32 vAddr =  (i * 4) << 20;
 
-            //Screen_PrintF("Copied page virtual %x\n", vAddr);
+            //printkf("Copied page virtual %x\n", vAddr);
 
             addPageToPd(newPd, (char*)vAddr, newPagePhysical, PG_USER);
         }
@@ -230,7 +230,7 @@ BOOL addPageToPd(uint32* pd, char *v_addr, char *p_addr, int flags)
 {
     uint32 *pde = NULL;
 
-    //Screen_PrintF("DEBUG: addPageToPd(): v_addr:%x p_addr:%x flags:%x\n", v_addr, p_addr, flags);
+    //printkf("DEBUG: addPageToPd(): v_addr:%x p_addr:%x flags:%x\n", v_addr, p_addr, flags);
 
 
     int index = (((uint32) v_addr & 0xFFC00000) >> 22);
@@ -242,10 +242,10 @@ BOOL addPageToPd(uint32* pd, char *v_addr, char *p_addr, int flags)
         return FALSE;
     }
 
-    //Screen_PrintF("addPageToPd(): index:%d pde:%x\n", index, pde);
+    //printkf("addPageToPd(): index:%d pde:%x\n", index, pde);
 
     *pde = ((uint32) p_addr) | (PG_PRESENT | PG_4MB | PG_WRITE | flags);
-    //Screen_PrintF("pde:%x *pde:%x\n", pde, *pde);
+    //printkf("pde:%x *pde:%x\n", pde, *pde);
 
     SET_PAGEFRAME_USED(gPhysicalPageFrameBitmap, PAGE_INDEX_4M((uint32)p_addr));
 

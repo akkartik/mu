@@ -127,7 +127,7 @@ static void handleSyscall(Registers* regs)
         return;
     }
 
-    //Screen_PrintF("We are in syscall_handler\n");
+    //printkf("We are in syscall_handler\n");
     //Screen_PrintInterruptsEnabled();
 
     //I think it is better to enable interrupts in syscall implementations if it is needed.
@@ -154,11 +154,11 @@ int syscall_open(const char *pathname, int flags)
     Process* process = getCurrentThread()->owner;
     if (process)
     {
-        //Screen_PrintF("open():[%s]\n", pathname);
+        //printkf("open():[%s]\n", pathname);
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(pathname, process);
         if (node)
         {
-            //Screen_PrintF("open():node:[%s]\n", node->name);
+            //printkf("open():node:[%s]\n", node->name);
             File* file = open_fs(node, flags);
 
             if (file)
@@ -206,7 +206,7 @@ int syscall_close(int fd)
 
 int syscall_read(int fd, void *buf, int nbytes)
 {
-    //Screen_PrintF("syscall_read: begin - nbytes:%d\n", nbytes);
+    //printkf("syscall_read: begin - nbytes:%d\n", nbytes);
 
     Process* process = getCurrentThread()->owner;
     if (process)
@@ -249,7 +249,7 @@ int syscall_write(int fd, void *buf, int nbytes)
     Process* process = getCurrentThread()->owner;
     if (process)
     {
-        //Screen_PrintF("syscall_write() called from process: %d. fd:%d\n", process->pid, fd);
+        //printkf("syscall_write() called from process: %d. fd:%d\n", process->pid, fd);
 
         if (fd < MAX_OPENED_FILES)
         {
@@ -291,7 +291,7 @@ int syscall_lseek(int fd, int offset, int whence)
     Process* process = getCurrentThread()->owner;
     if (process)
     {
-        //Screen_PrintF("syscall_lseek() called from process: %d. fd:%d\n", process->pid, fd);
+        //printkf("syscall_lseek() called from process: %d. fd:%d\n", process->pid, fd);
 
         if (fd < MAX_OPENED_FILES)
         {
@@ -324,7 +324,7 @@ int syscall_stat(const char *path, struct stat *buf)
     Process* process = getCurrentThread()->owner;
     if (process)
     {
-        //Screen_PrintF("syscall_stat() called from process: %d. path:%s\n", process->pid, path);
+        //printkf("syscall_stat() called from process: %d. path:%s\n", process->pid, path);
 
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(path, process);
 
@@ -432,7 +432,7 @@ int syscall_exit(int status)
 
 void* syscall_sbrk(uint32 increment)
 {
-    //Screen_PrintF("syscall_sbrk() !!! inc:%d\n", increment);
+    //printkf("syscall_sbrk() !!! inc:%d\n", increment);
 
     Process* process = getCurrentThread()->owner;
     if (process)
@@ -488,11 +488,11 @@ int syscall_execute(const char *path, char *const argv[], char *const envp[])
                 printkf("file found\n");
                 void* image = kmalloc(node->length);
 
-                //Screen_PrintF("executing %s and its %d bytes\n", filename, node->length);
+                //printkf("executing %s and its %d bytes\n", filename, node->length);
 
                 int32 bytesRead = read_fs(f, node->length, image);
 
-                //Screen_PrintF("syscall_execute: read_fs returned %d bytes\n", bytesRead);
+                //printkf("syscall_execute: read_fs returned %d bytes\n", bytesRead);
 
                 if (bytesRead > 0)
                 {
@@ -535,11 +535,11 @@ int syscall_executeOnTTY(const char *path, char *const argv[], char *const envp[
             {
                 void* image = kmalloc(node->length);
 
-                //Screen_PrintF("executing %s and its %d bytes\n", filename, node->length);
+                //printkf("executing %s and its %d bytes\n", filename, node->length);
 
                 int32 bytesRead = read_fs(f, node->length, image);
 
-                //Screen_PrintF("syscall_execute: read_fs returned %d bytes\n", bytesRead);
+                //printkf("syscall_execute: read_fs returned %d bytes\n", bytesRead);
 
                 if (bytesRead > 0)
                 {
@@ -743,7 +743,7 @@ int syscall_mkdir(const char *path, uint32 mode)
         return -1;
     }
 
-    //Screen_PrintF("mkdir: parent:[%s] name:[%s]\n", parentPath, name);
+    //printkf("mkdir: parent:[%s] name:[%s]\n", parentPath, name);
 
     FileSystemNode* targetNode = getFileSystemNode(parentPath);
 
@@ -778,7 +778,7 @@ int syscall_getdents(int fd, char *buf, int nbytes)
 
             if (file)
             {
-                //Screen_PrintF("syscall_getdents(%d): %s\n", process->pid, buf);
+                //printkf("syscall_getdents(%d): %s\n", process->pid, buf);
 
                 int byteCounter = 0;
 

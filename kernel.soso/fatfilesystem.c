@@ -92,11 +92,11 @@ static BOOL mount(const char* sourcePath, const char* targetPath, uint32 flags, 
                 FATFS* fatFs = (FATFS*)kmalloc(sizeof(FATFS));
                 //uint8 work[512];
                 //FRESULT fr = f_mkfs("", FM_FAT | FM_SFD, 512, work, 512);
-                //Screen_PrintF("f_mkfs: %d\n", fr);
+                //printkf("f_mkfs: %d\n", fr);
                 char path[8];
                 sprintf(path, "%d:", volume);
                 FRESULT fr = f_mount(fatFs, path, 1);
-                //Screen_PrintF("f_mount: fr:%d drv:%d\n", fr, fatFs->pdrv);
+                //printkf("f_mount: fr:%d drv:%d\n", fr, fatFs->pdrv);
 
                 if (FR_OK == fr)
                 {
@@ -143,7 +143,7 @@ static FileSystemDirent* readdir(FileSystemNode *node, uint32 index)
     //when node is the root of mounted filesystem,
     //node->mountSource is the source node (eg. disk partition /dev/hd1p1)
 
-    //Screen_PrintF("readdir1: node->name:%s\n", node->name);
+    //printkf("readdir1: node->name:%s\n", node->name);
 
     uint8 targetPath[128];
 
@@ -182,7 +182,7 @@ static FileSystemDirent* readdir(FileSystemNode *node, uint32 index)
     strcpyNonNull((char*)(targetPath + charIndex), number);
     uint8* target = targetPath + charIndex;
 
-    //Screen_PrintF("readdir: targetpath:[%s]\n", target);
+    //printkf("readdir: targetpath:[%s]\n", target);
 
     DIR dir;
     FRESULT fr = f_opendir(&dir, (TCHAR*)target);
@@ -226,7 +226,7 @@ static FileSystemNode* finddir(FileSystemNode *node, char *name)
     //when node is the root of mounted filesystem,
     //node->mountSource is the source node (eg. disk partition /dev/hd1p1)
 
-    //Screen_PrintF("finddir1: node->name:%s name:%s\n", node->name, name);
+    //printkf("finddir1: node->name:%s name:%s\n", node->name, name);
 
     FileSystemNode* child = node->firstChild;
     while (NULL != child)
@@ -283,7 +283,7 @@ static FileSystemNode* finddir(FileSystemNode *node, char *name)
     strcpyNonNull((char*)(targetPath + charIndex), number);
     uint8* target = targetPath + charIndex;
 
-    //Screen_PrintF("finddir: targetpath:[%s]\n", target);
+    //printkf("finddir: targetpath:[%s]\n", target);
 
     FILINFO fileInfo;
     memset((uint8*)&fileInfo, 0, sizeof(FILINFO));
@@ -328,12 +328,12 @@ static FileSystemNode* finddir(FileSystemNode *node, char *name)
             child->nextSibling = newNode;
         }
 
-        //Screen_PrintF("finddir: returning [%s]\n", name);
+        //printkf("finddir: returning [%s]\n", name);
         return newNode;
     }
     else
     {
-        //Screen_PrintF("finddir error: fr: %d]\n", fr);
+        //printkf("finddir error: fr: %d]\n", fr);
     }
 
     return NULL;
@@ -351,7 +351,7 @@ static int32 read(File *file, uint32 size, uint8 *buffer)
     UINT br = 0;
     FRESULT fr = f_read(f, buffer, size, &br);
     file->offset = f->fptr;
-    //Screen_PrintF("fat read: name:%s size:%d hasRead:%d, fr:%d\n", file->node->name, size, br, fr);
+    //printkf("fat read: name:%s size:%d hasRead:%d, fr:%d\n", file->node->name, size, br, fr);
     if (FR_OK == fr)
     {
         return br;
@@ -419,7 +419,7 @@ static int32 lseek(File *file, int32 offset, int32 whence)
 
 static int32 stat(FileSystemNode *node, struct stat* buf)
 {
-    //Screen_PrintF("fat stat [%s]\n", node->name);
+    //printkf("fat stat [%s]\n", node->name);
 
     uint8 targetPath[128];
 
@@ -457,7 +457,7 @@ static int32 stat(FileSystemNode *node, struct stat* buf)
     strcpyNonNull((char*)(targetPath + charIndex), number);
     uint8* target = targetPath + charIndex;
 
-    //Screen_PrintF("fat stat target:[%s]\n", target);
+    //printkf("fat stat target:[%s]\n", target);
 
     FILINFO fileInfo;
     memset((uint8*)&fileInfo, 0, sizeof(FILINFO));
@@ -483,7 +483,7 @@ static int32 stat(FileSystemNode *node, struct stat* buf)
 
 static BOOL open(File *file, uint32 flags)
 {
-    //Screen_PrintF("fat open %s\n", file->node->name);
+    //printkf("fat open %s\n", file->node->name);
 
     FileSystemNode *node = file->node;
 
@@ -528,7 +528,7 @@ static BOOL open(File *file, uint32 flags)
     strcpyNonNull((char*)(targetPath + charIndex), number);
     uint8* target = targetPath + charIndex;
 
-    //Screen_PrintF("fat open %s\n", target);
+    //printkf("fat open %s\n", target);
 
     int fatfsMode = FA_READ;
 
@@ -597,7 +597,7 @@ DRESULT disk_read (
     UINT count			/* Number of sectors to read */
 )
 {
-    //Screen_PrintF("disk_read() drv:%d sector:%d count:%d\n", pdrv, sector, count);
+    //printkf("disk_read() drv:%d sector:%d count:%d\n", pdrv, sector, count);
 
     if (gMountedBlockDevices[pdrv] == NULL) return RES_NOTRDY;
 

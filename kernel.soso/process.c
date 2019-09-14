@@ -149,16 +149,16 @@ static void copyArgvEnvToProcess(char *const argv[], char *const envp[])
     char** destination = (char**)USER_ARGV_ENV_LOC;
     int destinationIndex = 0;
 
-    //Screen_PrintF("ARGVENV: destination:%x\n", destination);
+    //printkf("ARGVENV: destination:%x\n", destination);
 
     int argvCount = getStringArrayItemCount(argv);
     int envpCount = getStringArrayItemCount(envp);
 
-    //Screen_PrintF("ARGVENV: argvCount:%d envpCount:%d\n", argvCount, envpCount);
+    //printkf("ARGVENV: argvCount:%d envpCount:%d\n", argvCount, envpCount);
 
     char* stringTable = (char*)USER_ARGV_ENV_LOC + sizeof(char*) * (argvCount + envpCount + 2);
 
-    //Screen_PrintF("ARGVENV: stringTable:%x\n", stringTable);
+    //printkf("ARGVENV: stringTable:%x\n", stringTable);
 
     for (int i = 0; i < argvCount; ++i)
     {
@@ -453,7 +453,7 @@ void threadStateToString(ThreadState state, uint8* buffer, uint32 bufferSize)
 
 void waitForSchedule()
 {
-    //Screen_PrintF("Waiting for a schedule()\n");
+    //printkf("Waiting for a schedule()\n");
 
     enableInterrupts();
     while (TRUE)
@@ -502,11 +502,11 @@ int32 addFileToProcess(Process* process, File* file)
 
     beginCriticalSection();
 
-    //Screen_PrintF("addFileToProcess: pid:%d\n", process->pid);
+    //printkf("addFileToProcess: pid:%d\n", process->pid);
 
     for (int i = 0; i < MAX_OPENED_FILES; ++i)
     {
-        //Screen_PrintF("addFileToProcess: i:%d fd[%d]:%x\n", i, i, process->fd[i]);
+        //printkf("addFileToProcess: i:%d fd[%d]:%x\n", i, i, process->fd[i]);
         if (process->fd[i] == NULL)
         {
             result = i;
@@ -739,7 +739,7 @@ void schedule(TimerInt_Registers* registers)
     /*
     if (gCurrentThread->threadId == 5)
     {
-        Screen_PrintF("I am scheduling to %d and its EIP is %x\n", gCurrentThread->threadId, gCurrentThread->regs.eip);
+        printkf("I am scheduling to %d and its EIP is %x\n", gCurrentThread->threadId, gCurrentThread->regs.eip);
     }
     */
 

@@ -88,7 +88,7 @@ int getFileSystemNodePath(FileSystemNode *node, char* buffer, uint32 bufferSize)
 
     int len = 127 - charIndex;
 
-    //Screen_PrintF("getFileSystemNodePath: len:[%s] %d\n", targetPath + charIndex, len);
+    //printkf("getFileSystemNodePath: len:[%s] %d\n", targetPath + charIndex, len);
 
     if (bufferSize < len)
     {
@@ -238,7 +238,7 @@ File *open_fs_forProcess(Thread* thread, FileSystemNode *node, uint32 flags)
 
         if (success)
         {
-            //Screen_PrintF("Opened:%s\n", file->node->name);
+            //printkf("Opened:%s\n", file->node->name);
             int32 fd = addFileToProcess(file->process, file);
 
             if (fd < 0)
@@ -361,7 +361,7 @@ int32 stat_fs(FileSystemNode *node, struct stat *buf)
 
 FileSystemDirent *readdir_fs(FileSystemNode *node, uint32 index)
 {
-    //Screen_PrintF("readdir_fs: node->name:%s index:%d\n", node->name, index);
+    //printkf("readdir_fs: node->name:%s index:%d\n", node->name, index);
 
     if ( (node->nodeType & FT_MountPoint) == FT_MountPoint && node->mountPoint != NULL )
     {
@@ -384,7 +384,7 @@ FileSystemDirent *readdir_fs(FileSystemNode *node, uint32 index)
 
 FileSystemNode *finddir_fs(FileSystemNode *node, char *name)
 {
-    //Screen_PrintF("finddir_fs: name:%s\n", name);
+    //printkf("finddir_fs: name:%s\n", name);
 
     if ( (node->nodeType & FT_MountPoint) == FT_MountPoint && node->mountPoint != NULL )
     {
@@ -444,7 +444,7 @@ BOOL munmap_fs(File* file, void* address, uint32 size)
 
 FileSystemNode *getFileSystemNode(const char *path)
 {
-    //Screen_PrintF("getFileSystemNode:%s *0\n", path);
+    //printkf("getFileSystemNode:%s *0\n", path);
 
     if (path[0] != '/')
     {
@@ -472,7 +472,7 @@ FileSystemNode *getFileSystemNode(const char *path)
 
 
 
-    //Screen_PrintF("getFileSystemNode:%s *1\n", path);
+    //printkf("getFileSystemNode:%s *1\n", path);
 
     FileSystemNode* root = getFileSystemRootNode();
 
@@ -485,7 +485,7 @@ FileSystemNode *getFileSystemNode(const char *path)
 
     FileSystemNode* node = root;
 
-    //Screen_PrintF("getFileSystemNode:%s *2\n", path);
+    //printkf("getFileSystemNode:%s *2\n", path);
 
     char buffer[64];
 
@@ -514,11 +514,11 @@ FileSystemNode *getFileSystemNode(const char *path)
             strcpy(buffer, inputPath);
         }
 
-        //Screen_PrintF("getFileSystemNode:%s *3\n", path);
+        //printkf("getFileSystemNode:%s *3\n", path);
 
         node = finddir_fs(node, buffer);
 
-        //Screen_PrintF("getFileSystemNode:%s *4\n", path);
+        //printkf("getFileSystemNode:%s *4\n", path);
 
         if (NULL == node)
         {
@@ -559,7 +559,7 @@ FileSystemNode* getFileSystemNodeAbsoluteOrRelative(const char* path, Process* p
                     strcat(buffer, "/");
                     strcat(buffer, path);
 
-                    //Screen_PrintF("getFileSystemNodeAbsoluteOrRelative:[%s]\n", buffer);
+                    //printkf("getFileSystemNodeAbsoluteOrRelative:[%s]\n", buffer);
 
                     node = getFileSystemNode(buffer);
                 }

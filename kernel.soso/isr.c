@@ -13,7 +13,7 @@ void registerInterruptHandler(uint8 n, IsrFunction handler)
 
 void handleISR(Registers regs)
 {
-    //Screen_PrintF("handleISR interrupt no:%d\n", regs.int_no);
+    //printkf("handleISR interrupt no:%d\n", regs.int_no);
 
     uint8 int_no = regs.interruptNumber & 0xFF;
 
@@ -41,7 +41,7 @@ void handleIRQ(Registers regs)
 
     outb(0x20, 0x20);
 
-    //Screen_PrintF("irq: %d\n", regs.int_no);
+    //printkf("irq: %d\n", regs.int_no);
 
     if (gInterruptHandlers[regs.interruptNumber] != 0)
     {

@@ -390,7 +390,7 @@ void sendKeyInputToTTY(Tty* tty, uint8 scancode)
 
 static BOOL tty_open(File *file, uint32 flags)
 {
-    //Screen_PrintF("tty_open: pid:%d\n", file->process->pid);
+    //printkf("tty_open: pid:%d\n", file->process->pid);
 
     Tty* tty = (Tty*)file->node->privateNodeData;
 
@@ -642,7 +642,7 @@ static void processScancode(uint8 scancode)
             break;
         }
 
-        //Screen_PrintF("released: %x (%d)\n", scancode, scancode);
+        //printkf("released: %x (%d)\n", scancode, scancode);
     }
     else
     {
@@ -664,7 +664,7 @@ static void processScancode(uint8 scancode)
             break;
         }
 
-        //Screen_PrintF("pressed: %x (%d)\n", scancode, scancode);
+        //printkf("pressed: %x (%d)\n", scancode, scancode);
 
         applyModifierKeys(gKeyModifier, scancode);
     }

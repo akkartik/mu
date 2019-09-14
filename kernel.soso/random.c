@@ -32,11 +32,11 @@ static int32 random_read(File *file, uint32 size, uint8 *buffer)
         return 0;
     }
 
-    //Screen_PrintF("random_read: calling sleep\n");
+    //printkf("random_read: calling sleep\n");
 
     //sleep(10000);
 
-    //Screen_PrintF("random_read: returned from sleep\n");
+    //printkf("random_read: returned from sleep\n");
 
     uint32 number = rand();
 
@@ -52,7 +52,7 @@ static int32 random_read(File *file, uint32 size, uint8 *buffer)
     }
     else if (size >= 4)
     {
-        //Screen_PrintF("random_read: buffer is %x, writing %x to buffer\n", buffer, number);
+        //printkf("random_read: buffer is %x, writing %x to buffer\n", buffer, number);
 
         *((uint32*)buffer) = number;
         return 4;
