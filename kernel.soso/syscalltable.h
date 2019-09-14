@@ -2,8 +2,7 @@
 #define SYSCALLTABLE_H
 
 //This file will also be included by C library.
-enum
-{
+enum {
     SYS_open,  // 0
     SYS_close,  // 1
     SYS_read,  // 2

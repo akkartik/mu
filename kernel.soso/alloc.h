@@ -14,8 +14,7 @@ void *sbrk(Process* process, int nBytes);
 
 uint32 getKernelHeapUsed();
 
-struct MallocHeader
-{
+struct MallocHeader {
     unsigned long size:31;
     unsigned long used:1;
 } __attribute__ ((packed));

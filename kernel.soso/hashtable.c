@@ -1,26 +1,22 @@
 #include "hashtable.h"
 #include "alloc.h"
 
-typedef struct DataItem
-{
+typedef struct DataItem {
    uint32 data;
    uint32 key;
    uint8 used;
 } DataItem;
 
-typedef struct HashTable
-{
+typedef struct HashTable {
    DataItem* items;
    uint32 capacity;
 } HashTable;
 
-static uint32 hashCode(HashTable* hashTable, uint32 key)
-{
+static uint32 hashCode(HashTable* hashTable, uint32 key) {
    return key % hashTable->capacity;
 }
 
-HashTable* HashTable_create(uint32 capacity)
-{
+HashTable* HashTable_create(uint32 capacity) {
     HashTable* hashTable = kmalloc(sizeof(HashTable));
     memset((uint8*)hashTable, 0, sizeof(HashTable));
     hashTable->capacity = capacity;
@@ -29,24 +25,19 @@ HashTable* HashTable_create(uint32 capacity)
     return hashTable;
 }
 
-void HashTable_destroy(HashTable* hashTable)
-{
+void HashTable_destroy(HashTable* hashTable) {
     kfree(hashTable->items);
     kfree(hashTable);
 }
 
-DataItem* HashTable_search_internal(HashTable* hashTable, uint32 key)
-{
+DataItem* HashTable_search_internal(HashTable* hashTable, uint32 key) {
    //get the hash
    uint32 hashIndex = hashCode(hashTable, key);
 
    uint32 counter = 0;
-   while(counter < hashTable->capacity)
-   {
-      if(hashTable->items[hashIndex].key == key)
-      {
-          if(hashTable->items[hashIndex].used == TRUE)
-          {
+   while(counter < hashTable->capacity) {
+      if(hashTable->items[hashIndex].key == key) {
+          if(hashTable->items[hashIndex].used == TRUE) {
               return &(hashTable->items[hashIndex]);
           }
       }
@@ -63,12 +54,10 @@ DataItem* HashTable_search_internal(HashTable* hashTable, uint32 key)
    return NULL;
 }
 
-BOOL HashTable_search(HashTable* hashTable, uint32 key, uint32* value)
-{
+BOOL HashTable_search(HashTable* hashTable, uint32 key, uint32* value) {
     DataItem* existing = HashTable_search_internal(hashTable, key);
 
-    if (existing)
-    {
+    if (existing) {
         *value = existing->data;
 
         return TRUE;
@@ -77,12 +66,10 @@ BOOL HashTable_search(HashTable* hashTable, uint32 key, uint32* value)
     return FALSE;
 }
 
-BOOL HashTable_insert(HashTable* hashTable, uint32 key, uint32 data)
-{
+BOOL HashTable_insert(HashTable* hashTable, uint32 key, uint32 data) {
     DataItem* existing = HashTable_search_internal(hashTable, key);
 
-    if (existing)
-    {
+    if (existing) {
         existing->data = data;
 
         return TRUE;
@@ -93,10 +80,8 @@ BOOL HashTable_insert(HashTable* hashTable, uint32 key, uint32 data)
 
     uint32 counter = 0;
     //move in array until an empty or deleted cell
-    while(counter < hashTable->capacity)
-    {
-        if (hashTable->items[hashIndex].used == FALSE)
-        {
+    while(counter < hashTable->capacity) {
+        if (hashTable->items[hashIndex].used == FALSE) {
             hashTable->items[hashIndex].key = key;
             hashTable->items[hashIndex].data = data;
             hashTable->items[hashIndex].used = TRUE;
@@ -117,12 +102,10 @@ BOOL HashTable_insert(HashTable* hashTable, uint32 key, uint32 data)
     return FALSE;
 }
 
-BOOL HashTable_remove(HashTable* hashTable, uint32 key)
-{
+BOOL HashTable_remove(HashTable* hashTable, uint32 key) {
     DataItem* existing = HashTable_search_internal(hashTable, key);
 
-    if (existing)
-    {
+    if (existing) {
         existing->used = FALSE;
 
         return TRUE;

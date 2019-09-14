@@ -13,15 +13,13 @@ static char *gKernelHeap = NULL;
 static uint32 gKernelHeapUsed = 0;
 
 
-void initializeKernelHeap()
-{
+void initializeKernelHeap() {
     gKernelHeap = (char *) KERN_HEAP_BEGIN;
 
     ksbrkPage(1);
 }
 
-void *ksbrkPage(int n)
-{
+void *ksbrkPage(int n) {
     struct MallocHeader *chunk;
     char *p_addr;
     int i;
@@ -33,14 +31,12 @@ void *ksbrkPage(int n)
 
     chunk = (struct MallocHeader *) gKernelHeap;
 
-    for (i = 0; i < n; i++)
-    {
+    for (i = 0; i < n; i++) {
         p_addr = getPageFrame4M();
 
         //printkf("DEBUG: ksbrkPage(): got 4M on physical %x\n", p_addr);
 
-        if ((int)(p_addr) < 0)
-        {
+        if ((int)(p_addr) < 0) {
             PANIC("PANIC: ksbrkPage(): no free page frame available !");
             return (char *) -1;
         }
@@ -56,24 +52,20 @@ void *ksbrkPage(int n)
     return chunk;
 }
 
-void *kmalloc(uint32 size)
-{
+void *kmalloc(uint32 size) {
     if (size==0)
         return 0;
 
     unsigned long realsize;
     struct MallocHeader *chunk, *other;
 
-    if ((realsize = sizeof(struct MallocHeader) + size) < KMALLOC_MINSIZE)
-    {
+    if ((realsize = sizeof(struct MallocHeader) + size) < KMALLOC_MINSIZE) {
         realsize = KMALLOC_MINSIZE;
     }
 
     chunk = (struct MallocHeader *) KERN_HEAP_BEGIN;
-    while (chunk->used || chunk->size < realsize)
-    {
-        if (chunk->size == 0)
-        {
+    while (chunk->used || chunk->size < realsize) {
+        if (chunk->size == 0) {
             printkf("\nPANIC: kmalloc(): corrupted chunk on %x with null size (heap %x) !\nSystem halted\n", chunk, gKernelHeap);
 
             PANIC("kmalloc()");
@@ -83,17 +75,14 @@ void *kmalloc(uint32 size)
 
         chunk = (struct MallocHeader *)((char *)chunk + chunk->size);
 
-        if (chunk == (struct MallocHeader *) gKernelHeap)
-        {
-            if ((int)(ksbrkPage((realsize / PAGESIZE_4M) + 1)) < 0)
-            {
+        if (chunk == (struct MallocHeader *) gKernelHeap) {
+            if ((int)(ksbrkPage((realsize / PAGESIZE_4M) + 1)) < 0) {
                 PANIC("kmalloc(): no memory left for kernel !\nSystem halted\n");
 
                 return 0;
             }
         }
-        else if (chunk > (struct MallocHeader *) gKernelHeap)
-        {
+        else if (chunk > (struct MallocHeader *) gKernelHeap) {
             printkf("\nPANIC: kmalloc(): chunk on %x while heap limit is on %x !\nSystem halted\n", chunk, gKernelHeap);
 
             PANIC("kmalloc()");
@@ -103,12 +92,10 @@ void *kmalloc(uint32 size)
     }
 
 
-    if (chunk->size - realsize < KMALLOC_MINSIZE)
-    {
+    if (chunk->size - realsize < KMALLOC_MINSIZE) {
         chunk->used = 1;
     }
-    else
-    {
+    else {
         other = (struct MallocHeader *)((char *) chunk + realsize);
         other->size = chunk->size - realsize;
         other->used = 0;
@@ -122,8 +109,7 @@ void *kmalloc(uint32 size)
     return (char *) chunk + sizeof(struct MallocHeader);
 }
 
-void kfree(void *v_addr)
-{
+void kfree(void *v_addr) {
     if (v_addr==(void*)0)
         return;
 
@@ -137,27 +123,21 @@ void kfree(void *v_addr)
     //Merge free block with next free block
     while ((other = (struct MallocHeader *)((char *)chunk + chunk->size))
            && other < (struct MallocHeader *)gKernelHeap
-           && other->used == 0)
-    {
+           && other->used == 0) {
         chunk->size += other->size;
     }
 }
 
-static void sbrkPage(Process* process, int pageCount)
-{
-    if (pageCount > 0)
-    {
-        for (int i = 0; i < pageCount; ++i)
-        {
-            if ((process->heapNextUnallocatedPageBegin + PAGESIZE_4M) > (char*)USER_OFFSET_END)
-            {
+static void sbrkPage(Process* process, int pageCount) {
+    if (pageCount > 0) {
+        for (int i = 0; i < pageCount; ++i) {
+            if ((process->heapNextUnallocatedPageBegin + PAGESIZE_4M) > (char*)USER_OFFSET_END) {
                 return;
             }
 
             char * p_addr = getPageFrame4M();
 
-            if ((int)(p_addr) < 0)
-            {
+            if ((int)(p_addr) < 0) {
                 //PANIC("sbrkPage(): no free page frame available !");
                 return;
             }
@@ -167,14 +147,11 @@ static void sbrkPage(Process* process, int pageCount)
             process->heapNextUnallocatedPageBegin += PAGESIZE_4M;
         }
     }
-    else if (pageCount < 0)
-    {
+    else if (pageCount < 0) {
         pageCount *= -1;
 
-        for (int i = 0; i < pageCount; ++i)
-        {
-            if (process->heapNextUnallocatedPageBegin - PAGESIZE_4M >= process->heapBegin)
-            {
+        for (int i = 0; i < pageCount; ++i) {
+            if (process->heapNextUnallocatedPageBegin - PAGESIZE_4M >= process->heapBegin) {
                 process->heapNextUnallocatedPageBegin -= PAGESIZE_4M;
 
                 //This also releases the page frame
@@ -184,8 +161,7 @@ static void sbrkPage(Process* process, int pageCount)
     }
 }
 
-void initializeProcessHeap(Process* process)
-{
+void initializeProcessHeap(Process* process) {
     process->heapBegin = (char*) USER_OFFSET;
     process->heapEnd = process->heapBegin;
     process->heapNextUnallocatedPageBegin = process->heapBegin;
@@ -197,45 +173,39 @@ void initializeProcessHeap(Process* process)
     sbrk(process, USER_EXE_IMAGE);
 }
 
-void *sbrk(Process* process, int nBytes)
-{
+void *sbrk(Process* process, int nBytes) {
     printkf("sbrk:1: pid:%d nBytes:%d\n", process->pid, nBytes);
 
     char* previousBreak = process->heapEnd;
     printkf("before: %x\n", previousBreak);
 
-    if (nBytes > 0)
-    {
+    if (nBytes > 0) {
         int remainingInThePage = process->heapNextUnallocatedPageBegin - process->heapEnd;
 
         //printkf("sbrk:2: remainingInThePage:%d\n", remainingInThePage);
 
-        if (nBytes > remainingInThePage)
-        {
+        if (nBytes > remainingInThePage) {
             int bytesNeededInNewPages = nBytes - remainingInThePage;
             int neededNewPageCount = (bytesNeededInNewPages / PAGESIZE_4M) + 1;
 
             //printkf("sbrk:3: neededNewPageCount:%d\n", neededNewPageCount);
 
             uint32 freePages = getFreePageCount();
-            if ((uint32)neededNewPageCount + 1 > freePages)
-            {
+            if ((uint32)neededNewPageCount + 1 > freePages) {
                 return (void*)-1;
             }
 
             sbrkPage(process, neededNewPageCount);
         }
     }
-    else if (nBytes < 0)
-    {
+    else if (nBytes < 0) {
         char* currentPageBegin = process->heapNextUnallocatedPageBegin - PAGESIZE_4M;
 
         int remainingInThePage = process->heapEnd - currentPageBegin;
 
         //printkf("sbrk:4: remainingInThePage:%d\n", remainingInThePage);
 
-        if (-nBytes > remainingInThePage)
-        {
+        if (-nBytes > remainingInThePage) {
             int bytesInPreviousPages = -nBytes - remainingInThePage;
             int neededNewPageCount = (bytesInPreviousPages / PAGESIZE_4M) + 1;
 
@@ -251,7 +221,6 @@ void *sbrk(Process* process, int nBytes)
     return previousBreak;
 }
 
-uint32 getKernelHeapUsed()
-{
+uint32 getKernelHeapUsed() {
     return gKernelHeapUsed;
 }

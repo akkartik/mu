@@ -16,8 +16,7 @@ static BOOL fb_munmap(File* file, void* address, uint32 size);
 static uint8* gFrameBufferPhysical = 0;
 static uint8* gFrameBufferVirtual = 0;
 
-void initializeFrameBuffer(uint8* p_address, uint8* v_address)
-{
+void initializeFrameBuffer(uint8* p_address, uint8* v_address) {
     gFrameBufferPhysical = p_address;
     gFrameBufferVirtual = v_address;
 
@@ -35,25 +34,20 @@ void initializeFrameBuffer(uint8* p_address, uint8* v_address)
     registerDevice(&device);
 }
 
-static BOOL fb_open(File *file, uint32 flags)
-{
+static BOOL fb_open(File *file, uint32 flags) {
     return TRUE;
 }
 
-static int32 fb_read(File *file, uint32 size, uint8 *buffer)
-{
-    if (size == 0)
-    {
+static int32 fb_read(File *file, uint32 size, uint8 *buffer) {
+    if (size == 0) {
         return 0;
     }
 
     return -1;
 }
 
-static int32 fb_write(File *file, uint32 size, uint8 *buffer)
-{
-    if (size == 0)
-    {
+static int32 fb_write(File *file, uint32 size, uint8 *buffer) {
+    if (size == 0) {
         return 0;
     }
 
@@ -63,8 +57,7 @@ static int32 fb_write(File *file, uint32 size, uint8 *buffer)
 
     int32 availableSize = length - file->offset;
 
-    if (availableSize <= 0)
-    {
+    if (availableSize <= 0) {
         return -1;
     }
 
@@ -77,12 +70,10 @@ static int32 fb_write(File *file, uint32 size, uint8 *buffer)
     return targetSize;
 }
 
-static int32 fb_ioctl(File *node, int32 request, void * argp)
-{
+static int32 fb_ioctl(File *node, int32 request, void * argp) {
     int32 result = -1;
 
-    switch (request)
-    {
+    switch (request) {
     case FB_GET_WIDTH:
         result = Gfx_GetWidth();
         break;
@@ -97,12 +88,10 @@ static int32 fb_ioctl(File *node, int32 request, void * argp)
     return result;
 }
 
-static void* fb_mmap(File* file, uint32 size, uint32 offset, uint32 flags)
-{
+static void* fb_mmap(File* file, uint32 size, uint32 offset, uint32 flags) {
     return mapMemory(file->thread->owner, size, (uint32)(gFrameBufferPhysical + offset), NULL);
 }
 
-static BOOL fb_munmap(File* file, void* address, uint32 size)
-{
+static BOOL fb_munmap(File* file, void* address, uint32 size) {
     return unmapMemory(file->thread->owner, size, (uint32)address);
 }

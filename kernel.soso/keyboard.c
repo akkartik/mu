@@ -20,14 +20,12 @@ static void keyboard_close(File *file);
 static int32 keyboard_read(File *file, uint32 size, uint8 *buffer);
 static int32 keyboard_ioctl(File *file, int32 request, void * argp);
 
-typedef enum ReadMode
-{
+typedef enum ReadMode {
     Blocking = 0,
     NonBlocking = 1
 } ReadMode;
 
-typedef struct Reader
-{
+typedef struct Reader {
     uint32 readIndex;
     ReadMode readMode;
 } Reader;
@@ -36,8 +34,7 @@ static List* gReaders = NULL;
 
 static void handleKeyboardInterrupt(Registers *regs);
 
-void initializeKeyboard()
-{
+void initializeKeyboard() {
     Device device;
     memset((uint8*)&device, 0, sizeof(Device));
     strcpy(device.name, "keyboard");
@@ -57,14 +54,12 @@ void initializeKeyboard()
     registerInterruptHandler(IRQ1, handleKeyboardInterrupt);
 }
 
-static BOOL keyboard_open(File *file, uint32 flags)
-{
+static BOOL keyboard_open(File *file, uint32 flags) {
     Reader* reader = (Reader*)kmalloc(sizeof(Reader));
     reader->readIndex = 0;
     reader->readMode = Blocking;
 
-    if (gKeyBufferWriteIndex > 0)
-    {
+    if (gKeyBufferWriteIndex > 0) {
         reader->readIndex = gKeyBufferWriteIndex;
     }
     file->privateData = (void*)reader;
@@ -74,8 +69,7 @@ static BOOL keyboard_open(File *file, uint32 flags)
     return TRUE;
 }
 
-static void keyboard_close(File *file)
-{
+static void keyboard_close(File *file) {
     //printkf("keyboard_close\n");
 
     Reader* reader = (Reader*)file->privateData;
@@ -85,16 +79,13 @@ static void keyboard_close(File *file)
     List_RemoveFirstOccurrence(gReaders, file);
 }
 
-static int32 keyboard_read(File *file, uint32 size, uint8 *buffer)
-{
+static int32 keyboard_read(File *file, uint32 size, uint8 *buffer) {
     Reader* reader = (Reader*)file->privateData;
 
     uint32 readIndex = reader->readIndex;
 
-    if (reader->readMode == Blocking)
-    {
-        while (readIndex == gKeyBufferWriteIndex)
-        {
+    if (reader->readMode == Blocking) {
+        while (readIndex == gKeyBufferWriteIndex) {
             file->thread->state = TS_WAITIO;
             file->thread->state_privateData = keyboard_read;
             enableInterrupts();
@@ -104,8 +95,7 @@ static int32 keyboard_read(File *file, uint32 size, uint8 *buffer)
 
     disableInterrupts();
 
-    if (readIndex == gKeyBufferWriteIndex)
-    {
+    if (readIndex == gKeyBufferWriteIndex) {
         //non-blocking return here
         return -1;
     }
@@ -119,27 +109,23 @@ static int32 keyboard_read(File *file, uint32 size, uint8 *buffer)
     return 1;
 }
 
-static int32 keyboard_ioctl(File *file, int32 request, void * argp)
-{
+static int32 keyboard_ioctl(File *file, int32 request, void * argp) {
     Reader* reader = (Reader*)file->privateData;
 
     int cmd = (int)argp;
 
-    switch (request)
-    {
+    switch (request) {
     case 0: //get
         *(int*)argp = (int)reader->readMode;
         return 0;
         break;
     case 1: //set
-        if (cmd == 0)
-        {
+        if (cmd == 0) {
             reader->readMode = Blocking;
 
             return 0;
         }
-        else if (cmd == 1)
-        {
+        else if (cmd == 1) {
             reader->readMode = NonBlocking;
             return 0;
         }
@@ -151,11 +137,9 @@ static int32 keyboard_ioctl(File *file, int32 request, void * argp)
     return -1;
 }
 
-static void handleKeyboardInterrupt(Registers *regs)
-{
+static void handleKeyboardInterrupt(Registers *regs) {
     uint8 scancode = 0;
-    do
-    {
+    do {
         scancode = inb(0x64);
     } while ((scancode & 0x01) == 0);
 
@@ -166,14 +150,11 @@ static void handleKeyboardInterrupt(Registers *regs)
     gKeyBufferWriteIndex %= KEYBUFFER_SIZE;
 
     //Wake readers
-    List_Foreach(n, gReaders)
-    {
+    List_Foreach(n, gReaders) {
         File* file = n->data;
 
-        if (file->thread->state == TS_WAITIO)
-        {
-            if (file->thread->state_privateData == keyboard_read)
-            {
+        if (file->thread->state == TS_WAITIO) {
+            if (file->thread->state_privateData == keyboard_read) {
                 file->thread->state = TS_RUN;
                 file->thread->state_privateData = NULL;
             }

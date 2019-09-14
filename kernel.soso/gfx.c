@@ -22,8 +22,7 @@ static uint16 gCurrentColumn = 0;
 
 #define LINE_HEIGHT 16
 
-void Gfx_Initialize(uint32* pixels, uint32 width, uint32 height, uint32 bytesPerPixel, uint32 pitch)
-{
+void Gfx_Initialize(uint32* pixels, uint32 width, uint32 height, uint32 bytesPerPixel, uint32 pitch) {
     char* p_address = (char*)pixels;
     char* v_address = (char*)GFX_MEMORY;
 
@@ -41,18 +40,14 @@ void Gfx_Initialize(uint32* pixels, uint32 width, uint32 height, uint32 bytesPer
 
     BOOL success = addPageToPd(gKernelPageDirectory, v_address, p_address, 0);
 
-    if (success)
-    {
-        for (int y = 0; y < gHeight; ++y)
-        {
-            for (int x = 0; x < gWidth; ++x)
-            {
+    if (success) {
+        for (int y = 0; y < gHeight; ++y) {
+            for (int x = 0; x < gWidth; ++x) {
                 gPixels[x + y * gWidth] = 0xFFFFFFFF;
             }
         }
     }
-    else
-    {
+    else {
         Debug_PrintF("Gfx initialization failed!\n");
     }
 
@@ -79,8 +74,7 @@ void Gfx_PutCharAt(
     /* cursor position on screen, in characters not in pixels */
     int cx, int cy,
     /* foreground and background colors, say 0xFFFFFF and 0x000000 */
-    uint32 fg, uint32 bg)
-{
+    uint32 fg, uint32 bg) {
     /* cast the address to PSF header struct */
     PSF_font *font = (PSF_font*)&_binary_font_psf_start;
     /* we need to know how many bytes encode one row */
@@ -107,14 +101,11 @@ void Gfx_PutCharAt(
         line=offs;
         mask=1<<(font->width-1);
         /* display a row */
-        for(x=0;x<font->width;x++)
-        {
-            if (c == 0)
-            {
+        for(x=0;x<font->width;x++) {
+            if (c == 0) {
                 *((uint32*)((uint8*)gPixels + line)) = bg;
             }
-            else
-            {
+            else {
                 *((uint32*)((uint8*)gPixels + line)) = ((int)*glyph) & (mask) ? fg : bg;
             }
 
@@ -128,12 +119,9 @@ void Gfx_PutCharAt(
     }
 }
 
-void Gfx_FlushFromTty(Tty* tty)
-{
-    for (uint32 r = 0; r < tty->lineCount; ++r)
-    {
-        for (uint32 c = 0; c < tty->columnCount; ++c)
-        {
+void Gfx_FlushFromTty(Tty* tty) {
+    for (uint32 r = 0; r < tty->lineCount; ++r) {
+        for (uint32 c = 0; c < tty->columnCount; ++c) {
             uint8* ttyPos = tty->buffer + (r * tty->columnCount + c) * 2;
 
             uint8 chr = ttyPos[0];
@@ -146,32 +134,25 @@ void Gfx_FlushFromTty(Tty* tty)
     //Screen_MoveCursor(tty->currentLine, tty->currentColumn);
 }
 
-uint8* Gfx_GetVideoMemory()
-{
+uint8* Gfx_GetVideoMemory() {
     return (uint8*)gPixels;
 }
 
-uint16 Gfx_GetWidth()
-{
+uint16 Gfx_GetWidth() {
     return gWidth;
 }
 
-uint16 Gfx_GetHeight()
-{
+uint16 Gfx_GetHeight() {
     return gHeight;
 }
 
-uint16 Gfx_GetBytesPerPixel()
-{
+uint16 Gfx_GetBytesPerPixel() {
     return gBytesPerPixel;
 }
 
-void Gfx_Fill(uint32 color)
-{
-    for (uint32 y = 0; y < gHeight; ++y)
-    {
-        for (uint32 x = 0; x < gWidth; ++x)
-        {
+void Gfx_Fill(uint32 color) {
+    for (uint32 y = 0; y < gHeight; ++y) {
+        for (uint32 x = 0; x < gWidth; ++x) {
             gPixels[x + y * gWidth] = color;
         }
     }

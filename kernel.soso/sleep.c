@@ -1,8 +1,7 @@
 #include "sleep.h"
 #include "timer.h"
 
-void sleepMilliseconds(Thread* thread, uint32 ms)
-{
+void sleepMilliseconds(Thread* thread, uint32 ms) {
     uint32 uptime = getUptimeMilliseconds();
 
     //target uptime to wakeup

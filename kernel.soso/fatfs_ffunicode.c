@@ -15251,8 +15251,7 @@ const WCHAR uc869[] = {	/*  CP869(Greek 2) to Unicode conversion table */
 WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	DWORD	uni,	/* UTF-16 encoded character to be converted */
 	WORD	cp		/* Code page for the conversion */
-)
-{
+) {
 	WCHAR c = 0;
 	const WCHAR *p = CVTBL(uc, FF_CODE_PAGE);
 
@@ -15273,8 +15272,7 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 WCHAR ff_oem2uni (	/* Returns Unicode character, zero on error */
 	WCHAR	oem,	/* OEM code to be converted */
 	WORD	cp		/* Code page for the conversion */
-)
-{
+) {
 	WCHAR c = 0;
 	const WCHAR *p = CVTBL(uc, FF_CODE_PAGE);
 
@@ -15304,8 +15302,7 @@ WCHAR ff_oem2uni (	/* Returns Unicode character, zero on error */
 WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	DWORD	uni,	/* UTF-16 encoded character to be converted */
 	WORD	cp		/* Code page for the conversion */
-)
-{
+) {
 	const WCHAR *p;
 	WCHAR c = 0, uc;
 	UINT i, n, li, hi;
@@ -15342,8 +15339,7 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 WCHAR ff_oem2uni (	/* Returns Unicode character, zero on error */
 	WCHAR	oem,	/* OEM code to be converted */
 	WORD	cp		/* Code page for the conversion */
-)
-{
+) {
 	const WCHAR *p;
 	WCHAR c = 0;
 	UINT i, n, li, hi;
@@ -15389,8 +15385,7 @@ static const WCHAR *const cp_table[] = {uc437, uc720, uc737, uc771, uc775, uc850
 WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	DWORD	uni,	/* UTF-16 encoded character to be converted */
 	WORD	cp		/* Code page for the conversion */
-)
-{
+) {
 	const WCHAR *p;
 	WCHAR c = 0, uc;
 	UINT i, n, li, hi;
@@ -15441,8 +15436,7 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 WCHAR ff_oem2uni (	/* Returns Unicode character, zero on error */
 	WCHAR	oem,	/* OEM code to be converted (DBC if >=0x100) */
 	WORD	cp		/* Code page for the conversion */
-)
-{
+) {
 	const WCHAR *p;
 	WCHAR c = 0;
 	UINT i, n, li, hi;
@@ -15494,8 +15488,7 @@ WCHAR ff_oem2uni (	/* Returns Unicode character, zero on error */
 
 DWORD ff_wtoupper (	/* Returns up-converted code point */
 	DWORD uni		/* Unicode code point to be up-converted */
-)
-{
+) {
 	/* Compressed upper conversion table */
 	static const WORD cvt1[] = {	/* U+0000 - U+0FFF */
 		/* Basic Latin */

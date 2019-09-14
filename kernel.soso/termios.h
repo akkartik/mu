@@ -9,8 +9,7 @@ typedef unsigned int        tcflag_t;
 
 #define NCCS 32
 
-struct termios
-  {
+struct termios {
     tcflag_t c_iflag;        // input mode flags
     tcflag_t c_oflag;        // output mode flags
     tcflag_t c_cflag;        // control mode flags

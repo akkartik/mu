@@ -3,8 +3,7 @@
 
 #include "common.h"
 
-enum EnFrameBuferIoctl
-{
+enum EnFrameBuferIoctl {
     FB_GET_WIDTH,
     FB_GET_HEIGHT,
     FB_GET_BITSPERPIXEL

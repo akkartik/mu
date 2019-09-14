@@ -4,8 +4,7 @@
 #include "common.h"
 #include "fs.h"
 
-typedef struct Device
-{
+typedef struct Device {
     char name[16];
     FileType deviceType;
     ReadWriteBlockFunction readBlock;

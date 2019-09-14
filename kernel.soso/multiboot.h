@@ -7,8 +7,7 @@
 #define MULTIBOOT_FRAMEBUFFER_TYPE_RGB      1
 #define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT 2
 
-struct Multiboot
-{
+struct Multiboot {
     uint32 flags;
     uint32 mem_lower;
     uint32 mem_upper;

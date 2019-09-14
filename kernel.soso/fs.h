@@ -3,8 +3,7 @@
 
 #include "common.h"
 
-typedef enum FileType
-{
+typedef enum FileType {
     FT_File               = 1,
     FT_CharacterDevice    = 2,
     FT_BlockDevice        = 3,
@@ -14,8 +13,7 @@ typedef enum FileType
     FT_MountPoint         = 256
 } FileType;
 
-typedef enum IoctlCommand
-{
+typedef enum IoctlCommand {
     IC_GetSectorSizeInBytes,
     IC_GetSectorCount,
 } IoctlCommand;
@@ -45,15 +43,13 @@ typedef BOOL (*MunmapFunction)(File* file, void* address, uint32 size);
 
 typedef BOOL (*MountFunction)(const char* sourcePath, const char* targetPath, uint32 flags, void *data);
 
-typedef struct FileSystem
-{
+typedef struct FileSystem {
     char name[32];
     MountFunction checkMount;
     MountFunction mount;
 } FileSystem;
 
-typedef struct FileSystemNode
-{
+typedef struct FileSystemNode {
     char name[128];
     uint32 mask;
     uint32 userId;
@@ -84,16 +80,14 @@ typedef struct FileSystemNode
     void* privateNodeData;
 } FileSystemNode;
 
-typedef struct FileSystemDirent
-{
+typedef struct FileSystemDirent {
     char name[128];
     FileType fileType;
     uint32 inode;
 } FileSystemDirent;
 
 //Per open
-typedef struct File
-{
+typedef struct File {
     FileSystemNode* node;
     Process* process;
     Thread* thread;
@@ -102,8 +96,7 @@ typedef struct File
     void* privateData;
 } File;
 
-struct stat
-{
+struct stat {
     uint16/*dev_t      */ st_dev;     /* ID of device containing file */
     uint16/*ino_t      */ st_ino;     /* inode number */
     uint32/*mode_t     */ st_mode;    /* protection */

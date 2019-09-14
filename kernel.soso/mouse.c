@@ -29,8 +29,7 @@ static List* gReaders = NULL;
 
 static Spinlock gReadersLock;
 
-void initializeMouse()
-{
+void initializeMouse() {
     Device device;
     memset((uint8*)&device, 0, sizeof(Device));
     strcpy(device.name, "psaux");
@@ -63,8 +62,7 @@ void initializeMouse()
     writeMouse(0xF4); //0xF4: Enable Packet Streaming
 }
 
-static BOOL mouse_open(File *file, uint32 flags)
-{
+static BOOL mouse_open(File *file, uint32 flags) {
     FifoBuffer* fifo = FifoBuffer_create(60);
 
     file->privateData = (void*)fifo;
@@ -78,8 +76,7 @@ static BOOL mouse_open(File *file, uint32 flags)
     return TRUE;
 }
 
-static void mouse_close(File *file)
-{
+static void mouse_close(File *file) {
     Spinlock_Lock(&gReadersLock);
 
     List_RemoveFirstOccurrence(gReaders, file);
@@ -91,12 +88,10 @@ static void mouse_close(File *file)
     FifoBuffer_destroy(fifo);
 }
 
-static int32 mouse_read(File *file, uint32 size, uint8 *buffer)
-{
+static int32 mouse_read(File *file, uint32 size, uint8 *buffer) {
     FifoBuffer* fifo = (FifoBuffer*)file->privateData;
 
-    while (FifoBuffer_getSize(fifo) < MOUSE_PACKET_SIZE)
-    {
+    while (FifoBuffer_getSize(fifo) < MOUSE_PACKET_SIZE) {
         file->thread->state = TS_WAITIO;
         file->thread->state_privateData = mouse_read;
         enableInterrupts();
@@ -114,36 +109,31 @@ static int32 mouse_read(File *file, uint32 size, uint8 *buffer)
     return smaller;
 }
 
-static void prepareForRead()
-{
+static void prepareForRead() {
     //https://wiki.osdev.org/Mouse_Input
     //Bytes cannot be read from port 0x60 until bit 0 (value=1) of port 0x64 is set
 
     int32 tryCount = 1000;
 
     uint8 data = 0;
-    do
-    {
+    do {
         data = inb(0x64);
     } while (((data & 0x01) == 0) && --tryCount > 0);
 }
 
-static void prepareForWrite()
-{
+static void prepareForWrite() {
     //https://wiki.osdev.org/Mouse_Input
     //All output to port 0x60 or 0x64 must be preceded by waiting for bit 1 (value=2) of port 0x64 to become clear
 
     int32 tryCount = 1000;
 
     uint8 data = 0;
-    do
-    {
+    do {
         data = inb(0x64);
     } while (((data & 0x02) != 0) && --tryCount > 0);
 }
 
-static void writeMouse(uint8 data)
-{
+static void writeMouse(uint8 data) {
     prepareForWrite();
 
     outb(0x64, 0xD4);
@@ -153,15 +143,13 @@ static void writeMouse(uint8 data)
     outb(0x60, data);
 }
 
-static void handleMouseInterrupt(Registers *regs)
-{
+static void handleMouseInterrupt(Registers *regs) {
     uint8 status = 0;
     //0x20 (5th bit is mouse bit)
     //read from 0x64, if its mouse bit is 1 then data is available at 0x60!
 
     int32 tryCount = 1000;
-    do
-    {
+    do {
         status = inb(0x64);
     } while (((status & 0x20) == 0) && --tryCount > 0);
 
@@ -171,25 +159,21 @@ static void handleMouseInterrupt(Registers *regs)
 
     gMouseByteCounter += 1;
 
-    if (gMouseByteCounter == MOUSE_PACKET_SIZE)
-    {
+    if (gMouseByteCounter == MOUSE_PACKET_SIZE) {
         gMouseByteCounter = 0;
 
         Spinlock_Lock(&gReadersLock);
 
         //Wake readers
-        List_Foreach(n, gReaders)
-        {
+        List_Foreach(n, gReaders) {
             File* file = n->data;
 
             FifoBuffer* fifo = (FifoBuffer*)file->privateData;
 
             FifoBuffer_enqueue(fifo, gMousePacket, MOUSE_PACKET_SIZE);
 
-            if (file->thread->state == TS_WAITIO)
-            {
-                if (file->thread->state_privateData == mouse_read)
-                {
+            if (file->thread->state == TS_WAITIO) {
+                if (file->thread->state_privateData == mouse_read) {
                     file->thread->state = TS_RUN;
                     file->thread->state_privateData = NULL;
                 }

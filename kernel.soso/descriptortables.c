@@ -25,8 +25,7 @@ extern IsrFunction gInterruptHandlers[];
 static void handleDoubleFault(Registers *regs);
 static void handleGeneralProtectionFault(Registers *regs);
 
-void initializeDescriptorTables()
-{
+void initializeDescriptorTables() {
     initializeGdt();
 
     initializeIdt();
@@ -37,8 +36,7 @@ void initializeDescriptorTables()
     registerInterruptHandler(13, handleGeneralProtectionFault);
 }
 
-static void initializeGdt()
-{
+static void initializeGdt() {
     gGdtPointer.limit = (sizeof(GdtEntry) * 6) - 1;
     gGdtPointer.base  = (uint32)&gGdtEntries;
 
@@ -66,8 +64,7 @@ static void initializeGdt()
 }
 
 // Set the value of one GDT entry.
-static void setGdtEntry(int32 num, uint32 base, uint32 limit, uint8 access, uint8 gran)
-{
+static void setGdtEntry(int32 num, uint32 base, uint32 limit, uint8 access, uint8 gran) {
     gGdtEntries[num].base_low    = (base & 0xFFFF);
     gGdtEntries[num].base_middle = (base >> 16) & 0xFF;
     gGdtEntries[num].base_high   = (base >> 24) & 0xFF;
@@ -81,8 +78,7 @@ static void setGdtEntry(int32 num, uint32 base, uint32 limit, uint8 access, uint
 
 void irqTimer();
 
-static void initializeIdt()
-{
+static void initializeIdt() {
     gIdtPointer.limit = sizeof(IdtEntry) * 256 -1;
     gIdtPointer.base  = (uint32)&gIdtEntries;
 
@@ -154,8 +150,7 @@ static void initializeIdt()
     flushIdt((uint32)&gIdtPointer);
 }
 
-static void setIdtEntry(uint8 num, uint32 base, uint16 sel, uint8 flags)
-{
+static void setIdtEntry(uint8 num, uint32 base, uint16 sel, uint8 flags) {
     gIdtEntries[num].base_lo = base & 0xFFFF;
     gIdtEntries[num].base_hi = (base >> 16) & 0xFFFF;
 
@@ -164,38 +159,31 @@ static void setIdtEntry(uint8 num, uint32 base, uint16 sel, uint8 flags)
     gIdtEntries[num].flags   = flags  | 0x60;
 }
 
-static void handleDoubleFault(Registers *regs)
-{
+static void handleDoubleFault(Registers *regs) {
     printkf("Double fault!!! Error code:%d\n", regs->errorCode);
 
     PANIC("Double fault!!!");
 }
 
-static void handleGeneralProtectionFault(Registers *regs)
-{
+static void handleGeneralProtectionFault(Registers *regs) {
     printkf("General protection fault!!! Error code:%d - IP:%x\n", regs->errorCode, regs->eip);
 
     Thread* faultingThread = getCurrentThread();
-    if (NULL != faultingThread)
-    {
+    if (NULL != faultingThread) {
         Thread* mainThread = getMainKernelThread();
 
-        if (mainThread == faultingThread)
-        {
+        if (mainThread == faultingThread) {
             PANIC("General protection fault in Kernel main thread!!!");
         }
-        else
-        {
+        else {
             printkf("Faulting thread is %d\n", faultingThread->threadId);
 
-            if (faultingThread->userMode)
-            {
+            if (faultingThread->userMode) {
                 printkf("Destroying process %d\n", faultingThread->owner->pid);
 
                 destroyProcess(faultingThread->owner);
             }
-            else
-            {
+            else {
                 printkf("Destroying kernel thread %d\n", faultingThread->threadId);
 
                 destroyThread(faultingThread);
@@ -204,8 +192,7 @@ static void handleGeneralProtectionFault(Registers *regs)
             waitForSchedule();
         }
     }
-    else
-    {
+    else {
         PANIC("General protection fault!!!");
     }
 }

@@ -8,8 +8,7 @@
 static BOOL random_open(File *file, uint32 flags);
 static int32 random_read(File *file, uint32 size, uint8 *buffer);
 
-void initializeRandom()
-{
+void initializeRandom() {
     Device device;
     memset((uint8*)&device, 0, sizeof(Device));
     strcpy(device.name, "random");
@@ -20,15 +19,12 @@ void initializeRandom()
     registerDevice(&device);
 }
 
-static BOOL random_open(File *file, uint32 flags)
-{
+static BOOL random_open(File *file, uint32 flags) {
     return TRUE;
 }
 
-static int32 random_read(File *file, uint32 size, uint8 *buffer)
-{
-    if (size == 0)
-    {
+static int32 random_read(File *file, uint32 size, uint8 *buffer) {
+    if (size == 0) {
         return 0;
     }
 
@@ -40,18 +36,15 @@ static int32 random_read(File *file, uint32 size, uint8 *buffer)
 
     uint32 number = rand();
 
-    if (size == 1)
-    {
+    if (size == 1) {
         *buffer = (uint8)number;
         return 1;
     }
-    else if (size == 2 || size == 3)
-    {
+    else if (size == 2 || size == 3) {
         *((uint16*)buffer) = (uint16)number;
         return 2;
     }
-    else if (size >= 4)
-    {
+    else if (size >= 4) {
         //printkf("random_read: buffer is %x, writing %x to buffer\n", buffer, number);
 
         *((uint32*)buffer) = number;

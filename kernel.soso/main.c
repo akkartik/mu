@@ -32,10 +32,8 @@ extern uint32 _end;
 uint32 gPhysicalKernelStartAddress = (uint32)&_start;
 uint32 gPhysicalKernelEndAddress = (uint32)&_end;
 
-static void* locateInitrd(struct Multiboot *mbi, uint32* size)
-{
-    if (mbi->mods_count > 0)
-    {
+static void* locateInitrd(struct Multiboot *mbi, uint32* size) {
+    if (mbi->mods_count > 0) {
         uint32 startLocation = *((uint32*)mbi->mods_addr);
         uint32 endLocation = *(uint32*)(mbi->mods_addr + 4);
 
@@ -47,8 +45,7 @@ static void* locateInitrd(struct Multiboot *mbi, uint32* size)
     return NULL;
 }
 
-void printUsageInfo()
-{
+void printUsageInfo() {
     char buffer[164];
 
     sprintf(buffer, "Used kheap:%d", getKernelHeapUsed());
@@ -66,8 +63,7 @@ void printUsageInfo()
     sprintf(buffer, "[idle]   cs:%d   ", p->totalContextSwitchCount);
     Screen_Print(line++, 60, buffer);
     p = p->next;
-    while (p != NULL)
-    {
+    while (p != NULL) {
         sprintf(buffer, "thread:%d cs:%d   ", p->threadId, p->totalContextSwitchCount);
 
         Screen_Print(line++, 60, buffer);
@@ -76,29 +72,23 @@ void printUsageInfo()
     }
 }
 
-int executeFile(const char *path, char *const argv[], char *const envp[], FileSystemNode* tty)
-{
+int executeFile(const char *path, char *const argv[], char *const envp[], FileSystemNode* tty) {
     int result = -1;
 
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(path, process);
-        if (node)
-        {
+        if (node) {
             File* f = open_fs(node, 0);
-            if (f)
-            {
+            if (f) {
                 void* image = kmalloc(node->length);
 
                 int32 bytesRead = read_fs(f, node->length, image);
 
-                if (bytesRead > 0)
-                {
+                if (bytesRead > 0) {
                     Process* newProcess = createUserProcessFromElfData("userProcess", image, argv, envp, process, tty);
 
-                    if (newProcess)
-                    {
+                    if (newProcess) {
                         result = newProcess->pid;
                     }
                 }
@@ -113,8 +103,7 @@ int executeFile(const char *path, char *const argv[], char *const envp[], FileSy
     return result;
 }
 
-void printAsciiArt()
-{
+void printAsciiArt() {
     printkf("     ________       ________      ________       ________     \n");
     printkf("    |\\   ____\\     |\\   __  \\    |\\   ____\\     |\\   __  \\    \n");
     printkf("    \\ \\  \\___|_    \\ \\  \\|\\  \\   \\ \\  \\___|_    \\ \\  \\|\\  \\   \n");
@@ -126,8 +115,7 @@ void printAsciiArt()
     printkf("\n");
 }
 
-int kmain(struct Multiboot *mboot_ptr)
-{
+int kmain(struct Multiboot *mboot_ptr) {
     int stack = 5;
 
     initializeDescriptorTables();
@@ -140,14 +128,12 @@ int kmain(struct Multiboot *mboot_ptr)
     initializeVFS();
     initializeDevFS();
 
-    if (MULTIBOOT_FRAMEBUFFER_TYPE_RGB == mboot_ptr->framebuffer_type)
-    {
+    if (MULTIBOOT_FRAMEBUFFER_TYPE_RGB == mboot_ptr->framebuffer_type) {
         Gfx_Initialize((uint32*)(uint32)mboot_ptr->framebuffer_addr, mboot_ptr->framebuffer_width, mboot_ptr->framebuffer_height, mboot_ptr->framebuffer_bpp / 32, mboot_ptr->framebuffer_pitch);
 
         initializeTTYs(TRUE);
     }
-    else
-    {
+    else {
         initializeTTYs(FALSE);
     }
     //printkf works after TTY initialization
@@ -174,8 +160,7 @@ int kmain(struct Multiboot *mboot_ptr)
     initializeKeyboard();
     initializeMouse();
 
-    if (0 != mboot_ptr->cmdline)
-    {
+    if (0 != mboot_ptr->cmdline) {
         printkf("Kernel cmdline:%s\n", (char*)mboot_ptr->cmdline);
     }
 
@@ -197,24 +182,20 @@ int kmain(struct Multiboot *mboot_ptr)
 
     uint32 initrdSize = 0;
     uint8* initrdLocation = locateInitrd(mboot_ptr, &initrdSize);
-    if (initrdLocation == NULL)
-    {
+    if (initrdLocation == NULL) {
         PANIC("Initrd not found!\n");
     }
-    else
-    {
+    else {
         printkf("Initrd found at %x (%d bytes)\n", initrdLocation, initrdSize);
         memcpy((uint8*)*(uint32*)getFileSystemNode("/dev/ramdisk1")->privateNodeData, initrdLocation, initrdSize);
         BOOL mountSuccess = mountFileSystem("/dev/ramdisk1", "/initrd", "fat", 0, 0);
 
-        if (mountSuccess)
-        {
+        if (mountSuccess) {
             printkf("Starting shell on TTYs\n");
 
             executeFile("/initrd/init", argv, envp, getFileSystemNode("/dev/tty1"));
         }
-        else
-        {
+        else {
             printkf("Mounting initrd failed!\n");
         }
     }
@@ -223,8 +204,7 @@ int kmain(struct Multiboot *mboot_ptr)
 
     enableInterrupts();
 
-    while(TRUE)
-    {
+    while(TRUE) {
         //Idle thread
 
         halt();

@@ -5,33 +5,28 @@
 static BOOL gInterruptsWereEnabled = FALSE;
 
 // Write a byte out to the specified port.
-void outb(uint16 port, uint8 value)
-{
+void outb(uint16 port, uint8 value) {
     asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
 }
 
-void outw(uint16 port, uint16 value)
-{
+void outw(uint16 port, uint16 value) {
     asm volatile ("outw %1, %0" : : "dN" (port), "a" (value));
 }
 
-uint8 inb(uint16 port)
-{
+uint8 inb(uint16 port) {
     uint8 ret;
     asm volatile("inb %1, %0" : "=a" (ret) : "dN" (port));
     return ret;
 }
 
-uint16 inw(uint16 port)
-{
+uint16 inw(uint16 port) {
     uint16 ret;
     asm volatile ("inw %1, %0" : "=a" (ret) : "dN" (port));
     return ret;
 }
 
 // Copy len bytes from src to dest.
-void* memcpy(uint8 *dest, const uint8 *src, uint32 len)
-{
+void* memcpy(uint8 *dest, const uint8 *src, uint32 len) {
     const uint8 *sp = (const uint8 *)src;
     uint8 *dp = (uint8 *)dest;
     for(; len != 0; len--) *dp++ = *sp++;
@@ -40,16 +35,14 @@ void* memcpy(uint8 *dest, const uint8 *src, uint32 len)
 }
 
 // Write len copies of val into dest.
-void* memset(uint8 *dest, uint8 val, uint32 len)
-{
+void* memset(uint8 *dest, uint8 val, uint32 len) {
     uint8 *temp = (uint8 *)dest;
     for ( ; len != 0; len--) *temp++ = val;
 
     return dest;
 }
 
-void* memmove(void* dest, const void* src, uint32 n)
-{
+void* memmove(void* dest, const void* src, uint32 n) {
     uint8* _dest;
     uint8* _src;
 
@@ -72,8 +65,7 @@ void* memmove(void* dest, const void* src, uint32 n)
     return dest;
 }
 
-int memcmp( const void* p1, const void* p2, uint32 c )
-{
+int memcmp( const void* p1, const void* p2, uint32 c ) {
     const uint8* su1, *su2;
     int8 res = 0;
 
@@ -88,34 +80,27 @@ int memcmp( const void* p1, const void* p2, uint32 c )
 
 // Compare two strings. Should return -1 if 
 // str1 < str2, 0 if they are equal or 1 otherwise.
-int strcmp(const char *str1, const char *str2)
-{
+int strcmp(const char *str1, const char *str2) {
       int i = 0;
       int failed = 0;
-      while(str1[i] != '\0' && str2[i] != '\0')
-      {
-          if(str1[i] != str2[i])
-          {
+      while(str1[i] != '\0' && str2[i] != '\0') {
+          if(str1[i] != str2[i]) {
               failed = 1;
               break;
           }
           i++;
       }
 
-      if ((str1[i] == '\0' && str2[i] != '\0') || (str1[i] != '\0' && str2[i] == '\0'))
-      {
+      if ((str1[i] == '\0' && str2[i] != '\0') || (str1[i] != '\0' && str2[i] == '\0')) {
           failed = 1;
       }
   
       return failed;
 }
 
-int strncmp(const char *str1, const char *str2, int length)
-{
-    for (int i = 0; i < length; ++i)
-    {
-        if (str1[i] != str2[i])
-        {
+int strncmp(const char *str1, const char *str2, int length) {
+    for (int i = 0; i < length; ++i) {
+        if (str1[i] != str2[i]) {
             return str1[i] - str2[i];
         }
     }
@@ -125,10 +110,8 @@ int strncmp(const char *str1, const char *str2, int length)
 
 // Copy the NULL-terminated string src into dest, and
 // return dest.
-char *strcpy(char *dest, const char *src)
-{
-    do
-    {
+char *strcpy(char *dest, const char *src) {
+    do {
       *dest++ = *src++;
     }
     while (*src != 0);
@@ -137,10 +120,8 @@ char *strcpy(char *dest, const char *src)
     return dest;
 }
 
-char *strcpyNonNull(char *dest, const char *src)
-{
-    do
-    {
+char *strcpyNonNull(char *dest, const char *src) {
+    do {
       *dest++ = *src++;
     }
     while (*src != 0);
@@ -152,22 +133,17 @@ char *strcpyNonNull(char *dest, const char *src)
 //destination is padded with zeros until a total of num characters have been written to it.
 //No null-character is implicitly appended at the end of destination if source is longer than num.
 //Thus, in this case, destination shall not be considered a null terminated C string.
-char *strncpy(char *dest, const char *src, uint32 num)
-{
+char *strncpy(char *dest, const char *src, uint32 num) {
     BOOL sourceEnded = FALSE;
-    for (uint32 i = 0; i < num; ++i)
-    {
-        if (sourceEnded == FALSE && src[i] == '\0')
-        {
+    for (uint32 i = 0; i < num; ++i) {
+        if (sourceEnded == FALSE && src[i] == '\0') {
             sourceEnded = TRUE;
         }
 
-        if (sourceEnded)
-        {
+        if (sourceEnded) {
             dest[i] = '\0';
         }
-        else
-        {
+        else {
             dest[i] = src[i];
         }
     }
@@ -175,8 +151,7 @@ char *strncpy(char *dest, const char *src, uint32 num)
     return dest;
 }
 
-char* strcat(char *dest, const char *src)
-{
+char* strcat(char *dest, const char *src) {
     size_t i,j;
     for (i = 0; dest[i] != '\0'; i++)
         ;
@@ -186,21 +161,17 @@ char* strcat(char *dest, const char *src)
     return dest;
 }
 
-int strlen(const char *src)
-{
+int strlen(const char *src) {
     int i = 0;
     while (*src++)
         i++;
     return i;
 }
 
-int strFirstIndexOf(const char *src, char c)
-{
+int strFirstIndexOf(const char *src, char c) {
     int i = 0;
-    while (src[i])
-    {
-        if (src[i] == c)
-        {
+    while (src[i]) {
+        if (src[i] == c) {
             return i;
         }
         i++;
@@ -209,8 +180,7 @@ int strFirstIndexOf(const char *src, char c)
     return -1;
 }
 
-uint32 rand()
-{
+uint32 rand() {
     static uint32 x = 123456789;
     static uint32 y = 362436069;
     static uint32 z = 521288629;
@@ -223,39 +193,33 @@ uint32 rand()
     return w = w ^ (w >> 19) ^ t ^ (t >> 8);
 }
 
-int atoi(char *str)
-{
+int atoi(char *str) {
     int result = 0;
 
-    for (int i = 0; str[i] != '\0'; ++i)
-    {
+    for (int i = 0; str[i] != '\0'; ++i) {
         result = result*10 + str[i] - '0';
     }
 
     return result;
 }
 
-void itoa (char *buf, int base, int d)
-{
+void itoa (char *buf, int base, int d) {
     char *p = buf;
     char *p1, *p2;
     unsigned long ud = d;
     int divisor = 10;
 
 
-    if (base == 'd' && d < 0)
-    {
+    if (base == 'd' && d < 0) {
         *p++ = '-';
         buf++;
         ud = -d;
     }
-    else if (base == 'x')
-    {
+    else if (base == 'x') {
         divisor = 16;
     }
 
-    do
-    {
+    do {
         int remainder = ud % divisor;
 
         *p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
@@ -268,8 +232,7 @@ void itoa (char *buf, int base, int d)
     //Reverse BUF.
     p1 = buf;
     p2 = p - 1;
-    while (p1 < p2)
-    {
+    while (p1 < p2) {
         char tmp = *p1;
         *p1 = *p2;
         *p2 = tmp;
@@ -278,24 +241,20 @@ void itoa (char *buf, int base, int d)
     }
 }
 
-int sprintf_va(char* buffer, const char *format, __builtin_va_list vl)
-{
+int sprintf_va(char* buffer, const char *format, __builtin_va_list vl) {
     char c;
     char buf[20];
 
     int bufferIndex = 0;
 
-    while ((c = *format++) != 0)
-      {
+    while ((c = *format++) != 0) {
         if (c != '%')
           buffer[bufferIndex++] = c;
-        else
-          {
+        else {
             char *p;
 
             c = *format++;
-            switch (c)
-              {
+            switch (c) {
               case 'x':
                  buf[0] = '0';
                  buf[1] = 'x';
@@ -336,8 +295,7 @@ int sprintf_va(char* buffer, const char *format, __builtin_va_list vl)
     return bufferIndex;
 }
 
-int sprintf(char* buffer, const char *format, ...)
-{
+int sprintf(char* buffer, const char *format, ...) {
     int result = 0;
 
     __builtin_va_list vl;
@@ -350,16 +308,14 @@ int sprintf(char* buffer, const char *format, ...)
     return result;
 }
 
-void printkf(const char *format, ...)
-{
+void printkf(const char *format, ...) {
     char buffer[1024];
     buffer[0] = 'k';
     buffer[1] = ':';
     buffer[2] = 0;
 
     Tty* tty = getActiveTTY();
-    if (tty)
-    {
+    if (tty) {
         __builtin_va_list vl;
         __builtin_va_start(vl, format);
 
@@ -369,15 +325,13 @@ void printkf(const char *format, ...)
 
         Tty_PutText(tty, buffer);
 
-        if (tty->flushScreen)
-        {
+        if (tty->flushScreen) {
             tty->flushScreen(tty);
         }
     }
 }
 
-void panic(const char *message, const char *file, uint32 line)
-{
+void panic(const char *message, const char *file, uint32 line) {
     disableInterrupts();
 
     printkf("PANIC:%s:%d:%s\n", file, line, message);
@@ -385,13 +339,11 @@ void panic(const char *message, const char *file, uint32 line)
     halt();
 }
 
-void warning(const char *message, const char *file, uint32 line)
-{
+void warning(const char *message, const char *file, uint32 line) {
     printkf("WARNING:%s:%d:%s\n", file, line, message);
 }
 
-void panic_assert(const char *file, uint32 line, const char *desc)
-{
+void panic_assert(const char *file, uint32 line, const char *desc) {
     disableInterrupts();
 
     printkf("ASSERTION-FAILED:%s:%d:%s\n", file, line, desc);
@@ -399,16 +351,14 @@ void panic_assert(const char *file, uint32 line, const char *desc)
     halt();
 }
 
-uint32 readEsp()
-{
+uint32 readEsp() {
     uint32 stack_pointer;
     asm volatile("mov %%esp, %0" : "=r" (stack_pointer));
 
     return stack_pointer;
 }
 
-uint32 getCpuFlags()
-{
+uint32 getCpuFlags() {
     uint32 eflags = 0;
 
     asm("pushfl; pop %%eax; mov %%eax, %0": "=m"(eflags):);
@@ -416,8 +366,7 @@ uint32 getCpuFlags()
     return eflags;
 }
 
-BOOL isInterruptsEnabled()
-{
+BOOL isInterruptsEnabled() {
     uint32 eflags = getCpuFlags();
 
     uint32 interruptFlag = 0x200; //9th flag
@@ -425,17 +374,14 @@ BOOL isInterruptsEnabled()
     return (eflags & interruptFlag) == interruptFlag;
 }
 
-void beginCriticalSection()
-{
+void beginCriticalSection() {
     gInterruptsWereEnabled = isInterruptsEnabled();
 
     disableInterrupts();
 }
 
-void endCriticalSection()
-{
-    if (gInterruptsWereEnabled)
-    {
+void endCriticalSection() {
+    if (gInterruptsWereEnabled) {
         enableInterrupts();
     }
 }

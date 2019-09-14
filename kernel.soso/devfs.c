@@ -18,8 +18,7 @@ static FileSystemNode *devfs_finddir(FileSystemNode *node, char *name);
 
 static FileSystemDirent gDirent;
 
-void initializeDevFS()
-{
+void initializeDevFS() {
     gDevRoot = kmalloc(sizeof(FileSystemNode));
     memset((uint8*)gDevRoot, 0, sizeof(FileSystemNode));
 
@@ -29,15 +28,13 @@ void initializeDevFS()
 
     FileSystemNode* devNode = finddir_fs(rootFs, "dev");
 
-    if (devNode)
-    {
+    if (devNode) {
         devNode->nodeType |= FT_MountPoint;
         devNode->mountPoint = gDevRoot;
         gDevRoot->parent = devNode->parent;
         strcpy(gDevRoot->name, devNode->name);
     }
-    else
-    {
+    else {
         PANIC("/dev does not exist!");
     }
 
@@ -49,23 +46,19 @@ void initializeDevFS()
     Spinlock_Init(&gDeviceListLock);
 }
 
-static BOOL devfs_open(File *node, uint32 flags)
-{
+static BOOL devfs_open(File *node, uint32 flags) {
     return TRUE;
 }
 
-static FileSystemDirent *devfs_readdir(FileSystemNode *node, uint32 index)
-{
+static FileSystemDirent *devfs_readdir(FileSystemNode *node, uint32 index) {
     FileSystemDirent * result = NULL;
 
     uint32 counter = 0;
 
     Spinlock_Lock(&gDeviceListLock);
 
-    List_Foreach(n, gDeviceList)
-    {
-        if (index == counter)
-        {
+    List_Foreach(n, gDeviceList) {
+        if (index == counter) {
             FileSystemNode* deviceNode = (FileSystemNode*)n->data;
             strcpy(gDirent.name, deviceNode->name);
             gDirent.fileType = deviceNode->nodeType;
@@ -81,19 +74,16 @@ static FileSystemDirent *devfs_readdir(FileSystemNode *node, uint32 index)
     return result;
 }
 
-static FileSystemNode *devfs_finddir(FileSystemNode *node, char *name)
-{
+static FileSystemNode *devfs_finddir(FileSystemNode *node, char *name) {
     FileSystemNode* result = NULL;
 
 
     Spinlock_Lock(&gDeviceListLock);
 
-    List_Foreach(n, gDeviceList)
-    {
+    List_Foreach(n, gDeviceList) {
         FileSystemNode* deviceNode = (FileSystemNode*)n->data;
 
-        if (strcmp(name, deviceNode->name) == 0)
-        {
+        if (strcmp(name, deviceNode->name) == 0) {
             result = deviceNode;
             break;
         }
@@ -104,16 +94,13 @@ static FileSystemNode *devfs_finddir(FileSystemNode *node, char *name)
     return result;
 }
 
-FileSystemNode* registerDevice(Device* device)
-{
+FileSystemNode* registerDevice(Device* device) {
     Spinlock_Lock(&gDeviceListLock);
 
-    List_Foreach(n, gDeviceList)
-    {
+    List_Foreach(n, gDeviceList) {
         FileSystemNode* deviceNode = (FileSystemNode*)n->data;
 
-        if (strcmp(device->name, deviceNode->name) == 0)
-        {
+        if (strcmp(device->name, deviceNode->name) == 0) {
             //There is already a device with the same name
             Spinlock_Unlock(&gDeviceListLock);
             return NULL;

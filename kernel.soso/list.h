@@ -5,15 +5,13 @@
 
 #define List_Foreach(listNode, list) for (ListNode* listNode = list->head; NULL != listNode ; listNode = listNode->next)
 
-typedef struct ListNode
-{
+typedef struct ListNode {
     struct ListNode* previous;
     struct ListNode* next;
     void* data;
 } ListNode;
 
-typedef struct List
-{
+typedef struct List {
     struct ListNode* head;
     struct ListNode* tail;
 } List;
@@ -35,8 +33,7 @@ void List_RemoveFirstNode(List* list);
 void List_RemoveLastNode(List* list);
 void List_RemoveFirstOccurrence(List* list, void* data);
 
-typedef struct Stack
-{
+typedef struct Stack {
     List* list;
 } Stack;
 
@@ -47,8 +44,7 @@ BOOL Stack_IsEmpty(Stack* stack);
 void Stack_Push(Stack* stack, void* data);
 void* Stack_Pop(Stack* stack);
 
-typedef struct Queue
-{
+typedef struct Queue {
     List* list;
 } Queue;
 

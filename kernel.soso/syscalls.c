@@ -65,8 +65,7 @@ int syscall_posix_openpt(int flags);
 int syscall_ptsname_r(int fd, char *buf, int buflen);
 
 
-void initialiseSyscalls()
-{
+void initialiseSyscalls() {
     memset((uint8*)gSyscallTable, 0, sizeof(void*) * SYSCALL_COUNT);
 
     gSyscallTable[SYS_open] = syscall_open;
@@ -112,17 +111,14 @@ void initialiseSyscalls()
     registerInterruptHandler (0x80, &handleSyscall);
 }
 
-static void handleSyscall(Registers* regs)
-{
-    if (regs->eax >= SYSCALL_COUNT)
-    {
+static void handleSyscall(Registers* regs) {
+    if (regs->eax >= SYSCALL_COUNT) {
         return;
     }
 
     void *location = gSyscallTable[regs->eax];
 
-    if (NULL == location)
-    {
+    if (NULL == location) {
         regs->eax = -1;
         return;
     }
@@ -149,20 +145,16 @@ static void handleSyscall(Registers* regs)
     regs->eax = ret;
 }
 
-int syscall_open(const char *pathname, int flags)
-{
+int syscall_open(const char *pathname, int flags) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         //printkf("open():[%s]\n", pathname);
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(pathname, process);
-        if (node)
-        {
+        if (node) {
             //printkf("open():node:[%s]\n", node->name);
             File* file = open_fs(node, flags);
 
-            if (file)
-            {
+            if (file) {
                 return file->fd;
             }
         }
@@ -171,52 +163,41 @@ int syscall_open(const char *pathname, int flags)
     return -1;
 }
 
-int syscall_close(int fd)
-{
+int syscall_close(int fd) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 close_fs(file);
 
                 return 0;
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_read(int fd, void *buf, int nbytes)
-{
+int syscall_read(int fd, void *buf, int nbytes) {
     //printkf("syscall_read: begin - nbytes:%d\n", nbytes);
 
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 //Debug_PrintF("syscall_read(%d): %s\n", process->pid, buf);
 
                 //enableInterrupts();
@@ -226,40 +207,32 @@ int syscall_read(int fd, void *buf, int nbytes)
 
                 return read_fs(file, nbytes, buf);
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_write(int fd, void *buf, int nbytes)
-{
+int syscall_write(int fd, void *buf, int nbytes) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         //printkf("syscall_write() called from process: %d. fd:%d\n", process->pid, fd);
 
-        if (fd < MAX_OPENED_FILES)
-        {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 /*
-                for (int i = 0; i < nbytes; ++i)
-                {
+                for (int i = 0; i < nbytes; ++i) {
                     Debug_PrintF("pid:%d syscall_write:buf[%d]=%c\n", process->pid, i, ((char*)buf)[i]);
                 }
                 */
@@ -268,146 +241,116 @@ int syscall_write(int fd, void *buf, int nbytes)
 
                 return writeResult;
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_lseek(int fd, int offset, int whence)
-{
+int syscall_lseek(int fd, int offset, int whence) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         //printkf("syscall_lseek() called from process: %d. fd:%d\n", process->pid, fd);
 
-        if (fd < MAX_OPENED_FILES)
-        {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 return lseek_fs(file, offset, whence);
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_stat(const char *path, struct stat *buf)
-{
+int syscall_stat(const char *path, struct stat *buf) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         //printkf("syscall_stat() called from process: %d. path:%s\n", process->pid, path);
 
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(path, process);
 
-        if (node)
-        {
+        if (node) {
             return stat_fs(node, buf);
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_fstat(int fd, struct stat *buf)
-{
+int syscall_fstat(int fd, struct stat *buf) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 return stat_fs(file->node, buf);
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_ioctl(int fd, int32 request, void *arg)
-{
+int syscall_ioctl(int fd, int32 request, void *arg) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 return ioctl_fs(file, request, arg);
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_exit(int status)
-{
+int syscall_exit(int status) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         printkf("syscall_exit(%d)\n", status);
         printkf("process pid: %d\n", process->pid);
         if (process->parent) {
@@ -422,47 +365,39 @@ int syscall_exit(int status)
 
         waitForSchedule();
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-void* syscall_sbrk(uint32 increment)
-{
+void* syscall_sbrk(uint32 increment) {
     //printkf("syscall_sbrk() !!! inc:%d\n", increment);
 
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         return sbrk(process, increment);
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return (void*)-1;
 }
 
-int syscall_fork()
-{
+int syscall_fork() {
     //Not implemented
 
     return -1;
 }
 
-int syscall_getpid()
-{
+int syscall_getpid() {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         return process->pid;
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
@@ -470,21 +405,17 @@ int syscall_getpid()
 }
 
 //NON-posix
-int syscall_execute(const char *path, char *const argv[], char *const envp[])
-{
+int syscall_execute(const char *path, char *const argv[], char *const envp[]) {
     int result = -1;
 
     printkf("syscall_execute: %s\n", path);
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         printkf("found current process\n");
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(path, process);
-        if (node)
-        {
+        if (node) {
             File* f = open_fs(node, 0);
-            if (f)
-            {
+            if (f) {
                 printkf("file found\n");
                 void* image = kmalloc(node->length);
 
@@ -494,13 +425,11 @@ int syscall_execute(const char *path, char *const argv[], char *const envp[])
 
                 //printkf("syscall_execute: read_fs returned %d bytes\n", bytesRead);
 
-                if (bytesRead > 0)
-                {
+                if (bytesRead > 0) {
                     printkf("creating user process from ELF data\n");
                     Process* newProcess = createUserProcessFromElfData("userProcess", image, argv, envp, process, NULL);
 
-                    if (newProcess)
-                    {
+                    if (newProcess) {
                         result = newProcess->pid;
                     }
                 }
@@ -511,28 +440,23 @@ int syscall_execute(const char *path, char *const argv[], char *const envp[])
 
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return result;
 }
 
-int syscall_executeOnTTY(const char *path, char *const argv[], char *const envp[], const char *ttyPath)
-{
+int syscall_executeOnTTY(const char *path, char *const argv[], char *const envp[], const char *ttyPath) {
     int result = -1;
 
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(path, process);
         FileSystemNode* ttyNode = getFileSystemNodeAbsoluteOrRelative(ttyPath, process);
-        if (node && ttyNode)
-        {
+        if (node && ttyNode) {
             File* f = open_fs(node, 0);
-            if (f)
-            {
+            if (f) {
                 void* image = kmalloc(node->length);
 
                 //printkf("executing %s and its %d bytes\n", filename, node->length);
@@ -541,12 +465,10 @@ int syscall_executeOnTTY(const char *path, char *const argv[], char *const envp[
 
                 //printkf("syscall_execute: read_fs returned %d bytes\n", bytesRead);
 
-                if (bytesRead > 0)
-                {
+                if (bytesRead > 0) {
                     Process* newProcess = createUserProcessFromElfData("userProcess", image, argv, envp, process, ttyNode);
 
-                    if (newProcess)
-                    {
+                    if (newProcess) {
                         result = newProcess->pid;
                     }
                 }
@@ -557,28 +479,23 @@ int syscall_executeOnTTY(const char *path, char *const argv[], char *const envp[
 
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return result;
 }
 
-int syscall_execve(const char *path, char *const argv[], char *const envp[])
-{
+int syscall_execve(const char *path, char *const argv[], char *const envp[]) {
     Process* callingProcess = getCurrentThread()->owner;
 
     FileSystemNode* node = getFileSystemNode(path);
-    if (node)
-    {
+    if (node) {
         File* f = open_fs(node, 0);
-        if (f)
-        {
+        if (f) {
             void* image = kmalloc(node->length);
 
-            if (read_fs(f, node->length, image) > 0)
-            {
+            if (read_fs(f, node->length, image) > 0) {
                 disableInterrupts(); //just in case if a file operation left interrupts enabled.
 
                 Process* newProcess = createUserProcessEx("fromExecve", callingProcess->pid, 0, NULL, image, argv, envp, NULL, callingProcess->tty);
@@ -587,8 +504,7 @@ int syscall_execve(const char *path, char *const argv[], char *const envp[])
 
                 kfree(image);
 
-                if (newProcess)
-                {
+                if (newProcess) {
                     destroyProcess(callingProcess);
 
                     waitForSchedule();
@@ -608,22 +524,18 @@ int syscall_execve(const char *path, char *const argv[], char *const envp[])
     return 0;
 }
 
-int syscall_wait(int *wstatus)
-{
+int syscall_wait(int *wstatus) {
     //TODO: return pid of exited child. implement with sendsignal
     Thread* currentThread = getCurrentThread();
 
     Process* process = currentThread->owner;
-    if (process)
-    {
+    if (process) {
         printkf("wait: I am %d at %x\n", process->pid, process);
         Thread* thread = getMainKernelThread();
-        while (thread)
-        {
+        while (thread) {
             printkf("wait: checking %d at %x\n", thread->owner->pid, thread->owner);
             printkf("wait: parent is %d at %x\n", thread->owner->parent->pid, thread->owner->parent);
-            if (process == thread->owner->parent)
-            {
+            if (process == thread->owner->parent) {
                 //We have a child process
                 printkf("wait: d\n");
 
@@ -642,35 +554,29 @@ int syscall_wait(int *wstatus)
             thread = thread->next;
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_kill(int pid, int sig)
-{
+int syscall_kill(int pid, int sig) {
     Process* selfProcess = getCurrentThread()->owner;
 
     Thread* thread = getMainKernelThread();
-    while (thread)
-    {
-        if (pid == thread->owner->pid)
-        {
+    while (thread) {
+        if (pid == thread->owner->pid) {
             //We have found the process
 
-            //TODOif (sig==KILL)
+            //TODO if (sig==KILL)
             {
                 destroyProcess(thread->owner);
 
-                if (thread->owner == selfProcess)
-                {
+                if (thread->owner == selfProcess) {
                     waitForSchedule();
                 }
-                else
-                {
+                else {
                     return 0;
                 }
             }
@@ -683,26 +589,21 @@ int syscall_kill(int pid, int sig)
     return -1;
 }
 
-int syscall_mount(const char *source, const char *target, const char *fsType, unsigned long flags, void *data)//non-posix
-{
+int syscall_mount(const char *source, const char *target, const char *fsType, unsigned long flags, void *data) {  // non-posix
     BOOL result = mountFileSystem(source, target, fsType, flags, data);
 
-    if (TRUE == result)
-    {
+    if (TRUE == result) {
         return 0;//on success
     }
 
     return -1;//on error
 }
 
-int syscall_unmount(const char *target)//non-posix
-{
+int syscall_unmount(const char *target) {  // non-posix
     FileSystemNode* targetNode = getFileSystemNode(target);
 
-    if (targetNode)
-    {
-        if (targetNode->nodeType == FT_MountPoint)
-        {
+    if (targetNode) {
+        if (targetNode->nodeType == FT_MountPoint) {
             targetNode->nodeType = FT_Directory;
 
             targetNode->mountPoint = NULL;
@@ -716,15 +617,12 @@ int syscall_unmount(const char *target)//non-posix
     return -1;//on error
 }
 
-int syscall_mkdir(const char *path, uint32 mode)
-{
+int syscall_mkdir(const char *path, uint32 mode) {
     char parentPath[128];
     const char* name = NULL;
     int length = strlen(path);
-    for (int i = length - 1; i >= 0; --i)
-    {
-        if (path[i] == '/')
-        {
+    for (int i = length - 1; i >= 0; --i) {
+        if (path[i] == '/') {
             name = path + i + 1;
             strncpy(parentPath, path, i);
             parentPath[i] = '\0';
@@ -732,14 +630,12 @@ int syscall_mkdir(const char *path, uint32 mode)
         }
     }
 
-    if (strlen(parentPath) == 0)
-    {
+    if (strlen(parentPath) == 0) {
         parentPath[0] = '/';
         parentPath[1] = '\0';
     }
 
-    if (strlen(name) == 0)
-    {
+    if (strlen(name) == 0) {
         return -1;
     }
 
@@ -747,11 +643,9 @@ int syscall_mkdir(const char *path, uint32 mode)
 
     FileSystemNode* targetNode = getFileSystemNode(parentPath);
 
-    if (targetNode)
-    {
+    if (targetNode) {
         BOOL success = mkdir_fs(targetNode, name, mode);
-        if (success)
-        {
+        if (success) {
             return 0;//on success
         }
     }
@@ -759,25 +653,20 @@ int syscall_mkdir(const char *path, uint32 mode)
     return -1;//on error
 }
 
-int syscall_rmdir(const char *path)
-{
+int syscall_rmdir(const char *path) {
     //TODO:
     //return 0;//on success
 
     return -1;//on error
 }
 
-int syscall_getdents(int fd, char *buf, int nbytes)
-{
+int syscall_getdents(int fd, char *buf, int nbytes) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 //printkf("syscall_getdents(%d): %s\n", process->pid, buf);
 
                 int byteCounter = 0;
@@ -785,8 +674,7 @@ int syscall_getdents(int fd, char *buf, int nbytes)
                 int index = 0;
                 FileSystemDirent* dirent = readdir_fs(file->node, index);
 
-                while (NULL != dirent && (byteCounter + sizeof(FileSystemDirent) <= nbytes))
-                {
+                while (NULL != dirent && (byteCounter + sizeof(FileSystemDirent) <= nbytes)) {
                     memcpy((uint8*)buf + byteCounter, (uint8*)dirent, sizeof(FileSystemDirent));
 
                     byteCounter += sizeof(FileSystemDirent);
@@ -797,108 +685,87 @@ int syscall_getdents(int fd, char *buf, int nbytes)
 
                 return byteCounter;
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;//on error
 }
 
-int syscall_readDir(int fd, void *dirent, int index)
-{
+int syscall_readDir(int fd, void *dirent, int index) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 FileSystemDirent* direntFs = readdir_fs(file->node, index);
 
-                if (direntFs)
-                {
+                if (direntFs) {
                     memcpy((uint8*)dirent, (uint8*)direntFs, sizeof(FileSystemDirent));
 
                     return 1;
                 }
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;//on error
 }
 
-int syscall_getWorkingDirectory(char *buf, int size)
-{
+int syscall_getWorkingDirectory(char *buf, int size) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (process->workingDirectory)
-        {
+    if (process) {
+        if (process->workingDirectory) {
             return getFileSystemNodePath(process->workingDirectory, buf, size);
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;//on error
 }
 
-int syscall_setWorkingDirectory(const char *path)
-{
+int syscall_setWorkingDirectory(const char *path) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         FileSystemNode* node = getFileSystemNodeAbsoluteOrRelative(path, process);
 
-        if (node)
-        {
+        if (node) {
             process->workingDirectory = node;
 
             return 0; //success
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;//on error
 }
 
-int syscall_managePipe(const char *pipeName, int operation, int data)
-{
+int syscall_managePipe(const char *pipeName, int operation, int data) {
     int result = -1;
 
-    switch (operation)
-    {
+    switch (operation) {
     case 0:
         result = existsPipe(pipeName);
         break;
@@ -913,13 +780,11 @@ int syscall_managePipe(const char *pipeName, int operation, int data)
     return result;
 }
 
-int syscall_getUptimeMilliseconds()
-{
+int syscall_getUptimeMilliseconds() {
     return getUptimeMilliseconds();
 }
 
-int syscall_sleepMilliseconds(int ms)
-{
+int syscall_sleepMilliseconds(int ms) {
     Thread* thread = getCurrentThread();
 
     sleepMilliseconds(thread, (uint32)ms);
@@ -927,14 +792,12 @@ int syscall_sleepMilliseconds(int ms)
     return 0;
 }
 
-int syscall_manageMessage(int command, void* message)
-{
+int syscall_manageMessage(int command, void* message) {
     Thread* thread = getCurrentThread();
 
     int result = -1;
 
-    switch (command)
-    {
+    switch (command) {
     case 0:
         result = getMessageQueueCount(thread);
         break;
@@ -953,10 +816,8 @@ int syscall_manageMessage(int command, void* message)
     return result;
 }
 
-void* syscall_mmap(void *addr, int length, int flags, int fd, int offset)
-{
-    if (addr)
-    {
+void* syscall_mmap(void *addr, int length, int flags, int fd, int offset) {
+    if (addr) {
         //Mapping to a specified address is not implemented
 
         return (void*)-1;
@@ -964,71 +825,56 @@ void* syscall_mmap(void *addr, int length, int flags, int fd, int offset)
 
     Process* process = getCurrentThread()->owner;
 
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 void* ret = mmap_fs(file, length, offset, flags);
 
-                if (ret)
-                {
+                if (ret) {
                     return ret;
                 }
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return (void*)-1;
 }
 
-int syscall_munmap(void *addr, int length)
-{
+int syscall_munmap(void *addr, int length) {
     //TODO: fd
 
     /*
     Process* process = getCurrentThread()->owner;
 
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
-                if (munmap_fs(file, addr, length))
-                {
+            if (file) {
+                if (munmap_fs(file, addr, length)) {
                     return 0;//on success
                 }
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
     */
@@ -1038,25 +884,20 @@ int syscall_munmap(void *addr, int length)
 
 #define O_CREAT 0x200
 
-int syscall_shm_open(const char *name, int oflag, int mode)
-{
+int syscall_shm_open(const char *name, int oflag, int mode) {
     FileSystemNode* node = NULL;
 
-    if ((oflag & O_CREAT) == O_CREAT)
-    {
+    if ((oflag & O_CREAT) == O_CREAT) {
         node = createSharedMemory(name);
     }
-    else
-    {
+    else {
         node = getSharedMemoryNode(name);
     }
 
-    if (node)
-    {
+    if (node) {
         File* file = open_fs(node, oflag);
 
-        if (file)
-        {
+        if (file) {
             return file->fd;
         }
     }
@@ -1064,98 +905,77 @@ int syscall_shm_open(const char *name, int oflag, int mode)
     return -1;
 }
 
-int syscall_shm_unlink(const char *name)
-{
+int syscall_shm_unlink(const char *name) {
     return -1;
 }
 
-int syscall_ftruncate(int fd, int size)
-{
+int syscall_ftruncate(int fd, int size) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 return ftruncate_fs(file, size);
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_posix_openpt(int flags)
-{
+int syscall_posix_openpt(int flags) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
+    if (process) {
         FileSystemNode* node = createPseudoTerminal();
-        if (node)
-        {
+        if (node) {
             File* file = open_fs(node, flags);
 
-            if (file)
-            {
+            if (file) {
                 return file->fd;
             }
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 
     return -1;
 }
 
-int syscall_ptsname_r(int fd, char *buf, int buflen)
-{
+int syscall_ptsname_r(int fd, char *buf, int buflen) {
     Process* process = getCurrentThread()->owner;
-    if (process)
-    {
-        if (fd < MAX_OPENED_FILES)
-        {
+    if (process) {
+        if (fd < MAX_OPENED_FILES) {
             File* file = process->fd[fd];
 
-            if (file)
-            {
+            if (file) {
                 /*
                 int result = getSlavePath(file->node, buf, buflen);
 
-                if (result > 0)
-                {
+                if (result > 0) {
                     return 0; //return 0 on success
                 }
                 */
             }
-            else
-            {
+            else {
                 //TODO: error invalid fd
             }
         }
-        else
-        {
+        else {
             //TODO: error invalid fd
         }
     }
-    else
-    {
+    else {
         PANIC("Process is NULL!\n");
     }
 

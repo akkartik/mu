@@ -11,43 +11,35 @@ uint32 gSystemTickCount = 0;
 BOOL gSchedulerEnabled = FALSE;
 
 //called from assembly
-void handleTimerIRQ(TimerInt_Registers registers)
-{
+void handleTimerIRQ(TimerInt_Registers registers) {
     gSystemTickCount++;
 
-    if (/*gSystemTickCount % 10 == 0 &&*/ gSchedulerEnabled == TRUE)
-    {
+    if (/*gSystemTickCount % 10 == 0 &&*/ gSchedulerEnabled == TRUE) {
         schedule(&registers);
     }
 }
 
-uint32 getSystemTickCount()
-{
+uint32 getSystemTickCount() {
     return gSystemTickCount;
 }
 
-uint32 getUptimeSeconds()
-{
+uint32 getUptimeSeconds() {
     return gSystemTickCount / TIMER_FREQ;
 }
 
-uint32 getUptimeMilliseconds()
-{
+uint32 getUptimeMilliseconds() {
     return gSystemTickCount;
 }
 
-void enableScheduler()
-{
+void enableScheduler() {
     gSchedulerEnabled = TRUE;
 }
 
-void disableScheduler()
-{
+void disableScheduler() {
     gSchedulerEnabled = FALSE;
 }
 
-static void initTimer(uint32 frequency)
-{
+static void initTimer(uint32 frequency) {
     uint32 divisor = 1193180 / frequency;
 
     outb(0x43, 0x36);
@@ -59,7 +51,6 @@ static void initTimer(uint32 frequency)
     outb(0x40, h);
 }
 
-void initializeTimer()
-{
+void initializeTimer() {
     initTimer(TIMER_FREQ);
 }

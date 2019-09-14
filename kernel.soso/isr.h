@@ -20,8 +20,7 @@
 #define IRQ14 46
 #define IRQ15 47
 
-typedef struct Registers
-{
+typedef struct Registers {
     uint32 gs;
     uint32 fs;
     uint32 es;

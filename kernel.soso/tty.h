@@ -11,8 +11,7 @@ typedef struct Tty Tty;
 
 typedef void (*TtyFlushScreenFunction)(Tty* tty);
 
-typedef struct Tty
-{
+typedef struct Tty {
     uint16 lineCount;
     uint16 columnCount;
     uint8* buffer;

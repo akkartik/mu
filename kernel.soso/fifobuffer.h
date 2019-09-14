@@ -3,8 +3,7 @@
 
 #include "common.h"
 
-typedef struct FifoBuffer
-{
+typedef struct FifoBuffer {
     uint8* data;
     uint32 writeIndex;
     uint32 readIndex;

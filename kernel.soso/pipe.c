@@ -10,8 +10,7 @@ static FileSystemNode* gPipesRoot = NULL;
 
 static FileSystemDirent gDirent;
 
-typedef struct Pipe
-{
+typedef struct Pipe {
     char name[32];
     FifoBuffer* buffer;
     FileSystemNode* fsNode;
@@ -22,39 +21,32 @@ static BOOL pipes_open(File *file, uint32 flags);
 static FileSystemDirent *pipes_readdir(FileSystemNode *node, uint32 index);
 static FileSystemNode *pipes_finddir(FileSystemNode *node, char *name);
 
-void initializePipes()
-{
+void initializePipes() {
     gPipeList = List_Create();
 
     gPipesRoot = getFileSystemNode("/system/pipes");
 
-    if (NULL == gPipesRoot)
-    {
+    if (NULL == gPipesRoot) {
         WARNING("/system/pipes not found!!");
     }
-    else
-    {
+    else {
         gPipesRoot->open = pipes_open;
         gPipesRoot->finddir = pipes_finddir;
         gPipesRoot->readdir = pipes_readdir;
     }
 }
 
-static BOOL pipes_open(File *file, uint32 flags)
-{
+static BOOL pipes_open(File *file, uint32 flags) {
     return TRUE;
 }
 
-static FileSystemDirent *pipes_readdir(FileSystemNode *node, uint32 index)
-{
+static FileSystemDirent *pipes_readdir(FileSystemNode *node, uint32 index) {
     int counter = 0;
 
-    List_Foreach (n, gPipeList)
-    {
+    List_Foreach (n, gPipeList) {
         Pipe* p = (Pipe*)n->data;
 
-        if (counter == index)
-        {
+        if (counter == index) {
             strcpy(gDirent.name, p->name);
             gDirent.fileType = FT_Pipe;
 
@@ -66,14 +58,11 @@ static FileSystemDirent *pipes_readdir(FileSystemNode *node, uint32 index)
     return NULL;
 }
 
-static FileSystemNode *pipes_finddir(FileSystemNode *node, char *name)
-{
-    List_Foreach (n, gPipeList)
-    {
+static FileSystemNode *pipes_finddir(FileSystemNode *node, char *name) {
+    List_Foreach (n, gPipeList) {
         Pipe* p = (Pipe*)n->data;
 
-        if (strcmp(name, p->name) == 0)
-        {
+        if (strcmp(name, p->name) == 0) {
             return p->fsNode;
         }
     }
@@ -81,8 +70,7 @@ static FileSystemNode *pipes_finddir(FileSystemNode *node, char *name)
     return NULL;
 }
 
-static BOOL pipe_open(File *file, uint32 flags)
-{
+static BOOL pipe_open(File *file, uint32 flags) {
     beginCriticalSection();
 
     Pipe* pipe = file->node->privateNodeData;
@@ -94,8 +82,7 @@ static BOOL pipe_open(File *file, uint32 flags)
     return TRUE;
 }
 
-static void pipe_close(File *file)
-{
+static void pipe_close(File *file) {
     beginCriticalSection();
 
     Pipe* pipe = file->node->privateNodeData;
@@ -105,12 +92,10 @@ static void pipe_close(File *file)
     endCriticalSection();
 }
 
-static void blockAccessingThreads(Pipe* pipe)
-{
+static void blockAccessingThreads(Pipe* pipe) {
     disableInterrupts();
 
-    List_Foreach (n, pipe->accessingThreads)
-    {
+    List_Foreach (n, pipe->accessingThreads) {
         Thread* reader = n->data;
 
         reader->state = TS_WAITIO;
@@ -123,18 +108,14 @@ static void blockAccessingThreads(Pipe* pipe)
     halt();
 }
 
-static void wakeupAccessingThreads(Pipe* pipe)
-{
+static void wakeupAccessingThreads(Pipe* pipe) {
     beginCriticalSection();
 
-    List_Foreach (n, pipe->accessingThreads)
-    {
+    List_Foreach (n, pipe->accessingThreads) {
         Thread* reader = n->data;
 
-        if (reader->state == TS_WAITIO)
-        {
-            if (reader->state_privateData == pipe)
-            {
+        if (reader->state == TS_WAITIO) {
+            if (reader->state_privateData == pipe) {
                 reader->state = TS_RUN;
             }
         }
@@ -143,18 +124,15 @@ static void wakeupAccessingThreads(Pipe* pipe)
     endCriticalSection();
 }
 
-static int32 pipe_read(File *file, uint32 size, uint8 *buffer)
-{
-    if (0 == size || NULL == buffer)
-    {
+static int32 pipe_read(File *file, uint32 size, uint8 *buffer) {
+    if (0 == size || NULL == buffer) {
         return -1;
     }
 
     Pipe* pipe = file->node->privateNodeData;
 
     uint32 used = 0;
-    while ((used = FifoBuffer_getSize(pipe->buffer)) < size)
-    {
+    while ((used = FifoBuffer_getSize(pipe->buffer)) < size) {
         blockAccessingThreads(pipe);
     }
 
@@ -167,18 +145,15 @@ static int32 pipe_read(File *file, uint32 size, uint8 *buffer)
     return readBytes;
 }
 
-static int32 pipe_write(File *file, uint32 size, uint8 *buffer)
-{
-    if (0 == size || NULL == buffer)
-    {
+static int32 pipe_write(File *file, uint32 size, uint8 *buffer) {
+    if (0 == size || NULL == buffer) {
         return -1;
     }
 
     Pipe* pipe = file->node->privateNodeData;
 
     uint32 free = 0;
-    while ((free = FifoBuffer_getFree(pipe->buffer)) < size)
-    {
+    while ((free = FifoBuffer_getFree(pipe->buffer)) < size) {
         blockAccessingThreads(pipe);
     }
 
@@ -191,13 +166,10 @@ static int32 pipe_write(File *file, uint32 size, uint8 *buffer)
     return bytesWritten;
 }
 
-BOOL createPipe(const char* name, uint32 bufferSize)
-{
-    List_Foreach (n, gPipeList)
-    {
+BOOL createPipe(const char* name, uint32 bufferSize) {
+    List_Foreach (n, gPipeList) {
         Pipe* p = (Pipe*)n->data;
-        if (strcmp(name, p->name) == 0)
-        {
+        if (strcmp(name, p->name) == 0) {
             return FALSE;
         }
     }
@@ -223,13 +195,10 @@ BOOL createPipe(const char* name, uint32 bufferSize)
     return TRUE;
 }
 
-BOOL destroyPipe(const char* name)
-{
-    List_Foreach (n, gPipeList)
-    {
+BOOL destroyPipe(const char* name) {
+    List_Foreach (n, gPipeList) {
         Pipe* p = (Pipe*)n->data;
-        if (strcmp(name, p->name) == 0)
-        {
+        if (strcmp(name, p->name) == 0) {
             List_RemoveFirstOccurrence(gPipeList, p);
             FifoBuffer_destroy(p->buffer);
             List_Destroy(p->accessingThreads);
@@ -243,13 +212,10 @@ BOOL destroyPipe(const char* name)
     return FALSE;
 }
 
-BOOL existsPipe(const char* name)
-{
-    List_Foreach (n, gPipeList)
-    {
+BOOL existsPipe(const char* name) {
+    List_Foreach (n, gPipeList) {
         Pipe* p = (Pipe*)n->data;
-        if (strcmp(name, p->name) == 0)
-        {
+        if (strcmp(name, p->name) == 0) {
             return TRUE;
         }
     }

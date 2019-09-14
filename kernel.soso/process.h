@@ -11,8 +11,7 @@
 #include "fifobuffer.h"
 #include "spinlock.h"
 
-typedef enum ThreadState
-{
+typedef enum ThreadState {
     TS_RUN,
     TS_WAITIO,
     TS_WAITCHILD,
@@ -21,8 +20,7 @@ typedef enum ThreadState
     TS_YIELD
 } ThreadState;
 
-struct Process
-{
+struct Process {
     char name[32];
 
     uint32 pid;
@@ -62,12 +60,10 @@ struct Process
 
 typedef struct Process Process;
 
-struct Thread
-{
+struct Thread {
     uint32 threadId;
 
-    struct
-    {
+    struct {
         uint32 eax, ecx, edx, ebx;
         uint32 esp, ebp, esi, edi;
         uint32 eip, eflags;
@@ -75,8 +71,7 @@ struct Thread
         uint32 cr3;
     } regs __attribute__ ((packed));
 
-    struct
-    {
+    struct {
         uint32 esp0;
         uint16 ss0;
         uint32 stackStart;
@@ -106,8 +101,7 @@ struct Thread
 
 typedef struct Thread Thread;
 
-typedef struct TimerInt_Registers
-{
+typedef struct TimerInt_Registers {
     uint32 gs, fs, es, ds;
     uint32 edi, esi, ebp, esp, ebx, edx, ecx, eax; //pushed by pushad
     uint32 eip, cs, eflags, esp_if_privilege_change, ss_if_privilege_change; //pushed by the CPU

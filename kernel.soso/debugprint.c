@@ -4,15 +4,13 @@
 
 static File* gFile = NULL;
 
-void Debug_initialize(const char* fileName)
-{
+void Debug_initialize(const char* fileName) {
     FileSystemNode* node = getFileSystemNode(fileName);
 
     gFile = open_fs(node, 0);
 }
 
-void Debug_PrintF(const char *format, ...)
-{
+void Debug_PrintF(const char *format, ...) {
     char **arg = (char **) &format;
     char c;
     char buf[20];
@@ -24,22 +22,18 @@ void Debug_PrintF(const char *format, ...)
     __builtin_va_list vl;
     __builtin_va_start(vl, format);
 
-    while ((c = *format++) != 0)
-      {
-        if (bufferIndex > 510)
-        {
+    while ((c = *format++) != 0) {
+        if (bufferIndex > 510) {
             break;
         }
 
         if (c != '%')
           buffer[bufferIndex++] = c;
-        else
-          {
+        else {
             char *p;
 
             c = *format++;
-            switch (c)
-              {
+            switch (c) {
               case 'x':
                  buf[0] = '0';
                  buf[1] = 'x';
@@ -77,8 +71,7 @@ void Debug_PrintF(const char *format, ...)
 
     buffer[bufferIndex] = '\0';
 
-    if (gFile)
-    {
+    if (gFile) {
         write_fs(gFile, strlen(buffer), (uint8*)buffer);
     }
 

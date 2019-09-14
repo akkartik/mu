@@ -3,8 +3,7 @@
 
 #define PORT 0x3f8   //COM1
 
-void initializeSerial()
-{
+void initializeSerial() {
    outb(PORT + 1, 0x00);    // Disable all interrupts
    outb(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
    outb(PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
@@ -14,32 +13,27 @@ void initializeSerial()
    outb(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
 }
 
-int serialReceived()
-{
+int serialReceived() {
    return inb(PORT + 5) & 1;
 }
 
-char readSerial()
-{
+char readSerial() {
    while (serialReceived() == 0);
 
    return inb(PORT);
 }
 
-int isTransmitEmpty()
-{
+int isTransmitEmpty() {
    return inb(PORT + 5) & 0x20;
 }
 
-void writeSerial(char a)
-{
+void writeSerial(char a) {
    while (isTransmitEmpty() == 0);
 
    outb(PORT,a);
 }
 
-void Serial_PrintF(const char *format, ...)
-{
+void Serial_PrintF(const char *format, ...) {
   char **arg = (char **) &format;
   char c;
   char buf[20];
@@ -48,17 +42,14 @@ void Serial_PrintF(const char *format, ...)
   __builtin_va_list vl;
   __builtin_va_start(vl, format);
 
-  while ((c = *format++) != 0)
-    {
+  while ((c = *format++) != 0) {
       if (c != '%')
         writeSerial(c);
-      else
-        {
+      else {
           char *p;
 
           c = *format++;
-          switch (c)
-            {
+          switch (c) {
             case 'x':
                buf[0] = '0';
                buf[1] = 'x';

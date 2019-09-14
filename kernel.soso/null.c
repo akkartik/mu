@@ -5,8 +5,7 @@
 
 static BOOL null_open(File *file, uint32 flags);
 
-void initializeNull()
-{
+void initializeNull() {
     Device device;
     memset((uint8*)&device, 0, sizeof(Device));
     strcpy(device.name, "null");
@@ -16,7 +15,6 @@ void initializeNull()
     registerDevice(&device);
 }
 
-static BOOL null_open(File *file, uint32 flags)
-{
+static BOOL null_open(File *file, uint32 flags) {
     return TRUE;
 }
