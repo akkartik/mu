@@ -83,7 +83,7 @@ if empty($TMUX)
   "   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
   "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
   "   can't avoid the function because that disables the wait for <CR> prompt
-  noremap <Leader>t {j0:keeppatterns /[^ #]<CR>:call RunTestMoveCursor("<C-r><C-w>")<CR>
+  noremap <Leader>t {:keeppatterns /^[^ #]<CR>:call RunTestMoveCursor("<C-r><C-w>")<CR>
   function RunTestMoveCursor(arg)
     exec "!./run_one_test ".expand("%")." ".a:arg
     exec "normal \<C-o>"
@@ -91,7 +91,7 @@ if empty($TMUX)
 else
   " we have tmux; we don't need to show any output in the Vim pane so life is simpler
   " assume the left-most window is for the shell
-  noremap <Leader>t {j0:keeppatterns /[^ #]<CR>:silent! call RunTestInFirstPane("<C-r><C-w>")<CR><C-o>
+  noremap <Leader>t {:keeppatterns /^[^ #]<CR>:silent! call RunTestInFirstPane("<C-r><C-w>")<CR><C-o>
   function RunTestInFirstPane(arg)
     call RunInFirstPane("./run_one_test ".expand("%")." ".a:arg)
   endfunction
