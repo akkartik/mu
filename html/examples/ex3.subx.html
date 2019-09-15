@@ -59,13 +59,13 @@ if ('onhashchange' in window) {
 <span id="L1" class="LineNr"> 1 </span><span class="subxComment"># Add the first 10 numbers, and return the result in the exit code.</span>
 <span id="L2" class="LineNr"> 2 </span><span class="subxComment">#</span>
 <span id="L3" class="LineNr"> 3 </span><span class="subxComment"># To run:</span>
-<span id="L4" class="LineNr"> 4 </span><span class="subxComment">#   $ ./subx translate examples/ex3.subx -o examples/ex3</span>
+<span id="L4" class="LineNr"> 4 </span><span class="subxComment">#   $ ./subx translate init.linux examples/ex3.subx -o examples/ex3</span>
 <span id="L5" class="LineNr"> 5 </span><span class="subxComment">#   $ ./subx run examples/ex3</span>
 <span id="L6" class="LineNr"> 6 </span><span class="subxComment"># Expected result:</span>
 <span id="L7" class="LineNr"> 7 </span><span class="subxComment">#   $ echo $?</span>
 <span id="L8" class="LineNr"> 8 </span><span class="subxComment">#   55</span>
 <span id="L9" class="LineNr"> 9 </span>
-<span id="L10" class="LineNr">10 </span>== code 0x09000000
+<span id="L10" class="LineNr">10 </span>== code
 <span id="L11" class="LineNr">11 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
 <span id="L12" class="LineNr">12 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
 <span id="L13" class="LineNr">13 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
@@ -88,13 +88,10 @@ if ('onhashchange' in window) {
 <span id="L30" class="LineNr">30 </span>    eb/jump  $loop/disp8
 <span id="L31" class="LineNr">31 </span>
 <span id="L32" class="LineNr">32 </span><span class="Constant">$exit</span>:
-<span id="L33" class="LineNr">33 </span>    <span class="subxComment"># syscall(exit, ebx)</span>
-<span id="L34" class="LineNr">34 </span>    b8/copy-to-eax  1/imm32/exit
-<span id="L35" class="LineNr">35 </span>    cd/syscall  0x80/imm8
-<span id="L36" class="LineNr">36 </span>
-<span id="L37" class="LineNr">37 </span>== data 0x0a000000
-<span id="L38" class="LineNr">38 </span>
-<span id="L39" class="LineNr">39 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L33" class="LineNr">33 </span>    <span class="subxComment"># exit(ebx)</span>
+<span id="L34" class="LineNr">34 </span>    e8/call  syscall_exit/disp32
+<span id="L35" class="LineNr">35 </span>
+<span id="L36" class="LineNr">36 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>

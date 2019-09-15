@@ -62,7 +62,7 @@ if ('onhashchange' in window) {
 <span id="L4" class="LineNr"> 4 </span><span class="subxComment"># letter of second arg.</span>
 <span id="L5" class="LineNr"> 5 </span><span class="subxComment">#</span>
 <span id="L6" class="LineNr"> 6 </span><span class="subxComment"># To run:</span>
-<span id="L7" class="LineNr"> 7 </span><span class="subxComment">#   $ ./subx translate examples/ex9.subx -o examples/ex9</span>
+<span id="L7" class="LineNr"> 7 </span><span class="subxComment">#   $ ./subx translate init.linux examples/ex9.subx -o examples/ex9</span>
 <span id="L8" class="LineNr"> 8 </span><span class="subxComment">#   $ ./subx run examples/ex9 z x</span>
 <span id="L9" class="LineNr"> 9 </span><span class="subxComment"># Expected result:</span>
 <span id="L10" class="LineNr">10 </span><span class="subxComment">#   $ echo $?</span>
@@ -75,7 +75,7 @@ if ('onhashchange' in window) {
 <span id="L17" class="LineNr">17 </span><span class="subxComment">#   ...</span>
 <span id="L18" class="LineNr">18 </span><span class="subxComment"># Locals start from esp-4 downwards.</span>
 <span id="L19" class="LineNr">19 </span>
-<span id="L20" class="LineNr">20 </span>== code 0x09000000
+<span id="L20" class="LineNr">20 </span>== code
 <span id="L21" class="LineNr">21 </span><span class="subxComment">#   instruction                     effective address                                                   register    displacement    immediate</span>
 <span id="L22" class="LineNr">22 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
 <span id="L23" class="LineNr">23 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
@@ -89,28 +89,25 @@ if ('onhashchange' in window) {
 <span id="L31" class="LineNr">31 </span>    <span class="subxS2Comment"># . . push argv[1]</span>
 <span id="L32" class="LineNr">32 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
 <span id="L33" class="LineNr">33 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L34" class="LineNr">34 </span>    e8/call  <a href='ex9.subx.html#L42'>ascii-difference</a>/disp32
+<span id="L34" class="LineNr">34 </span>    e8/call  <a href='ex9.subx.html#L41'>ascii-difference</a>/disp32
 <span id="L35" class="LineNr">35 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L36" class="LineNr">36 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L37" class="LineNr">37 </span>    <span class="subxComment"># syscall(exit, eax)</span>
+<span id="L37" class="LineNr">37 </span>    <span class="subxComment"># exit(eax)</span>
 <span id="L38" class="LineNr">38 </span>    89/copy                         3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy eax to ebx</span>
-<span id="L39" class="LineNr">39 </span>    b8/copy-to-eax  1/imm32/exit
-<span id="L40" class="LineNr">40 </span>    cd/syscall  0x80/imm8
-<span id="L41" class="LineNr">41 </span>
-<span id="L42" class="LineNr">42 </span><span class="subxFunction">ascii-difference</span>:  <span class="subxComment"># (s1, s2) : null-terminated ascii strings</span>
-<span id="L43" class="LineNr">43 </span>    <span class="subxComment"># a = first letter of s1 (ecx)</span>
-<span id="L44" class="LineNr">44 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none              0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esp+4) to eax</span>
-<span id="L45" class="LineNr">45 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to eax</span>
-<span id="L46" class="LineNr">46 </span>    <span class="subxComment"># b = first letter of s2 (edx)</span>
-<span id="L47" class="LineNr">47 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none              1/r32/ecx   8/disp8                           <span class="subxComment"># copy *(esp+8) to ecx</span>
-<span id="L48" class="LineNr">48 </span>    8b/copy                         0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ecx to ecx</span>
-<span id="L49" class="LineNr">49 </span>    <span class="subxComment"># a-b</span>
-<span id="L50" class="LineNr">50 </span>    29/subtract                     3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract ecx from eax</span>
-<span id="L51" class="LineNr">51 </span>    c3/return
-<span id="L52" class="LineNr">52 </span>
-<span id="L53" class="LineNr">53 </span>== data 0x0a000000
-<span id="L54" class="LineNr">54 </span>
-<span id="L55" class="LineNr">55 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L39" class="LineNr">39 </span>    e8/call  syscall_exit/disp32
+<span id="L40" class="LineNr">40 </span>
+<span id="L41" class="LineNr">41 </span><span class="subxFunction">ascii-difference</span>:  <span class="subxComment"># (s1, s2) : null-terminated ascii strings</span>
+<span id="L42" class="LineNr">42 </span>    <span class="subxComment"># a = first letter of s1 (ecx)</span>
+<span id="L43" class="LineNr">43 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none              0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esp+4) to eax</span>
+<span id="L44" class="LineNr">44 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to eax</span>
+<span id="L45" class="LineNr">45 </span>    <span class="subxComment"># b = first letter of s2 (edx)</span>
+<span id="L46" class="LineNr">46 </span>    8b/copy                         1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none              1/r32/ecx   8/disp8                           <span class="subxComment"># copy *(esp+8) to ecx</span>
+<span id="L47" class="LineNr">47 </span>    8b/copy                         0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ecx to ecx</span>
+<span id="L48" class="LineNr">48 </span>    <span class="subxComment"># a-b</span>
+<span id="L49" class="LineNr">49 </span>    29/subtract                     3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract ecx from eax</span>
+<span id="L50" class="LineNr">50 </span>    c3/return
+<span id="L51" class="LineNr">51 </span>
+<span id="L52" class="LineNr">52 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
