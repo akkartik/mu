@@ -121,7 +121,6 @@ You can use SubX to translate itself. For example, running natively on Linux:
 
   # or, automating the above steps
   $ ./ntranslate init.linux ex1.subx
-  $ chmod +x a.elf
   $ ./a.elf
   $ echo $?
   42
