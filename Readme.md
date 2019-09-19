@@ -104,7 +104,7 @@ You can use SubX to translate itself. For example, running natively on Linux:
 
   ```sh
   # generate translator phases using the C++ translator
-  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/hex.subx    -o hex
+  $ ./subx translate init.linux 0[0-6]*.subx 070---hex.subx                    -o hex
   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/survey.subx -o survey
   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/pack.subx   -o pack
   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/assort.subx -o assort

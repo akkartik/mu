@@ -226,7 +226,7 @@ test $NATIVE  &&  {
 # Phases of the self-hosted SubX translator.
 
 echo hex
-./subx translate init.$OS 0*.subx apps/subx-common.subx apps/hex.subx  -o apps/hex
+./subx translate init.$OS $(enumerate/enumerate --until 070---hex.subx |grep '\.subx$') -o apps/hex
 test "$1" = 'record'  ||  git diff --exit-code apps/hex
 test $EMULATED  &&  {
   ./subx run apps/hex test
@@ -358,7 +358,11 @@ done
 
 # Phases of the self-hosted SubX translator.
 
-for app in hex survey pack assort dquotes tests sigils calls braces
+echo hex
+./ntranslate init.$OS $(enumerate/enumerate --until 070---hex.subx |grep '\.subx$')
+diff apps/hex a.elf
+
+for app in survey pack assort dquotes tests sigils calls braces
 do
   echo $app
   ./ntranslate init.$OS 0*.subx apps/subx-common.subx apps/$app.subx
