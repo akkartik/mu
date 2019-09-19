@@ -16,13 +16,18 @@
 # very same 'allocate' helper. They just need a new allocation descriptor for
 # their book-keeping.
 
-# A default allocation descriptor for programs to use.
 == data
+
+# A default allocation descriptor for programs to use.
 Heap:
   # curr
   0/imm32
   # limit
   0/imm32
+
+# a reasonable default
+Heap-size:
+  0x200000/imm32/2MB
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -33,10 +38,10 @@ Heap:
 
 Entry:
     # initialize heap
-    # . Heap = new-segment(64KB)
+    # . Heap = new-segment(Heap-size)
     # . . push args
     68/push  Heap/imm32
-    68/push  0x10000/imm32/64KB
+    68/push  Heap-size/imm32
     # . . call
     e8/call  new-segment/disp32
     # . . discard args
