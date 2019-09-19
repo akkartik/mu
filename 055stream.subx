@@ -33,13 +33,12 @@ clear-stream:  # f : (address stream) -> <void>
     c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         0/imm32           # copy to *(eax+4)
     # eax = f->data
     81          0/subop/add         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xc/imm32         # add to eax
-    # while (true)
 $clear-stream:loop:
     # if (eax >= ecx) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
     73/jump-if-greater-or-equal-unsigned  $clear-stream:end/disp8
     # *eax = 0
-    c6          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm8            # copy byte to *eax
+    c6          0/subop/copy-byte   0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm8            # copy byte to *eax
     # ++eax
     40/increment-eax
     eb/jump  $clear-stream:loop/disp8

@@ -309,14 +309,9 @@ test `uname` = 'Linux'  &&  {
   echo
 }
 
-# Only native runs beyond this point. We start using syntax that the emulator
-# doesn't support.
-test $EMULATED  &&  echo "skipping remaining runs in emulated mode"
-test $NATIVE  ||  exit 0
-
 echo calls
-cat 0*.subx apps/subx-common.subx apps/calls.subx  |  apps/sigils  > a.sigils
-./subx translate init.$OS a.sigils -o apps/calls
+cat init.$OS 0*.subx apps/subx-common.subx apps/calls.subx  |  apps/sigils  > a.sigils
+./subx translate a.sigils -o apps/calls
 [ "$1" != record ]  &&  git diff --exit-code apps/calls
 ./subx run apps/calls test
 echo
@@ -324,6 +319,22 @@ test `uname` = 'Linux'  &&  {
   apps/calls test
   echo
 }
+
+echo braces
+cat init.$OS 0*.subx apps/subx-common.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
+./subx translate a.sigils -o apps/braces
+[ "$1" != record ]  &&  git diff --exit-code apps/braces
+./subx run apps/braces test
+echo
+test `uname` = 'Linux'  &&  {
+  apps/braces test
+  echo
+}
+
+# Only native runs beyond this point. We start using syntax that the emulator
+# doesn't support.
+test $EMULATED  &&  echo "skipping remaining runs in emulated mode"
+test $NATIVE  ||  exit 0
 
 echo "== translating using SubX"
 
@@ -347,7 +358,7 @@ done
 
 # Phases of the self-hosted SubX translator.
 
-for app in hex survey pack assort dquotes tests sigils calls
+for app in hex survey pack assort dquotes tests sigils calls braces
 do
   echo $app
   ./ntranslate init.$OS 0*.subx apps/subx-common.subx apps/$app.subx
