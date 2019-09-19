@@ -226,7 +226,7 @@ $convert:regular-word:
 $convert:next-word:
     # write-buffered(out, " ")
     # . . push args
-    68/push  " "/imm32
+    68/push  Space/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
     e8/call  write-buffered/disp32
@@ -472,7 +472,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . write(_test-input-stream, "\n")  # empty line
     # . . push args
-    68/push  "\n"/imm32
+    68/push  Newline/imm32
     68/push  _test-input-stream/imm32
     # . . call
     e8/call  write/disp32
@@ -2314,20 +2314,6 @@ test-string-length-at-start-of-slice-escaped:
 
 Next-string-literal:  # tracks the next auto-generated variable name
   1/imm32
-
-# length-prefixed string containing just a single space
-Space:
-    # size
-    1/imm32
-    # data
-    20/space
-
-# length-prefixed string containing just a single slash
-Slash:
-    # size
-    1/imm32
-    # data
-    2f/slash
 
 _test-slice-abc:
   22/dquote 61/a 62/b 63/c 22/dquote  # "abc"
