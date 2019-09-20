@@ -65,4 +65,6 @@ syntax match subxMinorFunction "^_[^ ]*\(:\)\@=" | highlight subxMinorFunction c
 " other internal labels starting with '$'
 syntax match subxLabel "^\$[^ ]*\(:\)\@=" | highlight link subxLabel Constant
 
+syntax keyword subxControl break loop | highlight link subxControl Constant
+
 let &cpo = s:save_cpo
