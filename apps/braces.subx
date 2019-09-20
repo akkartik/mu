@@ -1,8 +1,8 @@
 # Structured control flow using break/loop rather than jump.
 #
 # To run (on Linux):
-#   $ ./ntranslate init.linux 0*.subx apps/subx-params.subx apps/calls.subx
-#   $ mv a.elf apps/calls
+#   $ ./ntranslate init.linux 0*.subx apps/subx-params.subx apps/braces.subx
+#   $ mv a.elf apps/braces
 #
 # Example 1:
 #   $ cat x.subx
@@ -10,7 +10,7 @@
 #     7c/if-lesser break/disp8
 #     74/if-equal loop/disp8
 #   }
-#   $ cat x.subx |apps/calls
+#   $ cat x.subx |apps/braces
 #   _loop1:
 #     7c/if-lesser _break1/disp8
 #     74/if-equal _loop1/disp8
@@ -24,7 +24,7 @@
 #   {
 #     74/if-equal loop/disp8
 #   }
-#   $ cat x.subx |apps/calls
+#   $ cat x.subx |apps/braces
 #   _loop1:
 #     7c/if-lesser _break1/disp8
 #   _break1:
@@ -40,7 +40,7 @@
 #     }
 #     7c/if-lesser loop/disp8
 #   }
-#   $ cat x.subx |apps/calls
+#   $ cat x.subx |apps/braces
 #   _loop1:
 #     _loop2:
 #       74/if-equal _loop2/disp8
@@ -89,34 +89,289 @@ subx-braces:  # in : (address buffered-file), out : (address buffered-file) -> <
     #       print(out, "_loop" next-label-id ":\n")
     #       push(label-stack, next-label-id)
     #       ++next-label-id
+    #       continue
     #     if line->data[line->read] == '}'
     #       var top = pop(label-stack)
     #       print(out, "_break" top ":\n")
+    #       continue
     #     while true
-    #       var word-slice : (address slice) = next-word-or-expression(line)
+    #       var word-slice : (address slice) = next-word-or-string(line)
     #       if slice-empty?(word-slice)                         # end of line
     #         break
     #       if slice-starts-with?(word-slice, "#")              # comment
     #         continue
     #       if slice-starts-with?(word-slice, "break/")
     #         var top = top(label-stack)
-    #         write(out, "_break" top)
+    #         print(out, "_break" top)
     #         word-slice->start += len("break")
     #       else if slice-starts-with?(word-slice, "loop/")
     #         var top = top(label-stack)
-    #         write(out, "_loop" top)
+    #         print(out, "_loop" top)
     #         word-slice->start += len("loop")
-    #       write(out, word-slice " ")
-    #     write(out, "\n")
+    #       print(out, word-slice " ")
+    #     print(out, "\n")
     #   flush(out)
     # . prolog
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-$subx-braces:loop:
-    eb/jump $subx-braces:loop/disp8
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = in
+    8b/-> *(ebp+8) 6/r32/esi
+    # var line/ecx : (address stream byte) = stream(512)
+    81 5/subop/subtract %esp 0x200/imm32
+    68/push 0x200/imm32/length
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %ecx 4/r32/esp
+    # var label-stack/edx : (address stack)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/length
+    68/push 0/imm32/top
+    89/<- %edx 4/r32/esp
+    # next-label-id/ebx = 1
+    c7 0/subop/copy %ebx 1/imm32
+    # var word-slice/edi = {0, 0}
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %edi 4/r32/esp
+$subx-braces:line-loop:
+    (clear-stream %ecx)
+    (read-line-buffered %esi %ecx)
+$subx-braces:check0:
+    # if (line->write == 0) break
+    81 7/subop/compare *ecx 0/imm32
+    0f 84/jump-if-equal  $subx-braces:break/disp32
+    (skip-chars-matching-whitespace %ecx)
+$subx-braces:check-for-curly-open:
+    # if (line->data[line->read] != '{') goto next check
+    # . eax = line->data[line->read]
+    8b/-> *(ecx+4) 0/r32/eax
+    8a/copy-byte *(ecx+eax+0xc) 0/r32/AL
+    81 4/subop/and %eax 0xff/imm32
+    # . if (eax != '{') continue
+    3d/compare-eax-and 0x7b/imm32/open-curly
+    0f 85/jump-if-not-equal $subx-braces:check-for-curly-closed/disp32
+$subx-braces:emit-curly-open:
+    # print(out, "_loop" next-label-id ":")
+    (write-buffered *(ebp+0xc) "_loop")
+    (print-int32-buffered *(ebp+0xc) %ebx)
+    (write-buffered *(ebp+0xc) ":")
+    # push(label-stack, next-label-id)
+    (push %edx %ebx)
+    # ++next-label-id
+    ff 0/subop/increment %ebx
+    # continue
+    e9/jump  $subx-braces:next-line/disp32
+$subx-braces:check-for-curly-closed:
+    # if (line->data[line->read] != '}') goto next check
+    3d/compare-eax-and 0x7d/imm32/close-curly
+    0f 85/jump-if-equal $subx-braces:word-loop/disp32
+$subx-braces:emit-curly-closed:
+    # eax = pop(label-stack)
+    (pop %edx)
+    # print(out, "_break" eax ":")
+    (write-buffered *(ebp+0xc) "_break")
+    (print-int32-buffered *(ebp+0xc) %eax)
+    (write-buffered *(ebp+0xc) ":")
+    # continue
+    e9/jump  $subx-braces:next-line/disp32
+$subx-braces:word-loop:
+    (next-word-or-string %ecx %edi)
+$subx-braces:check1:
+    # if (slice-empty?(word-slice)) break
+    (slice-empty? %edi)
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $subx-braces:next-line/disp32
+$subx-braces:check-for-comment:
+    # if (slice-starts-with?(word-slice, "#")) continue
+    # . eax = *word-slice->start
+    8b/-> *edi 0/r32/eax
+    8a/copy-byte *eax 0/r32/AL
+    81 4/subop/and %eax 0xff/imm32
+    # . if (eax == '#') continue
+    3d/compare-eax-and 0x23/imm32/hash
+    74/jump-if-equal $subx-braces:word-loop/disp8
+$subx-braces:check-for-break:
+    # if (!slice-starts-with?(word-slice, "break/")) goto next check
+    # . eax = slice-starts-with?(word-slice, "break/")
+    (slice-starts-with? %edi "break/")
+    # . if (eax == 0) goto next check
+    3d/compare-eax-and 0/imm32
+    74/jump-if-equal $subx-braces:check-for-loop/disp8
+$subx-braces:emit-break:
+    (top %edx)
+    # print(out, "_break" eax)
+    (write-buffered *(ebp+0xc) "_break")
+    (print-int32-buffered *(ebp+0xc) %eax)
+    # word-slice->start += len("break")
+    81 0/subop/add *edi 5/imm32/strlen
+    # emit rest of word as usual
+    eb/jump $subx-braces:emit-word-slice/disp8
+$subx-braces:check-for-loop:
+    # if (!slice-starts-with?(word-slice, "loop/")) emit word
+    # . eax = slice-starts-with?(word-slice, "loop/")
+    (slice-starts-with? %edi "loop/")
+    # . if (eax == 0) goto next check
+    3d/compare-eax-and 0/imm32
+    74/jump-if-equal $subx-braces:emit-word-slice/disp8
+$subx-braces:emit-loop:
+    (top %edx)
+    # print(out, "_loop" eax)
+    (write-buffered *(ebp+0xc) "_loop")
+    (print-int32-buffered *(ebp+0xc) %eax)
+    # word-slice->start += len("loop")
+    81 0/subop/add *edi 4/imm32/strlen
+    # fall through
+$subx-braces:emit-word-slice:
+    # print(out, word-slice " ")
+    (write-slice-buffered *(ebp+0xc) %edi)
+    (write-buffered *(ebp+0xc) Space)
+    # loop to next word
+    e9/jump $subx-braces:word-loop/disp32
+$subx-braces:next-line:
+    # print(out, "\n")
+    (write-buffered *(ebp+0xc) Newline)
+    # loop to next line
+    e9/jump $subx-braces:line-loop/disp32
+$subx-braces:break:
+    (flush *(ebp+0xc))
 $subx-braces:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x29c/imm32
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-subx-braces-passes-most-words-through:
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-output-stream)
+    # . clear-stream(_test-input-buffered-file+4)
+    b8/copy-to-eax  _test-input-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    (clear-stream %eax)
+    # . clear-stream(_test-output-buffered-file+4)
+    b8/copy-to-eax  _test-output-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    (clear-stream %eax)
+    # test
+    (write _test-input-stream "== abcd 0x1")
+    (subx-braces _test-input-buffered-file _test-output-buffered-file)
+    # check that the line just passed through
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     # }}}
+    (check-stream-equal _test-output-stream "== abcd 0x1 \n" "F - test-subx-braces-passes-most-words-through")
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-subx-braces-1:
+    # input:
+    #   {
+    #   ab break/imm32
+    #   cd loop/imm32
+    #   }
+    #
+    # output:
+    #   _loop1:
+    #   ab _break1/imm32
+    #   cd _loop1/imm32
+    #   _break1:
+    #
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-output-stream)
+    # . clear-stream(_test-input-buffered-file+4)
+    b8/copy-to-eax  _test-input-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    (clear-stream %eax)
+    # . clear-stream(_test-output-buffered-file+4)
+    b8/copy-to-eax  _test-output-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    (clear-stream %eax)
+    # test
+    (write _test-input-stream "{\nab break/imm32\ncd loop/imm32\n}")
+    (subx-braces _test-input-buffered-file _test-output-buffered-file)
+    # check that the line just passed through
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     # }}}
+    (check-stream-equal _test-output-stream "_loop0x00000001:\nab _break0x00000001/imm32 \ncd _loop0x00000001/imm32 \n_break0x00000001:\n" "F - test-subx-braces-1")
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-subx-braces-2:
+    # input:
+    #   {
+    #   {
+    #   ab break/imm32
+    #   }
+    #   cd loop/imm32
+    #   }
+    #
+    # output:
+    #   _loop1:
+    #   _loop2:
+    #   ab _break2/imm32
+    #   _break2:
+    #   cd _loop1/imm32
+    #   _break1:
+    #
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-output-stream)
+    # . clear-stream(_test-input-buffered-file+4)
+    b8/copy-to-eax  _test-input-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    (clear-stream %eax)
+    # . clear-stream(_test-output-buffered-file+4)
+    b8/copy-to-eax  _test-output-buffered-file/imm32
+    05/add-to-eax  4/imm32
+    (clear-stream %eax)
+    # test
+    (write _test-input-stream "{\n{\nab break/imm32\n}\ncd loop/imm32\n}")
+    (subx-braces _test-input-buffered-file _test-output-buffered-file)
+    # check that the line just passed through
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     # }}}
+    (check-stream-equal _test-output-stream "_loop0x00000001:\n_loop0x00000002:\nab _break0x00000002/imm32 \n_break0x00000002:\ncd _loop0x00000001/imm32 \n_break0x00000001:\n" "F - test-subx-braces-2")
     # . epilog
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -330,6 +585,68 @@ test-pop:
     58/pop-to-eax
     (check-ints-equal %eax 8 "F - test-pop: length")
     # clean up
-    58/pop-to-eax
-    58/pop-to-eax
+    81 0/subop/add %esp 8/imm32
+    c3/return
+
+top:  # s : (address stack) -> n/eax : int
+    # . prolog
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # esi = s
+    8b/-> *(ebp+8) 6/r32/esi
+    # if (s->top <= 0) abort
+    81 7/subop/compare *esi 0/imm32
+    7e/jump-if-lesser-or-equal $top:abort/disp8
+    # eax = s->data[s->top - 4]
+    8b/-> *esi 1/r32/ecx/top
+    81 5/subop/subtract %ecx 4/imm32
+    8b/-> *(esi+ecx+8) 0/r32/eax
+$top:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilog
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$top:abort:
+    # print(stderr, "error: top: nothing left in stack")
+    # . write-buffered(Stderr, "error: top: nothing left in stack")
+    # . . push args
+    68/push "error: top: nothing left in stack"/imm32
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . flush(Stderr)
+    # . . push args
+    68/push Stderr/imm32
+    # . . call
+    e8/call flush/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . syscall(exit, 1)
+    bb/copy-to-ebx 1/imm32
+    b8/copy-to-eax 1/imm32/exit
+    cd/syscall 0x80/imm8
+    # never gets here
+
+test-top:
+    # var ecx : (address stack) = stack of size 8 containing just 42
+    68/push 0/imm32
+    68/push 42/imm32
+    68/push 8/imm32/length
+    68/push 4/imm32/top
+    89/<- %ecx 4/r32/esp
+    #
+    (top %ecx)  # => eax
+    # result
+    (check-ints-equal %eax 42 "F - test-top: result")
+    # clean up
+    81 0/subop/add %esp 0x10/imm32
     c3/return
