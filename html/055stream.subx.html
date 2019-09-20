@@ -91,44 +91,43 @@ if ('onhashchange' in window) {
 <span id="L33" class="LineNr">33 </span>    c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8         0/imm32           <span class="subxComment"># copy to *(eax+4)</span>
 <span id="L34" class="LineNr">34 </span>    <span class="subxComment"># eax = f-&gt;data</span>
 <span id="L35" class="LineNr">35 </span>    81          0/subop/add         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to eax</span>
-<span id="L36" class="LineNr">36 </span>    <span class="subxComment"># while (true)</span>
-<span id="L37" class="LineNr">37 </span><span class="Constant">$clear-stream:loop</span>:
-<span id="L38" class="LineNr">38 </span>    <span class="subxComment"># if (eax &gt;= ecx) break</span>
-<span id="L39" class="LineNr">39 </span>    39/compare                      3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare eax with ecx</span>
-<span id="L40" class="LineNr">40 </span>    73/jump-if-greater-or-equal-unsigned  $clear-stream:end/disp8
-<span id="L41" class="LineNr">41 </span>    <span class="subxComment"># *eax = 0</span>
-<span id="L42" class="LineNr">42 </span>    c6          0/subop/copy        0/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm8            <span class="subxComment"># copy byte to *eax</span>
-<span id="L43" class="LineNr">43 </span>    <span class="subxComment"># ++eax</span>
-<span id="L44" class="LineNr">44 </span>    40/increment-eax
-<span id="L45" class="LineNr">45 </span>    eb/jump  $clear-stream:loop/disp8
-<span id="L46" class="LineNr">46 </span><span class="Constant">$clear-stream:end</span>:
-<span id="L47" class="LineNr">47 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L48" class="LineNr">48 </span>    59/pop-to-ecx
-<span id="L49" class="LineNr">49 </span>    58/pop-to-eax
-<span id="L50" class="LineNr">50 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L51" class="LineNr">51 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
-<span id="L52" class="LineNr">52 </span>    5d/pop-to-ebp
-<span id="L53" class="LineNr">53 </span>    c3/return
-<span id="L54" class="LineNr">54 </span>
-<span id="L55" class="LineNr">55 </span><span class="subxFunction">rewind-stream</span>:  <span class="subxComment"># f : (address stream) -&gt; &lt;void&gt;</span>
-<span id="L56" class="LineNr">56 </span>    <span class="subxS1Comment"># . prolog</span>
-<span id="L57" class="LineNr">57 </span>    55/push-ebp
-<span id="L58" class="LineNr">58 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
-<span id="L59" class="LineNr">59 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L60" class="LineNr">60 </span>    50/push-eax
-<span id="L61" class="LineNr">61 </span>    <span class="subxComment"># eax = f</span>
-<span id="L62" class="LineNr">62 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>                        0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to eax</span>
-<span id="L63" class="LineNr">63 </span>    <span class="subxComment"># f-&gt;read = 0</span>
-<span id="L64" class="LineNr">64 </span>    c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8         0/imm32           <span class="subxComment"># copy to *(eax+4)</span>
-<span id="L65" class="LineNr">65 </span><span class="Constant">$rewind-stream:end</span>:
-<span id="L66" class="LineNr">66 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L67" class="LineNr">67 </span>    58/pop-to-eax
-<span id="L68" class="LineNr">68 </span>    <span class="subxS1Comment"># . epilog</span>
-<span id="L69" class="LineNr">69 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
-<span id="L70" class="LineNr">70 </span>    5d/pop-to-ebp
-<span id="L71" class="LineNr">71 </span>    c3/return
-<span id="L72" class="LineNr">72 </span>
-<span id="L73" class="LineNr">73 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L36" class="LineNr">36 </span><span class="Constant">$clear-stream:loop</span>:
+<span id="L37" class="LineNr">37 </span>    <span class="subxComment"># if (eax &gt;= ecx) break</span>
+<span id="L38" class="LineNr">38 </span>    39/compare                      3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare eax with ecx</span>
+<span id="L39" class="LineNr">39 </span>    73/jump-if-greater-or-equal-unsigned  $clear-stream:end/disp8
+<span id="L40" class="LineNr">40 </span>    <span class="subxComment"># *eax = 0</span>
+<span id="L41" class="LineNr">41 </span>    c6          0/subop/copy-byte   0/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm8            <span class="subxComment"># copy byte to *eax</span>
+<span id="L42" class="LineNr">42 </span>    <span class="subxComment"># ++eax</span>
+<span id="L43" class="LineNr">43 </span>    40/increment-eax
+<span id="L44" class="LineNr">44 </span>    eb/jump  $clear-stream:<span class="Constant">loop</span>/disp8
+<span id="L45" class="LineNr">45 </span><span class="Constant">$clear-stream:end</span>:
+<span id="L46" class="LineNr">46 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L47" class="LineNr">47 </span>    59/pop-to-ecx
+<span id="L48" class="LineNr">48 </span>    58/pop-to-eax
+<span id="L49" class="LineNr">49 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L50" class="LineNr">50 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L51" class="LineNr">51 </span>    5d/pop-to-ebp
+<span id="L52" class="LineNr">52 </span>    c3/return
+<span id="L53" class="LineNr">53 </span>
+<span id="L54" class="LineNr">54 </span><span class="subxFunction">rewind-stream</span>:  <span class="subxComment"># f : (address stream) -&gt; &lt;void&gt;</span>
+<span id="L55" class="LineNr">55 </span>    <span class="subxS1Comment"># . prolog</span>
+<span id="L56" class="LineNr">56 </span>    55/push-ebp
+<span id="L57" class="LineNr">57 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
+<span id="L58" class="LineNr">58 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L59" class="LineNr">59 </span>    50/push-eax
+<span id="L60" class="LineNr">60 </span>    <span class="subxComment"># eax = f</span>
+<span id="L61" class="LineNr">61 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>                        0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to eax</span>
+<span id="L62" class="LineNr">62 </span>    <span class="subxComment"># f-&gt;read = 0</span>
+<span id="L63" class="LineNr">63 </span>    c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8         0/imm32           <span class="subxComment"># copy to *(eax+4)</span>
+<span id="L64" class="LineNr">64 </span><span class="Constant">$rewind-stream:end</span>:
+<span id="L65" class="LineNr">65 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L66" class="LineNr">66 </span>    58/pop-to-eax
+<span id="L67" class="LineNr">67 </span>    <span class="subxS1Comment"># . epilog</span>
+<span id="L68" class="LineNr">68 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L69" class="LineNr">69 </span>    5d/pop-to-ebp
+<span id="L70" class="LineNr">70 </span>    c3/return
+<span id="L71" class="LineNr">71 </span>
+<span id="L72" class="LineNr">72 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
