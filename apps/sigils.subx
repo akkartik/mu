@@ -66,10 +66,10 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 
     # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
+    # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    7e/jump-if-lesser-or-equal  $subx-sigils-main:interactive/disp8
+    # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
     68/push  "test"/imm32
@@ -78,33 +78,33 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
+    # . if (eax == 0) goto interactive
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-equal  $subx-sigils-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    eb/jump  $main:end/disp8
-$run-main:
+    eb/jump  $subx-sigils-main:end/disp8
+$subx-sigils-main:interactive:
     # - otherwise convert stdin
-    # convert(Stdin, Stdout)
+    # subx-sigils(Stdin, Stdout)
     # . . push args
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
-$main:end:
+$subx-sigils-main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 # error messages considered:
 #   *x + 34                 -> error: base+disp addressing must be within '()'
-convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-sigils:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   while true
@@ -151,7 +151,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-$convert:line-loop:
+$subx-sigils:line-loop:
     # clear-stream(line)
     # . . push args
     51/push-ecx
@@ -167,11 +167,11 @@ $convert:line-loop:
     e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check0:
+$subx-sigils:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $convert:break/disp32
-$convert:word-loop:
+    0f 84/jump-if-equal  $subx-sigils:break/disp32
+$subx-sigils:word-loop:
     # next-word-or-expression(line, word-slice)
     # . . push args
     52/push-edx
@@ -180,7 +180,7 @@ $convert:word-loop:
     e8/call  next-word-or-expression/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check1:
+$subx-sigils:check1:
     # if (slice-empty?(word-slice)) break
     # . eax = slice-empty?(word-slice)
     # . . push args
@@ -191,8 +191,8 @@ $convert:check1:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != 0) break
     3d/compare-eax-and  0/imm32
-    0f 85/jump-if-not-equal  $convert:next-line/disp32
-$convert:check-for-comment:
+    0f 85/jump-if-not-equal  $subx-sigils:next-line/disp32
+$subx-sigils:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
     # . start/ebx = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           3/r32/ebx   .               .                 # copy *edx to ebx
@@ -201,12 +201,12 @@ $convert:check-for-comment:
     8a/copy-byte                    0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/AL    .               .                 # copy byte at *ebx to AL
     # . if (eax == '#') continue
     3d/compare-eax-and  0x23/imm32/hash
-    74/jump-if-equal  $convert:word-loop/disp8
-$convert:check-for-direct-mode:
+    74/jump-if-equal  $subx-sigils:word-loop/disp8
+$subx-sigils:check-for-direct-mode:
     # if (!slice-starts-with?(word-slice, "%")) goto next check
     3d/compare-eax-and  0x25/imm32/percent
-    75/jump-if-not-equal  $convert:check-for-indirect-mode/disp8
-$convert:direct-mode:
+    75/jump-if-not-equal  $subx-sigils:check-for-indirect-mode/disp8
+$subx-sigils:direct-mode:
 #?     # dump word-slice {{{
 #?     # . write(2/stderr, "w: ")
 #?     # . . push args
@@ -262,11 +262,11 @@ $convert:direct-mode:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # continue
-    e9/jump  $convert:next-word/disp32
-$convert:check-for-indirect-mode:
+    e9/jump  $subx-sigils:next-word/disp32
+$subx-sigils:check-for-indirect-mode:
     # if (!slice-starts-with?(word-slice, "*")) goto next check
     3d/compare-eax-and  0x2a/imm32/asterisk
-    75/jump-if-not-equal  $convert:check-for-invalid-addition/disp8
+    75/jump-if-not-equal  $subx-sigils:check-for-invalid-addition/disp8
     # if (!disp32-mode?(word-slice)) goto indirect mode
     # . eax = disp32-mode?(word-slice)
     # . . push args
@@ -277,8 +277,8 @@ $convert:check-for-indirect-mode:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == 0) goto indirect mode
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $convert:indirect-mode/disp8
-$convert:disp32-mode:
+    74/jump-if-equal  $subx-sigils:indirect-mode/disp8
+$subx-sigils:disp32-mode:
     # emit-indirect-mode(out, word-slice)
     # . . push args
     52/push-edx
@@ -288,8 +288,8 @@ $convert:disp32-mode:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # continue
-    e9/jump  $convert:next-word/disp32
-$convert:indirect-mode:
+    e9/jump  $subx-sigils:next-word/disp32
+$subx-sigils:indirect-mode:
     # spill registers
     50/push-eax
     51/push-ecx
@@ -319,16 +319,16 @@ $convert:indirect-mode:
     59/pop-to-ecx
     58/pop-to-eax
     # continue
-    e9/jump  $convert:next-word/disp32
-$convert:check-for-invalid-addition:
+    e9/jump  $subx-sigils:next-word/disp32
+$subx-sigils:check-for-invalid-addition:
     # if (slice-starts-with?(word-slice, "+")) goto error1
     3d/compare-eax-and  0x2b/imm32/plus
-    74/jump-if-equal  $convert:error1/disp8
-$convert:check-for-invalid-left-shift:
+    74/jump-if-equal  $subx-sigils:error1/disp8
+$subx-sigils:check-for-invalid-left-shift:
     # if (slice-starts-with?(word-slice, "<")) goto error1
     3d/compare-eax-and  0x3c/imm32/less-than
-    74/jump-if-equal  $convert:error1/disp8
-$convert:regular-word:
+    74/jump-if-equal  $subx-sigils:error1/disp8
+$subx-sigils:regular-word:
     # write-slice-buffered(out, word-slice)
     # . . push args
     52/push-edx
@@ -338,7 +338,7 @@ $convert:regular-word:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # fall through
-$convert:next-word:
+$subx-sigils:next-word:
     # write-buffered(out, " ")
     # . . push args
     68/push  Space/imm32
@@ -348,8 +348,8 @@ $convert:next-word:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # loop
-    e9/jump  $convert:word-loop/disp32
-$convert:next-line:
+    e9/jump  $subx-sigils:word-loop/disp32
+$subx-sigils:next-line:
     # write-buffered(out, "\n")
     # . . push args
     68/push  Newline/imm32
@@ -359,8 +359,8 @@ $convert:next-line:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # loop
-    e9/jump  $convert:line-loop/disp32
-$convert:break:
+    e9/jump  $subx-sigils:line-loop/disp32
+$subx-sigils:break:
     # flush(out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
@@ -368,7 +368,7 @@ $convert:break:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-$convert:end:
+$subx-sigils:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x214/imm32       # add to esp
     # . restore registers
@@ -381,7 +381,7 @@ $convert:end:
     5d/pop-to-ebp
     c3/return
 
-$convert:error1:
+$subx-sigils:error1:
     # print(stderr, "error: '" eax "' only permitted within '*(...)' in '" line "'")
     # . write-buffered(Stderr, "error: '")
     # . . push args
@@ -436,7 +436,7 @@ $convert:error1:
     cd/syscall  0x80/imm8
     # never gets here
 
-test-convert-passes-most-words-through:
+test-subx-sigils-passes-most-words-through:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -482,12 +482,12 @@ test-convert-passes-most-words-through:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -526,7 +526,7 @@ test-convert-passes-most-words-through:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "== abcd 0x1 \n", msg)
     # . . push args
-    68/push  "F - test-convert-passes-most-words-through"/imm32
+    68/push  "F - test-subx-sigils-passes-most-words-through"/imm32
     68/push  "== abcd 0x1 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -538,7 +538,7 @@ test-convert-passes-most-words-through:
     5d/pop-to-ebp
     c3/return
 
-test-convert-direct-mode:
+test-subx-sigils-direct-mode:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -584,12 +584,12 @@ test-convert-direct-mode:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -628,7 +628,7 @@ test-convert-direct-mode:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "ab 3/mod/direct 0x00000001/rm32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-direct-mode"/imm32
+    68/push  "F - test-subx-sigils-direct-mode"/imm32
     68/push  "ab 3/mod/direct 0x00000001/rm32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -640,7 +640,7 @@ test-convert-direct-mode:
     5d/pop-to-ebp
     c3/return
 
-test-convert-direct-mode-with-metadata:
+test-subx-sigils-direct-mode-with-metadata:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -686,12 +686,12 @@ test-convert-direct-mode-with-metadata:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -704,7 +704,7 @@ test-convert-direct-mode-with-metadata:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-stream-equal(_test-output-stream, "ab 3/mod/direct 0x00000001/rm32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-direct-mode-with-metadata"/imm32
+    68/push  "F - test-subx-sigils-direct-mode-with-metadata"/imm32
     68/push  "ab 3/mod/direct 0x00000001/rm32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -716,7 +716,7 @@ test-convert-direct-mode-with-metadata:
     5d/pop-to-ebp
     c3/return
 
-test-convert-register-indirect-mode:
+test-subx-sigils-register-indirect-mode:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -762,12 +762,12 @@ test-convert-register-indirect-mode:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -806,7 +806,7 @@ test-convert-register-indirect-mode:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "ab 0/mod/indirect 0x00000001/rm32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-register-indirect-mode"/imm32
+    68/push  "F - test-subx-sigils-register-indirect-mode"/imm32
     68/push  "ab 0/mod/indirect 0x00000001/rm32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -818,7 +818,7 @@ test-convert-register-indirect-mode:
     5d/pop-to-ebp
     c3/return
 
-test-convert-register-indirect-mode-with-metadata:
+test-subx-sigils-register-indirect-mode-with-metadata:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -864,12 +864,12 @@ test-convert-register-indirect-mode-with-metadata:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -882,7 +882,7 @@ test-convert-register-indirect-mode-with-metadata:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-stream-equal(_test-output-stream, "ab 0/mod/indirect 0x00000001/rm32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-register-indirect-mode-with-metadata"/imm32
+    68/push  "F - test-subx-sigils-register-indirect-mode-with-metadata"/imm32
     68/push  "ab 0/mod/indirect 0x00000001/rm32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -894,7 +894,7 @@ test-convert-register-indirect-mode-with-metadata:
     5d/pop-to-ebp
     c3/return
 
-test-convert-register-indirect-mode-without-displacement:
+test-subx-sigils-register-indirect-mode-without-displacement:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -940,12 +940,12 @@ test-convert-register-indirect-mode-without-displacement:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -984,7 +984,7 @@ test-convert-register-indirect-mode-without-displacement:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "ab 0/mod/indirect 1/rm32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-register-indirect-mode-without-displacement"/imm32
+    68/push  "F - test-subx-sigils-register-indirect-mode-without-displacement"/imm32
     68/push  "ab 0/mod/indirect 0x00000001/rm32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -996,7 +996,7 @@ test-convert-register-indirect-mode-without-displacement:
     5d/pop-to-ebp
     c3/return
 
-test-convert-register-indirect-mode-with-displacement:
+test-subx-sigils-register-indirect-mode-with-displacement:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1042,12 +1042,12 @@ test-convert-register-indirect-mode-with-displacement:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -1086,7 +1086,7 @@ test-convert-register-indirect-mode-with-displacement:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "ab 2/mod/*+disp32 1/rm32 4/disp32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-register-indirect-mode-with-displacement"/imm32
+    68/push  "F - test-subx-sigils-register-indirect-mode-with-displacement"/imm32
     68/push  "ab 2/mod/*+disp32 0x00000001/rm32 0x00000004/disp32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1099,7 +1099,7 @@ test-convert-register-indirect-mode-with-displacement:
     c3/return
 
 # boss level
-test-convert-register-indirect-mode-with-sib-byte:
+test-subx-sigils-register-indirect-mode-with-sib-byte:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1145,12 +1145,12 @@ test-convert-register-indirect-mode-with-sib-byte:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -1189,7 +1189,7 @@ test-convert-register-indirect-mode-with-sib-byte:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "ab 2/mod/*+disp32 4/rm32/sib 1/base 2/index 3/scale 4/disp32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-register-indirect-mode-with-sib-byte"/imm32
+    68/push  "F - test-subx-sigils-register-indirect-mode-with-sib-byte"/imm32
     68/push  "ab 2/mod/*+disp32 4/rm32/sib 0x00000001/base 0x00000002/index 0x00000003/scale 0x00000004/disp32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1201,7 +1201,7 @@ test-convert-register-indirect-mode-with-sib-byte:
     5d/pop-to-ebp
     c3/return
 
-test-convert-register-indirect-mode-with-sib-byte-negative-displacement:
+test-subx-sigils-register-indirect-mode-with-sib-byte-negative-displacement:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1247,12 +1247,12 @@ test-convert-register-indirect-mode-with-sib-byte-negative-displacement:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -1291,7 +1291,7 @@ test-convert-register-indirect-mode-with-sib-byte-negative-displacement:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "ab 2/mod/*+disp32 4/rm32/sib 1/base 2/index 3/scale -4/disp32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-register-indirect-mode-with-sib-byte-negative-displacement"/imm32
+    68/push  "F - test-subx-sigils-register-indirect-mode-with-sib-byte-negative-displacement"/imm32
     68/push  "ab 2/mod/*+disp32 4/rm32/sib 0x00000001/base 0x00000002/index 0x00000003/scale 0xfffffffc/disp32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -1303,7 +1303,7 @@ test-convert-register-indirect-mode-with-sib-byte-negative-displacement:
     5d/pop-to-ebp
     c3/return
 
-test-convert-indirect-mode-without-register:
+test-subx-sigils-indirect-mode-without-register:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1349,12 +1349,12 @@ test-convert-indirect-mode-without-register:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-sigils(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-sigils/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -1393,7 +1393,7 @@ test-convert-indirect-mode-without-register:
 #?     # }}}
     # . check-stream-equal(_test-output-stream, "ab 0/mod/indirect 5/rm32/.disp32 Foo/disp32 \n", msg)
     # . . push args
-    68/push  "F - test-convert-indirect-mode-without-register"/imm32
+    68/push  "F - test-subx-sigils-indirect-mode-without-register"/imm32
     68/push  "ab 0/mod/indirect 5/rm32/.disp32 Foo/disp32 \n"/imm32
     68/push  _test-output-stream/imm32
     # . . call

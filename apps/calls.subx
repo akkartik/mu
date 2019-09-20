@@ -41,7 +41,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto run-main
     81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-lesser-or-equal $run-main/disp8
+    7e/jump-if-lesser-or-equal $subx-calls-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto run-main
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -53,29 +53,29 @@ Entry:  # run tests if necessary, convert stdin if not
     81 0/subop/add %esp 8/imm32
     # . if (eax == 0) goto run-main
     3d/compare-eax-and 0/imm32
-    74/jump-if-equal $run-main/disp8
+    74/jump-if-equal $subx-calls-main:interactive/disp8
     # run-tests()
     e8/call run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/-> *Num-test-failures 3/r32/ebx
-    eb/jump $main:end/disp8
-$run-main:
+    eb/jump $subx-calls-main:end/disp8
+$subx-calls-main:interactive:
     # - otherwise convert stdin
-    # convert(Stdin, Stdout)
+    # subx-calls(Stdin, Stdout)
     # . . push args
     68/push Stdout/imm32
     68/push Stdin/imm32
     # . . call
-    e8/call convert/disp32
+    e8/call subx-calls/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
     # syscall(exit, 0)
     bb/copy-to-ebx 0/imm32
-$main:end:
+$subx-calls-main:end:
     b8/copy-to-eax 1/imm32/exit
     cd/syscall 0x80/imm8
 
-convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-calls:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   var words : (address stream slice) = new-stream(16, 8)  # at most function name and 15 args
@@ -117,7 +117,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %edx 4/r32/esp
-$convert:loop:
+$subx-calls:loop:
     # clear-stream(line)
     # . . push args
     56/push-esi
@@ -133,10 +133,10 @@ $convert:loop:
     e8/call read-line-buffered/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
-$convert:check0:
+$subx-calls:check0:
     # if (line->write == 0) break
     81 7/subop/compare *esi 0/imm32
-    0f 84/jump-if-equal $convert:break/disp32
+    0f 84/jump-if-equal $subx-calls:break/disp32
     # skip-chars-matching-whitespace(line)
     # . . push args
     56/push-esi
@@ -152,8 +152,8 @@ $convert:check0:
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax == '(') goto convert-call
     3d/compare-eax-and 0x28/imm32/open-paren
-    74/jump-if-equal $convert:convert-call/disp8
-$convert:pass-through:
+    74/jump-if-equal $subx-calls:convert-call/disp8
+$subx-calls:pass-through:
     # write-stream-data(out, line)
     # . . push args
     56/push-esi
@@ -163,8 +163,8 @@ $convert:pass-through:
     # . . discard args
     81 0/subop/add %esp 8/imm32
     # continue
-    eb/jump $convert:loop/disp8
-$convert:convert-call:
+    eb/jump $subx-calls:loop/disp8
+$subx-calls:convert-call:
     # - emit comment
     # write-buffered(out, "# . ")
     # . . push args
@@ -209,8 +209,8 @@ $convert:convert-call:
     # . . discard args
     81 0/subop/add %esp 8/imm32
     # loop
-    e9/jump $convert:loop/disp32
-$convert:break:
+    e9/jump $subx-calls:loop/disp32
+$subx-calls:break:
     # flush(out)
     # . . push args
     ff 6/subop/push *(ebp+0xc)
@@ -218,7 +218,7 @@ $convert:break:
     e8/call flush/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-$convert:end:
+$subx-calls:end:
     # . reclaim locals
     81 0/subop/add %esp 0x298/imm32  # 0x20c + 0x8c
     # . restore registers
@@ -545,7 +545,7 @@ $emit-call:error1:
     cd/syscall 0x80/imm8
     # never gets here
 
-test-convert-passes-most-lines-through:
+test-subx-calls-passes-most-lines-through:
     # . prolog
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -590,12 +590,12 @@ test-convert-passes-most-lines-through:
     e8/call write/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-calls(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push _test-output-buffered-file/imm32
     68/push _test-input-buffered-file/imm32
     # . . call
-    e8/call convert/disp32
+    e8/call subx-calls/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
     # check that the line just passed through
@@ -608,7 +608,7 @@ test-convert-passes-most-lines-through:
     81 0/subop/add %esp 4/imm32
     # . check-stream-equal(_test-output-stream, "== abcd 0x1\n", msg)
     # . . push args
-    68/push "F - test-convert-passes-most-lines-through"/imm32
+    68/push "F - test-subx-calls-passes-most-lines-through"/imm32
     68/push "== abcd 0x1\n"/imm32
     68/push _test-output-stream/imm32
     # . . call
@@ -620,7 +620,7 @@ test-convert-passes-most-lines-through:
     5d/pop-to-ebp
     c3/return
 
-test-convert-processes-calls:
+test-subx-calls-processes-calls:
     # . prolog
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -665,12 +665,12 @@ test-convert-processes-calls:
     e8/call write/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-calls(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push _test-output-buffered-file/imm32
     68/push _test-input-buffered-file/imm32
     # . . call
-    e8/call convert/disp32
+    e8/call subx-calls/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
     # check that the line just passed through
@@ -716,7 +716,7 @@ test-convert-processes-calls:
 #?     # }}}
     # . check-next-stream-line-equal(_test-output-stream, "# . (foo %eax)", msg)
     # . . push args
-    68/push "F - test-convert-processes-calls: comment"/imm32
+    68/push "F - test-subx-calls-processes-calls: comment"/imm32
     68/push "# . (foo %eax)"/imm32
     68/push _test-output-stream/imm32
     # . . call
@@ -725,7 +725,7 @@ test-convert-processes-calls:
     81 0/subop/add %esp 0xc/imm32
     # . check-next-stream-line-equal(_test-output-stream, "ff 6/subop/push %eax", msg)
     # . . push args
-    68/push "F - test-convert-processes-calls: arg 0"/imm32
+    68/push "F - test-subx-calls-processes-calls: arg 0"/imm32
     68/push "ff 6/subop/push %eax"/imm32
     68/push _test-output-stream/imm32
     # . . call
@@ -734,7 +734,7 @@ test-convert-processes-calls:
     81 0/subop/add %esp 0xc/imm32
     # . check-next-stream-line-equal(_test-output-stream, "e8/call foo/disp32", msg)
     # . . push args
-    68/push "F - test-convert-processes-calls: call"/imm32
+    68/push "F - test-subx-calls-processes-calls: call"/imm32
     68/push "e8/call foo/disp32"/imm32
     68/push _test-output-stream/imm32
     # . . call
@@ -743,7 +743,7 @@ test-convert-processes-calls:
     81 0/subop/add %esp 0xc/imm32
     # . check-next-stream-line-equal(_test-output-stream, "81 0/subop/add %esp 4/imm32", msg)
     # . . push args
-    68/push "F - test-convert-processes-calls: pops"/imm32
+    68/push "F - test-subx-calls-processes-calls: pops"/imm32
     68/push "81 0/subop/add %esp 0x00000004/imm32"/imm32
     68/push _test-output-stream/imm32
     # . . call

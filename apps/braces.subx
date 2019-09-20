@@ -55,27 +55,27 @@ Entry:  # run tests if necessary, a REPL if not
     89/<- %ebp 4/r32/esp
     # initialize heap
     (new-segment Heap-size Heap)
-    # if (argc <= 1) goto run-main
+    # if (argc <= 1) goto interactive
     81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-lesser-or-equal $run-main/disp8
-    # if (argv[1] != "test")) goto run-main
+    7e/jump-if-lesser-or-equal $subx-braces-main:interactive/disp8
+    # if (argv[1] != "test")) goto interactive
     (kernel-string-equal? *(ebp+8) "test")  # => eax
     3d/compare-eax-and 0/imm32
-    74/jump-if-equal $run-main/disp8
+    74/jump-if-equal $subx-braces-main:interactive/disp8
     #
     (run-tests)
     # syscall(exit, *Num-test-failures)
     8b/-> *Num-test-failures 3/r32/ebx
-    eb/jump $main:end/disp8
-$run-main:
-    (convert Stdin Stdout)
+    eb/jump $subx-braces-main:end/disp8
+$subx-braces-main:interactive:
+    (subx-braces Stdin Stdout)
     # syscall(exit, 0)
     bb/copy-to-ebx 0/imm32
-$main:end:
+$subx-braces-main:end:
     b8/copy-to-eax 1/imm32/exit
     cd/syscall 0x80/imm8
 
-convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-braces:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   var label-stack : (address stack) = new-stack(32*4)  # at most 32 levels of nesting
@@ -113,9 +113,9 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-$convert:loop:
-    eb/jump $convert:loop/disp8
-$convert:end:
+$subx-braces:loop:
+    eb/jump $subx-braces:loop/disp8
+$subx-braces:end:
     # . restore registers
     # . epilog
     89/<- %esp 5/r32/ebp
