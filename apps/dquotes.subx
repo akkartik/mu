@@ -2,7 +2,7 @@
 # Replace them with references to new variables in the data segment.
 #
 # To run:
-#   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/dquotes.subx  -o apps/dquotes
+#   $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx  -o apps/dquotes
 #   $ cat x
 #   == code
 #   ab "cd ef"/imm32
@@ -33,11 +33,11 @@ Entry:  # run tests if necessary, convert stdin if not
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 
-    # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
+    # - if argc > 1 and argv[1] == "test", then return run-tests()
+    # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    7e/jump-if-lesser-or-equal  $subx-dquotes-main:interactive/disp8
+    # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
     68/push  "test"/imm32
@@ -46,15 +46,15 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
+    # . if (eax == 0) goto interactive
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-equal  $subx-dquotes-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    eb/jump  $main:end/disp8
-$run-main:
+    eb/jump  $subx-dquotes-main:end/disp8
+$subx-dquotes-main:interactive:
     # - otherwise convert stdin
     # var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
@@ -62,19 +62,19 @@ $run-main:
     # configure ed to really exit()
     # . ed->target = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # convert(Stdin, 1/stdout, 2/stderr, ed)
+    # subx-dquotes(Stdin, 1/stdout, 2/stderr, ed)
     # . . push args
     50/push-eax/ed
     68/push  Stderr/imm32
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-dquotes/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
-$main:end:
+$subx-dquotes-main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
@@ -82,7 +82,7 @@ $main:end:
 #   line = words separated by ' ', maybe followed by comment starting with '#'
 #   word = datum until '/', then 0 or more metadata separated by '/'
 
-convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-dquotes:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   var new-data-segment = new-stream(Heap, Segment-size, 1)
@@ -146,7 +146,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:line-loop:
+$subx-dquotes:line-loop:
     # clear-stream(line)
     # . . push args
     51/push-ecx
@@ -162,11 +162,11 @@ $convert:line-loop:
     e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check0:
+$subx-dquotes:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $convert:break/disp32
-$convert:word-loop:
+    0f 84/jump-if-equal  $subx-dquotes:break/disp32
+$subx-dquotes:word-loop:
     # next-word-or-string(line, word-slice)
     # . . push args
     52/push-edx
@@ -175,7 +175,7 @@ $convert:word-loop:
     e8/call  next-word-or-string/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check1:
+$subx-dquotes:check1:
     # if (slice-empty?(word-slice)) break
     # . eax = slice-empty?(word-slice)
     # . . push args
@@ -186,8 +186,8 @@ $convert:check1:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != 0) break
     3d/compare-eax-and  0/imm32
-    0f 85/jump-if-not-equal  $convert:next-line/disp32
-$convert:check-for-comment:
+    0f 85/jump-if-not-equal  $subx-dquotes:next-line/disp32
+$subx-dquotes:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
     # . start/esi = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           6/r32/esi   .               .                 # copy *edx to esi
@@ -196,12 +196,12 @@ $convert:check-for-comment:
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # . if (eax == '#') continue
     3d/compare-eax-and  0x23/imm32/hash
-    74/jump-if-equal  $convert:word-loop/disp8
-$convert:check-for-string-literal:
+    74/jump-if-equal  $subx-dquotes:word-loop/disp8
+$subx-dquotes:check-for-string-literal:
     # if (slice-starts-with?(word-slice, '"')) continue
     3d/compare-eax-and  0x22/imm32/dquote
-    75/jump-if-not-equal  $convert:regular-word/disp8
-$convert:string-literal:
+    75/jump-if-not-equal  $subx-dquotes:regular-word/disp8
+$subx-dquotes:string-literal:
     # process-string-literal(word-slice, out, new-data-segment)
     # . . push args
     57/push-edi
@@ -212,8 +212,8 @@ $convert:string-literal:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # continue
-    eb/jump  $convert:next-word/disp8
-$convert:regular-word:
+    eb/jump  $subx-dquotes:next-word/disp8
+$subx-dquotes:regular-word:
     # write-slice-buffered(out, word-slice)
     # . . push args
     52/push-edx
@@ -223,7 +223,7 @@ $convert:regular-word:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # fall through
-$convert:next-word:
+$subx-dquotes:next-word:
     # write-buffered(out, " ")
     # . . push args
     68/push  Space/imm32
@@ -233,8 +233,8 @@ $convert:next-word:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # loop
-    eb/jump  $convert:word-loop/disp8
-$convert:next-line:
+    eb/jump  $subx-dquotes:word-loop/disp8
+$subx-dquotes:next-line:
     # write-buffered(out, "\n")
     # . . push args
     68/push  Newline/imm32
@@ -244,8 +244,8 @@ $convert:next-line:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # loop
-    e9/jump  $convert:line-loop/disp32
-$convert:break:
+    e9/jump  $subx-dquotes:line-loop/disp32
+$subx-dquotes:break:
     # write-stream-data(out, new-data-segment)
     # . . push args
     57/push-edi
@@ -261,7 +261,7 @@ $convert:break:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-$convert:end:
+$subx-dquotes:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x214/imm32       # add to esp
     # . restore registers
@@ -383,7 +383,7 @@ $process-string-literal:end:
     5d/pop-to-ebp
     c3/return
 
-test-convert-is-idempotent-by-default:
+test-subx-dquotes-is-idempotent-by-default:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -502,12 +502,12 @@ test-convert-is-idempotent-by-default:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-dquotes(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-dquotes/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . flush(_test-output-buffered-file)
@@ -556,7 +556,7 @@ test-convert-is-idempotent-by-default:
 #?     # }}}
     # . check-next-stream-line-equal(_test-output-stream, "", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/0"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/0"/imm32
     68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -565,7 +565,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/1"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/1"/imm32
     68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -574,7 +574,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== code 0x1 ", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/2"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/2"/imm32
     68/push  "== code 0x1 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -583,7 +583,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/3"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/3"/imm32
     68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -592,7 +592,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "1 ", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/4"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/4"/imm32
     68/push  "1 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -601,7 +601,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/5"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/5"/imm32
     68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -610,7 +610,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "2 3 ", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/6"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/6"/imm32
     68/push  "2 3 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -619,7 +619,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== data 0x2 ", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/7"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/7"/imm32
     68/push  "== data 0x2 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -628,7 +628,7 @@ test-convert-is-idempotent-by-default:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "4 5/imm32 ", msg)
     # . . push args
-    68/push  "F - test-convert-is-idempotent-by-default/8"/imm32
+    68/push  "F - test-subx-dquotes-is-idempotent-by-default/8"/imm32
     68/push  "4 5/imm32 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -640,7 +640,7 @@ test-convert-is-idempotent-by-default:
     5d/pop-to-ebp
     c3/return
 
-test-convert-processes-string-literals:
+test-subx-dquotes-processes-string-literals:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -703,12 +703,12 @@ test-convert-processes-string-literals:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-dquotes(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-dquotes/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . flush(_test-output-buffered-file)
@@ -769,7 +769,7 @@ test-convert-processes-string-literals:
 #?     # }}}
     # . check-next-stream-line-equal(_test-output-stream, "== code 0x1 ", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/0"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/0"/imm32
     68/push  "== code 0x1 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -778,7 +778,7 @@ test-convert-processes-string-literals:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "1 _string1/x ", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/1"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/1"/imm32
     68/push  "1 _string1/x "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -787,7 +787,7 @@ test-convert-processes-string-literals:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "2 _string2/y ", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/2"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/2"/imm32
     68/push  "2 _string2/y "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -796,7 +796,7 @@ test-convert-processes-string-literals:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== data", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/3"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/3"/imm32
     68/push  "== data"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -805,7 +805,7 @@ test-convert-processes-string-literals:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "_string1: ", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/4"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/4"/imm32
     68/push  "_string1:"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -814,7 +814,7 @@ test-convert-processes-string-literals:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "1/imm32 61/a ", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/5"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/5"/imm32
     68/push  "0x00000001/imm32 61/a "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -823,7 +823,7 @@ test-convert-processes-string-literals:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "_string2: ", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/6"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/6"/imm32
     68/push  "_string2:"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -832,7 +832,7 @@ test-convert-processes-string-literals:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "2/imm32 62/b 63/c ", msg)
     # . . push args
-    68/push  "F - test-convert-processes-string-literals/7"/imm32
+    68/push  "F - test-subx-dquotes-processes-string-literals/7"/imm32
     68/push  "0x00000002/imm32 62/b 63/c "/imm32
     68/push  _test-output-stream/imm32
     # . . call

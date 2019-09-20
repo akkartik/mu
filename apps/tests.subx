@@ -2,7 +2,7 @@
 # all functions starting with 'test-'.
 #
 # To build:
-#   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/tests.subx  -o apps/tests
+#   $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o apps/tests
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -33,7 +33,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto run-main
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
+    7e/jump-if-lesser-or-equal  $subx-tests-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto run-main
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -45,29 +45,29 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == 0) goto run-main
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-equal  $subx-tests-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    eb/jump  $main:end/disp8
-$run-main:
+    eb/jump  $subx-tests-main:end/disp8
+$subx-tests-main:interactive:
     # - otherwise convert stdin
-    # convert(Stdin, Stdout)
+    # subx-gen-run-tests(Stdin, Stdout)
     # . . push args
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-gen-run-tests/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
-$main:end:
+$subx-tests-main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
-convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-gen-run-tests:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode
     #   bool tests-found = false
     #   var line = new-stream(512, 1)
@@ -141,7 +141,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:loop:
+$subx-gen-run-tests:loop:
     # clear-stream(line)
     # . . push args
     51/push-ecx
@@ -157,10 +157,10 @@ $convert:loop:
     e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check0:
+$subx-gen-run-tests:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $convert:break/disp32
+    0f 84/jump-if-equal  $subx-gen-run-tests:break/disp32
     # next-word(line, word-slice)
     # . . push args
     52/push-edx
@@ -169,7 +169,7 @@ $convert:check0:
     e8/call  next-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check-for-label:
+$subx-gen-run-tests:check-for-label:
     # if (!is-label?(word-slice)) continue
     # . eax = is-label?(word-slice)
     # . . push args
@@ -180,8 +180,8 @@ $convert:check-for-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == 0) continue
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $convert:continue/disp8
-$convert:check-label-prefix:
+    74/jump-if-equal  $subx-gen-run-tests:continue/disp8
+$subx-gen-run-tests:check-label-prefix:
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
     # if !slice-starts-with?(word-slice, "test-") continue
@@ -194,8 +194,8 @@ $convert:check-label-prefix:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == 0) break
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $convert:continue/disp8
-$convert:call-test-function:
+    74/jump-if-equal  $subx-gen-run-tests:continue/disp8
+$subx-gen-run-tests:call-test-function:
     # tests-found? = true
     bb/copy-to-ebx  1/imm32/true
     # write(new-code-segment, "  e8/call  ")
@@ -222,7 +222,7 @@ $convert:call-test-function:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:continue:
+$subx-gen-run-tests:continue:
     # rewind-stream(line)
     # . . push args
     51/push-ecx
@@ -239,11 +239,11 @@ $convert:continue:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # loop
-    e9/jump  $convert:loop/disp32
-$convert:break:
+    e9/jump  $subx-gen-run-tests:loop/disp32
+$subx-gen-run-tests:break:
     # if (!tests-found?) goto end
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
-    74/jump-if-equal  $convert:end/disp8
+    74/jump-if-equal  $subx-gen-run-tests:end/disp8
     # write(new-code-segment, "  c3/return\n")
     # . . push args
     68/push  "  c3/return\n"/imm32
@@ -260,7 +260,7 @@ $convert:break:
     e8/call  write-stream-data/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:end:
+$subx-gen-run-tests:end:
     # flush(out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)

@@ -3,7 +3,7 @@
 # comments between '#' and newline.
 #
 # To run:
-#   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/hex.subx  -o apps/hex
+#   $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx  -o apps/hex
 #   $ echo '80 81 82  # comment'  |./subx run apps/hex  |xxd -
 # Expected output:
 #   00000000: 8081 82
@@ -32,10 +32,10 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 
     # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
+    # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $hex:run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    7e/jump-if-lesser-or-equal  $subx-hex-main:interactive/disp8
+    # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
     68/push  "test"/imm32
@@ -44,15 +44,15 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
+    # . if (eax == 0) goto interactive
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $hex:run-main/disp8
+    74/jump-if-equal  $subx-hex-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    eb/jump  $hex:end/disp8
-$hex:run-main:
+    eb/jump  $subx-hex-main:end/disp8
+$subx-hex-main:interactive:
     # - otherwise convert stdin
     # var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
@@ -60,24 +60,24 @@ $hex:run-main:
     # configure ed to really exit()
     # . ed->target = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # convert-hex(Stdin, 1/stdout, 2/stderr, ed)
+    # subx-hex(Stdin, 1/stdout, 2/stderr, ed)
     # . . push args
     50/push-eax/ed
     68/push  Stderr/imm32
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
-    e8/call  convert-hex/disp32
+    e8/call  subx-hex/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
-$hex:end:
+$subx-hex-main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
 # the main entry point
-convert-hex:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
+subx-hex:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> <void>
     # pseudocode:
     #   while true
     #     eax = convert-next-octet(in, err, ed)
@@ -90,7 +90,7 @@ convert-hex:  # in : (address buffered-file), out : (address buffered-file), err
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     50/push-eax
-$convert-hex:loop:
+$subx-hex:loop:
     # eax = convert-next-octet(in, err, ed)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x14/disp8      .                 # push *(ebp+20)
@@ -102,7 +102,7 @@ $convert-hex:loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # if (eax == Eof) break
     3d/compare-eax-and  0xffffffff/imm32/Eof
-    74/jump-if-equal  $convert-hex:loop-end/disp8
+    74/jump-if-equal  $subx-hex:loop-end/disp8
     # write-byte-buffered(out, AL)
     # . . push args
     50/push-eax
@@ -112,8 +112,8 @@ $convert-hex:loop:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # loop
-    eb/jump  $convert-hex:loop/disp8
-$convert-hex:loop-end:
+    eb/jump  $subx-hex:loop/disp8
+$subx-hex:loop-end:
     # flush(out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
@@ -121,7 +121,7 @@ $convert-hex:loop-end:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-$convert-hex:end:
+$subx-hex:end:
     # . restore registers
     58/pop-to-eax
     # . epilog

@@ -104,12 +104,12 @@ You can use SubX to translate itself. For example, running natively on Linux:
 
   ```sh
   # generate translator phases using the C++ translator
-  $ ./subx translate init.linux 0[0-6]*.subx 070---hex.subx                    -o hex
-  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/survey.subx -o survey
-  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/pack.subx   -o pack
-  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/assort.subx -o assort
-  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/dquotes.subx -o dquotes
-  $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/tests.subx  -o tests
+  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
+  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx -o survey
+  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
+  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
+  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
+  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
   $ chmod +x hex survey pack assort dquotes tests
 
   # use the generated translator phases to translate SubX programs

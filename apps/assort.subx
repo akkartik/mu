@@ -7,7 +7,7 @@
 # because we don't know if they refer to the line above or the line below.
 #
 # To run:
-#   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/assort.subx  -o apps/assort
+#   $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx  -o apps/assort
 #   $ cat x
 #   == code
 #   abc
@@ -38,10 +38,10 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 
     # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
+    # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    7e/jump-if-lesser-or-equal  $subx-assort-main:interactive/disp8
+    # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
     68/push  "test"/imm32
@@ -50,15 +50,15 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
+    # . if (eax == 0) goto interactive
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-equal  $subx-assort-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    eb/jump  $main:end/disp8
-$run-main:
+    eb/jump  $subx-assort-main:end/disp8
+$subx-assort-main:interactive:
     # - otherwise convert stdin
     # var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
@@ -66,19 +66,19 @@ $run-main:
     # configure ed to really exit()
     # . ed->target = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # convert(Stdin, Stdout, Stderr, ed)
+    # subx-assort(Stdin, Stdout, Stderr, ed)
     # . . push args
     50/push-eax/ed
     68/push  Stderr/imm32
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-assort/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
-$main:end:
+$subx-assort-main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
@@ -86,7 +86,7 @@ $main:end:
 #   table: (address stream {string, (address stream byte)})     (8 bytes per row)
 # inefficient; uses sequential search for looking up segments by name
 
-convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-assort:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var table : (address stream) = new-stream(10 rows, 8 bytes each)
     #   read-segments(in, table)
@@ -110,7 +110,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-$convert:read:
+$subx-assort:read:
 #?     # print("read\n") {{{
 #?     # . . push args
 #?     68/push  "read\n"/imm32
@@ -128,7 +128,7 @@ $convert:read:
     e8/call  read-segments/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:write:
+$subx-assort:write:
 #?     # print("write\n") {{{
 #?     # . . push args
 #?     68/push  "write\n"/imm32
@@ -146,7 +146,7 @@ $convert:write:
     e8/call  write-segments/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:end:
+$subx-assort:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x5c/imm32        # add to esp
     # . restore registers
@@ -156,7 +156,7 @@ $convert:end:
     5d/pop-to-ebp
     c3/return
 
-test-convert:
+test-subx-assort:
     # . prolog
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -320,12 +320,12 @@ test-convert:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-assort(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-assort/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . flush(_test-output-buffered-file)
@@ -379,7 +379,7 @@ test-convert:
 #?     # }}}
     # . check-next-stream-line-equal(_test-output-stream, "== code 0x09000000", msg)
     # . . push args
-    68/push  "F - test-convert/0"/imm32
+    68/push  "F - test-subx-assort/0"/imm32
     68/push  "== code 0x09000000"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -388,7 +388,7 @@ test-convert:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "1", msg)
     # . . push args
-    68/push  "F - test-convert/1"/imm32
+    68/push  "F - test-subx-assort/1"/imm32
     68/push  "1"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -397,7 +397,7 @@ test-convert:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "2 3 # comment 4 inline with other contents", msg)
     # . . push args
-    68/push  "F - test-convert/2"/imm32
+    68/push  "F - test-subx-assort/2"/imm32
     68/push  "2 3 # comment 4 inline with other contents"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -406,7 +406,7 @@ test-convert:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "6 7", msg)
     # . . push args
-    68/push  "F - test-convert/3"/imm32
+    68/push  "F - test-subx-assort/3"/imm32
     68/push  "6 7"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -415,7 +415,7 @@ test-convert:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "8 9", msg)
     # . . push args
-    68/push  "F - test-convert/4"/imm32
+    68/push  "F - test-subx-assort/4"/imm32
     68/push  "8 9"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -424,7 +424,7 @@ test-convert:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "10 11", msg)
     # . . push args
-    68/push  "F - test-convert/5"/imm32
+    68/push  "F - test-subx-assort/5"/imm32
     68/push  "10 11"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -433,7 +433,7 @@ test-convert:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== data 0x0a000000", msg)
     # . . push args
-    68/push  "F - test-convert/6"/imm32
+    68/push  "F - test-subx-assort/6"/imm32
     68/push  "== data 0x0a000000"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -442,7 +442,7 @@ test-convert:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "4 5/imm32", msg)
     # . . push args
-    68/push  "F - test-convert/7"/imm32
+    68/push  "F - test-subx-assort/7"/imm32
     68/push  "4 5/imm32"/imm32
     68/push  _test-output-stream/imm32
     # . . call

@@ -5,7 +5,7 @@
 #   b) add segment headers with addresses and offsets correctly filled in
 #
 # To build:
-#   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/survey.subx  -o apps/survey
+#   $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx  -o apps/survey
 #
 # The expected input is a stream of bytes with segment headers, comments and
 # some interspersed labels.
@@ -62,10 +62,10 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 
     # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
+    # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    7e/jump-if-lesser-or-equal  $subx-survey-main:interactive/disp8
+    # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
     68/push  "test"/imm32
@@ -74,22 +74,22 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
+    # . if (eax == 0) goto interactive
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-equal  $subx-survey-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    eb/jump  $main:end/disp8
-$run-main:
+    eb/jump  $subx-survey-main:end/disp8
+$subx-survey-main:interactive:
     # - otherwise convert stdin
-    # convert(Stdin, Stdout)
+    # subx-survey(Stdin, Stdout)
     # . . push args
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-survey/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . write-stream(2/stderr, Trace-stream)
@@ -102,7 +102,7 @@ $run-main:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
-$main:end:
+$subx-survey-main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
@@ -113,7 +113,7 @@ $main:end:
 #   labels: (address stream {string, label-info})         (16 bytes per row)
 # these are all inefficient; use sequential scans for lookups
 
-convert:  # infile : (address buffered-file), out : (address buffered-file) -> <void>
+subx-survey:  # infile : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode
     #   var in : (address stream byte) = stream(4096)
     #   slurp(infile, in)
@@ -440,7 +440,7 @@ convert:  # infile : (address buffered-file), out : (address buffered-file) -> <
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-$convert:end:
+$subx-survey:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x30a0/imm32      # add to esp
     # . restore registers
@@ -452,7 +452,7 @@ $convert:end:
     5d/pop-to-ebp
     c3/return
 
-test-convert-computes-addresses:
+test-subx-survey-computes-addresses:
     # input:
     #   == code 0x1
     #   Entry:
@@ -552,12 +552,12 @@ test-convert-computes-addresses:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-survey(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-survey/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check trace
@@ -589,7 +589,7 @@ test-convert-computes-addresses:
 #?     # }}}
     # . check-trace-contains("label 'x' is at address 0x00001079.", msg)
     # . . push args
-    68/push  "F - test-convert-computes-addresses/0"/imm32
+    68/push  "F - test-subx-survey-computes-addresses/0"/imm32
     68/push  "label 'x' is at address 0x00001079."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
@@ -597,7 +597,7 @@ test-convert-computes-addresses:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . check-trace-contains("segment 'code' starts at address 0x00000074.", msg)
     # . . push args
-    68/push  "F - test-convert-computes-addresses/1"/imm32
+    68/push  "F - test-subx-survey-computes-addresses/1"/imm32
     68/push  "segment 'code' starts at address 0x00000074."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
@@ -605,7 +605,7 @@ test-convert-computes-addresses:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . check-trace-contains("segment 'code' has size 0x00000005.", msg)
     # . . push args
-    68/push  "F - test-convert-computes-addresses/2"/imm32
+    68/push  "F - test-subx-survey-computes-addresses/2"/imm32
     68/push  "segment 'code' has size 0x00000005."/imm32
     # . . call
     e8/call  check-trace-contains/disp32
@@ -613,7 +613,7 @@ test-convert-computes-addresses:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . check-trace-contains("segment 'data' starts at address 0x00001079.", msg)
     # . . push args
-    68/push  "F - test-convert-computes-addresses/3"/imm32
+    68/push  "F - test-subx-survey-computes-addresses/3"/imm32
     68/push  "segment 'data' starts at address 0x00001079."/imm32
     # . . call
     e8/call  check-trace-contains/disp32

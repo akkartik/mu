@@ -225,82 +225,28 @@ test $NATIVE  &&  {
 
 # Phases of the self-hosted SubX translator.
 
-echo hex
-./subx translate init.$OS $(enumerate/enumerate --until 070---hex.subx |grep '\.subx$') -o apps/hex
-test "$1" = 'record'  ||  git diff --exit-code apps/hex
-test $EMULATED  &&  {
-  ./subx run apps/hex test
-  echo
-}
-test $NATIVE  &&  {
-  apps/hex test
-  echo
-}
-
-echo survey
-./subx translate init.$OS 0*.subx apps/subx-common.subx apps/survey.subx  -o apps/survey
-test "$1" = 'record'  ||  git diff --exit-code apps/survey
-test $EMULATED  &&  {
-  ./subx run apps/survey test
-  echo
-}
-test $NATIVE  &&  {
-  apps/survey test
-  echo
-}
-
-echo pack
-./subx translate init.$OS 0*.subx apps/subx-common.subx apps/pack.subx  -o apps/pack
-test "$1" = 'record'  ||  git diff --exit-code apps/pack
-test $EMULATED  &&  {
-  ./subx run apps/pack test
-  echo
-}
-test $NATIVE  &&  {
-  apps/pack test
-  echo
-}
-
-echo assort
-./subx translate init.$OS 0*.subx apps/subx-common.subx apps/assort.subx  -o apps/assort
-test "$1" = 'record'  ||  git diff --exit-code apps/assort
-test $EMULATED  &&  {
-  ./subx run apps/assort test
-  echo
-}
-test $NATIVE  &&  {
-  apps/assort test
-  echo
-}
-
-echo dquotes
-./subx translate init.$OS 0*.subx apps/subx-common.subx apps/dquotes.subx  -o apps/dquotes
-test "$1" = 'record'  ||  git diff --exit-code apps/dquotes
-test $EMULATED  &&  {
-  ./subx run apps/dquotes test
-  echo
-}
-test $NATIVE  &&  {
-  apps/dquotes test
-  echo
-}
-
-echo tests
-./subx translate init.$OS 0*.subx apps/subx-common.subx apps/tests.subx  -o apps/tests
-test "$1" = 'record'  ||  git diff --exit-code apps/tests
-test $EMULATED  &&  {
-  ./subx run apps/tests test
-  echo
-}
-test $NATIVE  &&  {
-  apps/tests test
-  echo
-}
+for phase in hex survey pack assort dquotes tests
+do
+  echo $phase
+  ./subx translate init.$OS 0*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
+  test "$1" = 'record'  ||  git diff --exit-code apps/hex
+  test $EMULATED  &&  {
+    ./subx run apps/$phase test
+    echo
+  }
+  test $NATIVE  &&  {
+    apps/$phase test
+    echo
+  }
+done
 
 # Higher-level syntax.
 
+# Certain phases of translation run native beyond this point. We're starting
+# to go beyond functionality of the C++ bootstrap.
+
 echo sigils
-./subx translate init.$OS 0*.subx apps/subx-common.subx apps/sigils.subx  -o apps/sigils
+./subx translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
 [ "$1" != record ]  &&  git diff --exit-code apps/sigils
 ./subx run apps/sigils test
 echo
@@ -310,7 +256,7 @@ test `uname` = 'Linux'  &&  {
 }
 
 echo calls
-cat init.$OS 0*.subx apps/subx-common.subx apps/calls.subx  |  apps/sigils  > a.sigils
+cat init.$OS 0*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
 ./subx translate a.sigils -o apps/calls
 [ "$1" != record ]  &&  git diff --exit-code apps/calls
 ./subx run apps/calls test
@@ -321,7 +267,7 @@ test `uname` = 'Linux'  &&  {
 }
 
 echo braces
-cat init.$OS 0*.subx apps/subx-common.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
+cat init.$OS 0*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
 ./subx translate a.sigils -o apps/braces
 [ "$1" != record ]  &&  git diff --exit-code apps/braces
 ./subx run apps/braces test
@@ -331,12 +277,8 @@ test `uname` = 'Linux'  &&  {
   echo
 }
 
-# Only native runs beyond this point. We start using syntax that the emulator
-# doesn't support.
-test $EMULATED  &&  echo "skipping remaining runs in emulated mode"
 test $NATIVE  ||  exit 0
-
-echo "== translating using SubX"
+echo "== translating using SubX (native only)"
 
 # example programs
 
@@ -358,14 +300,10 @@ done
 
 # Phases of the self-hosted SubX translator.
 
-echo hex
-./ntranslate init.$OS $(enumerate/enumerate --until 070---hex.subx |grep '\.subx$')
-diff apps/hex a.elf
-
-for app in survey pack assort dquotes tests sigils calls braces
+for app in hex survey pack assort dquotes tests sigils calls braces
 do
   echo $app
-  ./ntranslate init.$OS 0*.subx apps/subx-common.subx apps/$app.subx
+  ./ntranslate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
   diff apps/$app a.elf
 done
 

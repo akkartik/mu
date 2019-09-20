@@ -3,7 +3,7 @@
 # uses are left untouched.
 #
 # To run:
-#   $ ./subx translate init.linux 0*.subx apps/subx-common.subx apps/pack.subx  -o apps/pack
+#   $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx  -o apps/pack
 #   $ echo '05/add-to-eax 0x20/imm32'  |./subx run apps/pack
 # Expected output:
 #   05 20 00 00 00  # 05/add-to-eax 0x20/imm32
@@ -33,10 +33,10 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 
     # - if argc > 1 and argv[1] == "test", then return run_tests()
-    # if (argc <= 1) goto run-main
+    # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
-    # if (!kernel-string-equal?(argv[1], "test")) goto run-main
+    7e/jump-if-lesser-or-equal  $subx-pack-main:interactive/disp8
+    # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
     68/push  "test"/imm32
@@ -45,15 +45,15 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
+    # . if (eax == 0) goto interactive
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-equal  $subx-pack-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
-    eb/jump  $main:end/disp8
-$run-main:
+    eb/jump  $subx-pack-main:end/disp8
+$subx-pack-main:interactive:
     # - otherwise convert stdin
     # var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
@@ -61,19 +61,19 @@ $run-main:
     # configure ed to really exit()
     # . ed->target = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # convert(Stdin, Stdout, Stderr, ed)
+    # subx-pack(Stdin, Stdout, Stderr, ed)
     # . . push args
     50/push-eax/ed
     68/push  Stderr/imm32
     68/push  Stdout/imm32
     68/push  Stdin/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-pack/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # syscall(exit, 0)
     bb/copy-to-ebx  0/imm32
-$main:end:
+$subx-pack-main:end:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
@@ -97,7 +97,7 @@ $main:end:
 #   next-token-from-slice(start, end, delim char) -> slice
 #   slice-equal?(slice, string)
 
-convert:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-pack:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   var in-code? = false
@@ -140,7 +140,7 @@ convert:  # in : (address buffered-file), out : (address buffered-file) -> <void
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
     # var in-code?/ebx = false
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
-$convert:loop:
+$subx-pack:loop:
     # clear-stream(line)
     # . . push args
     51/push-ecx
@@ -156,10 +156,10 @@ $convert:loop:
     e8/call  read-line-buffered/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check0:
+$subx-pack:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $convert:break/disp32
+    0f 84/jump-if-equal  $subx-pack:break/disp32
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
 #?     # . . push args
@@ -194,7 +194,7 @@ $convert:check0:
     e8/call  next-word/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-$convert:check1:
+$subx-pack:check1:
     # if (slice-empty?(word-slice)) write-stream-data(out, line)
     # . eax = slice-empty?(word-slice)
     # . . push args
@@ -205,8 +205,8 @@ $convert:check1:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != 0) write-stream-data(out, line)
     3d/compare-eax-and  0/imm32
-    0f 85/jump-if-not-equal  $convert:pass-through/disp32
-$convert:check2:
+    0f 85/jump-if-not-equal  $subx-pack:pass-through/disp32
+$subx-pack:check2:
 #?     # dump word-slice {{{
 #?     # . write(2/stderr, "AA: ")
 #?     # . . push args
@@ -260,7 +260,7 @@ $convert:check2:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == 0) goto check3
     3d/compare-eax-and  0/imm32
-    0f 84/jump-if-equal  $convert:check3/disp32
+    0f 84/jump-if-equal  $subx-pack:check3/disp32
     # word-slice = next-word(line)
     # . . push args
     52/push-edx
@@ -322,8 +322,8 @@ $convert:check2:
     # . . in-code? = eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
     # write-stream-data(out, line)
-    eb/jump  $convert:pass-through/disp8
-$convert:check3:
+    eb/jump  $subx-pack:pass-through/disp8
+$subx-pack:check3:
     # else rewind-stream(line)
     # . rewind-stream(line)
     # . . push args
@@ -334,8 +334,8 @@ $convert:check3:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # if (in-code? != 0) convert-instruction(line, out)
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
-    74/jump-if-equal  $convert:data/disp8
-$convert:code:
+    74/jump-if-equal  $subx-pack:data/disp8
+$subx-pack:code:
     # . convert-instruction(line, out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
@@ -345,8 +345,8 @@ $convert:code:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . loop
-    e9/jump  $convert:loop/disp32
-$convert:data:
+    e9/jump  $subx-pack:loop/disp32
+$subx-pack:data:
     # else convert-data(line, out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
@@ -356,8 +356,8 @@ $convert:data:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . loop
-    e9/jump  $convert:loop/disp32
-$convert:pass-through:
+    e9/jump  $subx-pack:loop/disp32
+$subx-pack:pass-through:
     # write-stream-data(out, line)
     # . . push args
     51/push-ecx
@@ -367,8 +367,8 @@ $convert:pass-through:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . loop
-    e9/jump  $convert:loop/disp32
-$convert:break:
+    e9/jump  $subx-pack:loop/disp32
+$subx-pack:break:
     # flush(out)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
@@ -376,7 +376,7 @@ $convert:break:
     e8/call  flush/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-$convert:end:
+$subx-pack:end:
     # . reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x214/imm32       # add to esp
     # . restore registers
@@ -389,7 +389,7 @@ $convert:end:
     5d/pop-to-ebp
     c3/return
 
-test-convert-passes-empty-lines-through:
+test-subx-pack-passes-empty-lines-through:
     # if a line is empty, pass it along unchanged
     # . prolog
     55/push-ebp
@@ -428,12 +428,12 @@ test-convert-passes-empty-lines-through:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # write nothing to input
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-pack(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-pack/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -446,7 +446,7 @@ test-convert-passes-empty-lines-through:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-stream-equal(_test-output-stream, "", msg)
     # . . push args
-    68/push  "F - test-convert-passes-empty-lines-through"/imm32
+    68/push  "F - test-subx-pack-passes-empty-lines-through"/imm32
     68/push  ""/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -458,7 +458,7 @@ test-convert-passes-empty-lines-through:
     5d/pop-to-ebp
     c3/return
 
-test-convert-passes-lines-with-just-whitespace-through:
+test-subx-pack-passes-lines-with-just-whitespace-through:
     # if a line is empty, pass it along unchanged
     # . prolog
     55/push-ebp
@@ -505,12 +505,12 @@ test-convert-passes-lines-with-just-whitespace-through:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-pack(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-pack/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -523,7 +523,7 @@ test-convert-passes-lines-with-just-whitespace-through:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "    ", msg)
     # . . push args
-    68/push  "F - test-convert-passes-with-just-whitespace-through"/imm32
+    68/push  "F - test-subx-pack-passes-with-just-whitespace-through"/imm32
     68/push  "    "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -535,7 +535,7 @@ test-convert-passes-lines-with-just-whitespace-through:
     5d/pop-to-ebp
     c3/return
 
-test-convert-passes-segment-headers-through:
+test-subx-pack-passes-segment-headers-through:
     # if a line starts with '==', pass it along unchanged
     # . prolog
     55/push-ebp
@@ -582,12 +582,12 @@ test-convert-passes-segment-headers-through:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-pack(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-pack/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check that the line just passed through
@@ -600,7 +600,7 @@ test-convert-passes-segment-headers-through:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-stream-equal(_test-output-stream, "== abcd 0x1", msg)
     # . . push args
-    68/push  "F - test-convert-passes-segment-headers-through"/imm32
+    68/push  "F - test-subx-pack-passes-segment-headers-through"/imm32
     68/push  "== abcd 0x1"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -612,7 +612,7 @@ test-convert-passes-segment-headers-through:
     5d/pop-to-ebp
     c3/return
 
-test-convert-in-data-segment:
+test-subx-pack-in-data-segment:
     # correctly process lines in the data segment
     # . prolog
     55/push-ebp
@@ -678,12 +678,12 @@ test-convert-in-data-segment:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-pack(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-pack/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check output
@@ -722,7 +722,7 @@ test-convert-in-data-segment:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== code 0x1", msg)
     # . . push args
-    68/push  "F - test-convert-in-data-segment/0"/imm32
+    68/push  "F - test-subx-pack-in-data-segment/0"/imm32
     68/push  "== code 0x1"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -731,7 +731,7 @@ test-convert-in-data-segment:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== data 0x2", msg)
     # . . push args
-    68/push  "F - test-convert-in-data-segment/1"/imm32
+    68/push  "F - test-subx-pack-in-data-segment/1"/imm32
     68/push  "== data 0x2"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -740,7 +740,7 @@ test-convert-in-data-segment:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "03 04 00 00 00 ", msg)
     # . . push args
-    68/push  "F - test-convert-in-data-segment/2"/imm32
+    68/push  "F - test-subx-pack-in-data-segment/2"/imm32
     68/push  "03 04 00 00 00 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -752,7 +752,7 @@ test-convert-in-data-segment:
     5d/pop-to-ebp
     c3/return
 
-test-convert-code-and-data-segments:
+test-subx-pack-code-and-data-segments:
     # correctly process lines in both code and data segments
     # . prolog
     55/push-ebp
@@ -836,12 +836,12 @@ test-convert-code-and-data-segments:
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # convert(_test-input-buffered-file, _test-output-buffered-file)
+    # subx-pack(_test-input-buffered-file, _test-output-buffered-file)
     # . . push args
     68/push  _test-output-buffered-file/imm32
     68/push  _test-input-buffered-file/imm32
     # . . call
-    e8/call  convert/disp32
+    e8/call  subx-pack/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check output
@@ -885,7 +885,7 @@ test-convert-code-and-data-segments:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== code 0x1", msg)
     # . . push args
-    68/push  "F - test-convert-code-and-data-segments/0"/imm32
+    68/push  "F - test-subx-pack-code-and-data-segments/0"/imm32
     68/push  "== code 0x1"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -894,7 +894,7 @@ test-convert-code-and-data-segments:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "e8 20 00 00 00  # e8/call 20/disp32", msg)
     # . . push args
-    68/push  "F - test-convert-code-and-data-segments/1"/imm32
+    68/push  "F - test-subx-pack-code-and-data-segments/1"/imm32
     68/push  "e8 20 00 00 00  # e8/call 20/disp32"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -903,7 +903,7 @@ test-convert-code-and-data-segments:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "68 20  # 68/push 0x20/imm8", msg)
     # . . push args
-    68/push  "F - test-convert-code-and-data-segments/2"/imm32
+    68/push  "F - test-subx-pack-code-and-data-segments/2"/imm32
     68/push  "68 20  # 68/push 0x20/imm8"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -912,7 +912,7 @@ test-convert-code-and-data-segments:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "== data 0x2", msg)
     # . . push args
-    68/push  "F - test-convert-code-and-data-segments/3"/imm32
+    68/push  "F - test-subx-pack-code-and-data-segments/3"/imm32
     68/push  "== data 0x2"/imm32
     68/push  _test-output-stream/imm32
     # . . call
@@ -921,7 +921,7 @@ test-convert-code-and-data-segments:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . check-next-stream-line-equal(_test-output-stream, "03 04 00 00 00 ", msg)
     # . . push args
-    68/push  "F - test-convert-code-and-data-segments/4"/imm32
+    68/push  "F - test-subx-pack-code-and-data-segments/4"/imm32
     68/push  "03 04 00 00 00 "/imm32
     68/push  _test-output-stream/imm32
     # . . call
