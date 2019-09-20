@@ -248,8 +248,10 @@ done
 echo sigils
 ./subx translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
 [ "$1" != record ]  &&  git diff --exit-code apps/sigils
-./subx run apps/sigils test
-echo
+test $EMULATED  &&  {
+  ./subx run apps/sigils test
+  echo
+}
 test `uname` = 'Linux'  &&  {
   apps/sigils test
   echo
@@ -259,8 +261,10 @@ echo calls
 cat init.$OS 0*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
 ./subx translate a.sigils -o apps/calls
 [ "$1" != record ]  &&  git diff --exit-code apps/calls
-./subx run apps/calls test
-echo
+test $EMULATED  &&  {
+  ./subx run apps/calls test
+  echo
+}
 test `uname` = 'Linux'  &&  {
   apps/calls test
   echo
@@ -270,8 +274,10 @@ echo braces
 cat init.$OS 0*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
 ./subx translate a.sigils -o apps/braces
 [ "$1" != record ]  &&  git diff --exit-code apps/braces
-./subx run apps/braces test
-echo
+test $EMULATED  &&  {
+  ./subx run apps/braces test
+  echo
+}
 test `uname` = 'Linux'  &&  {
   apps/braces test
   echo
