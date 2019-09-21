@@ -114,12 +114,12 @@ if ('onhashchange' in window) {
 <span id="L54" class="LineNr"> 54 </span>    <span class="subxS1Comment"># . prolog</span>
 <span id="L55" class="LineNr"> 55 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L56" class="LineNr"> 56 </span>    <span class="subxComment"># initialize heap</span>
-<span id="L57" class="LineNr"> 57 </span>    (new-segment <span class="SpecialChar"><a href='../069allocate.subx.html#L29'>Heap-size</a></span> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span>)
+<span id="L57" class="LineNr"> 57 </span>    (<a href='../053new-segment.subx.html#L41'>new-segment</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L29'>Heap-size</a></span> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span>)
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxComment"># if (argc &lt;= 1) goto interactive</span>
 <span id="L59" class="LineNr"> 59 </span>    81 7/subop/compare *ebp 1/imm32
 <span id="L60" class="LineNr"> 60 </span>    7e/jump-if-lesser-or-equal $subx-braces-main:interactive/disp8
 <span id="L61" class="LineNr"> 61 </span>    <span class="subxComment"># if (argv[1] != &quot;test&quot;)) goto interactive</span>
-<span id="L62" class="LineNr"> 62 </span>    (kernel-string-equal? *(ebp+8) <span class="Constant">&quot;test&quot;</span>)  <span class="subxComment"># =&gt; eax</span>
+<span id="L62" class="LineNr"> 62 </span>    (<a href='../052kernel-string-equal.subx.html#L31'>kernel-string-equal?</a> *(ebp+8) <span class="Constant">&quot;test&quot;</span>)  <span class="subxComment"># =&gt; eax</span>
 <span id="L63" class="LineNr"> 63 </span>    3d/compare-eax-and 0/imm32
 <span id="L64" class="LineNr"> 64 </span>    74/jump-if-equal $subx-braces-main:interactive/disp8
 <span id="L65" class="LineNr"> 65 </span>    <span class="subxComment">#</span>
@@ -128,7 +128,7 @@ if ('onhashchange' in window) {
 <span id="L68" class="LineNr"> 68 </span>    8b/-&gt; *<span class="SpecialChar"><a href='../051test.subx.html#L90'>Num-test-failures</a></span> 3/r32/ebx
 <span id="L69" class="LineNr"> 69 </span>    eb/jump $subx-braces-main:end/disp8
 <span id="L70" class="LineNr"> 70 </span><span class="Constant">$subx-braces-main:interactive</span>:
-<span id="L71" class="LineNr"> 71 </span>    (subx-braces <span class="SpecialChar"><a href='../061read-byte.subx.html#L14'>Stdin</a></span> <span class="SpecialChar"><a href='../064write-byte.subx.html#L10'>Stdout</a></span>)
+<span id="L71" class="LineNr"> 71 </span>    (<a href='braces.subx.html#L78'>subx-braces</a> <span class="SpecialChar"><a href='../061read-byte.subx.html#L14'>Stdin</a></span> <span class="SpecialChar"><a href='../064write-byte.subx.html#L10'>Stdout</a></span>)
 <span id="L72" class="LineNr"> 72 </span>    <span class="subxComment"># syscall(exit, 0)</span>
 <span id="L73" class="LineNr"> 73 </span>    bb/copy-to-ebx 0/imm32
 <span id="L74" class="LineNr"> 74 </span><span class="Constant">$subx-braces-main:end</span>:
@@ -201,13 +201,13 @@ if ('onhashchange' in window) {
 <span id="L141" class="LineNr">141 </span>    68/push 0/imm32/start
 <span id="L142" class="LineNr">142 </span>    89/&lt;- %edi 4/r32/esp
 <span id="L143" class="LineNr">143 </span><span class="Constant">$subx-braces:line-loop</span>:
-<span id="L144" class="LineNr">144 </span>    (clear-stream %ecx)
-<span id="L145" class="LineNr">145 </span>    (read-line-buffered %esi %ecx)
+<span id="L144" class="LineNr">144 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> %ecx)
+<span id="L145" class="LineNr">145 </span>    (<a href='../071read-line.subx.html#L9'>read-line-buffered</a> %esi %ecx)
 <span id="L146" class="LineNr">146 </span><span class="Constant">$subx-braces:check0</span>:
 <span id="L147" class="LineNr">147 </span>    <span class="subxComment"># if (line-&gt;write == 0) break</span>
 <span id="L148" class="LineNr">148 </span>    81 7/subop/compare *ecx 0/imm32
 <span id="L149" class="LineNr">149 </span>    0f 84/jump-if-equal  $subx-braces:<span class="Constant">break</span>/disp32
-<span id="L150" class="LineNr">150 </span>    (skip-chars-matching-whitespace %ecx)
+<span id="L150" class="LineNr">150 </span>    (<a href='../073next-token.subx.html#L464'>skip-chars-matching-whitespace</a> %ecx)
 <span id="L151" class="LineNr">151 </span><span class="Constant">$subx-braces:check-for-curly-open</span>:
 <span id="L152" class="LineNr">152 </span>    <span class="subxComment"># if (line-&gt;data[line-&gt;read] != '{') goto next check</span>
 <span id="L153" class="LineNr">153 </span>    <span class="subxS1Comment"># . eax = line-&gt;data[line-&gt;read]</span>
@@ -219,11 +219,11 @@ if ('onhashchange' in window) {
 <span id="L159" class="LineNr">159 </span>    0f 85/jump-if-not-equal $subx-braces:check-for-curly-closed/disp32
 <span id="L160" class="LineNr">160 </span><span class="Constant">$subx-braces:emit-curly-open</span>:
 <span id="L161" class="LineNr">161 </span>    <span class="subxComment"># print(out, &quot;_loop&quot; next-label-id &quot;:&quot;)</span>
-<span id="L162" class="LineNr">162 </span>    (write-buffered *(ebp+0xc) <span class="Constant">&quot;_loop&quot;</span>)
-<span id="L163" class="LineNr">163 </span>    (print-int32-buffered *(ebp+0xc) %ebx)
-<span id="L164" class="LineNr">164 </span>    (write-buffered *(ebp+0xc) <span class="Constant">&quot;:&quot;</span>)
+<span id="L162" class="LineNr">162 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="Constant">&quot;_loop&quot;</span>)
+<span id="L163" class="LineNr">163 </span>    (<a href='../066print-int.subx.html#L267'>print-int32-buffered</a> *(ebp+0xc) %ebx)
+<span id="L164" class="LineNr">164 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="Constant">&quot;:&quot;</span>)
 <span id="L165" class="LineNr">165 </span>    <span class="subxComment"># push(label-stack, next-label-id)</span>
-<span id="L166" class="LineNr">166 </span>    (push %edx %ebx)
+<span id="L166" class="LineNr">166 </span>    (<a href='braces.subx.html#L445'>push</a> %edx %ebx)
 <span id="L167" class="LineNr">167 </span>    <span class="subxComment"># ++next-label-id</span>
 <span id="L168" class="LineNr">168 </span>    ff 0/subop/increment %ebx
 <span id="L169" class="LineNr">169 </span>    <span class="subxComment"># continue</span>
@@ -234,18 +234,18 @@ if ('onhashchange' in window) {
 <span id="L174" class="LineNr">174 </span>    0f 85/jump-if-equal $subx-braces:word-loop/disp32
 <span id="L175" class="LineNr">175 </span><span class="Constant">$subx-braces:emit-curly-closed</span>:
 <span id="L176" class="LineNr">176 </span>    <span class="subxComment"># eax = pop(label-stack)</span>
-<span id="L177" class="LineNr">177 </span>    (pop %edx)
+<span id="L177" class="LineNr">177 </span>    (<a href='braces.subx.html#L521'>pop</a> %edx)
 <span id="L178" class="LineNr">178 </span>    <span class="subxComment"># print(out, &quot;_break&quot; eax &quot;:&quot;)</span>
-<span id="L179" class="LineNr">179 </span>    (write-buffered *(ebp+0xc) <span class="Constant">&quot;_break&quot;</span>)
-<span id="L180" class="LineNr">180 </span>    (print-int32-buffered *(ebp+0xc) %eax)
-<span id="L181" class="LineNr">181 </span>    (write-buffered *(ebp+0xc) <span class="Constant">&quot;:&quot;</span>)
+<span id="L179" class="LineNr">179 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="Constant">&quot;_break&quot;</span>)
+<span id="L180" class="LineNr">180 </span>    (<a href='../066print-int.subx.html#L267'>print-int32-buffered</a> *(ebp+0xc) %eax)
+<span id="L181" class="LineNr">181 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="Constant">&quot;:&quot;</span>)
 <span id="L182" class="LineNr">182 </span>    <span class="subxComment"># continue</span>
 <span id="L183" class="LineNr">183 </span>    e9/jump  $subx-braces:next-line/disp32
 <span id="L184" class="LineNr">184 </span><span class="Constant">$subx-braces:word-loop</span>:
-<span id="L185" class="LineNr">185 </span>    (next-word-or-string %ecx %edi)
+<span id="L185" class="LineNr">185 </span>    (<a href='../094next-word-or-string.subx.html#L8'>next-word-or-string</a> %ecx %edi)
 <span id="L186" class="LineNr">186 </span><span class="Constant">$subx-braces:check1</span>:
 <span id="L187" class="LineNr">187 </span>    <span class="subxComment"># if (slice-empty?(word-slice)) break</span>
-<span id="L188" class="LineNr">188 </span>    (slice-empty? %edi)
+<span id="L188" class="LineNr">188 </span>    (<a href='../072slice.subx.html#L9'>slice-empty?</a> %edi)
 <span id="L189" class="LineNr">189 </span>    3d/compare-eax-and 0/imm32
 <span id="L190" class="LineNr">190 </span>    0f 85/jump-if-not-equal $subx-braces:next-line/disp32
 <span id="L191" class="LineNr">191 </span><span class="Constant">$subx-braces:check-for-comment</span>:
@@ -260,15 +260,15 @@ if ('onhashchange' in window) {
 <span id="L200" class="LineNr">200 </span><span class="Constant">$subx-braces:check-for-break</span>:
 <span id="L201" class="LineNr">201 </span>    <span class="subxComment"># if (!slice-starts-with?(word-slice, &quot;break/&quot;)) goto next check</span>
 <span id="L202" class="LineNr">202 </span>    <span class="subxS1Comment"># . eax = slice-starts-with?(word-slice, &quot;break/&quot;)</span>
-<span id="L203" class="LineNr">203 </span>    (slice-starts-with? %edi <span class="Constant">&quot;break/&quot;</span>)
+<span id="L203" class="LineNr">203 </span>    (<a href='../072slice.subx.html#L457'>slice-starts-with?</a> %edi <span class="Constant">&quot;break/&quot;</span>)
 <span id="L204" class="LineNr">204 </span>    <span class="subxS1Comment"># . if (eax == 0) goto next check</span>
 <span id="L205" class="LineNr">205 </span>    3d/compare-eax-and 0/imm32
 <span id="L206" class="LineNr">206 </span>    74/jump-if-equal $subx-braces:check-for-loop/disp8
 <span id="L207" class="LineNr">207 </span><span class="Constant">$subx-braces:emit-break</span>:
-<span id="L208" class="LineNr">208 </span>    (top %edx)
+<span id="L208" class="LineNr">208 </span>    (<a href='braces.subx.html#L591'>top</a> %edx)
 <span id="L209" class="LineNr">209 </span>    <span class="subxComment"># print(out, &quot;_break&quot; eax)</span>
-<span id="L210" class="LineNr">210 </span>    (write-buffered *(ebp+0xc) <span class="Constant">&quot;_break&quot;</span>)
-<span id="L211" class="LineNr">211 </span>    (print-int32-buffered *(ebp+0xc) %eax)
+<span id="L210" class="LineNr">210 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="Constant">&quot;_break&quot;</span>)
+<span id="L211" class="LineNr">211 </span>    (<a href='../066print-int.subx.html#L267'>print-int32-buffered</a> *(ebp+0xc) %eax)
 <span id="L212" class="LineNr">212 </span>    <span class="subxComment"># word-slice-&gt;start += len(&quot;break&quot;)</span>
 <span id="L213" class="LineNr">213 </span>    81 0/subop/add *edi 5/imm32/strlen
 <span id="L214" class="LineNr">214 </span>    <span class="subxComment"># emit rest of word as usual</span>
@@ -276,31 +276,31 @@ if ('onhashchange' in window) {
 <span id="L216" class="LineNr">216 </span><span class="Constant">$subx-braces:check-for-loop</span>:
 <span id="L217" class="LineNr">217 </span>    <span class="subxComment"># if (!slice-starts-with?(word-slice, &quot;loop/&quot;)) emit word</span>
 <span id="L218" class="LineNr">218 </span>    <span class="subxS1Comment"># . eax = slice-starts-with?(word-slice, &quot;loop/&quot;)</span>
-<span id="L219" class="LineNr">219 </span>    (slice-starts-with? %edi <span class="Constant">&quot;loop/&quot;</span>)
+<span id="L219" class="LineNr">219 </span>    (<a href='../072slice.subx.html#L457'>slice-starts-with?</a> %edi <span class="Constant">&quot;loop/&quot;</span>)
 <span id="L220" class="LineNr">220 </span>    <span class="subxS1Comment"># . if (eax == 0) goto next check</span>
 <span id="L221" class="LineNr">221 </span>    3d/compare-eax-and 0/imm32
 <span id="L222" class="LineNr">222 </span>    74/jump-if-equal $subx-braces:emit-word-slice/disp8
 <span id="L223" class="LineNr">223 </span><span class="Constant">$subx-braces:emit-loop</span>:
-<span id="L224" class="LineNr">224 </span>    (top %edx)
+<span id="L224" class="LineNr">224 </span>    (<a href='braces.subx.html#L591'>top</a> %edx)
 <span id="L225" class="LineNr">225 </span>    <span class="subxComment"># print(out, &quot;_loop&quot; eax)</span>
-<span id="L226" class="LineNr">226 </span>    (write-buffered *(ebp+0xc) <span class="Constant">&quot;_loop&quot;</span>)
-<span id="L227" class="LineNr">227 </span>    (print-int32-buffered *(ebp+0xc) %eax)
+<span id="L226" class="LineNr">226 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="Constant">&quot;_loop&quot;</span>)
+<span id="L227" class="LineNr">227 </span>    (<a href='../066print-int.subx.html#L267'>print-int32-buffered</a> *(ebp+0xc) %eax)
 <span id="L228" class="LineNr">228 </span>    <span class="subxComment"># word-slice-&gt;start += len(&quot;loop&quot;)</span>
 <span id="L229" class="LineNr">229 </span>    81 0/subop/add *edi 4/imm32/strlen
 <span id="L230" class="LineNr">230 </span>    <span class="subxComment"># fall through</span>
 <span id="L231" class="LineNr">231 </span><span class="Constant">$subx-braces:emit-word-slice</span>:
 <span id="L232" class="LineNr">232 </span>    <span class="subxComment"># print(out, word-slice &quot; &quot;)</span>
-<span id="L233" class="LineNr">233 </span>    (write-slice-buffered *(ebp+0xc) %edi)
-<span id="L234" class="LineNr">234 </span>    (write-buffered *(ebp+0xc) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
+<span id="L233" class="LineNr">233 </span>    (<a href='../072slice.subx.html#L878'>write-slice-buffered</a> *(ebp+0xc) %edi)
+<span id="L234" class="LineNr">234 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
 <span id="L235" class="LineNr">235 </span>    <span class="subxComment"># loop to next word</span>
 <span id="L236" class="LineNr">236 </span>    e9/jump $subx-braces:word-loop/disp32
 <span id="L237" class="LineNr">237 </span><span class="Constant">$subx-braces:next-line</span>:
 <span id="L238" class="LineNr">238 </span>    <span class="subxComment"># print(out, &quot;\n&quot;)</span>
-<span id="L239" class="LineNr">239 </span>    (write-buffered *(ebp+0xc) <span class="SpecialChar"><a href='../051test.subx.html#L83'>Newline</a></span>)
+<span id="L239" class="LineNr">239 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="SpecialChar"><a href='../051test.subx.html#L83'>Newline</a></span>)
 <span id="L240" class="LineNr">240 </span>    <span class="subxComment"># loop to next line</span>
 <span id="L241" class="LineNr">241 </span>    e9/jump $subx-braces:line-loop/disp32
 <span id="L242" class="LineNr">242 </span><span class="Constant">$subx-braces:break</span>:
-<span id="L243" class="LineNr">243 </span>    (flush *(ebp+0xc))
+<span id="L243" class="LineNr">243 </span>    (<a href='../064write-byte.subx.html#L79'>flush</a> *(ebp+0xc))
 <span id="L244" class="LineNr">244 </span><span class="Constant">$subx-braces:end</span>:
 <span id="L245" class="LineNr">245 </span>    <span class="subxS1Comment"># . reclaim locals</span>
 <span id="L246" class="LineNr">246 </span>    81 0/subop/add %esp 0x29c/imm32
@@ -321,23 +321,23 @@ if ('onhashchange' in window) {
 <span id="L261" class="LineNr">261 </span>    55/push-ebp
 <span id="L262" class="LineNr">262 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L263" class="LineNr">263 </span>    <span class="subxComment"># setup</span>
-<span id="L264" class="LineNr">264 </span>    (clear-stream _test-input-stream)
-<span id="L265" class="LineNr">265 </span>    (clear-stream _test-output-stream)
+<span id="L264" class="LineNr">264 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> _test-input-stream)
+<span id="L265" class="LineNr">265 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> _test-output-stream)
 <span id="L266" class="LineNr">266 </span>    <span class="subxS1Comment"># . clear-stream(_test-input-buffered-file+4)</span>
 <span id="L267" class="LineNr">267 </span>    b8/copy-to-eax  <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a>/imm32
 <span id="L268" class="LineNr">268 </span>    05/add-to-eax  4/imm32
-<span id="L269" class="LineNr">269 </span>    (clear-stream %eax)
+<span id="L269" class="LineNr">269 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> %eax)
 <span id="L270" class="LineNr">270 </span>    <span class="subxS1Comment"># . clear-stream(_test-output-buffered-file+4)</span>
 <span id="L271" class="LineNr">271 </span>    b8/copy-to-eax  <a href='../064write-byte.subx.html#L332'>_test-output-buffered-file</a>/imm32
 <span id="L272" class="LineNr">272 </span>    05/add-to-eax  4/imm32
-<span id="L273" class="LineNr">273 </span>    (clear-stream %eax)
+<span id="L273" class="LineNr">273 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> %eax)
 <span id="L274" class="LineNr">274 </span>    <span class="subxComment"># test</span>
-<span id="L275" class="LineNr">275 </span>    (write <a href='../061read-byte.subx.html#L293'>_test-input-stream</a> <span class="Constant">&quot;== abcd 0x1&quot;</span>)
-<span id="L276" class="LineNr">276 </span>    (subx-braces <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a> _test-output-buffered-file)
+<span id="L275" class="LineNr">275 </span>    (<a href='../057write.subx.html#L24'>write</a> <a href='../061read-byte.subx.html#L293'>_test-input-stream</a> <span class="Constant">&quot;== abcd 0x1&quot;</span>)
+<span id="L276" class="LineNr">276 </span>    (<a href='braces.subx.html#L78'>subx-braces</a> <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a> _test-output-buffered-file)
 <span id="L277" class="LineNr">277 </span>    <span class="subxComment"># check that the line just passed through</span>
-<span id="L278" class="LineNr">278 </span>    (flush _test-output-buffered-file)
-<span id="L279" class="Folded">279 </span><span class="Folded">+--  5 lines: #?     # dump _test-output-stream ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L284" class="LineNr">284 </span>    (check-stream-equal <a href='../064write-byte.subx.html#L290'>_test-output-stream</a> <span class="Constant">&quot;== abcd 0x1 \n&quot;</span> <span class="Constant">&quot;F - test-subx-braces-passes-most-words-through&quot;</span>)
+<span id="L278" class="LineNr">278 </span>    (<a href='../064write-byte.subx.html#L79'>flush</a> _test-output-buffered-file)
+<span id="L279" class="Folded">279 </span><span class="Folded">+--  5 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L284" class="LineNr">284 </span>    (<a href='../058stream-equal.subx.html#L193'>check-stream-equal</a> <a href='../064write-byte.subx.html#L290'>_test-output-stream</a> <span class="Constant">&quot;== abcd 0x1 \n&quot;</span> <span class="Constant">&quot;F - test-subx-braces-passes-most-words-through&quot;</span>)
 <span id="L285" class="LineNr">285 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L286" class="LineNr">286 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L287" class="LineNr">287 </span>    5d/pop-to-ebp
@@ -360,23 +360,23 @@ if ('onhashchange' in window) {
 <span id="L304" class="LineNr">304 </span>    55/push-ebp
 <span id="L305" class="LineNr">305 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L306" class="LineNr">306 </span>    <span class="subxComment"># setup</span>
-<span id="L307" class="LineNr">307 </span>    (clear-stream _test-input-stream)
-<span id="L308" class="LineNr">308 </span>    (clear-stream _test-output-stream)
+<span id="L307" class="LineNr">307 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> _test-input-stream)
+<span id="L308" class="LineNr">308 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> _test-output-stream)
 <span id="L309" class="LineNr">309 </span>    <span class="subxS1Comment"># . clear-stream(_test-input-buffered-file+4)</span>
 <span id="L310" class="LineNr">310 </span>    b8/copy-to-eax  <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a>/imm32
 <span id="L311" class="LineNr">311 </span>    05/add-to-eax  4/imm32
-<span id="L312" class="LineNr">312 </span>    (clear-stream %eax)
+<span id="L312" class="LineNr">312 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> %eax)
 <span id="L313" class="LineNr">313 </span>    <span class="subxS1Comment"># . clear-stream(_test-output-buffered-file+4)</span>
 <span id="L314" class="LineNr">314 </span>    b8/copy-to-eax  <a href='../064write-byte.subx.html#L332'>_test-output-buffered-file</a>/imm32
 <span id="L315" class="LineNr">315 </span>    05/add-to-eax  4/imm32
-<span id="L316" class="LineNr">316 </span>    (clear-stream %eax)
+<span id="L316" class="LineNr">316 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> %eax)
 <span id="L317" class="LineNr">317 </span>    <span class="subxComment"># test</span>
-<span id="L318" class="LineNr">318 </span>    (write <a href='../061read-byte.subx.html#L293'>_test-input-stream</a> <span class="Constant">&quot;{\nab break/imm32\ncd loop/imm32\n}&quot;</span>)
-<span id="L319" class="LineNr">319 </span>    (subx-braces <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a> _test-output-buffered-file)
+<span id="L318" class="LineNr">318 </span>    (<a href='../057write.subx.html#L24'>write</a> <a href='../061read-byte.subx.html#L293'>_test-input-stream</a> <span class="Constant">&quot;{\nab break/imm32\ncd loop/imm32\n}&quot;</span>)
+<span id="L319" class="LineNr">319 </span>    (<a href='braces.subx.html#L78'>subx-braces</a> <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a> _test-output-buffered-file)
 <span id="L320" class="LineNr">320 </span>    <span class="subxComment"># check that the line just passed through</span>
-<span id="L321" class="LineNr">321 </span>    (flush _test-output-buffered-file)
-<span id="L322" class="Folded">322 </span><span class="Folded">+--  5 lines: #?     # dump _test-output-stream ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L327" class="LineNr">327 </span>    (check-stream-equal <a href='../064write-byte.subx.html#L290'>_test-output-stream</a> <span class="Constant">&quot;_loop0x00000001:\nab _break0x00000001/imm32 \ncd _loop0x00000001/imm32 \n_break0x00000001:\n&quot;</span> <span class="Constant">&quot;F - test-subx-braces-1&quot;</span>)
+<span id="L321" class="LineNr">321 </span>    (<a href='../064write-byte.subx.html#L79'>flush</a> _test-output-buffered-file)
+<span id="L322" class="Folded">322 </span><span class="Folded">+--  5 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L327" class="LineNr">327 </span>    (<a href='../058stream-equal.subx.html#L193'>check-stream-equal</a> <a href='../064write-byte.subx.html#L290'>_test-output-stream</a> <span class="Constant">&quot;_loop0x00000001:\nab _break0x00000001/imm32 \ncd _loop0x00000001/imm32 \n_break0x00000001:\n&quot;</span> <span class="Constant">&quot;F - test-subx-braces-1&quot;</span>)
 <span id="L328" class="LineNr">328 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L329" class="LineNr">329 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L330" class="LineNr">330 </span>    5d/pop-to-ebp
@@ -403,23 +403,23 @@ if ('onhashchange' in window) {
 <span id="L351" class="LineNr">351 </span>    55/push-ebp
 <span id="L352" class="LineNr">352 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L353" class="LineNr">353 </span>    <span class="subxComment"># setup</span>
-<span id="L354" class="LineNr">354 </span>    (clear-stream _test-input-stream)
-<span id="L355" class="LineNr">355 </span>    (clear-stream _test-output-stream)
+<span id="L354" class="LineNr">354 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> _test-input-stream)
+<span id="L355" class="LineNr">355 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> _test-output-stream)
 <span id="L356" class="LineNr">356 </span>    <span class="subxS1Comment"># . clear-stream(_test-input-buffered-file+4)</span>
 <span id="L357" class="LineNr">357 </span>    b8/copy-to-eax  <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a>/imm32
 <span id="L358" class="LineNr">358 </span>    05/add-to-eax  4/imm32
-<span id="L359" class="LineNr">359 </span>    (clear-stream %eax)
+<span id="L359" class="LineNr">359 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> %eax)
 <span id="L360" class="LineNr">360 </span>    <span class="subxS1Comment"># . clear-stream(_test-output-buffered-file+4)</span>
 <span id="L361" class="LineNr">361 </span>    b8/copy-to-eax  <a href='../064write-byte.subx.html#L332'>_test-output-buffered-file</a>/imm32
 <span id="L362" class="LineNr">362 </span>    05/add-to-eax  4/imm32
-<span id="L363" class="LineNr">363 </span>    (clear-stream %eax)
+<span id="L363" class="LineNr">363 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> %eax)
 <span id="L364" class="LineNr">364 </span>    <span class="subxComment"># test</span>
-<span id="L365" class="LineNr">365 </span>    (write <a href='../061read-byte.subx.html#L293'>_test-input-stream</a> <span class="Constant">&quot;{\n{\nab break/imm32\n}\ncd loop/imm32\n}&quot;</span>)
-<span id="L366" class="LineNr">366 </span>    (subx-braces <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a> _test-output-buffered-file)
+<span id="L365" class="LineNr">365 </span>    (<a href='../057write.subx.html#L24'>write</a> <a href='../061read-byte.subx.html#L293'>_test-input-stream</a> <span class="Constant">&quot;{\n{\nab break/imm32\n}\ncd loop/imm32\n}&quot;</span>)
+<span id="L366" class="LineNr">366 </span>    (<a href='braces.subx.html#L78'>subx-braces</a> <a href='../061read-byte.subx.html#L319'>_test-input-buffered-file</a> _test-output-buffered-file)
 <span id="L367" class="LineNr">367 </span>    <span class="subxComment"># check that the line just passed through</span>
-<span id="L368" class="LineNr">368 </span>    (flush _test-output-buffered-file)
-<span id="L369" class="Folded">369 </span><span class="Folded">+--  5 lines: #?     # dump _test-output-stream ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L374" class="LineNr">374 </span>    (check-stream-equal <a href='../064write-byte.subx.html#L290'>_test-output-stream</a> <span class="Constant">&quot;_loop0x00000001:\n_loop0x00000002:\nab _break0x00000002/imm32 \n_break0x00000002:\ncd _loop0x00000001/imm32 \n_break0x00000001:\n&quot;</span> <span class="Constant">&quot;F - test-subx-braces-2&quot;</span>)
+<span id="L368" class="LineNr">368 </span>    (<a href='../064write-byte.subx.html#L79'>flush</a> _test-output-buffered-file)
+<span id="L369" class="Folded">369 </span><span class="Folded">+--  5 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L374" class="LineNr">374 </span>    (<a href='../058stream-equal.subx.html#L193'>check-stream-equal</a> <a href='../064write-byte.subx.html#L290'>_test-output-stream</a> <span class="Constant">&quot;_loop0x00000001:\n_loop0x00000002:\nab _break0x00000002/imm32 \n_break0x00000002:\ncd _loop0x00000001/imm32 \n_break0x00000001:\n&quot;</span> <span class="Constant">&quot;F - test-subx-braces-2&quot;</span>)
 <span id="L375" class="LineNr">375 </span>    <span class="subxS1Comment"># . epilog</span>
 <span id="L376" class="LineNr">376 </span>    89/&lt;- %esp 5/r32/ebp
 <span id="L377" class="LineNr">377 </span>    5d/pop-to-ebp
@@ -475,19 +475,19 @@ if ('onhashchange' in window) {
 <span id="L427" class="LineNr">427 </span>    68/push 14/imm32/top
 <span id="L428" class="LineNr">428 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L429" class="LineNr">429 </span>    <span class="subxComment"># clear</span>
-<span id="L430" class="LineNr">430 </span>    (clear-stack %ecx)
+<span id="L430" class="LineNr">430 </span>    (<a href='braces.subx.html#L387'>clear-stack</a> %ecx)
 <span id="L431" class="LineNr">431 </span>    <span class="subxComment"># top should be 0</span>
 <span id="L432" class="LineNr">432 </span>    58/pop-to-eax
-<span id="L433" class="LineNr">433 </span>    (check-ints-equal %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: top&quot;</span>)
+<span id="L433" class="LineNr">433 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: top&quot;</span>)
 <span id="L434" class="LineNr">434 </span>    <span class="subxComment"># length should remain 8</span>
 <span id="L435" class="LineNr">435 </span>    58/pop-to-eax
-<span id="L436" class="LineNr">436 </span>    (check-ints-equal %eax 8 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: length&quot;</span>)
+<span id="L436" class="LineNr">436 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 8 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: length&quot;</span>)
 <span id="L437" class="LineNr">437 </span>    <span class="subxComment"># first word is 0</span>
 <span id="L438" class="LineNr">438 </span>    58/pop-to-eax
-<span id="L439" class="LineNr">439 </span>    (check-ints-equal %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: data[0..3]&quot;</span>)
+<span id="L439" class="LineNr">439 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: data[0..3]&quot;</span>)
 <span id="L440" class="LineNr">440 </span>    <span class="subxComment"># second word is 0</span>
 <span id="L441" class="LineNr">441 </span>    58/pop-to-eax
-<span id="L442" class="LineNr">442 </span>    (check-ints-equal %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: data[4..7]&quot;</span>)
+<span id="L442" class="LineNr">442 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L422'>test-clear-stack</a>: data[4..7]&quot;</span>)
 <span id="L443" class="LineNr">443 </span>    c3/return
 <span id="L444" class="LineNr">444 </span>
 <span id="L445" class="LineNr">445 </span><span class="subxFunction">push</span>:  <span class="subxComment"># s : (address stack), n : int</span>
@@ -551,19 +551,19 @@ if ('onhashchange' in window) {
 <span id="L503" class="LineNr">503 </span>    68/push 0/imm32/top
 <span id="L504" class="LineNr">504 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L505" class="LineNr">505 </span>    <span class="subxComment">#</span>
-<span id="L506" class="LineNr">506 </span>    (push %ecx 42)
+<span id="L506" class="LineNr">506 </span>    (<a href='braces.subx.html#L445'>push</a> %ecx 42)
 <span id="L507" class="LineNr">507 </span>    <span class="subxComment"># top</span>
 <span id="L508" class="LineNr">508 </span>    58/pop-to-eax
-<span id="L509" class="LineNr">509 </span>    (check-ints-equal %eax 4 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: top&quot;</span>)
+<span id="L509" class="LineNr">509 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 4 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: top&quot;</span>)
 <span id="L510" class="LineNr">510 </span>    <span class="subxComment"># length</span>
 <span id="L511" class="LineNr">511 </span>    58/pop-to-eax
-<span id="L512" class="LineNr">512 </span>    (check-ints-equal %eax 8 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: length&quot;</span>)
+<span id="L512" class="LineNr">512 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 8 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: length&quot;</span>)
 <span id="L513" class="LineNr">513 </span>    <span class="subxComment"># first word is 42</span>
 <span id="L514" class="LineNr">514 </span>    58/pop-to-eax
-<span id="L515" class="LineNr">515 </span>    (check-ints-equal %eax 42 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: data[0..3]&quot;</span>)
+<span id="L515" class="LineNr">515 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 42 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: data[0..3]&quot;</span>)
 <span id="L516" class="LineNr">516 </span>    <span class="subxComment"># second word is 0</span>
 <span id="L517" class="LineNr">517 </span>    58/pop-to-eax
-<span id="L518" class="LineNr">518 </span>    (check-ints-equal %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: data[4..7]&quot;</span>)
+<span id="L518" class="LineNr">518 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L498'>test-push</a>: data[4..7]&quot;</span>)
 <span id="L519" class="LineNr">519 </span>    c3/return
 <span id="L520" class="LineNr">520 </span>
 <span id="L521" class="LineNr">521 </span><span class="subxFunction">pop</span>:  <span class="subxComment"># s : (address stack) -&gt; n/eax : int</span>
@@ -623,15 +623,15 @@ if ('onhashchange' in window) {
 <span id="L575" class="LineNr">575 </span>    68/push 4/imm32/top
 <span id="L576" class="LineNr">576 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L577" class="LineNr">577 </span>    <span class="subxComment">#</span>
-<span id="L578" class="LineNr">578 </span>    (pop %ecx)  <span class="subxComment"># =&gt; eax</span>
+<span id="L578" class="LineNr">578 </span>    (<a href='braces.subx.html#L521'>pop</a> %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L579" class="LineNr">579 </span>    <span class="subxComment"># result</span>
-<span id="L580" class="LineNr">580 </span>    (check-ints-equal %eax 42 <span class="Constant">&quot;F - <a href='braces.subx.html#L570'>test-pop</a>: result&quot;</span>)
+<span id="L580" class="LineNr">580 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 42 <span class="Constant">&quot;F - <a href='braces.subx.html#L570'>test-pop</a>: result&quot;</span>)
 <span id="L581" class="LineNr">581 </span>    <span class="subxComment"># top</span>
 <span id="L582" class="LineNr">582 </span>    58/pop-to-eax
-<span id="L583" class="LineNr">583 </span>    (check-ints-equal %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L570'>test-pop</a>: top&quot;</span>)
+<span id="L583" class="LineNr">583 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 0 <span class="Constant">&quot;F - <a href='braces.subx.html#L570'>test-pop</a>: top&quot;</span>)
 <span id="L584" class="LineNr">584 </span>    <span class="subxComment"># length</span>
 <span id="L585" class="LineNr">585 </span>    58/pop-to-eax
-<span id="L586" class="LineNr">586 </span>    (check-ints-equal %eax 8 <span class="Constant">&quot;F - <a href='braces.subx.html#L570'>test-pop</a>: length&quot;</span>)
+<span id="L586" class="LineNr">586 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 8 <span class="Constant">&quot;F - <a href='braces.subx.html#L570'>test-pop</a>: length&quot;</span>)
 <span id="L587" class="LineNr">587 </span>    <span class="subxComment"># clean up</span>
 <span id="L588" class="LineNr">588 </span>    81 0/subop/add %esp 8/imm32
 <span id="L589" class="LineNr">589 </span>    c3/return
@@ -692,9 +692,9 @@ if ('onhashchange' in window) {
 <span id="L644" class="LineNr">644 </span>    68/push 4/imm32/top
 <span id="L645" class="LineNr">645 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L646" class="LineNr">646 </span>    <span class="subxComment">#</span>
-<span id="L647" class="LineNr">647 </span>    (top %ecx)  <span class="subxComment"># =&gt; eax</span>
+<span id="L647" class="LineNr">647 </span>    (<a href='braces.subx.html#L591'>top</a> %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L648" class="LineNr">648 </span>    <span class="subxComment"># result</span>
-<span id="L649" class="LineNr">649 </span>    (check-ints-equal %eax 42 <span class="Constant">&quot;F - <a href='braces.subx.html#L639'>test-top</a>: result&quot;</span>)
+<span id="L649" class="LineNr">649 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 42 <span class="Constant">&quot;F - <a href='braces.subx.html#L639'>test-top</a>: result&quot;</span>)
 <span id="L650" class="LineNr">650 </span>    <span class="subxComment"># clean up</span>
 <span id="L651" class="LineNr">651 </span>    81 0/subop/add %esp 0x10/imm32
 <span id="L652" class="LineNr">652 </span>    c3/return

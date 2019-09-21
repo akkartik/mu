@@ -198,6 +198,11 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
             while (in2 >> c) out << c;
             at_start_of_line = false;
           }
+          // send through open parens at start of line
+          else if (c == '(') {
+            out << c;
+            at_start_of_line = false;
+          }
           else {
 //?             cerr << "rest\n";
             if (c == ',' || c == ':') {
