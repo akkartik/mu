@@ -15,19 +15,20 @@ Entry:  # run tests if necessary, a REPL if not
     89/<- %ebp 4/r32/esp
     # initialize heap
     (new-segment Heap-size Heap)
-    # if (argc <= 1) goto run-main
-    81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-lesser-or-equal $run-main/disp8
-    # if (argv[1] != "test")) goto run-main
-    (kernel-string-equal? *(ebp+8) "test")  # => eax
-    3d/compare-eax-and 0/imm32
-    74/jump-if-equal $run-main/disp8
-    #
-    (run-tests)
-    # syscall(exit, *Num-test-failures)
-    8b/-> *Num-test-failures 3/r32/ebx
-    eb/jump $main:end/disp8
-$run-main:
+    {
+      # if (argc <= 1) break
+      81 7/subop/compare *ebp 1/imm32
+      7e/jump-if-lesser-or-equal break/disp8
+      # if (argv[1] != "test")) break
+      (kernel-string-equal? *(ebp+8) "test")  # => eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-equal break/disp8
+      #
+      (run-tests)
+      # syscall(exit, *Num-test-failures)
+      8b/-> *Num-test-failures 3/r32/ebx
+      eb/jump $main:end/disp8
+    }
     (repl Stdin Stdout)
     # syscall(exit, 0)
     bb/copy-to-ebx 0/imm32
@@ -79,16 +80,16 @@ repl:  # in : (address buffered-file), out : (address buffered-file) -> <void>
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-$repl:loop:
-    (lisp-read Stdin)  # => eax : (address cell)
-    # if (eax == 0) break
-    3d/compare-eax-and 0/imm32
-    74/jump-if-equal $repl:end/disp8
-    #
-    (lisp-eval %eax)  # => eax : (address cell)
-    (lisp-print Stdout %eax)
-    # loop
-    eb/jump $repl:loop/disp8
+    {
+      (lisp-read Stdin)  # => eax : (address cell)
+      # if (eax == 0) break
+      3d/compare-eax-and 0/imm32
+      74/jump-if-equal break/disp8
+      #
+      (lisp-eval %eax)  # => eax : (address cell)
+      (lisp-print Stdout %eax)
+      eb/jump loop/disp8
+    }
 $repl:end:
     # . restore registers
     58/pop-to-eax
@@ -115,15 +116,20 @@ lisp-read:  # in : (address buffered-file) -> eax : (address cell)
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
-$lisp-read:loop:
-    # read line into s
-    (clear-stream %ecx)
-    (read-line-buffered *(ebp+8) %ecx)
-    # if (s->write == 0) return null
-    81 7/subop/compare *ecx 0/imm32
-    75/jump-if-not-equal $lisp-read:loop/disp8
-    b8/copy-to-eax 0/imm32/eof
-    eb/jump $lisp-read:end/disp8
+    {
+      # read line into s
+      (clear-stream %ecx)
+      (read-line-buffered *(ebp+8) %ecx)
+      # if (s->write == 0) return null
+      {
+        81 7/subop/compare *ecx 0/imm32
+        75/jump-if-not-equal break/disp8
+        b8/copy-to-eax 0/imm32/eof
+        eb/jump $lisp-read:end/disp8
+      }
+      # ...
+      eb/jump loop/disp8
+    }
     # return s
     89/<- %eax 1/r32/ecx
 $lisp-read:end:
@@ -137,13 +143,13 @@ $lisp-read:end:
     c3/return
 
 # lisp-read:  in : (address buffered-file) -> (address cell)
-#   token tmp = next-token(in)
+#   token tmp = next-mulisp-token(in)
 #   if is-int(tmp) return cell(tmp)
 #   if is-string(tmp) return cell(tmp)
 #   if is-pair(tmp) ...
 #   if is-array(tmp) ...
 
-next-token:  # in : (address buffered-file), line : (address stream), result : (address slice)
+next-mulisp-token:  # in : (address buffered-file), line : (address stream), result : (address slice)
     # pseudocode:
     #   if (line->read >= line->write)
     #     read-line-buffered(in, line)
@@ -180,7 +186,7 @@ next-token:  # in : (address buffered-file), line : (address stream), result : (
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-$next-token:end:
+$next-mulisp-token:end:
     # . reclaim locals
     # . restore registers
     # . epilog
