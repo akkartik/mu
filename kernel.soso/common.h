@@ -21,24 +21,23 @@ typedef unsigned  int       size_t;
 #define FALSE 0
 #define NULL 0
 
+// kernel memory map
+//   code
 #define KERN_PAGE_DIRECTORY     0x00001000
-
 #define KERN_BASE               0x00100000
-
-//16M is identity mapped as below.
-//First 8M we don't touch. Kernel code is there.
-//4M is reserved for 4K page directories.
-//4M is not used for now. kernel mini heap was here in old times.
-#define RESERVED_AREA           0x01000000 //16 mb
-#define KERN_PD_AREA_BEGIN      0x00800000 // 8 mb
-#define KERN_PD_AREA_END        0x00C00000 //12 mb
-#define KERN_NOTUSED_BEGIN      0x00C00000 //12 mb
-#define KERN_NOTUSED_END        0x01000000 //16 mb
-
-#define GFX_MEMORY              0x01000000 //16 mb
-
-#define KERN_HEAP_BEGIN         0x02000000 //32 mb
-#define KERN_HEAP_END           0x40000000 // 1 gb
+//   4k page directories
+#define KERN_PD_AREA_BEGIN      0x00800000 //  8 MB
+#define KERN_PD_AREA_END        0x00C00000 // 12 MB
+//   4MB unused (used to be for mini heap)
+#define KERN_NOTUSED_BEGIN      0x00C00000 // 12 MB
+#define KERN_NOTUSED_END        0x01000000 // 16 MB
+//
+#define RESERVED_AREA           0x01000000 // 16 MB
+//   frame buffer
+#define GFX_MEMORY              0x01000000 // 16 MB
+//   heap
+#define KERN_HEAP_BEGIN         0x02000000 // 32 MB
+#define KERN_HEAP_END           0x40000000 //  1 GB
 
 
 #define PAGE_INDEX_4K(addr)     ((addr) >> 12)
