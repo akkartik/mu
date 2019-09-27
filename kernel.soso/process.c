@@ -547,7 +547,7 @@ BOOL isProcessValid(Process* process) {
     return FALSE;
 }
 
-static void switchToTask(Thread* current);
+static void switchToTask(Thread* current, int mode);
 
 static void updateMetrics(Thread* thread) {
     uint32 seconds = getUptimeSeconds();
@@ -657,10 +657,20 @@ void schedule(TimerInt_Registers* registers) {
     */
 
     updateMetrics(current);
-    switchToTask(current);
+
+    if (current->regs.cs != 0x08) {
+        switchToTask(current, USERMODE);
+    }
+    else {
+        switchToTask(current, KERNELMODE);
+    }
 }
 
-static void switchToTask(Thread* current) {
+
+
+//The mode indicates whether this process was in user mode or kernel mode
+//When it was previously interrupted by the scheduler.
+static void switchToTask(Thread* current, int mode) {
     uint32 kesp, eflags;
     uint16 kss, ss, cs;
 
@@ -672,14 +682,11 @@ static void switchToTask(Thread* current) {
     cs = current->regs.cs;
     eflags = (current->regs.eflags | 0x200) & 0xFFFFBFFF;
 
-    int oldMode;
-    if (cs != 0x08) {
-        oldMode = USERMODE;
+    if (mode == USERMODE) {
         kss = current->kstack.ss0;
         kesp = current->kstack.esp0;
     }
     else {
-        oldMode = KERNELMODE;
         kss = current->regs.ss;
         kesp = current->regs.esp;
     }
@@ -708,6 +715,6 @@ static void switchToTask(Thread* current) {
         "m"(current->regs.eip), \
         "m"(current), \
         [KMODE] "i"(KERNELMODE), \
-        [mode] "g"(oldMode)
+        [mode] "g"(mode)
         );
 }
