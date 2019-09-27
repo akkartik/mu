@@ -6,24 +6,24 @@
 #define halt() asm volatile("hlt")
 
 
-typedef unsigned long long 	uint64;
-typedef signed long long	int64;
-typedef unsigned int   uint32;
-typedef          int   int32;
-typedef unsigned short uint16;
-typedef          short int16;
-typedef unsigned char  uint8;
-typedef          char  int8;
-typedef unsigned int  size_t;
+typedef unsigned  long long uint64;
+typedef signed    long long int64;
+typedef unsigned  int       uint32;
+typedef           int       int32;
+typedef unsigned  short     uint16;
+typedef           short     int16;
+typedef unsigned  char      uint8;
+typedef           char      int8;
+typedef unsigned  int       size_t;
 
 #define BOOL uint8
 #define TRUE 1
 #define FALSE 0
 #define NULL 0
 
-#define	KERN_PAGE_DIRECTORY			0x00001000
+#define KERN_PAGE_DIRECTORY     0x00001000
 
-#define	KERN_BASE			0x00100000
+#define KERN_BASE               0x00100000
 
 //16M is identity mapped as below.
 //First 8M we don't touch. Kernel code is there.
@@ -37,36 +37,36 @@ typedef unsigned int  size_t;
 
 #define GFX_MEMORY              0x01000000 //16 mb
 
-#define KERN_HEAP_BEGIN 		0x02000000 //32 mb
-#define KERN_HEAP_END    		0x40000000 // 1 gb
+#define KERN_HEAP_BEGIN         0x02000000 //32 mb
+#define KERN_HEAP_END           0x40000000 // 1 gb
 
 
-#define PAGE_INDEX_4K(addr)		((addr) >> 12)
-#define PAGE_INDEX_4M(addr)		((addr) >> 22)
-#define	PAGING_FLAG 		0x80000000	// CR0 - bit 31
-#define PSE_FLAG			0x00000010	// CR4 - bit 4
-#define PG_PRESENT			0x00000001	// page directory / table
-#define PG_WRITE			0x00000002
-#define PG_USER				0x00000004
-#define PG_4MB				0x00000080
-#define	PAGESIZE_4K 		0x00001000
-#define	PAGESIZE_4M			0x00400000
-#define	RAM_AS_4K_PAGES		0x100000
-#define	RAM_AS_4M_PAGES		1024
+#define PAGE_INDEX_4K(addr)     ((addr) >> 12)
+#define PAGE_INDEX_4M(addr)     ((addr) >> 22)
+#define PAGING_FLAG             0x80000000  // CR0 - bit 31
+#define PSE_FLAG                0x00000010  // CR4 - bit 4
+#define PG_PRESENT              0x00000001  // page directory / table
+#define PG_WRITE                0x00000002
+#define PG_USER                 0x00000004
+#define PG_4MB                  0x00000080
+#define PAGESIZE_4K             0x00001000
+#define PAGESIZE_4M             0x00400000
+#define RAM_AS_4K_PAGES         0x100000
+#define RAM_AS_4M_PAGES         1024
 
 #define KERNELMEMORY_PAGE_COUNT 256 //(KERN_HEAP_END / PAGESIZE_4M)
 
-#define	KERN_STACK_SIZE		PAGESIZE_4K
+#define KERN_STACK_SIZE         PAGESIZE_4K
 
 //KERN_HEAP_END ends and this one starts
-#define	USER_OFFSET         	0x40000000
-#define	USER_OFFSET_END     	0xF0000000
-#define	USER_OFFSET_MMAP    	0xF0000000
-#define	USER_OFFSET_MMAP_END    0xFFFFFFFF
+#define USER_OFFSET             0x40000000
+#define USER_OFFSET_END         0xF0000000
+#define USER_OFFSET_MMAP        0xF0000000
+#define USER_OFFSET_MMAP_END    0xFFFFFFFF
 
-#define	USER_EXE_IMAGE 		0x200000 //2MB
-#define	USER_ARGV_ENV_SIZE	0x10000  //65KB
-#define	USER_ARGV_ENV_LOC	(USER_OFFSET + (USER_EXE_IMAGE - USER_ARGV_ENV_SIZE))
+#define USER_EXE_IMAGE          0x200000 //2MB
+#define USER_ARGV_ENV_SIZE      0x10000  //65KB
+#define USER_ARGV_ENV_LOC       (USER_OFFSET + (USER_EXE_IMAGE - USER_ARGV_ENV_SIZE))
 //This means we support executable images up to 2MB
 //And user malloc functions will start from USER_OFFSET + USER_EXE_IMAGE
 //We will 65KB (0x10000) for argv and environ just before user malloc start
@@ -74,7 +74,7 @@ typedef unsigned int  size_t;
 //That means argv and env data will start from USER_OFFSET + 0x1F0000
 //Of course libc should know this numbers :)
 
-#define	USER_STACK 			0xF0000000
+#define USER_STACK          0xF0000000
 
 void outb(uint16 port, uint8 value);
 void outw(uint16 port, uint16 value);
@@ -123,3 +123,5 @@ void beginCriticalSection();
 void endCriticalSection();
 
 #endif // COMMON_H
+
+// vim:expandtab:ts=2
