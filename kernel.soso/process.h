@@ -1,6 +1,9 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#define KERNELMODE	0
+#define USERMODE	1
+
 #define MAX_OPENED_FILES 20
 
 #include "common.h"
