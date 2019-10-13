@@ -9,7 +9,7 @@ to run, and nothing else.
   ```sh
   $ git clone https://github.com/akkartik/mu
   $ cd mu
-  # package up a "hello world" binary and Soso kernel into mu_soso.iso
+  # package up a "hello world" program with a third-party kernel into mu_soso.iso
   # requires sudo
   $ ./gen_soso_iso init.soso examples/ex6.subx
   # try it out
