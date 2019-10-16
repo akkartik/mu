@@ -27,7 +27,7 @@ array-equal?:  # a : (address array int), b : (address array int) -> eax : boole
     #   i1: eax
     #   i2: ebx
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -82,13 +82,13 @@ $array-equal?:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-compare-empty-with-empty-array:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ecx = []
@@ -114,13 +114,13 @@ test-compare-empty-with-empty-array:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-compare-empty-with-non-empty-array:  # also checks length-mismatch code path
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ecx = [1]
@@ -147,13 +147,13 @@ test-compare-empty-with-non-empty-array:  # also checks length-mismatch code pat
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-compare-equal-arrays:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ecx = [1, 2, 3]
@@ -185,13 +185,13 @@ test-compare-equal-arrays:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-compare-inequal-arrays-equal-lengths:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ecx = [1, 4, 3]
@@ -223,7 +223,7 @@ test-compare-inequal-arrays-equal-lengths:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -253,7 +253,7 @@ parse-array-of-ints:  # ad : (address allocation-descriptor), s : (address strin
     #     slice->start = slice->end
     #   return result
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -393,13 +393,13 @@ $parse-array-of-ints:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-parse-array-of-ints:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ecx = [1, 2, 3]
@@ -433,14 +433,14 @@ test-parse-array-of-ints:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-parse-array-of-ints-empty:
     # - empty string = empty array
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # eax = parse-array-of-ints(Heap, "")
@@ -460,14 +460,14 @@ test-parse-array-of-ints-empty:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-parse-array-of-ints-just-whitespace:
     # - just whitespace = empty array
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # eax = parse-array-of-ints(Heap, " ")
@@ -487,13 +487,13 @@ test-parse-array-of-ints-just-whitespace:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-parse-array-of-ints-extra-whitespace:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ecx = [1, 2, 3]
@@ -527,7 +527,7 @@ test-parse-array-of-ints-extra-whitespace:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -535,7 +535,7 @@ test-parse-array-of-ints-extra-whitespace:
 # helper for later tests
 # compare an array with a string representation of an array literal
 check-array-equal:  # a : (address array int), expected : (address string), msg : (address string)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -571,13 +571,13 @@ check-array-equal:  # a : (address array int), expected : (address string), msg 
 $check-array-equal:end:
     # . restore registers
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-check-array-equal:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ecx = [1, 2, 3]
@@ -595,7 +595,7 @@ test-check-array-equal:
     e8/call  check-array-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

@@ -11,7 +11,7 @@
 == code
 
 Entry:  # run tests if necessary, a REPL if not
-    # . prolog
+    # . prologue
     89/<- %ebp 4/r32/esp
     # initialize heap
     (new-segment Heap-size Heap)
@@ -75,7 +75,7 @@ $main:end:
 #     tag for them all
 
 repl:  # in : (address buffered-file), out : (address buffered-file) -> <void>
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
@@ -93,7 +93,7 @@ repl:  # in : (address buffered-file), out : (address buffered-file) -> <void>
 $repl:end:
     # . restore registers
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -105,7 +105,7 @@ $repl:end:
 # symbols start with anything else but quote, backquote, unquote or splice
 # only one s-expression per line
 lisp-read:  # in : (address buffered-file) -> eax : (address cell)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
@@ -137,7 +137,7 @@ $lisp-read:end:
     81 0/subop/add %esp 0x20c/imm32
     # . restore registers
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -182,14 +182,14 @@ next-mulisp-token:  # in : (address buffered-file), line : (address stream), res
     #     result->en = &line->data[line->read]
     #     return
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
 $next-mulisp-token:end:
     # . reclaim locals
     # . restore registers
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -199,20 +199,20 @@ new-int-cell:  # in : (address slice) -> eax : (address cell)
 new-string-cell:  # in : (address slice) -> eax : (address cell)
 
 lisp-eval:  # in : (address cell) -> eax : (address cell)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     8b/-> *(ebp+8) 0/r32/eax
 $lisp-eval:end:
     # . restore registers
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 lisp-print:  # out : (address buffered-file), x : (address cell)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
@@ -222,7 +222,7 @@ lisp-print:  # out : (address buffered-file), x : (address cell)
     (flush Stdout)
 $lisp-print:end:
     # . restore registers
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return

@@ -20,7 +20,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 Entry:  # run tests if necessary, convert stdin if not
-    # . prolog
+    # . prologue
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
 
     # initialize heap
@@ -106,7 +106,7 @@ subx-dquotes:  # in : (address buffered-file), out : (address buffered-file) -> 
     #   write-stream-data(out, new-data-segment)
     #   flush(out)
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -271,7 +271,7 @@ $subx-dquotes:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -286,7 +286,7 @@ process-string-literal:  # string-literal : (address slice), out : (address buff
     #   emit-metadata(out, string-literal)
     #   ++ *Next-string-literal
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -378,13 +378,13 @@ $process-string-literal:end:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x16/imm32        # add to esp
     # . restore registers
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-subx-dquotes-is-idempotent-by-default:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -635,13 +635,13 @@ test-subx-dquotes-is-idempotent-by-default:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-subx-dquotes-processes-string-literals:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -839,7 +839,7 @@ test-subx-dquotes-processes-string-literals:
     e8/call  check-next-stream-line-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -873,7 +873,7 @@ emit-string-literal-data:  # out : (address stream), word : (address slice)
     #       idx = 0
     #       write(out, "\n")
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -1015,13 +1015,13 @@ $emit-string-literal-data:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 is-alphanumeric?:  # c : int -> eax : boolean
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # eax = c
@@ -1051,13 +1051,13 @@ $is-alphanumeric?:false:
 $is-alphanumeric?:true:
     b8/copy-to-eax  1/imm32/true
 $is-alphanumeric?:end:
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-string-literal-data:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1115,13 +1115,13 @@ test-emit-string-literal-data:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-string-literal-data-empty:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1179,14 +1179,14 @@ test-emit-string-literal-data-empty:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 # just to keep things simple
 test-emit-string-literal-data-no-metadata-for-non-alphanumerics:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1244,13 +1244,13 @@ test-emit-string-literal-data-no-metadata-for-non-alphanumerics:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-string-literal-data-handles-escape-sequences:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1308,13 +1308,13 @@ test-emit-string-literal-data-handles-escape-sequences:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-string-literal-data-handles-newline-escape:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1372,7 +1372,7 @@ test-emit-string-literal-data-handles-newline-escape:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -1394,7 +1394,7 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     #   slice->start = curr
     #   write-slice-buffered(out, slice)
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -1464,13 +1464,13 @@ $emit-metadata:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-metadata:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1523,13 +1523,13 @@ test-emit-metadata:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-metadata-none:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1582,13 +1582,13 @@ test-emit-metadata-none:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-metadata-multiple:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1641,13 +1641,13 @@ test-emit-metadata-multiple:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-metadata-when-no-datum:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1702,13 +1702,13 @@ test-emit-metadata-when-no-datum:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-emit-metadata-in-string-literal:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
@@ -1782,13 +1782,13 @@ test-emit-metadata-in-string-literal:
     e8/call  check-stream-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 string-length-at-start-of-slice:  # curr : (address byte), end : (address byte) -> length/eax
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -1833,13 +1833,13 @@ $string-length-at-start-of-slice:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-string-length-at-start-of-slice:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup: (eax..ecx) = "\"abc\" def"
@@ -1864,13 +1864,13 @@ test-string-length-at-start-of-slice:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-string-length-at-start-of-slice-escaped:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup: (eax..ecx) = "\"ab\\c\" def"
@@ -1895,7 +1895,7 @@ test-string-length-at-start-of-slice-escaped:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

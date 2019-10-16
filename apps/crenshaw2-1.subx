@@ -31,7 +31,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 Entry:  # run tests if necessary, call 'compile' if not
-    # . prolog
+    # . prologue
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
 
     # initialize heap
@@ -91,7 +91,7 @@ $main:end:
 
 # the main entry point
 compile:  # in : (address buffered-file), out : fd or (address stream), err : fd or (address stream), ed : (address exit-descriptor) -> <void>
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -182,7 +182,7 @@ $compile:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -210,7 +210,7 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     # get-char in each iteration of the loop. (Thereby demonstrating that it's
     # not the right interface for us. But we'll keep it just to follow Crenshaw.)
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - if (is-digit?(Look)) expected(ed, err, "integer")
@@ -288,7 +288,7 @@ $get-num:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -473,7 +473,7 @@ test-get-num-aborts-on-non-digit-in-Look:
 
 # write(f, "Error: "+s+" expected\n") then stop(ed, 1)
 expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte) -> <void>
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # write(f, "Error: ")
@@ -508,14 +508,14 @@ expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (ad
     e8/call  stop/disp32
     # should never get past this point
 $expected:dead-end:
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 # read a byte from 'f', and save it in 'Look'
 get-char:  # f : (address buffered-file) -> <void>
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -532,13 +532,13 @@ get-char:  # f : (address buffered-file) -> <void>
 $get-char:end:
     # . restore registers
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 is-digit?:  # c : int -> eax : boolean
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # eax = false
@@ -552,7 +552,7 @@ is-digit?:  # c : int -> eax : boolean
     # otherwise return true
     b8/copy-to-eax  1/imm32
 $is-digit?:end:
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

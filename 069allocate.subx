@@ -59,7 +59,7 @@ $array-equal-main:end:
 # Claim the next 'n' bytes of memory starting at ad->curr and update ad->curr.
 # Abort if there isn't enough memory in 'ad'.
 allocate:  # ad : (address allocation-descriptor), n : int -> address-or-null/eax
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -82,7 +82,7 @@ $allocate:end:
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -103,7 +103,7 @@ $allocate:abort:
     # never gets here
 
 test-allocate-success:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ad/ecx : (address allocation-descriptor) = {11, 15}
@@ -136,13 +136,13 @@ test-allocate-success:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 _pending-test-allocate-failure:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var ad/ecx : (address allocation-descriptor) = {11, 15}
@@ -176,14 +176,14 @@ _pending-test-allocate-failure:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 # helper: create a nested allocation descriptor (useful for tests)
 allocate-region:  # ad : (address allocation-descriptor), n : int -> new-ad : (address allocation-descriptor)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -210,7 +210,7 @@ allocate-region:  # ad : (address allocation-descriptor), n : int -> new-ad : (a
     89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(eax+4)
     # . restore registers
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

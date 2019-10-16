@@ -45,7 +45,7 @@ $handle-main:end:
     cd/syscall  0x80/imm8
 
 new:  # ad : (address allocation-descriptor), n : int, out : (address handle)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -87,13 +87,13 @@ $new:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-new:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var heap/edx : (address allocation-descriptor) = {0, 0}
@@ -154,13 +154,13 @@ test-new:
     # clean up
     # . *Next-alloc-id = 1
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     Next-alloc-id/disp32  1/imm32           # copy to *Next-alloc-id
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 _pending-test-new-failure:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . *Next-alloc-id = 0x34
@@ -216,13 +216,13 @@ _pending-test-new-failure:
     # clean up
     # . *Next-alloc-id = 1
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     Next-alloc-id/disp32  1/imm32           # copy to *Next-alloc-id
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 lookup:  # h : (handle T) -> eax : (address T)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - as a proof of concept for future inlining, uses no general-purpose registers besides the output (eax)
@@ -258,7 +258,7 @@ lookup:  # h : (handle T) -> eax : (address T)
 #?     # add 4 to eax
 #?     05/add-to-eax  4/imm32
     # - }
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -278,7 +278,7 @@ $lookup:abort:
     cd/syscall  0x80/imm8
 
 test-lookup-success:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -341,13 +341,13 @@ test-lookup-success:
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 test-lookup-failure:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var heap/esi : (address allocation-descriptor) = {0, 0}
@@ -414,7 +414,7 @@ test-lookup-failure:
     # clean up
     # . *Next-alloc-id = 1
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     Next-alloc-id/disp32  1/imm32           # copy to *Next-alloc-id
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

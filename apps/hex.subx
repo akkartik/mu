@@ -18,7 +18,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 Entry:  # run tests if necessary, convert stdin if not
-    # . prolog
+    # . prologue
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
 
     # initialize heap
@@ -85,7 +85,7 @@ subx-hex:  # in : (address buffered-file), out : (address buffered-file), err : 
     #     write-byte-buffered(out, AL)
     #   flush(out)
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -124,7 +124,7 @@ $subx-hex:loop-end:
 $subx-hex:end:
     # . restore registers
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -146,7 +146,7 @@ convert-next-octet:  # in : (address buffered-file), err : (address buffered-fil
     #   eax = (ecx << 4) | eax
     #   return
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -198,7 +198,7 @@ $convert-next-octet:convert:
 $convert-next-octet:end:
     # . restore registers
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -299,7 +299,7 @@ test-convert-next-octet:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-convert-next-octet:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -393,7 +393,7 @@ test-convert-next-octet-handles-Eof:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-convert-next-octet-handles-Eof:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -483,7 +483,7 @@ test-convert-next-octet-aborts-on-single-hex-byte:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-convert-next-octet-aborts-on-single-hex-byte:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -503,7 +503,7 @@ scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), 
     #     if (eax == '#') skip-until-newline(in)
     #     else error-byte(ed, err, "invalid byte: " eax)
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -567,7 +567,7 @@ $scan-next-byte:check3:
     e8/call  error-byte/disp32  # never returns
 $scan-next-byte:end:
     # . restore registers
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -668,7 +668,7 @@ test-scan-next-byte:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -770,7 +770,7 @@ test-scan-next-byte-skips-whitespace:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte-skips-whitespace:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -880,7 +880,7 @@ test-scan-next-byte-skips-comment:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte-skips-comment:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -990,7 +990,7 @@ test-scan-next-byte-skips-comment-and-whitespace:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte-skips-comment-and-whitespace:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -1100,7 +1100,7 @@ test-scan-next-byte-skips-whitespace-and-comment:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte-skips-whitespace-and-comment:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -1202,7 +1202,7 @@ test-scan-next-byte-reads-final-byte:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte-reads-final-byte:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -1296,7 +1296,7 @@ test-scan-next-byte-handles-Eof:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte-handles-Eof:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -1386,7 +1386,7 @@ test-scan-next-byte-aborts-on-invalid-byte:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
 $test-scan-next-byte-aborts-on-invalid-byte:end:
-    # . epilog
+    # . epilogue
     # don't restore esp from ebp; manually reclaim locals
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     5d/pop-to-ebp
@@ -1400,7 +1400,7 @@ skip-until-newline:  # in : (address buffered-file) -> <void>
     #     if (eax == Eof) break
     #     if (eax == 0x0a) break
     #   pop eax
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -1422,7 +1422,7 @@ $skip-until-newline:loop:
 $skip-until-newline:end:
     # . restore registers
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

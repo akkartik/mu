@@ -16,7 +16,7 @@
 #?     cd/syscall  0x80/imm8
 
 write-stream:  # f : fd or (address stream), s : (address stream) -> <void>
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # if (f < 0x08000000) _write-stream(f, s), return  # f can't be a user-mode address, so treat it as a kernel file descriptor
@@ -70,13 +70,13 @@ $write-stream:fake:
     5e/pop-to-esi
     58/pop-to-eax
 $write-stream:end:
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 _write-stream:  # fd : int, s : (address stream) -> <void>
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -114,7 +114,7 @@ _write-stream:  # fd : int, s : (address stream) -> <void>
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

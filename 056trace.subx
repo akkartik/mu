@@ -42,7 +42,7 @@ _test-trace-stream:
 # Allocate a new segment for the trace stream, initialize its length, and save its address to Trace-stream.
 # The Trace-stream segment will consist of variable-length lines separated by newlines (0x0a)
 initialize-trace-stream:  # n : int -> <void>
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -72,7 +72,7 @@ $initialize-trace-stream:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -80,7 +80,7 @@ $initialize-trace-stream:end:
 # Append a string to the given trace stream.
 # Silently give up if it's already full. Or truncate the string if there isn't enough room.
 trace:  # line : (address string)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -141,7 +141,7 @@ $trace:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -247,7 +247,7 @@ test-trace-empty-line:
     c3/return
 
 check-trace-contains:  # line : (address string), msg : (address string)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # rewind-stream(*Trace-stream)
@@ -266,13 +266,13 @@ check-trace-contains:  # line : (address string), msg : (address string)
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $check-trace-contains:end:
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 check-trace-scans-to:  # line : (address string), msg : (address string)
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -296,7 +296,7 @@ check-trace-scans-to:  # line : (address string), msg : (address string)
 $check-trace-scans-to:end:
     # . restore registers
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -316,7 +316,7 @@ trace-scan:  # line : (address string) -> result/eax : boolean
     #   pop saved copy of Trace-stream->read
     #   return false
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -373,7 +373,7 @@ $trace-scan:false:
 $trace-scan:end:
     # . restore registers
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -564,7 +564,7 @@ next-line-matches?:  # t : (address stream), line : (address string) -> result/e
     #     ++currl
     #   return *currt == '\n'
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -640,7 +640,7 @@ $next-line-matches?:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -742,7 +742,7 @@ skip-next-line:  # t : (address stream)
     #     ++curr
     #   t->read = i
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -789,7 +789,7 @@ $skip-next-line:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -839,7 +839,7 @@ test-skip-next-line-filled:
     c3/return
 
 clear-trace-stream:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -870,7 +870,7 @@ $clear-trace-stream:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
@@ -879,7 +879,7 @@ $clear-trace-stream:end:
 
 # 3-argument variant of _append
 _append-3:  # out : address, outend : address, s : (array byte) -> num_bytes_appended/eax
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -904,14 +904,14 @@ _append-3:  # out : address, outend : address, s : (array byte) -> num_bytes_app
 $_append-3:end:
     # . restore registers
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return
 
 # 4-argument variant of _append
 _append-4:  # out : address, outend : address, in : address, inend : address -> num_bytes_appended/eax
-    # . prolog
+    # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
@@ -954,7 +954,7 @@ $_append-4:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
     c3/return

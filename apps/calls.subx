@@ -25,7 +25,7 @@
 == code
 
 Entry:  # run tests if necessary, convert stdin if not
-    # . prolog
+    # . prologue
     89/<- %ebp 4/r32/esp
 
     # initialize heap
@@ -97,7 +97,7 @@ subx-calls:  # in : (address buffered-file), out : (address buffered-file) -> <v
     #     emit-call(out, words)
     #   flush(out)
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
@@ -226,7 +226,7 @@ $subx-calls:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -241,7 +241,7 @@ parse-line:  # line : (address stream byte), words : (address stream slice)
     #     write-int(words, word-slice->start)
     #     write-int(words, word-slice->end)
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
@@ -341,7 +341,7 @@ $parse-line:end:
     81 0/subop/add %esp 8/imm32
     # . restore registers
     59/pop-to-ecx
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -372,7 +372,7 @@ emit-call:  # out : (address buffered-file), words : (address stream slice)
     #   print-int32-buffered(out, words->write >> 1 - 4)
     #   write-buffered(out, "/imm32\n")
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
@@ -517,7 +517,7 @@ $emit-call:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -546,7 +546,7 @@ $emit-call:error1:
     # never gets here
 
 test-subx-calls-passes-most-lines-through:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -615,13 +615,13 @@ test-subx-calls-passes-most-lines-through:
     e8/call check-stream-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-subx-calls-processes-calls:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -750,7 +750,7 @@ test-subx-calls-processes-calls:
     e8/call check-next-stream-line-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -812,7 +812,7 @@ next-word-string-or-expression-without-metadata:  # line : (address stream), out
     #   ecx: often line->read
     #   eax: often line->data[line->read]
     #
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
@@ -993,7 +993,7 @@ $next-word-string-or-expression-without-metadata:end:
     5e/pop-to-esi
     59/pop-to-ecx
     58/pop-to-eax
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
@@ -1194,7 +1194,7 @@ $next-word-string-or-expression-without-metadata:error5:
     # never gets here
 
 test-next-word-string-or-expression-without-metadata:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1261,13 +1261,13 @@ test-next-word-string-or-expression-without-metadata:
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-returns-whole-comment:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1334,13 +1334,13 @@ test-next-word-string-or-expression-without-metadata-returns-whole-comment:
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-returns-empty-slice-on-eof:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1376,13 +1376,13 @@ test-next-word-string-or-expression-without-metadata-returns-empty-slice-on-eof:
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-returns-string-literal:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1439,13 +1439,13 @@ test-next-word-string-or-expression-without-metadata-returns-string-literal:
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-returns-string-with-escapes:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1502,13 +1502,13 @@ test-next-word-string-or-expression-without-metadata-returns-string-with-escapes
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-returns-whole-expression:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1565,13 +1565,13 @@ test-next-word-string-or-expression-without-metadata-returns-whole-expression:
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-close-paren:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1620,13 +1620,13 @@ test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-clo
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-handles-comment-after-trailing-close-paren:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1675,13 +1675,13 @@ test-next-word-string-or-expression-without-metadata-handles-comment-after-trail
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-handles-newline-after-trailing-close-paren:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1730,13 +1730,13 @@ test-next-word-string-or-expression-without-metadata-handles-newline-after-trail
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-next-word-string-or-expression-without-metadata-stops-at-close-paren:
-    # . prolog
+    # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # setup
@@ -1793,7 +1793,7 @@ test-next-word-string-or-expression-without-metadata-stops-at-close-paren:
     e8/call check-ints-equal/disp32
     # . . discard args
     81 0/subop/add %esp 0xc/imm32
-    # . epilog
+    # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
