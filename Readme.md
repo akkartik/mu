@@ -1,10 +1,11 @@
 # Mu: a human-scale computer
 
-Not designed to operate in large clusters providing services for millions of
-people.
+Mu is a minimal-dependency hobbyist computing stack (everything above the
+processor and OS kernel).
 
-Designed for _you_, to run one computer. (Or a few.) Running the code you want
-to run, and nothing else.
+Mu is not designed to operate in large clusters providing services for
+millions of people. Mu is designed for _you_, to run one computer. (Or a few.)
+Running the code you want to run, and nothing else.
 
   ```sh
   $ git clone https://github.com/akkartik/mu
@@ -51,7 +52,8 @@ In priority order:
 ## What works so far
 
 You get a thin syntax called SubX for programming in (a subset of) x86 machine
-code. Here's a program (`examples/ex1.subx`) that returns 42:
+code. (A memory-safe compiled language is [being designed](http://akkartik.name/post/mu-2019-2).)
+Here's a program (`examples/ex1.subx`) that returns 42:
 
   ```sh
   bb/copy-to-ebx  0x2a/imm32  # 42 in hex
