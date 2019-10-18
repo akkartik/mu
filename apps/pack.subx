@@ -97,7 +97,7 @@ $subx-pack-main:end:
 #   next-token-from-slice(start, end, delim char) -> slice
 #   slice-equal?(slice, string)
 
-subx-pack:  # in : (address buffered-file), out : (address buffered-file) -> <void>
+subx-pack:  # in : (address buffered-file), out : (address buffered-file)
     # pseudocode:
     #   var line = new-stream(512, 1)
     #   var in-code? = false
@@ -933,7 +933,7 @@ test-subx-pack-code-and-data-segments:
     5d/pop-to-ebp
     c3/return
 
-convert-data:  # line : (address stream byte), out : (address buffered-file) -> <void>
+convert-data:  # line : (address stream byte), out : (address buffered-file)
     # pseudocode:
     #   var word-slice = {0, 0}
     #   while true
@@ -1853,7 +1853,7 @@ test-convert-data-trailing-comment:
 #   unceremoniously abort on non-numeric operands except disp or imm
 #   opcodes must be lowercase and zero padded
 #   opcodes with misleading operand metadata may get duplicated as operands as well. don't rely on this.
-convert-instruction:  # line : (address stream byte), out : (address buffered-file) -> <void>
+convert-instruction:  # line : (address stream byte), out : (address buffered-file)
     # pseudocode:
     #   # some early exits
     #   var word-slice = next-word(line)
@@ -1997,7 +1997,7 @@ $convert-instruction:end:
     5d/pop-to-ebp
     c3/return
 
-emit-opcodes:  # line : (address stream byte), out : (address buffered-file) -> <void>
+emit-opcodes:  # line : (address stream byte), out : (address buffered-file)
     # opcodes occupy 1-3 bytes:
     #   xx
     #   0f xx
@@ -2293,7 +2293,7 @@ $emit-opcodes:end:
     5d/pop-to-ebp
     c3/return
 
-emit-modrm:  # line : (address stream byte), out : (address buffered-file) -> <void>
+emit-modrm:  # line : (address stream byte), out : (address buffered-file)
     # pseudocode:
     #   rewind-stream(line)
     #   var has-modrm? = false, mod = 0, rm32 = 0, r32 = 0
@@ -2612,7 +2612,7 @@ $emit-modrm:end:
     5d/pop-to-ebp
     c3/return
 
-emit-sib:  # line : (address stream byte), out : (address buffered-file) -> <void>
+emit-sib:  # line : (address stream byte), out : (address buffered-file)
     # pseudocode:
     #   var has-sib? = false, base = 0, index = 0, scale = 0
     #   var word-slice = {0, 0}
@@ -2895,7 +2895,7 @@ $emit-sib:end:
     5d/pop-to-ebp
     c3/return
 
-emit-disp:  # line : (address stream byte), out : (address buffered-file) -> <void>
+emit-disp:  # line : (address stream byte), out : (address buffered-file)
     # pseudocode:
     #   rewind-stream(line)
     #   var word-slice = {0, 0}
@@ -3116,7 +3116,7 @@ $emit-disp:break:
     5d/pop-to-ebp
     c3/return
 
-emit-imm:  # line : (address stream byte), out : (address buffered-file) -> <void>
+emit-imm:  # line : (address stream byte), out : (address buffered-file)
     # pseudocode:
     #   rewind-stream(line)
     #   var word-slice = {0, 0}
@@ -3337,7 +3337,7 @@ $emit-imm:break:
     5d/pop-to-ebp
     c3/return
 
-emit-line-in-comment:  # line : (address stream byte), out : (address buffered-file) -> <void>
+emit-line-in-comment:  # line : (address stream byte), out : (address buffered-file)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
