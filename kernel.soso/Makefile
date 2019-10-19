@@ -1,6 +1,8 @@
 CC=cc
 LD=ld
-CFLAGS=-nostdlib -nostdinc -fno-builtin -m32 -c
+# disable stack-protector to support Arch Linux
+# (https://bugs.archlinux.org/task/18864)
+CFLAGS=-nostdlib -nostdinc -fno-builtin -fno-stack-protector -m32 -c
 LDFLAGS=-Tlink.ld -m elf_i386
 ASFLAGS=-felf
 

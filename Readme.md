@@ -10,12 +10,7 @@ Running the code you want to run, and nothing else.
   ```sh
   $ git clone https://github.com/akkartik/mu
   $ cd mu
-  # package up a "hello world" program with a third-party kernel into mu_soso.iso
-  # requires sudo
-  $ ./gen_soso_iso init.soso examples/ex6.subx
-  # try it out
-  $ qemu-system-i386 -cdrom mu_soso.iso
-  # print the message
+  $ ./subx
   ```
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
@@ -138,12 +133,17 @@ Or, running in a VM on other platforms:
   42
   ```
 
-As described at the start, you can package up SubX binaries with the minimal
-hobbyist OS [Soso](https://github.com/ozkl/soso) and run them on Qemu.
-(Requires graphics and sudo access. Currently doesn't work on a cloud server.)
+You can package up SubX binaries with the minimal hobbyist OS [Soso](https://github.com/ozkl/soso)
+and run them on Qemu. (Requires graphics and sudo access. Currently doesn't
+work on a cloud server.)
 
   ```sh
+  # dependencies
+  $ sudo apt install util-linux nasm xorriso  # maybe also dosfstools and mtools
+  # package up a "hello world" program with a third-party kernel into mu_soso.iso
+  # requires sudo
   $ ./gen_soso_iso init.soso examples/ex6.subx
+  # try it out
   $ qemu-system-i386 -cdrom mu_soso.iso
   ```
 
