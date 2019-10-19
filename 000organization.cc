@@ -87,6 +87,8 @@
 //: Programmers shouldn't need to understand everything about a program to
 //: hack on it. But they shouldn't be prevented from a thorough understanding
 //: of each aspect either. The goal of layers is to reward curiosity.
+//:
+//: More information: http://akkartik.name/post/wart-layers
 
 // Includes
 // End Includes

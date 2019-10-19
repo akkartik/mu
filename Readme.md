@@ -817,6 +817,24 @@ To falsify these hypotheses, here's a roadmap of the next few planned features:
 
 * Gradually streamline the bundled kernel, stripping away code we don't need.
 
+---
+
+If you're still reading, here are some more things to check out:
+
+a) Try running the tests:
+
+  ```shell
+  $ ./test_apps
+  ```
+
+b) Try skimming the source code. You should be able to get a pretty good sense
+for how things work just by skimming the files in order, skimming the top of
+each file and ignoring details lower down.
+[Some details on my unconventional approach to organizing projects.](http://akkartik.name/post/four-repos)
+
+c) Try working on [the starter exercises](https://github.com/akkartik/mu/pulls)
+(labelled `hello`).
+
 ## Credits
 
 Mu builds on many ideas that have come before, especially:
