@@ -827,12 +827,16 @@ a) Try running the tests:
   $ ./test_apps
   ```
 
-b) Try skimming the source code. You should be able to get a pretty good sense
-for how things work just by skimming the files in order, skimming the top of
-each file and ignoring details lower down.
-[Some details on my unconventional approach to organizing projects.](http://akkartik.name/post/four-repos)
+b) Check out the online help. Try typing just `./subx`, and then `./subx
+help`.
 
-c) Try working on [the starter exercises](https://github.com/akkartik/mu/pulls)
+c) Familiarize yourself with `./subx help opcodes`. You'll spend a lot of time
+with it. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/opcodes).)
+[Here](https://lobste.rs/s/qglfdp/subx_minimalist_assembly_language_for#c_o9ddqk)
+are some tips on my setup for quickly finding the right opcode for any
+situation from within Vim.
+
+d) Try working on [the starter exercises](https://github.com/akkartik/mu/pulls)
 (labelled `hello`).
 
 ## Credits
