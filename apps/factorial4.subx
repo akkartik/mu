@@ -1,0 +1,83 @@
+## compute the factorial of 5, and return the result in the exit code
+#
+# To run:
+#   $ ./ntranslate init.linux 0*.subx apps/factorial.subx -o apps/factorial
+#   $ ./subx run apps/factorial
+# Expected result:
+#   $ echo $?
+#   120
+#
+# You can also run the automated test suite:
+#   $ ./subx run apps/factorial test
+# Expected output:
+#   ........
+# Every '.' indicates a passing test. Failing tests get a 'F'.
+
+== code
+
+Entry:  # run tests if necessary, compute `factorial(5)` if not
+    # . prologue
+    89/<- %ebp 4/r32/esp
+
+    # initialize heap
+    (new-segment 0x10000 Heap)
+
+    # - if argc > 1, then return run_tests()
+    {
+      # if (argc <= 1) break
+      81 7/subop/compare *ebp 1/imm32
+      7e/jump-if-lesser-or-equal break/disp8
+      # if (!kernel-string-equal?(argv[1], "test")) break
+      (kernel-string-equal? *(ebp+8) "test")  # => eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-equal break/disp8
+      #
+      (run-tests)
+      # eax = *Num-test-failures
+      8b/-> *Num-test-failures 3/r32/ebx
+    }
+    # if (argc <= 1) factorial(5)
+    {
+      # if (argc > 1) break
+      81 7/subop/compare *ebp 1/imm32
+      7f/jump-if-greater break/disp8
+      # eax = factorial(5)
+      (factorial 5)
+      # syscall(exit, eax)
+      89/<- %ebx 0/r32/eax
+    }
+
+    b8/copy-to-eax 1/imm32/exit
+    cd/syscall 0x80/imm8
+
+factorial:  # n : int -> int/eax
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # save registers
+    53/push-ebx
+    # if (n <= 1) return 1
+    81 7/subop/compare *(ebp+8) 1/imm32
+    {
+      7f/jump-if-greater break/disp8
+      b8/copy-to-eax 1/imm32
+    }
+    # if (n > 1) return n * factorial(n-1)
+    {
+      7e/jump-if-lesser-or-equal break/disp8
+      8b/-> *(ebp+8) 3/r32/ebx
+      4b/decrement-ebx
+      (factorial %ebx)  # => eax
+      f7 4/subop/multiply-into-eax *(ebp+8)
+    }
+    # restore registers
+    5b/pop-to-ebx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-factorial:
+    (factorial 5)
+    (check-ints-equal %eax 0x78 "F - test-factorial")
+    c3/return
