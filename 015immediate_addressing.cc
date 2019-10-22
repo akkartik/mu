@@ -1205,7 +1205,7 @@ case 0xbf: {  // copy imm32 to r32
 //:
 
 :(before "End Initialize Op Names")
-put_new(Name, "c7", "copy imm32 to rm32 (mov)");
+put_new(Name, "c7", "copy imm32 to rm32 with subop 0 (mov)");
 
 :(code)
 void test_copy_imm32_to_mem_at_r32() {
@@ -1214,7 +1214,7 @@ void test_copy_imm32_to_mem_at_r32() {
       "== code 0x1\n"
       // op     ModR/M  SIB   displacement  immediate
       "  c7     03                          0a 0b 0c 0d \n"  // copy 0x0d0c0b0a to *EBX
-      // ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
+      // ModR/M in binary: 00 (indirect mode) 000 (subop) 011 (dest EBX)
   );
   CHECK_TRACE_CONTENTS(
       "run: copy imm32 to r/m32\n"
