@@ -8,7 +8,9 @@ if (is_equal(argv[1], "run")) {
   // Outside of tests, traces must be explicitly requested.
   if (Trace_file.is_open()) Trace_stream = new trace_stream;
   trace(2, "run") << "=== Starting to run" << end();
-  assert(argc > 2);
+  if (argc <= 2) {
+    raise << "Not enough arguments provided.\n" << die();
+  }
   reset();
   cerr << std::hex;
   load_elf(argv[2], argc, argv);
