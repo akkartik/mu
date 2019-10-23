@@ -189,9 +189,8 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
 }
 
 void skip_whitespace(istream& in) {
-  while (true) {
-    if (has_data(in) && isspace(in.peek())) in.get();
-    else break;
+  while (has_data(in) && isspace(in.peek())) {
+    in.get();
   }
 }
 
