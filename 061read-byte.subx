@@ -10,17 +10,19 @@
 == data
 
 # The buffered file for standard input. Also illustrates the layout for
-# buffered-file.
+# buffered-file: a pointer to the backing store, followed by a 'buffer' stream
 Stdin:
     # file descriptor or (address stream)
     0/imm32  # standard input
-    # current write index
+Stdin->buffer:
+    # inlined fields for a stream
+    #   current write index
     0/imm32
-    # current read index
+    #   current read index
     0/imm32
-    # length
+    #   length
     8/imm32
-    # data
+    #   data
     00 00 00 00 00 00 00 00  # 8 bytes
 
 # TODO: 8 bytes is too small. We'll need to grow the buffer for efficiency. But
@@ -98,11 +100,9 @@ test-read-byte-buffered-single:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-buffered-file->buffer)
     # . . push args
-    b8/copy-to-eax  _test-buffered-file/imm32
-    05/add-to-eax  4/imm32
-    50/push-eax
+    68/push  _test-buffered-file->buffer/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -144,11 +144,9 @@ test-read-byte-buffered-multiple:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-buffered-file->buffer)
     # . . push args
-    b8/copy-to-eax  _test-buffered-file/imm32
-    05/add-to-eax  4/imm32
-    50/push-eax
+    68/push  _test-buffered-file->buffer/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -197,11 +195,9 @@ test-read-byte-buffered-end-of-file:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-buffered-file->buffer)
     # . . push args
-    b8/copy-to-eax  _test-buffered-file/imm32
-    05/add-to-eax  4/imm32
-    50/push-eax
+    68/push  _test-buffered-file->buffer/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -235,11 +231,9 @@ test-read-byte-buffered-refills-buffer:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream(_test-buffered-file+4)
+    # . clear-stream(_test-buffered-file->buffer)
     # . . push args
-    b8/copy-to-eax  _test-buffered-file/imm32
-    05/add-to-eax  4/imm32
-    50/push-eax
+    68/push  _test-buffered-file->buffer/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -281,6 +275,7 @@ test-read-byte-buffered-refills-buffer:
 _test-buffered-file:
     # file descriptor or (address stream)
     _test-stream/imm32
+_test-buffered-file->buffer:
     # current write index
     0/imm32
     # current read index
@@ -319,6 +314,7 @@ _test-input-stream:
 _test-input-buffered-file:
     # file descriptor or (address stream)
     _test-input-stream/imm32
+_test-input-buffered-file->buffer:
     # current write index
     0/imm32
     # current read index
