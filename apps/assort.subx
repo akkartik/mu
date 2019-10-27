@@ -88,7 +88,7 @@ $subx-assort-main:end:
 
 subx-assort:  # in : (address buffered-file), out : (address buffered-file)
     # pseudocode:
-    #   var table : (address stream) = new-stream(10 rows, 8 bytes each)
+    #   var table : (address stream {string, (address stream byte)} 10/rows)
     #   read-segments(in, table)
     #   write-segments(out, table)
     #
@@ -97,7 +97,7 @@ subx-assort:  # in : (address buffered-file), out : (address buffered-file)
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     51/push-ecx
-    # var table/ecx : (address stream byte) = stream(10 * 8)
+    # var table/ecx : (address stream byte 10*8)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x50/imm32        # subtract from esp
     68/push  0x50/imm32/length
     68/push  0/imm32/read
@@ -453,8 +453,8 @@ test-subx-assort:
 # beware: leaks memory (one name per segment read)
 read-segments:  # in : (address buffered-file), table : (address stream {string, (address stream byte)})
     # pseudocode:
-    #   var curr-segment = null
-    #   var line = new-stream(512, 1)
+    #   var curr-segment : (handle stream byte) = 0
+    #   var line : (stream byte 512)
     #   while true
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -470,7 +470,7 @@ read-segments:  # in : (address buffered-file), table : (address stream {string,
     #       curr-segment = *segment-slot
     #       if curr-segment != 0
     #         continue
-    #       curr-segment = new-stream(Segment-size)
+    #       curr-segment = new-stream(Heap, Segment-size, 1)
     #       *segment-slot = curr-segment
     #     rewind-stream(line)
     #     write-stream(curr-segment, line)  # abort if curr-segment overflows
@@ -494,7 +494,7 @@ read-segments:  # in : (address buffered-file), table : (address stream {string,
     52/push-edx
     53/push-ebx
     56/push-esi
-    # var line/ecx : (address stream byte) = stream(512)
+    # var line/ecx : (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
@@ -724,7 +724,7 @@ $read-segments:check-for-segment-header:
     e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # curr-segment = *segment-slot
+    # var curr-segment/ebx : (handle stream byte) = *segment-slot
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy *eax to ebx
     # if (curr-segment != 0) continue
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx

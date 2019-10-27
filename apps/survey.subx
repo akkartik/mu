@@ -117,8 +117,8 @@ subx-survey:  # infile : (address buffered-file), out : (address buffered-file)
     # pseudocode
     #   var in : (address stream byte) = stream(4096)
     #   slurp(infile, in)
-    #   var segments = new-stream(10 rows, 16 bytes each)
-    #   var labels = new-stream(Max-labels rows, 16 bytes each)
+    #   var segments : (stream segment-info 10)
+    #   var labels : (stream label-info Max-labels)
     #   compute-offsets(in, segments, labels)
     #   compute-addresses(segments, labels)
     #   rewind-stream(in)
@@ -630,7 +630,7 @@ compute-offsets:  # in : (address stream), segments : (address stream {string, s
     #
     # pseudocode:
     #   curr-segment-name : (address string) = 0
-    #   var line = new-stream(512, 1)
+    #   var line : (stream byte 512)
     #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line(in, line)
@@ -688,25 +688,19 @@ compute-offsets:  # in : (address stream), segments : (address stream {string, s
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:file-offset/disp32  0/imm32               # copy to *compute-offsets:word-slice
     # segment-offset = 0
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32            # copy to *compute-offsets:word-slice
-    # line/ecx = new-stream(512, 1)
-    # . eax = new-stream(512, 1)
-    # . . push args
-    68/push  1/imm32
-    68/push  0x200/imm32
-    68/push  Heap/imm32
-    # . . call
-    e8/call  new-stream/disp32
-    # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . line/ecx = eax
-    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy eax to ecx
+    # var line/ecx : (stream byte 512)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
+    68/push  0x200/imm32/length
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
 $compute-offsets:line-loop:
-    # clear-stream(line/ecx)
+    # clear-stream(line)
     51/push-ecx
     e8/call  clear-stream/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # read-line(in, line/ecx)
+    # read-line(in, line)
     51/push-ecx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     e8/call  read-line/disp32
@@ -752,7 +746,7 @@ $compute-offsets:line-loop:
 $compute-offsets:word-loop:
     # edx = word-slice
     ba/copy-to-edx  compute-offsets:word-slice/imm32
-    # next-word(line/ecx, word-slice/edx)
+    # next-word(line, word-slice/edx)
     52/push-edx
     51/push-ecx
     e8/call  next-word/disp32
@@ -900,7 +894,7 @@ $compute-offsets:case-segment-header:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
 $compute-offsets:construct-next-segment:
-    # next-word(line/ecx, segment-tmp)
+    # next-word(line, segment-tmp)
     68/push  compute-offsets:segment-tmp/imm32
     51/push-ecx
     e8/call  next-word/disp32
@@ -967,7 +961,7 @@ $compute-offsets:update-curr-segment-name:
     # . if (eax == 0) abort
     3d/compare-eax-and  0/imm32
     0f 84/jump-if-equal  $compute-offsets:abort/disp32
-    # next-word(line/ecx, segment-tmp)
+    # next-word(line, segment-tmp)
     68/push  compute-offsets:segment-tmp/imm32
     51/push-ecx
     e8/call  next-word/disp32
@@ -1169,6 +1163,7 @@ $compute-offsets:break-line-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
 $compute-offsets:end:
     # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20c/imm32       # add to esp
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -1930,7 +1925,7 @@ $emit-output:end:
 emit-segments:  # in : (address stream), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
     #   var offset-of-next-instruction = 0
-    #   var line = new-stream(512, 1)
+    #   var line : (stream byte 512)
     #   line-loop:
     #   while true
     #     clear-stream(line)
@@ -1992,7 +1987,7 @@ emit-segments:  # in : (address stream), out : (address buffered-file), segments
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var line/ecx : (address stream byte) = stream(512)
+    # var line/ecx : (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read

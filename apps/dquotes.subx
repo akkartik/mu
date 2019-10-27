@@ -62,7 +62,7 @@ $subx-dquotes-main:interactive:
     # configure ed to really exit()
     # . ed->target = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # subx-dquotes(Stdin, 1/stdout, 2/stderr, ed)
+    # subx-dquotes(Stdin, Stdout, Stderr, ed)
     # . . push args
     50/push-eax/ed
     68/push  Stderr/imm32
@@ -84,8 +84,8 @@ $subx-dquotes-main:end:
 
 subx-dquotes:  # in : (address buffered-file), out : (address buffered-file)
     # pseudocode:
-    #   var line = new-stream(512, 1)
-    #   var new-data-segment = new-stream(Heap, Segment-size, 1)
+    #   var line : (stream byte 512)
+    #   var new-data-segment : (handle stream byte) = new-stream(Heap, Segment-size, 1)
     #   write(new-data-segment, "== data\n")
     #   while true
     #     clear-stream(line)
