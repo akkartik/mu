@@ -277,7 +277,7 @@ and digest it:
 
 1. To read from `*eax` (in C syntax), `/mod` must be `0` (indirect mode), and
    the `/rm32` argument must be `0`. There must be no `/base`, `/index` or
-   `/scale` arguments.
+   `/scale` arguments (Intel calls the trio the 'SIB byte'.).
 
 1. To read from `*(eax+4)`, `/mod` must be `1` (indirect + disp8 mode),
    `/rm32` must be `0`, there must be no SIB byte, and there must be a single
