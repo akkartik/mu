@@ -4,6 +4,7 @@
 # To run:
 #   $ ./ntranslate init.linux 0*.subx apps/mu.subx
 
+# A sketch of planned data structures. Still highly speculative.
 == data
 
 # A program is currently a linked list of functions
@@ -20,6 +21,52 @@ Function-next:
   0x10/imm32
 Function-size:
   0x14/imm32/20
+
+# A block is a list of statements:
+#     statements: (address statement)
+
+# A statement can be either a regular statement consisting of:
+#     name: (address string)
+#     inputs: (address var)
+#     outputs: (address var-r)
+# or a variable declaration on the stack:
+#     name: (address string)
+#     type: (address type-sexpr)
+# or a regular statement writing to a single new variable in a register:
+#     name: (address string)
+#     inputs: (address var)
+#     output: var-r
+# or a block of statements:
+#     statements: (address statement)
+
+# Kinds of local variable declarations:
+#   var f : (array foo 10)
+#   var f/ecx : int <- copy 0
+# Variables live in either the stack or a register.
+# Variables in the stack are auto-initialized.
+#   (This is non-trivial for arrays, and arrays inside structs... We'll see.)
+# Variables in register need a real instruction.
+
+# var is a variable declaration. e.g. `foo: (array int 3)`
+#   name: (address string)
+#   type: (address type-sexpr)
+
+# var-r is a variable declaration in a register. e.g. `foo/eax: (array int 3)`
+#   name: (address string)
+#   type: (address type-sexpr)
+#   reg: int [0..7]
+
+# type-sexpr is a tree of type identifiers. e.g. (array (address int) 3)
+# either
+#   id: type-identifier
+# or
+#   car: (address type-sexpr)
+#   cdr: (address type-sexpr)
+
+# Still todo:
+#   heap allocations (planned name: 'handle')
+#   user-defined types: 'type' for structs, 'choice' for unions
+#   short-lived 'address' type for efficiently writing inside nested structs
 
 == code
 
