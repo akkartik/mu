@@ -1,0 +1,565 @@
+# Mu's level-2 language, also called Mu.
+# http://akkartik.name/post/mu-2019-2
+#
+# To run:
+#   $ ./ntranslate init.linux 0*.subx apps/mu.subx
+
+== data
+
+# A program is currently a linked list of functions
+Program:  # (address function)
+  0/imm32
+
+# A function currently consists of just:
+#   name : (address string)
+#   next : (address function)
+Function-size:
+  8/imm32
+
+== code
+
+Entry:
+    # . prologue
+    89/<- %ebp 4/r32/esp
+    (new-segment Heap-size Heap)
+    # if (argv[1] == "test') run-tests()
+    {
+      # if (argc <= 1) break
+      81 7/subop/compare *ebp 1/imm32
+      7e/jump-if-lesser-or-equal break/disp8
+      # if (argv[1] != "test")) break
+      (kernel-string-equal? *(ebp+8) "test")  # => eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-equal break/disp8
+      #
+      (run-tests)
+      # syscall(exit, *Num-test-failures)
+      8b/-> *Num-test-failures 3/r32/ebx
+      eb/jump $mu-main:end/disp8
+    }
+    # otherwise convert Stdin
+    (convert-mu Stdin Stdout)
+    (flush Stdout)
+    # syscall(exit, 0)
+    bb/copy-to-ebx 0/imm32
+$mu-main:end:
+    b8/copy-to-eax 1/imm32/exit
+    cd/syscall 0x80/imm8
+
+convert-mu:  # in : (address buffered-file), out : (address buffered-file)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (parse-mu *(ebp+8))
+    (check-mu-types)
+    (emit-subx *(ebp+0xc))
+$convert-mu:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-empty-input:
+    # empty input => empty output
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    #
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+    (check-stream-equal _test-output-stream "" "F - test-convert-empty-input")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-skeleton:
+    # empty function decl => function prologue and epilogue
+    #   fn foo {
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-skeleton/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-skeleton/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-skeleton/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-skeleton/3")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-skeleton/4")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-skeleton/5")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-skeleton/6")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-skeleton/7")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-multiple-function-skeletons:
+    # multiple functions correctly organized into a linked list
+    #   fn foo {
+    #   }
+    #   fn bar {
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    #   bar:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn bar {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check first function
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-multiple-function-skeletons/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-multiple-function-skeletons/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-multiple-function-skeletons/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-multiple-function-skeletons/3")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-multiple-function-skeletons/4")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-multiple-function-skeletons/5")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-multiple-function-skeletons/6")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-multiple-function-skeletons/7")
+    # check second function
+    (check-next-stream-line-equal _test-output-stream "bar:"                  "F - test-convert-multiple-function-skeletons/10")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-multiple-function-skeletons/11")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-multiple-function-skeletons/12")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-multiple-function-skeletons/13")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-multiple-function-skeletons/14")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-multiple-function-skeletons/15")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-multiple-function-skeletons/16")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-multiple-function-skeletons/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+parse-mu:  # in : (address buffered-file)
+    # pseudocode
+    #   var curr-function = Program
+    #   var line : (stream byte 512)
+    #   var word-slice : slice
+    #   while true                                  # line loop
+    #     clear-stream(line)
+    #     read-line-buffered(in, line)
+    #     if (line->write == 0) break               # end of file
+    #     while true                                # word loop
+    #       word-slice = next-word-or-string(line)
+    #       if slice-empty?(word-slice)             # end of line
+    #         break
+    #       else if slice-starts-with?(word-slice, "#")  # comment
+    #         break                                 # end of line
+    #       else if slice-equal(word-slice, "fn")
+    #         var curr-function/ecx : (address function)
+    #       else
+    #         abort()
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    57/push-edi
+    # var line/ecx : (stream byte 512)
+    81 5/subop/subtract %esp 0x200/imm32
+    68/push 0x200/imm32/length
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %ecx 4/r32/esp
+    # var word-slice/edx : slice
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %edx 4/r32/esp
+    # var curr-function/edi : (address function) = Program
+    bf/copy-to-edi Program/imm32
+    {
+$parse-mu:line-loop:
+      (clear-stream %ecx)
+      (read-line-buffered *(ebp+8) %ecx)
+      # if (line->write == 0) break
+      81 7/subop/compare *ecx 0/imm32
+      0f 84/jump-if-equal break/disp32
+#?       # dump line {{{
+#?       (write 2 "line: ^")
+#?       (write-stream 2 %ecx)
+#?       (write 2 "$\n")
+#?       (rewind-stream %ecx)
+#?       # }}}
+      { # word loop
+$parse-mu:word-loop:
+        (next-word-or-string %ecx %edx)
+        # if (slice-empty?(word-slice)) break
+        (slice-empty? %edx)
+        3d/compare-eax-and 0/imm32
+        0f 85/jump-if-not-equal break/disp32
+        # if (*word-slice->start == "#") break
+        # . eax = *word-slice->start
+        8b/-> *edx 0/r32/eax
+        8a/copy-byte *eax 0/r32/AL
+        81 4/subop/and %eax 0xff/imm32
+        # . if (eax == '#') break
+        3d/compare-eax-and 0x23/imm32/hash
+        0f 84/jump-if-equal break/disp32
+        # if slice-equal?(word-slice, "fn")
+        {
+          (slice-equal? %edx "fn")
+          3d/compare-eax-and 0/imm32
+          0f 84/jump-if-equal break/disp32
+          # var new-function/eax : (address function) = populate-mu-function()
+          (allocate Heap *Function-size)  # => eax
+          (populate-mu-function-header %ecx %eax)
+          (populate-mu-function-body *(ebp+8) %eax)
+          # *curr-function = new-function
+          89/<- *edi 0/r32/eax
+          # curr-function = &new-function->next
+          8d/address-> *(eax+4) 7/r32/edi
+          e9/jump $parse-mu:word-loop/disp32
+        }
+        # otherwise abort
+        e9/jump $parse-mu:abort/disp32
+      } # end word loop
+      e9/jump loop/disp32
+    } # end line loop
+$parse-mu:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x214/imm32
+    # . restore registers
+    5f/pop-to-edi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$parse-mu:abort:
+    # error("unexpected top-level command: " word-slice "\n")
+    (write-buffered Stderr "unexpected top-level command: ")
+    (write-buffered Stderr %edx)
+    (write-buffered Stderr "\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+# errors considered:
+#   fn foo { {
+#   fn foo { }
+#   fn foo { } {
+#   fn foo  # no block
+populate-mu-function-header:  # first-line : (address stream byte), out : (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+0xc) 7/r32/edi
+    # var word-slice/ecx : slice
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %ecx 4/r32/esp
+    # save function name
+    (next-word *(ebp+8) %ecx)
+    (slice-to-string Heap %ecx)  # => eax
+    89/<- *edi 0/r32/eax
+    # assert that next token is '{'
+    (next-word *(ebp+8) %ecx)
+    (slice-equal? %ecx "{")
+    3d/compare-eax-and 0/imm32
+    74/jump-if-equal $populate-mu-function-header:abort/disp8
+    # assert that there's no further token
+    {
+      # word-slice = next-word(line)
+      (next-word *(ebp+8) %ecx)
+      # if (word-slice == '') break
+      (slice-empty? %ecx)
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # if (slice-starts-with?(word-slice, "#")) break
+      # . eax = *word-slice->start
+      8b/-> *edx 0/r32/eax
+      8a/copy-byte *eax 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      # . if (eax == '#') break
+      3d/compare-eax-and 0x23/imm32/hash
+      74/jump-if-equal break/disp8
+      # otherwise abort
+      eb/jump $populate-mu-function-header:abort/disp8
+    }
+$populate-mu-function-header:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    5f/pop-to-edi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$populate-mu-function-header:abort:
+    # error("function header not in form 'fn <name> {'")
+    (write-buffered Stderr "function header not in form 'fn <name> {' -- '")
+    (rewind-stream *(ebp+8))
+    (write-stream 2 *(ebp+8))
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+# errors considered:
+#   { abc
+populate-mu-function-body:  # in : (address buffered-file), out : (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # var line/ecx : (stream byte 512)
+    81 5/subop/subtract %esp 0x200/imm32
+    68/push 0x200/imm32/length
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %ecx 4/r32/esp
+    # var word-slice/edx : slice
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %edx 4/r32/esp
+    # var open-curly-count/ebx : int = 1
+    bb/copy-to-ebx 1/imm32
+    { # line loop
+$populate-mu-function-body:line-loop:
+      # if (open-curly-count == 0) break
+      81 7/subop/compare %ebx 0/imm32
+      0f 84/jump-if-equal break/disp32
+      # line = read-line-buffered(in)
+      (clear-stream %ecx)
+      (read-line-buffered *(ebp+8) %ecx)
+      # if (line->write == 0) break
+      81 7/subop/compare *ecx 0/imm32
+      0f 84/jump-if-equal break/disp32
+      # word-slice = next-word(line)
+      (next-word %ecx %edx)
+      # if slice-empty?(word-slice)) continue
+      (slice-empty? %ecx)
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal loop/disp8
+      # if (slice-starts-with?(word-slice, '#') continue
+      # . eax = *word-slice->start
+      8b/-> *edx 0/r32/eax
+      8a/copy-byte *eax 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      # . if (eax == '#') continue
+      3d/compare-eax-and 0x23/imm32/hash
+      74/jump-if-equal loop/disp8
+      {
+        # if slice-equal?(word-slice, "{") ++open-curly-count
+        {
+          (slice-equal? %ecx "{")
+          3d/compare-eax-and 0/imm32
+          74/jump-if-equal break/disp8
+          43/increment-ebx
+          eb/jump $curly-found:end/disp8
+        }
+        # else if slice-equal?(word-slice, "}") --open-curly-count
+        {
+          (slice-equal? %ecx "}")
+          3d/compare-eax-and 0/imm32
+          74/jump-if-equal break/disp8
+          4b/decrement-ebx
+          eb/jump $curly-found:end/disp8
+        }
+        # else break
+        eb/jump $populate-mu-function-body:end/disp8
+      }
+      # - check for invalid tokens after curly
+$curly-found:end:
+      # second-word-slice = next-word(line)
+      (next-word %ecx %edx)
+      # if slice-empty?(second-word-slice)) continue
+      (slice-empty? %ecx)
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal loop/disp32
+      # if (slice-starts-with?(second-word-slice, '#') continue
+      # . eax = *second-word-slice->start
+      8b/-> *edx 0/r32/eax
+      8a/copy-byte *eax 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      # . if (eax == '#') continue
+      3d/compare-eax-and 0x23/imm32/hash
+      0f 84/jump-if-equal loop/disp32
+      # abort
+      eb/jump $populate-mu-function-body:abort/disp8
+    } # end line loop
+$populate-mu-function-body:end:
+    # . reclaim locals
+    81 0/subop/add %esp 0x214/imm32
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$populate-mu-function-body:abort:
+    # error("'{' or '}' should be on its own line, but got '")
+    (write-buffered Stderr "'{' or '}' should be on its own line, but got '")
+    (rewind-stream %ecx)
+    (write-stream 2 %ecx)
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+check-mu-types:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+$check-types:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx:  # out : (address buffered-file)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+8) 7/r32/edi
+    # var curr/ecx : (address function) = Program
+    8b/-> *Program 1/r32/ecx
+    {
+      # if (curr == NULL) break
+      81 7/subop/compare %ecx 0/imm32
+      0f 84/jump-if-equal break/disp32
+      (write-buffered %edi *ecx)
+      (write-buffered %edi ":\n")
+      (emit-subx-prologue %edi)
+      (emit-subx-epilogue %edi)
+      # curr = curr->next
+      8b/-> *(ecx+4) 1/r32/ecx
+      e9/jump loop/disp32
+    }
+$emit-subx:end:
+    # . restore registers
+    5f/pop-to-edi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-prologue:  # out : (address buffered-file)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write-buffered *(ebp+8) "# . prologue\n")
+    (write-buffered *(ebp+8) "55/push-ebp\n")
+    (write-buffered *(ebp+8) "89/<- %ebp 4/r32/esp\n")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-epilogue:  # out : (address buffered-file)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    (write-buffered *(ebp+8) "# . epilogue\n")
+    (write-buffered *(ebp+8) "89/<- %esp 5/r32/ebp\n")
+    (write-buffered *(ebp+8) "5d/pop-to-ebp\n")
+    (write-buffered *(ebp+8) "c3/return\n")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
