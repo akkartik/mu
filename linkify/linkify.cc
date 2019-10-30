@@ -203,6 +203,10 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
             out << c;
             at_start_of_line = false;
           }
+          else if (c == ')') {
+            out << c;
+            at_start_of_line = false;
+          }
           else {
 //?             cerr << "rest\n";
             if (c == ',' || c == ':') {
@@ -213,7 +217,7 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
             ostringstream out2;
             out2 << c;
             while (in2 >> c) {
-              if (isspace(c) || c == '<' || c == '"' || c == '\'' || c == '/' || c == ',' || c == ':') {  // keep sync'd with other clauses above
+              if (isspace(c) || c == '<' || c == '"' || c == '\'' || c == '/' || c == ',' || c == ':' || c == '(' || c == ')') {  // keep sync'd with other clauses above
                 in2.putback(c);
                 break;
               }
