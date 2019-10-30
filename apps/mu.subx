@@ -10,11 +10,16 @@
 Program:  # (address function)
   0/imm32
 
-# A function currently consists of just:
-#   name : (address string)
-#   next : (address function)
+# A function consists of:
+#   name: (address string)
+#   inputs: (address var-type)  # tbd
+#   outputs: (address var-type)  # tbd
+#   body: (address block)
+#   next: (address function)
+Function-next:
+  0x10/imm32
 Function-size:
-  8/imm32
+  0x14/imm32/20
 
 == code
 
@@ -274,7 +279,7 @@ $parse-mu:word-loop:
           # *curr-function = new-function
           89/<- *edi 0/r32/eax
           # curr-function = &new-function->next
-          8d/address-> *(eax+4) 7/r32/edi
+          8d/address-> *(eax+0x10) 7/r32/edi
           e9/jump $parse-mu:word-loop/disp32
         }
         # otherwise abort
@@ -524,7 +529,7 @@ emit-subx:  # out : (address buffered-file)
       (emit-subx-prologue %edi)
       (emit-subx-epilogue %edi)
       # curr = curr->next
-      8b/-> *(ecx+4) 1/r32/ecx
+      8b/-> *(ecx+0x10) 1/r32/ecx
       e9/jump loop/disp32
     }
 $emit-subx:end:
