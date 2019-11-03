@@ -1,4 +1,4 @@
-# Mu's level-2 language, also called Mu.
+# The Mu computer's level-2 language, also called Mu.
 # http://akkartik.name/post/mu-2019-2
 #
 # To run:
@@ -80,7 +80,7 @@ Entry:
       # if (argc <= 1) break
       81 7/subop/compare *ebp 1/imm32
       7e/jump-if-lesser-or-equal break/disp8
-      # if (argv[1] != "test")) break
+      # if (argv[1] != "test") break
       (kernel-string-equal? *(ebp+8) "test")  # => eax
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
@@ -306,7 +306,7 @@ $parse-mu:line-loop:
       { # word loop
 $parse-mu:word-loop:
         (next-word-or-string %ecx %edx)
-        # if (slice-empty?(word-slice)) break
+        # if slice-empty?(word-slice) break
         (slice-empty? %edx)
         3d/compare-eax-and 0/imm32
         0f 85/jump-if-not-equal break/disp32
@@ -318,7 +318,7 @@ $parse-mu:word-loop:
         # . if (eax == '#') break
         3d/compare-eax-and 0x23/imm32/hash
         0f 84/jump-if-equal break/disp32
-        # if slice-equal?(word-slice, "fn")
+        # if (slice-equal?(word-slice, "fn")) parse a function
         {
           (slice-equal? %edx "fn")
           3d/compare-eax-and 0/imm32
@@ -471,7 +471,7 @@ $populate-mu-function-body:line-loop:
       0f 84/jump-if-equal break/disp32
       # word-slice = next-word(line)
       (next-word %ecx %edx)
-      # if slice-empty?(word-slice)) continue
+      # if slice-empty?(word-slice) continue
       (slice-empty? %ecx)
       3d/compare-eax-and 0/imm32
       75/jump-if-not-equal loop/disp8
@@ -507,7 +507,7 @@ $populate-mu-function-body:line-loop:
 $curly-found:end:
       # second-word-slice = next-word(line)
       (next-word %ecx %edx)
-      # if slice-empty?(second-word-slice)) continue
+      # if slice-empty?(second-word-slice) continue
       (slice-empty? %ecx)
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal loop/disp32
