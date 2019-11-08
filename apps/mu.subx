@@ -4,6 +4,111 @@
 # To run:
 #   $ ./ntranslate init.linux 0*.subx apps/mu.subx
 
+# == Goals
+# 1. Be memory safe. It should be impossible to corrupt the heap, or to create
+# a bad pointer. (Requires strong type safety.)
+# 2. Do as little as possible to achieve goal 1.
+#   - runtime checks to avoid complex static analysis
+#   - minimize impedance mismatch between source language and SubX target
+
+# == Language description
+#
+# A program is a sequence of function definitions.
+#
+# Function example:
+#   fn foo n: int -> result/eax: int {
+#     ...
+#   }
+#
+# Functions consist of a name, optional inputs, optional outputs and a block.
+#
+# Inputs are variables with types. Outputs are variables in registers with
+# (word-size) types.
+#
+# All variables have a type and storage specifier. They can be placed either
+# in memory (on the stack) or in one of 6 named registers.
+#   eax ecx edx ebx esi edi
+# Variables in registers must be word-sized (int or address).
+# Variables not explicitly placed in a register are on the stack.
+# Variables in registers need not have a name; in that case you refer to them
+# directly by the register name.
+#
+# Blocks mostly consist of statements.
+#
+# Statements mostly consist of a name, optional inputs and optional outputs.
+#
+# Inputs are variables or literals. Variables need to specify type (and
+# storage) the first time they're mentioned but not later.
+#
+# Outputs can only be variables.
+#
+# Statement names must be either primitives or user-defined functions.
+#
+# Primitives can write to any register.
+# User-defined functions only write to hard-coded registers. Outputs of each
+# call must have the same registers as in the function definition.
+#
+# There are some other statement types:
+#   - blocks. Multiple statements surrounded by '{...}' and optionally
+#     prefixed with a label name and ':'
+#       - {
+#           ...
+#         }
+#       - foo: {
+#           ...
+#         }
+#
+#   - variable definitions on the stack. E.g.:
+#       - var foo: int
+#       - var bar: (array int 3)
+#     There's no initializer; variables are automatically initialized.
+#
+#   - variables definitions in a register. E.g.:
+#       - var foo/eax : int <- add bar 1
+#     The initializer is mandatory and must be a valid instruction that writes
+#     a single output to the right register. In practice registers will
+#     usually be either initialized by primitives or copied from eax.
+#       - var eax : int <- foo bar quux
+#         var floo/ecx : int <- copy eax
+#
+# Still todo:
+#   global variables
+#   heap allocations (planned name: 'handle')
+#   user-defined types: 'type' for structs, 'choice' for unions
+#   short-lived 'address' type for efficiently writing inside nested structs
+
+# Now that we know what the language looks like in the large, let's think
+# about how translation happens from the bottom up.
+
+# == Book-keeping while emitting code for a single statement
+# Immutable data:
+#   function info
+#
+# Mutable data:
+#   stack: variables currently in scope
+#     block id
+#     type
+#     ebp offset for function | register id
+#   dict: register -> var
+
+# == Compiling a single instruction
+# Determine the function or primitive being called.
+#   If no matches, show all functions/primitives with the same name, along
+#   with reasons they don't match. (type and storage checking)
+#   It must be a function if:
+#     #outputs > 1, or
+#     #inouts > 2, or
+#     #inouts + #outputs > 2
+# If it's a function, emit:
+#   (low-level-name <rm32 or imm32>...)
+# Otherwise (it's a primitive):
+#   assert(#inouts <= 2 && #outs <= 1 && (#inouts + #outs) <= 2)
+#   emit opcode
+#   emit-rm32(inout[0])
+#   if out[0] exists: emit-rm32(out[0])
+#   else if inout[1] is a literal: emit-imm32(inout[1])
+#   else: emit-rm32(inout[1])
+
 # A sketch of planned data structures. Still highly speculative.
 == data
 
@@ -62,12 +167,6 @@ Function-size:
 # or
 #   car: (address type-sexpr)
 #   cdr: (address type-sexpr)
-
-# Still todo:
-#   global variables
-#   heap allocations (planned name: 'handle')
-#   user-defined types: 'type' for structs, 'choice' for unions
-#   short-lived 'address' type for efficiently writing inside nested structs
 
 == code
 
@@ -242,6 +341,58 @@ test-convert-multiple-function-skeletons:
     (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-multiple-function-skeletons/15")
     (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-multiple-function-skeletons/16")
     (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-multiple-function-skeletons/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-arg:
+    # function with one arg and a copy instruction
+    #   fn foo n : int -> result/eax : int {
+    #     result <- copy n
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #     # result <- copy n
+    #     8b/-> *(ebp+8) 0/r32/eax
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-skeleton/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-skeleton/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-skeleton/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-skeleton/3")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-skeleton/4")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-skeleton/5")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-skeleton/6")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-skeleton/7")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
