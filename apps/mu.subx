@@ -12,7 +12,6 @@
 #   - minimize impedance mismatch between source language and SubX target
 
 # == Language description
-#
 # A program is a sequence of function definitions.
 #
 # Function example:
@@ -77,7 +76,22 @@
 #   heap allocations (planned name: 'handle')
 #   user-defined types: 'type' for structs, 'choice' for unions
 #   short-lived 'address' type for efficiently writing inside nested structs
+#
+# Formal types:
+#   A program is a linked list of functions
+#   A function contains:
+#     name: string
+#     inouts: linked list of var-types  <-- 'inouts' is more precise than 'inputs'
+#     outputs: linked list of var-types
+#     body: block
+#   A var-type contains:
+#     name: string
+#     type: s-expression of type ids
+#   Statements are not yet fully designed.
+#   statement = var definition or simple statement or block
+#   block = linked list of statements
 
+# == Translation
 # Now that we know what the language looks like in the large, let's think
 # about how translation happens from the bottom up. The interplay between
 # variable scopes and statements using variables is the most complex aspect of
@@ -100,6 +114,19 @@
 # One additional check we'll need is to ensure that a variable in a register
 # isn't shadowed by a different one. That may be worth a separate data
 # structure but for now repeatedly scanning the var stack should suffice.
+#
+# Formal types:
+#   functions, primitives: linked list of info
+#     name: string
+#     inouts: linked list of var-types
+#     outputs: linked list of var-types
+#   vars: linked list (stack) of info
+#     name: string
+#     type: s-expression? Just a type id for now.
+#     block: int
+#     location: int (negative numbers are on the stack;
+#                    0-7 are in registers;
+#                    higher positive numbers are currently invalid)
 
 # == Compiling a single instruction
 # Determine the function or primitive being called.
@@ -139,64 +166,10 @@
 
 # The rest is straightforward.
 
-# A sketch of planned data structures. Still highly speculative.
 == data
 
-# A program is currently a linked list of functions
 Program:  # (address function)
   0/imm32
-
-# A function consists of:
-#   name: (address string)
-#   inputs: (address var-type)  # tbd
-#   outputs: (address var-type)  # tbd
-#   body: (address block)
-#   next: (address function)
-Function-next:
-  0x10/imm32
-Function-size:
-  0x14/imm32/20
-
-# A block is a list of statements:
-#     statements: (address statement)
-
-# A statement can be either a regular statement consisting of:
-#     name: (address string)
-#     inputs: (address var)
-#     outputs: (address var-r)
-# or a variable declaration on the stack:
-#     name: (address string)
-#     type: (address type-sexpr)
-# or a regular statement writing to a single new variable in a register:
-#     name: (address string)
-#     inputs: (address var)
-#     output: var-r
-# or a block of statements:
-#     statements: (address statement)
-
-# Kinds of local variable declarations:
-#   var f : (array foo 10)
-#   var f/ecx : int <- copy 0
-# Variables live in either the stack or a register.
-# Variables in the stack are auto-initialized.
-#   (This is non-trivial for arrays, and arrays inside structs... We'll see.)
-# Variables in register need a real instruction.
-
-# var is a variable declaration. e.g. `foo: (array int 3)`
-#   name: (address string)
-#   type: (address type-sexpr)
-
-# var-r is a variable declaration in a register. e.g. `foo/eax: (array int 3)`
-#   name: (address string)
-#   type: (address type-sexpr)
-#   reg: int [0..7]
-
-# type-sexpr is a tree of type identifiers. e.g. (array (address int) 3)
-# either
-#   id: type-identifier
-# or
-#   car: (address type-sexpr)
-#   cdr: (address type-sexpr)
 
 == code
 
