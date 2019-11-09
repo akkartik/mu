@@ -22,8 +22,8 @@
 #
 # Functions consist of a name, optional inputs, optional outputs and a block.
 #
-# Inputs are variables with types. Outputs are variables in registers with
-# (word-size) types.
+# Inputs are variables with types (not in registers). Outputs are variables in
+# registers with (word-size) types.
 #
 # All variables have a type and storage specifier. They can be placed either
 # in memory (on the stack) or in one of 6 named registers.
@@ -105,9 +105,29 @@
 #   assert(#inouts <= 2 && #outs <= 1 && (#inouts + #outs) <= 2)
 #   emit opcode
 #   emit-rm32(inout[0])
-#   if out[0] exists: emit-rm32(out[0])
+#   if out[0] exists: emit-r32(out[0])
 #   else if inout[1] is a literal: emit-imm32(inout[1])
 #   else: emit-rm32(inout[1])
+
+# emit-rm32 and emit-r32 should check that the variable they intend is still
+# available in the register.
+
+# == Emitting a block
+# Emit block name if necessary
+# Emit '{'
+# When you encounter a statement, emit it as above
+# When you encounter a variable declaration
+#   emit any code needed for it (bzeros)
+#   push it on the var stack
+#   update register dict if necessary
+# When you encounter '}'
+#   While popping variables off the var stack until block id changes
+#     Emit code needed to clean up the stack
+#       either increment esp
+#       or pop into appropriate register
+#   TODO: how to update the register dict? does it need to be a stack as well?
+
+# The rest is straightforward.
 
 # A sketch of planned data structures. Still highly speculative.
 == data
@@ -726,10 +746,7 @@ emit-subx:  # out : (address buffered-file)
       # if (curr == NULL) break
       81 7/subop/compare %ecx 0/imm32
       0f 84/jump-if-equal break/disp32
-      (write-buffered %edi *ecx)
-      (write-buffered %edi ":\n")
-      (emit-subx-prologue %edi)
-      (emit-subx-epilogue %edi)
+      (emit-subx-function %edi %ecx)
       # curr = curr->next
       8b/-> *(ecx+0x10) 1/r32/ecx
       e9/jump loop/disp32
@@ -744,6 +761,133 @@ $emit-subx:end:
     5d/pop-to-ebp
     c3/return
 
+# == Emitting a function
+# Emit function header
+# Emit function prologue
+# Translate function body
+# Emit function epilogue
+
+emit-subx-function:  # out : (address buffered-file), f : (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+8) 7/r32/edi
+    # ecx = f
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    #
+    (write-buffered %edi *ecx)
+    (write-buffered %edi ":\n")
+    (emit-subx-prologue %edi)
+    (emit-subx-block %edi *(ecx+4))  # TODO: offset
+    (emit-subx-epilogue %edi)
+$emit-subx-function:end:
+    # . restore registers
+    5f/pop-to-edi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-block:  # out : (address buffered-file), block : (address block)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+$emit-subx-block:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), regs : (address array (address variable)), primitives : (address opcode-info), functions : (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    {
+    }
+$emit-subx-statement:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-emit-subx-statement-primitive:
+    # primitive operation on a variable on the stack
+    #   increment foo
+    # =>
+    #   ff 0/subop/increment *(ebp-8)
+    #
+    # there's a variable on the var stack as follows:
+    #   name: 'foo'
+    #   type: int
+    #   location: -8  (negative numbers are on the stack;
+    #                   0-7 are in registers;
+    #                   higher positive numbers are invalid)
+    #
+    # there's nothing in registers
+    #
+    # there's a primitive with this info:
+    #   name: 'increment'
+    #   inout: int/mem
+    #   value: 'ff 0/subop/increment'
+    #
+    # there's nothing in functions
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # . ecx = vars
+    68/push 0/imm32/next
+    68/push -8/imm32/stack-offset
+    68/push 0/imm32/int  # TODO
+    68/push "foo"/imm32
+    89/<- %ecx 4/r32/esp
+    # . edx = operand
+    68/push 0/imm32/next
+    51/push-ecx/var-foo
+    89/<- %edx 4/r32/esp
+    # . edx = stmt
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    52/push-edx/operand
+    68/push "increment"/imm32/operation
+    89/<- %edx 4/r32/esp
+    # . ebx = primitives
+    68/push 0/imm32/next
+    68/push "ff 0/subop/increment"/imm32
+    68/push 0/imm32/type-int
+    68/push 0/imm32/storage-memory
+    68/push "increment"/imm32/name
+    89/<- %ebx 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %edx %ecx 0 %ebx 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp-8)" "F - test-emit-subx-statement-primitive/0")
+    # . reclaim locals
+    81 0/subop/add %esp 0x3c/imm32
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 emit-subx-prologue:  # out : (address buffered-file)
     # . prologue
     55/push-ebp
@@ -752,6 +896,7 @@ emit-subx-prologue:  # out : (address buffered-file)
     (write-buffered *(ebp+8) "# . prologue\n")
     (write-buffered *(ebp+8) "55/push-ebp\n")
     (write-buffered *(ebp+8) "89/<- %ebp 4/r32/esp\n")
+$emit-subx-prologue:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -766,6 +911,7 @@ emit-subx-epilogue:  # out : (address buffered-file)
     (write-buffered *(ebp+8) "89/<- %esp 5/r32/ebp\n")
     (write-buffered *(ebp+8) "5d/pop-to-ebp\n")
     (write-buffered *(ebp+8) "c3/return\n")
+$emit-subx-epilogue:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
