@@ -805,27 +805,31 @@ $emit-subx-block:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), regs : (address array (address variable)), primitives : (address opcode-info), functions : (address function)
+emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), primitives : (address opcode-info), functions : (address function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
     51/push-ecx
-    # if statement doesn't match either a primitive or function, abort
+    # if stmt matches a primitive, emit it
     {
-      # if find-matching-function(primitives, statement) break
+      (find-matching-function *(ebp+0x14) *(ebp+0xc))
+      3d/compare-eax-and 0/imm32
+      74/jump-if-equal break/disp8
+      (emit-subx-primitive *(ebx+8) *(ebx+0xc) %eax)
+      e9/jump $emit-subx-statement:end/disp32
+    }
+    # else if stmt matches a function, emit a call to it
+    {
       (find-matching-function *(ebp+0x18) *(ebp+0xc))
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
-      # if find-matching-function(functions, statement) break
-      (find-matching-function *(ebp+0x20) *(ebp+0xc))
-      3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
-      # abort
-      e9/jump $emit-subx-statement:abort/disp32
+      74/jump-if-equal break/disp8
+      (emit-subx-call *(ebx+8) *(ebx+0xc) %eax)
+      e9/jump $emit-subx-statement:end/disp32
     }
-    # emit code for stmt according to curr and vars
+    # else abort
+    e9/jump $emit-subx-statement:abort/disp32
 $emit-subx-statement:end:
     # . restore registers
     59/pop-to-ecx
@@ -846,6 +850,38 @@ $emit-subx-statement:abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), primitive : (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+$emit-subx-primitive:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-call:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), callee : (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+$emit-subx-call:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 find-matching-function:  # functions : (address function), stmt : (address statement) -> result/eax : (address function)
     # . prologue
@@ -951,7 +987,7 @@ test-emit-subx-statement-primitive:
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %edx %ecx 0 %ebx 0)
+    (emit-subx-statement _test-output-buffered-file %edx %ecx %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1021,7 +1057,7 @@ test-emit-subx-statement-function-call:
     68/push "f"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %edx %ecx 0 0 %ebx)
+    (emit-subx-statement _test-output-buffered-file %edx %ecx 0 %ebx)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
