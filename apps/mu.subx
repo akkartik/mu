@@ -22,25 +22,26 @@
 #
 # Functions consist of a name, optional inputs, optional outputs and a block.
 #
-# Inputs are variables with types (not in registers). Outputs are variables in
-# registers with (word-size) types.
-#
-# All variables have a type and storage specifier. They can be placed either
-# in memory (on the stack) or in one of 6 named registers.
+# Function inputs and outputs are variables. All variables have a type and
+# storage specifier. They can be placed either in memory (on the stack) or in
+# one of 6 named registers.
 #   eax ecx edx ebx esi edi
-# Variables in registers must be word-sized (int or address).
+# Variables in registers must be primitive 32-bit types.
 # Variables not explicitly placed in a register are on the stack.
 # Variables in registers need not have a name; in that case you refer to them
 # directly by the register name.
+#
+# Function inputs are always passed in memory (on the stack), while outputs
+# are always returned in registers.
 #
 # Blocks mostly consist of statements.
 #
 # Statements mostly consist of a name, optional inputs and optional outputs.
 #
-# Inputs are variables or literals. Variables need to specify type (and
-# storage) the first time they're mentioned but not later.
+# Statement inputs are variables or literals. Variables need to specify type
+# (and storage) the first time they're mentioned but not later.
 #
-# Outputs can only be variables.
+# Statement outputs, like function outputs, must be variables in registers.
 #
 # Statement names must be either primitives or user-defined functions.
 #
@@ -78,7 +79,27 @@
 #   short-lived 'address' type for efficiently writing inside nested structs
 
 # Now that we know what the language looks like in the large, let's think
-# about how translation happens from the bottom up.
+# about how translation happens from the bottom up. The interplay between
+# variable scopes and statements using variables is the most complex aspect of
+# translation.
+#
+# Assume that we maintain a 'functions' list while parsing source code. And a
+# 'primitives' list is a global constant. Both these contain enough information
+# to perform type-checking on function calls or primitive statements, respectively.
+#
+# Defining variables pushes them on a stack with the current block depth and
+# enough information about their location (stack offset or register id).
+# Starting a block increments the current block id.
+# Each statement now has enough information to emit code for it.
+# Ending a block is where the magic happens:
+#   pop all variables at the current block depth
+#   emit code to restore all register variables introduced at the current depth
+#   emit code to clean up all stack variables at the current depth (just increment esp)
+#   decrement the current block depth
+#
+# One additional check we'll need is to ensure that a variable in a register
+# isn't shadowed by a different one. That may be worth a separate data
+# structure but for now repeatedly scanning the var stack should suffice.
 
 # == Book-keeping while emitting code for a single statement
 # Immutable data:
@@ -810,36 +831,84 @@ emit-subx-statement:  # out : (address buffered-file), stmt : (address statement
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    #
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # var curr/ecx : (address primitive) = primitives
+    8b/-> *(ebp+0x18) 1/r32/ecx
     {
+      # if (curr != null) abort
+      81 7/subop/compare *(ebp+0xc) 0/imm32
+      0f 84/jump-if-equal $emit-subx-statement:abort/disp32
+      # if (match(curr, stmt)) break
+      (mu-stmt-matches-primitive? *(ebp+0xc) %ecx)  # => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # emit code for stmt according to curr and vars
+      # curr = curr->next
+      8b/-> *(ecx+0x10) 1/r32/ecx
+      e9/jump loop/disp32
     }
 $emit-subx-statement:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$emit-subx-statement:abort:
+    # error("couldn't translate '" stmt "'\n")
+    (write-buffered Stderr "couldn't translate '")
+#?     (emit-string Stderr *(ebp+0xc))  # TODO
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+mu-stmt-matches-primitive?:  # stmt : (address statement), primitive : (address opcode-info) => result/eax : boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # return primitive->name == stmt->operation
+    8b/-> *(ebp+8) 1/r32/ecx
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (string-equal? *ecx *eax)  # => eax
+$mu-stmt-matches-primitive?:end:
+    # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
 test-emit-subx-statement-primitive:
-    # primitive operation on a variable on the stack
+    # Primitive operation on a variable on the stack.
     #   increment foo
     # =>
     #   ff 0/subop/increment *(ebp-8)
     #
-    # there's a variable on the var stack as follows:
+    # There's a variable on the var stack as follows:
     #   name: 'foo'
     #   type: int
     #   location: -8  (negative numbers are on the stack;
     #                   0-7 are in registers;
     #                   higher positive numbers are invalid)
     #
-    # there's nothing in registers
+    # There's nothing in registers.
     #
-    # there's a primitive with this info:
+    # There's a primitive with this info:
     #   name: 'increment'
     #   inout: int/mem
     #   value: 'ff 0/subop/increment'
     #
-    # there's nothing in functions
+    # There's nothing in functions.
     #
     # . prologue
     55/push-ebp
@@ -881,6 +950,76 @@ test-emit-subx-statement-primitive:
 #?     # }}}
     # check output
     (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp-8)" "F - test-emit-subx-statement-primitive/0")
+    # . reclaim locals
+    81 0/subop/add %esp 0x3c/imm32
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-emit-subx-statement-function-call:
+    # Call a function on a variable on the stack.
+    #   f var
+    # =>
+    #   (f2 *(ebp-8))
+    # (Changing the function name just to help disambiguate things.)
+    #
+    # There's a variable on the var stack as follows:
+    #   name: 'var'
+    #   type: int
+    #   location: -8  (negative numbers are on the stack;
+    #                   0-7 are in registers;
+    #                   higher positive numbers are invalid)
+    #
+    # There's nothing in registers.
+    #
+    # There's nothing in primitives.
+    #
+    # There's a function with this info:
+    #   name: 'f'
+    #   inout: int/mem
+    #   value: 'f2'
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # . ecx = vars
+    68/push 0/imm32/next
+    68/push -8/imm32/stack-offset
+    68/push 0/imm32/int  # TODO
+    68/push "var"/imm32
+    89/<- %ecx 4/r32/esp
+    # . edx = operand
+    68/push 0/imm32/next
+    51/push-ecx/var
+    89/<- %edx 4/r32/esp
+    # . edx = stmt
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    52/push-edx/operand
+    68/push "f"/imm32/operation
+    89/<- %edx 4/r32/esp
+    # . ebx = functions
+    68/push 0/imm32/next
+    68/push "f2"/imm32
+    68/push 0/imm32/type-int
+    68/push 0/imm32/storage-memory
+    68/push "f"/imm32/name
+    89/<- %ebx 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %edx %ecx 0 0 %ebx)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "f2 *(ebp-8)" "F - test-emit-subx-statement-function-call/0")
     # . reclaim locals
     81 0/subop/add %esp 0x3c/imm32
     # . epilogue
