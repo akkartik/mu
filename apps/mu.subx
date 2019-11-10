@@ -173,19 +173,38 @@ Program:  # (address function)
 
 Function-name:
   0/imm32
-Function-inouts:
+Function-inouts:  # (address var)
   4/imm32
-Function-outputs:
+Function-outputs:  # (address var)
   8/imm32
-Function-body:
+Function-body:  # (address statement)
   0xc/imm32
-Function-next:
+Function-next:  # (address function)
   0x10/imm32
 Function-size:
   0x14/imm32/20
 
+Stmt-name:
+  0/imm32
+Stmt-inouts:
+  4/imm32
+Stmt-outputs:
+  8/imm32
+Stmt-next:
+  0xc/imm32
+Stmt-size:
+  0x10/imm32
+
 Var-name:
   0/imm32
+Var-type:
+  4/imm32
+Var-location:
+  8/imm32
+Var-next:
+  0xc/imm32
+Var-size:
+  0x10/imm32
 
 == code
 
@@ -817,7 +836,7 @@ emit-subx-statement:  # out : (address buffered-file), stmt : (address statement
       (find-matching-function *(ebp+0x14) *(ebp+0xc))
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
-      (emit-subx-primitive *(ebx+8) *(ebx+0xc) %eax)
+      (emit-subx-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)
       e9/jump $emit-subx-statement:end/disp32
     }
     # else if stmt matches a function, emit a call to it
@@ -825,7 +844,7 @@ emit-subx-statement:  # out : (address buffered-file), stmt : (address statement
       (find-matching-function *(ebp+0x18) *(ebp+0xc))
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
-      (emit-subx-call *(ebx+8) *(ebx+0xc) %eax)
+      (emit-subx-call *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)
       e9/jump $emit-subx-statement:end/disp32
     }
     # else abort
@@ -874,6 +893,14 @@ emit-subx-call:  # out : (address buffered-file), stmt : (address statement), va
     # . save registers
     50/push-eax
     51/push-ecx
+    #
+    (write-buffered *(ebp+8) "(")
+    # emit function name
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    (write-buffered *(ebp+8) *(ecx+0xc))  # Stmt-value
+    # emit arguments
+    #
+    (write-buffered *(ebp+8) ")")
 $emit-subx-call:end:
     # . restore registers
     59/pop-to-ecx
@@ -890,14 +917,14 @@ find-matching-function:  # functions : (address function), stmt : (address state
     # . save registers
     51/push-ecx
     # var curr/ecx : (address function) = functions
-    8b/-> *(ebp+0xc) 1/r32/ecx
+    8b/-> *(ebp+8) 1/r32/ecx
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
       74/jump-if-equal break/disp8
       # if match(curr, stmt) return curr
       {
-        (mu-stmt-matches-primitive? *(ebp+0xc) %ecx)  # => eax
+        (mu-stmt-matches-function? *(ebp+0xc) %ecx)  # => eax
         3d/compare-eax-and 0/imm32
         74/jump-if-equal break/disp8
         89/<- %eax 1/r32/ecx
@@ -917,7 +944,7 @@ $find-matching-function:end:
     5d/pop-to-ebp
     c3/return
 
-mu-stmt-matches-primitive?:  # stmt : (address statement), primitive : (address opcode-info) => result/eax : boolean
+mu-stmt-matches-function?:  # stmt : (address statement), primitive : (address opcode-info) => result/eax : boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -927,7 +954,7 @@ mu-stmt-matches-primitive?:  # stmt : (address statement), primitive : (address 
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ebp+0xc) 0/r32/eax
     (string-equal? *ecx *eax)  # => eax
-$mu-stmt-matches-primitive?:end:
+$mu-stmt-matches-function?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -1059,14 +1086,14 @@ test-emit-subx-statement-function-call:
     # convert
     (emit-subx-statement _test-output-buffered-file %edx %ecx 0 %ebx)
     (flush _test-output-buffered-file)
-#?     # dump _test-output-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-output-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-output-stream)
-#?     # }}}
+    # dump _test-output-stream {{{
+    (write 2 "^")
+    (write-stream 2 _test-output-stream)
+    (write 2 "$\n")
+    (rewind-stream _test-output-stream)
+    # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "f2 *(ebp-8)" "F - test-emit-subx-statement-function-call/0")
+    (check-next-stream-line-equal _test-output-stream "(f2 *(ebp-8))" "F - test-emit-subx-statement-function-call/0")
     # . reclaim locals
     81 0/subop/add %esp 0x3c/imm32
     # . epilogue
