@@ -81,14 +81,22 @@
 #   A program is a linked list of functions
 #   A function contains:
 #     name: string
-#     inouts: linked list of var-types  <-- 'inouts' is more precise than 'inputs'
-#     outputs: linked list of var-types
+#     inouts: linked list of vars  <-- 'inouts' is more precise than 'inputs'
+#       data: (address var)
+#       next: (address list)
+#     outputs: linked list of vars
+#       data: (address var)
+#       next: (address list)
 #     body: block
 #   A var-type contains:
 #     name: string
 #     type: s-expression of type ids
 #   Statements are not yet fully designed.
 #   statement = var definition or simple statement or block
+#   simple statement:
+#     name: string
+#     inouts: linked list of vars
+#     outputs: linked list of vars
 #   block = linked list of statements
 
 # == Translation
@@ -118,9 +126,10 @@
 # Formal types:
 #   functions, primitives: linked list of info
 #     name: string
-#     inouts: linked list of var-types
-#     outputs: linked list of var-types
-#   vars: linked list (stack) of info
+#     inouts: linked list of vars
+#     outputs: linked list of vars
+#   live-vars: stack of vars
+#   var:
 #     name: string
 #     type: s-expression? Just a type id for now.
 #     block: int
@@ -162,7 +171,6 @@
 #     Emit code needed to clean up the stack
 #       either increment esp
 #       or pop into appropriate register
-#   TODO: how to update the register dict? does it need to be a stack as well?
 
 # The rest is straightforward.
 
@@ -173,16 +181,18 @@ Program:  # (address function)
 
 Function-name:
   0/imm32
-Function-inouts:  # (address var)
+Function-subx-name:
   4/imm32
-Function-outputs:  # (address var)
+Function-inouts:  # (address list var)
   8/imm32
-Function-body:  # (address statement)
+Function-outputs:  # (address list var)
   0xc/imm32
-Function-next:  # (address function)
+Function-body:  # (address block)
   0x10/imm32
+Function-next:  # (address function)
+  0x14/imm32
 Function-size:
-  0x14/imm32/20
+  0x18/imm32/24
 
 Stmt-name:
   0/imm32
@@ -201,7 +211,7 @@ Var-type:
   4/imm32
 Var-location:
   8/imm32
-Var-next:
+Var-block:
   0xc/imm32
 Var-size:
   0x10/imm32
@@ -824,7 +834,7 @@ $emit-subx-block:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), primitives : (address opcode-info), functions : (address function)
+emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (stack var), primitives : (address opcode-info), functions : (address function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -897,7 +907,7 @@ emit-subx-call:  # out : (address buffered-file), stmt : (address statement), va
     (write-buffered *(ebp+8) "(")
     # emit function name
     8b/-> *(ebp+0x14) 1/r32/ecx
-    (write-buffered *(ebp+8) *(ecx+0xc))  # Stmt-value
+    (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
     # emit arguments
     #
     (write-buffered *(ebp+8) ")")
@@ -990,31 +1000,37 @@ test-emit-subx-statement-primitive:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream _test-output-buffered-file->buffer)
-    # . ecx = vars
-    68/push 0/imm32/next
-    68/push -8/imm32/stack-offset
-    68/push 0/imm32/int  # TODO
+    # var-foo/ecx : var
+    68/push -8/imm32/location
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # . edx = operand
+    # vars/edx : (stack 1)
+    51/push-ecx/var-foo
+    68/push 1/imm32/data-length
+    68/push 1/imm32/top
+    89/<- %edx 4/r32/esp
+    # operand/esi : (list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
-    89/<- %edx 4/r32/esp
-    # . edx = stmt
+    89/<- %esi 4/r32/esp
+    # stmt/esi : statement
     68/push 0/imm32/next
     68/push 0/imm32/outputs
-    52/push-edx/operand
+    56/push-esi/operands
     68/push "increment"/imm32/operation
-    89/<- %edx 4/r32/esp
-    # . ebx = primitives
+    89/<- %esi 4/r32/esp
+    # primitives/ebx : function
     68/push 0/imm32/next
-    68/push "ff 0/subop/increment"/imm32
-    68/push 0/imm32/type-int
-    68/push 0/imm32/storage-memory
+    68/push 0/imm32/body
+    68/push 0/imm32/outputs
+    51/push-ecx/inouts  # hack; in practice we won't have the same var in function definition and call
+    68/push "ff 0/subop/increment"/imm32/subx-name
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %edx %ecx %ebx 0)
+    (emit-subx-statement _test-output-buffered-file %esi %edx %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -1025,7 +1041,7 @@ test-emit-subx-statement-primitive:
     # check output
     (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp-8)" "F - test-emit-subx-statement-primitive/0")
     # . reclaim locals
-    81 0/subop/add %esp 0x3c/imm32
+    81 0/subop/add %esp 0x48/imm32
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1033,13 +1049,13 @@ test-emit-subx-statement-primitive:
 
 test-emit-subx-statement-function-call:
     # Call a function on a variable on the stack.
-    #   f var
+    #   f foo
     # =>
     #   (f2 *(ebp-8))
     # (Changing the function name just to help disambiguate things.)
     #
     # There's a variable on the var stack as follows:
-    #   name: 'var'
+    #   name: 'foo'
     #   type: int
     #   location: -8  (negative numbers are on the stack;
     #                   0-7 are in registers;
@@ -1060,31 +1076,37 @@ test-emit-subx-statement-function-call:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream _test-output-buffered-file->buffer)
-    # . ecx = vars
-    68/push 0/imm32/next
-    68/push -8/imm32/stack-offset
-    68/push 0/imm32/int  # TODO
-    68/push "var"/imm32
+    # var-foo/ecx : var
+    68/push -8/imm32/location
+    68/push 0/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # . edx = operand
-    68/push 0/imm32/next
-    51/push-ecx/var
+    # vars/edx = (stack 1)
+    51/push-ecx/var-foo
+    68/push 1/imm32/data-length
+    68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # . edx = stmt
+    # operand/esi : (list var)
+    68/push 0/imm32/next
+    51/push-ecx/var-foo
+    89/<- %esi 4/r32/esp
+    # stmt/esi : statement
     68/push 0/imm32/next
     68/push 0/imm32/outputs
-    52/push-edx/operand
+    56/push-esi/operands
     68/push "f"/imm32/operation
-    89/<- %edx 4/r32/esp
-    # . ebx = functions
+    89/<- %esi 4/r32/esp
+    # functions/ebx : function
     68/push 0/imm32/next
-    68/push "f2"/imm32
-    68/push 0/imm32/type-int
-    68/push 0/imm32/storage-memory
+    68/push 0/imm32/body
+    68/push 0/imm32/outputs
+    51/push-ecx/inouts  # hack; in practice we won't have the same var in function definition and call
+    68/push "f2"/imm32/subx-name
     68/push "f"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %edx %ecx 0 %ebx)
+    (emit-subx-statement _test-output-buffered-file %esi %edx 0 %ebx)
     (flush _test-output-buffered-file)
     # dump _test-output-stream {{{
     (write 2 "^")
