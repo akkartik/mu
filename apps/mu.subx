@@ -887,6 +887,22 @@ emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement
     # . save registers
     50/push-eax
     51/push-ecx
+    # - emit primitive name
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
+    # - emit arguments
+    # var curr/ecx : (list var) = stmt->inouts
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    8b/-> *(ecx+4) 1/r32/ecx  # Stmt-inouts
+    {
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-equal break/disp8
+      #
+      (emit-subx-call-operand *(ebp+8) *ecx)
+      # curr = curr->next
+      8b/-> *(ecx+4) 1/r32/ecx
+    }
 $emit-subx-primitive:end:
     # . restore registers
     59/pop-to-ecx
@@ -905,15 +921,47 @@ emit-subx-call:  # out : (address buffered-file), stmt : (address statement), va
     51/push-ecx
     #
     (write-buffered *(ebp+8) "(")
-    # emit function name
+    # - emit function name
     8b/-> *(ebp+0x14) 1/r32/ecx
     (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
-    # emit arguments
+    # - emit arguments
+    # var curr/ecx : (list var) = stmt->inouts
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    8b/-> *(ecx+4) 1/r32/ecx  # Stmt-inouts
+    {
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-equal break/disp8
+      #
+      (emit-subx-call-operand *(ebp+8) *ecx)
+      # curr = curr->next
+      8b/-> *(ecx+4) 1/r32/ecx
+    }
     #
     (write-buffered *(ebp+8) ")")
 $emit-subx-call:end:
     # . restore registers
     59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-call-operand:  # out : (address buffered-file), operand : (address variable)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    #
+    (write-buffered *(ebp+8) Space)
+    (write-buffered *(ebp+8) "*(ebp+")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (print-int32-buffered *(ebp+8) *(eax+8))  # Var-location
+    (write-buffered *(ebp+8) ")")
+$emit-subx-call-operand:end:
+    # . restore registers
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -1001,8 +1049,8 @@ test-emit-subx-statement-primitive:
     (clear-stream _test-output-stream)
     (clear-stream _test-output-buffered-file->buffer)
     # var-foo/ecx : var
-    68/push -8/imm32/location
     68/push 1/imm32/block-depth
+    68/push -8/imm32/location
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
@@ -1039,7 +1087,7 @@ test-emit-subx-statement-primitive:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp-8)" "F - test-emit-subx-statement-primitive/0")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0xfffffff8)" "F - test-emit-subx-statement-primitive/0")
     # . reclaim locals
     81 0/subop/add %esp 0x48/imm32
     # . epilogue
@@ -1052,7 +1100,8 @@ test-emit-subx-statement-function-call:
     #   f foo
     # =>
     #   (f2 *(ebp-8))
-    # (Changing the function name just to help disambiguate things.)
+    # (Changing the function name supports overloading in general, but here it
+    # just serves to help disambiguate things.)
     #
     # There's a variable on the var stack as follows:
     #   name: 'foo'
@@ -1077,8 +1126,8 @@ test-emit-subx-statement-function-call:
     (clear-stream _test-output-stream)
     (clear-stream _test-output-buffered-file->buffer)
     # var-foo/ecx : var
-    68/push -8/imm32/location
     68/push 0/imm32/block-depth
+    68/push -8/imm32/location
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
@@ -1087,14 +1136,14 @@ test-emit-subx-statement-function-call:
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # operand/esi : (list var)
+    # operands/esi : (list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %esi 4/r32/esp
     # stmt/esi : statement
     68/push 0/imm32/next
     68/push 0/imm32/outputs
-    56/push-esi/operands
+    56/push-esi/inouts
     68/push "f"/imm32/operation
     89/<- %esi 4/r32/esp
     # functions/ebx : function
@@ -1108,14 +1157,14 @@ test-emit-subx-statement-function-call:
     # convert
     (emit-subx-statement _test-output-buffered-file %esi %edx 0 %ebx)
     (flush _test-output-buffered-file)
-    # dump _test-output-stream {{{
-    (write 2 "^")
-    (write-stream 2 _test-output-stream)
-    (write 2 "$\n")
-    (rewind-stream _test-output-stream)
-    # }}}
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "(f2 *(ebp-8))" "F - test-emit-subx-statement-function-call/0")
+    (check-next-stream-line-equal _test-output-stream "(f2 *(ebp+0xfffffff8))" "F - test-emit-subx-statement-function-call/0")
     # . reclaim locals
     81 0/subop/add %esp 0x3c/imm32
     # . epilogue
