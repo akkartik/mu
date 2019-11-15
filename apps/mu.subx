@@ -94,23 +94,22 @@
 #   Statements are not yet fully designed.
 #   statement = var definition or simple statement or block
 #   simple statement:
-#     name: string
+#     operation: string
 #     inouts: linked list of vars
 #     outputs: linked list of vars
 #   block = linked list of statements
 
-# == Translation
+# == Translation: managing the stack
 # Now that we know what the language looks like in the large, let's think
-# about how translation happens from the bottom up. The interplay between
-# variable scopes and statements using variables is the most complex aspect of
-# translation.
+# about how translation happens from the bottom up. One crucial piece of the
+# puzzle is how Mu will clean up variables defined on the stack for you.
 #
 # Assume that we maintain a 'functions' list while parsing source code. And a
 # 'primitives' list is a global constant. Both these contain enough information
 # to perform type-checking on function calls or primitive statements, respectively.
 #
 # Defining variables pushes them on a stack with the current block depth and
-# enough information about their location (stack offset or register id).
+# enough information about their location (stack offset or register).
 # Starting a block increments the current block id.
 # Each statement now has enough information to emit code for it.
 # Ending a block is where the magic happens:
@@ -119,15 +118,7 @@
 #   emit code to clean up all stack variables at the current depth (just increment esp)
 #   decrement the current block depth
 #
-# One additional check we'll need is to ensure that a variable in a register
-# isn't shadowed by a different one. That may be worth a separate data
-# structure but for now repeatedly scanning the var stack should suffice.
-#
 # Formal types:
-#   functions, primitives: linked list of info
-#     name: string
-#     inouts: linked list of vars
-#     outputs: linked list of vars
 #   live-vars: stack of vars
 #   var:
 #     name: string
@@ -141,28 +132,60 @@
 #   A register of '*' designates a variable _template_. Only legal in formal
 #   parameters for primitives.
 
-# == Compiling a single instruction
-# Determine the function or primitive being called.
-#   If no matches, show all functions/primitives with the same name, along
-#   with reasons they don't match. (type and storage checking)
-#   It must be a function if:
-#     #outputs > 1, or
-#     #inouts > 2, or
-#     #inouts + #outputs > 2
-# If it's a function, emit:
-#   (low-level-name <rm32 or imm32>...)
-# Otherwise (it's a primitive):
-#   assert(#inouts <= 2 && #outs <= 1 && (#inouts + #outs) <= 2)
-#   emit opcode
-#   emit-rm32(inout[0])
-#   if out[0] exists: emit-r32(out[0])
-#   else if inout[1] is a literal: emit-imm32(inout[1])
-#   else: emit-rm32(inout[1])
+# == Translating a single function call
+# This one's easy. Assuming we've already checked things, we just drop the
+# outputs (which use hard-coded registers) and emit inputs in a standard format.
+#
+# out1, out2, out3, ... <- name inout1, inout2, inout3, ...
+# =>
+# (subx-name inout1 inout2 inout3)
+#
+# Formal types:
+#   functions: linked list of info
+#     name: string
+#     inouts: linked list of vars
+#     outputs: linked list of vars
+#     body: block (singleton linked list)
+#     subx-name: string
 
-# emit-rm32 and emit-r32 should check that the variable they intend is still
-# available in the register.
+# == Translating a single primitive instruction
+# A second crucial piece of the puzzle is how Mu converts fairly regular
+# primitives with their uniform syntax to SubX instructions with their gnarly
+# x86 details.
+#
+# Mu instructions have inputs and outputs. Primitives can have up to 2 of
+# them.
+# SubX instructions have rm32 and r32 operands.
+# The translation between them covers almost all the possibilities.
+#   Instructions with 1 inout may turn into ones with 1 rm32
+#     (e.g. incrementing a var on the stack)
+#   Instructions with 1 output may turn into ones with 1 rm32
+#     (e.g. incrementing a var in a register)
+#   1 inout and 1 output may turn into 1 rm32 and 1 r32
+#     (e.g. adding a var to a reg)
+#   2 inouts may turn into 1 rm32 and 1 r32
+#     (e.g. adding a reg to a var)
+#   1 inout and 1 literal may turn into 1 rm32 and 1 imm32
+#     (e.g. adding a constant to a var)
+#   1 output and 1 literal may turn into 1 rm32 and 1 imm32
+#     (e.g. adding a constant to a reg)
+#   2 outputs to hardcoded registers and 1 inout may turn into 1 rm32
+#     (special-case: divide edx:eax by a var or reg)
+# Observations:
+#   We always emit rm32. It may be the first inout or the first output.
+#   We may emit r32 or imm32 or neither.
+#   When we emit r32 it may come from first inout or second inout or first output.
+#
+# Accordingly, the formal data structure for a primitive looks like this:
+#   primitives: linked list of info
+#     name: string
+#     mu-inouts: linked list of vars to check
+#     mu-outputs: linked list of vars to check
+#     subx-name: string
+#     subx-rm32: enum of 2 states
+#     subx-r32: enum of 3 states
 
-# == Emitting a block
+# == Translating a block
 # Emit block name if necessary
 # Emit '{'
 # When you encounter a statement, emit it as above
@@ -196,6 +219,19 @@ Function-body:  # (address block)
 Function-next:  # (address function)
   0x14/imm32
 Function-size:
+  0x18/imm32/24
+
+Primitive-name:
+  0/imm32
+Primitive-inouts:  # (address list var)
+  8/imm32
+Primitive-outputs:  # (address list var)
+  0xc/imm32
+Primitive-subx-name:
+  4/imm32
+Primitive-next:  # (address function)
+  0x14/imm32
+Primitive-size:
   0x18/imm32/24
 
 Stmt-operation:
@@ -1072,7 +1108,7 @@ test-emit-subx-statement-primitive:
     56/push-esi/operands
     68/push "increment"/imm32/operation
     89/<- %esi 4/r32/esp
-    # primitives/ebx : function
+    # primitives/ebx : primitive
     68/push 0/imm32/next
     68/push 0/imm32/body
     68/push 0/imm32/outputs
