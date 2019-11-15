@@ -133,9 +133,15 @@
 #     name: string
 #     type: s-expression? Just a type id for now.
 #     block: int
-#     location: int (negative numbers are on the stack;
-#                    0-7 are in registers;
-#                    higher positive numbers are currently invalid)
+#     stack-offset: int  (added to ebp)
+#     register-index: int
+#       0-7 with usual meanings
+#       8: any register
+#   At most one of stack-offset or register-index must be non-zero.
+#   When both are zero the variable is in eax (no way to refer to return
+#   address at ebp).
+#   A register-index of 8 designates a variable _template_. Only legal in
+#   formal parameters for primitives.
 
 # == Compiling a single instruction
 # Determine the function or primitive being called.
@@ -209,12 +215,14 @@ Var-name:
   0/imm32
 Var-type:
   4/imm32
-Var-location:
-  8/imm32
 Var-block:
+  8/imm32
+Var-stack-offset:
   0xc/imm32
-Var-size:
+Var-register-index:
   0x10/imm32
+Var-size:
+  0x14/imm32
 
 == code
 
@@ -958,7 +966,7 @@ emit-subx-call-operand:  # out : (address buffered-file), operand : (address var
     (write-buffered *(ebp+8) Space)
     (write-buffered *(ebp+8) "*(ebp+")
     8b/-> *(ebp+0xc) 0/r32/eax
-    (print-int32-buffered *(ebp+8) *(eax+8))  # Var-location
+    (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-stack-offset
     (write-buffered *(ebp+8) ")")
 $emit-subx-call-operand:end:
     # . restore registers
@@ -1047,8 +1055,9 @@ test-emit-subx-statement-primitive:
     (clear-stream _test-output-stream)
     (clear-stream _test-output-buffered-file->buffer)
     # var-foo/ecx : var
+    68/push 0/imm32/no-register
+    68/push -8/imm32/stack-offset
     68/push 1/imm32/block-depth
-    68/push -8/imm32/location
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
@@ -1122,8 +1131,9 @@ test-emit-subx-statement-function-call:
     (clear-stream _test-output-stream)
     (clear-stream _test-output-buffered-file->buffer)
     # var-foo/ecx : var
+    68/push 0/imm32/no-register
+    68/push -8/imm32/stack-offset
     68/push 0/imm32/block-depth
-    68/push -8/imm32/location
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
