@@ -198,7 +198,7 @@ Function-next:  # (address function)
 Function-size:
   0x18/imm32/24
 
-Stmt-name:
+Stmt-operation:
   0/imm32
 Stmt-inouts:
   4/imm32
@@ -897,7 +897,7 @@ emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement
     8b/-> *(ebp+0x14) 1/r32/ecx
     (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
     # - emit arguments
-    # var curr/ecx : (list var) = stmt->inouts
+    # var args/ecx : (list var) = stmt->inouts
     8b/-> *(ebp+0xc) 1/r32/ecx
     8b/-> *(ecx+4) 1/r32/ecx  # Stmt-inouts
     {
@@ -906,7 +906,7 @@ emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement
       74/jump-if-equal break/disp8
       #
       (emit-subx-call-operand *(ebp+8) *ecx)
-      # curr = curr->next
+      # args = args->next
       8b/-> *(ecx+4) 1/r32/ecx
     }
 $emit-subx-primitive:end:
@@ -1035,9 +1035,7 @@ test-emit-subx-statement-primitive:
     # There's a variable on the var stack as follows:
     #   name: 'foo'
     #   type: int
-    #   location: -8  (negative numbers are on the stack;
-    #                   0-7 are in registers;
-    #                   higher positive numbers are invalid)
+    #   stack-offset: -8
     #
     # There's a primitive with this info:
     #   name: 'increment'
@@ -1111,9 +1109,7 @@ test-emit-subx-statement-function-call:
     # There's a variable on the var stack as follows:
     #   name: 'foo'
     #   type: int
-    #   location: -8  (negative numbers are on the stack;
-    #                   0-7 are in registers;
-    #                   higher positive numbers are invalid)
+    #   stack-offset: -8
     #
     # There's nothing in primitives.
     #
