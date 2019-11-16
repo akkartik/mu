@@ -182,8 +182,14 @@
 #     mu-inouts: linked list of vars to check
 #     mu-outputs: linked list of vars to check
 #     subx-name: string
-#     subx-rm32: enum of 2 states
-#     subx-r32: enum of 3 states
+#     subx-rm32: enum arg-location
+#     subx-r32: enum arg-location
+#     subx-imm32: enum arg-location
+#   arg-location: enum
+#     0 means none
+#     1 means first inout
+#     2 means second inout
+#     3 means first output
 
 # == Translating a block
 # Emit block name if necessary
@@ -224,15 +230,21 @@ Function-size:
 Primitive-name:
   0/imm32
 Primitive-inouts:  # (address list var)
-  8/imm32
-Primitive-outputs:  # (address list var)
-  0xc/imm32
-Primitive-subx-name:
   4/imm32
-Primitive-next:  # (address function)
+Primitive-outputs:  # (address list var)
+  8/imm32
+Primitive-subx-name:  # (address string)
+  0xc/imm32
+Primitive-subx-rm32:  # enum arg-location
+  0x10/imm32
+Primitive-subx-r32:  # enum arg-location
   0x14/imm32
+Primitive-subx-imm32:  # enum arg-location
+  0x18/imm32
+Primitive-next:  # (address function)
+  0x1c/imm32
 Primitive-size:
-  0x18/imm32/24
+  0x20/imm32/24
 
 Stmt-operation:
   0/imm32
@@ -253,10 +265,16 @@ Var-block:
   8/imm32
 Var-stack-offset:
   0xc/imm32
-Var-register-index:
+Var-register:
   0x10/imm32
 Var-size:
   0x14/imm32
+
+Any-register:  # "*"
+  # size
+  1/imm32
+  # data
+  2a/asterisk
 
 == code
 
@@ -876,7 +894,7 @@ $emit-subx-block:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (stack var), primitives : (address opcode-info), functions : (address function)
+emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (stack var), primitives : (address primitive), functions : (address function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -885,18 +903,20 @@ emit-subx-statement:  # out : (address buffered-file), stmt : (address statement
     51/push-ecx
     # if stmt matches a primitive, emit it
     {
-      (find-matching-function *(ebp+0x14) *(ebp+0xc))
+$emit-subx-statement:primitive:
+      (find-matching-primitive *(ebp+0x14) *(ebp+0xc))  # primitives, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
-      (emit-subx-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)
+      (emit-subx-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)  # out, stmt, vars, curr
       e9/jump $emit-subx-statement:end/disp32
     }
     # else if stmt matches a function, emit a call to it
     {
-      (find-matching-function *(ebp+0x18) *(ebp+0xc))
+$emit-subx-statement:call:
+      (find-matching-function *(ebp+0x18) *(ebp+0xc))  # functions, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
-      (emit-subx-call *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)
+      (emit-subx-call *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)  # out, stmt, vars, curr
       e9/jump $emit-subx-statement:end/disp32
     }
     # else abort
@@ -929,22 +949,16 @@ emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement
     # . save registers
     50/push-eax
     51/push-ecx
-    # - emit primitive name
+    # ecx = primitive
     8b/-> *(ebp+0x14) 1/r32/ecx
-    (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
-    # - emit arguments
-    # var args/ecx : (list var) = stmt->inouts
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    8b/-> *(ecx+4) 1/r32/ecx  # Stmt-inouts
-    {
-      # if (curr == null) break
-      81 7/subop/compare %ecx 0/imm32
-      74/jump-if-equal break/disp8
-      #
-      (emit-subx-call-operand *(ebp+8) *ecx)
-      # args = args->next
-      8b/-> *(ecx+4) 1/r32/ecx
-    }
+    # emit primitive name
+    (write-buffered *(ebp+8) *(ecx+0xc))  # Primitive-subx-name
+    # emit rm32 if necessary
+    (emit-subx-rm32 *(ebp+8) *(ecx+0x10) *(ebp+0xc))  # out, Primitive-subx-rm32, stmt
+#?     # emit r32 if necessary
+#?     (emit-subx-r32 *(ebp+8) *(ecx+0x14) *(ebp+0xc))  # out, Primitive-subx-r32, stmt
+#?     # emit imm32 if necessary
+#?     (emit-subx-imm32 *(ebp+8) *(ecx+0x18) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
 $emit-subx-primitive:end:
     # . restore registers
     59/pop-to-ecx
@@ -953,6 +967,137 @@ $emit-subx-primitive:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+emit-subx-rm32:  # out : (address buffered-file), l : arg-location, stmt : (address statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # if (l == 0) return
+    81 7/subop/compare *(ebp+0xc) 0/imm32
+    74/jump-if-equal $emit-subx-rm32:end/disp8
+    #
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
+    (emit-subx-call-operand *(ebp+8) %eax)  # out, var
+$emit-subx-rm32:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+get-stmt-operand-from-arg-location:  # stmt : (address statement), l : arg-location -> var/eax : (address variable)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # eax = l
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # ecx = stmt
+    8b/-> *(ebp+8) 1/r32/ecx
+    # if (l == 1) return stmt->inouts->var
+    {
+      3d/compare-eax-and 1/imm32
+      75/jump-if-not-equal break/disp8
+$get-stmt-operand-from-arg-location:1:
+      8b/-> *(ecx+4) 0/r32/eax  # Stmt-inouts
+      8b/-> *eax 0/r32/eax  # Operand-var
+      eb/jump $get-stmt-operand-from-arg-location:end/disp8
+    }
+    # if (l == 2) return stmt->inouts->next->var
+    {
+      3d/compare-eax-and 2/imm32
+      75/jump-if-not-equal break/disp8
+$get-stmt-operand-from-arg-location:2:
+      8b/-> *(ecx+4) 0/r32/eax  # Stmt-inouts
+      8b/-> *(eax+4) 0/r32/eax  # Operand-next
+      8b/-> *eax 0/r32/eax  # Operand-var
+      eb/jump $get-stmt-operand-from-arg-location:end/disp8
+    }
+    # if (l == 3) return stmt->outputs
+    {
+      3d/compare-eax-and 3/imm32
+      75/jump-if-not-equal break/disp8
+$get-stmt-operand-from-arg-location:3:
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt-outputs
+      8b/-> *eax 0/r32/eax  # Operand-var
+      eb/jump $get-stmt-operand-from-arg-location:end/disp8
+    }
+    # abort
+    e9/jump $get-stmt-operand-from-arg-location:abort/disp32
+$get-stmt-operand-from-arg-location:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$get-stmt-operand-from-arg-location:abort:
+    # error("invalid arg-location " eax)
+    (write-buffered Stderr "invalid arg-location ")
+    (print-int32-buffered Stderr %eax)
+    (write-buffered Stderr "\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+emit-subx-r32:  # out : (address buffered-file), l : arg-location, stmt : (address statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # location/ecx : enum = primitive->subx-r32
+    # if (location == 0) return
+    # var/ecx : var = get-operand(stmt, primitive->subx-rm32)
+    # emit-subx-call-operand(out, var)
+$emit-subx-r32:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-imm32:  # out : (address buffered-file), l : arg-location, stmt : (address statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # var/ecx : var = get-operand(stmt, primitive->subx-rm32)
+    # emit-subx-call-operand(out, var)
+$emit-subx-imm32:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+#?     # var args/ecx : (list var) = stmt->inouts
+#?     8b/-> *(ebp+0xc) 1/r32/ecx
+#?     8b/-> *(ecx+4) 1/r32/ecx  # Stmt-inouts
+#?     {
+#?       # if (curr == null) break
+#?       81 7/subop/compare %ecx 0/imm32
+#?       74/jump-if-equal break/disp8
+#?       #
+#?       (emit-subx-call-operand *(ebp+8) *ecx)
+#?       # args = args->next
+#?       8b/-> *(ecx+4) 1/r32/ecx
+#?     }
 
 emit-subx-call:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), callee : (address function)
     # . prologue
@@ -996,12 +1141,27 @@ emit-subx-call-operand:  # out : (address buffered-file), operand : (address var
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    #
-    (write-buffered *(ebp+8) Space)
-    (write-buffered *(ebp+8) "*(ebp+")
+    # eax = operand
     8b/-> *(ebp+0xc) 0/r32/eax
-    (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-stack-offset
-    (write-buffered *(ebp+8) ")")
+    # if (operand->register) emit "%__"
+    {
+      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+      74/jump-if-equal break/disp8
+$emit-subx-call-operand:register:
+      (write-buffered *(ebp+8) " %")
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
+    }
+    # else if (operand->stack-offset) emit "*(ebp+__)"
+    {
+      81 7/subop/compare *(eax+0xc) 0/imm32  # Var-stack-offset
+      74/jump-if-equal break/disp8
+$emit-subx-call-operand:stack:
+      (write-buffered *(ebp+8) Space)
+      (write-buffered *(ebp+8) "*(ebp+")
+      8b/-> *(ebp+0xc) 0/r32/eax
+      (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-stack-offset
+      (write-buffered *(ebp+8) ")")
+    }
 $emit-subx-call-operand:end:
     # . restore registers
     58/pop-to-eax
@@ -1031,7 +1191,7 @@ find-matching-function:  # functions : (address function), stmt : (address state
         eb/jump $find-matching-function:end/disp8
       }
       # curr = curr->next
-      8b/-> *(ecx+0x10) 1/r32/ecx
+      8b/-> *(ecx+0x10) 1/r32/ecx  # Function-next
       eb/jump loop/disp8
     }
     # return null
@@ -1044,7 +1204,41 @@ $find-matching-function:end:
     5d/pop-to-ebp
     c3/return
 
-mu-stmt-matches-function?:  # stmt : (address statement), primitive : (address opcode-info) => result/eax : boolean
+find-matching-primitive:  # primitives : (address primitive), stmt : (address statement) -> result/eax : (address primitive)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx : (address primitive) = primitives
+    8b/-> *(ebp+8) 1/r32/ecx
+    {
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-equal break/disp8
+      # if match(curr, stmt) return curr
+      {
+        (mu-stmt-matches-primitive? *(ebp+0xc) %ecx)  # => eax
+        3d/compare-eax-and 0/imm32
+        74/jump-if-equal break/disp8
+        89/<- %eax 1/r32/ecx
+        eb/jump $find-matching-function:end/disp8
+      }
+      # curr = curr->next
+      8b/-> *(ecx+0x18) 1/r32/ecx  # Primitive-next
+      eb/jump loop/disp8
+    }
+    # return null
+    b8/copy-to-eax 0/imm32
+$find-matching-primitive:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+mu-stmt-matches-function?:  # stmt : (address statement), function : (address opcode-info) => result/eax : boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1055,6 +1249,24 @@ mu-stmt-matches-function?:  # stmt : (address statement), primitive : (address o
     8b/-> *(ebp+0xc) 0/r32/eax
     (string-equal? *ecx *eax)  # => eax
 $mu-stmt-matches-function?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+mu-stmt-matches-primitive?:  # stmt : (address statement), primitive : (address primitive) => result/eax : boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # return primitive->name == stmt->operation
+    8b/-> *(ebp+8) 1/r32/ecx
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (string-equal? *ecx *eax)  # => eax
+$mu-stmt-matches-primitive?:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -1075,7 +1287,7 @@ test-emit-subx-statement-primitive:
     #
     # There's a primitive with this info:
     #   name: 'increment'
-    #   inout: int/mem
+    #   inouts: int/mem
     #   value: 'ff 0/subop/increment'
     #
     # There's nothing in functions.
@@ -1110,10 +1322,12 @@ test-emit-subx-statement-primitive:
     89/<- %esi 4/r32/esp
     # primitives/ebx : primitive
     68/push 0/imm32/next
-    68/push 0/imm32/body
+    68/push 0/imm32/no-imm32
+    68/push 0/imm32/no-r32
+    68/push 1/imm32/rm32-is-first-inout
+    68/push "ff 0/subop/increment"/imm32/subx-name
     68/push 0/imm32/outputs
     51/push-ecx/inouts  # hack; in practice we won't have the same var in function definition and call
-    68/push "ff 0/subop/increment"/imm32/subx-name
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
@@ -1127,6 +1341,91 @@ test-emit-subx-statement-primitive:
 #?     # }}}
     # check output
     (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0xfffffff8)" "F - test-emit-subx-statement-primitive/0")
+    # . reclaim locals
+    81 0/subop/add %esp 0x48/imm32
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-emit-subx-statement-primitive-register:
+    # Primitive operation on a variable in a register.
+    #   foo <- increment
+    # =>
+    #   ff 0/subop/increment %eax  # sub-optimal, but should suffice
+    #
+    # There's a variable on the var stack as follows:
+    #   name: 'foo'
+    #   type: int
+    #   register: 'eax'
+    #
+    # There's a primitive with this info:
+    #   name: 'increment'
+    #   inout: int/reg
+    #   value: 'ff 0/subop/increment'
+    #
+    # There's nothing in functions.
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # var-foo/ecx : var in eax
+    68/push "eax"/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "foo"/imm32
+    89/<- %ecx 4/r32/esp
+    # vars/edx : (stack 1)
+    51/push-ecx/var-foo
+    68/push 1/imm32/data-length
+    68/push 1/imm32/top
+    89/<- %edx 4/r32/esp
+    # operand/esi : (list var)
+    68/push 0/imm32/next
+    51/push-ecx/var-foo
+    89/<- %esi 4/r32/esp
+    # stmt/esi : statement
+    68/push 0/imm32/next
+    56/push-esi/outputs
+    68/push 0/imm32/inouts
+    68/push "increment"/imm32/operation
+    89/<- %esi 4/r32/esp
+    # formal-var/ebx : var in any register
+    68/push Any-register/imm32
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "dummy"/imm32
+    89/<- %ebx 4/r32/esp
+    # operand/ebx : (list var)
+    68/push 0/imm32/next
+    53/push-ebx/formal-var
+    89/<- %ebx 4/r32/esp
+    # primitives/ebx : primitive
+    68/push 0/imm32/next
+    68/push 0/imm32/no-imm32
+    68/push 0/imm32/no-r32
+    68/push 3/imm32/rm32-in-first-output
+    68/push "ff 0/subop/increment"/imm32/subx-name
+    53/push-ebx/outputs
+    68/push 0/imm32/inouts
+    68/push "increment"/imm32/name
+    89/<- %ebx 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi %edx %ebx 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-statement-primitive-register/0")
     # . reclaim locals
     81 0/subop/add %esp 0x48/imm32
     # . epilogue
