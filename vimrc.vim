@@ -85,7 +85,7 @@ if empty($TMUX)
   "   can't avoid the function because that disables the wait for <CR> prompt
   noremap <Leader>t {:keeppatterns /^[^ #]<CR>:call RunTestMoveCursor("<C-r><C-w>")<CR>
   function RunTestMoveCursor(arg)
-    exec "!./run_one_test ".expand("%")." ".a:arg
+    exec "!./run_one_test ".expand("%")." '".a:arg."'"
     exec "normal \<C-o>"
   endfunction
 else
