@@ -942,6 +942,52 @@ $emit-subx-statement:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+# Primitives supported
+== data
+Primitives:
+    # increment var => ff 0/subop/increment *(ebp+__)
+    "increment"/imm32/name
+    Single-int-var-on-stack/imm32/inouts
+    0/imm32/no-outputs
+    "ff 0/subop/increment"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-inc-reg/imm32
+_Primitive-inc-reg:
+    # var/reg <- increment => ff 0/subop/increment %__
+    "increment"/imm32/name
+    0/imm32/no-inouts
+    Single-var-in-some-register/imm32/outputs
+    "ff 0/subop/increment"/imm32/subx-name
+    3/imm32/rm32-is-first-output
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    0/imm32/next
+
+Single-int-var-on-stack:
+    Int-var-on-stack/imm32
+    0/imm32/next
+
+Int-var-on-stack:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    1/imm32/some-stack-offset
+    0/imm32/no-register
+
+Single-var-in-some-register:
+    Int-var-in-some-register/imm32
+    0/imm32/next
+
+Int-var-in-some-register:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    0/imm32/some-stack-offset
+    "*"/imm32/register
+
+== code
 emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), primitive : (address function)
     # . prologue
     55/push-ebp
@@ -1803,6 +1849,128 @@ test-emit-subx-statement-select-primitive-2:
     89/<- %ebx 4/r32/esp
     # convert
     (emit-subx-statement _test-output-buffered-file %esi %edx %ebx 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-statement-select-primitive-2/0")
+    # . reclaim locals
+    81 0/subop/add %esp 0x48/imm32
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-emit-subx-statement-select-primitive-using-global-primitives:
+    # Select the right primitive between overloads.
+    #   foo <- increment
+    # =>
+    #   ff 0/subop/increment %eax  # sub-optimal, but should suffice
+    #
+    # There's a variable on the var stack as follows:
+    #   name: 'foo'
+    #   type: int
+    #   register: 'eax'
+    #
+    # Primitives are the global definitions.
+    #
+    # There are no functions defined.
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # var-foo/ecx : var in eax
+    68/push "eax"/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "foo"/imm32
+    89/<- %ecx 4/r32/esp
+    # vars/edx : (stack 1)
+    51/push-ecx/var-foo
+    68/push 1/imm32/data-length
+    68/push 1/imm32/top
+    89/<- %edx 4/r32/esp
+    # real-outputs/edi : (list var)
+    68/push 0/imm32/next
+    51/push-ecx/var-foo
+    89/<- %edi 4/r32/esp
+    # stmt/esi : statement
+    68/push 0/imm32/next
+    57/push-edi/outputs
+    68/push 0/imm32/inouts
+    68/push "increment"/imm32/operation
+    89/<- %esi 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi %edx Primitives 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-statement-select-primitive/0")
+    # . reclaim locals
+    81 0/subop/add %esp 0x48/imm32
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-emit-subx-statement-select-primitive-using-global-primitives-2:
+    # Select the right primitive between overloads.
+    #   foo <- increment
+    # =>
+    #   ff 0/subop/increment %eax  # sub-optimal, but should suffice
+    #
+    # There's a variable on the var stack as follows:
+    #   name: 'foo'
+    #   type: int
+    #   register: 'eax'
+    #
+    # Primitives are the global definitions.
+    #
+    # There are no functions defined.
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # var-foo/ecx : var in eax
+    68/push "eax"/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "foo"/imm32
+    89/<- %ecx 4/r32/esp
+    # vars/edx : (stack 1)
+    51/push-ecx/var-foo
+    68/push 1/imm32/data-length
+    68/push 1/imm32/top
+    89/<- %edx 4/r32/esp
+    # inouts/edi : (list var)
+    68/push 0/imm32/next
+    51/push-ecx/var-foo
+    89/<- %edi 4/r32/esp
+    # stmt/esi : statement
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    57/push-edi/inouts
+    68/push "increment"/imm32/operation
+    89/<- %esi 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi %edx Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
