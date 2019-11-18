@@ -473,13 +473,13 @@ if ('onhashchange' in window) {
 <span id="L459" class="LineNr">459 </span>    <span class="subxComment">#     clear-stream(line)</span>
 <span id="L460" class="LineNr">460 </span>    <span class="subxComment">#     read-line-buffered(in, line)</span>
 <span id="L461" class="LineNr">461 </span>    <span class="subxComment">#     if (line-&gt;write == 0) break             # end of file</span>
-<span id="L462" class="LineNr">462 </span>    <span class="subxComment">#     var word-slice = next-word(line)</span>
+<span id="L462" class="LineNr">462 </span>    <span class="subxComment">#     var word-slice = next-word-or-string(line)</span>
 <span id="L463" class="LineNr">463 </span>    <span class="subxComment">#     if slice-empty?(word-slice)             # whitespace</span>
 <span id="L464" class="LineNr">464 </span>    <span class="subxComment">#       continue</span>
 <span id="L465" class="LineNr">465 </span>    <span class="subxComment">#     if slice-starts-with?(word-slice, &quot;#&quot;)  # comment</span>
 <span id="L466" class="LineNr">466 </span>    <span class="subxComment">#       continue</span>
 <span id="L467" class="LineNr">467 </span>    <span class="subxComment">#     if slice-equal?(word-slice, &quot;==&quot;)</span>
-<span id="L468" class="LineNr">468 </span>    <span class="subxComment">#       var segment-name = next-word(line)</span>
+<span id="L468" class="LineNr">468 </span>    <span class="subxComment">#       var segment-name = next-word-or-string(line)</span>
 <span id="L469" class="LineNr">469 </span>    <span class="subxComment">#       segment-slot = leaky-get-or-insert-slice(table, segment-name, row-size=8)</span>
 <span id="L470" class="LineNr">470 </span>    <span class="subxComment">#       curr-segment = *segment-slot</span>
 <span id="L471" class="LineNr">471 </span>    <span class="subxComment">#       if curr-segment != 0</span>
@@ -539,12 +539,12 @@ if ('onhashchange' in window) {
 <span id="L525" class="LineNr">525 </span>    81          7/subop/compare     0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32           <span class="subxComment"># compare *ecx</span>
 <span id="L526" class="LineNr">526 </span>    0f 84/jump-if-equal  $read-segments:<span class="Constant">break</span>/disp32
 <span id="L527" class="Folded">527 </span><span class="Folded">+-- 33 lines: #?     # dump line -----------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L560" class="LineNr">560 </span>    <span class="subxComment"># next-word(line, word-slice)</span>
+<span id="L560" class="LineNr">560 </span>    <span class="subxComment"># next-word-or-string(line, word-slice)</span>
 <span id="L561" class="LineNr">561 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L562" class="LineNr">562 </span>    52/push-edx
 <span id="L563" class="LineNr">563 </span>    51/push-ecx
 <span id="L564" class="LineNr">564 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L565" class="LineNr">565 </span>    e8/call  <a href='../076next-word.subx.html#L10'>next-word</a>/disp32
+<span id="L565" class="LineNr">565 </span>    e8/call  <a href='../094next-word-or-string.subx.html#L8'>next-word-or-string</a>/disp32
 <span id="L566" class="LineNr">566 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L567" class="LineNr">567 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L568" class="LineNr">568 </span><span class="Constant">$read-segments:check1</span>:
@@ -586,12 +586,12 @@ if ('onhashchange' in window) {
 <span id="L667" class="LineNr">667 </span>    <span class="subxS1Comment"># . if (eax == 0) goto check3</span>
 <span id="L668" class="LineNr">668 </span>    3d/compare-eax-and  0/imm32
 <span id="L669" class="LineNr">669 </span>    0f 84/jump-if-equal  $read-segments:regular-line/disp32
-<span id="L670" class="LineNr">670 </span>    <span class="subxComment"># segment-name = next-word(line)</span>
+<span id="L670" class="LineNr">670 </span>    <span class="subxComment"># segment-name = next-word-or-string(line)</span>
 <span id="L671" class="LineNr">671 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L672" class="LineNr">672 </span>    52/push-edx
 <span id="L673" class="LineNr">673 </span>    51/push-ecx
 <span id="L674" class="LineNr">674 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L675" class="LineNr">675 </span>    e8/call  <a href='../076next-word.subx.html#L10'>next-word</a>/disp32
+<span id="L675" class="LineNr">675 </span>    e8/call  <a href='../094next-word-or-string.subx.html#L8'>next-word-or-string</a>/disp32
 <span id="L676" class="LineNr">676 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L677" class="LineNr">677 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L678" class="Folded">678 </span><span class="Folded">+-- 40 lines: #?     # dump segment name ---------------------------------------------------------------------------------------------------------------------</span>

@@ -86,7 +86,16 @@ subx-dquotes:  # in : (address buffered-file), out : (address buffered-file)
     # pseudocode:
     #   var line : (stream byte 512)
     #   var new-data-segment : (handle stream byte) = new-stream(Heap, Segment-size, 1)
+    #
     #   write(new-data-segment, "== data\n")
+    #      # TODO: When it was originally written dquotes ran before assort, so
+    #      # it assumes lots of segment headers, and emits a new segment of its
+    #      # own. We've since had to reorder the phases (see the explanation
+    #      # for a.assort2 in ntranslate). We could clean up a.assort2 if we
+    #      # conditionally emit the previous line. But this would require
+    #      # teaching dquotes to parse segment headers, so maybe that's not
+    #      # best..
+    #
     #   while true
     #     clear-stream(line)
     #     read-line-buffered(in, line)

@@ -459,13 +459,13 @@ read-segments:  # in : (address buffered-file), table : (address stream {string,
     #     clear-stream(line)
     #     read-line-buffered(in, line)
     #     if (line->write == 0) break             # end of file
-    #     var word-slice = next-word(line)
+    #     var word-slice = next-word-or-string(line)
     #     if slice-empty?(word-slice)             # whitespace
     #       continue
     #     if slice-starts-with?(word-slice, "#")  # comment
     #       continue
     #     if slice-equal?(word-slice, "==")
-    #       var segment-name = next-word(line)
+    #       var segment-name = next-word-or-string(line)
     #       segment-slot = leaky-get-or-insert-slice(table, segment-name, row-size=8)
     #       curr-segment = *segment-slot
     #       if curr-segment != 0
@@ -557,12 +557,12 @@ $read-segments:check0:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # next-word(line, word-slice)
+    # next-word-or-string(line, word-slice)
     # . . push args
     52/push-edx
     51/push-ecx
     # . . call
-    e8/call  next-word/disp32
+    e8/call  next-word-or-string/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 $read-segments:check1:
@@ -667,12 +667,12 @@ $read-segments:check-for-segment-header:
     # . if (eax == 0) goto check3
     3d/compare-eax-and  0/imm32
     0f 84/jump-if-equal  $read-segments:regular-line/disp32
-    # segment-name = next-word(line)
+    # segment-name = next-word-or-string(line)
     # . . push args
     52/push-edx
     51/push-ecx
     # . . call
-    e8/call  next-word/disp32
+    e8/call  next-word-or-string/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # dump segment name {{{
