@@ -1237,6 +1237,14 @@ $emit-subx-call-operand:stack:
       (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-stack-offset
       (write-buffered *(ebp+8) ")")
     }
+    # else if (operand->type == literal) emit "__"
+    {
+      81 7/subop/compare *(eax+4) 0/imm32  # Var-type
+      75/jump-if-not-equal break/disp8
+$emit-subx-call-operand:literal:
+      (write-buffered *(ebp+8) Space)
+      (write-buffered *(ebp+8) *eax)
+    }
 $emit-subx-call-operand:end:
     # . restore registers
     58/pop-to-eax
@@ -2154,6 +2162,64 @@ test-emit-subx-statement-function-call:
 #?     # }}}
     # check output
     (check-next-stream-line-equal _test-output-stream "(f2 *(ebp+0xfffffff8))" "F - test-emit-subx-statement-function-call")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-emit-subx-statement-function-call-with-literal-arg:
+    # Call a function on a literal.
+    #   f 34
+    # =>
+    #   (f2 34)
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # var-foo/ecx : literal
+    68/push 0/imm32/no-register
+    68/push 0/imm32/no-stack-offset
+    68/push 0/imm32/block-depth
+    68/push 0/imm32/type-literal
+    68/push "34"/imm32
+    89/<- %ecx 4/r32/esp
+    # vars/edx = (stack 1)
+    51/push-ecx/var-foo
+    68/push 1/imm32/data-length
+    68/push 1/imm32/top
+    89/<- %edx 4/r32/esp
+    # operands/esi : (list var)
+    68/push 0/imm32/next
+    51/push-ecx/var-foo
+    89/<- %esi 4/r32/esp
+    # stmt/esi : statement
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    56/push-esi/inouts
+    68/push "f"/imm32/operation
+    89/<- %esi 4/r32/esp
+    # functions/ebx : function
+    68/push 0/imm32/next
+    68/push 0/imm32/body
+    68/push 0/imm32/outputs
+    51/push-ecx/inouts  # hack; in practice we won't have the same var in function definition and call
+    68/push "f2"/imm32/subx-name
+    68/push "f"/imm32/name
+    89/<- %ebx 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi %edx 0 %ebx)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "(f2 34)" "F - test-emit-subx-statement-function-call-with-literal-arg")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp

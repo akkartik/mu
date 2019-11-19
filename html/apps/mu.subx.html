@@ -912,9 +912,9 @@ if ('onhashchange' in window) {
 <span id="L870" class="LineNr"> 870 </span>    <span class="subxComment">#</span>
 <span id="L871" class="LineNr"> 871 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> %edi *ecx)
 <span id="L872" class="LineNr"> 872 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> %edi <span class="Constant">&quot;:\n&quot;</span>)
-<span id="L873" class="LineNr"> 873 </span>    (<a href='mu.subx.html#L2162'>emit-subx-prologue</a> %edi)
+<span id="L873" class="LineNr"> 873 </span>    (<a href='mu.subx.html#L2228'>emit-subx-prologue</a> %edi)
 <span id="L874" class="LineNr"> 874 </span>    (<a href='mu.subx.html#L886'>emit-subx-block</a> %edi *(ecx+0x10))  <span class="subxComment"># Function-body</span>
-<span id="L875" class="LineNr"> 875 </span>    (<a href='mu.subx.html#L2176'>emit-subx-epilogue</a> %edi)
+<span id="L875" class="LineNr"> 875 </span>    (<a href='mu.subx.html#L2242'>emit-subx-epilogue</a> %edi)
 <span id="L876" class="LineNr"> 876 </span><span class="Constant">$emit-subx-function:end</span>:
 <span id="L877" class="LineNr"> 877 </span>    <span class="subxS1Comment"># . restore registers</span>
 <span id="L878" class="LineNr"> 878 </span>    5f/pop-to-edi
@@ -946,7 +946,7 @@ if ('onhashchange' in window) {
 <span id="L904" class="LineNr"> 904 </span>    <span class="subxComment"># if stmt matches a primitive, emit it</span>
 <span id="L905" class="LineNr"> 905 </span>    {
 <span id="L906" class="LineNr"> 906 </span><span class="Constant">$emit-subx-statement:primitive</span>:
-<span id="L907" class="LineNr"> 907 </span>      (<a href='mu.subx.html#L1282'>find-matching-primitive</a> *(ebp+0x14) *(ebp+0xc))  <span class="subxComment"># primitives, stmt =&gt; curr/eax</span>
+<span id="L907" class="LineNr"> 907 </span>      (<a href='mu.subx.html#L1290'>find-matching-primitive</a> *(ebp+0x14) *(ebp+0xc))  <span class="subxComment"># primitives, stmt =&gt; curr/eax</span>
 <span id="L908" class="LineNr"> 908 </span>      3d/compare-eax-and 0/imm32
 <span id="L909" class="LineNr"> 909 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
 <span id="L910" class="LineNr"> 910 </span>      (<a href='mu.subx.html#L1022'>emit-subx-primitive</a> *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)  <span class="subxComment"># out, stmt, vars, curr</span>
@@ -955,7 +955,7 @@ if ('onhashchange' in window) {
 <span id="L913" class="LineNr"> 913 </span>    <span class="subxComment"># else if stmt matches a function, emit a call to it</span>
 <span id="L914" class="LineNr"> 914 </span>    {
 <span id="L915" class="LineNr"> 915 </span><span class="Constant">$emit-subx-statement:call</span>:
-<span id="L916" class="LineNr"> 916 </span>      (<a href='mu.subx.html#L1248'>find-matching-function</a> *(ebp+0x18) *(ebp+0xc))  <span class="subxComment"># functions, stmt =&gt; curr/eax</span>
+<span id="L916" class="LineNr"> 916 </span>      (<a href='mu.subx.html#L1256'>find-matching-function</a> *(ebp+0x18) *(ebp+0xc))  <span class="subxComment"># functions, stmt =&gt; curr/eax</span>
 <span id="L917" class="LineNr"> 917 </span>      3d/compare-eax-and 0/imm32
 <span id="L918" class="LineNr"> 918 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
 <span id="L919" class="LineNr"> 919 </span>      (<a href='mu.subx.html#L1177'>emit-subx-call</a> *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)  <span class="subxComment"># out, stmt, vars, curr</span>
@@ -1279,911 +1279,972 @@ if ('onhashchange' in window) {
 <span id="L1237" class="LineNr">1237 </span>      (<a href='../066print-int.subx.html#L265'>print-int32-buffered</a> *(ebp+8) *(eax+0xc))  <span class="subxComment"># Var-stack-offset</span>
 <span id="L1238" class="LineNr">1238 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;)&quot;</span>)
 <span id="L1239" class="LineNr">1239 </span>    }
-<span id="L1240" class="LineNr">1240 </span><span class="Constant">$emit-subx-call-operand:end</span>:
-<span id="L1241" class="LineNr">1241 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1242" class="LineNr">1242 </span>    58/pop-to-eax
-<span id="L1243" class="LineNr">1243 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1244" class="LineNr">1244 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1245" class="LineNr">1245 </span>    5d/pop-to-ebp
-<span id="L1246" class="LineNr">1246 </span>    c3/return
-<span id="L1247" class="LineNr">1247 </span>
-<span id="L1248" class="LineNr">1248 </span><span class="subxFunction">find-matching-function</span>:  <span class="subxComment"># functions : (address function), stmt : (address statement) -&gt; result/eax : (address function)</span>
-<span id="L1249" class="LineNr">1249 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1250" class="LineNr">1250 </span>    55/push-ebp
-<span id="L1251" class="LineNr">1251 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1252" class="LineNr">1252 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L1253" class="LineNr">1253 </span>    51/push-ecx
-<span id="L1254" class="LineNr">1254 </span>    <span class="subxComment"># var curr/ecx : (address function) = functions</span>
-<span id="L1255" class="LineNr">1255 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
-<span id="L1256" class="LineNr">1256 </span>    {
-<span id="L1257" class="LineNr">1257 </span>      <span class="subxComment"># if (curr == null) break</span>
-<span id="L1258" class="LineNr">1258 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L1259" class="LineNr">1259 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
-<span id="L1260" class="LineNr">1260 </span>      <span class="subxComment"># if match(curr, stmt) return curr</span>
-<span id="L1261" class="LineNr">1261 </span>      {
-<span id="L1262" class="LineNr">1262 </span>        (<a href='mu.subx.html#L1318'>mu-stmt-matches-function?</a> *(ebp+0xc) %ecx)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1263" class="LineNr">1263 </span>        3d/compare-eax-and 0/imm32
-<span id="L1264" class="LineNr">1264 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
-<span id="L1265" class="LineNr">1265 </span>        89/&lt;- %eax 1/r32/ecx
-<span id="L1266" class="LineNr">1266 </span>        eb/jump $find-matching-function:end/disp8
-<span id="L1267" class="LineNr">1267 </span>      }
-<span id="L1268" class="LineNr">1268 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
-<span id="L1269" class="LineNr">1269 </span>      8b/-&gt; *(ecx+0x10) 1/r32/ecx  <span class="subxComment"># Function-next</span>
-<span id="L1270" class="LineNr">1270 </span>      eb/jump <span class="Constant">loop</span>/disp8
-<span id="L1271" class="LineNr">1271 </span>    }
-<span id="L1272" class="LineNr">1272 </span>    <span class="subxComment"># return null</span>
-<span id="L1273" class="LineNr">1273 </span>    b8/copy-to-eax 0/imm32
-<span id="L1274" class="LineNr">1274 </span><span class="Constant">$find-matching-function:end</span>:
-<span id="L1275" class="LineNr">1275 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1276" class="LineNr">1276 </span>    59/pop-to-ecx
-<span id="L1277" class="LineNr">1277 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1278" class="LineNr">1278 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1279" class="LineNr">1279 </span>    5d/pop-to-ebp
-<span id="L1280" class="LineNr">1280 </span>    c3/return
-<span id="L1281" class="LineNr">1281 </span>
-<span id="L1282" class="LineNr">1282 </span><span class="subxFunction">find-matching-primitive</span>:  <span class="subxComment"># primitives : (address primitive), stmt : (address statement) -&gt; result/eax : (address primitive)</span>
-<span id="L1283" class="LineNr">1283 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1284" class="LineNr">1284 </span>    55/push-ebp
-<span id="L1285" class="LineNr">1285 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1286" class="LineNr">1286 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L1287" class="LineNr">1287 </span>    51/push-ecx
-<span id="L1288" class="LineNr">1288 </span>    <span class="subxComment"># var curr/ecx : (address primitive) = primitives</span>
-<span id="L1289" class="LineNr">1289 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
-<span id="L1290" class="LineNr">1290 </span>    {
-<span id="L1291" class="LineNr">1291 </span><span class="Constant">$find-matching-primitive:loop</span>:
-<span id="L1292" class="LineNr">1292 </span>      <span class="subxComment"># if (curr == null) break</span>
-<span id="L1293" class="LineNr">1293 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L1294" class="LineNr">1294 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
-<span id="L1295" class="LineNr">1295 </span>      <span class="subxComment"># if match(curr, stmt) return curr</span>
-<span id="L1296" class="LineNr">1296 </span>      {
-<span id="L1297" class="LineNr">1297 </span>        (<a href='mu.subx.html#L1336'>mu-stmt-matches-primitive?</a> *(ebp+0xc) %ecx)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1298" class="LineNr">1298 </span>        3d/compare-eax-and 0/imm32
-<span id="L1299" class="LineNr">1299 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
-<span id="L1300" class="LineNr">1300 </span>        89/&lt;- %eax 1/r32/ecx
-<span id="L1301" class="LineNr">1301 </span>        eb/jump $find-matching-function:end/disp8
-<span id="L1302" class="LineNr">1302 </span>      }
-<span id="L1303" class="LineNr">1303 </span><span class="Constant">$find-matching-primitive:next-primitive</span>:
-<span id="L1304" class="LineNr">1304 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
-<span id="L1305" class="LineNr">1305 </span>      8b/-&gt; *(ecx+0x1c) 1/r32/ecx  <span class="subxComment"># Primitive-next</span>
-<span id="L1306" class="LineNr">1306 </span>      eb/jump <span class="Constant">loop</span>/disp8
-<span id="L1307" class="LineNr">1307 </span>    }
-<span id="L1308" class="LineNr">1308 </span>    <span class="subxComment"># return null</span>
-<span id="L1309" class="LineNr">1309 </span>    b8/copy-to-eax 0/imm32
-<span id="L1310" class="LineNr">1310 </span><span class="Constant">$find-matching-primitive:end</span>:
-<span id="L1311" class="LineNr">1311 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1312" class="LineNr">1312 </span>    59/pop-to-ecx
-<span id="L1313" class="LineNr">1313 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1314" class="LineNr">1314 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1315" class="LineNr">1315 </span>    5d/pop-to-ebp
-<span id="L1316" class="LineNr">1316 </span>    c3/return
-<span id="L1317" class="LineNr">1317 </span>
-<span id="L1318" class="LineNr">1318 </span><span class="subxFunction">mu-stmt-matches-function?</span>:  <span class="subxComment"># stmt : (address statement), function : (address opcode-info) =&gt; result/eax : boolean</span>
-<span id="L1319" class="LineNr">1319 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1320" class="LineNr">1320 </span>    55/push-ebp
-<span id="L1321" class="LineNr">1321 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1322" class="LineNr">1322 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L1323" class="LineNr">1323 </span>    51/push-ecx
-<span id="L1324" class="LineNr">1324 </span>    <span class="subxComment"># return primitive-&gt;name == stmt-&gt;operation</span>
-<span id="L1325" class="LineNr">1325 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
-<span id="L1326" class="LineNr">1326 </span>    8b/-&gt; *(ebp+0xc) 0/r32/eax
-<span id="L1327" class="LineNr">1327 </span>    (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *ecx *eax)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1328" class="LineNr">1328 </span><span class="Constant">$mu-stmt-matches-function?:end</span>:
-<span id="L1329" class="LineNr">1329 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1330" class="LineNr">1330 </span>    59/pop-to-ecx
-<span id="L1331" class="LineNr">1331 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1332" class="LineNr">1332 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1333" class="LineNr">1333 </span>    5d/pop-to-ebp
-<span id="L1334" class="LineNr">1334 </span>    c3/return
-<span id="L1335" class="LineNr">1335 </span>
-<span id="L1336" class="LineNr">1336 </span><span class="subxFunction">mu-stmt-matches-primitive?</span>:  <span class="subxComment"># stmt : (address statement), primitive : (address primitive) =&gt; result/eax : boolean</span>
-<span id="L1337" class="LineNr">1337 </span>    <span class="subxComment"># A mu stmt matches a primitive if the name matches, all the inout vars</span>
-<span id="L1338" class="LineNr">1338 </span>    <span class="subxComment"># match, and all the output vars match.</span>
-<span id="L1339" class="LineNr">1339 </span>    <span class="subxComment"># Vars match if types match and registers match.</span>
-<span id="L1340" class="LineNr">1340 </span>    <span class="subxComment"># In addition, a stmt output matches a primitive's output if types match</span>
-<span id="L1341" class="LineNr">1341 </span>    <span class="subxComment"># and the primitive has a wildcard register.</span>
-<span id="L1342" class="LineNr">1342 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1343" class="LineNr">1343 </span>    55/push-ebp
-<span id="L1344" class="LineNr">1344 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1345" class="LineNr">1345 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L1346" class="LineNr">1346 </span>    51/push-ecx
-<span id="L1347" class="LineNr">1347 </span>    52/push-edx
-<span id="L1348" class="LineNr">1348 </span>    53/push-ebx
-<span id="L1349" class="LineNr">1349 </span>    56/push-esi
-<span id="L1350" class="LineNr">1350 </span>    57/push-edi
-<span id="L1351" class="LineNr">1351 </span>    <span class="subxComment"># ecx = stmt</span>
-<span id="L1352" class="LineNr">1352 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
-<span id="L1353" class="LineNr">1353 </span>    <span class="subxComment"># edx = primitive</span>
-<span id="L1354" class="LineNr">1354 </span>    8b/-&gt; *(ebp+0xc) 2/r32/edx
-<span id="L1355" class="LineNr">1355 </span>    {
-<span id="L1356" class="LineNr">1356 </span><span class="Constant">$mu-stmt-matches-primitive?:check-name</span>:
-<span id="L1357" class="LineNr">1357 </span>      <span class="subxComment"># if (primitive-&gt;name != stmt-&gt;operation) return false</span>
-<span id="L1358" class="LineNr">1358 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *ecx *edx)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1359" class="LineNr">1359 </span>      3d/compare-eax-and 0/imm32
-<span id="L1360" class="LineNr">1360 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
-<span id="L1361" class="LineNr">1361 </span>      b8/copy-to-eax 0/imm32
-<span id="L1362" class="LineNr">1362 </span>      e9/jump $mu-stmt-matches-primitive?:end/disp32
-<span id="L1363" class="LineNr">1363 </span>    }
-<span id="L1364" class="LineNr">1364 </span><span class="Constant">$mu-stmt-matches-primitive?:check-inouts</span>:
-<span id="L1365" class="LineNr">1365 </span>    <span class="subxComment"># curr = stmt-&gt;inouts</span>
-<span id="L1366" class="LineNr">1366 </span>    8b/-&gt; *(ecx+4) 6/r32/esi  <span class="subxComment"># Stmt-inouts</span>
-<span id="L1367" class="LineNr">1367 </span>    <span class="subxComment"># curr2 = primitive-&gt;inouts</span>
-<span id="L1368" class="LineNr">1368 </span>    8b/-&gt; *(edx+4) 7/r32/edi  <span class="subxComment"># Primitive-inouts</span>
-<span id="L1369" class="LineNr">1369 </span>    {
-<span id="L1370" class="LineNr">1370 </span>      <span class="subxComment"># if (curr == 0) return (curr2 == 0)</span>
-<span id="L1371" class="LineNr">1371 </span>      {
-<span id="L1372" class="LineNr">1372 </span>        81 7/subop/compare %esi 0/imm32
-<span id="L1373" class="LineNr">1373 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
-<span id="L1374" class="LineNr">1374 </span>        {
-<span id="L1375" class="LineNr">1375 </span>          81 7/subop/compare %edi 0/imm32
-<span id="L1376" class="LineNr">1376 </span>          75/jump-if-not-equal <span class="Constant">break</span>/disp8
-<span id="L1377" class="LineNr">1377 </span>          <span class="subxComment"># return true</span>
-<span id="L1378" class="LineNr">1378 </span>          b8/copy-to-eax 1/imm32
-<span id="L1379" class="LineNr">1379 </span>          e9/jump $mu-stmt-matches-primitive?:end/disp32
-<span id="L1380" class="LineNr">1380 </span>        }
-<span id="L1381" class="LineNr">1381 </span>        <span class="subxComment"># return false</span>
-<span id="L1382" class="LineNr">1382 </span>        b8/copy-to-eax 0/imm32
-<span id="L1383" class="LineNr">1383 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
-<span id="L1384" class="LineNr">1384 </span>      }
-<span id="L1385" class="LineNr">1385 </span>      <span class="subxComment"># if (curr2 == 0) return false</span>
-<span id="L1386" class="LineNr">1386 </span>      {
-<span id="L1387" class="LineNr">1387 </span>        81 7/subop/compare %edi 0/imm32
-<span id="L1388" class="LineNr">1388 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
-<span id="L1389" class="LineNr">1389 </span>        b8/copy-to-eax 0/imm32
-<span id="L1390" class="LineNr">1390 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
-<span id="L1391" class="LineNr">1391 </span>      }
-<span id="L1392" class="LineNr">1392 </span>      <span class="subxComment"># if (curr != curr2) return false</span>
-<span id="L1393" class="LineNr">1393 </span>      {
-<span id="L1394" class="LineNr">1394 </span>        (<a href='mu.subx.html#L1464'>operand-matches-primitive?</a> *esi *edi)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1395" class="LineNr">1395 </span>        3d/compare-eax-and 0/imm32
+<span id="L1240" class="LineNr">1240 </span>    <span class="subxComment"># else if (operand-&gt;type == literal) emit &quot;__&quot;</span>
+<span id="L1241" class="LineNr">1241 </span>    {
+<span id="L1242" class="LineNr">1242 </span>      81 7/subop/compare *(eax+4) 0/imm32  <span class="subxComment"># Var-type</span>
+<span id="L1243" class="LineNr">1243 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1244" class="LineNr">1244 </span><span class="Constant">$emit-subx-call-operand:literal</span>:
+<span id="L1245" class="LineNr">1245 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
+<span id="L1246" class="LineNr">1246 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) *eax)
+<span id="L1247" class="LineNr">1247 </span>    }
+<span id="L1248" class="LineNr">1248 </span><span class="Constant">$emit-subx-call-operand:end</span>:
+<span id="L1249" class="LineNr">1249 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1250" class="LineNr">1250 </span>    58/pop-to-eax
+<span id="L1251" class="LineNr">1251 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1252" class="LineNr">1252 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1253" class="LineNr">1253 </span>    5d/pop-to-ebp
+<span id="L1254" class="LineNr">1254 </span>    c3/return
+<span id="L1255" class="LineNr">1255 </span>
+<span id="L1256" class="LineNr">1256 </span><span class="subxFunction">find-matching-function</span>:  <span class="subxComment"># functions : (address function), stmt : (address statement) -&gt; result/eax : (address function)</span>
+<span id="L1257" class="LineNr">1257 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1258" class="LineNr">1258 </span>    55/push-ebp
+<span id="L1259" class="LineNr">1259 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1260" class="LineNr">1260 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L1261" class="LineNr">1261 </span>    51/push-ecx
+<span id="L1262" class="LineNr">1262 </span>    <span class="subxComment"># var curr/ecx : (address function) = functions</span>
+<span id="L1263" class="LineNr">1263 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
+<span id="L1264" class="LineNr">1264 </span>    {
+<span id="L1265" class="LineNr">1265 </span>      <span class="subxComment"># if (curr == null) break</span>
+<span id="L1266" class="LineNr">1266 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L1267" class="LineNr">1267 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L1268" class="LineNr">1268 </span>      <span class="subxComment"># if match(curr, stmt) return curr</span>
+<span id="L1269" class="LineNr">1269 </span>      {
+<span id="L1270" class="LineNr">1270 </span>        (<a href='mu.subx.html#L1326'>mu-stmt-matches-function?</a> *(ebp+0xc) %ecx)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1271" class="LineNr">1271 </span>        3d/compare-eax-and 0/imm32
+<span id="L1272" class="LineNr">1272 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L1273" class="LineNr">1273 </span>        89/&lt;- %eax 1/r32/ecx
+<span id="L1274" class="LineNr">1274 </span>        eb/jump $find-matching-function:end/disp8
+<span id="L1275" class="LineNr">1275 </span>      }
+<span id="L1276" class="LineNr">1276 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
+<span id="L1277" class="LineNr">1277 </span>      8b/-&gt; *(ecx+0x10) 1/r32/ecx  <span class="subxComment"># Function-next</span>
+<span id="L1278" class="LineNr">1278 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L1279" class="LineNr">1279 </span>    }
+<span id="L1280" class="LineNr">1280 </span>    <span class="subxComment"># return null</span>
+<span id="L1281" class="LineNr">1281 </span>    b8/copy-to-eax 0/imm32
+<span id="L1282" class="LineNr">1282 </span><span class="Constant">$find-matching-function:end</span>:
+<span id="L1283" class="LineNr">1283 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1284" class="LineNr">1284 </span>    59/pop-to-ecx
+<span id="L1285" class="LineNr">1285 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1286" class="LineNr">1286 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1287" class="LineNr">1287 </span>    5d/pop-to-ebp
+<span id="L1288" class="LineNr">1288 </span>    c3/return
+<span id="L1289" class="LineNr">1289 </span>
+<span id="L1290" class="LineNr">1290 </span><span class="subxFunction">find-matching-primitive</span>:  <span class="subxComment"># primitives : (address primitive), stmt : (address statement) -&gt; result/eax : (address primitive)</span>
+<span id="L1291" class="LineNr">1291 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1292" class="LineNr">1292 </span>    55/push-ebp
+<span id="L1293" class="LineNr">1293 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1294" class="LineNr">1294 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L1295" class="LineNr">1295 </span>    51/push-ecx
+<span id="L1296" class="LineNr">1296 </span>    <span class="subxComment"># var curr/ecx : (address primitive) = primitives</span>
+<span id="L1297" class="LineNr">1297 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
+<span id="L1298" class="LineNr">1298 </span>    {
+<span id="L1299" class="LineNr">1299 </span><span class="Constant">$find-matching-primitive:loop</span>:
+<span id="L1300" class="LineNr">1300 </span>      <span class="subxComment"># if (curr == null) break</span>
+<span id="L1301" class="LineNr">1301 </span>      81 7/subop/compare %ecx 0/imm32
+<span id="L1302" class="LineNr">1302 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L1303" class="LineNr">1303 </span>      <span class="subxComment"># if match(curr, stmt) return curr</span>
+<span id="L1304" class="LineNr">1304 </span>      {
+<span id="L1305" class="LineNr">1305 </span>        (<a href='mu.subx.html#L1344'>mu-stmt-matches-primitive?</a> *(ebp+0xc) %ecx)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1306" class="LineNr">1306 </span>        3d/compare-eax-and 0/imm32
+<span id="L1307" class="LineNr">1307 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L1308" class="LineNr">1308 </span>        89/&lt;- %eax 1/r32/ecx
+<span id="L1309" class="LineNr">1309 </span>        eb/jump $find-matching-function:end/disp8
+<span id="L1310" class="LineNr">1310 </span>      }
+<span id="L1311" class="LineNr">1311 </span><span class="Constant">$find-matching-primitive:next-primitive</span>:
+<span id="L1312" class="LineNr">1312 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
+<span id="L1313" class="LineNr">1313 </span>      8b/-&gt; *(ecx+0x1c) 1/r32/ecx  <span class="subxComment"># Primitive-next</span>
+<span id="L1314" class="LineNr">1314 </span>      eb/jump <span class="Constant">loop</span>/disp8
+<span id="L1315" class="LineNr">1315 </span>    }
+<span id="L1316" class="LineNr">1316 </span>    <span class="subxComment"># return null</span>
+<span id="L1317" class="LineNr">1317 </span>    b8/copy-to-eax 0/imm32
+<span id="L1318" class="LineNr">1318 </span><span class="Constant">$find-matching-primitive:end</span>:
+<span id="L1319" class="LineNr">1319 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1320" class="LineNr">1320 </span>    59/pop-to-ecx
+<span id="L1321" class="LineNr">1321 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1322" class="LineNr">1322 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1323" class="LineNr">1323 </span>    5d/pop-to-ebp
+<span id="L1324" class="LineNr">1324 </span>    c3/return
+<span id="L1325" class="LineNr">1325 </span>
+<span id="L1326" class="LineNr">1326 </span><span class="subxFunction">mu-stmt-matches-function?</span>:  <span class="subxComment"># stmt : (address statement), function : (address opcode-info) =&gt; result/eax : boolean</span>
+<span id="L1327" class="LineNr">1327 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1328" class="LineNr">1328 </span>    55/push-ebp
+<span id="L1329" class="LineNr">1329 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1330" class="LineNr">1330 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L1331" class="LineNr">1331 </span>    51/push-ecx
+<span id="L1332" class="LineNr">1332 </span>    <span class="subxComment"># return primitive-&gt;name == stmt-&gt;operation</span>
+<span id="L1333" class="LineNr">1333 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
+<span id="L1334" class="LineNr">1334 </span>    8b/-&gt; *(ebp+0xc) 0/r32/eax
+<span id="L1335" class="LineNr">1335 </span>    (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *ecx *eax)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1336" class="LineNr">1336 </span><span class="Constant">$mu-stmt-matches-function?:end</span>:
+<span id="L1337" class="LineNr">1337 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1338" class="LineNr">1338 </span>    59/pop-to-ecx
+<span id="L1339" class="LineNr">1339 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1340" class="LineNr">1340 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1341" class="LineNr">1341 </span>    5d/pop-to-ebp
+<span id="L1342" class="LineNr">1342 </span>    c3/return
+<span id="L1343" class="LineNr">1343 </span>
+<span id="L1344" class="LineNr">1344 </span><span class="subxFunction">mu-stmt-matches-primitive?</span>:  <span class="subxComment"># stmt : (address statement), primitive : (address primitive) =&gt; result/eax : boolean</span>
+<span id="L1345" class="LineNr">1345 </span>    <span class="subxComment"># A mu stmt matches a primitive if the name matches, all the inout vars</span>
+<span id="L1346" class="LineNr">1346 </span>    <span class="subxComment"># match, and all the output vars match.</span>
+<span id="L1347" class="LineNr">1347 </span>    <span class="subxComment"># Vars match if types match and registers match.</span>
+<span id="L1348" class="LineNr">1348 </span>    <span class="subxComment"># In addition, a stmt output matches a primitive's output if types match</span>
+<span id="L1349" class="LineNr">1349 </span>    <span class="subxComment"># and the primitive has a wildcard register.</span>
+<span id="L1350" class="LineNr">1350 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1351" class="LineNr">1351 </span>    55/push-ebp
+<span id="L1352" class="LineNr">1352 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1353" class="LineNr">1353 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L1354" class="LineNr">1354 </span>    51/push-ecx
+<span id="L1355" class="LineNr">1355 </span>    52/push-edx
+<span id="L1356" class="LineNr">1356 </span>    53/push-ebx
+<span id="L1357" class="LineNr">1357 </span>    56/push-esi
+<span id="L1358" class="LineNr">1358 </span>    57/push-edi
+<span id="L1359" class="LineNr">1359 </span>    <span class="subxComment"># ecx = stmt</span>
+<span id="L1360" class="LineNr">1360 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
+<span id="L1361" class="LineNr">1361 </span>    <span class="subxComment"># edx = primitive</span>
+<span id="L1362" class="LineNr">1362 </span>    8b/-&gt; *(ebp+0xc) 2/r32/edx
+<span id="L1363" class="LineNr">1363 </span>    {
+<span id="L1364" class="LineNr">1364 </span><span class="Constant">$mu-stmt-matches-primitive?:check-name</span>:
+<span id="L1365" class="LineNr">1365 </span>      <span class="subxComment"># if (primitive-&gt;name != stmt-&gt;operation) return false</span>
+<span id="L1366" class="LineNr">1366 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *ecx *edx)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1367" class="LineNr">1367 </span>      3d/compare-eax-and 0/imm32
+<span id="L1368" class="LineNr">1368 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1369" class="LineNr">1369 </span>      b8/copy-to-eax 0/imm32
+<span id="L1370" class="LineNr">1370 </span>      e9/jump $mu-stmt-matches-primitive?:end/disp32
+<span id="L1371" class="LineNr">1371 </span>    }
+<span id="L1372" class="LineNr">1372 </span><span class="Constant">$mu-stmt-matches-primitive?:check-inouts</span>:
+<span id="L1373" class="LineNr">1373 </span>    <span class="subxComment"># curr = stmt-&gt;inouts</span>
+<span id="L1374" class="LineNr">1374 </span>    8b/-&gt; *(ecx+4) 6/r32/esi  <span class="subxComment"># Stmt-inouts</span>
+<span id="L1375" class="LineNr">1375 </span>    <span class="subxComment"># curr2 = primitive-&gt;inouts</span>
+<span id="L1376" class="LineNr">1376 </span>    8b/-&gt; *(edx+4) 7/r32/edi  <span class="subxComment"># Primitive-inouts</span>
+<span id="L1377" class="LineNr">1377 </span>    {
+<span id="L1378" class="LineNr">1378 </span>      <span class="subxComment"># if (curr == 0) return (curr2 == 0)</span>
+<span id="L1379" class="LineNr">1379 </span>      {
+<span id="L1380" class="LineNr">1380 </span>        81 7/subop/compare %esi 0/imm32
+<span id="L1381" class="LineNr">1381 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1382" class="LineNr">1382 </span>        {
+<span id="L1383" class="LineNr">1383 </span>          81 7/subop/compare %edi 0/imm32
+<span id="L1384" class="LineNr">1384 </span>          75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1385" class="LineNr">1385 </span>          <span class="subxComment"># return true</span>
+<span id="L1386" class="LineNr">1386 </span>          b8/copy-to-eax 1/imm32
+<span id="L1387" class="LineNr">1387 </span>          e9/jump $mu-stmt-matches-primitive?:end/disp32
+<span id="L1388" class="LineNr">1388 </span>        }
+<span id="L1389" class="LineNr">1389 </span>        <span class="subxComment"># return false</span>
+<span id="L1390" class="LineNr">1390 </span>        b8/copy-to-eax 0/imm32
+<span id="L1391" class="LineNr">1391 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
+<span id="L1392" class="LineNr">1392 </span>      }
+<span id="L1393" class="LineNr">1393 </span>      <span class="subxComment"># if (curr2 == 0) return false</span>
+<span id="L1394" class="LineNr">1394 </span>      {
+<span id="L1395" class="LineNr">1395 </span>        81 7/subop/compare %edi 0/imm32
 <span id="L1396" class="LineNr">1396 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
 <span id="L1397" class="LineNr">1397 </span>        b8/copy-to-eax 0/imm32
 <span id="L1398" class="LineNr">1398 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
 <span id="L1399" class="LineNr">1399 </span>      }
-<span id="L1400" class="LineNr">1400 </span>      <span class="subxComment"># curr=curr-&gt;next</span>
-<span id="L1401" class="LineNr">1401 </span>      8b/-&gt; *(ecx+4) 1/r32/ecx  <span class="subxComment"># Operand-next</span>
-<span id="L1402" class="LineNr">1402 </span>      <span class="subxComment"># curr2=curr2-&gt;next</span>
-<span id="L1403" class="LineNr">1403 </span>      8b/-&gt; *(edx+4) 2/r32/edx  <span class="subxComment"># Operand-next</span>
-<span id="L1404" class="LineNr">1404 </span>    }
-<span id="L1405" class="LineNr">1405 </span><span class="Constant">$mu-stmt-matches-primitive?:check-outputs</span>:
-<span id="L1406" class="LineNr">1406 </span>    <span class="subxComment"># ecx = stmt</span>
-<span id="L1407" class="LineNr">1407 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
-<span id="L1408" class="LineNr">1408 </span>    <span class="subxComment"># edx = primitive</span>
-<span id="L1409" class="LineNr">1409 </span>    8b/-&gt; *(ebp+0xc) 2/r32/edx
-<span id="L1410" class="LineNr">1410 </span>    <span class="subxComment"># curr = stmt-&gt;outputs</span>
-<span id="L1411" class="LineNr">1411 </span>    8b/-&gt; *(ecx+8) 6/r32/esi  <span class="subxComment"># Stmt-outputs</span>
-<span id="L1412" class="LineNr">1412 </span>    <span class="subxComment"># curr2 = primitive-&gt;outputs</span>
-<span id="L1413" class="LineNr">1413 </span>    8b/-&gt; *(edx+8) 7/r32/edi  <span class="subxComment"># Primitive-outputs</span>
-<span id="L1414" class="LineNr">1414 </span>    {
-<span id="L1415" class="LineNr">1415 </span>      <span class="subxComment"># if (curr == 0) return (curr2 == 0)</span>
-<span id="L1416" class="LineNr">1416 </span>      {
-<span id="L1417" class="LineNr">1417 </span>        81 7/subop/compare %esi 0/imm32
-<span id="L1418" class="LineNr">1418 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
-<span id="L1419" class="LineNr">1419 </span>        {
-<span id="L1420" class="LineNr">1420 </span>          81 7/subop/compare %edi 0/imm32
-<span id="L1421" class="LineNr">1421 </span>          75/jump-if-not-equal <span class="Constant">break</span>/disp8
-<span id="L1422" class="LineNr">1422 </span>          <span class="subxComment"># return true</span>
-<span id="L1423" class="LineNr">1423 </span>          b8/copy-to-eax 1/imm32
-<span id="L1424" class="LineNr">1424 </span>          e9/jump $mu-stmt-matches-primitive?:end/disp32
-<span id="L1425" class="LineNr">1425 </span>        }
-<span id="L1426" class="LineNr">1426 </span>        <span class="subxComment"># return false</span>
-<span id="L1427" class="LineNr">1427 </span>        b8/copy-to-eax 0/imm32
-<span id="L1428" class="LineNr">1428 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
-<span id="L1429" class="LineNr">1429 </span>      }
-<span id="L1430" class="LineNr">1430 </span>      <span class="subxComment"># if (curr2 == 0) return false</span>
-<span id="L1431" class="LineNr">1431 </span>      {
-<span id="L1432" class="LineNr">1432 </span>        81 7/subop/compare %edi 0/imm32
-<span id="L1433" class="LineNr">1433 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
-<span id="L1434" class="LineNr">1434 </span>        b8/copy-to-eax 0/imm32
-<span id="L1435" class="LineNr">1435 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
-<span id="L1436" class="LineNr">1436 </span>      }
-<span id="L1437" class="LineNr">1437 </span>      <span class="subxComment"># if (curr != curr2) return false</span>
-<span id="L1438" class="LineNr">1438 </span>      {
-<span id="L1439" class="LineNr">1439 </span>        (<a href='mu.subx.html#L1464'>operand-matches-primitive?</a> *esi *edi)  <span class="subxComment"># =&gt; eax</span>
-<span id="L1440" class="LineNr">1440 </span>        3d/compare-eax-and 0/imm32
+<span id="L1400" class="LineNr">1400 </span>      <span class="subxComment"># if (curr != curr2) return false</span>
+<span id="L1401" class="LineNr">1401 </span>      {
+<span id="L1402" class="LineNr">1402 </span>        (<a href='mu.subx.html#L1472'>operand-matches-primitive?</a> *esi *edi)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1403" class="LineNr">1403 </span>        3d/compare-eax-and 0/imm32
+<span id="L1404" class="LineNr">1404 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1405" class="LineNr">1405 </span>        b8/copy-to-eax 0/imm32
+<span id="L1406" class="LineNr">1406 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
+<span id="L1407" class="LineNr">1407 </span>      }
+<span id="L1408" class="LineNr">1408 </span>      <span class="subxComment"># curr=curr-&gt;next</span>
+<span id="L1409" class="LineNr">1409 </span>      8b/-&gt; *(ecx+4) 1/r32/ecx  <span class="subxComment"># Operand-next</span>
+<span id="L1410" class="LineNr">1410 </span>      <span class="subxComment"># curr2=curr2-&gt;next</span>
+<span id="L1411" class="LineNr">1411 </span>      8b/-&gt; *(edx+4) 2/r32/edx  <span class="subxComment"># Operand-next</span>
+<span id="L1412" class="LineNr">1412 </span>    }
+<span id="L1413" class="LineNr">1413 </span><span class="Constant">$mu-stmt-matches-primitive?:check-outputs</span>:
+<span id="L1414" class="LineNr">1414 </span>    <span class="subxComment"># ecx = stmt</span>
+<span id="L1415" class="LineNr">1415 </span>    8b/-&gt; *(ebp+8) 1/r32/ecx
+<span id="L1416" class="LineNr">1416 </span>    <span class="subxComment"># edx = primitive</span>
+<span id="L1417" class="LineNr">1417 </span>    8b/-&gt; *(ebp+0xc) 2/r32/edx
+<span id="L1418" class="LineNr">1418 </span>    <span class="subxComment"># curr = stmt-&gt;outputs</span>
+<span id="L1419" class="LineNr">1419 </span>    8b/-&gt; *(ecx+8) 6/r32/esi  <span class="subxComment"># Stmt-outputs</span>
+<span id="L1420" class="LineNr">1420 </span>    <span class="subxComment"># curr2 = primitive-&gt;outputs</span>
+<span id="L1421" class="LineNr">1421 </span>    8b/-&gt; *(edx+8) 7/r32/edi  <span class="subxComment"># Primitive-outputs</span>
+<span id="L1422" class="LineNr">1422 </span>    {
+<span id="L1423" class="LineNr">1423 </span>      <span class="subxComment"># if (curr == 0) return (curr2 == 0)</span>
+<span id="L1424" class="LineNr">1424 </span>      {
+<span id="L1425" class="LineNr">1425 </span>        81 7/subop/compare %esi 0/imm32
+<span id="L1426" class="LineNr">1426 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1427" class="LineNr">1427 </span>        {
+<span id="L1428" class="LineNr">1428 </span>          81 7/subop/compare %edi 0/imm32
+<span id="L1429" class="LineNr">1429 </span>          75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1430" class="LineNr">1430 </span>          <span class="subxComment"># return true</span>
+<span id="L1431" class="LineNr">1431 </span>          b8/copy-to-eax 1/imm32
+<span id="L1432" class="LineNr">1432 </span>          e9/jump $mu-stmt-matches-primitive?:end/disp32
+<span id="L1433" class="LineNr">1433 </span>        }
+<span id="L1434" class="LineNr">1434 </span>        <span class="subxComment"># return false</span>
+<span id="L1435" class="LineNr">1435 </span>        b8/copy-to-eax 0/imm32
+<span id="L1436" class="LineNr">1436 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
+<span id="L1437" class="LineNr">1437 </span>      }
+<span id="L1438" class="LineNr">1438 </span>      <span class="subxComment"># if (curr2 == 0) return false</span>
+<span id="L1439" class="LineNr">1439 </span>      {
+<span id="L1440" class="LineNr">1440 </span>        81 7/subop/compare %edi 0/imm32
 <span id="L1441" class="LineNr">1441 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
 <span id="L1442" class="LineNr">1442 </span>        b8/copy-to-eax 0/imm32
 <span id="L1443" class="LineNr">1443 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
 <span id="L1444" class="LineNr">1444 </span>      }
-<span id="L1445" class="LineNr">1445 </span>      <span class="subxComment"># curr=curr-&gt;next</span>
-<span id="L1446" class="LineNr">1446 </span>      8b/-&gt; *(ecx+4) 1/r32/ecx  <span class="subxComment"># Operand-next</span>
-<span id="L1447" class="LineNr">1447 </span>      <span class="subxComment"># curr2=curr2-&gt;next</span>
-<span id="L1448" class="LineNr">1448 </span>      8b/-&gt; *(edx+4) 2/r32/edx  <span class="subxComment"># Operand-next</span>
-<span id="L1449" class="LineNr">1449 </span>    }
-<span id="L1450" class="LineNr">1450 </span><span class="Constant">$mu-stmt-matches-primitive?:return-true</span>:
-<span id="L1451" class="LineNr">1451 </span>    b8/copy-to-eax 1/imm32
-<span id="L1452" class="LineNr">1452 </span><span class="Constant">$mu-stmt-matches-primitive?:end</span>:
-<span id="L1453" class="LineNr">1453 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1454" class="LineNr">1454 </span>    5f/pop-to-edi
-<span id="L1455" class="LineNr">1455 </span>    5e/pop-to-esi
-<span id="L1456" class="LineNr">1456 </span>    5b/pop-to-ebx
-<span id="L1457" class="LineNr">1457 </span>    5a/pop-to-edx
-<span id="L1458" class="LineNr">1458 </span>    59/pop-to-ecx
-<span id="L1459" class="LineNr">1459 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1460" class="LineNr">1460 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1461" class="LineNr">1461 </span>    5d/pop-to-ebp
-<span id="L1462" class="LineNr">1462 </span>    c3/return
-<span id="L1463" class="LineNr">1463 </span>
-<span id="L1464" class="LineNr">1464 </span><span class="subxFunction">operand-matches-primitive?</span>:  <span class="subxComment"># var : (address var), primout-var : (address var) =&gt; result/eax : boolean</span>
-<span id="L1465" class="LineNr">1465 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1466" class="LineNr">1466 </span>    55/push-ebp
-<span id="L1467" class="LineNr">1467 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1468" class="LineNr">1468 </span>    <span class="subxS1Comment"># . save registers</span>
-<span id="L1469" class="LineNr">1469 </span>    56/push-esi
-<span id="L1470" class="LineNr">1470 </span>    57/push-edi
-<span id="L1471" class="LineNr">1471 </span>    <span class="subxComment"># esi = var</span>
-<span id="L1472" class="LineNr">1472 </span>    8b/-&gt; *(ebp+8) 6/r32/esi
-<span id="L1473" class="LineNr">1473 </span>    <span class="subxComment"># edi = primout-var</span>
-<span id="L1474" class="LineNr">1474 </span>    8b/-&gt; *(ebp+0xc) 7/r32/edi
-<span id="L1475" class="LineNr">1475 </span>    <span class="subxComment"># if (var-&gt;type != primout-var-&gt;type) return false</span>
-<span id="L1476" class="LineNr">1476 </span>    <span class="subxComment"># TODO</span>
-<span id="L1477" class="LineNr">1477 </span>    <span class="subxComment"># return false if var-&gt;register doesn't match primout-var-&gt;register</span>
-<span id="L1478" class="LineNr">1478 </span>    {
-<span id="L1479" class="LineNr">1479 </span>      <span class="subxComment"># if addresses are equal, don't return here</span>
-<span id="L1480" class="LineNr">1480 </span>      8b/-&gt; *(esi+0x10) 0/r32/eax
-<span id="L1481" class="LineNr">1481 </span>      39/compare *(edi+0x10) 0/r32/eax
-<span id="L1482" class="LineNr">1482 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
-<span id="L1483" class="LineNr">1483 </span>      <span class="subxComment"># if either address is 0, return false</span>
-<span id="L1484" class="LineNr">1484 </span>      3d/compare-eax-and 0/imm32
-<span id="L1485" class="LineNr">1485 </span>      74/jump-if-equal  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
-<span id="L1486" class="LineNr">1486 </span>      81 7/subop/compare *(edi+0x10) 0/imm32
-<span id="L1487" class="LineNr">1487 </span>      74/jump-if-equal  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
-<span id="L1488" class="LineNr">1488 </span>      <span class="subxComment"># if primout-var-&gt;register is &quot;*&quot;, return true</span>
-<span id="L1489" class="LineNr">1489 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *(edi+0x10) <span class="Constant">&quot;*&quot;</span>)  <span class="subxComment"># Var-register</span>
-<span id="L1490" class="LineNr">1490 </span>      3d/compare-eax-and 0/imm32
-<span id="L1491" class="LineNr">1491 </span>      b8/copy-to-eax 1/imm32/true
-<span id="L1492" class="LineNr">1492 </span>      75/jump-if-not-equal $operand-matches-primitive?:end/disp8
-<span id="L1493" class="LineNr">1493 </span>      <span class="subxComment"># if string contents don't match, return false</span>
-<span id="L1494" class="LineNr">1494 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *(esi+0x10) *(edi+0x10))  <span class="subxComment"># Var-register Var-register</span>
-<span id="L1495" class="LineNr">1495 </span>      3d/compare-eax-and 0/imm32
-<span id="L1496" class="LineNr">1496 </span>      b8/copy-to-eax 0/imm32/false
-<span id="L1497" class="LineNr">1497 </span>      74/jump-if-equal $operand-matches-primitive?:end/disp8
-<span id="L1498" class="LineNr">1498 </span>    }
-<span id="L1499" class="LineNr">1499 </span>    <span class="subxComment"># return true</span>
-<span id="L1500" class="LineNr">1500 </span>    b8/copy-to-eax 1/imm32/true
-<span id="L1501" class="LineNr">1501 </span><span class="Constant">$operand-matches-primitive?:end</span>:
-<span id="L1502" class="LineNr">1502 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L1503" class="LineNr">1503 </span>    5f/pop-to-edi
-<span id="L1504" class="LineNr">1504 </span>    5e/pop-to-esi
-<span id="L1505" class="LineNr">1505 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1506" class="LineNr">1506 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1507" class="LineNr">1507 </span>    5d/pop-to-ebp
-<span id="L1508" class="LineNr">1508 </span>    c3/return
-<span id="L1509" class="LineNr">1509 </span>
-<span id="L1510" class="LineNr">1510 </span><span class="subxTest">test-emit-subx-statement-primitive</span>:
-<span id="L1511" class="LineNr">1511 </span>    <span class="subxComment"># Primitive operation on a variable on the stack.</span>
-<span id="L1512" class="LineNr">1512 </span>    <span class="subxComment">#   increment foo</span>
-<span id="L1513" class="LineNr">1513 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L1514" class="LineNr">1514 </span>    <span class="subxComment">#   ff 0/subop/increment *(ebp-8)</span>
-<span id="L1515" class="LineNr">1515 </span>    <span class="subxComment">#</span>
-<span id="L1516" class="LineNr">1516 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
-<span id="L1517" class="LineNr">1517 </span>    <span class="subxComment">#   name: 'foo'</span>
-<span id="L1518" class="LineNr">1518 </span>    <span class="subxComment">#   type: int</span>
-<span id="L1519" class="LineNr">1519 </span>    <span class="subxComment">#   stack-offset: -8</span>
-<span id="L1520" class="LineNr">1520 </span>    <span class="subxComment">#</span>
-<span id="L1521" class="LineNr">1521 </span>    <span class="subxComment"># There's a primitive with this info:</span>
-<span id="L1522" class="LineNr">1522 </span>    <span class="subxComment">#   name: 'increment'</span>
-<span id="L1523" class="LineNr">1523 </span>    <span class="subxComment">#   inouts: int/mem</span>
-<span id="L1524" class="LineNr">1524 </span>    <span class="subxComment">#   value: 'ff 0/subop/increment'</span>
-<span id="L1525" class="LineNr">1525 </span>    <span class="subxComment">#</span>
-<span id="L1526" class="LineNr">1526 </span>    <span class="subxComment"># There's nothing in functions.</span>
-<span id="L1527" class="LineNr">1527 </span>    <span class="subxComment">#</span>
-<span id="L1528" class="LineNr">1528 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1529" class="LineNr">1529 </span>    55/push-ebp
-<span id="L1530" class="LineNr">1530 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1531" class="LineNr">1531 </span>    <span class="subxComment"># setup</span>
-<span id="L1532" class="LineNr">1532 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L1533" class="LineNr">1533 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L1534" class="LineNr">1534 </span>    <span class="subxComment"># var-foo/ecx : var</span>
-<span id="L1535" class="LineNr">1535 </span>    68/push 0/imm32/no-register
-<span id="L1536" class="LineNr">1536 </span>    68/push -8/imm32/stack-offset
-<span id="L1537" class="LineNr">1537 </span>    68/push 1/imm32/block-depth
-<span id="L1538" class="LineNr">1538 </span>    68/push 1/imm32/type-int
-<span id="L1539" class="LineNr">1539 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
-<span id="L1540" class="LineNr">1540 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L1541" class="LineNr">1541 </span><span class="CommentedCode">#? $aa-var-in-ecx:</span>
-<span id="L1542" class="LineNr">1542 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
-<span id="L1543" class="LineNr">1543 </span>    51/push-ecx/var-foo
-<span id="L1544" class="LineNr">1544 </span>    68/push 1/imm32/data-length
-<span id="L1545" class="LineNr">1545 </span>    68/push 1/imm32/top
-<span id="L1546" class="LineNr">1546 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L1547" class="LineNr">1547 </span><span class="CommentedCode">#? $aa-vars-in-edx:</span>
-<span id="L1548" class="LineNr">1548 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
-<span id="L1549" class="LineNr">1549 </span>    68/push 0/imm32/next
-<span id="L1550" class="LineNr">1550 </span>    51/push-ecx/var-foo
-<span id="L1551" class="LineNr">1551 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1552" class="LineNr">1552 </span><span class="CommentedCode">#? $aa-stmt-operand-in-ebx:</span>
-<span id="L1553" class="LineNr">1553 </span>    <span class="subxComment"># stmt/esi : statement</span>
-<span id="L1554" class="LineNr">1554 </span>    68/push 0/imm32/next
-<span id="L1555" class="LineNr">1555 </span>    68/push 0/imm32/outputs
-<span id="L1556" class="LineNr">1556 </span>    53/push-ebx/operands
-<span id="L1557" class="LineNr">1557 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
-<span id="L1558" class="LineNr">1558 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L1559" class="LineNr">1559 </span><span class="CommentedCode">#? $aa-stmt-in-esi:</span>
-<span id="L1560" class="LineNr">1560 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
-<span id="L1561" class="LineNr">1561 </span>    68/push 0/imm32/next
-<span id="L1562" class="LineNr">1562 </span>    68/push 0/imm32/no-imm32
-<span id="L1563" class="LineNr">1563 </span>    68/push 0/imm32/no-r32
-<span id="L1564" class="LineNr">1564 </span>    68/push 1/imm32/rm32-is-first-inout
-<span id="L1565" class="LineNr">1565 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
-<span id="L1566" class="LineNr">1566 </span>    68/push 0/imm32/outputs
-<span id="L1567" class="LineNr">1567 </span>    53/push-ebx/inouts  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
-<span id="L1568" class="LineNr">1568 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
-<span id="L1569" class="LineNr">1569 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1570" class="LineNr">1570 </span><span class="Constant">$aa-primitive-in-ebx</span>:
-<span id="L1571" class="LineNr">1571 </span>    <span class="subxComment"># convert</span>
-<span id="L1572" class="LineNr">1572 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
-<span id="L1573" class="LineNr">1573 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L1574" class="Folded">1574 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L1580" class="LineNr">1580 </span>    <span class="subxComment"># check output</span>
-<span id="L1581" class="LineNr">1581 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment *(ebp+0xfffffff8)&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-primitive&quot;</span>)
-<span id="L1582" class="LineNr">1582 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1583" class="LineNr">1583 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1584" class="LineNr">1584 </span>    5d/pop-to-ebp
-<span id="L1585" class="LineNr">1585 </span>    c3/return
-<span id="L1586" class="LineNr">1586 </span>
-<span id="L1587" class="LineNr">1587 </span><span class="subxTest">test-emit-subx-statement-primitive-register</span>:
-<span id="L1588" class="LineNr">1588 </span>    <span class="subxComment"># Primitive operation on a variable in a register.</span>
-<span id="L1589" class="LineNr">1589 </span>    <span class="subxComment">#   foo &lt;- increment</span>
-<span id="L1590" class="LineNr">1590 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L1591" class="LineNr">1591 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
-<span id="L1592" class="LineNr">1592 </span>    <span class="subxComment">#</span>
-<span id="L1593" class="LineNr">1593 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
-<span id="L1594" class="LineNr">1594 </span>    <span class="subxComment">#   name: 'foo'</span>
-<span id="L1595" class="LineNr">1595 </span>    <span class="subxComment">#   type: int</span>
-<span id="L1596" class="LineNr">1596 </span>    <span class="subxComment">#   register: 'eax'</span>
-<span id="L1597" class="LineNr">1597 </span>    <span class="subxComment">#</span>
-<span id="L1598" class="LineNr">1598 </span>    <span class="subxComment"># There's a primitive with this info:</span>
-<span id="L1599" class="LineNr">1599 </span>    <span class="subxComment">#   name: 'increment'</span>
-<span id="L1600" class="LineNr">1600 </span>    <span class="subxComment">#   out: int/reg</span>
-<span id="L1601" class="LineNr">1601 </span>    <span class="subxComment">#   value: 'ff 0/subop/increment'</span>
-<span id="L1602" class="LineNr">1602 </span>    <span class="subxComment">#</span>
-<span id="L1603" class="LineNr">1603 </span>    <span class="subxComment"># There's nothing in functions.</span>
-<span id="L1604" class="LineNr">1604 </span>    <span class="subxComment">#</span>
-<span id="L1605" class="LineNr">1605 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1606" class="LineNr">1606 </span>    55/push-ebp
-<span id="L1607" class="LineNr">1607 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1608" class="LineNr">1608 </span>    <span class="subxComment"># setup</span>
-<span id="L1609" class="LineNr">1609 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L1610" class="LineNr">1610 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L1611" class="LineNr">1611 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
-<span id="L1612" class="LineNr">1612 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
-<span id="L1613" class="LineNr">1613 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1614" class="LineNr">1614 </span>    68/push 1/imm32/block-depth
-<span id="L1615" class="LineNr">1615 </span>    68/push 1/imm32/type-int
-<span id="L1616" class="LineNr">1616 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
-<span id="L1617" class="LineNr">1617 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L1618" class="LineNr">1618 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
-<span id="L1619" class="LineNr">1619 </span>    51/push-ecx/var-foo
-<span id="L1620" class="LineNr">1620 </span>    68/push 1/imm32/data-length
-<span id="L1621" class="LineNr">1621 </span>    68/push 1/imm32/top
-<span id="L1622" class="LineNr">1622 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L1623" class="LineNr">1623 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
-<span id="L1624" class="LineNr">1624 </span>    68/push 0/imm32/next
-<span id="L1625" class="LineNr">1625 </span>    51/push-ecx/var-foo
-<span id="L1626" class="LineNr">1626 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1627" class="LineNr">1627 </span>    <span class="subxComment"># stmt/esi : statement</span>
-<span id="L1628" class="LineNr">1628 </span>    68/push 0/imm32/next
-<span id="L1629" class="LineNr">1629 </span>    53/push-ebx/outputs
-<span id="L1630" class="LineNr">1630 </span>    68/push 0/imm32/inouts
-<span id="L1631" class="LineNr">1631 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
-<span id="L1632" class="LineNr">1632 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L1633" class="LineNr">1633 </span>    <span class="subxComment"># formal-var/ebx : var in any register</span>
-<span id="L1634" class="LineNr">1634 </span>    68/push <span class="SpecialChar"><a href='mu.subx.html#L273'>Any-register</a></span>/imm32
-<span id="L1635" class="LineNr">1635 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1636" class="LineNr">1636 </span>    68/push 1/imm32/block-depth
-<span id="L1637" class="LineNr">1637 </span>    68/push 1/imm32/type-int
-<span id="L1638" class="LineNr">1638 </span>    68/push <span class="Constant">&quot;dummy&quot;</span>/imm32
-<span id="L1639" class="LineNr">1639 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1640" class="LineNr">1640 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
-<span id="L1641" class="LineNr">1641 </span>    68/push 0/imm32/next
-<span id="L1642" class="LineNr">1642 </span>    53/push-ebx/formal-var
-<span id="L1643" class="LineNr">1643 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1644" class="LineNr">1644 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
-<span id="L1645" class="LineNr">1645 </span>    68/push 0/imm32/next
-<span id="L1646" class="LineNr">1646 </span>    68/push 0/imm32/no-imm32
-<span id="L1647" class="LineNr">1647 </span>    68/push 0/imm32/no-r32
-<span id="L1648" class="LineNr">1648 </span>    68/push 3/imm32/rm32-in-first-output
-<span id="L1649" class="LineNr">1649 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
-<span id="L1650" class="LineNr">1650 </span>    53/push-ebx/outputs
-<span id="L1651" class="LineNr">1651 </span>    68/push 0/imm32/inouts
-<span id="L1652" class="LineNr">1652 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
-<span id="L1653" class="LineNr">1653 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1654" class="LineNr">1654 </span>    <span class="subxComment"># convert</span>
-<span id="L1655" class="LineNr">1655 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
-<span id="L1656" class="LineNr">1656 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L1657" class="Folded">1657 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L1663" class="LineNr">1663 </span>    <span class="subxComment"># check output</span>
-<span id="L1664" class="LineNr">1664 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-primitive-register&quot;</span>)
-<span id="L1665" class="LineNr">1665 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1666" class="LineNr">1666 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1667" class="LineNr">1667 </span>    5d/pop-to-ebp
-<span id="L1668" class="LineNr">1668 </span>    c3/return
-<span id="L1669" class="LineNr">1669 </span>
-<span id="L1670" class="LineNr">1670 </span><span class="subxTest">test-emit-subx-statement-select-primitive</span>:
-<span id="L1671" class="LineNr">1671 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
-<span id="L1672" class="LineNr">1672 </span>    <span class="subxComment">#   foo &lt;- increment</span>
-<span id="L1673" class="LineNr">1673 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L1674" class="LineNr">1674 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
-<span id="L1675" class="LineNr">1675 </span>    <span class="subxComment">#</span>
-<span id="L1676" class="LineNr">1676 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
-<span id="L1677" class="LineNr">1677 </span>    <span class="subxComment">#   name: 'foo'</span>
-<span id="L1678" class="LineNr">1678 </span>    <span class="subxComment">#   type: int</span>
-<span id="L1679" class="LineNr">1679 </span>    <span class="subxComment">#   register: 'eax'</span>
-<span id="L1680" class="LineNr">1680 </span>    <span class="subxComment">#</span>
-<span id="L1681" class="LineNr">1681 </span>    <span class="subxComment"># There's two primitives, as follows:</span>
-<span id="L1682" class="LineNr">1682 </span>    <span class="subxComment">#   - name: 'increment'</span>
-<span id="L1683" class="LineNr">1683 </span>    <span class="subxComment">#     out: int/reg</span>
-<span id="L1684" class="LineNr">1684 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
-<span id="L1685" class="LineNr">1685 </span>    <span class="subxComment">#   - name: 'increment'</span>
-<span id="L1686" class="LineNr">1686 </span>    <span class="subxComment">#     inout: int/mem</span>
-<span id="L1687" class="LineNr">1687 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
+<span id="L1445" class="LineNr">1445 </span>      <span class="subxComment"># if (curr != curr2) return false</span>
+<span id="L1446" class="LineNr">1446 </span>      {
+<span id="L1447" class="LineNr">1447 </span>        (<a href='mu.subx.html#L1472'>operand-matches-primitive?</a> *esi *edi)  <span class="subxComment"># =&gt; eax</span>
+<span id="L1448" class="LineNr">1448 </span>        3d/compare-eax-and 0/imm32
+<span id="L1449" class="LineNr">1449 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1450" class="LineNr">1450 </span>        b8/copy-to-eax 0/imm32
+<span id="L1451" class="LineNr">1451 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
+<span id="L1452" class="LineNr">1452 </span>      }
+<span id="L1453" class="LineNr">1453 </span>      <span class="subxComment"># curr=curr-&gt;next</span>
+<span id="L1454" class="LineNr">1454 </span>      8b/-&gt; *(ecx+4) 1/r32/ecx  <span class="subxComment"># Operand-next</span>
+<span id="L1455" class="LineNr">1455 </span>      <span class="subxComment"># curr2=curr2-&gt;next</span>
+<span id="L1456" class="LineNr">1456 </span>      8b/-&gt; *(edx+4) 2/r32/edx  <span class="subxComment"># Operand-next</span>
+<span id="L1457" class="LineNr">1457 </span>    }
+<span id="L1458" class="LineNr">1458 </span><span class="Constant">$mu-stmt-matches-primitive?:return-true</span>:
+<span id="L1459" class="LineNr">1459 </span>    b8/copy-to-eax 1/imm32
+<span id="L1460" class="LineNr">1460 </span><span class="Constant">$mu-stmt-matches-primitive?:end</span>:
+<span id="L1461" class="LineNr">1461 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1462" class="LineNr">1462 </span>    5f/pop-to-edi
+<span id="L1463" class="LineNr">1463 </span>    5e/pop-to-esi
+<span id="L1464" class="LineNr">1464 </span>    5b/pop-to-ebx
+<span id="L1465" class="LineNr">1465 </span>    5a/pop-to-edx
+<span id="L1466" class="LineNr">1466 </span>    59/pop-to-ecx
+<span id="L1467" class="LineNr">1467 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1468" class="LineNr">1468 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1469" class="LineNr">1469 </span>    5d/pop-to-ebp
+<span id="L1470" class="LineNr">1470 </span>    c3/return
+<span id="L1471" class="LineNr">1471 </span>
+<span id="L1472" class="LineNr">1472 </span><span class="subxFunction">operand-matches-primitive?</span>:  <span class="subxComment"># var : (address var), primout-var : (address var) =&gt; result/eax : boolean</span>
+<span id="L1473" class="LineNr">1473 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1474" class="LineNr">1474 </span>    55/push-ebp
+<span id="L1475" class="LineNr">1475 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1476" class="LineNr">1476 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L1477" class="LineNr">1477 </span>    56/push-esi
+<span id="L1478" class="LineNr">1478 </span>    57/push-edi
+<span id="L1479" class="LineNr">1479 </span>    <span class="subxComment"># esi = var</span>
+<span id="L1480" class="LineNr">1480 </span>    8b/-&gt; *(ebp+8) 6/r32/esi
+<span id="L1481" class="LineNr">1481 </span>    <span class="subxComment"># edi = primout-var</span>
+<span id="L1482" class="LineNr">1482 </span>    8b/-&gt; *(ebp+0xc) 7/r32/edi
+<span id="L1483" class="LineNr">1483 </span>    <span class="subxComment"># if (var-&gt;type != primout-var-&gt;type) return false</span>
+<span id="L1484" class="LineNr">1484 </span>    <span class="subxComment"># TODO</span>
+<span id="L1485" class="LineNr">1485 </span>    <span class="subxComment"># return false if var-&gt;register doesn't match primout-var-&gt;register</span>
+<span id="L1486" class="LineNr">1486 </span>    {
+<span id="L1487" class="LineNr">1487 </span>      <span class="subxComment"># if addresses are equal, don't return here</span>
+<span id="L1488" class="LineNr">1488 </span>      8b/-&gt; *(esi+0x10) 0/r32/eax
+<span id="L1489" class="LineNr">1489 </span>      39/compare *(edi+0x10) 0/r32/eax
+<span id="L1490" class="LineNr">1490 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L1491" class="LineNr">1491 </span>      <span class="subxComment"># if either address is 0, return false</span>
+<span id="L1492" class="LineNr">1492 </span>      3d/compare-eax-and 0/imm32
+<span id="L1493" class="LineNr">1493 </span>      74/jump-if-equal  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
+<span id="L1494" class="LineNr">1494 </span>      81 7/subop/compare *(edi+0x10) 0/imm32
+<span id="L1495" class="LineNr">1495 </span>      74/jump-if-equal  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
+<span id="L1496" class="LineNr">1496 </span>      <span class="subxComment"># if primout-var-&gt;register is &quot;*&quot;, return true</span>
+<span id="L1497" class="LineNr">1497 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *(edi+0x10) <span class="Constant">&quot;*&quot;</span>)  <span class="subxComment"># Var-register</span>
+<span id="L1498" class="LineNr">1498 </span>      3d/compare-eax-and 0/imm32
+<span id="L1499" class="LineNr">1499 </span>      b8/copy-to-eax 1/imm32/true
+<span id="L1500" class="LineNr">1500 </span>      75/jump-if-not-equal $operand-matches-primitive?:end/disp8
+<span id="L1501" class="LineNr">1501 </span>      <span class="subxComment"># if string contents don't match, return false</span>
+<span id="L1502" class="LineNr">1502 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *(esi+0x10) *(edi+0x10))  <span class="subxComment"># Var-register Var-register</span>
+<span id="L1503" class="LineNr">1503 </span>      3d/compare-eax-and 0/imm32
+<span id="L1504" class="LineNr">1504 </span>      b8/copy-to-eax 0/imm32/false
+<span id="L1505" class="LineNr">1505 </span>      74/jump-if-equal $operand-matches-primitive?:end/disp8
+<span id="L1506" class="LineNr">1506 </span>    }
+<span id="L1507" class="LineNr">1507 </span>    <span class="subxComment"># return true</span>
+<span id="L1508" class="LineNr">1508 </span>    b8/copy-to-eax 1/imm32/true
+<span id="L1509" class="LineNr">1509 </span><span class="Constant">$operand-matches-primitive?:end</span>:
+<span id="L1510" class="LineNr">1510 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L1511" class="LineNr">1511 </span>    5f/pop-to-edi
+<span id="L1512" class="LineNr">1512 </span>    5e/pop-to-esi
+<span id="L1513" class="LineNr">1513 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1514" class="LineNr">1514 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1515" class="LineNr">1515 </span>    5d/pop-to-ebp
+<span id="L1516" class="LineNr">1516 </span>    c3/return
+<span id="L1517" class="LineNr">1517 </span>
+<span id="L1518" class="LineNr">1518 </span><span class="subxTest">test-emit-subx-statement-primitive</span>:
+<span id="L1519" class="LineNr">1519 </span>    <span class="subxComment"># Primitive operation on a variable on the stack.</span>
+<span id="L1520" class="LineNr">1520 </span>    <span class="subxComment">#   increment foo</span>
+<span id="L1521" class="LineNr">1521 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L1522" class="LineNr">1522 </span>    <span class="subxComment">#   ff 0/subop/increment *(ebp-8)</span>
+<span id="L1523" class="LineNr">1523 </span>    <span class="subxComment">#</span>
+<span id="L1524" class="LineNr">1524 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
+<span id="L1525" class="LineNr">1525 </span>    <span class="subxComment">#   name: 'foo'</span>
+<span id="L1526" class="LineNr">1526 </span>    <span class="subxComment">#   type: int</span>
+<span id="L1527" class="LineNr">1527 </span>    <span class="subxComment">#   stack-offset: -8</span>
+<span id="L1528" class="LineNr">1528 </span>    <span class="subxComment">#</span>
+<span id="L1529" class="LineNr">1529 </span>    <span class="subxComment"># There's a primitive with this info:</span>
+<span id="L1530" class="LineNr">1530 </span>    <span class="subxComment">#   name: 'increment'</span>
+<span id="L1531" class="LineNr">1531 </span>    <span class="subxComment">#   inouts: int/mem</span>
+<span id="L1532" class="LineNr">1532 </span>    <span class="subxComment">#   value: 'ff 0/subop/increment'</span>
+<span id="L1533" class="LineNr">1533 </span>    <span class="subxComment">#</span>
+<span id="L1534" class="LineNr">1534 </span>    <span class="subxComment"># There's nothing in functions.</span>
+<span id="L1535" class="LineNr">1535 </span>    <span class="subxComment">#</span>
+<span id="L1536" class="LineNr">1536 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1537" class="LineNr">1537 </span>    55/push-ebp
+<span id="L1538" class="LineNr">1538 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1539" class="LineNr">1539 </span>    <span class="subxComment"># setup</span>
+<span id="L1540" class="LineNr">1540 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L1541" class="LineNr">1541 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L1542" class="LineNr">1542 </span>    <span class="subxComment"># var-foo/ecx : var</span>
+<span id="L1543" class="LineNr">1543 </span>    68/push 0/imm32/no-register
+<span id="L1544" class="LineNr">1544 </span>    68/push -8/imm32/stack-offset
+<span id="L1545" class="LineNr">1545 </span>    68/push 1/imm32/block-depth
+<span id="L1546" class="LineNr">1546 </span>    68/push 1/imm32/type-int
+<span id="L1547" class="LineNr">1547 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
+<span id="L1548" class="LineNr">1548 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L1549" class="LineNr">1549 </span><span class="CommentedCode">#? $aa-var-in-ecx:</span>
+<span id="L1550" class="LineNr">1550 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
+<span id="L1551" class="LineNr">1551 </span>    51/push-ecx/var-foo
+<span id="L1552" class="LineNr">1552 </span>    68/push 1/imm32/data-length
+<span id="L1553" class="LineNr">1553 </span>    68/push 1/imm32/top
+<span id="L1554" class="LineNr">1554 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L1555" class="LineNr">1555 </span><span class="CommentedCode">#? $aa-vars-in-edx:</span>
+<span id="L1556" class="LineNr">1556 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
+<span id="L1557" class="LineNr">1557 </span>    68/push 0/imm32/next
+<span id="L1558" class="LineNr">1558 </span>    51/push-ecx/var-foo
+<span id="L1559" class="LineNr">1559 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1560" class="LineNr">1560 </span><span class="CommentedCode">#? $aa-stmt-operand-in-ebx:</span>
+<span id="L1561" class="LineNr">1561 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L1562" class="LineNr">1562 </span>    68/push 0/imm32/next
+<span id="L1563" class="LineNr">1563 </span>    68/push 0/imm32/outputs
+<span id="L1564" class="LineNr">1564 </span>    53/push-ebx/operands
+<span id="L1565" class="LineNr">1565 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
+<span id="L1566" class="LineNr">1566 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L1567" class="LineNr">1567 </span><span class="CommentedCode">#? $aa-stmt-in-esi:</span>
+<span id="L1568" class="LineNr">1568 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
+<span id="L1569" class="LineNr">1569 </span>    68/push 0/imm32/next
+<span id="L1570" class="LineNr">1570 </span>    68/push 0/imm32/no-imm32
+<span id="L1571" class="LineNr">1571 </span>    68/push 0/imm32/no-r32
+<span id="L1572" class="LineNr">1572 </span>    68/push 1/imm32/rm32-is-first-inout
+<span id="L1573" class="LineNr">1573 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
+<span id="L1574" class="LineNr">1574 </span>    68/push 0/imm32/outputs
+<span id="L1575" class="LineNr">1575 </span>    53/push-ebx/inouts  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
+<span id="L1576" class="LineNr">1576 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
+<span id="L1577" class="LineNr">1577 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1578" class="LineNr">1578 </span><span class="Constant">$aa-primitive-in-ebx</span>:
+<span id="L1579" class="LineNr">1579 </span>    <span class="subxComment"># convert</span>
+<span id="L1580" class="LineNr">1580 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
+<span id="L1581" class="LineNr">1581 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L1582" class="Folded">1582 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L1588" class="LineNr">1588 </span>    <span class="subxComment"># check output</span>
+<span id="L1589" class="LineNr">1589 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment *(ebp+0xfffffff8)&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-primitive&quot;</span>)
+<span id="L1590" class="LineNr">1590 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1591" class="LineNr">1591 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1592" class="LineNr">1592 </span>    5d/pop-to-ebp
+<span id="L1593" class="LineNr">1593 </span>    c3/return
+<span id="L1594" class="LineNr">1594 </span>
+<span id="L1595" class="LineNr">1595 </span><span class="subxTest">test-emit-subx-statement-primitive-register</span>:
+<span id="L1596" class="LineNr">1596 </span>    <span class="subxComment"># Primitive operation on a variable in a register.</span>
+<span id="L1597" class="LineNr">1597 </span>    <span class="subxComment">#   foo &lt;- increment</span>
+<span id="L1598" class="LineNr">1598 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L1599" class="LineNr">1599 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
+<span id="L1600" class="LineNr">1600 </span>    <span class="subxComment">#</span>
+<span id="L1601" class="LineNr">1601 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
+<span id="L1602" class="LineNr">1602 </span>    <span class="subxComment">#   name: 'foo'</span>
+<span id="L1603" class="LineNr">1603 </span>    <span class="subxComment">#   type: int</span>
+<span id="L1604" class="LineNr">1604 </span>    <span class="subxComment">#   register: 'eax'</span>
+<span id="L1605" class="LineNr">1605 </span>    <span class="subxComment">#</span>
+<span id="L1606" class="LineNr">1606 </span>    <span class="subxComment"># There's a primitive with this info:</span>
+<span id="L1607" class="LineNr">1607 </span>    <span class="subxComment">#   name: 'increment'</span>
+<span id="L1608" class="LineNr">1608 </span>    <span class="subxComment">#   out: int/reg</span>
+<span id="L1609" class="LineNr">1609 </span>    <span class="subxComment">#   value: 'ff 0/subop/increment'</span>
+<span id="L1610" class="LineNr">1610 </span>    <span class="subxComment">#</span>
+<span id="L1611" class="LineNr">1611 </span>    <span class="subxComment"># There's nothing in functions.</span>
+<span id="L1612" class="LineNr">1612 </span>    <span class="subxComment">#</span>
+<span id="L1613" class="LineNr">1613 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1614" class="LineNr">1614 </span>    55/push-ebp
+<span id="L1615" class="LineNr">1615 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1616" class="LineNr">1616 </span>    <span class="subxComment"># setup</span>
+<span id="L1617" class="LineNr">1617 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L1618" class="LineNr">1618 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L1619" class="LineNr">1619 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
+<span id="L1620" class="LineNr">1620 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
+<span id="L1621" class="LineNr">1621 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1622" class="LineNr">1622 </span>    68/push 1/imm32/block-depth
+<span id="L1623" class="LineNr">1623 </span>    68/push 1/imm32/type-int
+<span id="L1624" class="LineNr">1624 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
+<span id="L1625" class="LineNr">1625 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L1626" class="LineNr">1626 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
+<span id="L1627" class="LineNr">1627 </span>    51/push-ecx/var-foo
+<span id="L1628" class="LineNr">1628 </span>    68/push 1/imm32/data-length
+<span id="L1629" class="LineNr">1629 </span>    68/push 1/imm32/top
+<span id="L1630" class="LineNr">1630 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L1631" class="LineNr">1631 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
+<span id="L1632" class="LineNr">1632 </span>    68/push 0/imm32/next
+<span id="L1633" class="LineNr">1633 </span>    51/push-ecx/var-foo
+<span id="L1634" class="LineNr">1634 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1635" class="LineNr">1635 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L1636" class="LineNr">1636 </span>    68/push 0/imm32/next
+<span id="L1637" class="LineNr">1637 </span>    53/push-ebx/outputs
+<span id="L1638" class="LineNr">1638 </span>    68/push 0/imm32/inouts
+<span id="L1639" class="LineNr">1639 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
+<span id="L1640" class="LineNr">1640 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L1641" class="LineNr">1641 </span>    <span class="subxComment"># formal-var/ebx : var in any register</span>
+<span id="L1642" class="LineNr">1642 </span>    68/push <span class="SpecialChar"><a href='mu.subx.html#L273'>Any-register</a></span>/imm32
+<span id="L1643" class="LineNr">1643 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1644" class="LineNr">1644 </span>    68/push 1/imm32/block-depth
+<span id="L1645" class="LineNr">1645 </span>    68/push 1/imm32/type-int
+<span id="L1646" class="LineNr">1646 </span>    68/push <span class="Constant">&quot;dummy&quot;</span>/imm32
+<span id="L1647" class="LineNr">1647 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1648" class="LineNr">1648 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
+<span id="L1649" class="LineNr">1649 </span>    68/push 0/imm32/next
+<span id="L1650" class="LineNr">1650 </span>    53/push-ebx/formal-var
+<span id="L1651" class="LineNr">1651 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1652" class="LineNr">1652 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
+<span id="L1653" class="LineNr">1653 </span>    68/push 0/imm32/next
+<span id="L1654" class="LineNr">1654 </span>    68/push 0/imm32/no-imm32
+<span id="L1655" class="LineNr">1655 </span>    68/push 0/imm32/no-r32
+<span id="L1656" class="LineNr">1656 </span>    68/push 3/imm32/rm32-in-first-output
+<span id="L1657" class="LineNr">1657 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
+<span id="L1658" class="LineNr">1658 </span>    53/push-ebx/outputs
+<span id="L1659" class="LineNr">1659 </span>    68/push 0/imm32/inouts
+<span id="L1660" class="LineNr">1660 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
+<span id="L1661" class="LineNr">1661 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1662" class="LineNr">1662 </span>    <span class="subxComment"># convert</span>
+<span id="L1663" class="LineNr">1663 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
+<span id="L1664" class="LineNr">1664 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L1665" class="Folded">1665 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L1671" class="LineNr">1671 </span>    <span class="subxComment"># check output</span>
+<span id="L1672" class="LineNr">1672 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-primitive-register&quot;</span>)
+<span id="L1673" class="LineNr">1673 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1674" class="LineNr">1674 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1675" class="LineNr">1675 </span>    5d/pop-to-ebp
+<span id="L1676" class="LineNr">1676 </span>    c3/return
+<span id="L1677" class="LineNr">1677 </span>
+<span id="L1678" class="LineNr">1678 </span><span class="subxTest">test-emit-subx-statement-select-primitive</span>:
+<span id="L1679" class="LineNr">1679 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
+<span id="L1680" class="LineNr">1680 </span>    <span class="subxComment">#   foo &lt;- increment</span>
+<span id="L1681" class="LineNr">1681 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L1682" class="LineNr">1682 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
+<span id="L1683" class="LineNr">1683 </span>    <span class="subxComment">#</span>
+<span id="L1684" class="LineNr">1684 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
+<span id="L1685" class="LineNr">1685 </span>    <span class="subxComment">#   name: 'foo'</span>
+<span id="L1686" class="LineNr">1686 </span>    <span class="subxComment">#   type: int</span>
+<span id="L1687" class="LineNr">1687 </span>    <span class="subxComment">#   register: 'eax'</span>
 <span id="L1688" class="LineNr">1688 </span>    <span class="subxComment">#</span>
-<span id="L1689" class="LineNr">1689 </span>    <span class="subxComment"># There's nothing in functions.</span>
-<span id="L1690" class="LineNr">1690 </span>    <span class="subxComment">#</span>
-<span id="L1691" class="LineNr">1691 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1692" class="LineNr">1692 </span>    55/push-ebp
-<span id="L1693" class="LineNr">1693 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1694" class="LineNr">1694 </span>    <span class="subxComment"># setup</span>
-<span id="L1695" class="LineNr">1695 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L1696" class="LineNr">1696 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L1697" class="LineNr">1697 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
-<span id="L1698" class="LineNr">1698 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
-<span id="L1699" class="LineNr">1699 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1700" class="LineNr">1700 </span>    68/push 1/imm32/block-depth
-<span id="L1701" class="LineNr">1701 </span>    68/push 1/imm32/type-int
-<span id="L1702" class="LineNr">1702 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
-<span id="L1703" class="LineNr">1703 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L1704" class="LineNr">1704 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
-<span id="L1705" class="LineNr">1705 </span>    51/push-ecx/var-foo
-<span id="L1706" class="LineNr">1706 </span>    68/push 1/imm32/data-length
-<span id="L1707" class="LineNr">1707 </span>    68/push 1/imm32/top
-<span id="L1708" class="LineNr">1708 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L1709" class="LineNr">1709 </span>    <span class="subxComment"># real-outputs/edi : (list var)</span>
-<span id="L1710" class="LineNr">1710 </span>    68/push 0/imm32/next
-<span id="L1711" class="LineNr">1711 </span>    51/push-ecx/var-foo
-<span id="L1712" class="LineNr">1712 </span>    89/&lt;- %edi 4/r32/esp
-<span id="L1713" class="LineNr">1713 </span>    <span class="subxComment"># stmt/esi : statement</span>
-<span id="L1714" class="LineNr">1714 </span>    68/push 0/imm32/next
-<span id="L1715" class="LineNr">1715 </span>    57/push-edi/outputs
-<span id="L1716" class="LineNr">1716 </span>    68/push 0/imm32/inouts
-<span id="L1717" class="LineNr">1717 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
-<span id="L1718" class="LineNr">1718 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L1719" class="LineNr">1719 </span>    <span class="subxComment"># formal-var/ebx : var in any register</span>
-<span id="L1720" class="LineNr">1720 </span>    68/push <span class="SpecialChar"><a href='mu.subx.html#L273'>Any-register</a></span>/imm32
-<span id="L1721" class="LineNr">1721 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1722" class="LineNr">1722 </span>    68/push 1/imm32/block-depth
-<span id="L1723" class="LineNr">1723 </span>    68/push 1/imm32/type-int
-<span id="L1724" class="LineNr">1724 </span>    68/push <span class="Constant">&quot;dummy&quot;</span>/imm32
-<span id="L1725" class="LineNr">1725 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1726" class="LineNr">1726 </span>    <span class="subxComment"># formal-outputs/ebx : (list var)</span>
-<span id="L1727" class="LineNr">1727 </span>    68/push 0/imm32/next
-<span id="L1728" class="LineNr">1728 </span>    53/push-ebx/formal-var
-<span id="L1729" class="LineNr">1729 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1730" class="LineNr">1730 </span>    <span class="subxComment"># primitive1/ebx : primitive</span>
-<span id="L1731" class="LineNr">1731 </span>    68/push 0/imm32/next
-<span id="L1732" class="LineNr">1732 </span>    68/push 0/imm32/no-imm32
-<span id="L1733" class="LineNr">1733 </span>    68/push 0/imm32/no-r32
-<span id="L1734" class="LineNr">1734 </span>    68/push 3/imm32/rm32-in-first-output
-<span id="L1735" class="LineNr">1735 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
-<span id="L1736" class="LineNr">1736 </span>    53/push-ebx/outputs/formal-outputs
-<span id="L1737" class="LineNr">1737 </span>    68/push 0/imm32/inouts
-<span id="L1738" class="LineNr">1738 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
-<span id="L1739" class="LineNr">1739 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1740" class="LineNr">1740 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
-<span id="L1741" class="LineNr">1741 </span>    53/push-ebx/next
-<span id="L1742" class="LineNr">1742 </span>    68/push 0/imm32/no-imm32
-<span id="L1743" class="LineNr">1743 </span>    68/push 0/imm32/no-r32
-<span id="L1744" class="LineNr">1744 </span>    68/push 1/imm32/rm32-is-first-inout
-<span id="L1745" class="LineNr">1745 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
-<span id="L1746" class="LineNr">1746 </span>    68/push 0/imm32/outputs
-<span id="L1747" class="LineNr">1747 </span>    57/push-edi/inouts/real-outputs  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
-<span id="L1748" class="LineNr">1748 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
-<span id="L1749" class="LineNr">1749 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1750" class="LineNr">1750 </span>    <span class="subxComment"># convert</span>
-<span id="L1751" class="LineNr">1751 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
-<span id="L1752" class="LineNr">1752 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L1753" class="Folded">1753 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L1759" class="LineNr">1759 </span>    <span class="subxComment"># check output</span>
-<span id="L1760" class="LineNr">1760 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-select-primitive&quot;</span>)
-<span id="L1761" class="LineNr">1761 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1762" class="LineNr">1762 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1763" class="LineNr">1763 </span>    5d/pop-to-ebp
-<span id="L1764" class="LineNr">1764 </span>    c3/return
-<span id="L1765" class="LineNr">1765 </span>
-<span id="L1766" class="LineNr">1766 </span><span class="subxTest">test-emit-subx-statement-select-primitive-2</span>:
-<span id="L1767" class="LineNr">1767 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
-<span id="L1768" class="LineNr">1768 </span>    <span class="subxComment">#   foo &lt;- increment</span>
-<span id="L1769" class="LineNr">1769 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L1770" class="LineNr">1770 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
-<span id="L1771" class="LineNr">1771 </span>    <span class="subxComment">#</span>
-<span id="L1772" class="LineNr">1772 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
-<span id="L1773" class="LineNr">1773 </span>    <span class="subxComment">#   name: 'foo'</span>
-<span id="L1774" class="LineNr">1774 </span>    <span class="subxComment">#   type: int</span>
-<span id="L1775" class="LineNr">1775 </span>    <span class="subxComment">#   register: 'eax'</span>
-<span id="L1776" class="LineNr">1776 </span>    <span class="subxComment">#</span>
-<span id="L1777" class="LineNr">1777 </span>    <span class="subxComment"># There's two primitives, as follows:</span>
-<span id="L1778" class="LineNr">1778 </span>    <span class="subxComment">#   - name: 'increment'</span>
-<span id="L1779" class="LineNr">1779 </span>    <span class="subxComment">#     out: int/reg</span>
-<span id="L1780" class="LineNr">1780 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
-<span id="L1781" class="LineNr">1781 </span>    <span class="subxComment">#   - name: 'increment'</span>
-<span id="L1782" class="LineNr">1782 </span>    <span class="subxComment">#     inout: int/mem</span>
-<span id="L1783" class="LineNr">1783 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
+<span id="L1689" class="LineNr">1689 </span>    <span class="subxComment"># There's two primitives, as follows:</span>
+<span id="L1690" class="LineNr">1690 </span>    <span class="subxComment">#   - name: 'increment'</span>
+<span id="L1691" class="LineNr">1691 </span>    <span class="subxComment">#     out: int/reg</span>
+<span id="L1692" class="LineNr">1692 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
+<span id="L1693" class="LineNr">1693 </span>    <span class="subxComment">#   - name: 'increment'</span>
+<span id="L1694" class="LineNr">1694 </span>    <span class="subxComment">#     inout: int/mem</span>
+<span id="L1695" class="LineNr">1695 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
+<span id="L1696" class="LineNr">1696 </span>    <span class="subxComment">#</span>
+<span id="L1697" class="LineNr">1697 </span>    <span class="subxComment"># There's nothing in functions.</span>
+<span id="L1698" class="LineNr">1698 </span>    <span class="subxComment">#</span>
+<span id="L1699" class="LineNr">1699 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1700" class="LineNr">1700 </span>    55/push-ebp
+<span id="L1701" class="LineNr">1701 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1702" class="LineNr">1702 </span>    <span class="subxComment"># setup</span>
+<span id="L1703" class="LineNr">1703 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L1704" class="LineNr">1704 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L1705" class="LineNr">1705 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
+<span id="L1706" class="LineNr">1706 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
+<span id="L1707" class="LineNr">1707 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1708" class="LineNr">1708 </span>    68/push 1/imm32/block-depth
+<span id="L1709" class="LineNr">1709 </span>    68/push 1/imm32/type-int
+<span id="L1710" class="LineNr">1710 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
+<span id="L1711" class="LineNr">1711 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L1712" class="LineNr">1712 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
+<span id="L1713" class="LineNr">1713 </span>    51/push-ecx/var-foo
+<span id="L1714" class="LineNr">1714 </span>    68/push 1/imm32/data-length
+<span id="L1715" class="LineNr">1715 </span>    68/push 1/imm32/top
+<span id="L1716" class="LineNr">1716 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L1717" class="LineNr">1717 </span>    <span class="subxComment"># real-outputs/edi : (list var)</span>
+<span id="L1718" class="LineNr">1718 </span>    68/push 0/imm32/next
+<span id="L1719" class="LineNr">1719 </span>    51/push-ecx/var-foo
+<span id="L1720" class="LineNr">1720 </span>    89/&lt;- %edi 4/r32/esp
+<span id="L1721" class="LineNr">1721 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L1722" class="LineNr">1722 </span>    68/push 0/imm32/next
+<span id="L1723" class="LineNr">1723 </span>    57/push-edi/outputs
+<span id="L1724" class="LineNr">1724 </span>    68/push 0/imm32/inouts
+<span id="L1725" class="LineNr">1725 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
+<span id="L1726" class="LineNr">1726 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L1727" class="LineNr">1727 </span>    <span class="subxComment"># formal-var/ebx : var in any register</span>
+<span id="L1728" class="LineNr">1728 </span>    68/push <span class="SpecialChar"><a href='mu.subx.html#L273'>Any-register</a></span>/imm32
+<span id="L1729" class="LineNr">1729 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1730" class="LineNr">1730 </span>    68/push 1/imm32/block-depth
+<span id="L1731" class="LineNr">1731 </span>    68/push 1/imm32/type-int
+<span id="L1732" class="LineNr">1732 </span>    68/push <span class="Constant">&quot;dummy&quot;</span>/imm32
+<span id="L1733" class="LineNr">1733 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1734" class="LineNr">1734 </span>    <span class="subxComment"># formal-outputs/ebx : (list var)</span>
+<span id="L1735" class="LineNr">1735 </span>    68/push 0/imm32/next
+<span id="L1736" class="LineNr">1736 </span>    53/push-ebx/formal-var
+<span id="L1737" class="LineNr">1737 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1738" class="LineNr">1738 </span>    <span class="subxComment"># primitive1/ebx : primitive</span>
+<span id="L1739" class="LineNr">1739 </span>    68/push 0/imm32/next
+<span id="L1740" class="LineNr">1740 </span>    68/push 0/imm32/no-imm32
+<span id="L1741" class="LineNr">1741 </span>    68/push 0/imm32/no-r32
+<span id="L1742" class="LineNr">1742 </span>    68/push 3/imm32/rm32-in-first-output
+<span id="L1743" class="LineNr">1743 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
+<span id="L1744" class="LineNr">1744 </span>    53/push-ebx/outputs/formal-outputs
+<span id="L1745" class="LineNr">1745 </span>    68/push 0/imm32/inouts
+<span id="L1746" class="LineNr">1746 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
+<span id="L1747" class="LineNr">1747 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1748" class="LineNr">1748 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
+<span id="L1749" class="LineNr">1749 </span>    53/push-ebx/next
+<span id="L1750" class="LineNr">1750 </span>    68/push 0/imm32/no-imm32
+<span id="L1751" class="LineNr">1751 </span>    68/push 0/imm32/no-r32
+<span id="L1752" class="LineNr">1752 </span>    68/push 1/imm32/rm32-is-first-inout
+<span id="L1753" class="LineNr">1753 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
+<span id="L1754" class="LineNr">1754 </span>    68/push 0/imm32/outputs
+<span id="L1755" class="LineNr">1755 </span>    57/push-edi/inouts/real-outputs  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
+<span id="L1756" class="LineNr">1756 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
+<span id="L1757" class="LineNr">1757 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1758" class="LineNr">1758 </span>    <span class="subxComment"># convert</span>
+<span id="L1759" class="LineNr">1759 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
+<span id="L1760" class="LineNr">1760 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L1761" class="Folded">1761 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L1767" class="LineNr">1767 </span>    <span class="subxComment"># check output</span>
+<span id="L1768" class="LineNr">1768 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-select-primitive&quot;</span>)
+<span id="L1769" class="LineNr">1769 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1770" class="LineNr">1770 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1771" class="LineNr">1771 </span>    5d/pop-to-ebp
+<span id="L1772" class="LineNr">1772 </span>    c3/return
+<span id="L1773" class="LineNr">1773 </span>
+<span id="L1774" class="LineNr">1774 </span><span class="subxTest">test-emit-subx-statement-select-primitive-2</span>:
+<span id="L1775" class="LineNr">1775 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
+<span id="L1776" class="LineNr">1776 </span>    <span class="subxComment">#   foo &lt;- increment</span>
+<span id="L1777" class="LineNr">1777 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L1778" class="LineNr">1778 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
+<span id="L1779" class="LineNr">1779 </span>    <span class="subxComment">#</span>
+<span id="L1780" class="LineNr">1780 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
+<span id="L1781" class="LineNr">1781 </span>    <span class="subxComment">#   name: 'foo'</span>
+<span id="L1782" class="LineNr">1782 </span>    <span class="subxComment">#   type: int</span>
+<span id="L1783" class="LineNr">1783 </span>    <span class="subxComment">#   register: 'eax'</span>
 <span id="L1784" class="LineNr">1784 </span>    <span class="subxComment">#</span>
-<span id="L1785" class="LineNr">1785 </span>    <span class="subxComment"># There's nothing in functions.</span>
-<span id="L1786" class="LineNr">1786 </span>    <span class="subxComment">#</span>
-<span id="L1787" class="LineNr">1787 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1788" class="LineNr">1788 </span>    55/push-ebp
-<span id="L1789" class="LineNr">1789 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1790" class="LineNr">1790 </span>    <span class="subxComment"># setup</span>
-<span id="L1791" class="LineNr">1791 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L1792" class="LineNr">1792 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L1793" class="LineNr">1793 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
-<span id="L1794" class="LineNr">1794 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
-<span id="L1795" class="LineNr">1795 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1796" class="LineNr">1796 </span>    68/push 1/imm32/block-depth
-<span id="L1797" class="LineNr">1797 </span>    68/push 1/imm32/type-int
-<span id="L1798" class="LineNr">1798 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
-<span id="L1799" class="LineNr">1799 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L1800" class="LineNr">1800 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
-<span id="L1801" class="LineNr">1801 </span>    51/push-ecx/var-foo
-<span id="L1802" class="LineNr">1802 </span>    68/push 1/imm32/data-length
-<span id="L1803" class="LineNr">1803 </span>    68/push 1/imm32/top
-<span id="L1804" class="LineNr">1804 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L1805" class="LineNr">1805 </span>    <span class="subxComment"># inouts/edi : (list var)</span>
-<span id="L1806" class="LineNr">1806 </span>    68/push 0/imm32/next
-<span id="L1807" class="LineNr">1807 </span>    51/push-ecx/var-foo
-<span id="L1808" class="LineNr">1808 </span>    89/&lt;- %edi 4/r32/esp
-<span id="L1809" class="LineNr">1809 </span>    <span class="subxComment"># stmt/esi : statement</span>
-<span id="L1810" class="LineNr">1810 </span>    68/push 0/imm32/next
-<span id="L1811" class="LineNr">1811 </span>    68/push 0/imm32/outputs
-<span id="L1812" class="LineNr">1812 </span>    57/push-edi/inouts
-<span id="L1813" class="LineNr">1813 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
-<span id="L1814" class="LineNr">1814 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L1815" class="LineNr">1815 </span>    <span class="subxComment"># formal-var/ebx : var in any register</span>
-<span id="L1816" class="LineNr">1816 </span>    68/push <span class="SpecialChar"><a href='mu.subx.html#L273'>Any-register</a></span>/imm32
-<span id="L1817" class="LineNr">1817 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1818" class="LineNr">1818 </span>    68/push 1/imm32/block-depth
-<span id="L1819" class="LineNr">1819 </span>    68/push 1/imm32/type-int
-<span id="L1820" class="LineNr">1820 </span>    68/push <span class="Constant">&quot;dummy&quot;</span>/imm32
-<span id="L1821" class="LineNr">1821 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1822" class="LineNr">1822 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
-<span id="L1823" class="LineNr">1823 </span>    68/push 0/imm32/next
-<span id="L1824" class="LineNr">1824 </span>    53/push-ebx/formal-var
-<span id="L1825" class="LineNr">1825 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1826" class="LineNr">1826 </span>    <span class="subxComment"># primitive1/ebx : primitive</span>
-<span id="L1827" class="LineNr">1827 </span>    68/push 0/imm32/next
-<span id="L1828" class="LineNr">1828 </span>    68/push 0/imm32/no-imm32
-<span id="L1829" class="LineNr">1829 </span>    68/push 0/imm32/no-r32
-<span id="L1830" class="LineNr">1830 </span>    68/push 3/imm32/rm32-in-first-output
-<span id="L1831" class="LineNr">1831 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
-<span id="L1832" class="LineNr">1832 </span>    53/push-ebx/outputs/formal-outputs
-<span id="L1833" class="LineNr">1833 </span>    68/push 0/imm32/inouts
-<span id="L1834" class="LineNr">1834 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
-<span id="L1835" class="LineNr">1835 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1836" class="LineNr">1836 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
-<span id="L1837" class="LineNr">1837 </span>    53/push-ebx/next
-<span id="L1838" class="LineNr">1838 </span>    68/push 0/imm32/no-imm32
-<span id="L1839" class="LineNr">1839 </span>    68/push 0/imm32/no-r32
-<span id="L1840" class="LineNr">1840 </span>    68/push 1/imm32/rm32-is-first-inout
-<span id="L1841" class="LineNr">1841 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
-<span id="L1842" class="LineNr">1842 </span>    68/push 0/imm32/outputs
-<span id="L1843" class="LineNr">1843 </span>    57/push-edi/inouts/real-outputs  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
-<span id="L1844" class="LineNr">1844 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
-<span id="L1845" class="LineNr">1845 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L1846" class="LineNr">1846 </span>    <span class="subxComment"># convert</span>
-<span id="L1847" class="LineNr">1847 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
-<span id="L1848" class="LineNr">1848 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L1849" class="Folded">1849 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L1855" class="LineNr">1855 </span>    <span class="subxComment"># check output</span>
-<span id="L1856" class="LineNr">1856 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-select-primitive-2&quot;</span>)
-<span id="L1857" class="LineNr">1857 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1858" class="LineNr">1858 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1859" class="LineNr">1859 </span>    5d/pop-to-ebp
-<span id="L1860" class="LineNr">1860 </span>    c3/return
-<span id="L1861" class="LineNr">1861 </span>
-<span id="L1862" class="LineNr">1862 </span><span class="subxTest">test-increment-register</span>:
-<span id="L1863" class="LineNr">1863 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
-<span id="L1864" class="LineNr">1864 </span>    <span class="subxComment">#   foo &lt;- increment</span>
-<span id="L1865" class="LineNr">1865 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L1866" class="LineNr">1866 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
-<span id="L1867" class="LineNr">1867 </span>    <span class="subxComment">#</span>
-<span id="L1868" class="LineNr">1868 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
-<span id="L1869" class="LineNr">1869 </span>    <span class="subxComment">#   name: 'foo'</span>
-<span id="L1870" class="LineNr">1870 </span>    <span class="subxComment">#   type: int</span>
-<span id="L1871" class="LineNr">1871 </span>    <span class="subxComment">#   register: 'eax'</span>
-<span id="L1872" class="LineNr">1872 </span>    <span class="subxComment">#</span>
-<span id="L1873" class="LineNr">1873 </span>    <span class="subxComment"># Primitives are the global definitions.</span>
-<span id="L1874" class="LineNr">1874 </span>    <span class="subxComment">#</span>
-<span id="L1875" class="LineNr">1875 </span>    <span class="subxComment"># There are no functions defined.</span>
-<span id="L1876" class="LineNr">1876 </span>    <span class="subxComment">#</span>
-<span id="L1877" class="LineNr">1877 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1878" class="LineNr">1878 </span>    55/push-ebp
-<span id="L1879" class="LineNr">1879 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1880" class="LineNr">1880 </span>    <span class="subxComment"># setup</span>
-<span id="L1881" class="LineNr">1881 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L1882" class="LineNr">1882 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L1883" class="LineNr">1883 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
-<span id="L1884" class="LineNr">1884 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
-<span id="L1885" class="LineNr">1885 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1886" class="LineNr">1886 </span>    68/push 1/imm32/block-depth
-<span id="L1887" class="LineNr">1887 </span>    68/push 1/imm32/type-int
-<span id="L1888" class="LineNr">1888 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
-<span id="L1889" class="LineNr">1889 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L1890" class="LineNr">1890 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
-<span id="L1891" class="LineNr">1891 </span>    51/push-ecx/var-foo
-<span id="L1892" class="LineNr">1892 </span>    68/push 1/imm32/data-length
-<span id="L1893" class="LineNr">1893 </span>    68/push 1/imm32/top
-<span id="L1894" class="LineNr">1894 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L1895" class="LineNr">1895 </span>    <span class="subxComment"># real-outputs/edi : (list var)</span>
-<span id="L1896" class="LineNr">1896 </span>    68/push 0/imm32/next
-<span id="L1897" class="LineNr">1897 </span>    51/push-ecx/var-foo
-<span id="L1898" class="LineNr">1898 </span>    89/&lt;- %edi 4/r32/esp
-<span id="L1899" class="LineNr">1899 </span>    <span class="subxComment"># stmt/esi : statement</span>
-<span id="L1900" class="LineNr">1900 </span>    68/push 0/imm32/next
-<span id="L1901" class="LineNr">1901 </span>    57/push-edi/outputs
-<span id="L1902" class="LineNr">1902 </span>    68/push 0/imm32/inouts
-<span id="L1903" class="LineNr">1903 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
-<span id="L1904" class="LineNr">1904 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L1905" class="LineNr">1905 </span>    <span class="subxComment"># convert</span>
-<span id="L1906" class="LineNr">1906 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
-<span id="L1907" class="LineNr">1907 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L1908" class="Folded">1908 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L1914" class="LineNr">1914 </span>    <span class="subxComment"># check output</span>
-<span id="L1915" class="LineNr">1915 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-increment-register&quot;</span>)
-<span id="L1916" class="LineNr">1916 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1917" class="LineNr">1917 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1918" class="LineNr">1918 </span>    5d/pop-to-ebp
-<span id="L1919" class="LineNr">1919 </span>    c3/return
-<span id="L1920" class="LineNr">1920 </span>
-<span id="L1921" class="LineNr">1921 </span><span class="subxTest">test-increment-var</span>:
-<span id="L1922" class="LineNr">1922 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
-<span id="L1923" class="LineNr">1923 </span>    <span class="subxComment">#   foo &lt;- increment</span>
-<span id="L1924" class="LineNr">1924 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L1925" class="LineNr">1925 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
-<span id="L1926" class="LineNr">1926 </span>    <span class="subxComment">#</span>
-<span id="L1927" class="LineNr">1927 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
-<span id="L1928" class="LineNr">1928 </span>    <span class="subxComment">#   name: 'foo'</span>
-<span id="L1929" class="LineNr">1929 </span>    <span class="subxComment">#   type: int</span>
-<span id="L1930" class="LineNr">1930 </span>    <span class="subxComment">#   register: 'eax'</span>
-<span id="L1931" class="LineNr">1931 </span>    <span class="subxComment">#</span>
-<span id="L1932" class="LineNr">1932 </span>    <span class="subxComment"># Primitives are the global definitions.</span>
-<span id="L1933" class="LineNr">1933 </span>    <span class="subxComment">#</span>
-<span id="L1934" class="LineNr">1934 </span>    <span class="subxComment"># There are no functions defined.</span>
-<span id="L1935" class="LineNr">1935 </span>    <span class="subxComment">#</span>
-<span id="L1936" class="LineNr">1936 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1937" class="LineNr">1937 </span>    55/push-ebp
-<span id="L1938" class="LineNr">1938 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1939" class="LineNr">1939 </span>    <span class="subxComment"># setup</span>
-<span id="L1940" class="LineNr">1940 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L1941" class="LineNr">1941 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L1942" class="LineNr">1942 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
-<span id="L1943" class="LineNr">1943 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
-<span id="L1944" class="LineNr">1944 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1945" class="LineNr">1945 </span>    68/push 1/imm32/block-depth
-<span id="L1946" class="LineNr">1946 </span>    68/push 1/imm32/type-int
-<span id="L1947" class="LineNr">1947 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
-<span id="L1948" class="LineNr">1948 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L1949" class="LineNr">1949 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
-<span id="L1950" class="LineNr">1950 </span>    51/push-ecx/var-foo
-<span id="L1951" class="LineNr">1951 </span>    68/push 1/imm32/data-length
-<span id="L1952" class="LineNr">1952 </span>    68/push 1/imm32/top
-<span id="L1953" class="LineNr">1953 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L1954" class="LineNr">1954 </span>    <span class="subxComment"># inouts/edi : (list var)</span>
-<span id="L1955" class="LineNr">1955 </span>    68/push 0/imm32/next
-<span id="L1956" class="LineNr">1956 </span>    51/push-ecx/var-foo
-<span id="L1957" class="LineNr">1957 </span>    89/&lt;- %edi 4/r32/esp
-<span id="L1958" class="LineNr">1958 </span>    <span class="subxComment"># stmt/esi : statement</span>
-<span id="L1959" class="LineNr">1959 </span>    68/push 0/imm32/next
-<span id="L1960" class="LineNr">1960 </span>    68/push 0/imm32/outputs
-<span id="L1961" class="LineNr">1961 </span>    57/push-edi/inouts
-<span id="L1962" class="LineNr">1962 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
-<span id="L1963" class="LineNr">1963 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L1964" class="LineNr">1964 </span>    <span class="subxComment"># convert</span>
-<span id="L1965" class="LineNr">1965 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
-<span id="L1966" class="LineNr">1966 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L1967" class="Folded">1967 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L1973" class="LineNr">1973 </span>    <span class="subxComment"># check output</span>
-<span id="L1974" class="LineNr">1974 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-increment-var&quot;</span>)
-<span id="L1975" class="LineNr">1975 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L1976" class="LineNr">1976 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L1977" class="LineNr">1977 </span>    5d/pop-to-ebp
-<span id="L1978" class="LineNr">1978 </span>    c3/return
-<span id="L1979" class="LineNr">1979 </span>
-<span id="L1980" class="LineNr">1980 </span><span class="subxTest">test-add-reg-to-reg</span>:
-<span id="L1981" class="LineNr">1981 </span>    <span class="subxComment">#   var1/reg &lt;- add var2/reg</span>
-<span id="L1982" class="LineNr">1982 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L1983" class="LineNr">1983 </span>    <span class="subxComment">#   01 %var1 var2</span>
-<span id="L1984" class="LineNr">1984 </span>    <span class="subxComment">#</span>
-<span id="L1985" class="LineNr">1985 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L1986" class="LineNr">1986 </span>    55/push-ebp
-<span id="L1987" class="LineNr">1987 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L1988" class="LineNr">1988 </span>    <span class="subxComment"># setup</span>
-<span id="L1989" class="LineNr">1989 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L1990" class="LineNr">1990 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L1991" class="LineNr">1991 </span>    <span class="subxComment"># var-var1/ecx : var in eax</span>
-<span id="L1992" class="LineNr">1992 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
-<span id="L1993" class="LineNr">1993 </span>    68/push 0/imm32/no-stack-offset
-<span id="L1994" class="LineNr">1994 </span>    68/push 1/imm32/block-depth
-<span id="L1995" class="LineNr">1995 </span>    68/push 1/imm32/type-int
-<span id="L1996" class="LineNr">1996 </span>    68/push <span class="Constant">&quot;var1&quot;</span>/imm32
-<span id="L1997" class="LineNr">1997 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L1998" class="LineNr">1998 </span>    <span class="subxComment"># var-var2/edx : var in ecx</span>
-<span id="L1999" class="LineNr">1999 </span>    68/push <span class="Constant">&quot;ecx&quot;</span>/imm32/register
-<span id="L2000" class="LineNr">2000 </span>    68/push 0/imm32/no-stack-offset
-<span id="L2001" class="LineNr">2001 </span>    68/push 1/imm32/block-depth
-<span id="L2002" class="LineNr">2002 </span>    68/push 1/imm32/type-int
-<span id="L2003" class="LineNr">2003 </span>    68/push <span class="Constant">&quot;var2&quot;</span>/imm32
-<span id="L2004" class="LineNr">2004 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L2005" class="LineNr">2005 </span>    <span class="subxComment"># inouts/esi : (list var2)</span>
-<span id="L2006" class="LineNr">2006 </span>    68/push 0/imm32/next
-<span id="L2007" class="LineNr">2007 </span>    52/push-edx/var-var2
-<span id="L2008" class="LineNr">2008 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L2009" class="LineNr">2009 </span>    <span class="subxComment"># outputs/edi : (list var1)</span>
-<span id="L2010" class="LineNr">2010 </span>    68/push 0/imm32/next
-<span id="L2011" class="LineNr">2011 </span>    51/push-ecx/var-var1
-<span id="L2012" class="LineNr">2012 </span>    89/&lt;- %edi 4/r32/esp
-<span id="L2013" class="LineNr">2013 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L1785" class="LineNr">1785 </span>    <span class="subxComment"># There's two primitives, as follows:</span>
+<span id="L1786" class="LineNr">1786 </span>    <span class="subxComment">#   - name: 'increment'</span>
+<span id="L1787" class="LineNr">1787 </span>    <span class="subxComment">#     out: int/reg</span>
+<span id="L1788" class="LineNr">1788 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
+<span id="L1789" class="LineNr">1789 </span>    <span class="subxComment">#   - name: 'increment'</span>
+<span id="L1790" class="LineNr">1790 </span>    <span class="subxComment">#     inout: int/mem</span>
+<span id="L1791" class="LineNr">1791 </span>    <span class="subxComment">#     value: 'ff 0/subop/increment'</span>
+<span id="L1792" class="LineNr">1792 </span>    <span class="subxComment">#</span>
+<span id="L1793" class="LineNr">1793 </span>    <span class="subxComment"># There's nothing in functions.</span>
+<span id="L1794" class="LineNr">1794 </span>    <span class="subxComment">#</span>
+<span id="L1795" class="LineNr">1795 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1796" class="LineNr">1796 </span>    55/push-ebp
+<span id="L1797" class="LineNr">1797 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1798" class="LineNr">1798 </span>    <span class="subxComment"># setup</span>
+<span id="L1799" class="LineNr">1799 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L1800" class="LineNr">1800 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L1801" class="LineNr">1801 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
+<span id="L1802" class="LineNr">1802 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
+<span id="L1803" class="LineNr">1803 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1804" class="LineNr">1804 </span>    68/push 1/imm32/block-depth
+<span id="L1805" class="LineNr">1805 </span>    68/push 1/imm32/type-int
+<span id="L1806" class="LineNr">1806 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
+<span id="L1807" class="LineNr">1807 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L1808" class="LineNr">1808 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
+<span id="L1809" class="LineNr">1809 </span>    51/push-ecx/var-foo
+<span id="L1810" class="LineNr">1810 </span>    68/push 1/imm32/data-length
+<span id="L1811" class="LineNr">1811 </span>    68/push 1/imm32/top
+<span id="L1812" class="LineNr">1812 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L1813" class="LineNr">1813 </span>    <span class="subxComment"># inouts/edi : (list var)</span>
+<span id="L1814" class="LineNr">1814 </span>    68/push 0/imm32/next
+<span id="L1815" class="LineNr">1815 </span>    51/push-ecx/var-foo
+<span id="L1816" class="LineNr">1816 </span>    89/&lt;- %edi 4/r32/esp
+<span id="L1817" class="LineNr">1817 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L1818" class="LineNr">1818 </span>    68/push 0/imm32/next
+<span id="L1819" class="LineNr">1819 </span>    68/push 0/imm32/outputs
+<span id="L1820" class="LineNr">1820 </span>    57/push-edi/inouts
+<span id="L1821" class="LineNr">1821 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
+<span id="L1822" class="LineNr">1822 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L1823" class="LineNr">1823 </span>    <span class="subxComment"># formal-var/ebx : var in any register</span>
+<span id="L1824" class="LineNr">1824 </span>    68/push <span class="SpecialChar"><a href='mu.subx.html#L273'>Any-register</a></span>/imm32
+<span id="L1825" class="LineNr">1825 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1826" class="LineNr">1826 </span>    68/push 1/imm32/block-depth
+<span id="L1827" class="LineNr">1827 </span>    68/push 1/imm32/type-int
+<span id="L1828" class="LineNr">1828 </span>    68/push <span class="Constant">&quot;dummy&quot;</span>/imm32
+<span id="L1829" class="LineNr">1829 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1830" class="LineNr">1830 </span>    <span class="subxComment"># operand/ebx : (list var)</span>
+<span id="L1831" class="LineNr">1831 </span>    68/push 0/imm32/next
+<span id="L1832" class="LineNr">1832 </span>    53/push-ebx/formal-var
+<span id="L1833" class="LineNr">1833 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1834" class="LineNr">1834 </span>    <span class="subxComment"># primitive1/ebx : primitive</span>
+<span id="L1835" class="LineNr">1835 </span>    68/push 0/imm32/next
+<span id="L1836" class="LineNr">1836 </span>    68/push 0/imm32/no-imm32
+<span id="L1837" class="LineNr">1837 </span>    68/push 0/imm32/no-r32
+<span id="L1838" class="LineNr">1838 </span>    68/push 3/imm32/rm32-in-first-output
+<span id="L1839" class="LineNr">1839 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
+<span id="L1840" class="LineNr">1840 </span>    53/push-ebx/outputs/formal-outputs
+<span id="L1841" class="LineNr">1841 </span>    68/push 0/imm32/inouts
+<span id="L1842" class="LineNr">1842 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
+<span id="L1843" class="LineNr">1843 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1844" class="LineNr">1844 </span>    <span class="subxComment"># primitives/ebx : primitive</span>
+<span id="L1845" class="LineNr">1845 </span>    53/push-ebx/next
+<span id="L1846" class="LineNr">1846 </span>    68/push 0/imm32/no-imm32
+<span id="L1847" class="LineNr">1847 </span>    68/push 0/imm32/no-r32
+<span id="L1848" class="LineNr">1848 </span>    68/push 1/imm32/rm32-is-first-inout
+<span id="L1849" class="LineNr">1849 </span>    68/push <span class="Constant">&quot;ff 0/subop/increment&quot;</span>/imm32/subx-name
+<span id="L1850" class="LineNr">1850 </span>    68/push 0/imm32/outputs
+<span id="L1851" class="LineNr">1851 </span>    57/push-edi/inouts/real-outputs  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
+<span id="L1852" class="LineNr">1852 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/name
+<span id="L1853" class="LineNr">1853 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L1854" class="LineNr">1854 </span>    <span class="subxComment"># convert</span>
+<span id="L1855" class="LineNr">1855 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx %ebx 0)
+<span id="L1856" class="LineNr">1856 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L1857" class="Folded">1857 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L1863" class="LineNr">1863 </span>    <span class="subxComment"># check output</span>
+<span id="L1864" class="LineNr">1864 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-select-primitive-2&quot;</span>)
+<span id="L1865" class="LineNr">1865 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1866" class="LineNr">1866 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1867" class="LineNr">1867 </span>    5d/pop-to-ebp
+<span id="L1868" class="LineNr">1868 </span>    c3/return
+<span id="L1869" class="LineNr">1869 </span>
+<span id="L1870" class="LineNr">1870 </span><span class="subxTest">test-increment-register</span>:
+<span id="L1871" class="LineNr">1871 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
+<span id="L1872" class="LineNr">1872 </span>    <span class="subxComment">#   foo &lt;- increment</span>
+<span id="L1873" class="LineNr">1873 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L1874" class="LineNr">1874 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
+<span id="L1875" class="LineNr">1875 </span>    <span class="subxComment">#</span>
+<span id="L1876" class="LineNr">1876 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
+<span id="L1877" class="LineNr">1877 </span>    <span class="subxComment">#   name: 'foo'</span>
+<span id="L1878" class="LineNr">1878 </span>    <span class="subxComment">#   type: int</span>
+<span id="L1879" class="LineNr">1879 </span>    <span class="subxComment">#   register: 'eax'</span>
+<span id="L1880" class="LineNr">1880 </span>    <span class="subxComment">#</span>
+<span id="L1881" class="LineNr">1881 </span>    <span class="subxComment"># Primitives are the global definitions.</span>
+<span id="L1882" class="LineNr">1882 </span>    <span class="subxComment">#</span>
+<span id="L1883" class="LineNr">1883 </span>    <span class="subxComment"># There are no functions defined.</span>
+<span id="L1884" class="LineNr">1884 </span>    <span class="subxComment">#</span>
+<span id="L1885" class="LineNr">1885 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1886" class="LineNr">1886 </span>    55/push-ebp
+<span id="L1887" class="LineNr">1887 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1888" class="LineNr">1888 </span>    <span class="subxComment"># setup</span>
+<span id="L1889" class="LineNr">1889 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L1890" class="LineNr">1890 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L1891" class="LineNr">1891 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
+<span id="L1892" class="LineNr">1892 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
+<span id="L1893" class="LineNr">1893 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1894" class="LineNr">1894 </span>    68/push 1/imm32/block-depth
+<span id="L1895" class="LineNr">1895 </span>    68/push 1/imm32/type-int
+<span id="L1896" class="LineNr">1896 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
+<span id="L1897" class="LineNr">1897 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L1898" class="LineNr">1898 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
+<span id="L1899" class="LineNr">1899 </span>    51/push-ecx/var-foo
+<span id="L1900" class="LineNr">1900 </span>    68/push 1/imm32/data-length
+<span id="L1901" class="LineNr">1901 </span>    68/push 1/imm32/top
+<span id="L1902" class="LineNr">1902 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L1903" class="LineNr">1903 </span>    <span class="subxComment"># real-outputs/edi : (list var)</span>
+<span id="L1904" class="LineNr">1904 </span>    68/push 0/imm32/next
+<span id="L1905" class="LineNr">1905 </span>    51/push-ecx/var-foo
+<span id="L1906" class="LineNr">1906 </span>    89/&lt;- %edi 4/r32/esp
+<span id="L1907" class="LineNr">1907 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L1908" class="LineNr">1908 </span>    68/push 0/imm32/next
+<span id="L1909" class="LineNr">1909 </span>    57/push-edi/outputs
+<span id="L1910" class="LineNr">1910 </span>    68/push 0/imm32/inouts
+<span id="L1911" class="LineNr">1911 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
+<span id="L1912" class="LineNr">1912 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L1913" class="LineNr">1913 </span>    <span class="subxComment"># convert</span>
+<span id="L1914" class="LineNr">1914 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
+<span id="L1915" class="LineNr">1915 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L1916" class="Folded">1916 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L1922" class="LineNr">1922 </span>    <span class="subxComment"># check output</span>
+<span id="L1923" class="LineNr">1923 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-increment-register&quot;</span>)
+<span id="L1924" class="LineNr">1924 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1925" class="LineNr">1925 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1926" class="LineNr">1926 </span>    5d/pop-to-ebp
+<span id="L1927" class="LineNr">1927 </span>    c3/return
+<span id="L1928" class="LineNr">1928 </span>
+<span id="L1929" class="LineNr">1929 </span><span class="subxTest">test-increment-var</span>:
+<span id="L1930" class="LineNr">1930 </span>    <span class="subxComment"># Select the right primitive between overloads.</span>
+<span id="L1931" class="LineNr">1931 </span>    <span class="subxComment">#   foo &lt;- increment</span>
+<span id="L1932" class="LineNr">1932 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L1933" class="LineNr">1933 </span>    <span class="subxComment">#   ff 0/subop/increment %eax  # sub-optimal, but should suffice</span>
+<span id="L1934" class="LineNr">1934 </span>    <span class="subxComment">#</span>
+<span id="L1935" class="LineNr">1935 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
+<span id="L1936" class="LineNr">1936 </span>    <span class="subxComment">#   name: 'foo'</span>
+<span id="L1937" class="LineNr">1937 </span>    <span class="subxComment">#   type: int</span>
+<span id="L1938" class="LineNr">1938 </span>    <span class="subxComment">#   register: 'eax'</span>
+<span id="L1939" class="LineNr">1939 </span>    <span class="subxComment">#</span>
+<span id="L1940" class="LineNr">1940 </span>    <span class="subxComment"># Primitives are the global definitions.</span>
+<span id="L1941" class="LineNr">1941 </span>    <span class="subxComment">#</span>
+<span id="L1942" class="LineNr">1942 </span>    <span class="subxComment"># There are no functions defined.</span>
+<span id="L1943" class="LineNr">1943 </span>    <span class="subxComment">#</span>
+<span id="L1944" class="LineNr">1944 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1945" class="LineNr">1945 </span>    55/push-ebp
+<span id="L1946" class="LineNr">1946 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1947" class="LineNr">1947 </span>    <span class="subxComment"># setup</span>
+<span id="L1948" class="LineNr">1948 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L1949" class="LineNr">1949 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L1950" class="LineNr">1950 </span>    <span class="subxComment"># var-foo/ecx : var in eax</span>
+<span id="L1951" class="LineNr">1951 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
+<span id="L1952" class="LineNr">1952 </span>    68/push 0/imm32/no-stack-offset
+<span id="L1953" class="LineNr">1953 </span>    68/push 1/imm32/block-depth
+<span id="L1954" class="LineNr">1954 </span>    68/push 1/imm32/type-int
+<span id="L1955" class="LineNr">1955 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
+<span id="L1956" class="LineNr">1956 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L1957" class="LineNr">1957 </span>    <span class="subxComment"># vars/edx : (stack 1)</span>
+<span id="L1958" class="LineNr">1958 </span>    51/push-ecx/var-foo
+<span id="L1959" class="LineNr">1959 </span>    68/push 1/imm32/data-length
+<span id="L1960" class="LineNr">1960 </span>    68/push 1/imm32/top
+<span id="L1961" class="LineNr">1961 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L1962" class="LineNr">1962 </span>    <span class="subxComment"># inouts/edi : (list var)</span>
+<span id="L1963" class="LineNr">1963 </span>    68/push 0/imm32/next
+<span id="L1964" class="LineNr">1964 </span>    51/push-ecx/var-foo
+<span id="L1965" class="LineNr">1965 </span>    89/&lt;- %edi 4/r32/esp
+<span id="L1966" class="LineNr">1966 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L1967" class="LineNr">1967 </span>    68/push 0/imm32/next
+<span id="L1968" class="LineNr">1968 </span>    68/push 0/imm32/outputs
+<span id="L1969" class="LineNr">1969 </span>    57/push-edi/inouts
+<span id="L1970" class="LineNr">1970 </span>    68/push <span class="Constant">&quot;increment&quot;</span>/imm32/operation
+<span id="L1971" class="LineNr">1971 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L1972" class="LineNr">1972 </span>    <span class="subxComment"># convert</span>
+<span id="L1973" class="LineNr">1973 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
+<span id="L1974" class="LineNr">1974 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L1975" class="Folded">1975 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L1981" class="LineNr">1981 </span>    <span class="subxComment"># check output</span>
+<span id="L1982" class="LineNr">1982 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;ff 0/subop/increment %eax&quot;</span> <span class="Constant">&quot;F - test-increment-var&quot;</span>)
+<span id="L1983" class="LineNr">1983 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L1984" class="LineNr">1984 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L1985" class="LineNr">1985 </span>    5d/pop-to-ebp
+<span id="L1986" class="LineNr">1986 </span>    c3/return
+<span id="L1987" class="LineNr">1987 </span>
+<span id="L1988" class="LineNr">1988 </span><span class="subxTest">test-add-reg-to-reg</span>:
+<span id="L1989" class="LineNr">1989 </span>    <span class="subxComment">#   var1/reg &lt;- add var2/reg</span>
+<span id="L1990" class="LineNr">1990 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L1991" class="LineNr">1991 </span>    <span class="subxComment">#   01 %var1 var2</span>
+<span id="L1992" class="LineNr">1992 </span>    <span class="subxComment">#</span>
+<span id="L1993" class="LineNr">1993 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L1994" class="LineNr">1994 </span>    55/push-ebp
+<span id="L1995" class="LineNr">1995 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L1996" class="LineNr">1996 </span>    <span class="subxComment"># setup</span>
+<span id="L1997" class="LineNr">1997 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L1998" class="LineNr">1998 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L1999" class="LineNr">1999 </span>    <span class="subxComment"># var-var1/ecx : var in eax</span>
+<span id="L2000" class="LineNr">2000 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
+<span id="L2001" class="LineNr">2001 </span>    68/push 0/imm32/no-stack-offset
+<span id="L2002" class="LineNr">2002 </span>    68/push 1/imm32/block-depth
+<span id="L2003" class="LineNr">2003 </span>    68/push 1/imm32/type-int
+<span id="L2004" class="LineNr">2004 </span>    68/push <span class="Constant">&quot;var1&quot;</span>/imm32
+<span id="L2005" class="LineNr">2005 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L2006" class="LineNr">2006 </span>    <span class="subxComment"># var-var2/edx : var in ecx</span>
+<span id="L2007" class="LineNr">2007 </span>    68/push <span class="Constant">&quot;ecx&quot;</span>/imm32/register
+<span id="L2008" class="LineNr">2008 </span>    68/push 0/imm32/no-stack-offset
+<span id="L2009" class="LineNr">2009 </span>    68/push 1/imm32/block-depth
+<span id="L2010" class="LineNr">2010 </span>    68/push 1/imm32/type-int
+<span id="L2011" class="LineNr">2011 </span>    68/push <span class="Constant">&quot;var2&quot;</span>/imm32
+<span id="L2012" class="LineNr">2012 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L2013" class="LineNr">2013 </span>    <span class="subxComment"># inouts/esi : (list var2)</span>
 <span id="L2014" class="LineNr">2014 </span>    68/push 0/imm32/next
-<span id="L2015" class="LineNr">2015 </span>    57/push-edi/outputs
-<span id="L2016" class="LineNr">2016 </span>    56/push-esi/inouts
-<span id="L2017" class="LineNr">2017 </span>    68/push <span class="Constant">&quot;add&quot;</span>/imm32/operation
-<span id="L2018" class="LineNr">2018 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L2019" class="LineNr">2019 </span>    <span class="subxComment"># convert</span>
-<span id="L2020" class="LineNr">2020 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi 0 <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
-<span id="L2021" class="LineNr">2021 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L2022" class="Folded">2022 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L2028" class="LineNr">2028 </span>    <span class="subxComment"># check output</span>
-<span id="L2029" class="LineNr">2029 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;01 %eax 0x00000001/r32&quot;</span> <span class="Constant">&quot;F - test-add-reg-to-reg&quot;</span>)
-<span id="L2030" class="LineNr">2030 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L2031" class="LineNr">2031 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L2032" class="LineNr">2032 </span>    5d/pop-to-ebp
-<span id="L2033" class="LineNr">2033 </span>    c3/return
-<span id="L2034" class="LineNr">2034 </span>
-<span id="L2035" class="LineNr">2035 </span><span class="subxTest">test-add-literal-to-reg</span>:
-<span id="L2036" class="LineNr">2036 </span>    <span class="subxComment">#   var1/eax &lt;- add 0x34</span>
-<span id="L2037" class="LineNr">2037 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L2038" class="LineNr">2038 </span>    <span class="subxComment">#   81 0/subop/add %eax 0x34/imm32</span>
-<span id="L2039" class="LineNr">2039 </span>    <span class="subxComment">#</span>
-<span id="L2040" class="LineNr">2040 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L2041" class="LineNr">2041 </span>    55/push-ebp
-<span id="L2042" class="LineNr">2042 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L2043" class="LineNr">2043 </span>    <span class="subxComment"># setup</span>
-<span id="L2044" class="LineNr">2044 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L2045" class="LineNr">2045 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L2046" class="LineNr">2046 </span>    <span class="subxComment"># var-var1/ecx : var in eax</span>
-<span id="L2047" class="LineNr">2047 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
-<span id="L2048" class="LineNr">2048 </span>    68/push 0/imm32/no-stack-offset
-<span id="L2049" class="LineNr">2049 </span>    68/push 1/imm32/block-depth
-<span id="L2050" class="LineNr">2050 </span>    68/push 1/imm32/type-int
-<span id="L2051" class="LineNr">2051 </span>    68/push <span class="Constant">&quot;var1&quot;</span>/imm32
-<span id="L2052" class="LineNr">2052 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L2053" class="LineNr">2053 </span>    <span class="subxComment"># var-var2/edx : var literal</span>
-<span id="L2054" class="LineNr">2054 </span>    68/push 0/imm32/no-register
-<span id="L2055" class="LineNr">2055 </span>    68/push 0/imm32/no-stack-offset
-<span id="L2056" class="LineNr">2056 </span>    68/push 1/imm32/block-depth
-<span id="L2057" class="LineNr">2057 </span>    68/push 0/imm32/type-literal
-<span id="L2058" class="LineNr">2058 </span>    68/push <span class="Constant">&quot;0x34&quot;</span>/imm32
-<span id="L2059" class="LineNr">2059 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L2060" class="LineNr">2060 </span>    <span class="subxComment"># inouts/esi : (list var2)</span>
-<span id="L2061" class="LineNr">2061 </span>    68/push 0/imm32/next
-<span id="L2062" class="LineNr">2062 </span>    52/push-edx/var-var2
-<span id="L2063" class="LineNr">2063 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L2064" class="LineNr">2064 </span>    <span class="subxComment"># outputs/edi : (list var1)</span>
-<span id="L2065" class="LineNr">2065 </span>    68/push 0/imm32/next
-<span id="L2066" class="LineNr">2066 </span>    51/push-ecx/var-var1
-<span id="L2067" class="LineNr">2067 </span>    89/&lt;- %edi 4/r32/esp
-<span id="L2068" class="LineNr">2068 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L2015" class="LineNr">2015 </span>    52/push-edx/var-var2
+<span id="L2016" class="LineNr">2016 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2017" class="LineNr">2017 </span>    <span class="subxComment"># outputs/edi : (list var1)</span>
+<span id="L2018" class="LineNr">2018 </span>    68/push 0/imm32/next
+<span id="L2019" class="LineNr">2019 </span>    51/push-ecx/var-var1
+<span id="L2020" class="LineNr">2020 </span>    89/&lt;- %edi 4/r32/esp
+<span id="L2021" class="LineNr">2021 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L2022" class="LineNr">2022 </span>    68/push 0/imm32/next
+<span id="L2023" class="LineNr">2023 </span>    57/push-edi/outputs
+<span id="L2024" class="LineNr">2024 </span>    56/push-esi/inouts
+<span id="L2025" class="LineNr">2025 </span>    68/push <span class="Constant">&quot;add&quot;</span>/imm32/operation
+<span id="L2026" class="LineNr">2026 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2027" class="LineNr">2027 </span>    <span class="subxComment"># convert</span>
+<span id="L2028" class="LineNr">2028 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi 0 <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
+<span id="L2029" class="LineNr">2029 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L2030" class="Folded">2030 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L2036" class="LineNr">2036 </span>    <span class="subxComment"># check output</span>
+<span id="L2037" class="LineNr">2037 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;01 %eax 0x00000001/r32&quot;</span> <span class="Constant">&quot;F - test-add-reg-to-reg&quot;</span>)
+<span id="L2038" class="LineNr">2038 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L2039" class="LineNr">2039 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L2040" class="LineNr">2040 </span>    5d/pop-to-ebp
+<span id="L2041" class="LineNr">2041 </span>    c3/return
+<span id="L2042" class="LineNr">2042 </span>
+<span id="L2043" class="LineNr">2043 </span><span class="subxTest">test-add-literal-to-reg</span>:
+<span id="L2044" class="LineNr">2044 </span>    <span class="subxComment">#   var1/eax &lt;- add 0x34</span>
+<span id="L2045" class="LineNr">2045 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L2046" class="LineNr">2046 </span>    <span class="subxComment">#   81 0/subop/add %eax 0x34/imm32</span>
+<span id="L2047" class="LineNr">2047 </span>    <span class="subxComment">#</span>
+<span id="L2048" class="LineNr">2048 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L2049" class="LineNr">2049 </span>    55/push-ebp
+<span id="L2050" class="LineNr">2050 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L2051" class="LineNr">2051 </span>    <span class="subxComment"># setup</span>
+<span id="L2052" class="LineNr">2052 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L2053" class="LineNr">2053 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L2054" class="LineNr">2054 </span>    <span class="subxComment"># var-var1/ecx : var in eax</span>
+<span id="L2055" class="LineNr">2055 </span>    68/push <span class="Constant">&quot;eax&quot;</span>/imm32/register
+<span id="L2056" class="LineNr">2056 </span>    68/push 0/imm32/no-stack-offset
+<span id="L2057" class="LineNr">2057 </span>    68/push 1/imm32/block-depth
+<span id="L2058" class="LineNr">2058 </span>    68/push 1/imm32/type-int
+<span id="L2059" class="LineNr">2059 </span>    68/push <span class="Constant">&quot;var1&quot;</span>/imm32
+<span id="L2060" class="LineNr">2060 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L2061" class="LineNr">2061 </span>    <span class="subxComment"># var-var2/edx : var literal</span>
+<span id="L2062" class="LineNr">2062 </span>    68/push 0/imm32/no-register
+<span id="L2063" class="LineNr">2063 </span>    68/push 0/imm32/no-stack-offset
+<span id="L2064" class="LineNr">2064 </span>    68/push 1/imm32/block-depth
+<span id="L2065" class="LineNr">2065 </span>    68/push 0/imm32/type-literal
+<span id="L2066" class="LineNr">2066 </span>    68/push <span class="Constant">&quot;0x34&quot;</span>/imm32
+<span id="L2067" class="LineNr">2067 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L2068" class="LineNr">2068 </span>    <span class="subxComment"># inouts/esi : (list var2)</span>
 <span id="L2069" class="LineNr">2069 </span>    68/push 0/imm32/next
-<span id="L2070" class="LineNr">2070 </span>    57/push-edi/outputs
-<span id="L2071" class="LineNr">2071 </span>    56/push-esi/inouts
-<span id="L2072" class="LineNr">2072 </span>    68/push <span class="Constant">&quot;add&quot;</span>/imm32/operation
-<span id="L2073" class="LineNr">2073 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L2074" class="LineNr">2074 </span>    <span class="subxComment"># convert</span>
-<span id="L2075" class="LineNr">2075 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi 0 <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
-<span id="L2076" class="LineNr">2076 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L2077" class="Folded">2077 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L2083" class="LineNr">2083 </span>    <span class="subxComment"># check output</span>
-<span id="L2084" class="LineNr">2084 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;81 0/subop/add %eax 0x34/imm32&quot;</span> <span class="Constant">&quot;F - test-add-literal-to-reg&quot;</span>)
-<span id="L2085" class="LineNr">2085 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L2086" class="LineNr">2086 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L2087" class="LineNr">2087 </span>    5d/pop-to-ebp
-<span id="L2088" class="LineNr">2088 </span>    c3/return
-<span id="L2089" class="LineNr">2089 </span>
-<span id="L2090" class="LineNr">2090 </span><span class="subxTest">test-emit-subx-statement-function-call</span>:
-<span id="L2091" class="LineNr">2091 </span>    <span class="subxComment"># Call a function on a variable on the stack.</span>
-<span id="L2092" class="LineNr">2092 </span>    <span class="subxComment">#   f foo</span>
-<span id="L2093" class="LineNr">2093 </span>    <span class="subxComment"># =&gt;</span>
-<span id="L2094" class="LineNr">2094 </span>    <span class="subxComment">#   (f2 *(ebp-8))</span>
-<span id="L2095" class="LineNr">2095 </span>    <span class="subxComment"># (Changing the function name supports overloading in general, but here it</span>
-<span id="L2096" class="LineNr">2096 </span>    <span class="subxComment"># just serves to help disambiguate things.)</span>
-<span id="L2097" class="LineNr">2097 </span>    <span class="subxComment">#</span>
-<span id="L2098" class="LineNr">2098 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
-<span id="L2099" class="LineNr">2099 </span>    <span class="subxComment">#   name: 'foo'</span>
-<span id="L2100" class="LineNr">2100 </span>    <span class="subxComment">#   type: int</span>
-<span id="L2101" class="LineNr">2101 </span>    <span class="subxComment">#   stack-offset: -8</span>
-<span id="L2102" class="LineNr">2102 </span>    <span class="subxComment">#</span>
-<span id="L2103" class="LineNr">2103 </span>    <span class="subxComment"># There's nothing in primitives.</span>
-<span id="L2104" class="LineNr">2104 </span>    <span class="subxComment">#</span>
-<span id="L2105" class="LineNr">2105 </span>    <span class="subxComment"># There's a function with this info:</span>
-<span id="L2106" class="LineNr">2106 </span>    <span class="subxComment">#   name: 'f'</span>
-<span id="L2107" class="LineNr">2107 </span>    <span class="subxComment">#   inout: int/mem</span>
-<span id="L2108" class="LineNr">2108 </span>    <span class="subxComment">#   value: 'f2'</span>
-<span id="L2109" class="LineNr">2109 </span>    <span class="subxComment">#</span>
-<span id="L2110" class="LineNr">2110 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L2111" class="LineNr">2111 </span>    55/push-ebp
-<span id="L2112" class="LineNr">2112 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L2113" class="LineNr">2113 </span>    <span class="subxComment"># setup</span>
-<span id="L2114" class="LineNr">2114 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
-<span id="L2115" class="LineNr">2115 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
-<span id="L2116" class="LineNr">2116 </span>    <span class="subxComment"># var-foo/ecx : var</span>
-<span id="L2117" class="LineNr">2117 </span>    68/push 0/imm32/no-register
-<span id="L2118" class="LineNr">2118 </span>    68/push -8/imm32/stack-offset
-<span id="L2119" class="LineNr">2119 </span>    68/push 0/imm32/block-depth
-<span id="L2120" class="LineNr">2120 </span>    68/push 1/imm32/type-int
-<span id="L2121" class="LineNr">2121 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
-<span id="L2122" class="LineNr">2122 </span>    89/&lt;- %ecx 4/r32/esp
-<span id="L2123" class="LineNr">2123 </span>    <span class="subxComment"># vars/edx = (stack 1)</span>
-<span id="L2124" class="LineNr">2124 </span>    51/push-ecx/var-foo
-<span id="L2125" class="LineNr">2125 </span>    68/push 1/imm32/data-length
-<span id="L2126" class="LineNr">2126 </span>    68/push 1/imm32/top
-<span id="L2127" class="LineNr">2127 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L2128" class="LineNr">2128 </span>    <span class="subxComment"># operands/esi : (list var)</span>
-<span id="L2129" class="LineNr">2129 </span>    68/push 0/imm32/next
-<span id="L2130" class="LineNr">2130 </span>    51/push-ecx/var-foo
-<span id="L2131" class="LineNr">2131 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L2132" class="LineNr">2132 </span>    <span class="subxComment"># stmt/esi : statement</span>
-<span id="L2133" class="LineNr">2133 </span>    68/push 0/imm32/next
-<span id="L2134" class="LineNr">2134 </span>    68/push 0/imm32/outputs
-<span id="L2135" class="LineNr">2135 </span>    56/push-esi/inouts
-<span id="L2136" class="LineNr">2136 </span>    68/push <span class="Constant">&quot;f&quot;</span>/imm32/operation
-<span id="L2137" class="LineNr">2137 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L2138" class="LineNr">2138 </span>    <span class="subxComment"># functions/ebx : function</span>
-<span id="L2139" class="LineNr">2139 </span>    68/push 0/imm32/next
-<span id="L2140" class="LineNr">2140 </span>    68/push 0/imm32/body
-<span id="L2141" class="LineNr">2141 </span>    68/push 0/imm32/outputs
-<span id="L2142" class="LineNr">2142 </span>    51/push-ecx/inouts  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
-<span id="L2143" class="LineNr">2143 </span>    68/push <span class="Constant">&quot;f2&quot;</span>/imm32/subx-name
-<span id="L2144" class="LineNr">2144 </span>    68/push <span class="Constant">&quot;f&quot;</span>/imm32/name
-<span id="L2145" class="LineNr">2145 </span>    89/&lt;- %ebx 4/r32/esp
-<span id="L2146" class="LineNr">2146 </span>    <span class="subxComment"># convert</span>
-<span id="L2147" class="LineNr">2147 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx 0 %ebx)
-<span id="L2148" class="LineNr">2148 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
-<span id="L2149" class="Folded">2149 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
-<span id="L2155" class="LineNr">2155 </span>    <span class="subxComment"># check output</span>
-<span id="L2156" class="LineNr">2156 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;(f2 *(ebp+0xfffffff8))&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-function-call&quot;</span>)
-<span id="L2157" class="LineNr">2157 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L2158" class="LineNr">2158 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L2159" class="LineNr">2159 </span>    5d/pop-to-ebp
-<span id="L2160" class="LineNr">2160 </span>    c3/return
-<span id="L2161" class="LineNr">2161 </span>
-<span id="L2162" class="LineNr">2162 </span><span class="subxFunction">emit-subx-prologue</span>:  <span class="subxComment"># out : (address buffered-file)</span>
-<span id="L2163" class="LineNr">2163 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L2164" class="LineNr">2164 </span>    55/push-ebp
-<span id="L2165" class="LineNr">2165 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L2166" class="LineNr">2166 </span>    <span class="subxComment">#</span>
-<span id="L2167" class="LineNr">2167 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;# . prologue\n&quot;</span>)
-<span id="L2168" class="LineNr">2168 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;55/push-ebp\n&quot;</span>)
-<span id="L2169" class="LineNr">2169 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;89/&lt;- %ebp 4/r32/esp\n&quot;</span>)
-<span id="L2170" class="LineNr">2170 </span><span class="Constant">$emit-subx-prologue:end</span>:
-<span id="L2171" class="LineNr">2171 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L2172" class="LineNr">2172 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L2173" class="LineNr">2173 </span>    5d/pop-to-ebp
-<span id="L2174" class="LineNr">2174 </span>    c3/return
-<span id="L2175" class="LineNr">2175 </span>
-<span id="L2176" class="LineNr">2176 </span><span class="subxFunction">emit-subx-epilogue</span>:  <span class="subxComment"># out : (address buffered-file)</span>
-<span id="L2177" class="LineNr">2177 </span>    <span class="subxS1Comment"># . prologue</span>
-<span id="L2178" class="LineNr">2178 </span>    55/push-ebp
-<span id="L2179" class="LineNr">2179 </span>    89/&lt;- %ebp 4/r32/esp
-<span id="L2180" class="LineNr">2180 </span>    <span class="subxComment">#</span>
-<span id="L2181" class="LineNr">2181 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;# . epilogue\n&quot;</span>)
-<span id="L2182" class="LineNr">2182 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;89/&lt;- %esp 5/r32/ebp\n&quot;</span>)
-<span id="L2183" class="LineNr">2183 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;5d/pop-to-ebp\n&quot;</span>)
-<span id="L2184" class="LineNr">2184 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;c3/return\n&quot;</span>)
-<span id="L2185" class="LineNr">2185 </span><span class="Constant">$emit-subx-epilogue:end</span>:
-<span id="L2186" class="LineNr">2186 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L2187" class="LineNr">2187 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L2188" class="LineNr">2188 </span>    5d/pop-to-ebp
-<span id="L2189" class="LineNr">2189 </span>    c3/return
+<span id="L2070" class="LineNr">2070 </span>    52/push-edx/var-var2
+<span id="L2071" class="LineNr">2071 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2072" class="LineNr">2072 </span>    <span class="subxComment"># outputs/edi : (list var1)</span>
+<span id="L2073" class="LineNr">2073 </span>    68/push 0/imm32/next
+<span id="L2074" class="LineNr">2074 </span>    51/push-ecx/var-var1
+<span id="L2075" class="LineNr">2075 </span>    89/&lt;- %edi 4/r32/esp
+<span id="L2076" class="LineNr">2076 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L2077" class="LineNr">2077 </span>    68/push 0/imm32/next
+<span id="L2078" class="LineNr">2078 </span>    57/push-edi/outputs
+<span id="L2079" class="LineNr">2079 </span>    56/push-esi/inouts
+<span id="L2080" class="LineNr">2080 </span>    68/push <span class="Constant">&quot;add&quot;</span>/imm32/operation
+<span id="L2081" class="LineNr">2081 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2082" class="LineNr">2082 </span>    <span class="subxComment"># convert</span>
+<span id="L2083" class="LineNr">2083 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi 0 <span class="SpecialChar"><a href='mu.subx.html#L947'>Primitives</a></span> 0)
+<span id="L2084" class="LineNr">2084 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L2085" class="Folded">2085 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L2091" class="LineNr">2091 </span>    <span class="subxComment"># check output</span>
+<span id="L2092" class="LineNr">2092 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;81 0/subop/add %eax 0x34/imm32&quot;</span> <span class="Constant">&quot;F - test-add-literal-to-reg&quot;</span>)
+<span id="L2093" class="LineNr">2093 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L2094" class="LineNr">2094 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L2095" class="LineNr">2095 </span>    5d/pop-to-ebp
+<span id="L2096" class="LineNr">2096 </span>    c3/return
+<span id="L2097" class="LineNr">2097 </span>
+<span id="L2098" class="LineNr">2098 </span><span class="subxTest">test-emit-subx-statement-function-call</span>:
+<span id="L2099" class="LineNr">2099 </span>    <span class="subxComment"># Call a function on a variable on the stack.</span>
+<span id="L2100" class="LineNr">2100 </span>    <span class="subxComment">#   f foo</span>
+<span id="L2101" class="LineNr">2101 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L2102" class="LineNr">2102 </span>    <span class="subxComment">#   (f2 *(ebp-8))</span>
+<span id="L2103" class="LineNr">2103 </span>    <span class="subxComment"># (Changing the function name supports overloading in general, but here it</span>
+<span id="L2104" class="LineNr">2104 </span>    <span class="subxComment"># just serves to help disambiguate things.)</span>
+<span id="L2105" class="LineNr">2105 </span>    <span class="subxComment">#</span>
+<span id="L2106" class="LineNr">2106 </span>    <span class="subxComment"># There's a variable on the var stack as follows:</span>
+<span id="L2107" class="LineNr">2107 </span>    <span class="subxComment">#   name: 'foo'</span>
+<span id="L2108" class="LineNr">2108 </span>    <span class="subxComment">#   type: int</span>
+<span id="L2109" class="LineNr">2109 </span>    <span class="subxComment">#   stack-offset: -8</span>
+<span id="L2110" class="LineNr">2110 </span>    <span class="subxComment">#</span>
+<span id="L2111" class="LineNr">2111 </span>    <span class="subxComment"># There's nothing in primitives.</span>
+<span id="L2112" class="LineNr">2112 </span>    <span class="subxComment">#</span>
+<span id="L2113" class="LineNr">2113 </span>    <span class="subxComment"># There's a function with this info:</span>
+<span id="L2114" class="LineNr">2114 </span>    <span class="subxComment">#   name: 'f'</span>
+<span id="L2115" class="LineNr">2115 </span>    <span class="subxComment">#   inout: int/mem</span>
+<span id="L2116" class="LineNr">2116 </span>    <span class="subxComment">#   value: 'f2'</span>
+<span id="L2117" class="LineNr">2117 </span>    <span class="subxComment">#</span>
+<span id="L2118" class="LineNr">2118 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L2119" class="LineNr">2119 </span>    55/push-ebp
+<span id="L2120" class="LineNr">2120 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L2121" class="LineNr">2121 </span>    <span class="subxComment"># setup</span>
+<span id="L2122" class="LineNr">2122 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L2123" class="LineNr">2123 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L2124" class="LineNr">2124 </span>    <span class="subxComment"># var-foo/ecx : var</span>
+<span id="L2125" class="LineNr">2125 </span>    68/push 0/imm32/no-register
+<span id="L2126" class="LineNr">2126 </span>    68/push -8/imm32/stack-offset
+<span id="L2127" class="LineNr">2127 </span>    68/push 0/imm32/block-depth
+<span id="L2128" class="LineNr">2128 </span>    68/push 1/imm32/type-int
+<span id="L2129" class="LineNr">2129 </span>    68/push <span class="Constant">&quot;foo&quot;</span>/imm32
+<span id="L2130" class="LineNr">2130 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L2131" class="LineNr">2131 </span>    <span class="subxComment"># vars/edx = (stack 1)</span>
+<span id="L2132" class="LineNr">2132 </span>    51/push-ecx/var-foo
+<span id="L2133" class="LineNr">2133 </span>    68/push 1/imm32/data-length
+<span id="L2134" class="LineNr">2134 </span>    68/push 1/imm32/top
+<span id="L2135" class="LineNr">2135 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L2136" class="LineNr">2136 </span>    <span class="subxComment"># operands/esi : (list var)</span>
+<span id="L2137" class="LineNr">2137 </span>    68/push 0/imm32/next
+<span id="L2138" class="LineNr">2138 </span>    51/push-ecx/var-foo
+<span id="L2139" class="LineNr">2139 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2140" class="LineNr">2140 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L2141" class="LineNr">2141 </span>    68/push 0/imm32/next
+<span id="L2142" class="LineNr">2142 </span>    68/push 0/imm32/outputs
+<span id="L2143" class="LineNr">2143 </span>    56/push-esi/inouts
+<span id="L2144" class="LineNr">2144 </span>    68/push <span class="Constant">&quot;f&quot;</span>/imm32/operation
+<span id="L2145" class="LineNr">2145 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2146" class="LineNr">2146 </span>    <span class="subxComment"># functions/ebx : function</span>
+<span id="L2147" class="LineNr">2147 </span>    68/push 0/imm32/next
+<span id="L2148" class="LineNr">2148 </span>    68/push 0/imm32/body
+<span id="L2149" class="LineNr">2149 </span>    68/push 0/imm32/outputs
+<span id="L2150" class="LineNr">2150 </span>    51/push-ecx/inouts  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
+<span id="L2151" class="LineNr">2151 </span>    68/push <span class="Constant">&quot;f2&quot;</span>/imm32/subx-name
+<span id="L2152" class="LineNr">2152 </span>    68/push <span class="Constant">&quot;f&quot;</span>/imm32/name
+<span id="L2153" class="LineNr">2153 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L2154" class="LineNr">2154 </span>    <span class="subxComment"># convert</span>
+<span id="L2155" class="LineNr">2155 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx 0 %ebx)
+<span id="L2156" class="LineNr">2156 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L2157" class="Folded">2157 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L2163" class="LineNr">2163 </span>    <span class="subxComment"># check output</span>
+<span id="L2164" class="LineNr">2164 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;(f2 *(ebp+0xfffffff8))&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-function-call&quot;</span>)
+<span id="L2165" class="LineNr">2165 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L2166" class="LineNr">2166 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L2167" class="LineNr">2167 </span>    5d/pop-to-ebp
+<span id="L2168" class="LineNr">2168 </span>    c3/return
+<span id="L2169" class="LineNr">2169 </span>
+<span id="L2170" class="LineNr">2170 </span><span class="subxTest">test-emit-subx-statement-function-call-with-literal-arg</span>:
+<span id="L2171" class="LineNr">2171 </span>    <span class="subxComment"># Call a function on a literal.</span>
+<span id="L2172" class="LineNr">2172 </span>    <span class="subxComment">#   f 34</span>
+<span id="L2173" class="LineNr">2173 </span>    <span class="subxComment"># =&gt;</span>
+<span id="L2174" class="LineNr">2174 </span>    <span class="subxComment">#   (f2 34)</span>
+<span id="L2175" class="LineNr">2175 </span>    <span class="subxComment">#</span>
+<span id="L2176" class="LineNr">2176 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L2177" class="LineNr">2177 </span>    55/push-ebp
+<span id="L2178" class="LineNr">2178 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L2179" class="LineNr">2179 </span>    <span class="subxComment"># setup</span>
+<span id="L2180" class="LineNr">2180 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>)
+<span id="L2181" class="LineNr">2181 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../064write-byte.subx.html#L331'>_test-output-buffered-file-&gt;buffer</a>)
+<span id="L2182" class="LineNr">2182 </span>    <span class="subxComment"># var-foo/ecx : literal</span>
+<span id="L2183" class="LineNr">2183 </span>    68/push 0/imm32/no-register
+<span id="L2184" class="LineNr">2184 </span>    68/push 0/imm32/no-stack-offset
+<span id="L2185" class="LineNr">2185 </span>    68/push 0/imm32/block-depth
+<span id="L2186" class="LineNr">2186 </span>    68/push 0/imm32/type-literal
+<span id="L2187" class="LineNr">2187 </span>    68/push <span class="Constant">&quot;34&quot;</span>/imm32
+<span id="L2188" class="LineNr">2188 </span>    89/&lt;- %ecx 4/r32/esp
+<span id="L2189" class="LineNr">2189 </span>    <span class="subxComment"># vars/edx = (stack 1)</span>
+<span id="L2190" class="LineNr">2190 </span>    51/push-ecx/var-foo
+<span id="L2191" class="LineNr">2191 </span>    68/push 1/imm32/data-length
+<span id="L2192" class="LineNr">2192 </span>    68/push 1/imm32/top
+<span id="L2193" class="LineNr">2193 </span>    89/&lt;- %edx 4/r32/esp
+<span id="L2194" class="LineNr">2194 </span>    <span class="subxComment"># operands/esi : (list var)</span>
+<span id="L2195" class="LineNr">2195 </span>    68/push 0/imm32/next
+<span id="L2196" class="LineNr">2196 </span>    51/push-ecx/var-foo
+<span id="L2197" class="LineNr">2197 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2198" class="LineNr">2198 </span>    <span class="subxComment"># stmt/esi : statement</span>
+<span id="L2199" class="LineNr">2199 </span>    68/push 0/imm32/next
+<span id="L2200" class="LineNr">2200 </span>    68/push 0/imm32/outputs
+<span id="L2201" class="LineNr">2201 </span>    56/push-esi/inouts
+<span id="L2202" class="LineNr">2202 </span>    68/push <span class="Constant">&quot;f&quot;</span>/imm32/operation
+<span id="L2203" class="LineNr">2203 </span>    89/&lt;- %esi 4/r32/esp
+<span id="L2204" class="LineNr">2204 </span>    <span class="subxComment"># functions/ebx : function</span>
+<span id="L2205" class="LineNr">2205 </span>    68/push 0/imm32/next
+<span id="L2206" class="LineNr">2206 </span>    68/push 0/imm32/body
+<span id="L2207" class="LineNr">2207 </span>    68/push 0/imm32/outputs
+<span id="L2208" class="LineNr">2208 </span>    51/push-ecx/inouts  <span class="subxComment"># hack; in practice we won't have the same var in function definition and call</span>
+<span id="L2209" class="LineNr">2209 </span>    68/push <span class="Constant">&quot;f2&quot;</span>/imm32/subx-name
+<span id="L2210" class="LineNr">2210 </span>    68/push <span class="Constant">&quot;f&quot;</span>/imm32/name
+<span id="L2211" class="LineNr">2211 </span>    89/&lt;- %ebx 4/r32/esp
+<span id="L2212" class="LineNr">2212 </span>    <span class="subxComment"># convert</span>
+<span id="L2213" class="LineNr">2213 </span>    (<a href='mu.subx.html#L897'>emit-subx-statement</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a> %esi %edx 0 %ebx)
+<span id="L2214" class="LineNr">2214 </span>    (<a href='../064write-byte.subx.html#L81'>flush</a> <a href='../064write-byte.subx.html#L328'>_test-output-buffered-file</a>)
+<span id="L2215" class="Folded">2215 </span><span class="Folded">+--  6 lines: #?     # dump _test-output-stream --------------------------------------------------------------------------------------------------------------</span>
+<span id="L2221" class="LineNr">2221 </span>    <span class="subxComment"># check output</span>
+<span id="L2222" class="LineNr">2222 </span>    (<a href='../058stream-equal.subx.html#L563'>check-next-stream-line-equal</a> <a href='../064write-byte.subx.html#L286'>_test-output-stream</a> <span class="Constant">&quot;(f2 34)&quot;</span> <span class="Constant">&quot;F - test-emit-subx-statement-function-call-with-literal-arg&quot;</span>)
+<span id="L2223" class="LineNr">2223 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L2224" class="LineNr">2224 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L2225" class="LineNr">2225 </span>    5d/pop-to-ebp
+<span id="L2226" class="LineNr">2226 </span>    c3/return
+<span id="L2227" class="LineNr">2227 </span>
+<span id="L2228" class="LineNr">2228 </span><span class="subxFunction">emit-subx-prologue</span>:  <span class="subxComment"># out : (address buffered-file)</span>
+<span id="L2229" class="LineNr">2229 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L2230" class="LineNr">2230 </span>    55/push-ebp
+<span id="L2231" class="LineNr">2231 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L2232" class="LineNr">2232 </span>    <span class="subxComment">#</span>
+<span id="L2233" class="LineNr">2233 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;# . prologue\n&quot;</span>)
+<span id="L2234" class="LineNr">2234 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;55/push-ebp\n&quot;</span>)
+<span id="L2235" class="LineNr">2235 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;89/&lt;- %ebp 4/r32/esp\n&quot;</span>)
+<span id="L2236" class="LineNr">2236 </span><span class="Constant">$emit-subx-prologue:end</span>:
+<span id="L2237" class="LineNr">2237 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L2238" class="LineNr">2238 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L2239" class="LineNr">2239 </span>    5d/pop-to-ebp
+<span id="L2240" class="LineNr">2240 </span>    c3/return
+<span id="L2241" class="LineNr">2241 </span>
+<span id="L2242" class="LineNr">2242 </span><span class="subxFunction">emit-subx-epilogue</span>:  <span class="subxComment"># out : (address buffered-file)</span>
+<span id="L2243" class="LineNr">2243 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L2244" class="LineNr">2244 </span>    55/push-ebp
+<span id="L2245" class="LineNr">2245 </span>    89/&lt;- %ebp 4/r32/esp
+<span id="L2246" class="LineNr">2246 </span>    <span class="subxComment">#</span>
+<span id="L2247" class="LineNr">2247 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;# . epilogue\n&quot;</span>)
+<span id="L2248" class="LineNr">2248 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;89/&lt;- %esp 5/r32/ebp\n&quot;</span>)
+<span id="L2249" class="LineNr">2249 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;5d/pop-to-ebp\n&quot;</span>)
+<span id="L2250" class="LineNr">2250 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;c3/return\n&quot;</span>)
+<span id="L2251" class="LineNr">2251 </span><span class="Constant">$emit-subx-epilogue:end</span>:
+<span id="L2252" class="LineNr">2252 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L2253" class="LineNr">2253 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L2254" class="LineNr">2254 </span>    5d/pop-to-ebp
+<span id="L2255" class="LineNr">2255 </span>    c3/return
 </pre>
 </body>
 </html>
