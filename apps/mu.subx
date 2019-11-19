@@ -973,6 +973,16 @@ _Primitive-add-reg-to-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    _Primitive-add-lit-to-reg/imm32/next
+_Primitive-add-lit-to-reg:
+    # var1/reg <- add lit => 81 0/subop/add var1/rm32 lit/imm32
+    "add"/imm32/name
+    Single-lit-var/imm32/inouts
+    Single-int-var-in-some-register/imm32/outputs
+    "81 0/subop/add"/imm32/subx-name
+    3/imm32/rm32-is-first-output
+    0/imm32/no-r32
+    1/imm32/imm32-is-first-inout
     0/imm32/next
 
 Single-int-var-on-stack:
@@ -997,6 +1007,17 @@ Int-var-in-some-register:
     0/imm32/some-stack-offset
     "*"/imm32/register
 
+Single-lit-var:
+    Lit-var/imm32
+    0/imm32/next
+
+Lit-var:
+    "literal"/imm32/name
+    0/imm32/type-literal
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    0/imm32/no-register
+
 == code
 emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), primitive : (address function)
     # . prologue
@@ -1013,8 +1034,8 @@ emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement
     (emit-subx-rm32 *(ebp+8) *(ecx+0x10) *(ebp+0xc))  # out, Primitive-subx-rm32, stmt
     # emit r32 if necessary
     (emit-subx-r32 *(ebp+8) *(ecx+0x14) *(ebp+0xc))  # out, Primitive-subx-r32, stmt
-#?     # emit imm32 if necessary
-#?     (emit-subx-imm32 *(ebp+8) *(ecx+0x18) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
+    # emit imm32 if necessary
+    (emit-subx-imm32 *(ebp+8) *(ecx+0x18) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
 $emit-subx-primitive:end:
     # . restore registers
     59/pop-to-ecx
@@ -1141,7 +1162,9 @@ emit-subx-imm32:  # out : (address buffered-file), l : arg-location, stmt : (add
     74/jump-if-equal $emit-subx-imm32:end/disp8
     #
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
-    (emit-subx-call-operand *(ebp+8) %eax)  # out, var
+    (write-buffered *(ebp+8) Space)
+    (write-buffered *(ebp+8) *eax)  # Var-name
+    (write-buffered *(ebp+8) "/imm32")
 $emit-subx-imm32:end:
     # . restore registers
     59/pop-to-ecx
@@ -2004,6 +2027,61 @@ test-add-reg-to-reg:
 #?     # }}}
     # check output
     (check-next-stream-line-equal _test-output-stream "01 %eax 0x00000001/r32" "F - test-add-reg-to-reg")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-add-literal-to-reg:
+    #   var1/eax <- add 0x34
+    # =>
+    #   81 0/subop/add %eax 0x34/imm32
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # var-var1/ecx : var in eax
+    68/push "eax"/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "var1"/imm32
+    89/<- %ecx 4/r32/esp
+    # var-var2/edx : var literal
+    68/push 0/imm32/no-register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 0/imm32/type-literal
+    68/push "0x34"/imm32
+    89/<- %edx 4/r32/esp
+    # inouts/esi : (list var2)
+    68/push 0/imm32/next
+    52/push-edx/var-var2
+    89/<- %esi 4/r32/esp
+    # outputs/edi : (list var1)
+    68/push 0/imm32/next
+    51/push-ecx/var-var1
+    89/<- %edi 4/r32/esp
+    # stmt/esi : statement
+    68/push 0/imm32/next
+    57/push-edi/outputs
+    56/push-esi/inouts
+    68/push "add"/imm32/operation
+    89/<- %esi 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "81 0/subop/add %eax 0x34/imm32" "F - test-add-literal-to-reg")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
