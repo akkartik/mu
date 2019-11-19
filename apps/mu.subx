@@ -1056,7 +1056,7 @@ emit-subx-rm32:  # out : (address buffered-file), l : arg-location, stmt : (addr
     74/jump-if-equal $emit-subx-rm32:end/disp8
     #
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
-    (emit-subx-call-operand *(ebp+8) %eax)  # out, var
+    (emit-subx-var-as-rm32 *(ebp+8) %eax)  # out, var
 $emit-subx-rm32:end:
     # . restore registers
     58/pop-to-eax
@@ -1218,25 +1218,8 @@ emit-subx-call-operand:  # out : (address buffered-file), operand : (address var
     50/push-eax
     # eax = operand
     8b/-> *(ebp+0xc) 0/r32/eax
-    # if (operand->register) emit "%__"
-    {
-      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
-      74/jump-if-equal break/disp8
-$emit-subx-call-operand:register:
-      (write-buffered *(ebp+8) " %")
-      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
-    }
-    # else if (operand->stack-offset) emit "*(ebp+__)"
-    {
-      81 7/subop/compare *(eax+0xc) 0/imm32  # Var-stack-offset
-      74/jump-if-equal break/disp8
-$emit-subx-call-operand:stack:
-      (write-buffered *(ebp+8) Space)
-      (write-buffered *(ebp+8) "*(ebp+")
-      8b/-> *(ebp+0xc) 0/r32/eax
-      (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-stack-offset
-      (write-buffered *(ebp+8) ")")
-    }
+    # if non-literal, emit appropriately
+    (emit-subx-var-as-rm32 *(ebp+8) %eax)
     # else if (operand->type == literal) emit "__"
     {
       81 7/subop/compare *(eax+4) 0/imm32  # Var-type
@@ -1246,6 +1229,41 @@ $emit-subx-call-operand:literal:
       (write-buffered *(ebp+8) *eax)
     }
 $emit-subx-call-operand:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-var-as-rm32:  # out : (address buffered-file), operand : (address variable)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # eax = operand
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # if (operand->register) emit "%__"
+    {
+      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+      74/jump-if-equal break/disp8
+$emit-subx-var-as-rm32:register:
+      (write-buffered *(ebp+8) " %")
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
+    }
+    # else if (operand->stack-offset) emit "*(ebp+__)"
+    {
+      81 7/subop/compare *(eax+0xc) 0/imm32  # Var-stack-offset
+      74/jump-if-equal break/disp8
+$emit-subx-var-as-rm32:stack:
+      (write-buffered *(ebp+8) Space)
+      (write-buffered *(ebp+8) "*(ebp+")
+      8b/-> *(ebp+0xc) 0/r32/eax
+      (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-stack-offset
+      (write-buffered *(ebp+8) ")")
+    }
+$emit-subx-var-as-rm32:end:
     # . restore registers
     58/pop-to-eax
     # . epilogue
