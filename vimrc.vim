@@ -71,14 +71,11 @@ endif
 
 " useful for inspecting just the control flow in a trace
 " see https://github.com/akkartik/mu/blob/master/Readme.md#a-few-hints-for-debugging
-" the '-a' is because traces can sometimes contain unprintable characters that bother grep
-command! -nargs=0 L exec "%!grep -a label |grep -v clear-stream:loop"
+command! -nargs=0 L exec "%!grep label |grep -v clear-stream:loop"
 
 " run test around cursor
-" Unfortunately this only works with Linux at the moment.
-" Some compiler passes take too long to run in emulated mode.
 if empty($TMUX)
-  " hack: need to move cursor at outside function at start (`{j0`), but inside function at end (`<C-o>`)
+  " hack: need to move cursor outside function at start (`{`), but inside function at end (`<C-o>`)
   " this solution is unfortunate, but seems forced:
   "   can't put initial cursor movement inside function because we rely on <C-r><C-w> to grab word at cursor
   "   can't put final cursor movement out of function because that disables the wait for <CR> prompt; function must be final operation of map
