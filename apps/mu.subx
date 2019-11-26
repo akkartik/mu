@@ -645,7 +645,7 @@ $parse-mu:word-loop:
           # *curr-function = new-function
           89/<- *edi 0/r32/eax
           # curr-function = &new-function->next
-          8d/address-> *(eax+0x10) 7/r32/edi
+          8d/address-> *(eax+0x14) 7/r32/edi  # Function-next
           e9/jump $parse-mu:word-loop/disp32
         }
         # otherwise abort
@@ -750,9 +750,32 @@ $populate-mu-function-header:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+populate-mu-function-body:  # in : (address buffered-file), out : (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    56/push-esi
+    # esi = in
+    8b/-> *(ebp+8) 6/r32/esi
+    # var eax : (address block) = parse-mu-block(in)
+    (parse-mu-block %esi)
+    # out->body = eax
+    89/<- *(eax+0x10) 0/r32/eax  # Function-body
+$populate-mu-function-body:end:
+    # . restore registers
+    5e/pop-to-esi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# parses a block, assuming that the leading '{' has already been read by the caller
 # errors considered:
 #   { abc
-populate-mu-function-body:  # in : (address buffered-file), out : (address function)
+parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -774,7 +797,7 @@ populate-mu-function-body:  # in : (address buffered-file), out : (address funct
     # var open-curly-count/ebx : int = 1
     bb/copy-to-ebx 1/imm32
     { # line loop
-$populate-mu-function-body:line-loop:
+$parse-mu-block:line-loop:
       # if (open-curly-count == 0) break
       81 7/subop/compare %ebx 0/imm32
       0f 84/jump-if-equal break/disp32
@@ -816,7 +839,7 @@ $populate-mu-function-body:line-loop:
           eb/jump $curly-found:end/disp8
         }
         # else break
-        eb/jump $populate-mu-function-body:end/disp8
+        eb/jump $parse-mu-block:end/disp8
       }
       # - check for invalid tokens after curly
 $curly-found:end:
@@ -835,9 +858,9 @@ $curly-found:end:
       3d/compare-eax-and 0x23/imm32/hash
       0f 84/jump-if-equal loop/disp32
       # abort
-      eb/jump $populate-mu-function-body:abort/disp8
+      eb/jump $parse-mu-block:abort/disp8
     } # end line loop
-$populate-mu-function-body:end:
+$parse-mu-block:end:
     # . reclaim locals
     81 0/subop/add %esp 0x214/imm32
     # . restore registers
@@ -850,7 +873,7 @@ $populate-mu-function-body:end:
     5d/pop-to-ebp
     c3/return
 
-$populate-mu-function-body:abort:
+$parse-mu-block:abort:
     # error("'{' or '}' should be on its own line, but got '")
     (write-buffered Stderr "'{' or '}' should be on its own line, but got '")
     (rewind-stream %ecx)
@@ -892,7 +915,7 @@ emit-subx:  # out : (address buffered-file)
       0f 84/jump-if-equal break/disp32
       (emit-subx-function %edi %ecx)
       # curr = curr->next
-      8b/-> *(ecx+0x10) 1/r32/ecx
+      8b/-> *(ecx+0x14) 1/r32/ecx  # Function-next
       e9/jump loop/disp32
     }
 $emit-subx:end:
