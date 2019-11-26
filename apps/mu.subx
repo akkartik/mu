@@ -91,13 +91,39 @@
 #   A var-type contains:
 #     name: string
 #     type: s-expression of type ids
-#   Statements are not yet fully designed.
-#   statement = var definition or simple statement or block
-#   simple statement:
+#
+#   A statement can be:
+#     tag 0: a block
+#     tag 1: a simple statement
+#     tag 2: a variable defined on the stack
+#     tag 3: a variable defined in a register
+#     tag 4: a named block
+#
+#   A block contains:
+#     tag: 0
+#     statements: (address list statement)
+#
+#   A regular statement contains:
+#     tag: 1
 #     operation: string
-#     inouts: linked list of vars
-#     outputs: linked list of vars
-#   block = linked list of statements
+#     inouts: (address list operand)
+#     outputs: (address list var)
+#
+#   A variable defined on the stack contains:
+#     tag: 2
+#     name: string
+#     type: type-tree
+#
+#   A variable defined in a register contains:
+#     tag: 3
+#     name: string
+#     type: type-tree
+#     reg: string
+#
+#   A named block contains:
+#     tag: 4
+#     name: string
+#     statements: (address list statement)
 
 # == Translation: managing the stack
 # Now that we know what the language looks like in the large, let's think
@@ -245,6 +271,36 @@ Primitive-next:  # (address function)
   0x1c/imm32
 Primitive-size:
   0x20/imm32/24
+
+Stmt-tag:
+  0/imm32
+
+Block-statements:  # (address list statement)
+  4/imm32
+
+Stmt1-operation:  # string
+  4/imm32
+Stmt1-inouts:  # (address list operand)
+  8/imm32
+Stmt1-outputs:  # (address list var)
+  0xc/imm32
+
+Vardef-name:  # string
+  4/imm32
+Vardef-type:  # (address tree type-id)
+  8/imm32
+
+Regvardef-name:  # string
+  4/imm32
+Regvardef-type:  # (address tree type-id)
+  8/imm32
+Regvardef-register:  # string
+  0xc/imm32
+
+Named-block-name:
+  4/imm32
+Named-block-statements:  # (address list statement)
+  8/imm32
 
 Stmt-operation:
   0/imm32
@@ -1080,7 +1136,7 @@ get-stmt-operand-from-arg-location:  # stmt : (address statement), l : arg-locat
       3d/compare-eax-and 1/imm32
       75/jump-if-not-equal break/disp8
 $get-stmt-operand-from-arg-location:1:
-      8b/-> *(ecx+4) 0/r32/eax  # Stmt-inouts
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
       8b/-> *eax 0/r32/eax  # Operand-var
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
@@ -1089,7 +1145,7 @@ $get-stmt-operand-from-arg-location:1:
       3d/compare-eax-and 2/imm32
       75/jump-if-not-equal break/disp8
 $get-stmt-operand-from-arg-location:2:
-      8b/-> *(ecx+4) 0/r32/eax  # Stmt-inouts
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
       8b/-> *(eax+4) 0/r32/eax  # Operand-next
       8b/-> *eax 0/r32/eax  # Operand-var
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
@@ -1099,7 +1155,7 @@ $get-stmt-operand-from-arg-location:2:
       3d/compare-eax-and 3/imm32
       75/jump-if-not-equal break/disp8
 $get-stmt-operand-from-arg-location:3:
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt-outputs
+      8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
       8b/-> *eax 0/r32/eax  # Operand-var
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
@@ -1189,7 +1245,7 @@ emit-subx-call:  # out : (address buffered-file), stmt : (address statement), va
     # - emit arguments
     # var curr/ecx : (list var) = stmt->inouts
     8b/-> *(ebp+0xc) 1/r32/ecx
-    8b/-> *(ecx+4) 1/r32/ecx  # Stmt-inouts
+    8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
@@ -1350,7 +1406,7 @@ mu-stmt-matches-function?:  # stmt : (address statement), function : (address op
     # return primitive->name == stmt->operation
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ebp+0xc) 0/r32/eax
-    (string-equal? *ecx *eax)  # => eax
+    (string-equal? *(ecx+4) *eax)  # Stmt1-operation, Primitive-name => eax
 $mu-stmt-matches-function?:end:
     # . restore registers
     59/pop-to-ecx
@@ -1381,7 +1437,7 @@ mu-stmt-matches-primitive?:  # stmt : (address statement), primitive : (address 
     {
 $mu-stmt-matches-primitive?:check-name:
       # if (primitive->name != stmt->operation) return false
-      (string-equal? *ecx *edx)  # => eax
+      (string-equal? *(ecx+4) *edx)  # Stmt1-operation, Primitive-name => eax
       3d/compare-eax-and 0/imm32
       75/jump-if-not-equal break/disp8
       b8/copy-to-eax 0/imm32
@@ -1389,7 +1445,7 @@ $mu-stmt-matches-primitive?:check-name:
     }
 $mu-stmt-matches-primitive?:check-inouts:
     # curr = stmt->inouts
-    8b/-> *(ecx+4) 6/r32/esi  # Stmt-inouts
+    8b/-> *(ecx+8) 6/r32/esi  # Stmt1-inouts
     # curr2 = primitive->inouts
     8b/-> *(edx+4) 7/r32/edi  # Primitive-inouts
     {
@@ -1434,7 +1490,7 @@ $mu-stmt-matches-primitive?:check-outputs:
     # edx = primitive
     8b/-> *(ebp+0xc) 2/r32/edx
     # curr = stmt->outputs
-    8b/-> *(ecx+8) 6/r32/esi  # Stmt-outputs
+    8b/-> *(ecx+0xc) 6/r32/esi  # Stmt1-outputs
     # curr2 = primitive->outputs
     8b/-> *(edx+8) 7/r32/edi  # Primitive-outputs
     {
@@ -1581,6 +1637,7 @@ test-emit-subx-statement-primitive:
     68/push 0/imm32/outputs
     53/push-ebx/operands
     68/push "increment"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
 #? $aa-stmt-in-esi:
     # primitives/ebx : primitive
@@ -1655,6 +1712,7 @@ test-emit-subx-statement-primitive-register:
     53/push-ebx/outputs
     68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # formal-var/ebx : var in any register
     68/push Any-register/imm32
@@ -1741,6 +1799,7 @@ test-emit-subx-statement-select-primitive:
     57/push-edi/outputs
     68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # formal-var/ebx : var in any register
     68/push Any-register/imm32
@@ -1837,6 +1896,7 @@ test-emit-subx-statement-select-primitive-2:
     68/push 0/imm32/outputs
     57/push-edi/inouts
     68/push "increment"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # formal-var/ebx : var in any register
     68/push Any-register/imm32
@@ -1927,6 +1987,7 @@ test-increment-register:
     57/push-edi/outputs
     68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
     (emit-subx-statement _test-output-buffered-file %esi %edx Primitives 0)
@@ -1986,6 +2047,7 @@ test-increment-var:
     68/push 0/imm32/outputs
     57/push-edi/inouts
     68/push "increment"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
     (emit-subx-statement _test-output-buffered-file %esi %edx Primitives 0)
@@ -2041,6 +2103,7 @@ test-add-reg-to-reg:
     57/push-edi/outputs
     56/push-esi/inouts
     68/push "add"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
     (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
@@ -2096,6 +2159,7 @@ test-add-literal-to-reg:
     57/push-edi/outputs
     56/push-esi/inouts
     68/push "add"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
     (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
@@ -2160,6 +2224,7 @@ test-emit-subx-statement-function-call:
     68/push 0/imm32/outputs
     56/push-esi/inouts
     68/push "f"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # functions/ebx : function
     68/push 0/imm32/next
@@ -2218,6 +2283,7 @@ test-emit-subx-statement-function-call-with-literal-arg:
     68/push 0/imm32/outputs
     56/push-esi/inouts
     68/push "f"/imm32/operation
+    68/push 1/imm32
     89/<- %esi 4/r32/esp
     # functions/ebx : function
     68/push 0/imm32/next
