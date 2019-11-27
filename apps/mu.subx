@@ -1052,6 +1052,26 @@ _Primitive-add-reg-to-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    _Primitive-add-reg-to-mem/imm32/next
+_Primitive-add-reg-to-mem:
+    # add-to var1 var2/reg => 01 var1 var2/r32
+    "add-to"/imm32/name
+    Int-var-and-second-int-var-in-some-register/imm32/inouts
+    0/imm32/outputs
+    "01"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    2/imm32/r32-is-second-inout
+    0/imm32/no-imm32
+    _Primitive-add-mem-to-reg/imm32/next
+_Primitive-add-mem-to-reg:
+    # var1/reg <- add var2 => 03 var2/rm32 var1/r32
+    "add"/imm32/name
+    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-some-register/imm32/outputs
+    "03"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    3/imm32/r32-is-first-output
+    0/imm32/no-imm32
     _Primitive-add-lit-to-reg/imm32/next
 _Primitive-add-lit-to-reg:
     # var1/reg <- add lit => 81 0/subop/add var1/rm32 lit/imm32
@@ -1062,6 +1082,16 @@ _Primitive-add-lit-to-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    _Primitive-add-lit-to-mem/imm32/next
+_Primitive-add-lit-to-mem:
+    # add-to var1, lit => 81 0/subop/add var1/rm32 lit/imm32
+    "add"/imm32/name
+    Int-var-and-literal/imm32/inouts
+    0/imm32/outputs
+    "81 0/subop/add"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    0/imm32/no-r32
+    2/imm32/imm32-is-first-inout
     0/imm32/next
 
 Single-int-var-on-stack:
@@ -1075,6 +1105,14 @@ Int-var-on-stack:
     1/imm32/some-stack-offset
     0/imm32/no-register
 
+Int-var-and-second-int-var-in-some-register:
+    Int-var-on-stack/imm32
+    Int-var-in-some-register/imm32/next
+
+Int-var-and-literal:
+    Int-var-on-stack/imm32
+    Single-lit-var/imm32/next
+
 Single-int-var-in-some-register:
     Int-var-in-some-register/imm32
     0/imm32/next
@@ -1083,7 +1121,7 @@ Int-var-in-some-register:
     "arg1"/imm32/name
     1/imm32/type-int
     1/imm32/some-block-depth
-    0/imm32/some-stack-offset
+    0/imm32/no-stack-offset
     "*"/imm32/register
 
 Single-lit-var:
@@ -1578,7 +1616,10 @@ operand-matches-primitive?:  # var : (address var), primout-var : (address var) 
     # edi = primout-var
     8b/-> *(ebp+0xc) 7/r32/edi
     # if (var->type != primout-var->type) return false
-    # TODO
+    8b/-> *(esi+4) 0/r32/eax  # Var-type
+    39/compare *(edi+4) 0/r32/eax  # Var-type
+    b8/copy-to-eax 0/imm32/false
+    75/jump-if-not-equal $operand-matches-primitive?:end/disp8
     # return false if var->register doesn't match primout-var->register
     {
       # if addresses are equal, don't return here
