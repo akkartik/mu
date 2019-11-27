@@ -2176,6 +2176,118 @@ test-add-reg-to-reg:
     5d/pop-to-ebp
     c3/return
 
+test-add-reg-to-mem:
+    #   add-to var1 var2/reg
+    # =>
+    #   01 *(ebp+__) var2
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # var-var1/ecx : var
+    68/push 0/imm32/no-register
+    68/push 8/imm32/stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "var1"/imm32
+    89/<- %ecx 4/r32/esp
+    # var-var2/edx : var in ecx
+    68/push "ecx"/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "var2"/imm32
+    89/<- %edx 4/r32/esp
+    # inouts/esi : (list var2)
+    68/push 0/imm32/next
+    52/push-edx/var-var2
+    89/<- %esi 4/r32/esp
+    # inouts = (list var1 var2)
+    56/push-esi/next
+    51/push-ecx/var-var1
+    89/<- %esi 4/r32/esp
+    # stmt/esi : statement
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    56/push-esi/inouts
+    68/push "add-to"/imm32/operation
+    68/push 1/imm32
+    89/<- %esi 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "01 *(ebp+0x00000008) 0x00000001/r32" "F - test-add-reg-to-mem")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-add-mem-to-reg:
+    #   var1/reg <- add var2
+    # =>
+    #   03 *(ebp+__) var1
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    # var-var1/ecx : var in eax
+    68/push "eax"/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "var1"/imm32
+    89/<- %ecx 4/r32/esp
+    # var-var2/edx : var
+    68/push 0/imm32/no-register
+    68/push 8/imm32/stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "var2"/imm32
+    89/<- %edx 4/r32/esp
+    # inouts/esi : (list var2)
+    68/push 0/imm32/next
+    52/push-edx/var-var2
+    89/<- %esi 4/r32/esp
+    # outputs/edi : (list var1)
+    68/push 0/imm32/next
+    51/push-ecx/var-var1
+    89/<- %edi 4/r32/esp
+    # stmt/esi : statement
+    68/push 0/imm32/next
+    57/push-edi/outputs
+    56/push-esi/inouts
+    68/push "add"/imm32/operation
+    68/push 1/imm32
+    89/<- %esi 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "03 *(ebp+0x00000008) 0x00000000/r32" "F - test-add-mem-to-reg")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-add-literal-to-reg:
     #   var1/eax <- add 0x34
     # =>
