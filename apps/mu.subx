@@ -280,7 +280,7 @@ Block-statements:  # (address list statement)
 
 Stmt1-operation:  # string
   4/imm32
-Stmt1-inouts:  # (address list operand)
+Stmt1-inouts:  # (address list var)
   8/imm32
 Stmt1-outputs:  # (address list var)
   0xc/imm32
@@ -302,14 +302,6 @@ Named-block-name:
 Named-block-statements:  # (address list statement)
   8/imm32
 
-Stmt-operation:
-  0/imm32
-Stmt-inouts:
-  4/imm32
-Stmt-outputs:
-  8/imm32
-Stmt-next:
-  0xc/imm32
 Stmt-size:
   0x10/imm32
 
@@ -561,6 +553,10 @@ test-convert-function-with-arg:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+#######################################################
+# Parsing
+#######################################################
 
 parse-mu:  # in : (address buffered-file)
     # pseudocode
@@ -886,16 +882,185 @@ $parse-mu-block:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+new-function:  # ad: allocation-descriptor, name: string, subx-name: string, inouts: (address list var), outputs: (address list var), body: (address block), next: (address function) -> result/eax: (address function)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Function-size)  # => eax
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *eax 1/r32/ecx  # Function-name
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # Function-subx-name
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Function-inouts
+    8b/-> *(ebp+0x18) 1/r32/ecx
+    89/<- *(eax+0xc) 1/r32/ecx  # Function-outputs
+    8b/-> *(ebp+0x1c) 1/r32/ecx
+    89/<- *(eax+0x10) 1/r32/ecx  # Function-body
+    8b/-> *(ebp+0x20) 1/r32/ecx
+    89/<- *(eax+0x14) 1/r32/ecx  # Function-next
+$new-function:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-var:  # ad: allocation-descriptor, name: string, type: int, block: int, stack-offset: int, register: string -> result/eax: (address var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Var-size)  # => eax
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *eax 1/r32/ecx  # Var-name
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # Var-type
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Var-block
+    8b/-> *(ebp+0x18) 1/r32/ecx
+    89/<- *(eax+0xc) 1/r32/ecx  # Var-stack-offset
+    8b/-> *(ebp+0x1c) 1/r32/ecx
+    89/<- *(eax+0x10) 1/r32/ecx  # Var-register
+$new-var:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-block:  # ad: allocation-descriptor, data: (address list statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Stmt-size)  # => eax
+    c7 0/subop/copy *eax 0/imm32/tag/block  # Stmt-tag
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # Block-statements
+$new-block:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-stmt:  # ad: allocation-descriptor, operation: string, inouts: (address list var), outputs: (address list var) -> result/eax: (address statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Stmt-size)  # => eax
+    c7 0/subop/copy *eax 1/imm32/tag/regular-stmt  # Stmt-tag
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # Stmt1-operation
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Stmt1-inouts
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    89/<- *(eax+0xc) 1/r32/ecx  # Stmt1-outputs
+$new-stmt:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-vardef:  # ad: allocation-descriptor, name: string, type: int -> result/eax: (address statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Stmt-size)  # => eax
+    c7 0/subop/copy *eax 2/imm32/tag/var-on-stack  # Stmt-tag
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # Vardef-name
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Vardef-type
+$new-vardef:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-regvardef:  # ad: allocation-descriptor, name: string, type: int, register: string -> result/eax: (address statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Stmt-size)  # => eax
+    c7 0/subop/copy *eax 3/imm32/tag/var-in-register
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # Regvardef-name
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Regvardef-type
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    89/<- *(eax+0xc) 1/r32/ecx  # Regvardef-register
+$new-regvardef:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-named-block:  # ad: allocation-descriptor, name: string, data: (address list statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Stmt-size)  # => eax
+    c7 0/subop/copy *eax 4/imm32/tag/named-block
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # Named-block-name
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Named-block-statements
+$new-named-block:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+#######################################################
+# Type-checking
+#######################################################
+
 check-mu-types:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     #
-$check-types:end:
+$check-mu-types:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+#######################################################
+# Code-generation
+#######################################################
 
 emit-subx:  # out : (address buffered-file)
     # . prologue
@@ -927,12 +1092,6 @@ $emit-subx:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
-
-# == Emitting a function
-# Emit function header
-# Emit function prologue
-# Translate function body
-# Emit function epilogue
 
 emit-subx-function:  # out : (address buffered-file), f : (address function)
     # . prologue
