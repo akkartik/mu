@@ -964,6 +964,7 @@ test-is-identifier-Z:
     c3/return
 
 test-is-identifier-@:
+    # character before 'A' is invalid
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -979,6 +980,115 @@ test-is-identifier-@:
     #
     (is-identifier? %ecx)
     (check-ints-equal %eax 0 "F - test-is-identifier-@")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-square-bracket:
+    # character after 'Z' is invalid
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "[a"
+    b8/copy-to-eax "[a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 0 "F - test-is-identifier-@")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-backtick:
+    # character before 'a' is invalid
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "`a"
+    b8/copy-to-eax "`a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 0 "F - test-is-identifier-backtick")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-curly-brace-open:
+    # character after 'z' is invalid; also used for blocks
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "{a"
+    b8/copy-to-eax "{a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 0 "F - test-is-identifier-curly-brace-open")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-curly-brace-close:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "}a"
+    b8/copy-to-eax "}a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 0 "F - test-is-identifier-curly-brace-close")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-hyphen:
+    # disallow leading '-' since '->' has special meaning
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "-a"
+    b8/copy-to-eax "-a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 0 "F - test-is-identifier-hyphen")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
