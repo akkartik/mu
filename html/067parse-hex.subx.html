@@ -467,7 +467,7 @@ if ('onhashchange' in window) {
 <span id="L407" class="LineNr">407 </span>    <span class="subxS2Comment"># . . copy arg to eax</span>
 <span id="L408" class="LineNr">408 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L409" class="LineNr">409 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L410" class="LineNr">410 </span>    e8/call  <a href='067parse-hex.subx.html#L797'>from-hex-char</a>/disp32
+<span id="L410" class="LineNr">410 </span>    e8/call  <a href='067parse-hex.subx.html#L801'>from-hex-char</a>/disp32
 <span id="L411" class="LineNr">411 </span>    <span class="subxComment"># result = result * 16 + eax</span>
 <span id="L412" class="LineNr">412 </span>    c1/shift    4/subop/left        3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm8            <span class="subxComment"># shift ebx left by 4 bits</span>
 <span id="L413" class="LineNr">413 </span>    01/add                          3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># add eax to ebx</span>
@@ -704,232 +704,236 @@ if ('onhashchange' in window) {
 <span id="L644" class="LineNr">644 </span>    <span class="subxComment"># ecx = c</span>
 <span id="L645" class="LineNr">645 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to ecx</span>
 <span id="L646" class="LineNr">646 </span>    <span class="subxComment"># return false if c &lt; '0'</span>
-<span id="L647" class="LineNr">647 </span>    b8/copy-to-eax  0/imm32/false
-<span id="L648" class="LineNr">648 </span>    81          7/subop/compare     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x30/imm32        <span class="subxComment"># compare ecx</span>
-<span id="L649" class="LineNr">649 </span>    7c/jump-if-lesser  $is-hex-digit?:end/disp8
-<span id="L650" class="LineNr">650 </span>    <span class="subxComment"># return false if c &gt; 'f'</span>
-<span id="L651" class="LineNr">651 </span>    81          7/subop/compare     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x66/imm32        <span class="subxComment"># compare ecx</span>
-<span id="L652" class="LineNr">652 </span>    7f/jump-if-greater  $is-hex-digit?:end/disp8
-<span id="L653" class="LineNr">653 </span>    <span class="subxComment"># return true if c &lt;= '9'</span>
-<span id="L654" class="LineNr">654 </span>    b8/copy-to-eax  1/imm32/true
-<span id="L655" class="LineNr">655 </span>    81          7/subop/compare     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x39/imm32        <span class="subxComment"># compare ecx</span>
-<span id="L656" class="LineNr">656 </span>    7e/jump-if-lesser-or-equal  $is-hex-digit?:end/disp8
+<span id="L647" class="LineNr">647 </span>    81          7/subop/compare     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x30/imm32        <span class="subxComment"># compare ecx</span>
+<span id="L648" class="LineNr">648 </span>    7c/jump-if-lesser  $is-hex-digit?:false/disp8
+<span id="L649" class="LineNr">649 </span>    <span class="subxComment"># return true if c &lt;= '9'</span>
+<span id="L650" class="LineNr">650 </span>    81          7/subop/compare     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x39/imm32        <span class="subxComment"># compare ecx</span>
+<span id="L651" class="LineNr">651 </span>    7e/jump-if-lesser-or-equal  $is-hex-digit?:true/disp8
+<span id="L652" class="LineNr">652 </span>    <span class="subxComment"># drop case</span>
+<span id="L653" class="LineNr">653 </span>    25/and-eax-with 0x5f/imm32
+<span id="L654" class="LineNr">654 </span>    <span class="subxComment"># return false if c &gt; 'f'</span>
+<span id="L655" class="LineNr">655 </span>    81          7/subop/compare     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x66/imm32        <span class="subxComment"># compare ecx</span>
+<span id="L656" class="LineNr">656 </span>    7f/jump-if-greater  $is-hex-digit?:false/disp8
 <span id="L657" class="LineNr">657 </span>    <span class="subxComment"># return true if c &gt;= 'a'</span>
 <span id="L658" class="LineNr">658 </span>    81          7/subop/compare     3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x61/imm32        <span class="subxComment"># compare ecx</span>
-<span id="L659" class="LineNr">659 </span>    7d/jump-if-greater-or-equal  $is-hex-digit?:end/disp8
-<span id="L660" class="LineNr">660 </span>    <span class="subxComment"># otherwise return false</span>
-<span id="L661" class="LineNr">661 </span>    b8/copy-to-eax  0/imm32/false
-<span id="L662" class="LineNr">662 </span><span class="Constant">$is-hex-digit?:end</span>:
-<span id="L663" class="LineNr">663 </span>    <span class="subxS1Comment"># . restore registers</span>
-<span id="L664" class="LineNr">664 </span>    59/pop-to-ecx
-<span id="L665" class="LineNr">665 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L666" class="LineNr">666 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
-<span id="L667" class="LineNr">667 </span>    5d/pop-to-ebp
-<span id="L668" class="LineNr">668 </span>    c3/return
-<span id="L669" class="LineNr">669 </span>
-<span id="L670" class="LineNr">670 </span><span class="subxTest">test-hex-below-0</span>:
-<span id="L671" class="LineNr">671 </span>    <span class="subxComment"># eax = is-hex-digit?(0x2f)</span>
-<span id="L672" class="LineNr">672 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L673" class="LineNr">673 </span>    68/push  0x2f/imm32
-<span id="L674" class="LineNr">674 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L675" class="LineNr">675 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
-<span id="L676" class="LineNr">676 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L677" class="LineNr">677 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L678" class="LineNr">678 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
-<span id="L679" class="LineNr">679 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L680" class="LineNr">680 </span>    68/push  <span class="Constant">&quot;F - test-hex-below-0&quot;</span>/imm32
-<span id="L681" class="LineNr">681 </span>    68/push  0/imm32/false
-<span id="L682" class="LineNr">682 </span>    50/push-eax
-<span id="L683" class="LineNr">683 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L684" class="LineNr">684 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L685" class="LineNr">685 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L686" class="LineNr">686 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L687" class="LineNr">687 </span>    c3/return
-<span id="L688" class="LineNr">688 </span>
-<span id="L689" class="LineNr">689 </span><span class="subxTest">test-hex-0-to-9</span>:
-<span id="L690" class="LineNr">690 </span>    <span class="subxComment"># eax = is-hex-digit?(0x30)</span>
-<span id="L691" class="LineNr">691 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L692" class="LineNr">692 </span>    68/push  0x30/imm32
-<span id="L693" class="LineNr">693 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L694" class="LineNr">694 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
-<span id="L695" class="LineNr">695 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L696" class="LineNr">696 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L697" class="LineNr">697 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
-<span id="L698" class="LineNr">698 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L699" class="LineNr">699 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-0&quot;</span>/imm32
-<span id="L700" class="LineNr">700 </span>    68/push  1/imm32/true
-<span id="L701" class="LineNr">701 </span>    50/push-eax
-<span id="L702" class="LineNr">702 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L703" class="LineNr">703 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L704" class="LineNr">704 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L705" class="LineNr">705 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L706" class="LineNr">706 </span>    <span class="subxComment"># eax = is-hex-digit?(0x39)</span>
-<span id="L707" class="LineNr">707 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L708" class="LineNr">708 </span>    68/push  0x39/imm32
-<span id="L709" class="LineNr">709 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L710" class="LineNr">710 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
-<span id="L711" class="LineNr">711 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L712" class="LineNr">712 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L713" class="LineNr">713 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
-<span id="L714" class="LineNr">714 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L715" class="LineNr">715 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-9&quot;</span>/imm32
-<span id="L716" class="LineNr">716 </span>    68/push  1/imm32/true
-<span id="L717" class="LineNr">717 </span>    50/push-eax
-<span id="L718" class="LineNr">718 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L719" class="LineNr">719 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L720" class="LineNr">720 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L721" class="LineNr">721 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L722" class="LineNr">722 </span>    c3/return
-<span id="L723" class="LineNr">723 </span>
-<span id="L724" class="LineNr">724 </span><span class="subxTest">test-hex-above-9-to-a</span>:
-<span id="L725" class="LineNr">725 </span>    <span class="subxComment"># eax = is-hex-digit?(0x3a)</span>
-<span id="L726" class="LineNr">726 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L727" class="LineNr">727 </span>    68/push  0x3a/imm32
-<span id="L728" class="LineNr">728 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L729" class="LineNr">729 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
-<span id="L730" class="LineNr">730 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L731" class="LineNr">731 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L732" class="LineNr">732 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
-<span id="L733" class="LineNr">733 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L734" class="LineNr">734 </span>    68/push  <span class="Constant">&quot;F - test-hex-above-9-to-a&quot;</span>/imm32
-<span id="L735" class="LineNr">735 </span>    68/push  0/imm32/false
-<span id="L736" class="LineNr">736 </span>    50/push-eax
-<span id="L737" class="LineNr">737 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L738" class="LineNr">738 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L739" class="LineNr">739 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L740" class="LineNr">740 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L741" class="LineNr">741 </span>    c3/return
-<span id="L742" class="LineNr">742 </span>
-<span id="L743" class="LineNr">743 </span><span class="subxTest">test-hex-a-to-f</span>:
-<span id="L744" class="LineNr">744 </span>    <span class="subxComment"># eax = is-hex-digit?(0x61)</span>
-<span id="L745" class="LineNr">745 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L746" class="LineNr">746 </span>    68/push  0x61/imm32
-<span id="L747" class="LineNr">747 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L748" class="LineNr">748 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
-<span id="L749" class="LineNr">749 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L750" class="LineNr">750 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L751" class="LineNr">751 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
-<span id="L752" class="LineNr">752 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L753" class="LineNr">753 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-a&quot;</span>/imm32
-<span id="L754" class="LineNr">754 </span>    68/push  1/imm32/true
-<span id="L755" class="LineNr">755 </span>    50/push-eax
-<span id="L756" class="LineNr">756 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L757" class="LineNr">757 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L758" class="LineNr">758 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L759" class="LineNr">759 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L760" class="LineNr">760 </span>    <span class="subxComment"># eax = is-hex-digit?(0x66)</span>
-<span id="L761" class="LineNr">761 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L762" class="LineNr">762 </span>    68/push  0x66/imm32
-<span id="L763" class="LineNr">763 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L764" class="LineNr">764 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
-<span id="L765" class="LineNr">765 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L766" class="LineNr">766 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L767" class="LineNr">767 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
-<span id="L768" class="LineNr">768 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L769" class="LineNr">769 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-f&quot;</span>/imm32
-<span id="L770" class="LineNr">770 </span>    68/push  1/imm32/true
-<span id="L771" class="LineNr">771 </span>    50/push-eax
-<span id="L772" class="LineNr">772 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L773" class="LineNr">773 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L774" class="LineNr">774 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L775" class="LineNr">775 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L776" class="LineNr">776 </span>    c3/return
-<span id="L777" class="LineNr">777 </span>
-<span id="L778" class="LineNr">778 </span><span class="subxTest">test-hex-above-f</span>:
-<span id="L779" class="LineNr">779 </span>    <span class="subxComment"># eax = is-hex-digit?(0x67)</span>
-<span id="L780" class="LineNr">780 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L781" class="LineNr">781 </span>    68/push  0x67/imm32
-<span id="L782" class="LineNr">782 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L783" class="LineNr">783 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
-<span id="L784" class="LineNr">784 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L785" class="LineNr">785 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L786" class="LineNr">786 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
-<span id="L787" class="LineNr">787 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L788" class="LineNr">788 </span>    68/push  <span class="Constant">&quot;F - test-hex-above-f&quot;</span>/imm32
-<span id="L789" class="LineNr">789 </span>    68/push  0/imm32/false
-<span id="L790" class="LineNr">790 </span>    50/push-eax
-<span id="L791" class="LineNr">791 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L792" class="LineNr">792 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
-<span id="L793" class="LineNr">793 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L794" class="LineNr">794 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
-<span id="L795" class="LineNr">795 </span>    c3/return
-<span id="L796" class="LineNr">796 </span>
-<span id="L797" class="LineNr">797 </span><span class="subxFunction">from-hex-char</span>:  <span class="subxComment"># in/eax : byte -&gt; out/eax : nibble</span>
-<span id="L798" class="LineNr">798 </span><span class="Constant">$from-hex-char:check0</span>:
-<span id="L799" class="LineNr">799 </span>    <span class="subxComment"># if (eax &lt; '0') goto abort</span>
-<span id="L800" class="LineNr">800 </span>    3d/compare-eax-with  0x30/imm32/0
-<span id="L801" class="LineNr">801 </span>    7c/jump-if-lesser  $from-hex-char:abort/disp8
-<span id="L802" class="LineNr">802 </span><span class="Constant">$from-hex-char:check1</span>:
-<span id="L803" class="LineNr">803 </span>    <span class="subxComment"># if (eax &gt; 'f') goto abort</span>
-<span id="L804" class="LineNr">804 </span>    3d/compare-eax-with  0x66/imm32/f
-<span id="L805" class="LineNr">805 </span>    7f/jump-if-greater  $from-hex-char:abort/disp8
-<span id="L806" class="LineNr">806 </span><span class="Constant">$from-hex-char:check2</span>:
-<span id="L807" class="LineNr">807 </span>    <span class="subxComment"># if (eax &gt; '9') goto next check</span>
-<span id="L808" class="LineNr">808 </span>    3d/compare-eax-with  0x39/imm32/9
-<span id="L809" class="LineNr">809 </span>    7f/jump-if-greater  $from-hex-char:check3/disp8
-<span id="L810" class="LineNr">810 </span><span class="Constant">$from-hex-char:digit</span>:
-<span id="L811" class="LineNr">811 </span>    <span class="subxComment"># return eax - '0'</span>
-<span id="L812" class="LineNr">812 </span>    2d/subtract-from-eax  0x30/imm32/0
-<span id="L813" class="LineNr">813 </span>    c3/return
-<span id="L814" class="LineNr">814 </span><span class="Constant">$from-hex-char:check3</span>:
-<span id="L815" class="LineNr">815 </span>    <span class="subxComment"># if (eax &lt; 'a') goto abort</span>
-<span id="L816" class="LineNr">816 </span>    3d/compare-eax-with  0x61/imm32/a
-<span id="L817" class="LineNr">817 </span>    7c/jump-if-lesser  $from-hex-char:abort/disp8
-<span id="L818" class="LineNr">818 </span><span class="Constant">$from-hex-char:letter</span>:
-<span id="L819" class="LineNr">819 </span>    <span class="subxComment"># return eax - ('a'-10)</span>
-<span id="L820" class="LineNr">820 </span>    2d/subtract-from-eax  0x57/imm32/a-10
-<span id="L821" class="LineNr">821 </span>    c3/return
-<span id="L822" class="LineNr">822 </span>
-<span id="L823" class="LineNr">823 </span><span class="Constant">$from-hex-char:abort</span>:
-<span id="L824" class="LineNr">824 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
-<span id="L825" class="LineNr">825 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L826" class="LineNr">826 </span>    68/push  <span class="Constant">&quot;invalid hex char: &quot;</span>/imm32
-<span id="L827" class="LineNr">827 </span>    68/push  2/imm32/stderr
-<span id="L828" class="LineNr">828 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L829" class="LineNr">829 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
-<span id="L830" class="LineNr">830 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L831" class="LineNr">831 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L832" class="LineNr">832 </span>    <span class="subxS1Comment"># . clear-stream(Stderr-&gt;buffer)</span>
-<span id="L833" class="LineNr">833 </span>    <span class="subxS2Comment"># . . save eax</span>
-<span id="L834" class="LineNr">834 </span>    50/push-eax
-<span id="L835" class="LineNr">835 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L836" class="LineNr">836 </span>    68/push  <a href='065write-buffered.subx.html#L212'>Stderr-&gt;buffer</a>/imm32
-<span id="L837" class="LineNr">837 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L838" class="LineNr">838 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
-<span id="L839" class="LineNr">839 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L840" class="LineNr">840 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L841" class="LineNr">841 </span>    <span class="subxS2Comment"># . . restore eax</span>
-<span id="L842" class="LineNr">842 </span>    58/pop-to-eax
-<span id="L843" class="LineNr">843 </span>    <span class="subxS1Comment"># . print-int32-buffered(Stderr, eax)</span>
-<span id="L844" class="LineNr">844 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L845" class="LineNr">845 </span>    50/push-eax
-<span id="L846" class="LineNr">846 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
-<span id="L847" class="LineNr">847 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L848" class="LineNr">848 </span>    e8/call  <a href='066print-int.subx.html#L265'>print-int32-buffered</a>/disp32
-<span id="L849" class="LineNr">849 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L850" class="LineNr">850 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L851" class="LineNr">851 </span>    <span class="subxS1Comment"># . flush(Stderr)</span>
-<span id="L852" class="LineNr">852 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L853" class="LineNr">853 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
-<span id="L854" class="LineNr">854 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L855" class="LineNr">855 </span>    e8/call  <a href='064write-byte.subx.html#L81'>flush</a>/disp32
-<span id="L856" class="LineNr">856 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L857" class="LineNr">857 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L858" class="LineNr">858 </span>    <span class="subxS1Comment"># . _write(2/stderr, &quot;\n&quot;)</span>
-<span id="L859" class="LineNr">859 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L860" class="LineNr">860 </span>    68/push  <span class="SpecialChar"><a href='051test.subx.html#L83'>Newline</a></span>/imm32
-<span id="L861" class="LineNr">861 </span>    68/push  2/imm32/stderr
-<span id="L862" class="LineNr">862 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L863" class="LineNr">863 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
-<span id="L864" class="LineNr">864 </span>    <span class="subxS2Comment"># . . discard args</span>
-<span id="L865" class="LineNr">865 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L866" class="LineNr">866 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
-<span id="L867" class="LineNr">867 </span>    bb/copy-to-ebx  1/imm32
-<span id="L868" class="LineNr">868 </span>    b8/copy-to-eax  1/imm32/exit
-<span id="L869" class="LineNr">869 </span>    cd/syscall  0x80/imm8
-<span id="L870" class="LineNr">870 </span>    <span class="subxComment"># never gets here</span>
-<span id="L871" class="LineNr">871 </span>
-<span id="L872" class="LineNr">872 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L659" class="LineNr">659 </span>    7d/jump-if-greater-or-equal  $is-hex-digit?:true/disp8
+<span id="L660" class="LineNr">660 </span><span class="Constant">$is-hex-digit?:false</span>:
+<span id="L661" class="LineNr">661 </span>    <span class="subxComment"># otherwise return false</span>
+<span id="L662" class="LineNr">662 </span>    b8/copy-to-eax  0/imm32/false
+<span id="L663" class="LineNr">663 </span>    eb/jump $is-hex-digit?:end/disp8
+<span id="L664" class="LineNr">664 </span><span class="Constant">$is-hex-digit?:true</span>:
+<span id="L665" class="LineNr">665 </span>    b8/copy-to-eax  1/imm32/true
+<span id="L666" class="LineNr">666 </span><span class="Constant">$is-hex-digit?:end</span>:
+<span id="L667" class="LineNr">667 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L668" class="LineNr">668 </span>    59/pop-to-ecx
+<span id="L669" class="LineNr">669 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L670" class="LineNr">670 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L671" class="LineNr">671 </span>    5d/pop-to-ebp
+<span id="L672" class="LineNr">672 </span>    c3/return
+<span id="L673" class="LineNr">673 </span>
+<span id="L674" class="LineNr">674 </span><span class="subxTest">test-hex-below-0</span>:
+<span id="L675" class="LineNr">675 </span>    <span class="subxComment"># eax = is-hex-digit?(0x2f)</span>
+<span id="L676" class="LineNr">676 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L677" class="LineNr">677 </span>    68/push  0x2f/imm32
+<span id="L678" class="LineNr">678 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L679" class="LineNr">679 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
+<span id="L680" class="LineNr">680 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L681" class="LineNr">681 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L682" class="LineNr">682 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
+<span id="L683" class="LineNr">683 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L684" class="LineNr">684 </span>    68/push  <span class="Constant">&quot;F - test-hex-below-0&quot;</span>/imm32
+<span id="L685" class="LineNr">685 </span>    68/push  0/imm32/false
+<span id="L686" class="LineNr">686 </span>    50/push-eax
+<span id="L687" class="LineNr">687 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L688" class="LineNr">688 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L689" class="LineNr">689 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L690" class="LineNr">690 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L691" class="LineNr">691 </span>    c3/return
+<span id="L692" class="LineNr">692 </span>
+<span id="L693" class="LineNr">693 </span><span class="subxTest">test-hex-0-to-9</span>:
+<span id="L694" class="LineNr">694 </span>    <span class="subxComment"># eax = is-hex-digit?(0x30)</span>
+<span id="L695" class="LineNr">695 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L696" class="LineNr">696 </span>    68/push  0x30/imm32
+<span id="L697" class="LineNr">697 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L698" class="LineNr">698 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
+<span id="L699" class="LineNr">699 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L700" class="LineNr">700 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L701" class="LineNr">701 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
+<span id="L702" class="LineNr">702 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L703" class="LineNr">703 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-0&quot;</span>/imm32
+<span id="L704" class="LineNr">704 </span>    68/push  1/imm32/true
+<span id="L705" class="LineNr">705 </span>    50/push-eax
+<span id="L706" class="LineNr">706 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L707" class="LineNr">707 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L708" class="LineNr">708 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L709" class="LineNr">709 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L710" class="LineNr">710 </span>    <span class="subxComment"># eax = is-hex-digit?(0x39)</span>
+<span id="L711" class="LineNr">711 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L712" class="LineNr">712 </span>    68/push  0x39/imm32
+<span id="L713" class="LineNr">713 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L714" class="LineNr">714 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
+<span id="L715" class="LineNr">715 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L716" class="LineNr">716 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L717" class="LineNr">717 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
+<span id="L718" class="LineNr">718 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L719" class="LineNr">719 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-9&quot;</span>/imm32
+<span id="L720" class="LineNr">720 </span>    68/push  1/imm32/true
+<span id="L721" class="LineNr">721 </span>    50/push-eax
+<span id="L722" class="LineNr">722 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L723" class="LineNr">723 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L724" class="LineNr">724 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L725" class="LineNr">725 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L726" class="LineNr">726 </span>    c3/return
+<span id="L727" class="LineNr">727 </span>
+<span id="L728" class="LineNr">728 </span><span class="subxTest">test-hex-above-9-to-a</span>:
+<span id="L729" class="LineNr">729 </span>    <span class="subxComment"># eax = is-hex-digit?(0x3a)</span>
+<span id="L730" class="LineNr">730 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L731" class="LineNr">731 </span>    68/push  0x3a/imm32
+<span id="L732" class="LineNr">732 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L733" class="LineNr">733 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
+<span id="L734" class="LineNr">734 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L735" class="LineNr">735 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L736" class="LineNr">736 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
+<span id="L737" class="LineNr">737 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L738" class="LineNr">738 </span>    68/push  <span class="Constant">&quot;F - test-hex-above-9-to-a&quot;</span>/imm32
+<span id="L739" class="LineNr">739 </span>    68/push  0/imm32/false
+<span id="L740" class="LineNr">740 </span>    50/push-eax
+<span id="L741" class="LineNr">741 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L742" class="LineNr">742 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L743" class="LineNr">743 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L744" class="LineNr">744 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L745" class="LineNr">745 </span>    c3/return
+<span id="L746" class="LineNr">746 </span>
+<span id="L747" class="LineNr">747 </span><span class="subxTest">test-hex-a-to-f</span>:
+<span id="L748" class="LineNr">748 </span>    <span class="subxComment"># eax = is-hex-digit?(0x61)</span>
+<span id="L749" class="LineNr">749 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L750" class="LineNr">750 </span>    68/push  0x61/imm32
+<span id="L751" class="LineNr">751 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L752" class="LineNr">752 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
+<span id="L753" class="LineNr">753 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L754" class="LineNr">754 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L755" class="LineNr">755 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
+<span id="L756" class="LineNr">756 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L757" class="LineNr">757 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-a&quot;</span>/imm32
+<span id="L758" class="LineNr">758 </span>    68/push  1/imm32/true
+<span id="L759" class="LineNr">759 </span>    50/push-eax
+<span id="L760" class="LineNr">760 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L761" class="LineNr">761 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L762" class="LineNr">762 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L763" class="LineNr">763 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L764" class="LineNr">764 </span>    <span class="subxComment"># eax = is-hex-digit?(0x66)</span>
+<span id="L765" class="LineNr">765 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L766" class="LineNr">766 </span>    68/push  0x66/imm32
+<span id="L767" class="LineNr">767 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L768" class="LineNr">768 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
+<span id="L769" class="LineNr">769 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L770" class="LineNr">770 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L771" class="LineNr">771 </span>    <span class="subxComment"># check-ints-equal(eax, 1, msg)</span>
+<span id="L772" class="LineNr">772 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L773" class="LineNr">773 </span>    68/push  <span class="Constant">&quot;F - test-hex-at-f&quot;</span>/imm32
+<span id="L774" class="LineNr">774 </span>    68/push  1/imm32/true
+<span id="L775" class="LineNr">775 </span>    50/push-eax
+<span id="L776" class="LineNr">776 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L777" class="LineNr">777 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L778" class="LineNr">778 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L779" class="LineNr">779 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L780" class="LineNr">780 </span>    c3/return
+<span id="L781" class="LineNr">781 </span>
+<span id="L782" class="LineNr">782 </span><span class="subxTest">test-hex-above-f</span>:
+<span id="L783" class="LineNr">783 </span>    <span class="subxComment"># eax = is-hex-digit?(0x67)</span>
+<span id="L784" class="LineNr">784 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L785" class="LineNr">785 </span>    68/push  0x67/imm32
+<span id="L786" class="LineNr">786 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L787" class="LineNr">787 </span>    e8/call  <a href='067parse-hex.subx.html#L638'>is-hex-digit?</a>/disp32
+<span id="L788" class="LineNr">788 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L789" class="LineNr">789 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L790" class="LineNr">790 </span>    <span class="subxComment"># check-ints-equal(eax, 0, msg)</span>
+<span id="L791" class="LineNr">791 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L792" class="LineNr">792 </span>    68/push  <span class="Constant">&quot;F - test-hex-above-f&quot;</span>/imm32
+<span id="L793" class="LineNr">793 </span>    68/push  0/imm32/false
+<span id="L794" class="LineNr">794 </span>    50/push-eax
+<span id="L795" class="LineNr">795 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L796" class="LineNr">796 </span>    e8/call  <a href='051test.subx.html#L24'>check-ints-equal</a>/disp32
+<span id="L797" class="LineNr">797 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L798" class="LineNr">798 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
+<span id="L799" class="LineNr">799 </span>    c3/return
+<span id="L800" class="LineNr">800 </span>
+<span id="L801" class="LineNr">801 </span><span class="subxFunction">from-hex-char</span>:  <span class="subxComment"># in/eax : byte -&gt; out/eax : nibble</span>
+<span id="L802" class="LineNr">802 </span><span class="Constant">$from-hex-char:check0</span>:
+<span id="L803" class="LineNr">803 </span>    <span class="subxComment"># if (eax &lt; '0') goto abort</span>
+<span id="L804" class="LineNr">804 </span>    3d/compare-eax-with  0x30/imm32/0
+<span id="L805" class="LineNr">805 </span>    7c/jump-if-lesser  $from-hex-char:abort/disp8
+<span id="L806" class="LineNr">806 </span><span class="Constant">$from-hex-char:check1</span>:
+<span id="L807" class="LineNr">807 </span>    <span class="subxComment"># if (eax &gt; 'f') goto abort</span>
+<span id="L808" class="LineNr">808 </span>    3d/compare-eax-with  0x66/imm32/f
+<span id="L809" class="LineNr">809 </span>    7f/jump-if-greater  $from-hex-char:abort/disp8
+<span id="L810" class="LineNr">810 </span><span class="Constant">$from-hex-char:check2</span>:
+<span id="L811" class="LineNr">811 </span>    <span class="subxComment"># if (eax &gt; '9') goto next check</span>
+<span id="L812" class="LineNr">812 </span>    3d/compare-eax-with  0x39/imm32/9
+<span id="L813" class="LineNr">813 </span>    7f/jump-if-greater  $from-hex-char:check3/disp8
+<span id="L814" class="LineNr">814 </span><span class="Constant">$from-hex-char:digit</span>:
+<span id="L815" class="LineNr">815 </span>    <span class="subxComment"># return eax - '0'</span>
+<span id="L816" class="LineNr">816 </span>    2d/subtract-from-eax  0x30/imm32/0
+<span id="L817" class="LineNr">817 </span>    c3/return
+<span id="L818" class="LineNr">818 </span><span class="Constant">$from-hex-char:check3</span>:
+<span id="L819" class="LineNr">819 </span>    <span class="subxComment"># if (eax &lt; 'a') goto abort</span>
+<span id="L820" class="LineNr">820 </span>    3d/compare-eax-with  0x61/imm32/a
+<span id="L821" class="LineNr">821 </span>    7c/jump-if-lesser  $from-hex-char:abort/disp8
+<span id="L822" class="LineNr">822 </span><span class="Constant">$from-hex-char:letter</span>:
+<span id="L823" class="LineNr">823 </span>    <span class="subxComment"># return eax - ('a'-10)</span>
+<span id="L824" class="LineNr">824 </span>    2d/subtract-from-eax  0x57/imm32/a-10
+<span id="L825" class="LineNr">825 </span>    c3/return
+<span id="L826" class="LineNr">826 </span>
+<span id="L827" class="LineNr">827 </span><span class="Constant">$from-hex-char:abort</span>:
+<span id="L828" class="LineNr">828 </span>    <span class="subxS1Comment"># . _write(2/stderr, error)</span>
+<span id="L829" class="LineNr">829 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L830" class="LineNr">830 </span>    68/push  <span class="Constant">&quot;invalid hex char: &quot;</span>/imm32
+<span id="L831" class="LineNr">831 </span>    68/push  2/imm32/stderr
+<span id="L832" class="LineNr">832 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L833" class="LineNr">833 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
+<span id="L834" class="LineNr">834 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L835" class="LineNr">835 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L836" class="LineNr">836 </span>    <span class="subxS1Comment"># . clear-stream(Stderr-&gt;buffer)</span>
+<span id="L837" class="LineNr">837 </span>    <span class="subxS2Comment"># . . save eax</span>
+<span id="L838" class="LineNr">838 </span>    50/push-eax
+<span id="L839" class="LineNr">839 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L840" class="LineNr">840 </span>    68/push  <a href='065write-buffered.subx.html#L212'>Stderr-&gt;buffer</a>/imm32
+<span id="L841" class="LineNr">841 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L842" class="LineNr">842 </span>    e8/call  <a href='055stream.subx.html#L17'>clear-stream</a>/disp32
+<span id="L843" class="LineNr">843 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L844" class="LineNr">844 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L845" class="LineNr">845 </span>    <span class="subxS2Comment"># . . restore eax</span>
+<span id="L846" class="LineNr">846 </span>    58/pop-to-eax
+<span id="L847" class="LineNr">847 </span>    <span class="subxS1Comment"># . print-int32-buffered(Stderr, eax)</span>
+<span id="L848" class="LineNr">848 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L849" class="LineNr">849 </span>    50/push-eax
+<span id="L850" class="LineNr">850 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
+<span id="L851" class="LineNr">851 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L852" class="LineNr">852 </span>    e8/call  <a href='066print-int.subx.html#L265'>print-int32-buffered</a>/disp32
+<span id="L853" class="LineNr">853 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L854" class="LineNr">854 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L855" class="LineNr">855 </span>    <span class="subxS1Comment"># . flush(Stderr)</span>
+<span id="L856" class="LineNr">856 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L857" class="LineNr">857 </span>    68/push  <span class="SpecialChar"><a href='065write-buffered.subx.html#L209'>Stderr</a></span>/imm32
+<span id="L858" class="LineNr">858 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L859" class="LineNr">859 </span>    e8/call  <a href='064write-byte.subx.html#L81'>flush</a>/disp32
+<span id="L860" class="LineNr">860 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L861" class="LineNr">861 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
+<span id="L862" class="LineNr">862 </span>    <span class="subxS1Comment"># . _write(2/stderr, &quot;\n&quot;)</span>
+<span id="L863" class="LineNr">863 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L864" class="LineNr">864 </span>    68/push  <span class="SpecialChar"><a href='051test.subx.html#L83'>Newline</a></span>/imm32
+<span id="L865" class="LineNr">865 </span>    68/push  2/imm32/stderr
+<span id="L866" class="LineNr">866 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L867" class="LineNr">867 </span>    e8/call  <a href='050_write.subx.html#L14'>_write</a>/disp32
+<span id="L868" class="LineNr">868 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L869" class="LineNr">869 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L870" class="LineNr">870 </span>    <span class="subxS1Comment"># . syscall(exit, 1)</span>
+<span id="L871" class="LineNr">871 </span>    bb/copy-to-ebx  1/imm32
+<span id="L872" class="LineNr">872 </span>    b8/copy-to-eax  1/imm32/exit
+<span id="L873" class="LineNr">873 </span>    cd/syscall  0x80/imm8
+<span id="L874" class="LineNr">874 </span>    <span class="subxComment"># never gets here</span>
+<span id="L875" class="LineNr">875 </span>
+<span id="L876" class="LineNr">876 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>

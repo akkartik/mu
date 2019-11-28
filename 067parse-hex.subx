@@ -644,21 +644,25 @@ is-hex-digit?:  # c : byte -> eax : boolean
     # ecx = c
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
     # return false if c < '0'
-    b8/copy-to-eax  0/imm32/false
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x30/imm32        # compare ecx
-    7c/jump-if-lesser  $is-hex-digit?:end/disp8
+    7c/jump-if-lesser  $is-hex-digit?:false/disp8
+    # return true if c <= '9'
+    81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x39/imm32        # compare ecx
+    7e/jump-if-lesser-or-equal  $is-hex-digit?:true/disp8
+    # drop case
+    25/and-eax-with 0x5f/imm32
     # return false if c > 'f'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x66/imm32        # compare ecx
-    7f/jump-if-greater  $is-hex-digit?:end/disp8
-    # return true if c <= '9'
-    b8/copy-to-eax  1/imm32/true
-    81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x39/imm32        # compare ecx
-    7e/jump-if-lesser-or-equal  $is-hex-digit?:end/disp8
+    7f/jump-if-greater  $is-hex-digit?:false/disp8
     # return true if c >= 'a'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x61/imm32        # compare ecx
-    7d/jump-if-greater-or-equal  $is-hex-digit?:end/disp8
+    7d/jump-if-greater-or-equal  $is-hex-digit?:true/disp8
+$is-hex-digit?:false:
     # otherwise return false
     b8/copy-to-eax  0/imm32/false
+    eb/jump $is-hex-digit?:end/disp8
+$is-hex-digit?:true:
+    b8/copy-to-eax  1/imm32/true
 $is-hex-digit?:end:
     # . restore registers
     59/pop-to-ecx
