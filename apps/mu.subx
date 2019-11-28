@@ -503,19 +503,14 @@ test-convert-multiple-function-skeletons:
     c3/return
 
 test-convert-function-with-arg:
-    # function with one arg and a copy instruction
-    #   fn foo n : int -> result/eax : int {
-    #     result <- copy n
+    # function with one arg
+    #   fn foo n : int {
     #   }
     # =>
     #   foo:
     #     # . prologue
     #     55/push-ebp
     #     89/<- %ebp 4/r32/esp
-    #     {
-    #     # result <- copy n
-    #     8b/-> *(ebp+8) 0/r32/eax
-    #     }
     #     # . epilogue
     #     89/<- %esp 5/r32/ebp
     #     5d/pop-to-ebp
@@ -529,7 +524,7 @@ test-convert-function-with-arg:
     (clear-stream _test-output-stream)
     (clear-stream _test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "fn foo n : int {\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file)
@@ -696,12 +691,65 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
     # save function name
     (next-word *(ebp+8) %ecx)
     (slice-to-string Heap %ecx)  # => eax
-    89/<- *edi 0/r32/eax
-    # assert that next token is '{'
-    (next-word *(ebp+8) %ecx)
-    (slice-equal? %ecx "{")
+    89/<- *edi 0/r32/eax  # Function-name
+    # error checking
+    # if (word-slice == '{') abort
+    (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32
-    74/jump-if-equal $populate-mu-function-header:abort/disp8
+    0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+    # if (word-slice == '->') abort
+    (slice-equal? %ecx "->")   # => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+    # if (word-slice == '}') abort
+    (slice-equal? %ecx "}")   # => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+    # save function inouts
+    # while (word-slice not in "{" "->")
+    {
+      # if (word-slice == '{') break
+      (slice-equal? %ecx "{")   # => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # if (word-slice == '->') break
+      (slice-equal? %ecx "->")   # => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # if (word-slice == '}') abort
+      (slice-equal? %ecx "}")   # => eax
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+      #
+      (next-word *(ebp+8) %ecx)
+      e9/jump loop/disp32
+    }
+    # if (word-slice == "->") skip it
+    {
+      (slice-equal? %ecx "->")   # => eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-equal break/disp8
+      (next-word *(ebp+8) %ecx)
+    }
+    # save function outputs
+    # while (word-slice not == "{")
+    {
+      # if (word-slice == '{') break
+      (slice-equal? %ecx "{")   # => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # if (word-slice == '->') abort
+      (slice-equal? %ecx "->")   # => eax
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+      # if (word-slice == '}') abort
+      (slice-equal? %ecx "}")   # => eax
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+      #
+      (next-word *(ebp+8) %ecx)
+      e9/jump loop/disp32
+    }
     # assert that there's no further token
     {
       # word-slice = next-word(line)
@@ -735,7 +783,8 @@ $populate-mu-function-header:end:
 
 $populate-mu-function-header:abort:
     # error("function header not in form 'fn <name> {'")
-    (write-buffered Stderr "function header not in form 'fn <name> {' -- '")
+    (write-buffered Stderr "function header not in form 'fn <name> [inouts] [-> outputs] {' -- '")
+    (flush Stderr)
     (rewind-stream *(ebp+8))
     (write-stream 2 *(ebp+8))
     (write-buffered Stderr "'\n")
