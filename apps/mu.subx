@@ -795,6 +795,195 @@ $populate-mu-function-header:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+# identifier starts with a letter or '$' or '_'
+# no constraints at the moment on later letters
+# all we really want to do so far is exclude '{', '}' and '->'
+is-identifier?:  # in : (address slice) -> result/eax : boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # if (slice-empty?(in)) return false
+    (slice-empty? *(ebp+8))  # => eax
+    3d/compare-eax-and 0/imm32
+    75/jump-if-not-equal $is-identifier?:false/disp8
+    # var c/eax : char = *in->start
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *eax 0/r32/eax
+    8a/copy-byte *eax 0/r32/AL
+    81 4/subop/and %eax 0xff/imm32
+    # if (c == '$') return true
+    3d/compare-eax-and 0x24/imm32/$
+    74/jump-if-equal $is-identifier?:true/disp8
+    # if (c == '_') return true
+    3d/compare-eax-and 0x5f/imm32/_
+    74/jump-if-equal $is-identifier?:true/disp8
+    # drop case
+    25/and-eax-with 0x5f/imm32
+    # if (c < 'A') return false
+    3d/compare-eax-and 0x41/imm32/A
+    7c/jump-if-lesser $is-identifier?:false/disp8
+    # if (c > 'Z') return false
+    3d/compare-eax-and 0x5a/imm32/Z
+    7f/jump-if-greater $is-identifier?:false/disp8
+    # otherwise return true
+$is-identifier?:true:
+    b8/copy-to-eax 1/imm32/true
+    eb/jump $is-identifier?:end/disp8
+$is-identifier?:false:
+    b8/copy-to-eax 0/imm32/false
+$is-identifier?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-dollar:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "$a"
+    b8/copy-to-eax "$a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 1 "F - test-is-identifier-dollar")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-underscore:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "_a"
+    b8/copy-to-eax "_a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 1 "F - test-is-identifier-underscore")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-a:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "a$"
+    b8/copy-to-eax "a$"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 1 "F - test-is-identifier-a")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-z:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "z$"
+    b8/copy-to-eax "z$"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 1 "F - test-is-identifier-z")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-A:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "A$"
+    b8/copy-to-eax "A$"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 1 "F - test-is-identifier-A")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-Z:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "Z$"
+    b8/copy-to-eax "Z$"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 1 "F - test-is-identifier-Z")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-is-identifier-@:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "@a"
+    b8/copy-to-eax "@a"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    #
+    (is-identifier? %ecx)
+    (check-ints-equal %eax 0 "F - test-is-identifier-@")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 populate-mu-function-body:  # in : (address buffered-file), out : (address function)
     # . prologue
     55/push-ebp
