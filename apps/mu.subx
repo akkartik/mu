@@ -836,25 +836,7 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
       e9/jump loop/disp32
     }
 $populate-mu-function-header:done:
-    # assert that there's no further token
-    {
-      # word-slice = next-word(line)
-      (next-word *(ebp+8) %ecx)
-      # if (word-slice == '') break
-      (slice-empty? %ecx)
-      3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
-      # if (slice-starts-with?(word-slice, "#")) break
-      # . eax = *word-slice->start
-      8b/-> *ecx 0/r32/eax
-      8a/copy-byte *eax 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
-      # . if (eax == '#') break
-      3d/compare-eax-and 0x23/imm32/hash
-      74/jump-if-equal break/disp8
-      # otherwise abort
-      eb/jump $populate-mu-function-header:abort/disp8
-    }
+    (check-no-tokens-left *(ebp+8))
 $populate-mu-function-header:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -1655,6 +1637,7 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
     #     else if slice-starts-with?(word-slice, "#")
     #       continue
     #     else if slice-equal?(word-slice, "{")
+    #       assert(no-tokens-in(line))
     #       block = parse-mu-block(in)
     #       append-to-block(result, block)
     #     else if slice-equal?(word-slice, "}")
@@ -1729,6 +1712,7 @@ $parse-mu-block:check-for-block:
         (slice-equal? %edx "{")
         3d/compare-eax-and 0/imm32
         74/jump-if-equal break/disp8
+        (check-no-tokens-left %ecx)
         # parse new block and append
         (parse-mu-block *(ebp+8))  # => eax
         (append-to-block %edi %eax)
@@ -1786,30 +1770,6 @@ $parse-mu-block:end:
     5d/pop-to-ebp
     c3/return
 
-# check for extra words after '{'
-#?       e9/jump loop/disp32
-#?       # - check for invalid tokens after curly
-#? $parse-mu-block:curly-found:
-#?       # second-word-slice = next-word(line)
-#?       (next-word %ecx %edx)
-#? #?       (write-buffered Stderr "second word slice: ")
-#? #?       (write-stream-data Stderr %edx)
-#? #?       (flush Stderr)
-#?       # if slice-empty?(second-word-slice) continue
-#?       (slice-empty? %ecx)
-#?       3d/compare-eax-and 0/imm32
-#?       0f 85/jump-if-not-equal loop/disp32
-#?       # if (slice-starts-with?(second-word-slice, '#') continue
-#?       # . eax = *second-word-slice->start
-#?       8b/-> *edx 0/r32/eax
-#?       8a/copy-byte *eax 0/r32/AL
-#?       81 4/subop/and %eax 0xff/imm32
-#?       # . if (eax == '#') continue
-#?       3d/compare-eax-and 0x23/imm32/hash
-#?       0f 84/jump-if-equal loop/disp32
-#?       # abort
-#?       eb/jump $parse-mu-block:abort/disp8
-
 $parse-mu-block:abort:
     # error("'{' or '}' should be on its own line, but got '")
     (write-buffered Stderr "'{' or '}' should be on its own line, but got '")
@@ -1822,6 +1782,53 @@ $parse-mu-block:abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+check-no-tokens-left:  # line : (address stream)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # var s/ecx : slice = next-word(line)
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %ecx 4/r32/esp
+    #
+    (next-word *(ebp+8) %ecx)
+    # if slice-empty?(s) return
+    (slice-empty? %ecx)
+    3d/compare-eax-and 0/imm32
+    75/jump-if-not-equal $check-no-tokens-left:end/disp8
+    # if (slice-starts-with?(s, '#') return
+    # . eax = *s->start
+    8b/-> *edx 0/r32/eax
+    8a/copy-byte *eax 0/r32/AL
+    81 4/subop/and %eax 0xff/imm32
+    # . if (eax == '#') continue
+    3d/compare-eax-and 0x23/imm32/hash
+    74/jump-if-equal $check-no-tokens-left:end/disp8
+    # abort
+    (write-buffered Stderr "'{' or '}' should be on its own line, but got '")
+    (rewind-stream %ecx)
+    (write-stream 2 %ecx)
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+$check-no-tokens-left:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 parse-mu-named-block:  # name : (address slice), first-line : (address stream), in : (address buffered-file) -> result/eax : (address stmt)
     # pseudocode:
