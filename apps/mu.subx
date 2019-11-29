@@ -543,14 +543,69 @@ test-convert-function-with-arg:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-skeleton/0")
-    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-skeleton/1")
-    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-skeleton/2")
-    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-skeleton/3")
-    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-skeleton/4")
-    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-skeleton/5")
-    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-skeleton/6")
-    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-skeleton/7")
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-with-arg/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-with-arg/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-with-arg/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-arg/3")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-arg/4")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-arg/5")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-arg/6")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-arg/7")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-arg-and-body:
+    # function with one arg and one instruction in the body
+    #   fn foo n : int {
+    #     increment n
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       ff 0/subop/increment *(ebp+8)
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream _test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream _test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo n : int {\n")
+    (write _test-input-stream "  increment n\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-with-arg-and-body/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-with-arg-and-body/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-with-arg-and-body/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-arg-and-body/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-arg-and-body/4")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-arg-and-body/5")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-arg-and-body/6")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-arg-and-body/7")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-arg-and-body/8")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-arg-and-body/9")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-arg-and-body/10")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -569,20 +624,19 @@ parse-mu:  # in : (address buffered-file)
     #     clear-stream(line)
     #     read-line-buffered(in, line)
     #     if (line->write == 0) break               # end of file
-    #     while true                                # word loop
-    #       word-slice = next-word-or-string(line)
-    #       if slice-empty?(word-slice)             # end of line
-    #         break
-    #       else if slice-starts-with?(word-slice, "#")  # comment
-    #         break                                 # end of line
-    #       else if slice-equal(word-slice, "fn")
-    #         var new-function : (address function) = new function
-    #         populate-mu-function-header(in, new-function)
-    #         populate-mu-function-body(in, new-function)
-    #         *curr-function = new-function
-    #         curr-function = &new-function->next
-    #       else
-    #         abort()
+    #     word-slice = next-word-or-string(line)
+    #     if slice-empty?(word-slice)               # end of line
+    #       continue
+    #     else if slice-starts-with?(word-slice, "#")  # comment
+    #       continue                                # end of line
+    #     else if slice-equal(word-slice, "fn")
+    #       var new-function : (address function) = new function
+    #       populate-mu-function-header(in, new-function)
+    #       populate-mu-function-body(in, new-function)
+    #       *curr-function = new-function
+    #       curr-function = &new-function->next
+    #     else
+    #       abort()
     #
     # . prologue
     55/push-ebp
@@ -612,45 +666,42 @@ $parse-mu:line-loop:
       81 7/subop/compare *ecx 0/imm32
       0f 84/jump-if-equal break/disp32
 #?       # dump line {{{
-#?       (write 2 "line: ^")
+#?       (write 2 "parse-mu: ^")
 #?       (write-stream 2 %ecx)
 #?       (write 2 "$\n")
 #?       (rewind-stream %ecx)
 #?       # }}}
-      { # word loop
-$parse-mu:word-loop:
-        (next-word-or-string %ecx %edx)
-        # if slice-empty?(word-slice) break
-        (slice-empty? %edx)
+      (next-word-or-string %ecx %edx)
+      # if slice-empty?(word-slice) continue
+      (slice-empty? %edx)
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal loop/disp32
+      # if (*word-slice->start == "#") continue
+      # . eax = *word-slice->start
+      8b/-> *edx 0/r32/eax
+      8a/copy-byte *eax 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      # . if (eax == '#') continue
+      3d/compare-eax-and 0x23/imm32/hash
+      0f 84/jump-if-equal loop/disp32
+      # if (slice-equal?(word-slice, "fn")) parse a function
+      {
+$parse-mu:fn:
+        (slice-equal? %edx "fn")
         3d/compare-eax-and 0/imm32
-        0f 85/jump-if-not-equal break/disp32
-        # if (*word-slice->start == "#") break
-        # . eax = *word-slice->start
-        8b/-> *edx 0/r32/eax
-        8a/copy-byte *eax 0/r32/AL
-        81 4/subop/and %eax 0xff/imm32
-        # . if (eax == '#') break
-        3d/compare-eax-and 0x23/imm32/hash
         0f 84/jump-if-equal break/disp32
-        # if (slice-equal?(word-slice, "fn")) parse a function
-        {
-          (slice-equal? %edx "fn")
-          3d/compare-eax-and 0/imm32
-          0f 84/jump-if-equal break/disp32
-          # var new-function/eax : (address function) = populate-mu-function()
-          (allocate Heap *Function-size)  # => eax
-          (populate-mu-function-header %ecx %eax)
-          (populate-mu-function-body *(ebp+8) %eax)
-          # *curr-function = new-function
-          89/<- *edi 0/r32/eax
-          # curr-function = &new-function->next
-          8d/address-> *(eax+0x14) 7/r32/edi  # Function-next
-          e9/jump $parse-mu:word-loop/disp32
-        }
-        # otherwise abort
-        e9/jump $parse-mu:abort/disp32
-      } # end word loop
-      e9/jump loop/disp32
+        # var new-function/eax : (address function) = populate-mu-function()
+        (allocate Heap *Function-size)  # => eax
+        (populate-mu-function-header %ecx %eax)
+        (populate-mu-function-body *(ebp+8) %eax)
+        # *curr-function = new-function
+        89/<- *edi 0/r32/eax
+        # curr-function = &new-function->next
+        8d/address-> *(eax+0x14) 7/r32/edi  # Function-next
+        e9/jump $parse-mu:line-loop/disp32
+      }
+      # otherwise abort
+      e9/jump $parse-mu:abort/disp32
     } # end line loop
 $parse-mu:end:
     # . reclaim locals
@@ -668,7 +719,7 @@ $parse-mu:end:
 $parse-mu:abort:
     # error("unexpected top-level command: " word-slice "\n")
     (write-buffered Stderr "unexpected top-level command: ")
-    (write-buffered Stderr %edx)
+    (write-slice-buffered Stderr %edx)
     (write-buffered Stderr "\n")
     (flush Stderr)
     # . syscall(exit, 1)
@@ -1588,9 +1639,37 @@ $populate-mu-function-body:end:
     c3/return
 
 # parses a block, assuming that the leading '{' has already been read by the caller
-# errors considered:
-#   { abc
 parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
+    # pseudocode:
+    #   var line : (stream byte 512)
+    #   var word-slice : slice
+    #   result/eax = allocate(Heap, Stmt-size)
+    #   result->tag = 0/Block
+    #   while true                                  # line loop
+    #     clear-stream(line)
+    #     read-line-buffered(in, line)
+    #     if (line->write == 0) break               # end of file
+    #     word-slice = next-word(line)
+    #     if slice-empty?(word-slice)               # end of line
+    #       continue
+    #     else if slice-starts-with?(word-slice, "#")
+    #       continue
+    #     else if slice-equal?(word-slice, "{")
+    #       block = parse-mu-block(in)
+    #       append-to-block(result, block)
+    #     else if slice-equal?(word-slice, "}")
+    #       break
+    #     else if slice-ends-with?(word-slice, ":")
+    #       named-block = parse-mu-named-block(word-slice, line, in)
+    #       append-to-block(result, named-block)
+    #     else if slice-equal?(word-slice, "var")
+    #       var-def = parse-mu-var-def(line)
+    #       append-to-block(result, var-def)
+    #     else
+    #       stmt = parse-mu-stmt(line)
+    #       append-to-block(result, stmt)
+    #   return result
+    #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1599,6 +1678,8 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
     51/push-ecx
     52/push-edx
     53/push-ebx
+    56/push-esi
+    57/pop-edi
     # var line/ecx : (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
@@ -1609,25 +1690,31 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # var open-curly-count/ebx : int = 1
-    bb/copy-to-ebx 1/imm32
+    # edi = out
+    (allocate Heap *Stmt-size)  # => eax
+    89/<- %edi 0/r32/eax
     { # line loop
 $parse-mu-block:line-loop:
-      # if (open-curly-count == 0) break
-      81 7/subop/compare %ebx 0/imm32
-      0f 84/jump-if-equal break/disp32
       # line = read-line-buffered(in)
       (clear-stream %ecx)
       (read-line-buffered *(ebp+8) %ecx)
+#?       (write-buffered Stderr "line: ")
+#?       (write-stream-data Stderr %ecx)
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       # if (line->write == 0) break
       81 7/subop/compare *ecx 0/imm32
       0f 84/jump-if-equal break/disp32
       # word-slice = next-word(line)
       (next-word %ecx %edx)
+#?       (write-buffered Stderr "word: ")
+#?       (write-slice-buffered Stderr %edx)
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       # if slice-empty?(word-slice) continue
       (slice-empty? %ecx)
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal loop/disp8
+      0f 85/jump-if-not-equal loop/disp32
       # if (slice-starts-with?(word-slice, '#') continue
       # . eax = *word-slice->start
       8b/-> *edx 0/r32/eax
@@ -1635,50 +1722,61 @@ $parse-mu-block:line-loop:
       81 4/subop/and %eax 0xff/imm32
       # . if (eax == '#') continue
       3d/compare-eax-and 0x23/imm32/hash
-      74/jump-if-equal loop/disp8
-      {
-        # if slice-equal?(word-slice, "{") ++open-curly-count
-        {
-          (slice-equal? %ecx "{")
-          3d/compare-eax-and 0/imm32
-          74/jump-if-equal break/disp8
-          43/increment-ebx
-          eb/jump $curly-found:end/disp8
-        }
-        # else if slice-equal?(word-slice, "}") --open-curly-count
-        {
-          (slice-equal? %ecx "}")
-          3d/compare-eax-and 0/imm32
-          74/jump-if-equal break/disp8
-          4b/decrement-ebx
-          eb/jump $curly-found:end/disp8
-        }
-        # else break
-        eb/jump $parse-mu-block:end/disp8
-      }
-      # - check for invalid tokens after curly
-$curly-found:end:
-      # second-word-slice = next-word(line)
-      (next-word %ecx %edx)
-      # if slice-empty?(second-word-slice) continue
-      (slice-empty? %ecx)
-      3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal loop/disp32
-      # if (slice-starts-with?(second-word-slice, '#') continue
-      # . eax = *second-word-slice->start
-      8b/-> *edx 0/r32/eax
-      8a/copy-byte *eax 0/r32/AL
-      81 4/subop/and %eax 0xff/imm32
-      # . if (eax == '#') continue
-      3d/compare-eax-and 0x23/imm32/hash
       0f 84/jump-if-equal loop/disp32
-      # abort
-      eb/jump $parse-mu-block:abort/disp8
+      # if slice-equal?(word-slice, "{")
+      {
+$parse-mu-block:check-for-block:
+        (slice-equal? %edx "{")
+        3d/compare-eax-and 0/imm32
+        74/jump-if-equal break/disp8
+        # parse new block and append
+        (parse-mu-block *(ebp+8))  # => eax
+        (append-to-block %edi %eax)
+        e9/jump $parse-mu-block:line-loop/disp32
+      }
+      # if slice-equal?(word-slice, "}") break
+$parse-mu-block:check-for-end:
+      (slice-equal? %edx "}")
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal break/disp32
+      # if slice-ends-with?(word-slice, ":") parse named block and append
+      {
+$parse-mu-block:check-for-named-block:
+        # . eax = *word-slice->end
+        8b/-> *(edx+4) 0/r32/eax
+        8a/copy-byte *eax 0/r32/AL
+        81 4/subop/and %eax 0xff/imm32
+        # . if (eax != ':') break
+        3d/compare-eax-and 0x23/imm32/hash
+        0f 85/jump-if-not-equal break/disp32
+        #
+        (parse-mu-named-block %edx %ecx *(ebp+8))  # => eax
+        (append-to-block %edi %eax)
+        e9/jump $parse-mu-block:line-loop/disp32
+      }
+      # if slice-equal?(word-slice, "var")
+      {
+$parse-mu-block:check-for-var:
+        (slice-equal? %edx "var")
+        3d/compare-eax-and 0/imm32
+        74/jump-if-equal break/disp8
+        #
+        (parse-mu-var-def %ecx)  # => eax
+        (append-to-block %edi %eax)
+        e9/jump $parse-mu-block:line-loop/disp32
+      }
+$parse-mu-block:regular-stmt:
+      # otherwise
+      (parse-mu-stmt %edx)  # => eax
+      (append-to-block %edi %eax)
+      e9/jump loop/disp32
     } # end line loop
 $parse-mu-block:end:
     # . reclaim locals
     81 0/subop/add %esp 0x214/imm32
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
@@ -1687,6 +1785,30 @@ $parse-mu-block:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+# check for extra words after '{'
+#?       e9/jump loop/disp32
+#?       # - check for invalid tokens after curly
+#? $parse-mu-block:curly-found:
+#?       # second-word-slice = next-word(line)
+#?       (next-word %ecx %edx)
+#? #?       (write-buffered Stderr "second word slice: ")
+#? #?       (write-stream-data Stderr %edx)
+#? #?       (flush Stderr)
+#?       # if slice-empty?(second-word-slice) continue
+#?       (slice-empty? %ecx)
+#?       3d/compare-eax-and 0/imm32
+#?       0f 85/jump-if-not-equal loop/disp32
+#?       # if (slice-starts-with?(second-word-slice, '#') continue
+#?       # . eax = *second-word-slice->start
+#?       8b/-> *edx 0/r32/eax
+#?       8a/copy-byte *eax 0/r32/AL
+#?       81 4/subop/and %eax 0xff/imm32
+#?       # . if (eax == '#') continue
+#?       3d/compare-eax-and 0x23/imm32/hash
+#?       0f 84/jump-if-equal loop/disp32
+#?       # abort
+#?       eb/jump $parse-mu-block:abort/disp8
 
 $parse-mu-block:abort:
     # error("'{' or '}' should be on its own line, but got '")
@@ -1700,6 +1822,80 @@ $parse-mu-block:abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+parse-mu-named-block:  # name : (address slice), first-line : (address stream), in : (address buffered-file) -> result/eax : (address stmt)
+    # pseudocode:
+    #   var line : (stream byte 512)
+    #   var word-slice : slice
+    #   result/eax = allocate(Heap, Stmt-size)
+    #   result->tag = 4/Named-block
+    #   result->name = name
+    #   assert(next-word(first-line) == "{")
+    #   assert(no-tokens-in(first-line))
+    #   while true                                  # line loop
+    #     clear-stream(line)
+    #     read-line-buffered(in, line)
+    #     if (line->write == 0) break               # end of file
+    #     word-slice = next-word(line)
+    #     if slice-empty?(word-slice)               # end of line
+    #       break
+    #     else if slice-equal?(word-slice, "{")
+    #       block = parse-mu-block(in)
+    #       append-to-block(result, block)
+    #     else if slice-equal?(word-slice, "}")
+    #       break
+    #     else if slice-ends-with?(word-slice, ":")
+    #       named-block = parse-mu-named-block(word-slice, in)
+    #       append-to-block(result, named-block)
+    #     else if slice-equal?(word-slice, "var")
+    #       var-def = parse-mu-var-def(line)
+    #       append-to-block(result, var-def)
+    #     else
+    #       stmt = parse-mu-stmt(line)
+    #       append-to-block(result, stmt)
+    #   return result
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$parse-mu-named-block:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+parse-mu-var-def:  # line : (address stream) -> result/eax : (address stmt)
+    # pseudocode:
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$parse-mu-var-def:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+parse-mu-stmt:  # line : (address stream) -> result/eax : (address stmt)
+    # pseudocode:
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$parse-mu-stmt:end:
+    # . reclaim locals
+    # . restore registers
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 new-function:  # ad: allocation-descriptor, name: string, subx-name: string, inouts: (address list var), outputs: (address list var), body: (address block), next: (address function) -> result/eax: (address function)
     # . prologue
@@ -1913,6 +2109,18 @@ append-list:  # ad: allocation-descriptor, value: _type, list: (address list _ty
 $append-list:end:
     # . restore registers
     59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+append-to-block:  # ad: allocation-descriptor, block: (address block), x: (address stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+$append-to-block:end:
+    # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
