@@ -324,6 +324,13 @@ Any-register:  # "*"
   # data
   2a/asterisk
 
+List-value:
+  0/imm32
+List-next:
+  4/imm32
+List-size:
+  8/imm32
+
 == code
 
 Entry:
@@ -570,7 +577,8 @@ parse-mu:  # in : (address buffered-file)
     #         break                                 # end of line
     #       else if slice-equal(word-slice, "fn")
     #         var new-function : (address function) = new function
-    #         populate-mu-function(in, new-function)
+    #         populate-mu-function-header(in, new-function)
+    #         populate-mu-function-body(in, new-function)
     #         *curr-function = new-function
     #         curr-function = &new-function->next
     #       else
@@ -669,12 +677,39 @@ $parse-mu:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-# errors considered:
-#   fn foo { {
-#   fn foo { }
-#   fn foo { } {
-#   fn foo  # no block
+# scenarios considered:
+# ✗ fn foo  # no block
+# ✓ fn foo {
+# ✗ fn foo { {
+# ✗ fn foo { }
+# ✗ fn foo { } {
+# ✗ fn foo x {
+# ✗ fn foo x : {
+# ✓ fn foo x : int {
+# ✓ fn foo x: int {
+# ✓ fn foo x: int -> y/eax: int {
 populate-mu-function-header:  # first-line : (address stream byte), out : (address function)
+    # pseudocode:
+    #   var name : slice = next-word(first-line)
+    #   assert(name not in '{' '}' '->')
+    #   out->name = slice-to-string(name)
+    #   ## inouts
+    #   while true
+    #     ## name
+    #     name = next-word(first-line)
+    #     if (name == '{') goto done
+    #     if (name == '->') break
+    #     assert(name != '}')
+    #     var v : (address var) = parse-var-with-type(name, first-line)
+    #     out->inouts = new-list(v, out->inouts)
+    #   ## outputs
+    #   while true
+    #     ## name
+    #     name = next-word(first-line)
+    #     assert(name not in '{' '}' '->')
+    #     var v : (address var) = parse-var-with-type(name, first-line)
+    #   done:
+    #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -688,10 +723,8 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
-    # save function name
+    # read function name
     (next-word *(ebp+8) %ecx)
-    (slice-to-string Heap %ecx)  # => eax
-    89/<- *edi 0/r32/eax  # Function-name
     # error checking
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
@@ -705,13 +738,16 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
     (slice-equal? %ecx "}")   # => eax
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+    # save function name
+    (slice-to-string Heap %ecx)  # => eax
+    89/<- *edi 0/r32/eax  # Function-name
     # save function inouts
-    # while (word-slice not in "{" "->")
     {
-      # if (word-slice == '{') break
+      (next-word *(ebp+8) %ecx)
+      # if (word-slice == '{') goto done
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+      0f 85/jump-if-not-equal $populate-mu-function-header:done/disp32
       # if (word-slice == '->') break
       (slice-equal? %ecx "->")   # => eax
       3d/compare-eax-and 0/imm32
@@ -721,19 +757,14 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
       #
-      (next-word *(ebp+8) %ecx)
+      (parse-var-with-type %ecx *(ebp+8))
+      (new-list Heap %eax *(edi+8))  # Function-inouts
+      89/<- *(edi+8) 0/r32/eax  # Function-inouts
       e9/jump loop/disp32
     }
-    # if (word-slice == "->") skip it
-    {
-      (slice-equal? %ecx "->")   # => eax
-      3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
-      (next-word *(ebp+8) %ecx)
-    }
     # save function outputs
-    # while (word-slice not == "{")
     {
+      (next-word *(ebp+8) %ecx)
       # if (word-slice == '{') break
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
@@ -747,9 +778,12 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
       #
-      (next-word *(ebp+8) %ecx)
+      (parse-var-with-type %ecx *(ebp+8))
+      (new-list Heap %eax *(edi+0xc))  # Function-outputs
+      89/<- *(edi+0xc) 0/r32/eax  # Function-outputs
       e9/jump loop/disp32
     }
+$populate-mu-function-header:done:
     # assert that there's no further token
     {
       # word-slice = next-word(line)
@@ -760,7 +794,7 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
       75/jump-if-not-equal break/disp8
       # if (slice-starts-with?(word-slice, "#")) break
       # . eax = *word-slice->start
-      8b/-> *edx 0/r32/eax
+      8b/-> *ecx 0/r32/eax
       8a/copy-byte *eax 0/r32/AL
       81 4/subop/and %eax 0xff/imm32
       # . if (eax == '#') break
@@ -883,7 +917,7 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     (slice-equal? %ecx ":")
     {
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
+      0f 84/jump-if-equal break/disp32
       (next-word *(ebp+0xc) %ecx)
       # if (word-slice == '{') abort
       (slice-equal? %ecx "{")   # => eax
@@ -904,6 +938,8 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
 $parse-var-with-type:end:
     # return result
     89/<- %eax 7/r32/edi
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -1489,7 +1525,7 @@ $new-var:end:
     5d/pop-to-ebp
     c3/return
 
-new-block:  # ad: allocation-descriptor, data: (address list statement)
+new-block:  # ad: allocation-descriptor, data: (address list statement) -> result/eax: (address statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1575,7 +1611,7 @@ $new-regvardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-named-block:  # ad: allocation-descriptor, name: string, data: (address list statement)
+new-named-block:  # ad: allocation-descriptor, name: string, data: (address list statement) -> result/eax: (address statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1589,6 +1625,26 @@ new-named-block:  # ad: allocation-descriptor, name: string, data: (address list
     8b/-> *(ebp+0x10) 1/r32/ecx
     89/<- *(eax+8) 1/r32/ecx  # Named-block-statements
 $new-named-block:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+new-list:  # ad: allocation-descriptor, value: _type, next: (address list _type) -> result/eax : (address list _type)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *List-size)  # => eax
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *eax 1/r32/ecx  # List-value
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+4) 1/r32/ecx  # List-next
+$new-list:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
