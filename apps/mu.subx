@@ -839,13 +839,14 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     #   var v : (address var) = allocate(Heap, Var-size)
     #   var s : slice
     #   next-token-from-slice(name->start, name->end, '/', s)
+    #   var end : address = s->end
     #   if (slice-ends-with(s, ":"))
     #     decrement s->end
     #   if (slice-ends-with(s, ","))
     #     decrement s->end
     #   v->name = slice-to-string(s)
     #   ## register
-    #   next-token-from-slice(s->end, name->end, '/', s)
+    #   next-token-from-slice(end, name->end, '/', s)
     #   if (slice-ends-with(s, ":"))
     #     decrement s->end
     #   if (slice-ends-with(s, ","))
@@ -853,18 +854,10 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     #   if (!slice-empty?(s))
     #     v->register = slice-to-string(s)
     #   ## type
-    #   s = next-word-or-sexpression(first-line)
-    #   if (slice-ends-with(s, ":"))
-    #     decrement s->end
-    #   if (slice-ends-with(s, ","))
-    #     decrement s->end
+    #   s = next-mu-token(first-line)
     #   assert(s not in '{' '}' '->')
     #   if (slice-empty?(s)) {
-    #     s = next-word-or-sexpression(first-line)
-    #     if (slice-ends-with(s, ":"))
-    #       decrement s->end
-    #     if (slice-ends-with(s, ","))
-    #       decrement s->end
+    #     s = next-mu-token(first-line)
     #     assert(type not in '{' '}' '->')
     #   }
     #   type = type-for(s)
@@ -946,27 +939,7 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
       89/<- *(edi+0x10) 0/r32/eax  # Var-register
     }
     # save v->type
-    (next-word *(ebp+0xc) %ecx)  # TODO: support type s-expressions
-    # . if s ends with ':', decrement s->end
-    {
-      8b/-> *(ecx+4) 0/r32/eax
-      48/decrement-eax
-      8a/copy-byte *eax 3/r32/BL
-      81 4/subop/and %ebx 0xff/imm32
-      81 7/subop/compare %ebx 0x3a/imm32/colon
-      75/jump-if-not-equal break/disp8
-      89/<- *(ecx+4) 0/r32/eax
-    }
-    # . if s ends with ',', decrement s->end
-    {
-      8b/-> *(ecx+4) 0/r32/eax
-      48/decrement-eax
-      8a/copy-byte *eax 3/r32/BL
-      81 4/subop/and %ebx 0xff/imm32
-      81 7/subop/compare %ebx 0x2c/imm32/comma
-      75/jump-if-not-equal break/disp8
-      89/<- *(ecx+4) 0/r32/eax
-    }
+    (next-mu-token *(ebp+0xc) %ecx)
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32
@@ -984,7 +957,7 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     {
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-equal break/disp32
-      (next-word *(ebp+0xc) %ecx)
+      (next-mu-token *(ebp+0xc) %ecx)
       # if (word-slice == '{') abort
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
@@ -1030,7 +1003,48 @@ $parse-var-with-type:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-type-for:  # name: slice -> result/eax: type-tree
+next-mu-token:  # in: (address stream), out: (address slice)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+0xc) 7/r32/edi
+    #
+    (next-word *(ebp+8) %edi)  # TODO: support s-expressions
+    # if out ends with ':', decrement out->end
+    {
+      8b/-> *(edi+4) 0/r32/eax
+      48/decrement-eax
+      8a/copy-byte *eax 3/r32/BL
+      81 4/subop/and %ebx 0xff/imm32
+      81 7/subop/compare %ebx 0x3a/imm32/colon
+      75/jump-if-not-equal break/disp8
+      89/<- *(edi+4) 0/r32/eax
+    }
+    # if out ends with ',', decrement out->end
+    {
+      8b/-> *(edi+4) 0/r32/eax
+      48/decrement-eax
+      8a/copy-byte *eax 3/r32/BL
+      81 4/subop/and %ebx 0xff/imm32
+      81 7/subop/compare %ebx 0x2c/imm32/comma
+      75/jump-if-not-equal break/disp8
+      89/<- *(edi+4) 0/r32/eax
+    }
+$next-mu-token:end:
+    b8/copy-to-eax 1/imm32/int
+    # . restore registers
+    5f/pop-to-edi
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+type-for:  # name: (address slice) -> result/eax: type-tree
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
