@@ -832,6 +832,8 @@ $populate-mu-function-header:abort:
 # format for variables with types
 #   x : int
 #   x: int
+#   x: int,
+# ignores at most one trailing colon or comma
 parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax: (address var)
     # pseudocode:
     #   var v : (address var) = allocate(Heap, Var-size)
@@ -839,16 +841,30 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     #   next-token-from-slice(name->start, name->end, '/', s)
     #   if (slice-ends-with(s, ":"))
     #     decrement s->end
+    #   if (slice-ends-with(s, ","))
+    #     decrement s->end
     #   v->name = slice-to-string(s)
     #   ## register
     #   next-token-from-slice(s->end, name->end, '/', s)
+    #   if (slice-ends-with(s, ":"))
+    #     decrement s->end
+    #   if (slice-ends-with(s, ","))
+    #     decrement s->end
     #   if (!slice-empty?(s))
     #     v->register = slice-to-string(s)
     #   ## type
     #   s = next-word-or-sexpression(first-line)
-    #   assert(type not in '{' '}' '->')
-    #   if (slice-equal?(type, ":")) {
+    #   if (slice-ends-with(s, ":"))
+    #     decrement s->end
+    #   if (slice-ends-with(s, ","))
+    #     decrement s->end
+    #   assert(s not in '{' '}' '->')
+    #   if (slice-empty?(s)) {
     #     s = next-word-or-sexpression(first-line)
+    #     if (slice-ends-with(s, ":"))
+    #       decrement s->end
+    #     if (slice-ends-with(s, ","))
+    #       decrement s->end
     #     assert(type not in '{' '}' '->')
     #   }
     #   type = type-for(s)
@@ -887,10 +903,40 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
       75/jump-if-not-equal break/disp8
       89/<- *(ecx+4) 0/r32/eax
     }
+    # . if s ends with ',', decrement s->end
+    {
+      8b/-> *(ecx+4) 0/r32/eax
+      48/decrement-eax
+      8a/copy-byte *eax 3/r32/BL
+      81 4/subop/and %ebx 0xff/imm32
+      81 7/subop/compare %ebx 0x2c/imm32/comma
+      75/jump-if-not-equal break/disp8
+      89/<- *(ecx+4) 0/r32/eax
+    }
     (slice-to-string Heap %ecx)  # => eax
     89/<- *edi 0/r32/eax  # Var-name
     # save v->register
     (next-token-from-slice %edx *(esi+4) 0x2f %ecx)  # end, name->end, '/'
+    # . if s ends with ':', decrement s->end
+    {
+      8b/-> *(ecx+4) 0/r32/eax
+      48/decrement-eax
+      8a/copy-byte *eax 3/r32/BL
+      81 4/subop/and %ebx 0xff/imm32
+      81 7/subop/compare %ebx 0x3a/imm32/colon
+      75/jump-if-not-equal break/disp8
+      89/<- *(ecx+4) 0/r32/eax
+    }
+    # . if s ends with ',', decrement s->end
+    {
+      8b/-> *(ecx+4) 0/r32/eax
+      48/decrement-eax
+      8a/copy-byte *eax 3/r32/BL
+      81 4/subop/and %ebx 0xff/imm32
+      81 7/subop/compare %ebx 0x2c/imm32/comma
+      75/jump-if-not-equal break/disp8
+      89/<- *(ecx+4) 0/r32/eax
+    }
     # if (!slice-empty?(s)) v->register = slice-to-string(s)
     {
       (slice-empty? %ecx)
@@ -901,6 +947,26 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     }
     # save v->type
     (next-word *(ebp+0xc) %ecx)  # TODO: support type s-expressions
+    # . if s ends with ':', decrement s->end
+    {
+      8b/-> *(ecx+4) 0/r32/eax
+      48/decrement-eax
+      8a/copy-byte *eax 3/r32/BL
+      81 4/subop/and %ebx 0xff/imm32
+      81 7/subop/compare %ebx 0x3a/imm32/colon
+      75/jump-if-not-equal break/disp8
+      89/<- *(ecx+4) 0/r32/eax
+    }
+    # . if s ends with ',', decrement s->end
+    {
+      8b/-> *(ecx+4) 0/r32/eax
+      48/decrement-eax
+      8a/copy-byte *eax 3/r32/BL
+      81 4/subop/and %ebx 0xff/imm32
+      81 7/subop/compare %ebx 0x2c/imm32/comma
+      75/jump-if-not-equal break/disp8
+      89/<- *(ecx+4) 0/r32/eax
+    }
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32
@@ -913,8 +979,8 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     (slice-equal? %ecx "}")   # => eax
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
-    # if (slice-equal?(type, ":")) skip
-    (slice-equal? %ecx ":")
+    # if (slice-empty?(type)) skip
+    (slice-empty? %ecx)
     {
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-equal break/disp32
@@ -931,7 +997,6 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
-      eb/jump $parse-var-with-type:end/disp8
     }
     (type-for %ecx)
     89/<- *(edi+4) 0/r32/eax  # Var-type
@@ -970,6 +1035,10 @@ type-for:  # name: slice -> result/eax: type-tree
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+#?     (write-buffered Stderr "type: ")
+#?     (write-slice-buffered Stderr *(ebp+8))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
 $type-for:end:
     b8/copy-to-eax 1/imm32/int
     # . restore registers
@@ -993,10 +1062,9 @@ test-parse-var-with-type:
     89/<- %ecx 4/r32/esp
     # _test-input-stream contains "int"
     (clear-stream _test-input-stream)
-    (clear-stream _test-input-buffered-file->buffer)
     (write _test-input-stream "int")
     #
-    (parse-var-with-type %ecx _test-input-buffered-file)
+    (parse-var-with-type %ecx _test-input-stream)
     8b/-> *eax 2/r32/edx  # Var-name
     (check-string-equal %edx "x" "F - test-var-with-type/name")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
@@ -1021,16 +1089,44 @@ test-parse-var-with-type-and-register:
     89/<- %ecx 4/r32/esp
     # _test-input-stream contains ": int"
     (clear-stream _test-input-stream)
-    (clear-stream _test-input-buffered-file->buffer)
     (write _test-input-stream ": int")
     #
-    (parse-var-with-type %ecx _test-input-buffered-file)
+    (parse-var-with-type %ecx _test-input-stream)
     8b/-> *eax 2/r32/edx  # Var-name
     (check-string-equal %edx "x" "F - test-var-with-type-and-register/name")
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
     (check-string-equal %edx "eax" "F - test-var-with-type-and-register/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
     (check-ints-equal %edx 1 "F - test-var-with-type-and-register/type")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-var-with-trailing-characters:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "x/eax:"
+    b8/copy-to-eax "x/eax:"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    # _test-input-stream contains "int,"
+    (clear-stream _test-input-stream)
+    (write _test-input-stream "int,")
+    #
+    (parse-var-with-type %ecx _test-input-stream)
+    8b/-> *eax 2/r32/edx  # Var-name
+    (check-string-equal %edx "x" "F - test-var-with-trailing-characters/name")
+    8b/-> *(eax+0x10) 2/r32/edx  # Var-register
+    (check-string-equal %edx "eax" "F - test-var-with-trailing-characters/register")
+    8b/-> *(eax+4) 2/r32/edx  # Var-type
+    (check-ints-equal %edx 1 "F - test-var-with-trailing-characters/type")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
