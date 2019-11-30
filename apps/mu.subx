@@ -1924,6 +1924,8 @@ parse-mu-stmt:  # line : (address stream) -> result/eax : (address stmt)
     # var result/edi : (address stmt)
     (allocate Heap *Stmt-size)
     89/<- %edi 0/r32/eax
+    # result->tag = 1/stmt
+    c7 0/subop/copy *edi 1/imm32/stmt1  # Stmt-tag
     {
       (stmt-has-outputs? *(ebp+8))
       3d/compare-eax-and 0/imm32
@@ -2069,6 +2071,10 @@ parse-var:  # ad: allocation-descriptor, name: (address slice) -> result/eax: (a
     89/<- %ecx 0/r32/eax
     (allocate *(ebp+8) *Var-size)  # => eax
     89/<- *eax 1/r32/ecx  # Var-name
+    # var->type = int
+    c7 0/subop/copy *(eax+4) 1/imm32/int-type # Var-type
+    # var->stack-offset = 8
+    c7 0/subop/copy *(eax+0xc) 8/imm32 # Var-stack-offset
 $parse-var:end:
     # . restore registers
     59/pop-to-ecx
@@ -2423,8 +2429,16 @@ emit-subx-block:  # out : (address buffered-file), block : (address block)
     {
 $emit-subx-block:stmt:
       81 7/subop/compare %esi 0/imm32
-      74/jump-if-equal break/disp8
+      0f 84/jump-if-equal break/disp32
       (write-buffered *(ebp+8) "{\n")
+      {
+        81 7/subop/compare %esi 0/imm32
+        74/jump-if-equal break/disp8
+        (emit-subx-statement *(ebp+8) *esi 0 Primitives 0)  # TODO: initialize vars and functions
+        (write-buffered *(ebp+8) Newline)
+        8b/-> *(esi+4) 6/r32/esi  # List-next
+        eb/jump loop/disp8
+      }
       (write-buffered *(ebp+8) "}\n")
     }
 $emit-subx-block:end:
@@ -2973,22 +2987,24 @@ $mu-stmt-matches-primitive?:check-inouts:
       {
         81 7/subop/compare %esi 0/imm32
         75/jump-if-not-equal break/disp8
+$mu-stmt-matches-primitive?:stmt-inout-is-null:
         {
           81 7/subop/compare %edi 0/imm32
           75/jump-if-not-equal break/disp8
           # return true
-          b8/copy-to-eax 1/imm32
+          b8/copy-to-eax 1/imm32/true
           e9/jump $mu-stmt-matches-primitive?:end/disp32
         }
         # return false
-        b8/copy-to-eax 0/imm32
+        b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # if (curr2 == 0) return false
       {
         81 7/subop/compare %edi 0/imm32
         75/jump-if-not-equal break/disp8
-        b8/copy-to-eax 0/imm32
+$mu-stmt-matches-primitive?:prim-inout-is-null:
+        b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # if (curr != curr2) return false
@@ -2996,7 +3012,7 @@ $mu-stmt-matches-primitive?:check-inouts:
         (operand-matches-primitive? *esi *edi)  # => eax
         3d/compare-eax-and 0/imm32
         75/jump-if-not-equal break/disp8
-        b8/copy-to-eax 0/imm32
+        b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # curr=curr->next
