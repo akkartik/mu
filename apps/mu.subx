@@ -1605,14 +1605,18 @@ populate-mu-function-body:  # in : (address buffered-file), out : (address funct
     # . save registers
     50/push-eax
     56/push-esi
+    57/push-edi
     # esi = in
     8b/-> *(ebp+8) 6/r32/esi
+    # edi = out
+    8b/-> *(ebp+0xc) 7/r32/edi
     # var eax : (address block) = parse-mu-block(in)
-    (parse-mu-block %esi)
+    (parse-mu-block %esi)  # => eax
     # out->body = eax
-    89/<- *(eax+0x10) 0/r32/eax  # Function-body
+    89/<- *(edi+0x10) 0/r32/eax  # Function-body
 $populate-mu-function-body:end:
     # . restore registers
+    5f/pop-to-edi
     5e/pop-to-esi
     58/pop-to-eax
     # . epilogue
@@ -1657,12 +1661,11 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    50/push-eax
     51/push-ecx
     52/push-edx
     53/push-ebx
     56/push-esi
-    57/pop-edi
+    57/push-edi
     # var line/ecx : (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
@@ -1673,7 +1676,7 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # edi = out
+    # edi = result
     (allocate Heap *Stmt-size)  # => eax
     89/<- %edi 0/r32/eax
     { # line loop
@@ -1752,9 +1755,11 @@ $parse-mu-block:check-for-var:
 $parse-mu-block:regular-stmt:
       # otherwise
       (parse-mu-stmt %ecx)  # => eax
-      (append-to-block %edi %eax)
+      (append-to-block Heap %edi %eax)
       e9/jump loop/disp32
     } # end line loop
+    # return result
+    89/<- %eax 7/r32/edi
 $parse-mu-block:end:
     # . reclaim locals
     81 0/subop/add %esp 0x214/imm32
@@ -1764,7 +1769,6 @@ $parse-mu-block:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
-    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -2317,8 +2321,14 @@ append-to-block:  # ad: allocation-descriptor, block: (address block), x: (addre
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    56/push-esi
+    # esi = block
+    8b/-> *(ebp+0xc) 6/r32/esi
+    (append-list *(ebp+8) *(ebp+0x10) *(esi+4))  # ad, x, Block-statements
+    89/<- *(esi+4) 0/r32/eax  # Block-statements
 $append-to-block:end:
     # . restore registers
+    5e/pop-to-esi
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -2406,7 +2416,17 @@ emit-subx-block:  # out : (address buffered-file), block : (address block)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    # curr/esi : (address list statement) = block->statements
+    8b/-> *(ebp+0xc) 6/r32/esi
+    8b/-> *(esi+4) 6/r32/esi  # Block-statements
     #
+    {
+$emit-subx-block:stmt:
+      81 7/subop/compare %esi 0/imm32
+      74/jump-if-equal break/disp8
+      (write-buffered *(ebp+8) "{\n")
+      (write-buffered *(ebp+8) "}\n")
+    }
 $emit-subx-block:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
