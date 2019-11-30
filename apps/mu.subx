@@ -810,7 +810,7 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
       0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
       #
       (parse-var-with-type %ecx *(ebp+8))
-      (append-list Heap %eax *(edi+8))  # Function-inouts
+      (append-list Heap %eax *(edi+8))  # Function-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Function-inouts
       e9/jump loop/disp32
     }
@@ -1695,7 +1695,7 @@ $parse-mu-block:line-loop:
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       # if slice-empty?(word-slice) continue
-      (slice-empty? %ecx)
+      (slice-empty? %edx)
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal loop/disp32
       # if (slice-starts-with?(word-slice, '#') continue
@@ -1751,7 +1751,7 @@ $parse-mu-block:check-for-var:
       }
 $parse-mu-block:regular-stmt:
       # otherwise
-      (parse-mu-stmt %edx)  # => eax
+      (parse-mu-stmt %ecx)  # => eax
       (append-to-block %edi %eax)
       e9/jump loop/disp32
     } # end line loop
@@ -1891,14 +1891,205 @@ $parse-mu-var-def:end:
 
 parse-mu-stmt:  # line : (address stream) -> result/eax : (address stmt)
     # pseudocode:
+    #   var name : slice
+    #   var v : (address var)
+    #   result = allocate(Heap, Stmt-size)
+    #   if stmt-has-outputs?(line)
+    #     while true
+    #       name = next-word(line)
+    #       if (name == '<-') break
+    #       assert(is-identifier?(name))
+    #       v = parse-var(name)
+    #       result->outputs = append(result->outputs, v)
+    #   result->name = slice-to-string(next-word(line))
+    #   while true
+    #     name = next-word-or-string(line)
+    #     v = parse-var-or-literal(name)
+    #     result->inouts = append(result->inouts, v)
     #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
+    57/push-edi
+    # var name/ecx : (address slice)
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %ecx 4/r32/esp
+    # var result/edi : (address stmt)
+    (allocate Heap *Stmt-size)
+    89/<- %edi 0/r32/eax
+    {
+      (stmt-has-outputs? *(ebp+8))
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-equal break/disp32
+      {
+$parse-mu-stmt:read-outputs:
+        # name = next-word(line)
+        (next-word *(ebp+8) %ecx)
+        # if slice-empty?(word-slice) break
+        (slice-empty? %ecx)
+        3d/compare-eax-and 0/imm32
+        0f 85/jump-if-not-equal break/disp32
+        # if (name == "<-") break
+        (slice-equal? %ecx "<-")
+        3d/compare-eax-and 0/imm32
+        75/jump-if-not-equal break/disp8
+        # assert(is-identifier?(name))
+        (is-identifier? %ecx)
+        3d/compare-eax-and 0/imm32
+        0f 84/jump-if-equal $parse-mu-stmt:abort/disp32
+        #
+        (parse-var Heap %ecx)  # => eax
+        (append-list Heap %eax *(edi+0xc))  # Stmt1-outputs => eax
+        89/<- *(edi+0xc) 0/r32/eax  # Stmt1-outputs
+        e9/jump loop/disp32
+      }
+    }
+$parse-mu-stmt:read-operation:
+    (next-word *(ebp+8) %ecx)
+    (slice-to-string Heap %ecx)
+    89/<- *(edi+4) 0/r32/eax  # Stmt1-operation
+    {
+$parse-mu-stmt:read-inouts:
+      # name = next-word-or-string(line)
+      (next-word-or-string *(ebp+8) %ecx)
+      # if slice-empty?(word-slice) break
+      (slice-empty? %ecx)
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal break/disp32
+      # if (name == "<-") abort
+      (slice-equal? %ecx "<-")
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-not-equal $parse-mu-stmt:abort2/disp32
+      #
+      (parse-var Heap %ecx)  # => eax  # TODO: parse-var-or-literal
+      (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
+      89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts
+      e9/jump loop/disp32
+    }
 $parse-mu-stmt:end:
+    # return result
+    89/<- %eax 7/r32/edi
     # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
+    5f/pop-to-edi
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$parse-mu-stmt:abort:
+    # error("invalid identifier '" name "'\n")
+    (write-buffered Stderr "invalid identifier '")
+    (write-slice-buffered Stderr %ecx)
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$parse-mu-stmt:abort2:
+    # error("invalid statement '" line "'\n")
+    (rewind-stream *(ebp+8))
+    (write-buffered Stderr "invalid identifier '")
+    (write-stream Stderr *(ebp+8))
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+stmt-has-outputs?:  # line : (address stream) -> result/eax : boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var word-slice/ecx : slice
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %ecx 4/r32/esp
+    # result = false
+    b8/copy-to-eax 0/imm32/false
+    (rewind-stream *(ebp+8))
+    {
+      (next-word-or-string *(ebp+8) %ecx)
+      # if slice-empty?(word-slice) break
+      (slice-empty? %ecx)
+      3d/compare-eax-and 0/imm32
+      b8/copy-to-eax 0/imm32/false/result  # restore result (if we're here it's still false)
+      0f 85/jump-if-not-equal break/disp32
+      # if slice-starts-with?(word-slice, '#') break
+      # . eax = *word-slice->start
+      8b/-> *ecx 0/r32/eax
+      8a/copy-byte *eax 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      # . if (eax == '#') break
+      3d/compare-eax-and 0x23/imm32/hash
+      b8/copy-to-eax 0/imm32/false/result  # restore result (if we're here it's still false)
+      0f 84/jump-if-equal break/disp32
+      # if slice-equal?(word-slice, '<-') return true
+      (slice-equal? %ecx "<-")
+      3d/compare-eax-and 0/imm32
+      74/jump-if-equal loop/disp8
+      b8/copy-to-eax 1/imm32/true
+    }
+$stmt-has-outputs:end:
+    (rewind-stream *(ebp+8))
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+parse-var:  # ad: allocation-descriptor, name: (address slice) -> result/eax: (address var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # ecx = slice-to-string(name)
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    (slice-to-string Heap %ecx)  # => eax
+    89/<- %ecx 0/r32/eax
+    (allocate *(ebp+8) *Var-size)  # => eax
+    89/<- *eax 1/r32/ecx  # Var-name
+$parse-var:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-mu-stmt:
+    # 'increment n'
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (write _test-input-stream "increment n\n")
+    # convert
+    (parse-mu-stmt _test-input-stream)
+    # check result
+    (check-strings-equal *(eax+4) "increment" "F - test-parse-mu-stmt/name")  # Stmt1-operation
+    # edx : (address list var) = result->inouts
+    8b/-> *(eax+8) 2/r32/edx  # Stmt1-inouts
+    # ebx : (address var) = result->inouts->value
+    8b/-> *edx 3/r32/ebx  # List-value
+    (check-strings-equal *ebx "n" "F - test-parse-mu-stmt/inout:0")  # Var-name
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
