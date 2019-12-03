@@ -187,19 +187,19 @@ mv_if_exists mu.cc $TMP
 ) &
 
 TMP=`mktemp`
-mv_if_exists ../../cleave/cleave $TMP
+mv_if_exists cleave/cleave $TMP
 (
-  wait_for_all ../../cleave/cleave.cc
-  older_than $TMP ../../cleave/cleave.cc && {
+  wait_for_all cleave/cleave.cc
+  older_than $TMP cleave/cleave.cc && {
     echo "building cleave"
-    $CXX $CXXFLAGS ../../cleave/cleave.cc -o $TMP  ||  quit
+    $CXX $CXXFLAGS cleave/cleave.cc -o $TMP  ||  quit
     rm -rf .build
     echo "done building cleave"
   }
-  mv $TMP ../../cleave/cleave
+  mv $TMP cleave/cleave
 ) &
 
-wait_for_all mu.cc ../../cleave/cleave  # cleave/cleave just for the .build cleanup
+wait_for_all mu.cc cleave/cleave  # cleave/cleave just for the .build cleanup
 mkdir -p .build
 # auto-generate function declarations, so I can define them in any order
 # functions start out unindented, have all args on the same line, and end in ') {'
@@ -215,10 +215,10 @@ update_cp termbox/termbox.h .build/termbox
 TMP=`mktemp`
 mv_if_exists mu_bin $TMP
 (
-  wait_for_all mu.cc ../../cleave/cleave termbox/*.c termbox/*.h termbox/*.inl
-  older_than $TMP mu.cc *_list ../../cleave/cleave termbox/* && {
+  wait_for_all mu.cc cleave/cleave termbox/*.c termbox/*.h termbox/*.inl
+  older_than $TMP mu.cc *_list cleave/cleave termbox/* && {
     echo "building mu_bin"
-    ../../cleave/cleave mu.cc .build  ||  quit
+    cleave/cleave mu.cc .build  ||  quit
     cd .build
       # create the list of global variable declarations from the corresponding definitions
       grep ';' global_definitions_list  |sed 's/[=(].*/;/'  |sed 's/^[^\/# ]/extern &/'  |sed 's/^extern extern /extern /'  |update global_declarations_list

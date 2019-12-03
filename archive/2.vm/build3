@@ -140,8 +140,8 @@ older_than mu.cc $LAYERS ../../enumerate/enumerate ../../tangle/tangle && {
   ../../tangle/tangle $LAYERS  > mu.cc
 }
 
-older_than ../../cleave/cleave ../../cleave/cleave.cc && {
-  $CXX $CXXFLAGS ../../cleave/cleave.cc -o ../../cleave/cleave
+older_than cleave/cleave cleave/cleave.cc && {
+  $CXX $CXXFLAGS cleave/cleave.cc -o cleave/cleave
   rm -rf .build
 }
 
@@ -157,8 +157,8 @@ grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update .
 mkdir -p .build/termbox
 update_cp termbox/termbox.h .build/termbox
 
-older_than mu_bin mu.cc *_list ../../cleave/cleave termbox/* && {
-  ../../cleave/cleave mu.cc .build
+older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
+  cleave/cleave mu.cc .build
   noisy_cd .build
     # create the list of global variable declarations from the corresponding definitions
     grep ';' global_definitions_list  |sed 's/[=(].*/;/'  |sed 's/^[^\/# ]/extern &/'  |sed 's/^extern extern /extern /'  |update global_declarations_list
