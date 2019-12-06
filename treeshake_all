@@ -1,0 +1,46 @@
+#!/bin/sh
+# Build minimal-size versions of all apps.
+# Hacky; only intended for some stats at the moment.
+
+set -e
+cd `dirname $0`
+
+./build
+
+export OS=${OS:-linux}
+
+for app in factorial crenshaw2-1 crenshaw2-1b
+do
+  echo $app
+  ./treeshake_translate init.$OS 0*.subx apps/$app.subx
+  mv a.treeshake apps/$app.treeshake
+  mv a.elf apps/$app.treeshake.bin
+  apps/$app test
+  echo
+  apps/$app.treeshake.bin test
+  echo
+done
+
+# Phases of the self-hosted SubX translator.
+
+for app in hex survey pack assort dquotes tests sigils calls braces
+do
+  echo $app
+  ./treeshake_translate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  mv a.treeshake apps/$app.treeshake
+  mv a.elf apps/$app.treeshake.bin
+  apps/$app test
+  echo
+  apps/$app.treeshake.bin test
+  echo
+done
+
+# Mu translator
+echo mu.subx
+./treeshake_translate init.$OS 0*.subx apps/mu.subx
+mv a.treeshake apps/mu.treeshake
+mv a.elf apps/mu.treeshake.bin
+apps/mu test
+echo
+apps/mu.treeshake.bin test
+echo
