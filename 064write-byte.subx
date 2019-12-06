@@ -10,7 +10,7 @@
 Stdout:
     # file descriptor or (address stream)
     1/imm32  # standard output
-Stdout->buffer:
+$Stdout->buffer:
     # inlined fields for a stream
     #   current write index
     0/imm32
@@ -115,9 +115,9 @@ test-write-byte-buffered-single:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream(_test-buffered-file->buffer)
+    # . clear-stream($_test-buffered-file->buffer)
     # . . push args
-    68/push  _test-buffered-file->buffer/imm32
+    68/push  $_test-buffered-file->buffer/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
@@ -159,18 +159,18 @@ test-write-byte-buffered-multiple-flushes:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . clear-stream(_test-buffered-file->buffer)
+    # . clear-stream($_test-buffered-file->buffer)
     # . . push args
-    68/push  _test-buffered-file->buffer/imm32
+    68/push  $_test-buffered-file->buffer/imm32
     # . . call
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # fill up the buffer for _test-buffered-file
-    # . write(_test-buffered-file->buffer, "abcdef")
+    # . write($_test-buffered-file->buffer, "abcdef")
     # . . push args
     68/push  "abcdef"/imm32
-    68/push  _test-buffered-file->buffer/imm32
+    68/push  $_test-buffered-file->buffer/imm32
     # . . call
     e8/call  write/disp32
     # . . discard args
@@ -328,7 +328,7 @@ _test-output-stream:
 _test-output-buffered-file:
     # file descriptor or (address stream)
     _test-output-stream/imm32
-_test-output-buffered-file->buffer:
+$_test-output-buffered-file->buffer:
     # current write index
     0/imm32
     # current read index
@@ -359,7 +359,7 @@ _test-error-stream:
 _test-error-buffered-file:
     # file descriptor or (address stream)
     _test-error-stream/imm32
-_test-error-buffered-file->buffer:
+$_test-error-buffered-file->buffer:
     # current write index
     0/imm32
     # current read index
