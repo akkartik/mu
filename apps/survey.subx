@@ -3313,8 +3313,8 @@ $emit-headers:end:
 
 emit-elf-header:  # out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode
-    #   *Elf_e_entry = get(labels, "Entry")->address
-    #   *Elf_e_phnum = segments->write / 16         # size of a row
+    #   *$Elf_e_entry = get(labels, "Entry")->address
+    #   *$Elf_e_phnum = segments->write / 16         # size of a row
     #   emit-hex-array(out, Elf_header)
     #   write-buffered(out, "\n")
     #
@@ -3325,7 +3325,7 @@ emit-elf-header:  # out : (address buffered-file), segments : (address stream {s
     50/push-eax
     51/push-ecx
     52/push-edx  # just because we need to call idiv
-    # *Elf_e_entry = get(labels, "Entry")->address
+    # *$Elf_e_entry = get(labels, "Entry")->address
     # . eax = labels
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
     # . label-info/eax = get(labels, "Entry", row-size=16, "label table")
@@ -3340,9 +3340,9 @@ emit-elf-header:  # out : (address buffered-file), segments : (address stream {s
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # . eax = label-info->address
     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   8/disp8         .                 # copy *(eax+8) to eax
-    # . *Elf_e_entry = eax
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Elf_e_entry/disp32                # copy eax to *Elf_e_entry
-    # *Elf_e_phnum = segments->write / 0x10
+    # . *$Elf_e_entry = eax
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $Elf_e_entry/disp32               # copy eax to *$Elf_e_entry
+    # *$Elf_e_phnum = segments->write / 0x10
     # . eax = segments
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     # . len/eax = segments->write
@@ -3351,8 +3351,8 @@ emit-elf-header:  # out : (address buffered-file), segments : (address stream {s
     b9/copy-to-ecx  0x10/imm32
     31/xor                          3/mod/direct    2/rm32/edx    .           .             .           2/r32/edx   .               .                 # clear edx
     f7          7/subop/idiv        3/mod/direct    1/rm32/ecx    .           .             .           .           .               .                 # divide edx:eax by ecx, storing quotient in eax and remainder in edx
-    # . *Elf_e_phnum = eax
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Elf_e_phnum/disp32                # copy eax to *Elf_e_phnum
+    # . *$Elf_e_phnum = eax
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $Elf_e_phnum/disp32               # copy eax to *$Elf_e_phnum
     # emit-hex-array(out, Elf_header)
     # . . push args
     68/push  Elf_header/imm32
@@ -3381,15 +3381,15 @@ $emit-elf-header:end:
 
 emit-elf-program-header-entry:  # out : (address buffered-file), curr-segment : (address {string, segment-info})
     # pseudocode:
-    #   *Elf_p_offset = curr-segment->file-offset
-    #   *Elf_p_vaddr = curr-segment->address
-    #   *Elf_p_paddr = curr-segment->address
-    #   *Elf_p_filesz = curr-segment->size
-    #   *Elf_p_memsz = curr-segment->size
+    #   *$Elf_p_offset = curr-segment->file-offset
+    #   *$Elf_p_vaddr = curr-segment->address
+    #   *$Elf_p_paddr = curr-segment->address
+    #   *$Elf_p_filesz = curr-segment->size
+    #   *$Elf_p_memsz = curr-segment->size
     #   if curr-segment->name == "code"
-    #     *Elf_p_flags = 5  # r-x
+    #     *$Elf_p_flags = 5  # r-x
     #   else
-    #     *Elf_p_flags = 6  # rw-
+    #     *$Elf_p_flags = 6  # rw-
     #   emit-hex-array(out, Elf_program_header_entry)
     #   write-buffered(out, "\n")
     #
@@ -3401,25 +3401,25 @@ emit-elf-program-header-entry:  # out : (address buffered-file), curr-segment : 
     56/push-esi
     # esi = curr-segment
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # *Elf_p_offset = curr-segment->file-offset
+    # *$Elf_p_offset = curr-segment->file-offset
     # . eax = curr-segment->file-offset
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   8/disp8         .                 # copy *(esi+8) to eax
-    # . *Elf_p_offset = eax
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Elf_p_offset/disp32               # copy eax to *Elf_p_offset
-    # *Elf_p_vaddr = curr-segment->address
+    # . *$Elf_p_offset = eax
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $Elf_p_offset/disp32              # copy eax to *$Elf_p_offset
+    # *$Elf_p_vaddr = curr-segment->address
     # . eax = curr-segment->address
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
-    # . *Elf_p_vaddr = eax
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Elf_p_vaddr/disp32                # copy eax to *Elf_p_vaddr
-    # *Elf_p_paddr = curr-segment->address
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Elf_p_paddr/disp32                # copy eax to *Elf_p_paddr
-    # *Elf_p_filesz = curr-segment->size
+    # . *$Elf_p_vaddr = eax
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $Elf_p_vaddr/disp32               # copy eax to *$Elf_p_vaddr
+    # *$Elf_p_paddr = curr-segment->address
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $Elf_p_paddr/disp32               # copy eax to *$Elf_p_paddr
+    # *$Elf_p_filesz = curr-segment->size
     # . eax = curr-segment->size
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(esi+12) to eax
-    # . *Elf_p_filesz = eax
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Elf_p_filesz/disp32               # copy eax to *Elf_p_filesz
-    # *Elf_p_memsz = curr-segment->size
-    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Elf_p_memsz/disp32                # copy eax to *Elf_p_memsz
+    # . *$Elf_p_filesz = eax
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $Elf_p_filesz/disp32              # copy eax to *$Elf_p_filesz
+    # *$Elf_p_memsz = curr-segment->size
+    89/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   $Elf_p_memsz/disp32               # copy eax to *$Elf_p_memsz
     # if (!string-equal?(curr-segment->name, "code") goto next check
     # . eax = curr-segment->name
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
@@ -3434,12 +3434,12 @@ emit-elf-program-header-entry:  # out : (address buffered-file), curr-segment : 
     # . if (eax == 0) goto next check
     3d/compare-eax-and  0/imm32
     74/jump-if-equal  $emit-elf-program-header-entry:data/disp8
-    # *Elf_p_flags = r-x
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Elf_p_flags/disp32  5/imm32       # copy to *Elf_p_flags
+    # *$Elf_p_flags = r-x
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           $Elf_p_flags/disp32  5/imm32      # copy to *$Elf_p_flags
     eb/jump  $emit-elf-program-header-entry:really-emit/disp8
 $emit-elf-program-header-entry:data:
-    # otherwise *Elf_p_flags = rw-
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Elf_p_flags/disp32  6/imm32       # copy to *Elf_p_flags
+    # otherwise *$Elf_p_flags = rw-
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           $Elf_p_flags/disp32  6/imm32      # copy to *$Elf_p_flags
 $emit-elf-program-header-entry:really-emit:
     # emit-hex-array(out, Elf_program_header_entry)
     # . . push args
@@ -4667,7 +4667,7 @@ test-num-bytes-handles-imm32:
 == data
 
 # This block of bytes gets copied to the start of the output ELF file, with
-# some fields filled in.
+# some fields (the ones with labels capitalized) filled in.
 # http://www.sco.com/developers/gabi/latest/ch4.eheader.html
 Elf_header:
   # - length
@@ -4683,7 +4683,7 @@ $e_machine:
   03 00
 $e_version:
   1/imm32
-Elf_e_entry:
+$Elf_e_entry:
   0x09000000/imm32  # approximate default; must be updated
 $e_phoff:
   0x34/imm32  # offset for the 'program header table' containing segment headers
@@ -4695,7 +4695,7 @@ $e_ehsize:
   0x34 00
 $e_phentsize:
   0x20 00
-Elf_e_phnum:
+$Elf_e_phnum:
   00 00  # number of segments; must be updated
 $e_shentsize:
   00 00  # no sections
@@ -4713,17 +4713,17 @@ Elf_program_header_entry:
   # - data
 $p_type:
   1/imm32/PT_LOAD
-Elf_p_offset:
+$Elf_p_offset:
   0/imm32  # byte offset in the file at which a segment begins; must be updated
-Elf_p_vaddr:
+$Elf_p_vaddr:
   0/imm32  # starting address to store the segment at before running the program
-Elf_p_paddr:
-  0/imm32  # should have same value as Elf_p_vaddr
-Elf_p_filesz:
+$Elf_p_paddr:
+  0/imm32  # should have same value as $Elf_p_vaddr
+$Elf_p_filesz:
   0/imm32
-Elf_p_memsz:
-  0/imm32  # should have same value as Elf_p_filesz
-Elf_p_flags:
+$Elf_p_memsz:
+  0/imm32  # should have same value as $Elf_p_filesz
+$Elf_p_flags:
   6/imm32/rw-  # read/write/execute permissions for the segment; must be updated for the code segment
 $p_align:
   # we hold this constant; changing it will require adjusting the way we

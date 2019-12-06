@@ -1,26 +1,22 @@
 #!/bin/sh
-# Translate SubX into minimal ELF binaries for Linux.
+# Translate SubX by running the minified self-hosted translator natively on Linux.
 # This script is a hack; see the other *translate scripts instead.
 
 set -e
 
 ./build
 
-grep -vh '^\s*#\|^\s*$' $*     > a.in
+cat $*          |apps/braces.treeshake.bin   > a.braces
 
-cat a.in        |./treeshake   > a.treeshake
+cat a.braces    |apps/calls.treeshake.bin    > a.calls
 
-cat a.treeshake |apps/braces   > a.braces
+cat a.calls     |apps/sigils.treeshake.bin   > a.sigils
 
-cat a.braces    |apps/calls    > a.calls
+cat a.sigils    |apps/tests.treeshake.bin    > a.tests
 
-cat a.calls     |apps/sigils   > a.sigils
+cat a.tests     |apps/assort.treeshake.bin   > a.assort
 
-cat a.sigils    |apps/tests    > a.tests
-
-cat a.tests     |apps/assort   > a.assort
-
-cat a.assort    |apps/dquotes  > a.dquotes
+cat a.assort    |apps/dquotes.treeshake.bin  > a.dquotes
 
 # A little hack. We want ntranslate to always emit identical binaries to the
 # C++ translator. The C++ translator assorts segments before it processes
@@ -33,12 +29,12 @@ cat a.assort    |apps/dquotes  > a.dquotes
 #   a) modify C++ translator to process string literals before assorting.
 #   b) clean up dquotes to assume assorted segments, and append to the
 #   existing data segment.
-cat a.dquotes   |apps/assort   > a.assort2
+cat a.dquotes   |apps/assort.treeshake.bin   > a.assort2
 
-cat a.assort2   |apps/pack     > a.pack
+cat a.assort2   |apps/pack.treeshake.bin     > a.pack
 
-cat a.pack      |apps/survey   > a.survey
+cat a.pack      |apps/survey.treeshake.bin   > a.survey
 
-cat a.survey    |apps/hex      > a.elf
+cat a.survey    |apps/hex.treeshake.bin      > a.elf
 
 chmod +x a.elf

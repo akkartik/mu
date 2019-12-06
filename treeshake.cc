@@ -27,6 +27,7 @@ using std::string;
 #include<iostream>
 using std::cin;
 using std::cout;
+using std::cerr;
 
 #include<sstream>
 using std::istringstream;
@@ -37,6 +38,8 @@ bool starts_with(const string& s, const string& pat) {
     if (*a != *b) return false;
   return b == pat.end();
 }
+
+// input
 
 void read_body(string name, string definition_line, map<string, vector<string> >& segment) {
   // last definition wins; this only matters for the 'Entry' label in the code segment
@@ -78,8 +81,47 @@ void read_lines(map<string, vector<string> >& code, map<string, vector<string> >
   }
 }
 
-void treeshake(const map<string, vector<string> >& code, map<string, vector<string> >& data) {
+// treeshake
+
+bool any_line_matches(string pat, const vector<string>& lines) {
+  for (int i = 0;  i < SIZE(lines);  ++i)
+    if (lines.at(i).find(pat) != string::npos)  // conservative: confused by word boundaries, comments and string literals
+      return true;
+  return false;
 }
+
+bool is_dead(string key, const map<string, vector<string> >& code, const map<string, vector<string> >& data) {
+  if (key == "Entry") return false;
+  if (key == "==") return false;
+  for (map<string, vector<string> >::const_iterator p = code.begin();  p != code.end();  ++p) {
+    if (p->first == key) continue;
+    if (any_line_matches(key, p->second)) return false;
+  }
+  for (map<string, vector<string> >::const_iterator p = data.begin();  p != data.end();  ++p) {
+    if (p->first == key) continue;
+    if (any_line_matches(key, p->second)) return false;
+  }
+  return true;
+}
+
+void treeshake(map<string, vector<string> >& code, map<string, vector<string> >& data) {
+  for (map<string, vector<string> >::iterator p = code.begin();  p != code.end();  ++p) {
+    if (is_dead(p->first, code, data)) {
+//?       cerr << "  erasing " << p->first << '\n';
+      code.erase(p);
+      return;
+    }
+  }
+  for (map<string, vector<string> >::iterator p = data.begin();  p != data.end();  ++p) {
+    if (is_dead(p->first, code, data)) {
+//?       cerr << "  erasing " << p->first << '\n';
+      data.erase(p);
+      return;
+    }
+  }
+}
+
+// output
 
 void dump(const map<string, vector<string> > definitions) {
   // nothing special needed for segment headers, since '=' precedes all alphabet in ASCII
@@ -90,10 +132,11 @@ void dump(const map<string, vector<string> > definitions) {
   }
 }
 
-int main(int argc, const char* argv[]) {
+int main() {
   map<string, vector<string> > code, data;
   read_lines(code, data);
-  while (true) {
+  for (int iter = 0;  ;  ++iter) {
+//?     cerr << "iter: " << iter << '\n';
     int old_csize = SIZE(code), old_dsize = SIZE(data);
     treeshake(code, data);
     if (SIZE(code) == old_csize && SIZE(data) == old_dsize) break;

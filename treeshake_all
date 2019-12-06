@@ -9,38 +9,34 @@ cd `dirname $0`
 
 export OS=${OS:-linux}
 
+echo "== deleting dead code"
+for app in factorial crenshaw2-1 crenshaw2-1b handle hex survey pack dquotes assort tests sigils calls braces
+do
+  echo $app
+  ./treeshake_translate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx 2> apps/$app.stderr
+  mv a.in apps/$app.in
+  mv a.treeshake apps/$app.treeshake
+  echo "LoC `cat apps/$app.subx |wc -l` => `grep -vh '^\s*$\|^\s*#' apps/$app.subx |./treeshake |wc -l`"
+  echo "LoC including common libraries: `cat apps/$app.in |wc -l` => `cat apps/$app.treeshake |wc -l`"
+  mv a.elf apps/$app.treeshake.bin
+  echo "binary size: `ls -lh apps/$app |column 5` => `ls -lh apps/$app.treeshake.bin |column 5`"
+done
+
+echo "== testing treeshaken binaries"
 for app in factorial crenshaw2-1 crenshaw2-1b
 do
   echo $app
-  ./treeshake_translate init.$OS 0*.subx apps/$app.subx
-  mv a.treeshake apps/$app.treeshake
-  mv a.elf apps/$app.treeshake.bin
-  apps/$app test
-  echo
-  apps/$app.treeshake.bin test
-  echo
+  ./treeshake_ntranslate init.$OS 0*.subx apps/$app.subx
+  diff apps/$app a.elf
 done
-
-# Phases of the self-hosted SubX translator.
 
 for app in hex survey pack assort dquotes tests sigils calls braces
 do
   echo $app
-  ./treeshake_translate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
-  mv a.treeshake apps/$app.treeshake
-  mv a.elf apps/$app.treeshake.bin
-  apps/$app test
-  echo
-  apps/$app.treeshake.bin test
-  echo
+  ./treeshake_ntranslate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  diff apps/$app a.elf
 done
 
-# Mu translator
 echo mu.subx
-./treeshake_translate init.$OS 0*.subx apps/mu.subx
-mv a.treeshake apps/mu.treeshake
-mv a.elf apps/mu.treeshake.bin
-apps/mu test
-echo
-apps/mu.treeshake.bin test
-echo
+./treeshake_ntranslate init.$OS 0*.subx apps/mu.subx
+diff apps/mu a.elf
