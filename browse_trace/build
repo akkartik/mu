@@ -57,10 +57,10 @@ noisy_cd() {
   echo "-- `pwd`" >&2
 }
 
-older_than browse_trace_bin browse_trace.cc *_list ../termbox/*  &&  {
+older_than browse_trace_bin browse_trace.cc *_list termbox/*  &&  {
   # missing some deps here
-  noisy_cd ../termbox
-    older_than ../termbox/libtermbox.a ../termbox/*.c  &&  {
+  noisy_cd termbox
+    older_than libtermbox.a *.c  &&  {
       older_than utf8.o utf8.c && {
         $CC $CFLAGS -c utf8.c
       }
@@ -71,13 +71,13 @@ older_than browse_trace_bin browse_trace.cc *_list ../termbox/*  &&  {
         ar rcs libtermbox.a *.o
       }
     }
-  noisy_cd ../browse_trace
+  noisy_cd ..
 
   grep -h "^[^[:space:]#].*) {$" browse_trace.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |update function_list
   # auto-generate list of tests to run
   grep -h "^\s*void test_" browse_trace.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |update test_list
   grep -h "^\s*void test_" browse_trace.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
-  $CXX $CFLAGS browse_trace.cc ../termbox/libtermbox.a -o browse_trace_bin
+  $CXX $CFLAGS browse_trace.cc termbox/libtermbox.a -o browse_trace_bin
 }
 
 exit 0

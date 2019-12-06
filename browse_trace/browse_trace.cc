@@ -1,7 +1,7 @@
 // Warning: zero automated tests
 
 // Includes
-#include "../termbox/termbox.h"
+#include "termbox/termbox.h"
 
 #include <stdlib.h>
 #define SIZE(X) (assert((X).size() < (1LL<<(sizeof(int)*8-2))), static_cast<int>((X).size()))
