@@ -1,0 +1,44 @@
+#!/bin/sh
+# Build minimal-size versions of all apps.
+# Hacky; only intended for some stats at the moment.
+
+set -e
+
+[ ! -f tools/treeshake ] && {
+  echo building tools/treeshake
+  c++ -g -O3 tools/treeshake.cc -o tools/treeshake
+}
+
+export OS=${OS:-linux}
+
+echo "== deleting dead code"
+for app in factorial crenshaw2-1 crenshaw2-1b handle hex survey pack dquotes assort tests sigils calls braces
+do
+  echo "- $app"
+  tools/treeshake_translate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  mv a.in apps/$app.in
+  mv a.treeshake apps/$app.treeshake
+  echo "LoC $(cat apps/$app.subx |wc -l) => $(grep -vh '^\s*$\|^\s*#' apps/$app.subx |tools/treeshake |wc -l)"
+  echo "LoC including common libraries: $(cat apps/$app.in |wc -l) => $(cat apps/$app.treeshake |wc -l)"
+  mv a.elf apps/$app.treeshake.bin
+  echo "binary size: $(ls -lh apps/$app |column 5) => $(ls -lh apps/$app.treeshake.bin |column 5)"
+done
+
+echo "== testing treeshaken binaries"
+for app in factorial crenshaw2-1 crenshaw2-1b
+do
+  echo $app
+  tools/test_treeshake_translate init.$OS 0*.subx apps/$app.subx
+  diff apps/$app a.elf
+done
+
+for app in hex survey pack assort dquotes tests sigils calls braces
+do
+  echo $app
+  tools/test_treeshake_translate init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  diff apps/$app a.elf
+done
+
+echo mu.subx
+tools/test_treeshake_translate init.$OS 0*.subx apps/mu.subx
+diff apps/mu a.elf

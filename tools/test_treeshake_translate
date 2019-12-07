@@ -1,0 +1,29 @@
+#!/bin/sh
+# Translate SubX programs using a minified translator.
+# Based on ntranslate.
+
+set -e
+
+./build
+
+cat $*          |apps/braces.treeshake.bin   > a.braces
+
+cat a.braces    |apps/calls.treeshake.bin    > a.calls
+
+cat a.calls     |apps/sigils.treeshake.bin   > a.sigils
+
+cat a.sigils    |apps/tests.treeshake.bin    > a.tests
+
+cat a.tests     |apps/assort.treeshake.bin   > a.assort
+
+cat a.assort    |apps/dquotes.treeshake.bin  > a.dquotes
+
+cat a.dquotes   |apps/assort.treeshake.bin   > a.assort2
+
+cat a.assort2   |apps/pack.treeshake.bin     > a.pack
+
+cat a.pack      |apps/survey.treeshake.bin   > a.survey
+
+cat a.survey    |apps/hex.treeshake.bin      > a.elf
+
+chmod +x a.elf
