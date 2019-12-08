@@ -12,8 +12,11 @@ These are built automatically.
 
 These are built lazily.
 
+* `linkify`: inserts hyperlinks from variables to definitions in Mu's html
+  sources. Hacky; just see the number of tests. Invoked by `update_html`.
+
 * `treeshake_all`: rebuild SubX binaries without tests and unused functions.
-  Pretty hacky; just helps estimate the code needed to perform various tasks.
+  Hacky; just helps estimate the code needed to perform various tasks.
   ```
   tools/treeshake_all
   ```
