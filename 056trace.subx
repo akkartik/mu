@@ -842,34 +842,14 @@ clear-trace-stream:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # . save registers
-    50/push-eax
-    51/push-ecx
-    # eax = *Trace-stream
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   Trace-stream/disp32               # copy *Trace-stream to eax
-    # ecx = t->length
-    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(eax+8) to ecx
-    # ecx = &t->data[t->length]
-    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   0xc/disp8       .                 # copy eax+ecx+12 to ecx
-    # t->write = 0
-    c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # t->read = 0
-    c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         0/imm32           # copy to *(eax+4)
-    # eax = t->data
-    81          0/subop/add         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xc/imm32         # add to eax
-$clear-trace-stream:loop:
-    # if (eax >= ecx) break
-    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
-    73/jump-if-greater-or-equal-unsigned  $clear-trace-stream:end/disp8
-    # *eax = 0
-    c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # eax += 4
-    81          0/subop/add         3/mod/direct    0/rm32/eax    .           .             .           .           .               4/imm32           # add to eax
-    eb/jump  $clear-trace-stream:loop/disp8
+    # clear-stream(*Trace-stream)
+    # . . push args
+    ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+    # . . call
+    e8/call  clear-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 $clear-trace-stream:end:
-    # . restore registers
-    59/pop-to-ecx
-    58/pop-to-eax
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
