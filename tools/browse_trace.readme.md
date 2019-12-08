@@ -4,7 +4,7 @@ To try it out, first create an example trace (from the top-level `mu/`
 directory):
 
   ```shell
-  ./mu --trace nqueens.mu
+  ./subx --trace run apps/factorial
   ```
 
 This command will save a trace of its execution in a file called `last_run`.
@@ -14,7 +14,7 @@ and a single-word 'label', followed by a colon and whitespace.
 Now browse this trace:
 
   ```shell
-  ./browse_trace/browse_trace last_run
+  tools/browse_trace last_run
   ```
 
 You should now find yourself in a UI showing a subsequence of lines from the

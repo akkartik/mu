@@ -1,0 +1,21 @@
+#!/bin/sh
+set -e
+
+test "$CXX" || export CXX=c++
+test "$CC" || export CC=cc
+test "$CFLAGS" || export CFLAGS="-g -O2"
+export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+
+# build if doesn't exist
+[ ! -f `dirname $0`/browse_trace_bin ] && (
+  cd `dirname $0`
+  [ ! -f termbox/libtermbox.a ] && (
+    cd termbox
+    $CC $CFLAGS -c utf8.c
+    $CC $CFLAGS -c termbox.c
+    ar rcs libtermbox.a *.o
+  )
+  $CXX $CFLAGS browse_trace.cc termbox/libtermbox.a -o browse_trace_bin
+)
+
+`dirname $0`/browse_trace_bin $*

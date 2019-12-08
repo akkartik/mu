@@ -77,7 +77,7 @@ messages.
   42
   ```
 
-Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
+Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md).
 
   ```sh
   $ ./subx --debug translate init.linux examples/factorial.subx -o examples/factorial
@@ -87,7 +87,7 @@ Emulated runs can generate a trace that permits [time-travel debugging](https://
   $ ./subx --debug --trace run examples/factorial
   saving trace to 'last_run'
 
-  $ ./browse_trace/browse_trace last_run  # text-mode debugger UI
+  $ tools/browse_trace last_run  # text-mode debugger UI
   ```
 
 You can write tests for your programs. The entire stack is thoroughly covered
@@ -542,7 +542,7 @@ rudimentary but hopefully still workable toolkit:
   layer. It makes the trace a lot more verbose and a lot less dense, necessitating
   a lot more scrolling around, so I keep it turned off most of the time.
 
-* If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md)
+* If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md)
   in the 'time-travel debugger'.
 
 Hopefully these hints are enough to get you started. The main thing to

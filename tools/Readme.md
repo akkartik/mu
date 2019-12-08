@@ -12,6 +12,8 @@ These are built automatically.
 
 These are built lazily.
 
+* `browse_trace`: debugging tool. See `browse_trace.readme.md` for details.
+
 * `linkify`: inserts hyperlinks from variables to definitions in Mu's html
   sources. Hacky; just see the number of tests. Invoked by `update_html`.
 
