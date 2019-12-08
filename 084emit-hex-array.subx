@@ -15,20 +15,20 @@ emit-hex-array:  # out : (address buffered-file), arr : (address array byte)
     57/push-edi
     # edi = out
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # edx = arr  # <== 0xbdffffe4
+    # edx = arr
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
-    # curr/ecx = arr->data
+    # var curr/ecx : (address byte) = arr->data
     8d/copy-address                 1/mod/*+disp8   2/rm32/edx    .           .             .           1/r32/ecx   4/disp8         .                 # copy edx+4 to ecx
-    # max/edx = arr->data + arr->length
+    # var max/edx : (address byte) = &arr->data[arr->length]
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
     01/add                          3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # add ecx to edx
-    # eax = 0
+    # var c/eax : byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
 $emit-hex-array:loop:
     # if (curr >= width) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-or-equal-unsigned  $emit-hex-array:end/disp8
-    # emit-hex(out, *curr, width=1)
+    # emit-hex(out, c = *curr, width=1)
     # . . push args
     68/push  1/imm32/width
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
@@ -71,7 +71,7 @@ test-emit-hex-array:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var arr/ecx (address array byte) = [01, 02, 03]
+    # var arr/ecx (ref array byte) = [01, 02, 03]
     68/push  0x00030201/imm32  # bytes 01 02 03
     68/push  3/imm32/length
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

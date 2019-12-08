@@ -57,8 +57,8 @@ Entry:  # run tests if necessary, call 'compile' if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto run-main
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $run-main/disp8
     # run-tests()
     e8/call  run-tests/disp32
@@ -67,7 +67,7 @@ Entry:  # run tests if necessary, call 'compile' if not
     eb/jump  $main:end/disp8
 $run-main:
     # - otherwise read a program from stdin and emit its translation to stdout
-    # var ed/eax : exit-descriptor
+    # var ed/eax : (ref exit-descriptor)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -90,7 +90,7 @@ $main:end:
     cd/syscall  0x80/imm8
 
 # the main entry point
-compile:  # in : (address buffered-file), out : fd or (address stream), err : fd or (address stream), ed : (address exit-descriptor)
+compile:  # in : (address buffered-file), out : fd or (address stream byte), err : fd or (address stream byte), ed : (address exit-descriptor)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -105,7 +105,7 @@ compile:  # in : (address buffered-file), out : fd or (address stream), err : fd
     e8/call  get-char/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var num/ecx : (address stream) on the stack
+    # var num/ecx : (ref stream byte 7)
     # Numbers can be 32 bits or 8 hex bytes long. One of them will be in 'Look', so we need space for 7 bytes.
     # Sizing the stream just right buys us overflow-handling for free inside 'get-num'.
     # Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.
@@ -187,10 +187,11 @@ $compile:end:
     5d/pop-to-ebp
     c3/return
 
-# Read a single digit into 'out'. Abort if there are none, or if there is no space in 'out'.
-# Input comes from the global variable 'Look', and we leave the next byte from
-# 'in' into it on exit.
-get-num:  # in : (address buffered-file), out : (address stream), err : fd or (address stream), ed : (address exit-descriptor)
+# Read a single digit into 'out'. Abort if there are none, or if there is no
+# space in 'out'.
+# Input comes from the global variable 'Look' (first byte) and the argument
+# 'in' (rest). We leave the next byte from 'in' into 'Look' on exit.
+get-num:  # in : (address buffered-file), out : (address stream byte), err : fd or (address stream byte), ed : (address exit-descriptor)
     # pseudocode:
     #   if (!is-digit?(Look)) expected(ed, err, "integer")
     #   if out->write >= out->length
@@ -221,8 +222,8 @@ get-num:  # in : (address buffered-file), out : (address stream), err : fd or (a
     e8/call  is-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax == 0)
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false)
+    3d/compare-eax-and  0/imm32/false
     75/jump-if-not-equal  $get-num:main/disp8
     # . expected(ed, err, "integer")
     # . . push args
@@ -251,6 +252,7 @@ $get-num:main:
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
     # edx = out->length
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(edi+8) to edx
+$get-num:loop:
     # if (out->write >= out->length) error
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # compare edx with ecx
     7d/jump-if-lesser  $get-num:stage2/disp8
@@ -337,7 +339,7 @@ test-get-num-reads-single-digit:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : exit-descriptor
+    # . var ed/eax : (ref exit-descriptor)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)
@@ -426,7 +428,7 @@ test-get-num-aborts-on-non-digit-in-Look:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : (address exit-descriptor)
+    # . var ed/eax : (ref exit-descriptor)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)
@@ -468,7 +470,7 @@ test-get-num-aborts-on-non-digit-in-Look:
 ## helpers
 
 # write(f, "Error: "+s+" expected\n") then stop(ed, 1)
-expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte)
+expected:  # ed : (address exit-descriptor), f : fd or (address stream byte), s : (address array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -488,7 +490,7 @@ expected:  # ed : (address exit-descriptor), f : fd or (address stream), s : (ad
     e8/call  write/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # write(f, " expected")
+    # write(f, " expected\n")
     # . . push args
     68/push  " expected\n"/imm32
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)

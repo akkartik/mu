@@ -20,13 +20,13 @@ emit-hex:  # out : (address buffered-file), n : int, width : int
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy *(ebp+12) to ebx
     # edx = width
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0x10/disp8      .                 # copy *(ebp+16) to edx
-    # var curr/ecx = 0
+    # var curr/ecx : int = 0
     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
 $emit-hex:loop:
     # if (curr >= width) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     7d/jump-if-greater-or-equal  $emit-hex:end/disp8
-    # print-byte-buffered(out, ebx)
+    # print-byte-buffered(out, ebx)  # only BL used
     # . . push args
     53/push-ebx
     57/push-edi

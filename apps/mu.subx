@@ -7,7 +7,8 @@
 # == Goals
 # 1. Be memory safe. It should be impossible to corrupt the heap, or to create
 # a bad pointer. (Requires strong type safety.)
-# 2. Do as little as possible to achieve goal 1.
+# 2. Do as little as possible to achieve goal 1. The translator should be
+# implementable in machine code.
 #   - minimize impedance mismatch between source language and SubX target
 #     (e.g. programmer manages registers manually)
 #   - checks over syntax
@@ -63,9 +64,10 @@
 #         }
 #
 #   - variable definitions on the stack. E.g.:
-#       - var foo: int
-#       - var bar: (array int 3)
+#       - var foo: (ref int)
+#       - var bar: (ref array int 3)
 #     There's no initializer; variables are automatically initialized.
+#     The type of a local variable is either word-length (4 bytes) or starts with 'ref'.
 #
 #   - variables definitions in a register. E.g.:
 #       - var foo/eax : int <- add bar 1
@@ -81,20 +83,24 @@
 #   user-defined types: 'type' for structs, 'choice' for unions
 #   short-lived 'address' type for efficiently writing inside nested structs
 #
+# We don't have 'handle' types yet, but we try to distinguish 'ref', 'handle'
+# and 'address' in comments. Their definitions are in layer 50, but really you
+# can ignore the distinctions on a first reading of this program.
+#
 # Formal types:
 #   A program is a linked list of functions
 #   A function contains:
-#     name: string
+#     name: (handle array byte)
 #     inouts: linked list of vars  <-- 'inouts' is more precise than 'inputs'
-#       data: (address var)
-#       next: (address list)
+#       data: (handle var)
+#       next: (handle list)
 #     outputs: linked list of vars
-#       data: (address var)
-#       next: (address list)
-#     body: block
+#       data: (handle var)
+#       next: (handle list)
+#     body: (handle block)
 #   A var-type contains:
-#     name: string
-#     type: s-expression of type ids
+#     name: (handle array byte)
+#     type: (handle s-expression type-id)
 #
 #   A statement can be:
 #     tag 0: a block
@@ -105,29 +111,29 @@
 #
 #   A block contains:
 #     tag: 0
-#     statements: (address list statement)
+#     statements: (handle list statement)
 #
 #   A regular statement contains:
 #     tag: 1
-#     operation: string
-#     inouts: (address list operand)
-#     outputs: (address list var)
+#     operation: (handle array byte)
+#     inouts: (handle list operand)
+#     outputs: (handle list var)
 #
 #   A variable defined on the stack contains:
 #     tag: 2
-#     name: string
-#     type: type-tree
+#     name: (handle array byte)
+#     type: (handle s-expression type-id)
 #
 #   A variable defined in a register contains:
 #     tag: 3
-#     name: string
-#     type: type-tree
-#     reg: string
+#     name: (handle array byte)
+#     type: (handle s-expression type-id)
+#     reg: (handle array byte)
 #
 #   A named block contains:
 #     tag: 4
-#     name: string
-#     statements: (address list statement)
+#     name: (handle array byte)
+#     statements: (handle list statement)
 
 # == Translation: managing the stack
 # Now that we know what the language looks like in the large, let's think
@@ -151,11 +157,11 @@
 # Formal types:
 #   live-vars: stack of vars
 #   var:
-#     name: string
+#     name: (handle array byte)
 #     type: s-expression? Just a type id for now.
 #     block: int
 #     stack-offset: int  (added to ebp)
-#     register: string
+#     register: (handle array byte)
 #       either usual register names
 #       or '*' to indicate any register
 #   At most one of stack-offset or register-index must be non-zero.
@@ -172,11 +178,11 @@
 #
 # Formal types:
 #   functions: linked list of info
-#     name: string
+#     name: (handle array byte)
 #     inouts: linked list of vars
 #     outputs: linked list of vars
 #     body: block (singleton linked list)
-#     subx-name: string
+#     subx-name: (handle array byte)
 
 # == Translating a single primitive instruction
 # A second crucial piece of the puzzle is how Mu converts fairly regular
@@ -208,10 +214,10 @@
 #
 # Accordingly, the formal data structure for a primitive looks like this:
 #   primitives: linked list of info
-#     name: string
+#     name: (handle array byte)
 #     mu-inouts: linked list of vars to check
 #     mu-outputs: linked list of vars to check
-#     subx-name: string
+#     subx-name: (handle array byte)
 #     subx-rm32: enum arg-location
 #     subx-r32: enum arg-location
 #     subx-imm32: enum arg-location
@@ -239,31 +245,31 @@
 
 == data
 
-Program:  # (address function)
+Program:  # (handle function)
   0/imm32
 
 Function-name:
   0/imm32
 Function-subx-name:
   4/imm32
-Function-inouts:  # (address list var)
+Function-inouts:  # (handle list var)
   8/imm32
-Function-outputs:  # (address list var)
+Function-outputs:  # (handle list var)
   0xc/imm32
-Function-body:  # (address block)
+Function-body:  # (handle block)
   0x10/imm32
-Function-next:  # (address function)
+Function-next:  # (handle function)
   0x14/imm32
 Function-size:
   0x18/imm32/24
 
 Primitive-name:
   0/imm32
-Primitive-inouts:  # (address list var)
+Primitive-inouts:  # (handle list var)
   4/imm32
-Primitive-outputs:  # (address list var)
+Primitive-outputs:  # (handle list var)
   8/imm32
-Primitive-subx-name:  # (address string)
+Primitive-subx-name:  # (handle array byte)
   0xc/imm32
 Primitive-subx-rm32:  # enum arg-location
   0x10/imm32
@@ -271,7 +277,7 @@ Primitive-subx-r32:  # enum arg-location
   0x14/imm32
 Primitive-subx-imm32:  # enum arg-location
   0x18/imm32
-Primitive-next:  # (address function)
+Primitive-next:  # (handle function)
   0x1c/imm32
 Primitive-size:
   0x20/imm32/24
@@ -279,31 +285,31 @@ Primitive-size:
 Stmt-tag:
   0/imm32
 
-Block-statements:  # (address list statement)
+Block-statements:  # (handle list statement)
   4/imm32
 
-Stmt1-operation:  # string
+Stmt1-operation:  # (handle array byte)
   4/imm32
-Stmt1-inouts:  # (address list var)
+Stmt1-inouts:  # (handle list var)
   8/imm32
-Stmt1-outputs:  # (address list var)
+Stmt1-outputs:  # (handle list var)
   0xc/imm32
 
-Vardef-name:  # string
+Vardef-name:  # (handle array byte)
   4/imm32
-Vardef-type:  # (address tree type-id)
+Vardef-type:  # (handle tree type-id)
   8/imm32
 
-Regvardef-name:  # string
+Regvardef-name:  # (handle array byte)
   4/imm32
-Regvardef-type:  # (address tree type-id)
+Regvardef-type:  # (handle tree type-id)
   8/imm32
-Regvardef-register:  # string
+Regvardef-register:  # (handle array byte)
   0xc/imm32
 
 Named-block-name:
   4/imm32
-Named-block-statements:  # (address list statement)
+Named-block-statements:  # (handle list statement)
   8/imm32
 
 Stmt-size:
@@ -621,9 +627,9 @@ test-convert-function-with-arg-and-body:
 
 parse-mu:  # in : (address buffered-file)
     # pseudocode
-    #   var curr-function = Program
-    #   var line : (stream byte 512)
-    #   var word-slice : slice
+    #   var curr-function : (handle function) = Program
+    #   var line : (ref stream byte 512)
+    #   var word-slice : (ref slice)
     #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -634,7 +640,7 @@ parse-mu:  # in : (address buffered-file)
     #     else if slice-starts-with?(word-slice, "#")  # comment
     #       continue                                # end of line
     #     else if slice-equal(word-slice, "fn")
-    #       var new-function : (address function) = new function
+    #       var new-function : (handle function) = new function
     #       populate-mu-function-header(in, new-function)
     #       populate-mu-function-body(in, new-function)
     #       *curr-function = new-function
@@ -650,17 +656,17 @@ parse-mu:  # in : (address buffered-file)
     51/push-ecx
     52/push-edx
     57/push-edi
-    # var line/ecx : (stream byte 512)
+    # var line/ecx : (ref stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
-    # var word-slice/edx : slice
+    # var word-slice/edx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # var curr-function/edi : (address function) = Program
+    # var curr-function/edi : (handle function) = Program
     bf/copy-to-edi Program/imm32
     {
 $parse-mu:line-loop:
@@ -694,7 +700,7 @@ $parse-mu:fn:
         (slice-equal? %edx "fn")
         3d/compare-eax-and 0/imm32
         0f 84/jump-if-equal break/disp32
-        # var new-function/eax : (address function) = populate-mu-function()
+        # var new-function/eax : (handle function) = populate-mu-function()
         (allocate Heap *Function-size)  # => eax
         (populate-mu-function-header %ecx %eax)
         (populate-mu-function-body *(ebp+8) %eax)
@@ -743,9 +749,10 @@ $parse-mu:abort:
 # ✓ fn foo x : int {
 # ✓ fn foo x: int {
 # ✓ fn foo x: int -> y/eax: int {
-populate-mu-function-header:  # first-line : (address stream byte), out : (address function)
+populate-mu-function-header:  # first-line : (address stream byte), out : (handle function)
     # pseudocode:
-    #   var name : slice = next-word(first-line)
+    #   var name : (ref slice)
+    #   next-word(first-line, name)
     #   assert(name not in '{' '}' '->')
     #   out->name = slice-to-string(name)
     #   ## inouts
@@ -755,14 +762,14 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
     #     if (name == '{') goto done
     #     if (name == '->') break
     #     assert(name != '}')
-    #     var v : (address var) = parse-var-with-type(name, first-line)
+    #     var v : (handle var) = parse-var-with-type(name, first-line)
     #     out->inouts = append(out->inouts, v)
     #   ## outputs
     #   while true
     #     ## name
     #     name = next-word(first-line)
     #     assert(name not in '{' '}' '->')
-    #     var v : (address var) = parse-var-with-type(name, first-line)
+    #     var v : (handle var) = parse-var-with-type(name, first-line)
     #     out->outputs = append(out->outputs, v)
     #   done:
     #
@@ -775,7 +782,7 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (addre
     57/push-edi
     # edi = out
     8b/-> *(ebp+0xc) 7/r32/edi
-    # var word-slice/ecx : slice
+    # var word-slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -875,7 +882,7 @@ test-function-header-with-arg:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "foo n : int {\n")
-    # result/ecx : (address function)
+    # result/ecx : (ref function)
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
@@ -883,9 +890,9 @@ test-function-header-with-arg:
     (populate-mu-function-header _test-input-stream %ecx)
     # check result
     (check-strings-equal *ecx "foo" "F - test-function-header-with-arg/name")  # Function-name
-    # edx : (address list var) = result->inouts
+    # edx : (handle list var) = result->inouts
     8b/-> *(ecx+8) 2/r32/edx  # Function-inouts
-    # ebx : (address var) = result->inouts->value
+    # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "n" "F - test-function-header-with-arg/inout:0")  # Var-name
     (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type")  # Var-type
@@ -902,7 +909,7 @@ test-function-header-with-multiple-args:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "foo a: int, b: int c: int {\n")
-    # result/ecx : (address function)
+    # result/ecx : (handle function)
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
@@ -910,9 +917,9 @@ test-function-header-with-multiple-args:
     (populate-mu-function-header _test-input-stream %ecx)
     # check result
     (check-strings-equal *ecx "foo")  # Function-name
-    # edx : (address list var) = result->inouts
+    # edx : (handle list var) = result->inouts
     8b/-> *(ecx+8) 2/r32/edx  # Function-inouts
-    # ebx : (address var) = result->inouts->value
+    # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
     (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type")  # Var-type
@@ -941,7 +948,7 @@ test-function-with-multiple-args-and-outputs:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "foo a: int, b: int, c: int -> x/ecx: int y/edx : int {\n")
-    # result/ecx : (address function)
+    # result/ecx : (handle function)
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
@@ -949,9 +956,9 @@ test-function-with-multiple-args-and-outputs:
     (populate-mu-function-header _test-input-stream %ecx)
     # check result
     (check-strings-equal *ecx "foo")  # Function-name
-    # edx : (address list var) = result->inouts
+    # edx : (handle list var) = result->inouts
     8b/-> *(ecx+8) 2/r32/edx  # Function-inouts
-    # ebx : (address var) = result->inouts->value
+    # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
     (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type")  # Var-type
@@ -967,9 +974,9 @@ test-function-with-multiple-args-and-outputs:
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args/inout:2")  # Var-name
     (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:2/type")  # Var-type
-    # edx : (address list var) = result->outputs
+    # edx : (handle list var) = result->outputs
     8b/-> *(ecx+0xc) 2/r32/edx  # Function-outputs
-    # ebx : (address var) = result->outputs->value
+    # ebx : (handle var) = result->outputs->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "x" "F - test-function-header-with-multiple-args/output:0")  # Var-name
     (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/output:0/type")  # Var-type
@@ -991,12 +998,12 @@ test-function-with-multiple-args-and-outputs:
 #   x: int
 #   x: int,
 # ignores at most one trailing colon or comma
-parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax: (address var)
+parse-var-with-type:  # name: (address slice), first-line: (address stream byte) -> result/eax: (handle var)
     # pseudocode:
-    #   var v : (address var) = allocate(Heap, Var-size)
-    #   var s : slice
+    #   var v : (handle var) = allocate(Heap, Var-size)
+    #   var s : (ref slice)
     #   next-token-from-slice(name->start, name->end, '/', s)
-    #   var end : address = s->end
+    #   var end : (address byte) = s->end
     #   if (slice-ends-with(s, ":"))
     #     decrement s->end
     #   if (slice-ends-with(s, ","))
@@ -1030,12 +1037,12 @@ parse-var-with-type:  # name: slice, first-line: (address stream) -> result/eax:
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var result/edi : (address var) = allocate(Heap, Var-size)
+    # var result/edi : (handle var) = allocate(Heap, Var-size)
     (allocate Heap *Var-size)
     89/<- %edi 0/r32/eax
     # esi = name
     8b/-> *(ebp+8) 6/r32/esi
-    # var s/ecx : slice
+    # var s/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1160,7 +1167,7 @@ $parse-var-with-type:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-next-mu-token:  # in: (address stream), out: (address slice)
+next-mu-token:  # in: (address stream byte), out: (address slice)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1201,7 +1208,7 @@ $next-mu-token:end:
     5d/pop-to-ebp
     c3/return
 
-type-for:  # name: (address slice) -> result/eax: type-tree
+type-for:  # name: (address slice) -> result/eax: (handle s-expression type-id)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1227,7 +1234,7 @@ test-parse-var-with-type:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1254,7 +1261,7 @@ test-parse-var-with-type-and-register:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1283,7 +1290,7 @@ test-parse-var-with-trailing-characters:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1314,7 +1321,7 @@ is-identifier?:  # in : (address slice) -> result/eax : boolean
     (slice-empty? *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32
     75/jump-if-not-equal $is-identifier?:false/disp8
-    # var c/eax : char = *in->start
+    # var c/eax : byte = *in->start
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *eax 0/r32/eax
     8a/copy-byte *eax 0/r32/AL
@@ -1354,7 +1361,7 @@ test-is-identifier-dollar:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1375,7 +1382,7 @@ test-is-identifier-underscore:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1396,7 +1403,7 @@ test-is-identifier-a:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1417,7 +1424,7 @@ test-is-identifier-z:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1438,7 +1445,7 @@ test-is-identifier-A:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1459,7 +1466,7 @@ test-is-identifier-Z:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1481,7 +1488,7 @@ test-is-identifier-@:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1503,7 +1510,7 @@ test-is-identifier-square-bracket:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1525,7 +1532,7 @@ test-is-identifier-backtick:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1547,7 +1554,7 @@ test-is-identifier-curly-brace-open:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1568,7 +1575,7 @@ test-is-identifier-curly-brace-close:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1590,7 +1597,7 @@ test-is-identifier-hyphen:
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/<- %ecx 4/r32/esp
@@ -1602,7 +1609,7 @@ test-is-identifier-hyphen:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-function-body:  # in : (address buffered-file), out : (address function)
+populate-mu-function-body:  # in : (address buffered-file), out : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1614,7 +1621,7 @@ populate-mu-function-body:  # in : (address buffered-file), out : (address funct
     8b/-> *(ebp+8) 6/r32/esi
     # edi = out
     8b/-> *(ebp+0xc) 7/r32/edi
-    # var eax : (address block) = parse-mu-block(in)
+    # var eax : (handle block) = parse-mu-block(in)
     (parse-mu-block %esi)  # => eax
     # out->body = eax
     89/<- *(edi+0x10) 0/r32/eax  # Function-body
@@ -1629,10 +1636,10 @@ $populate-mu-function-body:end:
     c3/return
 
 # parses a block, assuming that the leading '{' has already been read by the caller
-parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
+parse-mu-block:  # in : (address buffered-file) -> result/eax : (handle block)
     # pseudocode:
-    #   var line : (stream byte 512)
-    #   var word-slice : slice
+    #   var line : (ref stream byte 512)
+    #   var word-slice : (ref slice)
     #   result/eax = allocate(Heap, Stmt-size)
     #   result->tag = 0/Block
     #   while true                                  # line loop
@@ -1670,13 +1677,13 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (address block)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var line/ecx : (stream byte 512)
+    # var line/ecx : (ref stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
-    # var word-slice/edx : slice
+    # var word-slice/edx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
@@ -1791,14 +1798,14 @@ $parse-mu-block:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-check-no-tokens-left:  # line : (address stream)
+check-no-tokens-left:  # line : (address stream byte)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
     51/push-ecx
-    # var s/ecx : slice = next-word(line)
+    # var s/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1838,10 +1845,10 @@ $check-no-tokens-left:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-named-block:  # name : (address slice), first-line : (address stream), in : (address buffered-file) -> result/eax : (address stmt)
+parse-mu-named-block:  # name : (address slice), first-line : (address stream byte), in : (address buffered-file) -> result/eax : (handle stmt)
     # pseudocode:
-    #   var line : (stream byte 512)
-    #   var word-slice : slice
+    #   var line : (ref stream byte 512)
+    #   var word-slice : (ref slice)
     #   result/eax = allocate(Heap, Stmt-size)
     #   result->tag = 4/Named-block
     #   result->name = name
@@ -1882,7 +1889,7 @@ $parse-mu-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-var-def:  # line : (address stream) -> result/eax : (address stmt)
+parse-mu-var-def:  # line : (address stream byte) -> result/eax : (handle stmt)
     # pseudocode:
     #
     # . prologue
@@ -1897,10 +1904,10 @@ $parse-mu-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-stmt:  # line : (address stream) -> result/eax : (address stmt)
+parse-mu-stmt:  # line : (address stream byte) -> result/eax : (handle stmt)
     # pseudocode:
-    #   var name : slice
-    #   var v : (address var)
+    #   var name : (ref slice)
+    #   var v : (ref var)
     #   result = allocate(Heap, Stmt-size)
     #   if stmt-has-outputs?(line)
     #     while true
@@ -1921,11 +1928,11 @@ parse-mu-stmt:  # line : (address stream) -> result/eax : (address stmt)
     # . save registers
     51/push-ecx
     57/push-edi
-    # var name/ecx : (address slice)
+    # var name/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
-    # var result/edi : (address stmt)
+    # result/edi : (handle stmt)
     (allocate Heap *Stmt-size)
     89/<- %edi 0/r32/eax
     # result->tag = 1/stmt
@@ -2017,13 +2024,13 @@ $parse-mu-stmt:abort2:
     cd/syscall  0x80/imm8
     # never gets here
 
-stmt-has-outputs?:  # line : (address stream) -> result/eax : boolean
+stmt-has-outputs?:  # line : (address stream byte) -> result/eax : boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var word-slice/ecx : slice
+    # var word-slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -2063,7 +2070,7 @@ $stmt-has-outputs:end:
     5d/pop-to-ebp
     c3/return
 
-parse-var:  # ad: allocation-descriptor, name: (address slice) -> result/eax: (address var)
+parse-var:  # ad: allocation-descriptor, name: (address slice) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2099,9 +2106,9 @@ test-parse-mu-stmt:
     (parse-mu-stmt _test-input-stream)
     # check result
     (check-strings-equal *(eax+4) "increment" "F - test-parse-mu-stmt/name")  # Stmt1-operation
-    # edx : (address list var) = result->inouts
+    # edx : (handle list var) = result->inouts
     8b/-> *(eax+8) 2/r32/edx  # Stmt1-inouts
-    # ebx : (address var) = result->inouts->value
+    # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "n" "F - test-parse-mu-stmt/inout:0")  # Var-name
     # . epilogue
@@ -2109,7 +2116,7 @@ test-parse-mu-stmt:
     5d/pop-to-ebp
     c3/return
 
-new-function:  # ad: allocation-descriptor, name: string, subx-name: string, inouts: (address list var), outputs: (address list var), body: (address block), next: (address function) -> result/eax: (address function)
+new-function:  # ad: allocation-descriptor, name: string, subx-name: string, inouts: (handle list var), outputs: (handle list var), body: (handle block), next: (handle function) -> result/eax: (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2137,7 +2144,7 @@ $new-function:end:
     5d/pop-to-ebp
     c3/return
 
-new-var:  # ad: allocation-descriptor, name: string, type: int, block: int, stack-offset: int, register: string -> result/eax: (address var)
+new-var:  # ad: allocation-descriptor, name: string, type: int, block: int, stack-offset: int, register: string -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2163,7 +2170,7 @@ $new-var:end:
     5d/pop-to-ebp
     c3/return
 
-new-block:  # ad: allocation-descriptor, data: (address list statement) -> result/eax: (address statement)
+new-block:  # ad: allocation-descriptor, data: (handle list statement) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2182,7 +2189,7 @@ $new-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-stmt:  # ad: allocation-descriptor, operation: string, inouts: (address list var), outputs: (address list var) -> result/eax: (address statement)
+new-stmt:  # ad: allocation-descriptor, operation: string, inouts: (handle list var), outputs: (handle list var) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2205,7 +2212,7 @@ $new-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-new-vardef:  # ad: allocation-descriptor, name: string, type: int -> result/eax: (address statement)
+new-vardef:  # ad: allocation-descriptor, name: string, type: int -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2226,7 +2233,7 @@ $new-vardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-regvardef:  # ad: allocation-descriptor, name: string, type: int, register: string -> result/eax: (address statement)
+new-regvardef:  # ad: allocation-descriptor, name: string, type: int, register: string -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2249,7 +2256,7 @@ $new-regvardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-named-block:  # ad: allocation-descriptor, name: string, data: (address list statement) -> result/eax: (address statement)
+new-named-block:  # ad: allocation-descriptor, name: string, data: (handle list statement) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2270,7 +2277,7 @@ $new-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-list:  # ad: allocation-descriptor, value: _type, next: (address list _type) -> result/eax : (address list _type)
+new-list:  # ad: allocation-descriptor, value: _type, next: (handle list _type) -> result/eax : (handle list _type)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2290,7 +2297,7 @@ $new-list:end:
     5d/pop-to-ebp
     c3/return
 
-append-list:  # ad: allocation-descriptor, value: _type, list: (address list _type) -> result/eax : (address list _type)
+append-list:  # ad: allocation-descriptor, value: _type, list: (handle list _type) -> result/eax : (handle list _type)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2326,7 +2333,7 @@ $append-list:end:
     5d/pop-to-ebp
     c3/return
 
-append-to-block:  # ad: allocation-descriptor, block: (address block), x: (address stmt)
+append-to-block:  # ad: allocation-descriptor, block: (handle block), x: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2373,10 +2380,10 @@ emit-subx:  # out : (address buffered-file)
     57/push-edi
     # edi = out
     8b/-> *(ebp+8) 7/r32/edi
-    # var curr/ecx : (address function) = Program
+    # var curr/ecx : (handle function) = Program
     8b/-> *Program 1/r32/ecx
     {
-      # if (curr == NULL) break
+      # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
       0f 84/jump-if-equal break/disp32
       (emit-subx-function %edi %ecx)
@@ -2394,7 +2401,7 @@ $emit-subx:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-function:  # out : (address buffered-file), f : (address function)
+emit-subx-function:  # out : (address buffered-file), f : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2422,11 +2429,11 @@ $emit-subx-function:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-block:  # out : (address buffered-file), block : (address block)
+emit-subx-block:  # out : (address buffered-file), block : (handle block)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # curr/esi : (address list statement) = block->statements
+    # curr/esi : (handle list statement) = block->statements
     8b/-> *(ebp+0xc) 6/r32/esi
     8b/-> *(esi+4) 6/r32/esi  # Block-statements
     #
@@ -2451,7 +2458,7 @@ $emit-subx-block:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-statement:  # out : (address buffered-file), stmt : (address statement), vars : (stack var), primitives : (address primitive), functions : (address function)
+emit-subx-statement:  # out : (address buffered-file), stmt : (handle statement), vars : (handle stack var), primitives : (handle primitive), functions : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2614,7 +2621,7 @@ Lit-var:
     0/imm32/no-register
 
 == code
-emit-subx-primitive:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), primitive : (address function)
+emit-subx-primitive:  # out : (address buffered-file), stmt : (handle statement), vars : (handle variable), primitive : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2640,7 +2647,7 @@ $emit-subx-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-rm32:  # out : (address buffered-file), l : arg-location, stmt : (address statement)
+emit-subx-rm32:  # out : (address buffered-file), l : arg-location, stmt : (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2660,7 +2667,7 @@ $emit-subx-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-get-stmt-operand-from-arg-location:  # stmt : (address statement), l : arg-location -> var/eax : (address variable)
+get-stmt-operand-from-arg-location:  # stmt : (handle statement), l : arg-location -> var/eax : (handle variable)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2720,7 +2727,7 @@ $get-stmt-operand-from-arg-location:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-emit-subx-r32:  # out : (address buffered-file), l : arg-location, stmt : (address statement)
+emit-subx-r32:  # out : (address buffered-file), l : arg-location, stmt : (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2745,7 +2752,7 @@ $emit-subx-r32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-imm32:  # out : (address buffered-file), l : arg-location, stmt : (address statement)
+emit-subx-imm32:  # out : (address buffered-file), l : arg-location, stmt : (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2769,7 +2776,7 @@ $emit-subx-imm32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call:  # out : (address buffered-file), stmt : (address statement), vars : (address variable), callee : (address function)
+emit-subx-call:  # out : (address buffered-file), stmt : (handle statement), vars : (handle variable), callee : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2782,7 +2789,7 @@ emit-subx-call:  # out : (address buffered-file), stmt : (address statement), va
     8b/-> *(ebp+0x14) 1/r32/ecx
     (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
     # - emit arguments
-    # var curr/ecx : (list var) = stmt->inouts
+    # var curr/ecx : (handle list var) = stmt->inouts
     8b/-> *(ebp+0xc) 1/r32/ecx
     8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
     {
@@ -2805,7 +2812,7 @@ $emit-subx-call:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call-operand:  # out : (address buffered-file), operand : (address variable)
+emit-subx-call-operand:  # out : (address buffered-file), operand : (handle variable)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2831,7 +2838,7 @@ $emit-subx-call-operand:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-as-rm32:  # out : (address buffered-file), operand : (address variable)
+emit-subx-var-as-rm32:  # out : (address buffered-file), operand : (handle variable)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2866,19 +2873,19 @@ $emit-subx-var-as-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-find-matching-function:  # functions : (address function), stmt : (address statement) -> result/eax : (address function)
+find-matching-function:  # functions : (address function), stmt : (handle statement) -> result/eax : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var curr/ecx : (address function) = functions
+    # var curr/ecx : (handle function) = functions
     8b/-> *(ebp+8) 1/r32/ecx
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
       74/jump-if-equal break/disp8
-      # if match(curr, stmt) return curr
+      # if match(stmt, curr) return curr
       {
         (mu-stmt-matches-function? *(ebp+0xc) %ecx)  # => eax
         3d/compare-eax-and 0/imm32
@@ -2900,13 +2907,13 @@ $find-matching-function:end:
     5d/pop-to-ebp
     c3/return
 
-find-matching-primitive:  # primitives : (address primitive), stmt : (address statement) -> result/eax : (address primitive)
+find-matching-primitive:  # primitives : (handle primitive), stmt : (handle statement) -> result/eax : (handle primitive)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var curr/ecx : (address primitive) = primitives
+    # var curr/ecx : (handle primitive) = primitives
     8b/-> *(ebp+8) 1/r32/ecx
     {
 $find-matching-primitive:loop:
@@ -2936,7 +2943,7 @@ $find-matching-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-mu-stmt-matches-function?:  # stmt : (address statement), function : (address opcode-info) => result/eax : boolean
+mu-stmt-matches-function?:  # stmt : (handle statement), function : (handle function) => result/eax : boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2954,7 +2961,7 @@ $mu-stmt-matches-function?:end:
     5d/pop-to-ebp
     c3/return
 
-mu-stmt-matches-primitive?:  # stmt : (address statement), primitive : (address primitive) => result/eax : boolean
+mu-stmt-matches-primitive?:  # stmt : (handle statement), primitive : (handle primitive) => result/eax : boolean
     # A mu stmt matches a primitive if the name matches, all the inout vars
     # match, and all the output vars match.
     # Vars match if types match and registers match.
@@ -3080,7 +3087,7 @@ $mu-stmt-matches-primitive?:end:
     5d/pop-to-ebp
     c3/return
 
-operand-matches-primitive?:  # var : (address var), primout-var : (address var) => result/eax : boolean
+operand-matches-primitive?:  # var : (handle var), primout-var : (handle var) => result/eax : boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3153,30 +3160,30 @@ test-emit-subx-statement-primitive:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : var
+    # var var-foo/ecx : (ref var)
     68/push 0/imm32/no-register
     68/push -8/imm32/stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx : (stack 1)
+    # var vars/edx : (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # operand/ebx : (list var)
+    # var operand/ebx : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %ebx 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     68/push 0/imm32/outputs
     53/push-ebx/operands
     68/push "increment"/imm32/operation
     68/push 1/imm32
     89/<- %esi 4/r32/esp
-    # primitives/ebx : primitive
+    # var primitives/ebx : (ref primitive)
     68/push 0/imm32/next
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
@@ -3226,41 +3233,41 @@ test-emit-subx-statement-primitive-register:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : var in eax
+    # var var-foo/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx : (stack 1)
+    # var vars/edx : (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # operand/ebx : (list var)
+    # var operand/ebx : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %ebx 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     53/push-ebx/outputs
     68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
     68/push 1/imm32
     89/<- %esi 4/r32/esp
-    # formal-var/ebx : var in any register
+    # var formal-var/ebx : (ref var) in any register
     68/push Any-register/imm32
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
-    # operand/ebx : (list var)
+    # var operand/ebx : (ref list var)
     68/push 0/imm32/next
     53/push-ebx/formal-var
     89/<- %ebx 4/r32/esp
-    # primitives/ebx : primitive
+    # var primitives/ebx : (ref primitive)
     68/push 0/imm32/next
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
@@ -3313,41 +3320,41 @@ test-emit-subx-statement-select-primitive:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : var in eax
+    # var var-foo/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx : (stack 1)
+    # var vars/edx : (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # real-outputs/edi : (list var)
+    # var real-outputs/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     57/push-edi/outputs
     68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
     68/push 1/imm32
     89/<- %esi 4/r32/esp
-    # formal-var/ebx : var in any register
+    # var formal-var/ebx : (ref var) in any register
     68/push Any-register/imm32
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
-    # formal-outputs/ebx : (list var)
+    # var formal-outputs/ebx : (ref list var) = {formal-var, 0}
     68/push 0/imm32/next
     53/push-ebx/formal-var
     89/<- %ebx 4/r32/esp
-    # primitive1/ebx : primitive
+    # var primitive1/ebx : (ref primitive)
     68/push 0/imm32/next
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
@@ -3357,7 +3364,7 @@ test-emit-subx-statement-select-primitive:
     68/push 0/imm32/inouts
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
-    # primitives/ebx : primitive
+    # var primitives/ebx : (ref primitive)
     53/push-ebx/next
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
@@ -3410,41 +3417,41 @@ test-emit-subx-statement-select-primitive-2:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : var in eax
+    # var var-foo/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx : (stack 1)
+    # var vars/edx : (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # inouts/edi : (list var)
+    # var inouts/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     68/push 0/imm32/outputs
     57/push-edi/inouts
     68/push "increment"/imm32/operation
     68/push 1/imm32
     89/<- %esi 4/r32/esp
-    # formal-var/ebx : var in any register
+    # var formal-var/ebx : (ref var) in any register
     68/push Any-register/imm32
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
-    # operand/ebx : (list var)
+    # var operand/ebx : (ref list var)
     68/push 0/imm32/next
     53/push-ebx/formal-var
     89/<- %ebx 4/r32/esp
-    # primitive1/ebx : primitive
+    # var primitive1/ebx : primitive
     68/push 0/imm32/next
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
@@ -3454,7 +3461,7 @@ test-emit-subx-statement-select-primitive-2:
     68/push 0/imm32/inouts
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
-    # primitives/ebx : primitive
+    # var primitives/ebx : (ref primitive)
     53/push-ebx/next
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
@@ -3501,23 +3508,23 @@ test-increment-register:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : var in eax
+    # var var-foo/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx : (stack 1)
+    # var vars/edx : (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # real-outputs/edi : (list var)
+    # var real-outputs/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     57/push-edi/outputs
     68/push 0/imm32/inouts
@@ -3561,23 +3568,23 @@ test-increment-var:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : var in eax
+    # var var-foo/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx : (stack 1)
+    # var vars/edx : (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # inouts/edi : (list var)
+    # var inouts/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     68/push 0/imm32/outputs
     57/push-edi/inouts
@@ -3611,29 +3618,29 @@ test-add-reg-to-reg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-var1/ecx : var in eax
+    # var var-var1/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
-    # var-var2/edx : var in ecx
+    # var var-var2/edx : (ref var) in ecx
     68/push "ecx"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
-    # inouts/esi : (list var2)
+    # var inouts/esi : (ref list var2)
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # outputs/edi : (list var1)
+    # var outputs/edi : (ref list var1)
     68/push 0/imm32/next
     51/push-ecx/var-var1
     89/<- %edi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     57/push-edi/outputs
     56/push-esi/inouts
@@ -3667,29 +3674,29 @@ test-add-reg-to-mem:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-var1/ecx : var
+    # var var-var1/ecx : (ref var)
     68/push 0/imm32/no-register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
-    # var-var2/edx : var in ecx
+    # var var-var2/edx : (ref var) in ecx
     68/push "ecx"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
-    # inouts/esi : (list var2)
+    # var inouts/esi : (ref list var2)
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # inouts = (list var1 var2)
+    # var inouts = (ref list var1 var2)
     56/push-esi/next
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     68/push 0/imm32/outputs
     56/push-esi/inouts
@@ -3723,29 +3730,29 @@ test-add-mem-to-reg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-var1/ecx : var in eax
+    # var var-var1/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
-    # var-var2/edx : var
+    # var var-var2/edx : (ref var)
     68/push 0/imm32/no-register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
-    # inouts/esi : (list var2)
+    # var inouts/esi : (ref list var2)
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # outputs/edi : (list var1)
+    # var outputs/edi : (ref list var1)
     68/push 0/imm32/next
     51/push-ecx/var-var1
     89/<- %edi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     57/push-edi/outputs
     56/push-esi/inouts
@@ -3779,29 +3786,29 @@ test-add-literal-to-reg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-var1/ecx : var in eax
+    # var var-var1/ecx : (ref var) in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
-    # var-var2/edx : var literal
+    # var var-var2/edx : (ref var) literal
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 0/imm32/type-literal
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # inouts/esi : (list var2)
+    # var inouts/esi : (ref list var2)
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # outputs/edi : (list var1)
+    # var outputs/edi : (ref list var1)
     68/push 0/imm32/next
     51/push-ecx/var-var1
     89/<- %edi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     57/push-edi/outputs
     56/push-esi/inouts
@@ -3835,29 +3842,29 @@ test-add-literal-to-mem:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-var1/ecx : var
+    # var var-var1/ecx : (ref var)
     68/push 0/imm32/no-register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
-    # var-var2/edx : var literal
+    # var var-var2/edx : (ref var) literal
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     68/push 0/imm32/type-literal
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # inouts/esi : (list var2)
+    # var inouts/esi : (ref list var2)
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # inouts = (list var1 inouts)
+    # var inouts = (ref list var1 inouts)
     56/push-esi/next
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     68/push 0/imm32/outputs
     56/push-esi/inouts
@@ -3906,30 +3913,30 @@ test-emit-subx-statement-function-call:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : var
+    # var var-foo/ecx : (ref var)
     68/push 0/imm32/no-register
     68/push -8/imm32/stack-offset
     68/push 0/imm32/block-depth
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx = (stack 1)
+    # var vars/edx = (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # operands/esi : (list var)
+    # var operands/esi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %esi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     68/push 0/imm32/outputs
     56/push-esi/inouts
     68/push "f"/imm32/operation
     68/push 1/imm32
     89/<- %esi 4/r32/esp
-    # functions/ebx : function
+    # var functions/ebx : (ref function)
     68/push 0/imm32/next
     68/push 0/imm32/body
     68/push 0/imm32/outputs
@@ -3965,30 +3972,30 @@ test-emit-subx-statement-function-call-with-literal-arg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var-foo/ecx : literal
+    # var var-foo/ecx : (ref var) literal
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
     68/push 0/imm32/block-depth
     68/push 0/imm32/type-literal
     68/push "34"/imm32
     89/<- %ecx 4/r32/esp
-    # vars/edx = (stack 1)
+    # var vars/edx = (ref stack 1)
     51/push-ecx/var-foo
     68/push 1/imm32/data-length
     68/push 1/imm32/top
     89/<- %edx 4/r32/esp
-    # operands/esi : (list var)
+    # var operands/esi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %esi 4/r32/esp
-    # stmt/esi : statement
+    # var stmt/esi : (ref statement)
     68/push 0/imm32/next
     68/push 0/imm32/outputs
     56/push-esi/inouts
     68/push "f"/imm32/operation
     68/push 1/imm32
     89/<- %esi 4/r32/esp
-    # functions/ebx : function
+    # var functions/ebx : (ref function)
     68/push 0/imm32/next
     68/push 0/imm32/body
     68/push 0/imm32/outputs

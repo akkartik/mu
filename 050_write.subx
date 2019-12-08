@@ -11,6 +11,26 @@ Entry:  # just exit; can't test _write just yet
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
+# Since this is the first file of SubX code, a note about type comments.
+# Eventually we'll build a slightly higher-level safe language atop SubX.
+# Even though we don't have the safe language yet, we'll start thinking in
+# terms of the higher-level types in comments.
+#
+# Mu will have two kinds of addresses:
+#   - 'ref' which is used to point to a unique element, because machine
+#     code can't store large types in registers.
+#   - 'handle' which can point to a heap allocation, different heap allocations
+#     at different times, or even at times nothing at all.
+#
+# The type 'address' can be obtained from either a ref or handle, but it can
+# only be stored on the stack (say to pass objects by reference).
+# Conversely, a ref can't be copied into another ref, only to an address (which
+# by construction has a shorter lifetime).
+#
+# Beginnings of a lattice of types:
+#   You can convert a ref or handle to an address, but not the other way around.
+#   You can convert addresses to ints, but not the other way around.
+
 _write:  # fd : int, s : (address array byte)
     # . prologue
     55/push-ebp

@@ -38,9 +38,9 @@ write-buffered:  # f : (address buffered-file), msg : (address array byte)
     57/push-edi
     # eax = msg
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
-    # in/esi = msg->data
+    # var in/esi : (address byte) = msg->data
     8d/copy-address                 1/mod/*+disp8   0/rm32/eax    .           .             .           6/r32/esi   4/disp8         .                 # copy eax+4 to esi
-    # inend/ecx = &msg->data[msg->length]
+    # var inend/ecx : (address byte) = &msg->data[msg->length]
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    6/base/esi  1/index/ecx   .           1/r32/ecx   .               .                 # copy esi+ecx to ecx
     # edi = f
@@ -206,8 +206,8 @@ test-write-buffered-with-intermediate-flush:
 == data
 
 # The buffered file for standard error.
-Stderr:
-    # file descriptor or (address stream)
+Stderr:  # (ref buffered-file)
+    # file descriptor or (address stream byte)
     2/imm32  # standard error
 $Stderr->buffer:
     # inlined fields for a stream

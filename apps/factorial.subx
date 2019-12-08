@@ -45,8 +45,8 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto run-main
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $run-main/disp8
     # run-tests()
     e8/call  run-tests/disp32
@@ -77,10 +77,10 @@ factorial:  # n : int -> int/eax
     b8/copy-to-eax  1/imm32
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         1/imm32           # compare *(ebp+8)
     7e/jump-if-<=  $factorial:end/disp8
-    # ebx = n-1
+    # var ebx : int = n-1
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
     4b/decrement-ebx
-    # eax = factorial(n-1)
+    # var eax : int = factorial(n-1)
     # . . push args
     53/push-ebx
     # . . call

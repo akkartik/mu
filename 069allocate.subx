@@ -19,14 +19,14 @@
 == data
 
 # A default allocation descriptor for programs to use.
-Heap:
+Heap:  # (ref allocation-descriptor)
   # curr
   0/imm32
   # limit
   0/imm32
 
 # a reasonable default
-Heap-size:
+Heap-size:  # (ref int)
   0x200000/imm32/2MB
 
 == code
@@ -56,7 +56,7 @@ $array-equal-main:end:
 
 # Claim the next 'n' bytes of memory starting at ad->curr and update ad->curr.
 # Abort if there isn't enough memory in 'ad'.
-allocate:  # ad : (address allocation-descriptor), n : int -> address-or-null/eax
+allocate:  # ad : (address allocation-descriptor), n : int -> address-or-null/eax : (address _)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -104,11 +104,11 @@ test-allocate-success:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ad/ecx : (address allocation-descriptor) = {11, 15}
+    # var ad/ecx : (ref allocation-descriptor) = {11, 15}
     68/push  0xf/imm32/limit
     68/push  0xb/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = allocate(ad, 3)
+    # var eax : (handle byte) = allocate(ad, 3)
     # . . push args
     68/push  3/imm32
     51/push-ecx
@@ -143,11 +143,11 @@ _pending-test-allocate-failure:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ad/ecx : (address allocation-descriptor) = {11, 15}
+    # var ad/ecx : (ref allocation-descriptor) = {11, 15}
     68/push  0xf/imm32/limit
     68/push  0xb/imm32/curr
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = allocate(ad, 6)
+    # var eax : (handle byte) = allocate(ad, 6)
     # . . push args
     68/push  6/imm32
     51/push-ecx
@@ -180,7 +180,7 @@ _pending-test-allocate-failure:
     c3/return
 
 # helper: create a nested allocation descriptor (useful for tests)
-allocate-region:  # ad : (address allocation-descriptor), n : int -> new-ad : (address allocation-descriptor)
+allocate-region:  # ad : (address allocation-descriptor), n : int -> new-ad : (handle allocation-descriptor)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp

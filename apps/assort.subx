@@ -50,8 +50,8 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto interactive
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto interactive
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $subx-assort-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
@@ -60,7 +60,7 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $subx-assort-main:end/disp8
 $subx-assort-main:interactive:
     # - otherwise convert stdin
-    # var ed/eax : exit-descriptor
+    # var ed/eax : (ref exit-descriptor)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -97,7 +97,7 @@ subx-assort:  # in : (address buffered-file), out : (address buffered-file)
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     51/push-ecx
-    # var table/ecx : (address stream byte 10*8)
+    # var table/ecx : (ref stream {string, (address stream byte)} 80)  # 10 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x50/imm32        # subtract from esp
     68/push  0x50/imm32/length
     68/push  0/imm32/read
@@ -450,8 +450,10 @@ test-subx-assort:
     5d/pop-to-ebp
     c3/return
 
+# type string_key = (address array byte)
+
 # beware: leaks memory (one name per segment read)
-read-segments:  # in : (address buffered-file), table : (address stream {string, (address stream byte)})
+read-segments:  # in : (address buffered-file), table : (address stream {string_key, (handle stream byte)})
     # pseudocode:
     #   var curr-segment : (handle stream byte) = 0
     #   var line : (stream byte 512)
@@ -494,13 +496,13 @@ read-segments:  # in : (address buffered-file), table : (address stream {string,
     52/push-edx
     53/push-ebx
     56/push-esi
-    # var line/ecx : (stream byte 512)
+    # var line/ecx : (ref stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx = {0, 0}
+    # var word-slice/edx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -583,8 +585,8 @@ $read-segments:check1:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax != 0) continue
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) continue
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $read-segments:loop/disp32
 $read-segments:check-for-comment:
 #?     # print("check for comment\n") {{{
@@ -597,12 +599,12 @@ $read-segments:check-for-comment:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # if (slice-starts-with?(word-slice, "#")) continue
-    # . start/esi = word-slice->start
+    # . var start/esi : (address byte) = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           6/r32/esi   .               .                 # copy *ecx to esi
-    # . c/eax = *start
+    # . var c/eax : byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
-    # . if (eax == '#') continue
+    # . if (c == '#') continue
     3d/compare-eax-and  0x23/imm32/hash
     0f 84/jump-if-equal  $read-segments:loop/disp32
 $read-segments:check-for-segment-header:
@@ -664,8 +666,8 @@ $read-segments:check-for-segment-header:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto check3
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto check3
+    3d/compare-eax-and  0/imm32/false
     0f 84/jump-if-equal  $read-segments:regular-line/disp32
     # segment-name = next-word-or-string(line)
     # . . push args
@@ -715,7 +717,7 @@ $read-segments:check-for-segment-header:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # segment-slot/eax = leaky-get-or-insert-slice(table, segment-name, row-size=8)
+    # var segment-slot/eax : (address handle stream byte) = leaky-get-or-insert-slice(table, segment-name, row-size=8)
     # . . push args
     68/push  8/imm32/row-size
     52/push-edx
@@ -841,10 +843,10 @@ $read-segments:end:
     5d/pop-to-ebp
     c3/return
 
-write-segments:  # out : (address buffered-file), table : (address stream {string, (address stream byte)})
+write-segments:  # out : (address buffered-file), table : (address stream {string_key, (handle stream byte)})
     # pseudocode:
     #   var curr = table->data
-    #   var max = table->data + table->write
+    #   var max = &table->data[table->write]
     #   while curr < max
     #     stream = table[i].stream
     #     write-stream-data(out, stream)
@@ -860,17 +862,17 @@ write-segments:  # out : (address buffered-file), table : (address stream {strin
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # write/edx = table->write
+    # var write/edx : int = table->write
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
-    # curr/esi = table->data
+    # var curr/esi : (address byte) = table->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               0xc/imm32         # add to eax
-    # max/edx = curr + write
+    # var max/edx : (address byte) = curr + write
     01/add                          3/mod/direct    2/rm32/edx    .           .             .           6/r32/esi   .               .                 # add esi to edx
 $write-segments:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           2/r32/edx   .               .                 # compare esi with edx
     73/jump-if-greater-or-equal-unsigned  $write-segments:break/disp8
-    # stream/eax = table[i].stream
+    # var stream/eax : (address stream byte) = table[i].stream
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     # write-stream-data(out, stream)
     # . . push args

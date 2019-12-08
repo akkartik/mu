@@ -81,12 +81,12 @@ repl:  # in : (address buffered-file), out : (address buffered-file)
     # . save registers
     50/push-eax
     {
-      (lisp-read Stdin)  # => eax : (address cell)
+      (lisp-read Stdin)  # => eax : (handle cell)
       # if (eax == 0) break
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
       #
-      (lisp-eval %eax)  # => eax : (address cell)
+      (lisp-eval %eax)  # => eax : (handle cell)
       (lisp-print Stdout %eax)
       eb/jump loop/disp8
     }
@@ -104,13 +104,13 @@ $repl:end:
 # arrays start with '['
 # symbols start with anything else but quote, backquote, unquote or splice
 # only one s-expression per line
-lisp-read:  # in : (address buffered-file) -> eax : (address cell)
+lisp-read:  # in : (address buffered-file) -> eax : (handle cell)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var s/ecx : (stream byte 512)
+    # var s/ecx : (ref stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/size
     68/push 0/imm32/read
@@ -142,14 +142,14 @@ $lisp-read:end:
     5d/pop-to-ebp
     c3/return
 
-# lisp-read:  in : (address buffered-file) -> (address cell)
+# lisp-read:  in : (address buffered-file) -> (handle cell)
 #   token tmp = next-mulisp-token(in)
 #   if is-int(tmp) return cell(tmp)
 #   if is-string(tmp) return cell(tmp)
 #   if is-pair(tmp) ...
 #   if is-array(tmp) ...
 
-next-mulisp-token:  # in : (address buffered-file), line : (address stream), result : (address slice)
+next-mulisp-token:  # in : (address buffered-file), line : (address stream byte), result : (address slice)
     # pseudocode:
     #   if (line->read >= line->write)
     #     read-line-buffered(in, line)
@@ -194,11 +194,11 @@ $next-mulisp-token:end:
     5d/pop-to-ebp
     c3/return
 
-new-int-cell:  # in : (address slice) -> eax : (address cell)
+new-int-cell:  # in : (address slice) -> eax : (handle cell)
 
-new-string-cell:  # in : (address slice) -> eax : (address cell)
+new-string-cell:  # in : (address slice) -> eax : (handle cell)
 
-lisp-eval:  # in : (address cell) -> eax : (address cell)
+lisp-eval:  # in : (address cell) -> eax : (handle cell)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp

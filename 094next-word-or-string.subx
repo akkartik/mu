@@ -33,7 +33,7 @@ $next-word-or-string:check0:
     # . if (eax < line->write) goto next check
     3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # compare eax with *esi
     7c/jump-if-lesser  $next-word-or-string:check-for-comment/disp8
-    # . return out = {0, 0}
+    # . return out
     c7          0/subop/copy        0/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32           # copy to *edi
     c7          0/subop/copy        1/mod/*+disp8   7/rm32/edi    .           .             .           .           4/disp8         0/imm32           # copy to *(edi+4)
     eb/jump  $next-word-or-string:end/disp8
@@ -111,7 +111,7 @@ test-next-word-or-string:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -184,7 +184,7 @@ test-next-word-or-string-returns-whole-comment:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -257,7 +257,7 @@ test-next-word-or-string-returns-empty-slice-on-eof:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -299,7 +299,7 @@ test-next-word-or-string-returns-string-literal:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -362,7 +362,7 @@ test-next-word-or-string-returns-string-with-escapes:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

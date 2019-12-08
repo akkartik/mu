@@ -11,8 +11,8 @@
 
 # The buffered file for standard input. Also illustrates the layout for
 # buffered-file: a pointer to the backing store, followed by a 'buffer' stream
-Stdin:
-    # file descriptor or (address stream)
+Stdin:  # (ref buffered-file)
+    # file descriptor or (address stream byte)
     0/imm32  # standard input
 $Stdin->buffer:
     # inlined fields for a stream
@@ -73,8 +73,7 @@ read-byte-buffered:  # f : (address buffered-file) -> byte-or-Eof/eax
     b8/copy-to-eax  0xffffffff/imm32/Eof
     eb/jump  $read-byte-buffered:end/disp8
 $read-byte-buffered:from-stream:
-    # read byte from stream
-    # AL = f->data[f->read]
+    # byte-or-Eof = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0x10/disp8      .                 # copy byte at *(esi+ecx+16) to AL
     # ++f->read
@@ -272,8 +271,8 @@ test-read-byte-buffered-refills-buffer:
 == data
 
 # a test buffered file for _test-stream
-_test-buffered-file:
-    # file descriptor or (address stream)
+_test-buffered-file:  # (ref buffered-file)
+    # file descriptor or (address stream byte)
     _test-stream/imm32
 $_test-buffered-file->buffer:
     # current write index
@@ -285,7 +284,7 @@ $_test-buffered-file->buffer:
     # data
     00 00 00 00 00 00  # 6 bytes
 
-_test-input-stream:
+_test-input-stream:  # (ref stream byte)
     # current write index
     0/imm32
     # current read index
@@ -311,8 +310,8 @@ _test-input-stream:
     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
 # a test buffered file for _test-input-stream
-_test-input-buffered-file:
-    # file descriptor or (address stream)
+_test-input-buffered-file:  # (ref buffered-file)
+    # file descriptor or (address stream byte)
     _test-input-stream/imm32
 $_test-input-buffered-file->buffer:
     # current write index

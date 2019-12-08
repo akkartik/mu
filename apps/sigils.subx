@@ -78,8 +78,8 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto interactive
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto interactive
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $subx-sigils-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
@@ -147,7 +147,7 @@ subx-sigils:  # in : (address buffered-file), out : (address buffered-file)
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx = {0, 0}
+    # var word-slice/edx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -189,8 +189,8 @@ $subx-sigils:check1:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax != 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $subx-sigils:next-line/disp32
 $subx-sigils:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
@@ -269,8 +269,8 @@ $subx-sigils:check-for-indirect-mode:
     e8/call  disp32-mode?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax == 0) goto indirect mode
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto indirect mode
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $subx-sigils:indirect-mode/disp8
 $subx-sigils:disp32-mode:
     # emit-indirect-mode(out, word-slice)
@@ -1365,7 +1365,7 @@ emit-direct-mode:  # out : (address buffered-file), word-slice : (address slice)
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     50/push-eax
-    # var local-slice/eax : (address slice) = {word-slice->start, word-slice->end}
+    # var local-slice/eax : (ref slice) = {word-slice->start, word-slice->end}
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         .                 # push *(eax+4)
     ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
@@ -1834,7 +1834,7 @@ test-next-word-or-expression:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1907,7 +1907,7 @@ test-next-word-or-expression-returns-whole-comment:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1980,7 +1980,7 @@ test-next-word-or-expression-returns-empty-slice-on-eof:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2022,7 +2022,7 @@ test-next-word-or-expression-returns-string-literal:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2085,7 +2085,7 @@ test-next-word-or-expression-returns-string-with-escapes:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2148,7 +2148,7 @@ test-next-word-or-expression-returns-whole-expression:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2250,7 +2250,7 @@ parse-effective-address:  # word-slice : (address slice) -> base/eax, index/ecx,
     # . save registers
     56/push-esi
     57/push-edi
-    # var local-slice/esi : (address slice) = {word-slice->start, word-slice->end}
+    # var local-slice/esi : (ref slice) = {word-slice->start, word-slice->end}
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -2679,7 +2679,7 @@ next-register:  # in : (address slice) -> reg/eax : int
     56/push-esi
     # esi = in
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var reg-slice/ecx : (address slice) = {in->start, in->start + 3}
+    # var reg-slice/ecx : (ref slice) = {in->start, in->start + 3}
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     05/add-to-eax  3/imm32
     50/push-eax
@@ -3865,7 +3865,7 @@ disp32-mode?:  # in : (address slice) -> reg/eax : boolean
     # . save registers
     56/push-esi
     57/push-edi
-    # var local-slice/esi : (address slice) = {in->start, in->end}
+    # var local-slice/esi : (ref slice) = {in->start, in->end}
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -3923,7 +3923,7 @@ emit-indirect-disp32:  # out : (address buffered-file), word-slice : (address sl
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     56/push-esi
-    # var local-slice/esi : (address slice) = {in->start, in->end}
+    # var local-slice/esi : (ref slice) = {in->start, in->end}
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
     ff          6/subop/push        1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # push *(esi+4)
     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
@@ -4055,8 +4055,8 @@ $next-hex-int:loop:
     e8/call  is-hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax == 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) break
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $next-hex-int:break/disp8
     # eax = from-hex-char(*curr)
     # . . copy arg to eax
@@ -4071,7 +4071,8 @@ $next-hex-int:loop:
     # loop
     eb/jump  $next-hex-int:loop/disp8
 $next-hex-int:break:
-    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
+    # if (negate?) result = -result
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32/false     # compare ebx
     74/jump-if-equal  $next-hex-int:end/disp8
 $next-hex-int:negate:
     f7          3/subop/negate      3/mod/direct    7/rm32/edi    .           .             .           .           .               .                 # negate edi
@@ -4437,8 +4438,8 @@ $next-positive-hex-int:loop:
     e8/call  is-hex-digit?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax == 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) break
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $next-positive-hex-int:end/disp8
     # eax = from-hex-char(*curr)
     # . . copy arg to eax

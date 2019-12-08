@@ -1,9 +1,11 @@
 # Checking null-terminated ascii strings.
 #
-# By default we create strings with a 4-byte length prefix rather than a null suffix.
-# However we still need null-prefixed strings when interacting with the Linux
-# kernel in a few places. This layer implements a function for comparing
-# a null-terminated 'kernel string' with a length-prefixed 'SubX string'.
+# By default we create strings as arrays of bytes, and all arrays have a 4-byte
+# length prefix.
+#
+# However, we sometimes need to deal with null-prefixed strings when interacting
+# with the Linux kernel. This layer implements a function for comparing a
+# null-terminated 'kernel string' with a length-prefixed 'SubX string'.
 #
 # To run (from the subx directory):
 #   $ ./subx translate 05[0-2]*.subx -o /tmp/tmp52
@@ -28,7 +30,7 @@ Entry:  # run all tests
 
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
-kernel-string-equal?:  # s : null-terminated ascii string, benchmark : length-prefixed ascii string -> eax : boolean
+kernel-string-equal?:  # s : (address kernel-string), benchmark : (address array byte) -> eax : boolean
     # pseudocode:
     #   n = benchmark->length
     #   s1 = s
@@ -59,17 +61,19 @@ kernel-string-equal?:  # s : null-terminated ascii string, benchmark : length-pr
     53/push-ebx
     56/push-esi
     57/push-edi
-    # s1/edi = s
+    # var s1/edi : (address byte) = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # n/edx = benchmark->length
+    # var n/edx : int = benchmark->length
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
-    # s2/esi = benchmark->data
+    # var s2/esi : (address byte) = benchmark->data
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
-    # i/ecx = c1/eax = c2/ebx = 0
+    # var i/ecx : int = 0
     b9/copy-to-ecx  0/imm32/exit
+    # var c1/eax : byte = 0
     b8/copy-to-eax  0/imm32
+    # var c2/ebx : byte = 0
     bb/copy-to-ebx  0/imm32
 $kernel-string-equal?:loop:
     # if (i >= n) break
@@ -258,10 +262,10 @@ test-compare-kernel-string-with-longer-array:
 
 == data
 
-Null-kernel-string:
+Null-kernel-string:  # (address kernel-string)
     00/null
 
-_test-Abc-kernel-string:
+_test-Abc-kernel-string:  # (address kernel-string)
     41/A 62/b 63/c 00/null
 
 # . . vim:nowrap:textwidth=0

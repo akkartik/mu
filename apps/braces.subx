@@ -77,8 +77,8 @@ $subx-braces-main:end:
 
 subx-braces:  # in : (address buffered-file), out : (address buffered-file)
     # pseudocode:
-    #   var line : (stream byte 512)
-    #   var label-stack : (stack address 32)  # at most 32 levels of nesting
+    #   var line : (ref stream byte 512)
+    #   var label-stack : (stack int 32)  # at most 32 levels of nesting
     #   var next-label-id : int = 1
     #   while true
     #     clear-stream(line)
@@ -123,20 +123,20 @@ subx-braces:  # in : (address buffered-file), out : (address buffered-file)
     57/push-edi
     # esi = in
     8b/-> *(ebp+8) 6/r32/esi
-    # var line/ecx : (stream byte 512)
+    # var line/ecx : (ref stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
-    # var label-stack/edx : (stack int 32)
+    # var label-stack/edx : (ref stack int 32)
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/length
     68/push 0/imm32/top
     89/<- %edx 4/r32/esp
-    # next-label-id/ebx = 1
+    # var next-label-id/ebx : int = 1
     c7 0/subop/copy %ebx 1/imm32
-    # var word-slice/edi = {0, 0}
+    # var word-slice/edi : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edi 4/r32/esp
@@ -201,8 +201,8 @@ $subx-braces:check-for-break:
     # if (!slice-starts-with?(word-slice, "break/")) goto next check
     # . eax = slice-starts-with?(word-slice, "break/")
     (slice-starts-with? %edi "break/")
-    # . if (eax == 0) goto next check
-    3d/compare-eax-and 0/imm32
+    # . if (eax == false) goto next check
+    3d/compare-eax-and 0/imm32/false
     74/jump-if-equal $subx-braces:check-for-loop/disp8
 $subx-braces:emit-break:
     (top %edx)
@@ -217,8 +217,8 @@ $subx-braces:check-for-loop:
     # if (!slice-starts-with?(word-slice, "loop/")) emit word
     # . eax = slice-starts-with?(word-slice, "loop/")
     (slice-starts-with? %edi "loop/")
-    # . if (eax == 0) goto next check
-    3d/compare-eax-and 0/imm32
+    # . if (eax == false) goto next check
+    3d/compare-eax-and 0/imm32/false
     74/jump-if-equal $subx-braces:emit-word-slice/disp8
 $subx-braces:emit-loop:
     (top %edx)

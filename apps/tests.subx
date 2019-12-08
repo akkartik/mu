@@ -43,8 +43,8 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto run-main
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto run-main
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $subx-tests-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
@@ -101,13 +101,13 @@ subx-gen-run-tests:  # in : (address buffered-file), out : (address buffered-fil
     52/push-edx
     53/push-ebx
     57/push-edi
-    # var line/ecx : (address stream byte) = stream(512)
+    # var line/ecx : (ref stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx = {0, 0}
+    # var word-slice/edx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -178,8 +178,8 @@ $subx-gen-run-tests:check-for-label:
     e8/call  is-label?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax == 0) continue
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) continue
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $subx-gen-run-tests:continue/disp8
 $subx-gen-run-tests:check-label-prefix:
     # strip trailing ':' from word-slice
@@ -192,8 +192,8 @@ $subx-gen-run-tests:check-label-prefix:
     e8/call  slice-starts-with?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) break
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $subx-gen-run-tests:continue/disp8
 $subx-gen-run-tests:call-test-function:
     # tests-found? = true
@@ -242,7 +242,7 @@ $subx-gen-run-tests:continue:
     e9/jump  $subx-gen-run-tests:loop/disp32
 $subx-gen-run-tests:break:
     # if (!tests-found?) goto end
-    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
+    81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32/false     # compare ebx
     74/jump-if-equal  $subx-gen-run-tests:end/disp8
     # write(new-code-segment, "  c3/return\n")
     # . . push args

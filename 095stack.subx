@@ -16,20 +16,20 @@ clear-stack:  # s : (address stack)
     51/push-ecx
     # eax = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
-    # ecx = &s->data[s->length]
+    # var max/ecx : (address byte) = &s->data[s->length]
     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(eax+4) to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   8/disp8         .                 # copy eax+ecx+8 to ecx
     # s->top = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
-    # eax = s->data
+    # var curr/eax : (address byte) = s->data
     81          0/subop/add         3/mod/direct    0/rm32/eax    .           .             .           .           .               8/imm32           # add to eax
 $clear-stack:loop:
-    # if (eax >= ecx) break
+    # if (curr >= max) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
     73/jump-if-greater-or-equal-unsigned  $clear-stack:end/disp8
-    # *eax = 0
+    # *curr = 0
     c6          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm8            # copy byte to *eax
-    # ++eax
+    # ++curr
     40/increment-eax
     eb/jump $clear-stack:loop/disp8
 $clear-stack:end:
@@ -343,7 +343,7 @@ top:  # s : (address stack) -> n/eax : int
     # if (s->top <= 0) abort
     81          7/subop/compare     0/mod/indirect  6/rm32/esi    .           .             .           .           .               0/imm32           # compare *esi
     7e/jump-if-lesser-or-equal  $top:abort/disp8
-    # eax = s->data[s->top - 4]
+    # n = s->data[s->top - 4]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     81          5/subop/subtract    3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # subtract from ecx
     8b/copy                         1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/eax   8/disp8         .                 # copy *(esi+ecx+8) to eax

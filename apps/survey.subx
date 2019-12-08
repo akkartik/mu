@@ -74,8 +74,8 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call  kernel-string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto interactive
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto interactive
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $subx-survey-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
@@ -115,9 +115,9 @@ $subx-survey-main:end:
 
 subx-survey:  # infile : (address buffered-file), out : (address buffered-file)
     # pseudocode
-    #   var in : (address stream byte) = stream(4096)
+    #   var in : (ref stream byte 4096)
     #   slurp(infile, in)
-    #   var segments : (stream segment-info 10)
+    #   var segments : (stream segment-info)
     #   var labels : (stream label-info Max-labels)
     #   compute-offsets(in, segments, labels)
     #   compute-addresses(segments, labels)
@@ -131,13 +131,13 @@ subx-survey:  # infile : (address buffered-file), out : (address buffered-file)
     51/push-ecx
     52/push-edx
     56/push-esi
-    # var segments/ecx = stream(10 * 16)
+    # var segments/ecx : (ref stream {string, segment-info} 160)   # 10 rows * 16 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var labels/edx = stream(Max-labels * 16)
+    # var labels/edx : (ref stream label-info Max-labels*16)
     # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/esp   Max-labels/disp32                 # subtract *Max-labels from esp
     # . length
@@ -147,7 +147,7 @@ subx-survey:  # infile : (address buffered-file), out : (address buffered-file)
     # . write
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var in/esi = stream(Input-size * 1)
+    # var in/esi : (ref stream byte Input-size)
     # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/esp   Input-size/disp32                 # subtract *Input-size from esp
     # . length
@@ -618,7 +618,7 @@ compute-offsets:segment-tmp:  # slice
 
 == code
 
-compute-offsets:  # in : (address stream), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+compute-offsets:  # in : (address stream byte), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # skeleton:
     #   for lines in 'in'
     #     for words in line
@@ -833,8 +833,8 @@ $compute-offsets:case-empty:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax != 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $compute-offsets:line-loop/disp32
 $compute-offsets:case-comment:
     # if slice-starts-with?(word-slice, "#") continue
@@ -843,8 +843,8 @@ $compute-offsets:case-comment:
     e8/call  slice-starts-with?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $compute-offsets:line-loop/disp32
 $compute-offsets:case-segment-header:
     # if (!slice-equal?(word-slice/edx, "==")) goto next case
@@ -854,8 +854,8 @@ $compute-offsets:case-segment-header:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto next case
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto next case
+    3d/compare-eax-and  0/imm32/false
     0f 84/jump-if-equal  $compute-offsets:case-label/disp32
     # if (curr-segment-name == 0) goto construct-next-segment
     81          7/subop/compare     3/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm32           # compare esi
@@ -973,8 +973,8 @@ $compute-offsets:update-curr-segment-name:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax != 0) abort
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $compute-offsets:abort/disp32
     # seg/ebx = get-or-insert(segments, curr-segment-name, row-size=16)
     # . . push args
@@ -1022,8 +1022,8 @@ $compute-offsets:case-label:
     e8/call  is-label?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax == 0) goto next case
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto next case
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $compute-offsets:case-default/disp8
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
@@ -1219,13 +1219,13 @@ test-compute-offsets:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var segments/ecx = stream(2 * 16)
+    # var segments/ecx : (ref stream byte 2*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # subtract from esp
     68/push  0x20/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var labels/edx = stream(2 * 16)
+    # var labels/edx : (ref stream byte 2*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # subtract from esp
     68/push  0x20/imm32/length
     68/push  0/imm32/read
@@ -1381,7 +1381,7 @@ test-compute-offsets:
 compute-addresses:  # segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
     #   srow : (address segment-info) = segments->data
-    #   max = segments->data + segments->write
+    #   max = &segments->data[segments->write]
     #   num-segments = segments->write / 16
     #   starting-offset = 0x34 + (num-segments * 0x20)
     #   while true
@@ -1392,7 +1392,7 @@ compute-addresses:  # segments : (address stream {string, segment-info}), labels
     #     trace-sssns("segment " s->key " starts at address " s->address)
     #     srow += 16  # row-size
     #   lrow : (address label-info) = labels->data
-    #   max = labels->data + labels->write
+    #   max = &labels->data[labels->write]
     #   while true
     #     if (lrow >= max) break
     #     seg-name : (address string) = lrow->segment-name
@@ -1422,7 +1422,7 @@ compute-addresses:  # segments : (address stream {string, segment-info}), labels
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               0x34/imm32        # add to edi
     # srow/eax = segments->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy esi+12 to eax
-    # max/ecx = segments->data + segments->write
+    # max/ecx = &segments->data[segments->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     01/add                          3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # add esi to ecx
 $compute-addresses:segment-loop:
@@ -1489,7 +1489,7 @@ $compute-addresses:segment-break:
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
     # lrow/eax = labels->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy esi+12 to eax
-    # max/ecx = labels->data + labels->write
+    # max/ecx = &labels->data[labels->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     01/add                          3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # add esi to ecx
 $compute-addresses:label-loop:
@@ -1621,13 +1621,13 @@ test-compute-addresses:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
-    # . var segments/ecx = stream(10 * 16)
+    # . var segments/ecx : (ref stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx = stream(512 * 16)
+    # . var labels/edx : (ref stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -1790,13 +1790,13 @@ test-compute-addresses-large-segments:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
-    # . var segments/ecx = stream(10 * 16)
+    # . var segments/ecx : (ref stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx = stream(512 * 16)
+    # . var labels/edx : (ref stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -1871,7 +1871,7 @@ test-compute-addresses-large-segments:
     5d/pop-to-ebp
     c3/return
 
-emit-output:  # in : (address stream), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+emit-output:  # in : (address stream byte), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
     #   emit-headers(out, segments, labels)
     #   emit-segments(in, out, segments, labels)
@@ -1922,7 +1922,7 @@ $emit-output:end:
     5d/pop-to-ebp
     c3/return
 
-emit-segments:  # in : (address stream), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
+emit-segments:  # in : (address stream byte), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})
     # pseudocode:
     #   var offset-of-next-instruction = 0
     #   var line : (stream byte 512)
@@ -1993,11 +1993,11 @@ emit-segments:  # in : (address stream), out : (address buffered-file), segments
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx = {0, 0}
+    # var word-slice/edx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var datum/edi = {0, 0}
+    # var datum/edi : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
@@ -2139,8 +2139,8 @@ $emit-segments:check-for-label:
     e8/call  is-label?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax != 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $emit-segments:line-loop/disp32
 $emit-segments:check-for-segment-header:
     # if (slice-equal?(word-slice, "==")) break
@@ -2152,8 +2152,8 @@ $emit-segments:check-for-segment-header:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $emit-segments:line-loop/disp32
 $emit-segments:2-character:
     # if (length(word-slice) != 2) goto next check
@@ -2275,8 +2275,8 @@ $emit-segments:check-global-variable:
     e8/call  string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != 0) goto code label checks
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) goto code label checks
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $emit-segments:check-code-label-for-imm8/disp32
 $emit-segments:check-global-variable-for-disp8:
     # if has-metadata?(word-slice, "disp8") abort
@@ -2288,8 +2288,8 @@ $emit-segments:check-global-variable-for-disp8:
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != 0) abort
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $emit-segments:global-variable-abort/disp32
 $emit-segments:check-global-variable-for-imm8:
     # if has-metadata?(word-slice, "imm8") abort
@@ -2301,8 +2301,8 @@ $emit-segments:check-global-variable-for-imm8:
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != 0) abort
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $emit-segments:global-variable-abort/disp32
 $emit-segments:emit-global-variable:
     # emit-hex(out, info->address, 4)
@@ -2326,8 +2326,8 @@ $emit-segments:check-code-label-for-imm8:
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != 0) abort
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-not-equal  $emit-segments:imm8-abort/disp32
 $emit-segments:check-code-label-for-imm32:
     # if (!has-metadata?(word-slice, "imm32")) goto next check
@@ -2339,7 +2339,7 @@ $emit-segments:check-code-label-for-imm32:
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto next check
+    # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32
     74/jump-if-equal  $emit-segments:check-code-label-for-disp8/disp8
 #?     # dump info->address {{{
@@ -2397,8 +2397,8 @@ $emit-segments:check-code-label-for-disp8:
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto next check
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto next check
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $emit-segments:check-code-label-for-disp32/disp8
 $emit-segments:emit-code-label-disp8:
     # emit-hex(out, info->offset - offset-of-next-instruction, 1)
@@ -2424,8 +2424,8 @@ $emit-segments:check-code-label-for-disp32:
     e8/call  has-metadata?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) abort
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) abort
+    3d/compare-eax-and  0/imm32/false
     0f 84/jump-if-equal  $emit-segments:abort/disp32
 $emit-segments:emit-code-label-disp32:
     # emit-hex(out, info->offset - offset-of-next-instruction, 4)
@@ -2577,13 +2577,13 @@ test-emit-segments-global-variable:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . var segments/ecx = stream(10 * 16)
+    # . var segments/ecx : (ref stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx = stream(512 * 16)
+    # . var labels/edx : (ref stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -2814,13 +2814,13 @@ test-emit-segments-code-label:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . var segments/ecx = stream(10 * 16)
+    # . var segments/ecx : (ref stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx = stream(512 * 16)
+    # . var labels/edx : (ref stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -3016,13 +3016,13 @@ test-emit-segments-code-label-absolute:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . var segments/ecx = stream(10 * 16)
+    # . var segments/ecx : (ref stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx = stream(512 * 16)
+    # . var labels/edx : (ref stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -3177,7 +3177,7 @@ emit-headers:  # out : (address buffered-file), segments : (address stream {stri
     # pseudocode:
     #   emit-elf-header(out, segments, labels)
     #   curr-segment = segments->data
-    #   max = segments->data + segments->write
+    #   max = &segments->data[segments->write]
     #   while true
     #     if (curr-segment >= max) break
     #     emit-elf-program-header-entry(out, curr-segment)
@@ -3213,7 +3213,7 @@ emit-headers:  # out : (address buffered-file), segments : (address stream {stri
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     # curr-segment/eax = segments->data
     8d/copy-address                 1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   0xc/disp8       .                 # copy eax+12 to eax
-    # max/ecx = segments->data + segments->write
+    # max/ecx = &segments->data[segments->write]
     01/add                          3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # add eax to ecx
 $emit-headers:loop:
     # if (curr-segment >= max) break
@@ -3431,8 +3431,8 @@ emit-elf-program-header-entry:  # out : (address buffered-file), curr-segment : 
     e8/call  string-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax == 0) goto next check
-    3d/compare-eax-and  0/imm32
+    # . if (eax == false) goto next check
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $emit-elf-program-header-entry:data/disp8
     # *$Elf_p_flags = r-x
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           $Elf_p_flags/disp32  5/imm32      # copy to *$Elf_p_flags
@@ -3479,12 +3479,12 @@ stream-add4:  # in : (address stream byte), key : address, val1 : address, val2 
     56/push-esi
     # esi = in
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # curr/eax = in->data + in->write
+    # curr/eax = &in->data[in->write]
     # . eax = in->write
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     # . eax = esi+eax+12
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
-    # max/edx = in->data + in->length
+    # max/edx = &in->data[in->length]
     # . edx = in->length
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(esi+8) to edx
     # . edx = esi+edx+12
@@ -3830,7 +3830,7 @@ test-trace-slsls:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var b/ebx : (address slice) = {eax, ecx}
+    # var b/ebx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -3839,7 +3839,7 @@ test-trace-slsls:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var d/edx : (address slice) = {eax, ecx}
+    # var d/edx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -3955,7 +3955,7 @@ test-trace-slsns:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var b/ebx : (address slice) = {eax, ecx}
+    # var b/ebx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -4071,7 +4071,7 @@ test-trace-slsss:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var b/ebx : (address slice) = {eax, ecx}
+    # var b/ebx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -4125,7 +4125,7 @@ test-trace-slsss:
     5d/pop-to-ebp
     c3/return
 
-num-bytes:  # line : (address stream) -> eax : int
+num-bytes:  # line : (address stream byte) -> eax : int
     # pseudocode:
     #   result = 0
     #   while true
@@ -4150,7 +4150,7 @@ num-bytes:  # line : (address stream) -> eax : int
     53/push-ebx
     # var result/eax = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # var word-slice/ecx = {0, 0}
+    # var word-slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -4247,8 +4247,8 @@ $num-bytes:check0:
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax != 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     # . restore result now that ZF is set
     58/pop-to-eax
     75/jump-if-not-equal  $num-bytes:end/disp8
@@ -4284,8 +4284,8 @@ $num-bytes:check-for-segment-header:
     e8/call  slice-equal?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # . if (eax != 0) break
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and  0/imm32/false
     # . restore result now that ZF is set
     58/pop-to-eax
     75/jump-if-not-equal  $num-bytes:end/disp8

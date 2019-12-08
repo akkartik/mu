@@ -7,7 +7,7 @@
 
 # extract the next run of characters that are different from a given 'delimiter' (skipping multiple delimiters if necessary)
 # on reaching end of file, return an empty interval
-next-token:  # in : (address stream), delimiter : byte, out : (address slice)
+next-token:  # in : (address stream byte), delimiter : byte, out : (address slice)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -66,7 +66,7 @@ test-next-token:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -130,7 +130,7 @@ test-next-token-Eof:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -216,7 +216,7 @@ test-next-token-from-slice:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var out/edi : (address slice) = {0, 0}
+    # var out/edi : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
@@ -265,7 +265,7 @@ test-next-token-from-slice-Eof:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var out/edi : (address slice) = {0, 0}
+    # var out/edi : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
@@ -306,7 +306,7 @@ test-next-token-from-slice-nothing:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var out/edi : (address slice) = {0, 0}
+    # var out/edi : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
@@ -338,7 +338,7 @@ test-next-token-from-slice-nothing:
     5d/pop-to-ebp
     c3/return
 
-skip-chars-matching:  # in : (address stream), delimiter : byte
+skip-chars-matching:  # in : (address stream byte), delimiter : byte
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -461,7 +461,7 @@ test-skip-chars-matching-none:
     # end
     c3/return
 
-skip-chars-matching-whitespace:  # in : (address stream)
+skip-chars-matching-whitespace:  # in : (address stream byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -551,7 +551,7 @@ test-skip-chars-matching-whitespace:
     c3/return
 
 # minor fork of 'skip-chars-matching'
-skip-chars-not-matching:  # in : (address stream), delimiter : byte
+skip-chars-not-matching:  # in : (address stream byte), delimiter : byte
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -713,7 +713,7 @@ test-skip-chars-not-matching-all:
     # end
     c3/return
 
-skip-chars-not-matching-whitespace:  # in : (address stream)
+skip-chars-not-matching-whitespace:  # in : (address stream byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -815,14 +815,15 @@ skip-chars-matching-in-slice:  # curr : (address byte), end : (address byte), de
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
     # edx = delimiter
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0x10/disp8       .                 # copy *(ebp+16) to edx
-    # ebx = 0
+    # var c/ebx : byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $skip-chars-matching-in-slice:loop:
     # if (curr >= end) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
     73/jump-if-greater-or-equal-unsigned  $skip-chars-matching-in-slice:end/disp8
-    # if (*curr != delimiter) break
+    # c = *curr
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
+    # if (c != delimiter) break
     39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx and edx
     75/jump-if-not-equal  $skip-chars-matching-in-slice:end/disp8
     # ++curr
@@ -896,7 +897,7 @@ test-skip-chars-matching-in-slice-none:
     # end
     c3/return
 
-skip-chars-matching-whitespace-in-slice:  # in : (address stream)
+skip-chars-matching-whitespace-in-slice:  # curr : (address byte), end : (address byte) -> curr/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -907,24 +908,24 @@ skip-chars-matching-whitespace-in-slice:  # in : (address stream)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
     # ecx = end
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
-    # ebx = 0
+    # var c/ebx : byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $skip-chars-matching-whitespace-in-slice:loop:
     # if (curr >= end) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
     0f 83/jump-if-greater-or-equal-unsigned  $skip-chars-matching-in-slice:end/disp32
-    # ebx = *curr
+    # c = *curr
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
-    # if (*curr == ' ') goto body
+    # if (c == ' ') goto body
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x20/imm32/space  # compare ebx
     74/jump-if-equal  $skip-chars-matching-whitespace-in-slice:body/disp8
-    # if (*curr == '\n') goto body
+    # if (c == '\n') goto body
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0a/imm32/newline  # compare ebx
     74/jump-if-equal  $skip-chars-matching-whitespace-in-slice:body/disp8
-    # if (*curr == '\t') goto body
+    # if (c == '\t') goto body
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x09/imm32/tab    # compare ebx
     74/jump-if-equal  $skip-chars-matching-whitespace-in-slice:body/disp8
-    # if (*curr != '\r') break
+    # if (c != '\r') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0d/imm32/cr     # compare ebx
     75/jump-if-not-equal  $skip-chars-matching-whitespace-in-slice:end/disp8
 $skip-chars-matching-whitespace-in-slice:body:
@@ -983,14 +984,15 @@ skip-chars-not-matching-in-slice:  # curr : (address byte), end : (address byte)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
     # edx = delimiter
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0x10/disp8       .                 # copy *(ebp+16) to edx
-    # ebx = 0
+    # var c/ebx : byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $skip-chars-not-matching-in-slice:loop:
     # if (curr >= end) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
     73/jump-if-greater-or-equal-unsigned  $skip-chars-not-matching-in-slice:end/disp8
-    # if (*curr == delimiter) break
+    # c = *curr
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
+    # if (c == delimiter) break
     39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx and edx
     74/jump-if-equal  $skip-chars-not-matching-in-slice:end/disp8
     # ++curr
@@ -1093,7 +1095,7 @@ test-skip-chars-not-matching-in-slice-all:
     # end
     c3/return
 
-skip-chars-not-matching-whitespace-in-slice:  # in : (address stream)
+skip-chars-not-matching-whitespace-in-slice:  # curr : (address byte), end : (address byte) -> curr/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1104,24 +1106,24 @@ skip-chars-not-matching-whitespace-in-slice:  # in : (address stream)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
     # ecx = end
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
-    # ebx = 0
+    # var c/ebx : byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $skip-chars-not-matching-whitespace-in-slice:loop:
     # if (curr >= end) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
     0f 83/jump-if-greater-or-equal-unsigned  $skip-chars-not-matching-in-slice:end/disp32
-    # ebx = *curr
+    # c = *curr
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           3/r32/BL    .               .                 # copy byte at *eax to BL
-    # if (*curr == ' ') break
+    # if (c == ' ') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x20/imm32/space  # compare ebx
     74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
-    # if (*curr == '\n') break
+    # if (c == '\n') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0a/imm32/newline  # compare ebx
     74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
-    # if (*curr == '\t') break
+    # if (c == '\t') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x09/imm32/tab    # compare ebx
     74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
-    # if (*curr == '\r') break
+    # if (c == '\r') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x0d/imm32/cr     # compare ebx
     74/jump-if-equal  $skip-chars-not-matching-whitespace-in-slice:end/disp8
     # ++curr
@@ -1166,7 +1168,7 @@ test-skip-chars-not-matching-whitespace-in-slice:
 
 # update line->read to end of string literal surrounded by double quotes
 # line->read must start out at a double-quote
-skip-string:  # line : (address stream)
+skip-string:  # line : (address stream byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1420,7 +1422,7 @@ skip-string-in-slice:  # curr : (address byte), end : (address byte) -> new_curr
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
     # edx = end
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         2/r32/edx   0xc/disp8         .               # copy *(ebp+12) to edx
-    # eax = 0
+    # var c/eax : byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     # skip initial dquote
     41/increment-ecx
@@ -1428,14 +1430,14 @@ $skip-string-in-slice:loop:
     # if (curr >= end) return curr
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-unsigned-or-equal  $skip-string-in-slice:return-curr/disp8
-    # AL = *curr
+    # c = *curr
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
 $skip-string-in-slice:dquote:
-    # if (eax == '"') break
+    # if (c == '"') break
     3d/compare-eax-and  0x22/imm32/double-quote
     74/jump-if-equal  $skip-string-in-slice:break/disp8
 $skip-string-in-slice:check-for-escape:
-    # if (eax == '\') escape next char
+    # if (c == '\') escape next char
     3d/compare-eax-and  0x5c/imm32/backslash
     75/jump-if-not-equal  $skip-string-in-slice:continue/disp8
 $skip-string-in-slice:escape:
@@ -1594,7 +1596,7 @@ test-skip-string-in-slice-stops-at-end:
 
 # update line->read to ')'
 # line->read ends at ')'
-skip-until-close-paren:  # line : (address stream)
+skip-until-close-paren:  # line : (address stream byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1781,7 +1783,7 @@ test-skip-until-close-paren-works-from-mid-stream:
     5d/pop-to-ebp
     c3/return
 
-skip-until-close-paren-in-slice:  # curr : (address byte), end : (address byte) -> new_curr/eax
+skip-until-close-paren-in-slice:  # curr : (address byte), end : (address byte) -> new_curr/eax : (address byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1792,7 +1794,7 @@ skip-until-close-paren-in-slice:  # curr : (address byte), end : (address byte) 
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
     # edx = end
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         2/r32/edx   0xc/disp8         .               # copy *(ebp+12) to edx
-    # eax = 0
+    # var c/eax : byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     # skip initial dquote
     41/increment-ecx
@@ -1800,10 +1802,10 @@ $skip-until-close-paren-in-slice:loop:
     # if (curr >= end) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     73/jump-if-greater-unsigned-or-equal  $skip-until-close-paren-in-slice:break/disp8
-    # AL = *curr
+    # c = *curr
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
 $skip-until-close-paren-in-slice:check-close:
-    # if (eax == ')') break
+    # if (c == ')') break
     3d/compare-eax-and  0x29/imm32/close-paren
     74/jump-if-equal  $skip-until-close-paren-in-slice:break/disp8
     # ++curr

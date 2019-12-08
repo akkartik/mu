@@ -40,27 +40,29 @@ array-equal?:  # a : (address array int), b : (address array int) -> eax : boole
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # edi = b
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
-    # lena/edx = a->length
+    # var lena/edx : int = a->length
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
 $array-equal?:lengths:
     # if (lena != b->length) return false
     39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare *edi and edx
     75/jump-if-not-equal  $array-equal?:false/disp8
-    # curra/esi = a->data
+    # var curra/esi : (address byte) = a->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
-    # currb/edi = b->data
+    # var currb/edi : (address byte) = b->data
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
-    # i/ecx = i1/eax = i2/ebx = 0
+    # var i/ecx : int = 0
     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+    # var vala/eax : int
+    # var valb/ebx : int
 $array-equal?:loop:
     # if (i >= lena) return true
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     7d/jump-if-greater-or-equal  $array-equal?:true/disp8
-    # i1 = *curra
+    # vala = *curra
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
-    # i2 = *currb
+    # valb = *currb
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           3/r32/ebx   .               .                 # copy *edi to ebx
-    # if (i1 != i2) return false
+    # if (vala != valb) return false
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
     75/jump-if-not-equal  $array-equal?:false/disp8
     # i += 4
@@ -91,10 +93,10 @@ test-compare-empty-with-empty-array:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx = []
+    # var ecx : (ref array _) = []
     68/push  0/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx = []
+    # var edx : (ref array _) = []
     68/push  0/imm32/size
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
     # eax = array-equal?(ecx, edx)
@@ -123,11 +125,11 @@ test-compare-empty-with-non-empty-array:  # also checks length-mismatch code pat
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx = [1]
+    # var ecx : (ref array int) = [1]
     68/push  1/imm32
     68/push  4/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx = []
+    # var edx : (ref array int) = []
     68/push  0/imm32/size
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
     # eax = array-equal?(ecx, edx)
@@ -156,13 +158,13 @@ test-compare-equal-arrays:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx = [1, 2, 3]
+    # var ecx : (ref array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
     68/push  0xc/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx = [1, 2, 3]
+    # var edx : (ref array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -194,13 +196,13 @@ test-compare-inequal-arrays-equal-lengths:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx = [1, 4, 3]
+    # var ecx : (ref array int) = [1, 4, 3]
     68/push  3/imm32
     68/push  4/imm32
     68/push  1/imm32
     68/push  0xc/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx = [1, 2, 3]
+    # var edx : (ref array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -228,9 +230,9 @@ test-compare-inequal-arrays-equal-lengths:
     5d/pop-to-ebp
     c3/return
 
-parse-array-of-ints:  # ad : (address allocation-descriptor), s : (address string) -> result/eax : (address array int)
+parse-array-of-ints:  # ad : (address allocation-descriptor), s : (address string) -> result/eax : (handle array int)
     # pseudocode
-    #   end = s->data + s->length
+    #   end = &s->data[s->length]
     #   curr = s->data
     #   size = 0
     #   while true
@@ -241,7 +243,7 @@ parse-array-of-ints:  # ad : (address allocation-descriptor), s : (address strin
     #     ++size
     #   result = allocate(ad, (size+1)*4)
     #   result->size = (size+1)*4
-    #   var slice = {s->data, 0}
+    #   var slice : (ref slice) = {s->data, 0}
     #   out = result->data
     #   while true
     #     if (slice->start >= end) break
@@ -264,14 +266,14 @@ parse-array-of-ints:  # ad : (address allocation-descriptor), s : (address strin
     57/push-edi
     # esi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # curr/ecx = s->data
+    # var curr/ecx : (address byte) = s->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy esi+4 to ecx
-    # end/edx = s->data + s->length
+    # var end/edx : (address byte) = &s->data[s->length]
     # . edx = s->length
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     # . edx += curr
     01/add                          3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # add ecx to edx
-    # size/ebx = 0
+    # var size/ebx : int = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $parse-array-of-ints:loop1:
     # if (curr >= end) break
@@ -308,7 +310,7 @@ $parse-array-of-ints:loop1:
     81          0/subop/add         3/mod/direct    3/rm32/ebx    .           .             .           .           .               4/imm32           # add to ebx
     eb/jump  $parse-array-of-ints:loop1/disp8
 $parse-array-of-ints:break1:
-    # result/edi = allocate(ad, size+4)
+    # var result/edi : (handle array int) = allocate(ad, size+4)
     # . eax = allocate(ad, size+4)
     # . . push args
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy ebx to eax
@@ -324,7 +326,7 @@ $parse-array-of-ints:break1:
     # result->size = size
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy ebx to *eax
 $parse-array-of-ints:pass2:
-    # var slice/ecx = {s->data, 0}
+    # var slice/ecx : (ref slice) = {s->data, 0}
     # . push 0
     68/push  0/imm32/end
     # . push s->data
@@ -332,7 +334,7 @@ $parse-array-of-ints:pass2:
     51/push-ecx
     # . bookmark
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # out/ebx = result->data
+    # var out/ebx : (address byte) = result->data
     8d/copy-address                 1/mod/*+disp8   0/rm32/eax    .           .             .           3/r32/ebx   4/disp8         .                 # copy eax+4 to ebx
 $parse-array-of-ints:loop2:
     # if (slice->start >= end) break
@@ -373,7 +375,7 @@ $parse-array-of-ints:loop2:
     e8/call  parse-hex-int/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # *out = eax
+    # . *out = eax
     89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
     # out += 4
     81          0/subop/add         3/mod/direct    3/rm32/ebx    .           .             .           .           .               4/imm32           # add to ebx
@@ -402,7 +404,7 @@ test-parse-array-of-ints:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx = [1, 2, 3]
+    # var ecx : (ref array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -496,7 +498,7 @@ test-parse-array-of-ints-extra-whitespace:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx = [1, 2, 3]
+    # var ecx : (ref array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -540,7 +542,7 @@ check-array-equal:  # a : (address array int), expected : (address string), msg 
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     50/push-eax
-    # var b/ecx = parse-array-of-ints(Heap, expected)
+    # var b/ecx : (handle array int) = parse-array-of-ints(Heap, expected)
     # . eax = parse-array-of-ints(Heap, expected)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
@@ -580,7 +582,7 @@ test-check-array-equal:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx = [1, 2, 3]
+    # var ecx : (ref array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32

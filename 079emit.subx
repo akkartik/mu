@@ -17,7 +17,7 @@ emit:  # out : (address buffered-file), word : (address slice), width : int
     57/push-edi
     # esi = word
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var name/edi : (address slice) = {0, 0}
+    # var datum/edi : (ref slice)
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
@@ -39,8 +39,8 @@ emit:  # out : (address buffered-file), word : (address slice), width : int
     e8/call  is-valid-name?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . if (eax != 0)
-    3d/compare-eax-and  0/imm32
+    # . if (eax != false)
+    3d/compare-eax-and  0/imm32/false
     74/jump-if-equal  $emit:hex-int/disp8
 $emit:name:
     # . write-slice-buffered(out, word)
@@ -63,11 +63,11 @@ $emit:name:
     eb/jump  $emit:end/disp8
     # otherwise emit-hex(out, parse-hex-int(datum), width)
     #   (Weird shit can happen here if the datum of 'word' isn't either a valid
-    #   name or a hex number, but we're only going to be passing in real legal
-    #   programs. We just want to make sure that valid names aren't treated as
-    #   (valid) hex numbers.)
+    #   name or a hex number. `emit` is mostly used by ntranslate, which is
+    #   currently designed to only receive legal SubX programs. We just want to
+    #   make sure that valid names aren't treated as (valid) hex numbers.)
 $emit:hex-int:
-    # . value/eax = parse-hex-int(datum)
+    # . var value/eax : int = parse-hex-int(datum)
     # . . push args
     57/push-edi
     # . . call
@@ -119,7 +119,7 @@ test-emit-number:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -178,7 +178,7 @@ test-emit-negative-number:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -236,7 +236,7 @@ test-emit-number-with-metadata:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -295,7 +295,7 @@ test-emit-non-number:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -353,7 +353,7 @@ test-emit-non-number-with-metadata:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -411,7 +411,7 @@ test-emit-non-number-with-all-hex-digits-and-metadata:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx = {eax, ecx}
+    # var slice/ecx : (ref slice) = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

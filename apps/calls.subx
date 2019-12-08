@@ -51,8 +51,8 @@ Entry:  # run tests if necessary, convert stdin if not
     e8/call kernel-string-equal?/disp32
     # . . discard args
     81 0/subop/add %esp 8/imm32
-    # . if (eax == 0) goto run-main
-    3d/compare-eax-and 0/imm32
+    # . if (eax == false) goto run-main
+    3d/compare-eax-and 0/imm32/false
     74/jump-if-equal $subx-calls-main:interactive/disp8
     # run-tests()
     e8/call run-tests/disp32
@@ -77,8 +77,8 @@ $subx-calls-main:end:
 
 subx-calls:  # in : (address buffered-file), out : (address buffered-file)
     # pseudocode:
-    #   var line : (stream byte 512)
-    #   var words : (stream slice 16)  # at most function name and 15 args
+    #   var line : (ref stream byte 512)
+    #   var words : (ref stream slice 16)  # at most function name and 15 args
     #   while true
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -105,13 +105,13 @@ subx-calls:  # in : (address buffered-file), out : (address buffered-file)
     51/push-ecx
     52/push-edx
     56/push-esi
-    # var line/esi : (address stream byte) = stream(512)
+    # var line/esi : (ref stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %esi 4/r32/esp
-    # var words/edx : (address stream slice) = stream(16, 8)
+    # var words/edx : (ref stream slice 128)  # 16 rows * 8 bytes/row
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/length
     68/push 0/imm32/read
@@ -233,7 +233,7 @@ $subx-calls:end:
 
 parse-line:  # line : (address stream byte), words : (address stream slice)
     # pseudocode:
-    #   var word-slice : (address slice)
+    #   var word-slice : (ref slice)
     #   while true
     #     word-slice = next-word-string-or-expression-without-metadata(line)
     #     if slice-empty?(word-slice)
@@ -246,7 +246,7 @@ parse-line:  # line : (address stream byte), words : (address stream slice)
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var word-slice/ecx : (address slice) = {0, 0}
+    # var word-slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -268,8 +268,8 @@ $parse-line:check1:
     e8/call slice-empty?/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # . if (eax != 0) break
-    3d/compare-eax-and 0/imm32
+    # . if (eax != false) break
+    3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-not-equal $parse-line:end/disp32
 #?     # dump word-slice {{{
 #?     # . write(2/stderr, "w: ")
@@ -381,9 +381,9 @@ emit-call:  # out : (address buffered-file), words : (address stream slice)
     8b/-> *esi 1/r32/ecx
     81 5/subop/subtract %ecx 8/imm32
     0f 8c/jump-if-lesser $emit-call:error1/disp32
-    # curr/ecx = &words->data[words->write-8]
+    # var curr/ecx : (address slice) = &words->data[words->write-8]
     8d/copy-address *(esi+ecx+0xc) 1/r32/ecx
-    # min/edx = words->data
+    # var min/edx : (address byte) = words->data
     8d/copy-address *(esi+0xc) 2/r32/edx
     # - emit pushes
 $emit-call:push-loop:
@@ -391,15 +391,15 @@ $emit-call:push-loop:
     39/compare %ecx 2/r32/edx
     0f 8e/jump-if-lesser-or-equal $emit-call:call-instruction/disp32
     # if (*curr->start in '%' '*') goto push-rm32
-    # . eax = curr->start
+    # . var start/eax : (address byte) = curr->start
     8b/-> *ecx 0/r32/eax
-    # . eax = (byte)*eax
+    # . var c/eax : byte = *eax
     8b/-> *eax 0/r32/eax
     81 4/subop/and %eax 0xff/imm32
-    # . if (eax == '%') goto push-rm32
+    # . if (c == '%') goto push-rm32
     3d/compare-eax-and 0x25/imm32/percent
     74/jump-if-equal $emit-call:push-rm32/disp8
-    # . if (eax == '*') goto push-rm32
+    # . if (c == '*') goto push-rm32
     3d/compare-eax-and 0x2a/imm32/asterisk
     74/jump-if-equal $emit-call:push-rm32/disp8
 $emit-call:push-imm32:
@@ -741,7 +741,7 @@ test-subx-calls-processes-calls:
     5d/pop-to-ebp
     c3/return
 
-next-word-string-or-expression-without-metadata:  # line : (address stream), out : (address slice)
+next-word-string-or-expression-without-metadata:  # line : (address stream byte), out : (address slice)
     # pseudocode:
     #   skip-chars-matching(line, ' ')
     #   if line->read >= line->write              # end of line
@@ -830,7 +830,7 @@ $next-word-string-or-expression-without-metadata:check-for-comment:
     8d/copy-address *(esi+ecx+0xc) 0/r32/eax
     89/<- *edi 0/r32/eax
     # if (line->data[line->read] != '#') goto next check
-    # . eax = line->data[line->read]
+    # . var eax : byte = line->data[line->read]
     31/xor %eax 0/r32/eax
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax != '#') goto next check
@@ -1191,7 +1191,7 @@ test-next-word-string-or-expression-without-metadata:
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1264,7 +1264,7 @@ test-next-word-string-or-expression-without-metadata-returns-whole-comment:
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1337,7 +1337,7 @@ test-next-word-string-or-expression-without-metadata-returns-empty-slice-on-eof:
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1379,7 +1379,7 @@ test-next-word-string-or-expression-without-metadata-returns-string-literal:
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1442,7 +1442,7 @@ test-next-word-string-or-expression-without-metadata-returns-string-with-escapes
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1505,7 +1505,7 @@ test-next-word-string-or-expression-without-metadata-returns-whole-expression:
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1568,7 +1568,7 @@ test-next-word-string-or-expression-without-metadata-returns-eol-on-trailing-clo
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1623,7 +1623,7 @@ test-next-word-string-or-expression-without-metadata-handles-comment-after-trail
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1678,7 +1678,7 @@ test-next-word-string-or-expression-without-metadata-handles-newline-after-trail
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
@@ -1733,7 +1733,7 @@ test-next-word-string-or-expression-without-metadata-stops-at-close-paren:
     e8/call clear-stream/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
-    # var slice/ecx = {0, 0}
+    # var slice/ecx : (ref slice)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp

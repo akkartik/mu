@@ -8,7 +8,7 @@
 #   - construct a 'maximal slice' and pass it to write-slice-buffered
 #   - flush the buffered-file and pass the stream directly to its fd (disabling buffering)
 # we'll go with the first way for now
-write-stream-data:  # f : (address buffered-file), s : (address stream)
+write-stream-data:  # f : (address buffered-file), s : (address stream byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -18,8 +18,8 @@ write-stream-data:  # f : (address buffered-file), s : (address stream)
     56/push-esi
     # esi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var slice/ecx = {s->data, s->data + s->write}
-    # . push s->data + s->write
+    # var slice/ecx : (ref slice) = {s->data, &s->data[s->write]}
+    # . push &s->data[s->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
     50/push-eax
