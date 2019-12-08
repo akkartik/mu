@@ -76,26 +76,20 @@ older_than tools/enumerate tools/enumerate.cc && {
   $CXX $CFLAGS tools/enumerate.cc -o tools/enumerate
 }
 
-older_than tangle/tangle tangle/*.cc && {
-  noisy_cd tangle
-    {
-      grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'
-      grep -h "^typedef " [0-9]*.cc
-    }  |update type_list
-    grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  |update function_list
-    ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  |update file_list
-    ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  |update test_file_list
-    grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update test_list
-    grep -h "^\s*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
-    $CXX $CFLAGS boot.cc -o tangle
+older_than tools/tangle tools/tangle.cc && {
+  noisy_cd tools
+    grep -h "^[^ #].*) {" tangle.cc  |sed 's/ {.*/;/'  |update tangle.function_list
+    grep -h "^[[:space:]]*void test_" tangle.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update tangle.test_list
+    grep -h "^\s*void test_" tangle.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update tangle.test_name_list
+    $CXX $CFLAGS tangle.cc -o tangle
     ./tangle test
   noisy_cd ..  # no effect; just to show us returning to the parent directory
 }
 
 LAYERS=$(tools/enumerate --until $UNTIL_LAYER  |grep '.cc$')
-older_than subx.cc $LAYERS tools/enumerate tangle/tangle && {
+older_than subx.cc $LAYERS tools/enumerate tools/tangle && {
   # no update here; rely on 'update' calls downstream
-  tangle/tangle $LAYERS  > subx.cc
+  tools/tangle $LAYERS  > subx.cc
 }
 
 grep -h "^[^[:space:]#].*) {$" subx.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |update function_list
