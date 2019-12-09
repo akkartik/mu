@@ -77,7 +77,7 @@ if ('onhashchange' in window) {
 <span id="L17" class="LineNr">17 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L18" class="LineNr">18 </span>
 <span id="L19" class="LineNr">19 </span><span class="SpecialChar">Entry</span>:   <span class="subxComment"># manual test</span>
-<span id="L20" class="LineNr">20 </span>    <span class="subxComment"># var ad/ecx : (address allocation-descriptor) = {0, 0}</span>
+<span id="L20" class="LineNr">20 </span>    <span class="subxComment"># var ad/ecx : (ref allocation-descriptor)</span>
 <span id="L21" class="LineNr">21 </span>    68/push  0/imm32/limit
 <span id="L22" class="LineNr">22 </span>    68/push  0/imm32/curr
 <span id="L23" class="LineNr">23 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
@@ -89,7 +89,7 @@ if ('onhashchange' in window) {
 <span id="L29" class="LineNr">29 </span>    e8/call  <a href='053new-segment.subx.html#L41'>new-segment</a>/disp32
 <span id="L30" class="LineNr">30 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L31" class="LineNr">31 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L32" class="LineNr">32 </span>    <span class="subxComment"># eax = ad-&gt;curr</span>
+<span id="L32" class="LineNr">32 </span>    <span class="subxComment"># var eax : (address _) = ad-&gt;curr</span>
 <span id="L33" class="LineNr">33 </span>    8b/copy                         0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ecx to eax</span>
 <span id="L34" class="LineNr">34 </span>    <span class="subxComment"># write to *eax to check that we have access to the newly-allocated segment</span>
 <span id="L35" class="LineNr">35 </span>    c7          0/subop/copy        0/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x34/imm32        <span class="subxComment"># copy to *eax</span>
@@ -98,7 +98,7 @@ if ('onhashchange' in window) {
 <span id="L38" class="LineNr">38 </span>    b8/copy-to-eax  1/imm32/exit
 <span id="L39" class="LineNr">39 </span>    cd/syscall  0x80/imm8
 <span id="L40" class="LineNr">40 </span>
-<span id="L41" class="LineNr">41 </span><span class="subxFunction">new-segment</span>:  <span class="subxComment"># len : int, ad : (address allocation-descriptor)</span>
+<span id="L41" class="LineNr">41 </span><span class="subxFunction">new-segment</span>:  <span class="subxComment"># len : int, ad : (ref allocation-descriptor)</span>
 <span id="L42" class="LineNr">42 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L43" class="LineNr">43 </span>    55/push-ebp
 <span id="L44" class="LineNr">44 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -107,7 +107,7 @@ if ('onhashchange' in window) {
 <span id="L47" class="LineNr">47 </span>    53/push-ebx
 <span id="L48" class="LineNr">48 </span>    <span class="subxComment"># copy len to _mmap-new-segment-&gt;len</span>
 <span id="L49" class="LineNr">49 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to eax</span>
-<span id="L50" class="LineNr">50 </span>    89/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   <a href='053new-segment.subx.html#L75'>_mmap-new-segment</a>:len/disp32      <span class="subxComment"># copy eax to *_mmap-new-segment:len</span>
+<span id="L50" class="LineNr">50 </span>    89/copy                         0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   $_mmap-new-segment:len/disp32     <span class="subxComment"># copy eax to *$_mmap-new-segment:len</span>
 <span id="L51" class="LineNr">51 </span>    <span class="subxComment"># mmap(_mmap-new-segment)</span>
 <span id="L52" class="LineNr">52 </span>    bb/copy-to-ebx  <a href='053new-segment.subx.html#L75'>_mmap-new-segment</a>/imm32
 <span id="L53" class="LineNr">53 </span>    b8/copy-to-eax  0x5a/imm32/mmap
@@ -132,10 +132,10 @@ if ('onhashchange' in window) {
 <span id="L72" class="LineNr">72 </span>== data
 <span id="L73" class="LineNr">73 </span>
 <span id="L74" class="LineNr">74 </span><span class="subxComment"># various constants used here were found in the Linux sources (search for file mman-common.h)</span>
-<span id="L75" class="LineNr">75 </span><span class="subxMinorFunction">_mmap-new-segment</span>:  <span class="subxComment"># type mmap_arg_struct</span>
+<span id="L75" class="LineNr">75 </span><span class="subxMinorFunction">_mmap-new-segment</span>:  <span class="subxComment"># (ref mmap_arg_struct)</span>
 <span id="L76" class="LineNr">76 </span>    <span class="subxComment"># addr</span>
 <span id="L77" class="LineNr">77 </span>    0/imm32
-<span id="L78" class="LineNr">78 </span><span class="subxMinorFunction">_mmap-new-segment:len</span>:
+<span id="L78" class="LineNr">78 </span><span class="Constant">$_mmap-new-segment:len</span>:
 <span id="L79" class="LineNr">79 </span>    <span class="subxComment"># len</span>
 <span id="L80" class="LineNr">80 </span>    0/imm32
 <span id="L81" class="LineNr">81 </span>    <span class="subxComment"># protection flags</span>

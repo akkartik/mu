@@ -78,7 +78,7 @@ if ('onhashchange' in window) {
 <span id="L20" class="LineNr"> 20 </span>      81 7/subop/compare *ebp 1/imm32
 <span id="L21" class="LineNr"> 21 </span>      7e/jump-if-lesser-or-equal <span class="Constant">break</span>/disp8
 <span id="L22" class="LineNr"> 22 </span>      <span class="subxComment"># if (argv[1] != &quot;test&quot;)) break</span>
-<span id="L23" class="LineNr"> 23 </span>      (<a href='../052kernel-string-equal.subx.html#L31'>kernel-string-equal?</a> *(ebp+8) <span class="Constant">&quot;test&quot;</span>)  <span class="subxComment"># =&gt; eax</span>
+<span id="L23" class="LineNr"> 23 </span>      (<a href='../052kernel-string-equal.subx.html#L33'>kernel-string-equal?</a> *(ebp+8) <span class="Constant">&quot;test&quot;</span>)  <span class="subxComment"># =&gt; eax</span>
 <span id="L24" class="LineNr"> 24 </span>      3d/compare-eax-and 0/imm32
 <span id="L25" class="LineNr"> 25 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
 <span id="L26" class="LineNr"> 26 </span>      <span class="subxComment">#</span>
@@ -139,12 +139,12 @@ if ('onhashchange' in window) {
 <span id="L81" class="LineNr"> 81 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L82" class="LineNr"> 82 </span>    50/push-eax
 <span id="L83" class="LineNr"> 83 </span>    {
-<span id="L84" class="LineNr"> 84 </span>      (<a href='mulisp.subx.html#L107'>lisp-read</a> <span class="SpecialChar"><a href='../061read-byte.subx.html#L14'>Stdin</a></span>)  <span class="subxComment"># =&gt; eax : (address cell)</span>
+<span id="L84" class="LineNr"> 84 </span>      (<a href='mulisp.subx.html#L107'>lisp-read</a> <span class="SpecialChar"><a href='../061read-byte.subx.html#L14'>Stdin</a></span>)  <span class="subxComment"># =&gt; eax : (handle cell)</span>
 <span id="L85" class="LineNr"> 85 </span>      <span class="subxComment"># if (eax == 0) break</span>
 <span id="L86" class="LineNr"> 86 </span>      3d/compare-eax-and 0/imm32
 <span id="L87" class="LineNr"> 87 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
 <span id="L88" class="LineNr"> 88 </span>      <span class="subxComment">#</span>
-<span id="L89" class="LineNr"> 89 </span>      (<a href='mulisp.subx.html#L201'>lisp-eval</a> %eax)  <span class="subxComment"># =&gt; eax : (address cell)</span>
+<span id="L89" class="LineNr"> 89 </span>      (<a href='mulisp.subx.html#L201'>lisp-eval</a> %eax)  <span class="subxComment"># =&gt; eax : (handle cell)</span>
 <span id="L90" class="LineNr"> 90 </span>      (<a href='mulisp.subx.html#L214'>lisp-print</a> <span class="SpecialChar"><a href='../064write-byte.subx.html#L10'>Stdout</a></span> %eax)
 <span id="L91" class="LineNr"> 91 </span>      eb/jump <span class="Constant">loop</span>/disp8
 <span id="L92" class="LineNr"> 92 </span>    }
@@ -162,13 +162,13 @@ if ('onhashchange' in window) {
 <span id="L104" class="LineNr">104 </span><span class="subxComment"># arrays start with '['</span>
 <span id="L105" class="LineNr">105 </span><span class="subxComment"># symbols start with anything else but quote, backquote, unquote or splice</span>
 <span id="L106" class="LineNr">106 </span><span class="subxComment"># only one s-expression per line</span>
-<span id="L107" class="LineNr">107 </span><span class="subxFunction">lisp-read</span>:  <span class="subxComment"># in : (address buffered-file) -&gt; eax : (address cell)</span>
+<span id="L107" class="LineNr">107 </span><span class="subxFunction">lisp-read</span>:  <span class="subxComment"># in : (address buffered-file) -&gt; eax : (handle cell)</span>
 <span id="L108" class="LineNr">108 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L109" class="LineNr">109 </span>    55/push-ebp
 <span id="L110" class="LineNr">110 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L111" class="LineNr">111 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L112" class="LineNr">112 </span>    51/push-ecx
-<span id="L113" class="LineNr">113 </span>    <span class="subxComment"># var s/ecx : (stream byte 512)</span>
+<span id="L113" class="LineNr">113 </span>    <span class="subxComment"># var s/ecx : (ref stream byte 512)</span>
 <span id="L114" class="LineNr">114 </span>    81 5/subop/subtract %esp 0x200/imm32
 <span id="L115" class="LineNr">115 </span>    68/push 0x200/imm32/size
 <span id="L116" class="LineNr">116 </span>    68/push 0/imm32/read
@@ -200,14 +200,14 @@ if ('onhashchange' in window) {
 <span id="L142" class="LineNr">142 </span>    5d/pop-to-ebp
 <span id="L143" class="LineNr">143 </span>    c3/return
 <span id="L144" class="LineNr">144 </span>
-<span id="L145" class="LineNr">145 </span><span class="subxComment"># lisp-read:  in : (address buffered-file) -&gt; (address cell)</span>
+<span id="L145" class="LineNr">145 </span><span class="subxComment"># lisp-read:  in : (address buffered-file) -&gt; (handle cell)</span>
 <span id="L146" class="LineNr">146 </span><span class="subxComment">#   token tmp = next-mulisp-token(in)</span>
 <span id="L147" class="LineNr">147 </span><span class="subxComment">#   if is-int(tmp) return cell(tmp)</span>
 <span id="L148" class="LineNr">148 </span><span class="subxComment">#   if is-string(tmp) return cell(tmp)</span>
 <span id="L149" class="LineNr">149 </span><span class="subxComment">#   if is-pair(tmp) ...</span>
 <span id="L150" class="LineNr">150 </span><span class="subxComment">#   if is-array(tmp) ...</span>
 <span id="L151" class="LineNr">151 </span>
-<span id="L152" class="LineNr">152 </span><span class="subxFunction">next-mulisp-token</span>:  <span class="subxComment"># in : (address buffered-file), line : (address stream), result : (address slice)</span>
+<span id="L152" class="LineNr">152 </span><span class="subxFunction">next-mulisp-token</span>:  <span class="subxComment"># in : (address buffered-file), line : (address stream byte), result : (address slice)</span>
 <span id="L153" class="LineNr">153 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L154" class="LineNr">154 </span>    <span class="subxComment">#   if (line-&gt;read &gt;= line-&gt;write)</span>
 <span id="L155" class="LineNr">155 </span>    <span class="subxComment">#     read-line-buffered(in, line)</span>
@@ -252,11 +252,11 @@ if ('onhashchange' in window) {
 <span id="L194" class="LineNr">194 </span>    5d/pop-to-ebp
 <span id="L195" class="LineNr">195 </span>    c3/return
 <span id="L196" class="LineNr">196 </span>
-<span id="L197" class="LineNr">197 </span><span class="subxFunction">new-int-cell</span>:  <span class="subxComment"># in : (address slice) -&gt; eax : (address cell)</span>
+<span id="L197" class="LineNr">197 </span><span class="subxFunction">new-int-cell</span>:  <span class="subxComment"># in : (address slice) -&gt; eax : (handle cell)</span>
 <span id="L198" class="LineNr">198 </span>
-<span id="L199" class="LineNr">199 </span><span class="subxFunction">new-string-cell</span>:  <span class="subxComment"># in : (address slice) -&gt; eax : (address cell)</span>
+<span id="L199" class="LineNr">199 </span><span class="subxFunction">new-string-cell</span>:  <span class="subxComment"># in : (address slice) -&gt; eax : (handle cell)</span>
 <span id="L200" class="LineNr">200 </span>
-<span id="L201" class="LineNr">201 </span><span class="subxFunction">lisp-eval</span>:  <span class="subxComment"># in : (address cell) -&gt; eax : (address cell)</span>
+<span id="L201" class="LineNr">201 </span><span class="subxFunction">lisp-eval</span>:  <span class="subxComment"># in : (address cell) -&gt; eax : (handle cell)</span>
 <span id="L202" class="LineNr">202 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L203" class="LineNr">203 </span>    55/push-ebp
 <span id="L204" class="LineNr">204 </span>    89/&lt;- %ebp 4/r32/esp

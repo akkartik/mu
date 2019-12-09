@@ -115,11 +115,11 @@ if ('onhashchange' in window) {
 <span id="L54" class="LineNr"> 54 </span>    68/push  <span class="Constant">&quot;test&quot;</span>/imm32
 <span id="L55" class="LineNr"> 55 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
 <span id="L56" class="LineNr"> 56 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L57" class="LineNr"> 57 </span>    e8/call  <a href='../052kernel-string-equal.subx.html#L31'>kernel-string-equal?</a>/disp32
+<span id="L57" class="LineNr"> 57 </span>    e8/call  <a href='../052kernel-string-equal.subx.html#L33'>kernel-string-equal?</a>/disp32
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L59" class="LineNr"> 59 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
-<span id="L60" class="LineNr"> 60 </span>    <span class="subxS1Comment"># . if (eax == 0) goto run-main</span>
-<span id="L61" class="LineNr"> 61 </span>    3d/compare-eax-and  0/imm32
+<span id="L60" class="LineNr"> 60 </span>    <span class="subxS1Comment"># . if (eax == false) goto run-main</span>
+<span id="L61" class="LineNr"> 61 </span>    3d/compare-eax-and  0/imm32/false
 <span id="L62" class="LineNr"> 62 </span>    74/jump-if-equal  $run-main/disp8
 <span id="L63" class="LineNr"> 63 </span>    <span class="subxComment"># run-tests()</span>
 <span id="L64" class="LineNr"> 64 </span>    e8/call  run-tests/disp32
@@ -128,7 +128,7 @@ if ('onhashchange' in window) {
 <span id="L67" class="LineNr"> 67 </span>    eb/jump  $main:end/disp8
 <span id="L68" class="LineNr"> 68 </span><span class="Constant">$run-main</span>:
 <span id="L69" class="LineNr"> 69 </span>    <span class="subxH1Comment"># - otherwise read a program from stdin and emit its translation to stdout</span>
-<span id="L70" class="LineNr"> 70 </span>    <span class="subxComment"># var ed/eax : exit-descriptor</span>
+<span id="L70" class="LineNr"> 70 </span>    <span class="subxComment"># var ed/eax : (ref exit-descriptor)</span>
 <span id="L71" class="LineNr"> 71 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L72" class="LineNr"> 72 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L73" class="LineNr"> 73 </span>    <span class="subxComment"># configure ed to really exit()</span>
@@ -151,7 +151,7 @@ if ('onhashchange' in window) {
 <span id="L90" class="LineNr"> 90 </span>    cd/syscall  0x80/imm8
 <span id="L91" class="LineNr"> 91 </span>
 <span id="L92" class="LineNr"> 92 </span><span class="subxComment"># the main entry point</span>
-<span id="L93" class="LineNr"> 93 </span><span class="subxFunction">compile</span>:  <span class="subxComment"># in : (address buffered-file), out : fd or (address stream), err : fd or (address stream), ed : (address exit-descriptor)</span>
+<span id="L93" class="LineNr"> 93 </span><span class="subxFunction">compile</span>:  <span class="subxComment"># in : (address buffered-file), out : fd or (address stream byte), err : fd or (address stream byte), ed : (address exit-descriptor)</span>
 <span id="L94" class="LineNr"> 94 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L95" class="LineNr"> 95 </span>    55/push-ebp
 <span id="L96" class="LineNr"> 96 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -166,7 +166,7 @@ if ('onhashchange' in window) {
 <span id="L105" class="LineNr">105 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L709'>get-char</a>/disp32
 <span id="L106" class="LineNr">106 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L107" class="LineNr">107 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L108" class="LineNr">108 </span>    <span class="subxComment"># var num/ecx : (address stream) on the stack</span>
+<span id="L108" class="LineNr">108 </span>    <span class="subxComment"># var num/ecx : (ref stream byte 7)</span>
 <span id="L109" class="LineNr">109 </span>    <span class="subxComment"># Numbers can be 32 bits or 8 hex bytes long. One of them will be in 'Look', so we need space for 7 bytes.</span>
 <span id="L110" class="LineNr">110 </span>    <span class="subxComment"># Sizing the stream just right buys us overflow-handling for free inside 'get-num'.</span>
 <span id="L111" class="LineNr">111 </span>    <span class="subxComment"># Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.</span>
@@ -252,7 +252,7 @@ if ('onhashchange' in window) {
 <span id="L191" class="LineNr">191 </span><span class="subxComment"># no space in 'out'.</span>
 <span id="L192" class="LineNr">192 </span><span class="subxComment"># Input comes from the global variable 'Look' (first byte) and the argument</span>
 <span id="L193" class="LineNr">193 </span><span class="subxComment"># 'in' (rest). We leave the next byte from 'in' into 'Look' on exit.</span>
-<span id="L194" class="LineNr">194 </span><span class="subxFunction">get-num</span>:  <span class="subxComment"># in : (address buffered-file), out : (address stream), err : fd or (address stream), ed : (address exit-descriptor)</span>
+<span id="L194" class="LineNr">194 </span><span class="subxFunction">get-num</span>:  <span class="subxComment"># in : (address buffered-file), out : (address stream byte), err : fd or (address stream byte), ed : (address exit-descriptor)</span>
 <span id="L195" class="LineNr">195 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L196" class="LineNr">196 </span>    <span class="subxComment">#   if (!is-digit?(Look)) expected(ed, err, &quot;integer&quot;)</span>
 <span id="L197" class="LineNr">197 </span>    <span class="subxComment">#   do</span>
@@ -288,8 +288,8 @@ if ('onhashchange' in window) {
 <span id="L227" class="LineNr">227 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L732'>is-digit?</a>/disp32
 <span id="L228" class="LineNr">228 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L229" class="LineNr">229 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L230" class="LineNr">230 </span>    <span class="subxS1Comment"># . if (eax == 0)</span>
-<span id="L231" class="LineNr">231 </span>    3d/compare-eax-and  0/imm32
+<span id="L230" class="LineNr">230 </span>    <span class="subxS1Comment"># . if (eax == false)</span>
+<span id="L231" class="LineNr">231 </span>    3d/compare-eax-and  0/imm32/false
 <span id="L232" class="LineNr">232 </span>    75/jump-if-not-equal  $get-num:main/disp8
 <span id="L233" class="LineNr">233 </span>    <span class="subxS1Comment"># . expected(ed, err, &quot;integer&quot;)</span>
 <span id="L234" class="LineNr">234 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -353,8 +353,8 @@ if ('onhashchange' in window) {
 <span id="L292" class="LineNr">292 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L732'>is-digit?</a>/disp32
 <span id="L293" class="LineNr">293 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L294" class="LineNr">294 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L295" class="LineNr">295 </span>    <span class="subxS1Comment"># . if (eax != 0) loop</span>
-<span id="L296" class="LineNr">296 </span>    3d/compare-eax-and  0/imm32
+<span id="L295" class="LineNr">295 </span>    <span class="subxS1Comment"># . if (eax != false) loop</span>
+<span id="L296" class="LineNr">296 </span>    3d/compare-eax-and  0/imm32/false
 <span id="L297" class="LineNr">297 </span>    0f 85/jump-if-not-equal  $get-num:<span class="Constant">loop</span>/disp32
 <span id="L298" class="LineNr">298 </span><span class="Constant">$get-num:loop-end</span>:
 <span id="L299" class="LineNr">299 </span>    <span class="subxComment"># persist necessary variables from registers</span>
@@ -385,9 +385,9 @@ if ('onhashchange' in window) {
 <span id="L324" class="LineNr">324 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L325" class="LineNr">325 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L326" class="LineNr">326 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L327" class="LineNr">327 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file-&gt;buffer)</span>
+<span id="L327" class="LineNr">327 </span>    <span class="subxS1Comment"># . clear-stream($_test-buffered-file-&gt;buffer)</span>
 <span id="L328" class="LineNr">328 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L329" class="LineNr">329 </span>    68/push  <a href='../061read-byte.subx.html#L278'>_test-buffered-file-&gt;buffer</a>/imm32
+<span id="L329" class="LineNr">329 </span>    68/push  $_test-buffered-file-&gt;buffer/imm32
 <span id="L330" class="LineNr">330 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L331" class="LineNr">331 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L332" class="LineNr">332 </span>    <span class="subxS2Comment"># . . discard args</span>
@@ -416,7 +416,7 @@ if ('onhashchange' in window) {
 <span id="L355" class="LineNr">355 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L356" class="LineNr">356 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L357" class="LineNr">357 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
-<span id="L358" class="LineNr">358 </span>    <span class="subxS1Comment"># . var ed/eax : exit-descriptor</span>
+<span id="L358" class="LineNr">358 </span>    <span class="subxS1Comment"># . var ed/eax : (ref exit-descriptor)</span>
 <span id="L359" class="LineNr">359 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L360" class="LineNr">360 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L361" class="LineNr">361 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
@@ -430,7 +430,7 @@ if ('onhashchange' in window) {
 <span id="L369" class="LineNr">369 </span>    <span class="subxComment"># prime the pump</span>
 <span id="L370" class="LineNr">370 </span>    <span class="subxS1Comment"># . get-char(_test-buffered-file)</span>
 <span id="L371" class="LineNr">371 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L372" class="LineNr">372 </span>    68/push  <a href='../061read-byte.subx.html#L275'>_test-buffered-file</a>/imm32
+<span id="L372" class="LineNr">372 </span>    68/push  <a href='../061read-byte.subx.html#L274'>_test-buffered-file</a>/imm32
 <span id="L373" class="LineNr">373 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L374" class="LineNr">374 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L709'>get-char</a>/disp32
 <span id="L375" class="LineNr">375 </span>    <span class="subxS2Comment"># . . discard args</span>
@@ -440,7 +440,7 @@ if ('onhashchange' in window) {
 <span id="L379" class="LineNr">379 </span>    50/push-eax/ed
 <span id="L380" class="LineNr">380 </span>    68/push  <a href='../064write-byte.subx.html#L341'>_test-error-stream</a>/imm32
 <span id="L381" class="LineNr">381 </span>    68/push  <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>/imm32
-<span id="L382" class="LineNr">382 </span>    68/push  <a href='../061read-byte.subx.html#L275'>_test-buffered-file</a>/imm32
+<span id="L382" class="LineNr">382 </span>    68/push  <a href='../061read-byte.subx.html#L274'>_test-buffered-file</a>/imm32
 <span id="L383" class="LineNr">383 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L384" class="LineNr">384 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L194'>get-num</a>/disp32
 <span id="L385" class="LineNr">385 </span>    <span class="subxComment"># registers except esp may be clobbered at this point</span>
@@ -474,9 +474,9 @@ if ('onhashchange' in window) {
 <span id="L413" class="LineNr">413 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L414" class="LineNr">414 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L415" class="LineNr">415 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L416" class="LineNr">416 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file-&gt;buffer)</span>
+<span id="L416" class="LineNr">416 </span>    <span class="subxS1Comment"># . clear-stream($_test-buffered-file-&gt;buffer)</span>
 <span id="L417" class="LineNr">417 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L418" class="LineNr">418 </span>    68/push  <a href='../061read-byte.subx.html#L278'>_test-buffered-file-&gt;buffer</a>/imm32
+<span id="L418" class="LineNr">418 </span>    68/push  $_test-buffered-file-&gt;buffer/imm32
 <span id="L419" class="LineNr">419 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L420" class="LineNr">420 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L421" class="LineNr">421 </span>    <span class="subxS2Comment"># . . discard args</span>
@@ -505,7 +505,7 @@ if ('onhashchange' in window) {
 <span id="L444" class="LineNr">444 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L445" class="LineNr">445 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L446" class="LineNr">446 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
-<span id="L447" class="LineNr">447 </span>    <span class="subxS1Comment"># . var ed/eax : (address exit-descriptor)</span>
+<span id="L447" class="LineNr">447 </span>    <span class="subxS1Comment"># . var ed/eax : (ref exit-descriptor)</span>
 <span id="L448" class="LineNr">448 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L449" class="LineNr">449 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L450" class="LineNr">450 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
@@ -522,7 +522,7 @@ if ('onhashchange' in window) {
 <span id="L461" class="LineNr">461 </span>    50/push-eax/ed
 <span id="L462" class="LineNr">462 </span>    68/push  <a href='../064write-byte.subx.html#L341'>_test-error-stream</a>/imm32
 <span id="L463" class="LineNr">463 </span>    68/push  <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>/imm32
-<span id="L464" class="LineNr">464 </span>    68/push  <a href='../061read-byte.subx.html#L275'>_test-buffered-file</a>/imm32
+<span id="L464" class="LineNr">464 </span>    68/push  <a href='../061read-byte.subx.html#L274'>_test-buffered-file</a>/imm32
 <span id="L465" class="LineNr">465 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L466" class="LineNr">466 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L194'>get-num</a>/disp32
 <span id="L467" class="LineNr">467 </span>    <span class="subxComment"># registers except esp may be clobbered at this point</span>
@@ -557,9 +557,9 @@ if ('onhashchange' in window) {
 <span id="L496" class="LineNr">496 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L497" class="LineNr">497 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L498" class="LineNr">498 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L499" class="LineNr">499 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file-&gt;buffer)</span>
+<span id="L499" class="LineNr">499 </span>    <span class="subxS1Comment"># . clear-stream($_test-buffered-file-&gt;buffer)</span>
 <span id="L500" class="LineNr">500 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L501" class="LineNr">501 </span>    68/push  <a href='../061read-byte.subx.html#L278'>_test-buffered-file-&gt;buffer</a>/imm32
+<span id="L501" class="LineNr">501 </span>    68/push  $_test-buffered-file-&gt;buffer/imm32
 <span id="L502" class="LineNr">502 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L503" class="LineNr">503 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L504" class="LineNr">504 </span>    <span class="subxS2Comment"># . . discard args</span>
@@ -588,7 +588,7 @@ if ('onhashchange' in window) {
 <span id="L527" class="LineNr">527 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L528" class="LineNr">528 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L529" class="LineNr">529 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
-<span id="L530" class="LineNr">530 </span>    <span class="subxS1Comment"># . var ed/eax : (address exit-descriptor)</span>
+<span id="L530" class="LineNr">530 </span>    <span class="subxS1Comment"># . var ed/eax : (ref exit-descriptor)</span>
 <span id="L531" class="LineNr">531 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L532" class="LineNr">532 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L533" class="LineNr">533 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
@@ -602,7 +602,7 @@ if ('onhashchange' in window) {
 <span id="L541" class="LineNr">541 </span>    <span class="subxComment"># prime the pump</span>
 <span id="L542" class="LineNr">542 </span>    <span class="subxS1Comment"># . get-char(_test-buffered-file)</span>
 <span id="L543" class="LineNr">543 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L544" class="LineNr">544 </span>    68/push  <a href='../061read-byte.subx.html#L275'>_test-buffered-file</a>/imm32
+<span id="L544" class="LineNr">544 </span>    68/push  <a href='../061read-byte.subx.html#L274'>_test-buffered-file</a>/imm32
 <span id="L545" class="LineNr">545 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L546" class="LineNr">546 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L709'>get-char</a>/disp32
 <span id="L547" class="LineNr">547 </span>    <span class="subxS2Comment"># . . discard args</span>
@@ -612,7 +612,7 @@ if ('onhashchange' in window) {
 <span id="L551" class="LineNr">551 </span>    50/push-eax/ed
 <span id="L552" class="LineNr">552 </span>    68/push  <a href='../064write-byte.subx.html#L341'>_test-error-stream</a>/imm32
 <span id="L553" class="LineNr">553 </span>    68/push  <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>/imm32
-<span id="L554" class="LineNr">554 </span>    68/push  <a href='../061read-byte.subx.html#L275'>_test-buffered-file</a>/imm32
+<span id="L554" class="LineNr">554 </span>    68/push  <a href='../061read-byte.subx.html#L274'>_test-buffered-file</a>/imm32
 <span id="L555" class="LineNr">555 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L556" class="LineNr">556 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L194'>get-num</a>/disp32
 <span id="L557" class="LineNr">557 </span>    <span class="subxComment"># registers except esp may be clobbered at this point</span>
@@ -646,9 +646,9 @@ if ('onhashchange' in window) {
 <span id="L585" class="LineNr">585 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L586" class="LineNr">586 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L587" class="LineNr">587 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L588" class="LineNr">588 </span>    <span class="subxS1Comment"># . clear-stream(_test-buffered-file-&gt;buffer)</span>
+<span id="L588" class="LineNr">588 </span>    <span class="subxS1Comment"># . clear-stream($_test-buffered-file-&gt;buffer)</span>
 <span id="L589" class="LineNr">589 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L590" class="LineNr">590 </span>    68/push  <a href='../061read-byte.subx.html#L278'>_test-buffered-file-&gt;buffer</a>/imm32
+<span id="L590" class="LineNr">590 </span>    68/push  $_test-buffered-file-&gt;buffer/imm32
 <span id="L591" class="LineNr">591 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L592" class="LineNr">592 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L593" class="LineNr">593 </span>    <span class="subxS2Comment"># . . discard args</span>
@@ -677,7 +677,7 @@ if ('onhashchange' in window) {
 <span id="L616" class="LineNr">616 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L617" class="LineNr">617 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L618" class="LineNr">618 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
-<span id="L619" class="LineNr">619 </span>    <span class="subxS1Comment"># . var ed/eax : (address exit-descriptor)</span>
+<span id="L619" class="LineNr">619 </span>    <span class="subxS1Comment"># . var ed/eax : (ref exit-descriptor)</span>
 <span id="L620" class="LineNr">620 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L621" class="LineNr">621 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L622" class="LineNr">622 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
@@ -691,7 +691,7 @@ if ('onhashchange' in window) {
 <span id="L630" class="LineNr">630 </span>    <span class="subxComment"># prime the pump</span>
 <span id="L631" class="LineNr">631 </span>    <span class="subxS1Comment"># . get-char(_test-buffered-file)</span>
 <span id="L632" class="LineNr">632 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L633" class="LineNr">633 </span>    68/push  <a href='../061read-byte.subx.html#L275'>_test-buffered-file</a>/imm32
+<span id="L633" class="LineNr">633 </span>    68/push  <a href='../061read-byte.subx.html#L274'>_test-buffered-file</a>/imm32
 <span id="L634" class="LineNr">634 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L635" class="LineNr">635 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L709'>get-char</a>/disp32
 <span id="L636" class="LineNr">636 </span>    <span class="subxS2Comment"># . . discard args</span>
@@ -701,7 +701,7 @@ if ('onhashchange' in window) {
 <span id="L640" class="LineNr">640 </span>    50/push-eax/ed
 <span id="L641" class="LineNr">641 </span>    68/push  <a href='../064write-byte.subx.html#L341'>_test-error-stream</a>/imm32
 <span id="L642" class="LineNr">642 </span>    68/push  <a href='../064write-byte.subx.html#L286'>_test-output-stream</a>/imm32
-<span id="L643" class="LineNr">643 </span>    68/push  <a href='../061read-byte.subx.html#L275'>_test-buffered-file</a>/imm32
+<span id="L643" class="LineNr">643 </span>    68/push  <a href='../061read-byte.subx.html#L274'>_test-buffered-file</a>/imm32
 <span id="L644" class="LineNr">644 </span>    <span class="subxS2Comment"># . . call</span>
 <span id="L645" class="LineNr">645 </span>    e8/call  <a href='crenshaw2-1b.subx.html#L194'>get-num</a>/disp32
 <span id="L646" class="LineNr">646 </span>    <span class="subxComment"># registers except esp may be clobbered at this point</span>
@@ -725,7 +725,7 @@ if ('onhashchange' in window) {
 <span id="L664" class="LineNr">664 </span><span class="subxComment">## helpers</span>
 <span id="L665" class="LineNr">665 </span>
 <span id="L666" class="LineNr">666 </span><span class="subxComment"># write(f, &quot;Error: &quot;+s+&quot; expected\n&quot;) then stop(ed, 1)</span>
-<span id="L667" class="LineNr">667 </span><span class="subxFunction">expected</span>:  <span class="subxComment"># ed : (address exit-descriptor), f : fd or (address stream), s : (address array byte)</span>
+<span id="L667" class="LineNr">667 </span><span class="subxFunction">expected</span>:  <span class="subxComment"># ed : (address exit-descriptor), f : fd or (address stream byte), s : (address array byte)</span>
 <span id="L668" class="LineNr">668 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L669" class="LineNr">669 </span>    55/push-ebp
 <span id="L670" class="LineNr">670 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
