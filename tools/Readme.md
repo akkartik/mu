@@ -22,3 +22,15 @@ These are built lazily.
   ```
   tools/treeshake_all
   ```
+
+### Notes to self: constraints on the tools/ directory
+* Don't overwhelm the initial view of the project with lots of crap in the
+  root directory.
+* Directories go up top in the github view, so too many sub-directories are
+  also overwhelming.
+* Don't increase increase build time too much; everything in `tools/` shouldn't
+  be automatically built.
+  * stuff needed all the time is built from root directory.
+* `tools/` contains many independent things; don't make it hard to see
+  boundaries. Ideally just one source file per tool. If not, give related
+  files similar name prefixes.
