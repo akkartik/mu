@@ -93,7 +93,7 @@ if ('onhashchange' in window) {
 <span id="L34" class="LineNr">34 </span>      7e/jump-if-lesser-or-equal <span class="Constant">break</span>/disp8
 <span id="L35" class="LineNr">35 </span>      <span class="subxComment"># if (!kernel-string-equal?(argv[1], &quot;test&quot;)) break</span>
 <span id="L36" class="LineNr">36 </span>      (<a href='../052kernel-string-equal.subx.html#L33'>kernel-string-equal?</a> *(ebp+8) <span class="Constant">&quot;test&quot;</span>)  <span class="subxComment"># =&gt; eax</span>
-<span id="L37" class="LineNr">37 </span>      3d/compare-eax-and 0/imm32
+<span id="L37" class="LineNr">37 </span>      3d/compare-eax-and 0/imm32/false
 <span id="L38" class="LineNr">38 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
 <span id="L39" class="LineNr">39 </span>      <span class="subxComment">#</span>
 <span id="L40" class="LineNr">40 </span>      (run-tests)
@@ -129,22 +129,23 @@ if ('onhashchange' in window) {
 <span id="L70" class="LineNr">70 </span>    <span class="subxComment"># if (n &gt; 1) return n * factorial(n-1)</span>
 <span id="L71" class="LineNr">71 </span>    {
 <span id="L72" class="LineNr">72 </span>      7e/jump-if-lesser-or-equal <span class="Constant">break</span>/disp8
-<span id="L73" class="LineNr">73 </span>      8b/-&gt; *(ebp+8) 3/r32/ebx
-<span id="L74" class="LineNr">74 </span>      4b/decrement-ebx
-<span id="L75" class="LineNr">75 </span>      (<a href='factorial4.subx.html#L58'>factorial</a> %ebx)  <span class="subxComment"># =&gt; eax</span>
-<span id="L76" class="LineNr">76 </span>      f7 4/subop/multiply-into-eax *(ebp+8)
-<span id="L77" class="LineNr">77 </span>    }
-<span id="L78" class="LineNr">78 </span>    <span class="subxComment"># restore registers</span>
-<span id="L79" class="LineNr">79 </span>    5b/pop-to-ebx
-<span id="L80" class="LineNr">80 </span>    <span class="subxS1Comment"># . epilogue</span>
-<span id="L81" class="LineNr">81 </span>    89/&lt;- %esp 5/r32/ebp
-<span id="L82" class="LineNr">82 </span>    5d/pop-to-ebp
-<span id="L83" class="LineNr">83 </span>    c3/return
-<span id="L84" class="LineNr">84 </span>
-<span id="L85" class="LineNr">85 </span><span class="subxTest">test-factorial</span>:
-<span id="L86" class="LineNr">86 </span>    (<a href='factorial4.subx.html#L58'>factorial</a> 5)
-<span id="L87" class="LineNr">87 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 0x78 <span class="Constant">&quot;F - test-factorial&quot;</span>)
-<span id="L88" class="LineNr">88 </span>    c3/return
+<span id="L73" class="LineNr">73 </span>      <span class="subxComment"># var ebx : int = n-1</span>
+<span id="L74" class="LineNr">74 </span>      8b/-&gt; *(ebp+8) 3/r32/ebx
+<span id="L75" class="LineNr">75 </span>      4b/decrement-ebx
+<span id="L76" class="LineNr">76 </span>      (<a href='factorial4.subx.html#L58'>factorial</a> %ebx)  <span class="subxComment"># =&gt; eax</span>
+<span id="L77" class="LineNr">77 </span>      f7 4/subop/multiply-into-eax *(ebp+8)
+<span id="L78" class="LineNr">78 </span>    }
+<span id="L79" class="LineNr">79 </span>    <span class="subxComment"># restore registers</span>
+<span id="L80" class="LineNr">80 </span>    5b/pop-to-ebx
+<span id="L81" class="LineNr">81 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L82" class="LineNr">82 </span>    89/&lt;- %esp 5/r32/ebp
+<span id="L83" class="LineNr">83 </span>    5d/pop-to-ebp
+<span id="L84" class="LineNr">84 </span>    c3/return
+<span id="L85" class="LineNr">85 </span>
+<span id="L86" class="LineNr">86 </span><span class="subxTest">test-factorial</span>:
+<span id="L87" class="LineNr">87 </span>    (<a href='factorial4.subx.html#L58'>factorial</a> 5)
+<span id="L88" class="LineNr">88 </span>    (<a href='../051test.subx.html#L24'>check-ints-equal</a> %eax 0x78 <span class="Constant">&quot;F - test-factorial&quot;</span>)
+<span id="L89" class="LineNr">89 </span>    c3/return
 </pre>
 </body>
 </html>
