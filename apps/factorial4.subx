@@ -34,7 +34,7 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
       7e/jump-if-lesser-or-equal break/disp8
       # if (!kernel-string-equal?(argv[1], "test")) break
       (kernel-string-equal? *(ebp+8) "test")  # => eax
-      3d/compare-eax-and 0/imm32
+      3d/compare-eax-and 0/imm32/false
       74/jump-if-equal break/disp8
       #
       (run-tests)
@@ -70,6 +70,7 @@ factorial:  # n : int -> int/eax
     # if (n > 1) return n * factorial(n-1)
     {
       7e/jump-if-lesser-or-equal break/disp8
+      # var ebx : int = n-1
       8b/-> *(ebp+8) 3/r32/ebx
       4b/decrement-ebx
       (factorial %ebx)  # => eax
