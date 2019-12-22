@@ -640,9 +640,11 @@ parse-mu:  # in : (address buffered-file)
     #     else if slice-starts-with?(word-slice, "#")  # comment
     #       continue                                # end of line
     #     else if slice-equal(word-slice, "fn")
-    #       var new-function : (handle function) = new function
-    #       populate-mu-function-header(in, new-function)
-    #       populate-mu-function-body(in, new-function)
+    #       var new-function : (handle function) = allocate(function)
+    #       var vars : (ref stack (address var) 256)
+    #       populate-mu-function-header(in, new-function, vars)
+    #       populate-mu-function-body(in, new-function, vars)
+    #       assert(vars->top == 0)
     #       *curr-function = new-function
     #       curr-function = &new-function->next
     #     else
@@ -655,6 +657,7 @@ parse-mu:  # in : (address buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
+    53/push-ebx
     57/push-edi
     # var line/ecx : (ref stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
@@ -668,6 +671,11 @@ parse-mu:  # in : (address buffered-file)
     89/<- %edx 4/r32/esp
     # var curr-function/edi : (handle function) = Program
     bf/copy-to-edi Program/imm32
+    # var vars/ebx : (ref stack (address var) 256)
+    81 5/subop/subtract %esp 0x400/imm32
+    68/push 0x400/imm32/length
+    68/push 0/imm32/top
+    89/<- %ebx 4/r32/esp
     {
 $parse-mu:line-loop:
       (clear-stream %ecx)
@@ -700,10 +708,14 @@ $parse-mu:fn:
         (slice-equal? %edx "fn")
         3d/compare-eax-and 0/imm32
         0f 84/jump-if-equal break/disp32
-        # var new-function/eax : (handle function) = populate-mu-function()
+        # var new-function/eax : (handle function) = populate-mu-function(in, new-function, vars)
         (allocate Heap *Function-size)  # => eax
-        (populate-mu-function-header %ecx %eax)
-        (populate-mu-function-body *(ebp+8) %eax)
+        (zero-out %eax *Function-size)
+        (populate-mu-function-header %ecx %eax %ebx)
+        (populate-mu-function-body *(ebp+8) %eax %ebx)
+        # assert(vars->top == 0)
+        81 7/subop/compare *ebx 0/imm32
+        75/jump-if-not-equal $parse-mu:error2/disp8
         # *curr-function = new-function
         89/<- *edi 0/r32/eax
         # curr-function = &new-function->next
@@ -711,13 +723,14 @@ $parse-mu:fn:
         e9/jump $parse-mu:line-loop/disp32
       }
       # otherwise abort
-      e9/jump $parse-mu:abort/disp32
+      e9/jump $parse-mu:error1/disp32
     } # end line loop
 $parse-mu:end:
     # . reclaim locals
-    81 0/subop/add %esp 0x214/imm32
+    81 0/subop/add %esp 0x630/imm32
     # . restore registers
     5f/pop-to-edi
+    5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
@@ -726,11 +739,24 @@ $parse-mu:end:
     5d/pop-to-ebp
     c3/return
 
-$parse-mu:abort:
+$parse-mu:error1:
     # error("unexpected top-level command: " word-slice "\n")
     (write-buffered Stderr "unexpected top-level command: ")
     (write-slice-buffered Stderr %edx)
     (write-buffered Stderr "\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$parse-mu:error2:
+    # error(vars->top " vars not reclaimed after fn '" new-function->name "'\n")
+    (print-int32-buffered Stderr *ebx)
+    (write-buffered Stderr " vars not reclaimed after fn '")
+    (write-slice-buffered Stderr *eax)  # Function-name
+    (write-buffered Stderr "'\n")
     (flush Stderr)
     # . syscall(exit, 1)
     bb/copy-to-ebx  1/imm32
@@ -749,12 +775,13 @@ $parse-mu:abort:
 # ✓ fn foo x : int {
 # ✓ fn foo x: int {
 # ✓ fn foo x: int -> y/eax: int {
-populate-mu-function-header:  # first-line : (address stream byte), out : (handle function)
+populate-mu-function-header:  # first-line : (address stream byte), out : (handle function), vars : (address stack (address var))
     # pseudocode:
     #   var name : (ref slice)
     #   next-word(first-line, name)
     #   assert(name not in '{' '}' '->')
     #   out->name = slice-to-string(name)
+    #   var next-offset : int = 8
     #   ## inouts
     #   while true
     #     ## name
@@ -763,6 +790,10 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (handl
     #     if (name == '->') break
     #     assert(name != '}')
     #     var v : (handle var) = parse-var-with-type(name, first-line)
+    #     assert(v->register == null)
+    #     v->stack-offset = next-offset
+    #     next-offset += size-of(var)
+    #     push(vars, var)
     #     out->inouts = append(out->inouts, v)
     #   ## outputs
     #   while true
@@ -770,6 +801,7 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (handl
     #     name = next-word(first-line)
     #     assert(name not in '{' '}' '->')
     #     var v : (handle var) = parse-var-with-type(name, first-line)
+    #     assert(v->register != null)
     #     out->outputs = append(out->outputs, v)
     #   done:
     #
@@ -779,6 +811,8 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (handl
     # . save registers
     50/push-eax
     51/push-ecx
+    52/push-edx
+    53/push-ebx
     57/push-edi
     # edi = out
     8b/-> *(ebp+0xc) 7/r32/edi
@@ -786,26 +820,29 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (handl
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
+    # var next-offset/edx = 8
+    ba/copy-to-edx 8/imm32
     # read function name
     (next-word *(ebp+8) %ecx)
     # error checking
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
     # if (word-slice == '->') abort
     (slice-equal? %ecx "->")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
     # if (word-slice == '}') abort
     (slice-equal? %ecx "}")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
     # save function name
     (slice-to-string Heap %ecx)  # => eax
     89/<- *edi 0/r32/eax  # Function-name
     # save function inouts
     {
+$populate-mu-function-header:check-for-inout:
       (next-word *(ebp+8) %ecx)
       # if (word-slice == '{') goto done
       (slice-equal? %ecx "{")   # => eax
@@ -818,31 +855,47 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (handl
       # if (word-slice == '}') abort
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+      # var var/ebx : (handle var) = parse-var-with-type(word-slice, first-line)
+      (parse-var-with-type %ecx *(ebp+8))  # => eax
+      89/<- %ebx 0/r32/eax
+      # assert(var->register == null)
+      81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
+      0f 85/jump-if-not-equal $populate-mu-function-header:error2/disp32
+      # var->stack-offset = next-offset
+      89/<- *(ebx+0xc) 2/r32/edx  # Var-stack-offset
+      # next-offset += size-of(var)
+      (size-of %ebx)  # => eax
+      01/add %edx 0/r32/eax
       #
-      (parse-var-with-type %ecx *(ebp+8))
-      (append-list Heap %eax *(edi+8))  # Function-inouts => eax
+      (append-list Heap %ebx *(edi+8))  # Function-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Function-inouts
+      #
       e9/jump loop/disp32
     }
     # save function outputs
     {
+$parse-var-with-type:check-for-out:
       (next-word *(ebp+8) %ecx)
       # if (word-slice == '{') break
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+      0f 85/jump-if-not-equal break/disp32
       # if (word-slice == '->') abort
       (slice-equal? %ecx "->")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
       # if (word-slice == '}') abort
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $populate-mu-function-header:abort/disp32
+      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
       #
-      (parse-var-with-type %ecx *(ebp+8))
-      (append-list Heap %eax *(edi+0xc))  # Function-outputs
+      (parse-var-with-type %ecx *(ebp+8))  # => eax
+      89/<- %ebx 0/r32/eax
+      # assert(var->register != null)
+      81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
+      0f 84/jump-if-equal $populate-mu-function-header:error3/disp32
+      (append-list Heap %ebx *(edi+0xc))  # Function-outputs => eax
       89/<- *(edi+0xc) 0/r32/eax  # Function-outputs
       e9/jump loop/disp32
     }
@@ -853,6 +906,8 @@ $populate-mu-function-header:end:
     81 0/subop/add %esp 8/imm32
     # . restore registers
     5f/pop-to-edi
+    5b/pop-to-ebx
+    5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
@@ -860,9 +915,37 @@ $populate-mu-function-header:end:
     5d/pop-to-ebp
     c3/return
 
-$populate-mu-function-header:abort:
+$populate-mu-function-header:error1:
     # error("function header not in form 'fn <name> {'")
     (write-buffered Stderr "function header not in form 'fn <name> [inouts] [-> outputs] {' -- '")
+    (flush Stderr)
+    (rewind-stream *(ebp+8))
+    (write-stream 2 *(ebp+8))
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$populate-mu-function-header:error2:
+    # error("function input '" var "' cannot be in a register")
+    (write-buffered Stderr "function input '")
+    (write-buffered Stderr *ebx)  # Var-name
+    (write-buffered Stderr "' cannot be in a register")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$populate-mu-function-header:error3:
+    # error("function input '" var "' must be in a register")
+    (write-buffered Stderr "function input '")
+    (write-buffered Stderr *eax)  # Var-name
+    (write-buffered Stderr " must be in a register'")
     (flush Stderr)
     (rewind-stream *(ebp+8))
     (write-stream 2 *(ebp+8))
@@ -919,22 +1002,25 @@ test-function-header-with-multiple-args:
     (check-strings-equal *ecx "foo")  # Function-name
     # edx : (handle list var) = result->inouts
     8b/-> *(ecx+8) 2/r32/edx  # Function-inouts
+$test-function-header-with-multiple-args:inout0:
     # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type")  # Var-type
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:0/type")  # Var-type
     # edx = result->inouts->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
+$test-function-header-with-multiple-args:inout1:
     # ebx = result->inouts->next->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "b" "F - test-function-header-with-multiple-args/inout:1")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:1/type")  # Var-type
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:1/type")  # Var-type
     # edx = result->inouts->next->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
+$test-function-header-with-multiple-args:inout2:
     # ebx = result->inouts->next->next->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args/inout:2")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:2/type")  # Var-type
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:2/type")  # Var-type
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1038,7 +1124,8 @@ parse-var-with-type:  # name: (address slice), first-line: (address stream byte)
     56/push-esi
     57/push-edi
     # var result/edi : (handle var) = allocate(Heap, Var-size)
-    (allocate Heap *Var-size)
+    (allocate Heap *Var-size)  # => eax
+    (zero-out %eax *Var-size)
     89/<- %edi 0/r32/eax
     # esi = name
     8b/-> *(ebp+8) 6/r32/esi
@@ -1046,6 +1133,7 @@ parse-var-with-type:  # name: (address slice), first-line: (address stream byte)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
+$parse-var-with-type:save-name:
     # save v->name
     (next-token-from-slice *esi *(esi+4) 0x2f %ecx)  # Slice-start, Slice-end, '/'
     # . end/edx = s->end
@@ -1070,9 +1158,11 @@ parse-var-with-type:  # name: (address slice), first-line: (address stream byte)
       75/jump-if-not-equal break/disp8
       89/<- *(ecx+4) 0/r32/eax
     }
+$parse-var-with-type:write-name:
     (slice-to-string Heap %ecx)  # => eax
     89/<- *edi 0/r32/eax  # Var-name
     # save v->register
+$parse-var-with-type:save-register:
     (next-token-from-slice %edx *(esi+4) 0x2f %ecx)  # end, name->end, '/'
     # . if s ends with ':', decrement s->end
     {
@@ -1096,9 +1186,12 @@ parse-var-with-type:  # name: (address slice), first-line: (address stream byte)
     }
     # if (!slice-empty?(s)) v->register = slice-to-string(s)
     {
-      (slice-empty? %ecx)
-      3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+$parse-var-with-type:write-register:
+      # HACK: s->end can be less than s->start with all the decrements above
+      # That's probably a sign we have the wrong algorithm for this function.
+      8b/-> *ecx 0/r32/eax
+      39/compare 0/r32/eax *(ecx+4)
+      76/jump-if-lesser-or-equal break/disp8
       (slice-to-string Heap %ecx)
       89/<- *(edi+0x10) 0/r32/eax  # Var-register
     }
@@ -1285,8 +1378,8 @@ test-parse-var-with-trailing-characters:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # (eax..ecx) = "x/eax:"
-    b8/copy-to-eax "x/eax:"/imm32
+    # (eax..ecx) = "x:"
+    b8/copy-to-eax "x:"/imm32
     8b/-> *eax 1/r32/ecx
     8d/copy-address *(eax+ecx+4) 1/r32/ecx
     05/add-to-eax 4/imm32
@@ -1302,9 +1395,38 @@ test-parse-var-with-trailing-characters:
     8b/-> *eax 2/r32/edx  # Var-name
     (check-strings-equal %edx "x" "F - test-var-with-trailing-characters/name")
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
-    (check-strings-equal %edx "eax" "F - test-var-with-trailing-characters/register")
+    (check-ints-equal %edx 0 "F - test-var-with-trailing-characters/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
     (check-ints-equal %edx 1 "F - test-var-with-trailing-characters/type")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-var-with-register-and-trailing-characters:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "x/eax:"
+    b8/copy-to-eax "x/eax:"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx : (ref slice) = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    # _test-input-stream contains "int,"
+    (clear-stream _test-input-stream)
+    (write _test-input-stream "int,")
+    #
+    (parse-var-with-type %ecx _test-input-stream)
+    8b/-> *eax 2/r32/edx  # Var-name
+    (check-strings-equal %edx "x" "F - test-var-with-register-and-trailing-characters/name")
+    8b/-> *(eax+0x10) 2/r32/edx  # Var-register
+    (check-strings-equal %edx "eax" "F - test-var-with-register-and-trailing-characters/register")
+    8b/-> *(eax+4) 2/r32/edx  # Var-type
+    (check-ints-equal %edx 1 "F - test-var-with-register-and-trailing-characters/type")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1675,7 +1797,6 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (handle block)
     51/push-ecx
     52/push-edx
     53/push-ebx
-    56/push-esi
     57/push-edi
     # var line/ecx : (ref stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
@@ -1689,6 +1810,7 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (handle block)
     89/<- %edx 4/r32/esp
     # edi = result
     (allocate Heap *Stmt-size)  # => eax
+    (zero-out %eax *Stmt-size)
     89/<- %edi 0/r32/eax
     { # line loop
 $parse-mu-block:line-loop:
@@ -1776,7 +1898,6 @@ $parse-mu-block:end:
     81 0/subop/add %esp 0x214/imm32
     # . restore registers
     5f/pop-to-edi
-    5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
@@ -1933,7 +2054,8 @@ parse-mu-stmt:  # line : (address stream byte) -> result/eax : (handle stmt)
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
     # result/edi : (handle stmt)
-    (allocate Heap *Stmt-size)
+    (allocate Heap *Stmt-size)  # => eax
+    (zero-out %eax *Stmt-size)
     89/<- %edi 0/r32/eax
     # result->tag = 1/stmt
     c7 0/subop/copy *edi 1/imm32/stmt1  # Stmt-tag
@@ -2081,11 +2203,10 @@ parse-var:  # ad: allocation-descriptor, name: (address slice) -> result/eax: (h
     (slice-to-string Heap %ecx)  # => eax
     89/<- %ecx 0/r32/eax
     (allocate *(ebp+8) *Var-size)  # => eax
+    (zero-out %eax *Var-size)
     89/<- *eax 1/r32/ecx  # Var-name
     # var->type = int
     c7 0/subop/copy *(eax+4) 1/imm32/int-type # Var-type
-    # var->stack-offset = 8
-    c7 0/subop/copy *(eax+0xc) 8/imm32 # Var-stack-offset
 $parse-var:end:
     # . restore registers
     59/pop-to-ecx
@@ -2178,6 +2299,7 @@ new-block:  # ad: allocation-descriptor, data: (handle list statement) -> result
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
+    (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 0/imm32/tag/block  # Stmt-tag
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Block-statements
@@ -2197,6 +2319,7 @@ new-stmt:  # ad: allocation-descriptor, operation: string, inouts: (handle list 
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
+    (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 1/imm32/tag/regular-stmt  # Stmt-tag
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Stmt1-operation
@@ -2220,6 +2343,7 @@ new-vardef:  # ad: allocation-descriptor, name: string, type: int -> result/eax:
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
+    (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 2/imm32/tag/var-on-stack  # Stmt-tag
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Vardef-name
@@ -2241,6 +2365,7 @@ new-regvardef:  # ad: allocation-descriptor, name: string, type: int, register: 
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
+    (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 3/imm32/tag/var-in-register
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Regvardef-name
@@ -2264,6 +2389,7 @@ new-named-block:  # ad: allocation-descriptor, name: string, data: (handle list 
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
+    (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 4/imm32/tag/named-block
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Named-block-name
@@ -2366,6 +2492,18 @@ $check-mu-types:end:
     5d/pop-to-ebp
     c3/return
 
+size-of:  # n : (address var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # hard-coded since we only support 'int' types for now
+    b8/copy-to-eax 4/imm32
+$size-of:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Code-generation
 #######################################################
@@ -2438,11 +2576,12 @@ emit-subx-block:  # out : (address buffered-file), block : (handle block)
     8b/-> *(esi+4) 6/r32/esi  # Block-statements
     #
     {
-$emit-subx-block:stmt:
+$emit-subx-block:check-empty:
       81 7/subop/compare %esi 0/imm32
       0f 84/jump-if-equal break/disp32
       (write-buffered *(ebp+8) "{\n")
       {
+$emit-subx-block:stmt:
         81 7/subop/compare %esi 0/imm32
         74/jump-if-equal break/disp8
         (emit-subx-statement *(ebp+8) *esi 0 Primitives 0)  # TODO: initialize vars and functions
