@@ -356,7 +356,7 @@ void render() {  // Trace_index -> Last_printed_row, screen
     else {
       out << "        ";
     }
-    out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
+    out << std::setw(2) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
     render_line(screen_row, out.str(), screen_row == Cursor_row);
   }
   // clear rest of screen

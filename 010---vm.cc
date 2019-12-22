@@ -336,7 +336,7 @@ void dump_registers() {
   ostringstream out;
   out << "registers before: ";
   for (int i = 0;  i < NUM_INT_REGISTERS;  ++i) {
-    if (i > 0) out << "    ";
+    if (i > 0) out << "  ";
     out << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
   }
   out << " -- SF: " << SF << "; ZF: " << ZF << "; CF: " << CF << "; OF: " << OF;

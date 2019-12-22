@@ -141,7 +141,7 @@ string unescape_newline(string& s) {
 }
 
 void dump_trace_line(ostream& s, trace_line& t) {
-  s << std::setw(4) << t.depth << ' ' << t.label << ": " << unescape_newline(t.contents) << '\n';
+  s << std::setw(2) << t.depth << ' ' << t.label << ": " << unescape_newline(t.contents) << '\n';
 }
 
 //: Starting a new trace line.
