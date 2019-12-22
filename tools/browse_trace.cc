@@ -79,7 +79,7 @@ template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::
 trace_stream* Trace_stream = NULL;
 
 ofstream Trace_file;
-int Display_row = 0;
+int Cursor_row = 0;
 set<int> Visible;
 int Top_of_screen = 0;
 int Left_of_screen = 0;
@@ -213,24 +213,24 @@ void render_line(int screen_row, const string& s, bool cursor_line) {  // -> scr
 }
 
 void search_next(const string& pat) {
-  for (int trace_index = get(Trace_index, Display_row)+1;  trace_index < SIZE(Trace_stream->past_lines);  ++trace_index) {
+  for (int trace_index = get(Trace_index, Cursor_row)+1;  trace_index < SIZE(Trace_stream->past_lines);  ++trace_index) {
     if (!contains_key(Visible, trace_index)) continue;
     const trace_line& line = Trace_stream->past_lines.at(trace_index);
     if (line.label.find(pat) == string::npos && line.contents.find(pat) == string::npos) continue;
     Top_of_screen = trace_index;
-    Display_row = 0;
+    Cursor_row = 0;
     refresh_screen_rows();
     return;
   }
 }
 
 void search_previous(const string& pat) {
-  for (int trace_index = get(Trace_index, Display_row)-1;  trace_index >= 0;  --trace_index) {
+  for (int trace_index = get(Trace_index, Cursor_row)-1;  trace_index >= 0;  --trace_index) {
     if (!contains_key(Visible, trace_index)) continue;
     const trace_line& line = Trace_stream->past_lines.at(trace_index);
     if (line.label.find(pat) == string::npos && line.contents.find(pat) == string::npos) continue;
     Top_of_screen = trace_index;
-    Display_row = 0;
+    Cursor_row = 0;
     refresh_screen_rows();
     return;
   }
@@ -357,14 +357,14 @@ void render() {  // Trace_index -> Last_printed_row, screen
       out << "        ";
     }
     out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
-    render_line(screen_row, out.str(), screen_row == Display_row);
+    render_line(screen_row, out.str(), screen_row == Cursor_row);
   }
   // clear rest of screen
   Last_printed_row = screen_row-1;
   for (;  screen_row < tb_height();  ++screen_row)
     render_line(screen_row, "~", /*cursor_line?*/false);
   // move cursor back to display row at the end
-  tb_set_cursor(0, Display_row);
+  tb_set_cursor(0, Cursor_row);
 }
 
 int main(int argc, char* argv[]) {
@@ -388,7 +388,7 @@ int main(int argc, char* argv[]) {
   }
   tb_init();
   tb_clear();
-  Display_row = 0;
+  Cursor_row = 0;
   Top_of_screen = 0;
   refresh_screen_rows();
   while (true) {
@@ -397,32 +397,32 @@ int main(int argc, char* argv[]) {
     if (key == 'q' || key == 'Q' || key == TB_KEY_CTRL_C) break;
     if (key == 'j' || key == TB_KEY_ARROW_DOWN) {
       // move cursor one line down
-      if (Display_row < Last_printed_row) ++Display_row;
+      if (Cursor_row < Last_printed_row) ++Cursor_row;
     }
     else if (key == 'k' || key == TB_KEY_ARROW_UP) {
       // move cursor one line up
-      if (Display_row > 0) --Display_row;
+      if (Cursor_row > 0) --Cursor_row;
     }
     else if (key == 't') {
       // move cursor to top of screen
-      Display_row = 0;
+      Cursor_row = 0;
     }
     else if (key == 'c') {
       // move cursor to center of screen
-      Display_row = tb_height()/2;
-      while (!contains_key(Trace_index, Display_row))
-        --Display_row;
+      Cursor_row = tb_height()/2;
+      while (!contains_key(Trace_index, Cursor_row))
+        --Cursor_row;
     }
     else if (key == 'b') {
       // move cursor to bottom of screen
-      Display_row = tb_height()-1;
-      while (!contains_key(Trace_index, Display_row))
-        --Display_row;
+      Cursor_row = tb_height()-1;
+      while (!contains_key(Trace_index, Cursor_row))
+        --Cursor_row;
     }
     else if (key == 'T') {
       // scroll line at cursor to top of screen
-      Top_of_screen = get(Trace_index, Display_row);
-      Display_row = 0;
+      Top_of_screen = get(Trace_index, Cursor_row);
+      Cursor_row = 0;
       refresh_screen_rows();
     }
     else if (key == 'h' || key == TB_KEY_ARROW_LEFT) {
@@ -463,7 +463,7 @@ int main(int argc, char* argv[]) {
     else if (key == 'g' || key == TB_KEY_HOME) {
         Top_of_screen = 0;
         Last_printed_row = 0;
-        Display_row = 0;
+        Cursor_row = 0;
         refresh_screen_rows();
     }
     else if (key == 'G' || key == TB_KEY_END) {
@@ -477,13 +477,13 @@ int main(int argc, char* argv[]) {
       }
       refresh_screen_rows();
       // move cursor to bottom
-      Display_row = Last_printed_row;
+      Cursor_row = Last_printed_row;
       refresh_screen_rows();
     }
     else if (key == TB_KEY_CARRIAGE_RETURN) {
       // expand lines under current by one level
-      assert(contains_key(Trace_index, Display_row));
-      int start_index = get(Trace_index, Display_row);
+      assert(contains_key(Trace_index, Cursor_row));
+      int start_index = get(Trace_index, Cursor_row);
       int index = 0;
       // simultaneously compute end_index and min_depth
       int min_depth = 9999;
@@ -505,8 +505,8 @@ int main(int argc, char* argv[]) {
     }
     else if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
       // collapse all lines under current
-      assert(contains_key(Trace_index, Display_row));
-      int start_index = get(Trace_index, Display_row);
+      assert(contains_key(Trace_index, Cursor_row));
+      int start_index = get(Trace_index, Cursor_row);
       int index = 0;
       // end_index is the next line at a depth same as or lower than start_index
       int initial_depth = Trace_stream->past_lines.at(start_index).depth;
