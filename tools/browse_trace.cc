@@ -80,7 +80,6 @@ trace_stream* Trace_stream = NULL;
 
 ofstream Trace_file;
 int Display_row = 0;
-int Display_column = 0;
 set<int> Visible;
 int Top_of_screen = 0;
 int Left_of_screen = 0;
@@ -389,7 +388,7 @@ int main(int argc, char* argv[]) {
   }
   tb_init();
   tb_clear();
-  Display_row = Display_column = 0;
+  Display_row = 0;
   Top_of_screen = 0;
   refresh_screen_rows();
   while (true) {
