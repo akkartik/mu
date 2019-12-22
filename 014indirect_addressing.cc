@@ -91,7 +91,7 @@ void test_add_mem_at_r32_to_r32_signed_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: add r/m32 to EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 1\n"
+      "run: effective address contains 0x00000001\n"
       "run: SF=1; ZF=0; CF=0; OF=1\n"
       "run: storing 0x80000000\n"
   );
@@ -111,7 +111,7 @@ void test_add_mem_at_r32_to_r32_unsigned_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: add r/m32 to EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 1\n"
+      "run: effective address contains 0x00000001\n"
       "run: SF=0; ZF=1; CF=1; OF=0\n"
       "run: storing 0x00000000\n"
   );
@@ -131,7 +131,7 @@ void test_add_mem_at_r32_to_r32_unsigned_and_signed_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: add r/m32 to EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 80000000\n"
+      "run: effective address contains 0x80000000\n"
       "run: SF=0; ZF=1; CF=1; OF=1\n"
       "run: storing 0x00000000\n"
   );
@@ -219,7 +219,7 @@ void test_subtract_mem_at_r32_from_r32_signed_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: subtract r/m32 from EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 7fffffff\n"
+      "run: effective address contains 0x7fffffff\n"
       "run: SF=0; ZF=0; CF=0; OF=1\n"
       "run: storing 0x00000001\n"
   );
@@ -239,7 +239,7 @@ void test_subtract_mem_at_r32_from_r32_unsigned_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: subtract r/m32 from EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 1\n"
+      "run: effective address contains 0x00000001\n"
       "run: SF=1; ZF=0; CF=1; OF=0\n"
       "run: storing 0xffffffff\n"
   );
@@ -259,7 +259,7 @@ void test_subtract_mem_at_r32_from_r32_signed_and_unsigned_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: subtract r/m32 from EBX\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 80000000\n"
+      "run: effective address contains 0x80000000\n"
       "run: SF=1; ZF=0; CF=1; OF=1\n"
       "run: storing 0x80000000\n"
   );
@@ -590,7 +590,7 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains a0b0c0d\n"
+      "run: effective address contains 0x0a0b0c0d\n"
       "run: SF=1; ZF=0; CF=1; OF=0\n"
   );
 }
@@ -609,7 +609,7 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned_and_signed_due_to_overflow
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 80000000\n"
+      "run: effective address contains 0x80000000\n"
       "run: SF=1; ZF=0; CF=1; OF=1\n"
   );
 }
@@ -628,7 +628,7 @@ void test_compare_r32_with_mem_at_r32_lesser_signed() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains 1\n"
+      "run: effective address contains 0x00000001\n"
       "run: SF=1; ZF=0; CF=0; OF=0\n"
   );
 }
@@ -647,7 +647,7 @@ void test_compare_r32_with_mem_at_r32_lesser_unsigned() {
   CHECK_TRACE_CONTENTS(
       "run: compare EBX with r/m32\n"
       "run: effective address is 0x00002000 (EAX)\n"
-      "run: effective address contains ffffffff\n"
+      "run: effective address contains 0xffffffff\n"
       "run: SF=0; ZF=0; CF=1; OF=0\n"
   );
 }

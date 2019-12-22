@@ -339,7 +339,7 @@ void test_subtract_imm32_from_mem_at_r32_signed_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: combine r/m32 with imm32\n"
       "run: effective address is 0x00002000 (EBX)\n"
-      "run: effective address contains 80000000\n"
+      "run: effective address contains 0x80000000\n"
       "run: imm32 is 0x7fffffff\n"
       "run: subop subtract\n"
       "run: SF=0; ZF=0; CF=0; OF=1\n"
@@ -360,7 +360,7 @@ void test_subtract_imm32_from_mem_at_r32_unsigned_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: combine r/m32 with imm32\n"
       "run: effective address is 0x00002000 (EBX)\n"
-      "run: effective address contains 0\n"
+      "run: effective address contains 0x00000000\n"
       "run: imm32 is 0x00000001\n"
       "run: subop subtract\n"
       "run: SF=1; ZF=0; CF=1; OF=0\n"
@@ -381,7 +381,7 @@ void test_subtract_imm32_from_mem_at_r32_signed_and_unsigned_overflow() {
   CHECK_TRACE_CONTENTS(
       "run: combine r/m32 with imm32\n"
       "run: effective address is 0x00002000 (EBX)\n"
-      "run: effective address contains 0\n"
+      "run: effective address contains 0x00000000\n"
       "run: imm32 is 0x80000000\n"
       "run: subop subtract\n"
       "run: SF=1; ZF=0; CF=1; OF=1\n"

@@ -108,7 +108,7 @@ int32_t* effective_address(uint8_t modrm) {
     return &Reg[rm].i;
   }
   uint32_t addr = effective_address_number(modrm);
-  trace(Callstack_depth+1, "run") << "effective address contains " << read_mem_i32(addr) << end();
+  trace(Callstack_depth+1, "run") << "effective address contains 0x" << HEXWORD << read_mem_i32(addr) << end();
   return mem_addr_i32(addr);
 }
 
