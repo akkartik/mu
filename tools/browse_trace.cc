@@ -79,11 +79,11 @@ template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::
 trace_stream* Trace_stream = NULL;
 
 ofstream Trace_file;
-int Cursor_row = 0;
+int Cursor_row = 0;  // screen coordinate
 set<int> Visible;
-int Top_of_screen = 0;
-int Left_of_screen = 0;
-int Last_printed_row = 0;
+int Top_of_screen = 0;  // trace coordinate
+int Left_of_screen = 0;  // trace coordinate
+int Last_printed_row = 0;  // screen coordinate
 map<int, int> Trace_index;  // screen row -> trace index
 
 string Current_search_pattern = "";
