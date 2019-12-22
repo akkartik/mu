@@ -476,6 +476,7 @@ int main(int argc, char* argv[]) {
           --Top_of_screen;
       }
       refresh_screen_rows();
+      render();
       // move cursor to bottom
       Cursor_row = Last_printed_row;
       refresh_screen_rows();
