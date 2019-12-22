@@ -132,8 +132,7 @@ void load_trace(const char* filename) {
   cerr << "lines read: " << Trace_stream->past_lines.size() << '\n';
 }
 
-// update Trace_indices for each screen_row on the basis of Top_of_screen and Visible
-void refresh_screen_rows() {
+void refresh_screen_rows() {  // Top_of_screen, Visible -> Trace_index
   int screen_row = 0, index = 0;
   Trace_index.clear();
   for (screen_row = 0, index = Top_of_screen;  screen_row < tb_height() && index < SIZE(Trace_stream->past_lines);  ++screen_row, ++index) {
@@ -148,7 +147,7 @@ void refresh_screen_rows() {
 done:;
 }
 
-void clear_line(int screen_row) {
+void clear_line(int screen_row) {  // -> screen
   tb_set_cursor(0, screen_row);
   for (int col = 0;  col < tb_width();  ++col)
     tb_print(' ', TB_WHITE, TB_BLACK);
@@ -193,7 +192,7 @@ vector<pair<size_t, size_t> > find_all_occurrences(const string& s, const string
   return result;
 }
 
-void render_line(int screen_row, const string& s, bool cursor_line) {
+void render_line(int screen_row, const string& s, bool cursor_line) {  // -> screen
   int col = 0;
   int color = TB_WHITE;
   int background_color = cursor_line ? /*subtle grey*/240 : TB_BLACK;
@@ -337,7 +336,7 @@ bool start_search_editor(search_direction dir) {
   }
 }
 
-void render() {
+void render() {  // Trace_index -> Last_printed_row, screen
   int screen_row = 0;
   for (screen_row = 0;  screen_row < tb_height();  ++screen_row) {
     if (!contains_key(Trace_index, screen_row)) break;
@@ -469,7 +468,7 @@ int main(int argc, char* argv[]) {
         refresh_screen_rows();
     }
     else if (key == 'G' || key == TB_KEY_END) {
-      // go to bottom of screen; largely like page-up, interestingly
+      // go to bottom of trace; largely like page-up, interestingly
       Top_of_screen = SIZE(Trace_stream->past_lines)-1;
       for (int screen_row = tb_height();  screen_row > 0 && Top_of_screen > 0;  --screen_row) {
         --Top_of_screen;
