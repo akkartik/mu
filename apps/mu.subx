@@ -621,6 +621,61 @@ test-convert-function-with-arg-and-body:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-distinguishes-args:
+    # function with two args refers to second one in body
+    #   fn foo a: int, b: int {
+    #     increment b
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       ff 0/subop/increment *(ebp+0xc)
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo a: int, b: int {\n")
+    (write _test-input-stream "  increment b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-distinguishes-args/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-distinguishes-args/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-distinguishes-args/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-distinguishes-args/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-distinguishes-args/4")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0x0000000c)"  "F - test-convert-function-distinguishes-args/5")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-distinguishes-args/6")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-distinguishes-args/7")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-distinguishes-args/8")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-distinguishes-args/9")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-distinguishes-args/10")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
