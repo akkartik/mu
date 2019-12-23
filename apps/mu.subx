@@ -711,11 +711,9 @@ $parse-mu:fn:
         # var new-function/eax : (handle function) = populate-mu-function(in, new-function, vars)
         (allocate Heap *Function-size)  # => eax
         (zero-out %eax *Function-size)
+        (clear-stack %ebx)
         (populate-mu-function-header %ecx %eax %ebx)
         (populate-mu-function-body *(ebp+8) %eax %ebx)
-        # assert(vars->top == 0)
-        81 7/subop/compare *ebx 0/imm32
-        75/jump-if-not-equal $parse-mu:error2/disp8
         # *curr-function = new-function
         89/<- *edi 0/r32/eax
         # curr-function = &new-function->next
@@ -775,7 +773,7 @@ $parse-mu:error2:
 # ✓ fn foo x : int {
 # ✓ fn foo x: int {
 # ✓ fn foo x: int -> y/eax: int {
-populate-mu-function-header:  # first-line : (address stream byte), out : (handle function), vars : (address stack (address var))
+populate-mu-function-header:  # first-line : (address stream byte), out : (handle function), vars : (address stack (handle var))
     # pseudocode:
     #   var name : (ref slice)
     #   next-word(first-line, name)
@@ -792,9 +790,9 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (handl
     #     var v : (handle var) = parse-var-with-type(name, first-line)
     #     assert(v->register == null)
     #     v->stack-offset = next-offset
-    #     next-offset += size-of(var)
-    #     push(vars, var)
+    #     next-offset += size-of(v)
     #     out->inouts = append(out->inouts, v)
+    #     push(vars, v)
     #   ## outputs
     #   while true
     #     ## name
@@ -851,25 +849,26 @@ $populate-mu-function-header:check-for-inout:
       # if (word-slice == '->') break
       (slice-equal? %ecx "->")   # => eax
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+      0f 85/jump-if-not-equal break/disp32
       # if (word-slice == '}') abort
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
-      # var var/ebx : (handle var) = parse-var-with-type(word-slice, first-line)
+      # var v/ebx : (handle var) = parse-var-with-type(word-slice, first-line)
       (parse-var-with-type %ecx *(ebp+8))  # => eax
       89/<- %ebx 0/r32/eax
-      # assert(var->register == null)
+      # assert(v->register == null)
       81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
       0f 85/jump-if-not-equal $populate-mu-function-header:error2/disp32
-      # var->stack-offset = next-offset
+      # v->stack-offset = next-offset
       89/<- *(ebx+0xc) 2/r32/edx  # Var-stack-offset
-      # next-offset += size-of(var)
+      # next-offset += size-of(v)
       (size-of %ebx)  # => eax
       01/add %edx 0/r32/eax
       #
       (append-list Heap %ebx *(edi+8))  # Function-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Function-inouts
+      (push *(ebp+0x10) %ebx)
       #
       e9/jump loop/disp32
     }
@@ -969,8 +968,13 @@ test-function-header-with-arg:
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
+    # var vars/ebx : (ref stack (address var) 16)
+    81 5/subop/subtract %esp 0x10/imm32
+    68/push 0x10/imm32/length
+    68/push 0/imm32/top
+    89/<- %ebx 4/r32/esp
     # convert
-    (populate-mu-function-header _test-input-stream %ecx)
+    (populate-mu-function-header _test-input-stream %ecx %ebx)
     # check result
     (check-strings-equal *ecx "foo" "F - test-function-header-with-arg/name")  # Function-name
     # edx : (handle list var) = result->inouts
@@ -996,8 +1000,13 @@ test-function-header-with-multiple-args:
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
+    # var vars/ebx : (ref stack (address var) 16)
+    81 5/subop/subtract %esp 0x10/imm32
+    68/push 0x10/imm32/length
+    68/push 0/imm32/top
+    89/<- %ebx 4/r32/esp
     # convert
-    (populate-mu-function-header _test-input-stream %ecx)
+    (populate-mu-function-header _test-input-stream %ecx %ebx)
     # check result
     (check-strings-equal *ecx "foo")  # Function-name
     # edx : (handle list var) = result->inouts
@@ -1038,8 +1047,13 @@ test-function-with-multiple-args-and-outputs:
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
+    # var vars/ebx : (ref stack (address var) 16)
+    81 5/subop/subtract %esp 0x10/imm32
+    68/push 0x10/imm32/length
+    68/push 0/imm32/top
+    89/<- %ebx 4/r32/esp
     # convert
-    (populate-mu-function-header _test-input-stream %ecx)
+    (populate-mu-function-header _test-input-stream %ecx %ebx)
     # check result
     (check-strings-equal *ecx "foo")  # Function-name
     # edx : (handle list var) = result->inouts
@@ -1731,7 +1745,7 @@ test-is-identifier-hyphen:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-function-body:  # in : (address buffered-file), out : (handle function)
+populate-mu-function-body:  # in : (address buffered-file), out : (handle function), vars : (address stack (handle var))
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1743,8 +1757,8 @@ populate-mu-function-body:  # in : (address buffered-file), out : (handle functi
     8b/-> *(ebp+8) 6/r32/esi
     # edi = out
     8b/-> *(ebp+0xc) 7/r32/edi
-    # var eax : (handle block) = parse-mu-block(in)
-    (parse-mu-block %esi)  # => eax
+    # var eax : (handle block) = parse-mu-block(in, vars)
+    (parse-mu-block %esi *(ebp+0x10))  # => eax
     # out->body = eax
     89/<- *(edi+0x10) 0/r32/eax  # Function-body
 $populate-mu-function-body:end:
@@ -1758,7 +1772,7 @@ $populate-mu-function-body:end:
     c3/return
 
 # parses a block, assuming that the leading '{' has already been read by the caller
-parse-mu-block:  # in : (address buffered-file) -> result/eax : (handle block)
+parse-mu-block:  # in : (address buffered-file), vars : (address stack (handle var)) -> result/eax : (handle block)
     # pseudocode:
     #   var line : (ref stream byte 512)
     #   var word-slice : (ref slice)
@@ -1775,18 +1789,18 @@ parse-mu-block:  # in : (address buffered-file) -> result/eax : (handle block)
     #       continue
     #     else if slice-equal?(word-slice, "{")
     #       assert(no-tokens-in(line))
-    #       block = parse-mu-block(in)
+    #       block = parse-mu-block(in, vars)
     #       append-to-block(result, block)
     #     else if slice-equal?(word-slice, "}")
     #       break
     #     else if slice-ends-with?(word-slice, ":")
-    #       named-block = parse-mu-named-block(word-slice, line, in)
+    #       named-block = parse-mu-named-block(word-slice, line, in, vars)
     #       append-to-block(result, named-block)
     #     else if slice-equal?(word-slice, "var")
-    #       var-def = parse-mu-var-def(line)
+    #       var-def = parse-mu-var-def(line, vars)
     #       append-to-block(result, var-def)
     #     else
-    #       stmt = parse-mu-stmt(line)
+    #       stmt = parse-mu-stmt(line, vars)
     #       append-to-block(result, stmt)
     #   return result
     #
@@ -1850,7 +1864,7 @@ $parse-mu-block:check-for-block:
         74/jump-if-equal break/disp8
         (check-no-tokens-left %ecx)
         # parse new block and append
-        (parse-mu-block *(ebp+8))  # => eax
+        (parse-mu-block *(ebp+8) *(ebp+0xc))  # => eax
         (append-to-block %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
@@ -1870,7 +1884,7 @@ $parse-mu-block:check-for-named-block:
         3d/compare-eax-and 0x23/imm32/hash
         0f 85/jump-if-not-equal break/disp32
         #
-        (parse-mu-named-block %edx %ecx *(ebp+8))  # => eax
+        (parse-mu-named-block %edx %ecx *(ebp+8) *(ebp+0xc))  # => eax
         (append-to-block %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
@@ -1881,13 +1895,13 @@ $parse-mu-block:check-for-var:
         3d/compare-eax-and 0/imm32
         74/jump-if-equal break/disp8
         #
-        (parse-mu-var-def %ecx)  # => eax
+        (parse-mu-var-def %ecx *(ebp+0xc))  # => eax
         (append-to-block %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
 $parse-mu-block:regular-stmt:
       # otherwise
-      (parse-mu-stmt %ecx)  # => eax
+      (parse-mu-stmt %ecx *(ebp+0xc))  # => eax
       (append-to-block Heap %edi %eax)
       e9/jump loop/disp32
     } # end line loop
@@ -1966,7 +1980,7 @@ $check-no-tokens-left:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-named-block:  # name : (address slice), first-line : (address stream byte), in : (address buffered-file) -> result/eax : (handle stmt)
+parse-mu-named-block:  # name : (address slice), first-line : (address stream byte), in : (address buffered-file), vars : (address stack (handle var)) -> result/eax : (handle stmt)
     # pseudocode:
     #   var line : (ref stream byte 512)
     #   var word-slice : (ref slice)
@@ -1983,18 +1997,18 @@ parse-mu-named-block:  # name : (address slice), first-line : (address stream by
     #     if slice-empty?(word-slice)               # end of line
     #       break
     #     else if slice-equal?(word-slice, "{")
-    #       block = parse-mu-block(in)
+    #       block = parse-mu-block(in, vars)
     #       append-to-block(result, block)
     #     else if slice-equal?(word-slice, "}")
     #       break
     #     else if slice-ends-with?(word-slice, ":")
-    #       named-block = parse-mu-named-block(word-slice, in)
+    #       named-block = parse-mu-named-block(word-slice, in, vars)
     #       append-to-block(result, named-block)
     #     else if slice-equal?(word-slice, "var")
-    #       var-def = parse-mu-var-def(line)
+    #       var-def = parse-mu-var-def(line, vars)
     #       append-to-block(result, var-def)
     #     else
-    #       stmt = parse-mu-stmt(line)
+    #       stmt = parse-mu-stmt(line, vars)
     #       append-to-block(result, stmt)
     #   return result
     #
@@ -2010,7 +2024,7 @@ $parse-mu-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-var-def:  # line : (address stream byte) -> result/eax : (handle stmt)
+parse-mu-var-def:  # line : (address stream byte), vars : (address stack (handle var)) -> result/eax : (handle stmt)
     # pseudocode:
     #
     # . prologue
@@ -2025,17 +2039,16 @@ $parse-mu-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-stmt:  # line : (address stream byte) -> result/eax : (handle stmt)
+parse-mu-stmt:  # line : (address stream byte), vars : (address stack (handle var)) -> result/eax : (handle stmt)
     # pseudocode:
     #   var name : (ref slice)
-    #   var v : (ref var)
     #   result = allocate(Heap, Stmt-size)
     #   if stmt-has-outputs?(line)
     #     while true
     #       name = next-word(line)
     #       if (name == '<-') break
     #       assert(is-identifier?(name))
-    #       v = parse-var(name)
+    #       var v : (handle var) = lookup-var(name, vars)
     #       result->outputs = append(result->outputs, v)
     #   result->name = slice-to-string(next-word(line))
     #   while true
@@ -2080,7 +2093,7 @@ $parse-mu-stmt:read-outputs:
         3d/compare-eax-and 0/imm32
         0f 84/jump-if-equal $parse-mu-stmt:abort/disp32
         #
-        (parse-var Heap %ecx)  # => eax
+        (lookup-var %ecx *(ebp+0xc))  # => eax
         (append-list Heap %eax *(edi+0xc))  # Stmt1-outputs => eax
         89/<- *(edi+0xc) 0/r32/eax  # Stmt1-outputs
         e9/jump loop/disp32
@@ -2103,7 +2116,7 @@ $parse-mu-stmt:read-inouts:
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $parse-mu-stmt:abort2/disp32
       #
-      (parse-var Heap %ecx)  # => eax  # TODO: parse-var-or-literal
+      (lookup-var %ecx *(ebp+0xc))  # => eax  # TODO: parse-var-or-literal
       (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts
       e9/jump loop/disp32
@@ -2192,28 +2205,87 @@ $stmt-has-outputs:end:
     5d/pop-to-ebp
     c3/return
 
-parse-var:  # ad: allocation-descriptor, name: (address slice) -> result/eax: (handle var)
+lookup-var:  # name: (address slice), vars : (address stack (handle var)) -> result/eax: (handle var)
+    # pseudocode:
+    #   var curr : (address handle var) = &vars->data[vars->top - 4]
+    #   var min = vars->data
+    #   while curr >= min
+    #     var v : (handle var) = *curr
+    #     if v->name == name
+    #       return v
+    #   abort
+    #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # ecx = slice-to-string(name)
-    8b/-> *(ebp+0xc) 1/r32/ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # var target/ecx : (handle array byte) = slice-to-string(name)
+    8b/-> *(ebp+8) 1/r32/ecx
     (slice-to-string Heap %ecx)  # => eax
     89/<- %ecx 0/r32/eax
-    (allocate *(ebp+8) *Var-size)  # => eax
-    (zero-out %eax *Var-size)
-    89/<- *eax 1/r32/ecx  # Var-name
-    # var->type = int
-    c7 0/subop/copy *(eax+4) 1/imm32/int-type # Var-type
-$parse-var:end:
+    # esi = vars
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # ebx = vars->top
+    8b/-> *esi 3/r32/ebx
+    # if (vars->top > vars->length) abort
+    3b/compare 0/r32/eax *(esi+4)
+    0f 8f/jump-if-greater $lookup-var:error1/disp32
+    # var min/edx : (address handle var) = vars->data
+    8d/copy-address *(esi+8) 2/r32/edx
+    # var curr/ebx : (address handle var) = &vars->data[vars->top - 4]
+    81 5/subop/subtract %ebx 4/imm32
+    8d/copy-address *(esi+ebx+8) 3/r32/ebx
+    {
+      # if (curr < min) abort
+      39/compare %ebx 2/r32/edx
+      0f 82/jump-if-lesser-unsigned $lookup-var:error2/disp32
+      # var v/eax : (handle var) = *curr
+      8b/-> *ebx 0/r32/eax
+      # if (v->name == name) break
+      (string-equal? *eax %ecx)  # Var-name Var-name
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      8b/-> *(ebx+4) 3/r32/ebx  # List-next
+      e9/jump loop/disp32
+    }
+    # return *curr
+    8b/-> *ebx 0/r32/eax
+$lookup-var:end:
     # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$lookup-var:error1:
+    (write-buffered Stderr "malformed stack when looking up '")
+    (write-slice-buffered Stderr *(ebp+8))
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$lookup-var:error2:
+    (write-buffered Stderr "unknown variable '")
+    (write-slice-buffered Stderr *(ebp+8))
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 test-parse-mu-stmt:
     # 'increment n'
@@ -2223,8 +2295,22 @@ test-parse-mu-stmt:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "increment n\n")
+    # var vars/ecx : (ref stack (address var) 4)
+    81 5/subop/subtract %esp 0x10/imm32
+    68/push 0x10/imm32/length
+    68/push 0/imm32/top
+    89/<- %ecx 4/r32/esp
+    (clear-stack %ecx)
+    # var v/edx : (ref var)
+    81 5/subop/subtract %esp 0x14/imm32  # Var-size
+    89/<- %edx 4/r32/esp
+    (zero-out %edx 0x14)
+    # v->name = "n"
+    c7 0/subop/copy *edx "n"/imm32  # Var-name
+    #
+    (push %ecx %edx)
     # convert
-    (parse-mu-stmt _test-input-stream)
+    (parse-mu-stmt _test-input-stream %ecx)
     # check result
     (check-strings-equal *(eax+4) "increment" "F - test-parse-mu-stmt/name")  # Stmt1-operation
     # edx : (handle list var) = result->inouts
@@ -2584,7 +2670,7 @@ $emit-subx-block:check-empty:
 $emit-subx-block:stmt:
         81 7/subop/compare %esi 0/imm32
         74/jump-if-equal break/disp8
-        (emit-subx-statement *(ebp+8) *esi 0 Primitives 0)  # TODO: initialize vars and functions
+        (emit-subx-statement *(ebp+8) *esi Primitives 0)
         (write-buffered *(ebp+8) Newline)
         8b/-> *(esi+4) 6/r32/esi  # List-next
         eb/jump loop/disp8
@@ -2597,7 +2683,7 @@ $emit-subx-block:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-statement:  # out : (address buffered-file), stmt : (handle statement), vars : (handle stack var), primitives : (handle primitive), functions : (handle function)
+emit-subx-statement:  # out : (address buffered-file), stmt : (handle statement), primitives : (handle primitive), functions : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2607,19 +2693,19 @@ emit-subx-statement:  # out : (address buffered-file), stmt : (handle statement)
     # if stmt matches a primitive, emit it
     {
 $emit-subx-statement:primitive:
-      (find-matching-primitive *(ebp+0x14) *(ebp+0xc))  # primitives, stmt => curr/eax
+      (find-matching-primitive *(ebp+0x10) *(ebp+0xc))  # primitives, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
-      (emit-subx-primitive *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)  # out, stmt, vars, curr
+      (emit-subx-primitive *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-statement:end/disp32
     }
     # else if stmt matches a function, emit a call to it
     {
 $emit-subx-statement:call:
-      (find-matching-function *(ebp+0x18) *(ebp+0xc))  # functions, stmt => curr/eax
+      (find-matching-function *(ebp+0x14) *(ebp+0xc))  # functions, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-equal break/disp8
-      (emit-subx-call *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)  # out, stmt, vars, curr
+      (emit-subx-call *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-statement:end/disp32
     }
     # else abort
@@ -2760,7 +2846,7 @@ Lit-var:
     0/imm32/no-register
 
 == code
-emit-subx-primitive:  # out : (address buffered-file), stmt : (handle statement), vars : (handle variable), primitive : (handle function)
+emit-subx-primitive:  # out : (address buffered-file), stmt : (handle statement), primitive : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2768,7 +2854,7 @@ emit-subx-primitive:  # out : (address buffered-file), stmt : (handle statement)
     50/push-eax
     51/push-ecx
     # ecx = primitive
-    8b/-> *(ebp+0x14) 1/r32/ecx
+    8b/-> *(ebp+0x10) 1/r32/ecx
     # emit primitive name
     (write-buffered *(ebp+8) *(ecx+0xc))  # Primitive-subx-name
     # emit rm32 if necessary
@@ -2915,7 +3001,7 @@ $emit-subx-imm32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call:  # out : (address buffered-file), stmt : (handle statement), vars : (handle variable), callee : (handle function)
+emit-subx-call:  # out : (address buffered-file), stmt : (handle statement), callee : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2925,7 +3011,7 @@ emit-subx-call:  # out : (address buffered-file), stmt : (handle statement), var
     #
     (write-buffered *(ebp+8) "(")
     # - emit function name
-    8b/-> *(ebp+0x14) 1/r32/ecx
+    8b/-> *(ebp+0x10) 1/r32/ecx
     (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
     # - emit arguments
     # var curr/ecx : (handle list var) = stmt->inouts
@@ -3306,11 +3392,6 @@ test-emit-subx-statement-primitive:
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx : (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var operand/ebx : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -3333,7 +3414,7 @@ test-emit-subx-statement-primitive:
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx %ebx 0)
+    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3379,11 +3460,6 @@ test-emit-subx-statement-primitive-register:
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx : (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var operand/ebx : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -3417,7 +3493,7 @@ test-emit-subx-statement-primitive-register:
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx %ebx 0)
+    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3466,11 +3542,6 @@ test-emit-subx-statement-select-primitive:
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx : (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var real-outputs/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -3514,7 +3585,7 @@ test-emit-subx-statement-select-primitive:
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx %ebx 0)
+    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3563,11 +3634,6 @@ test-emit-subx-statement-select-primitive-2:
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx : (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var inouts/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -3611,7 +3677,7 @@ test-emit-subx-statement-select-primitive-2:
     68/push "increment"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx %ebx 0)
+    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3654,11 +3720,6 @@ test-increment-register:
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx : (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var real-outputs/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -3671,7 +3732,7 @@ test-increment-register:
     68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx Primitives 0)
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3714,11 +3775,6 @@ test-increment-var:
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx : (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var inouts/edi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -3731,7 +3787,7 @@ test-increment-var:
     68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx Primitives 0)
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3787,7 +3843,7 @@ test-add-reg-to-reg:
     68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3843,7 +3899,7 @@ test-add-reg-to-mem:
     68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3899,7 +3955,7 @@ test-add-mem-to-reg:
     68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -3955,7 +4011,7 @@ test-add-literal-to-reg:
     68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -4011,7 +4067,7 @@ test-add-literal-to-mem:
     68/push 1/imm32
     89/<- %esi 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi 0 Primitives 0)
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -4059,11 +4115,6 @@ test-emit-subx-statement-function-call:
     68/push 1/imm32/type-int
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx = (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var operands/esi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -4084,7 +4135,7 @@ test-emit-subx-statement-function-call:
     68/push "f"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx 0 %ebx)
+    (emit-subx-statement _test-output-buffered-file %esi 0 %ebx)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -4118,11 +4169,6 @@ test-emit-subx-statement-function-call-with-literal-arg:
     68/push 0/imm32/type-literal
     68/push "34"/imm32
     89/<- %ecx 4/r32/esp
-    # var vars/edx = (ref stack 1)
-    51/push-ecx/var-foo
-    68/push 1/imm32/data-length
-    68/push 1/imm32/top
-    89/<- %edx 4/r32/esp
     # var operands/esi : (ref list var)
     68/push 0/imm32/next
     51/push-ecx/var-foo
@@ -4143,7 +4189,7 @@ test-emit-subx-statement-function-call-with-literal-arg:
     68/push "f"/imm32/name
     89/<- %ebx 4/r32/esp
     # convert
-    (emit-subx-statement _test-output-buffered-file %esi %edx 0 %ebx)
+    (emit-subx-statement _test-output-buffered-file %esi 0 %ebx)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")

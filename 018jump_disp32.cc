@@ -293,7 +293,7 @@ case 0x8c: {  // jump disp32 if SF and !ZF
   }
   break;
 }
-case 0x72: {  // jump disp32 if CF
+case 0x82: {  // jump disp32 if CF
   const int32_t offset = next32();
   if (CF) {
     trace(Callstack_depth+1, "run") << "jump " << offset << end();
