@@ -39,10 +39,10 @@ void load_source_lines() {
 if (contains_key(Symbol_name, EIP))
   trace(Callstack_depth, "run") << "== label " << get(Symbol_name, EIP) << end();
 if (contains_key(Source_line, EIP))
-  trace(Callstack_depth, "run") << "0x" << HEXWORD << EIP << ": " << get(Source_line, EIP) << end();
+  trace(Callstack_depth, "run") << "inst: " << get(Source_line, EIP) << end();
 else
   // no source line info; do what you can
-  trace(Callstack_depth, "run") << "0x" << HEXWORD << EIP << ": " << debug_info(EIP) << end();
+  trace(Callstack_depth, "run") << "inst: " << debug_info(EIP) << end();
 
 :(code)
 string debug_info(uint32_t inst_address) {

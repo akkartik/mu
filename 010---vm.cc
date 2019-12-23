@@ -334,7 +334,7 @@ inline uint8_t next() {
 
 void dump_registers() {
   ostringstream out;
-  out << "registers before: ";
+  out << "regs: ";
   for (int i = 0;  i < NUM_INT_REGISTERS;  ++i) {
     if (i > 0) out << "  ";
     out << i << ": " << std::hex << std::setw(8) << std::setfill('_') << Reg[i].u;
