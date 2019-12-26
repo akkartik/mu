@@ -283,6 +283,19 @@ test `uname` = 'Linux'  &&  {
   echo
 }
 
+echo mu
+cat init.$OS 0*.subx apps/mu.subx  |  apps/braces  |  apps/calls  |  apps/sigils  > a.sigils
+./subx translate a.sigils -o apps/mu
+[ "$1" != record ]  &&  git diff --exit-code apps/mu
+test $EMULATED  &&  {
+  ./subx run apps/mu test
+  echo
+}
+test `uname` = 'Linux'  &&  {
+  apps/mu test
+  echo
+}
+
 test $NATIVE  ||  exit 0
 echo "== translating using SubX (native only)"
 
@@ -314,11 +327,8 @@ do
 done
 
 # Mu translator
-echo mu.subx
+echo mu
 ./ntranslate init.$OS 0*.subx apps/mu.subx
-mv a.elf apps/mu
-[ "$1" != record ]  &&  git diff --exit-code apps/mu
-apps/mu test
-echo
+diff apps/mu a.elf
 
 exit 0
