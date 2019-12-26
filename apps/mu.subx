@@ -2787,9 +2787,10 @@ $emit-subx-statement:abort:
     # never gets here
 
 # Primitives supported
+# For each operation, put variants with hard-coded registers before flexible ones.
 == data
 Primitives:
-# - hardcoded registers (must come first)
+# - increment/decrement
 _Primitive-inc-eax:
     "increment"/imm32/name
     0/imm32/no-inouts
@@ -2898,7 +2899,6 @@ _Primitive-dec-edi:
     0/imm32/no-r32
     0/imm32/no-imm32
     _Primitive-inc-mem/imm32/next
-# - flexible registers
 _Primitive-inc-mem:
     # increment var => ff 0/subop/increment *(ebp+__)
     "increment"/imm32/name
@@ -2938,33 +2938,43 @@ _Primitive-dec-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     0/imm32/no-imm32
+    _Primitive-add-to-eax/imm32/next
+# - add
+_Primitive-add-to-eax:
+    "add"/imm32/name
+    Single-lit-var/imm32/inouts
+    Single-int-var-in-eax/imm32/outputs
+    "05/add-to-eax"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    1/imm32/imm32-is-first-inout
     _Primitive-add-reg-to-reg/imm32/next
 _Primitive-add-reg-to-reg:
-    # var1/reg <- add var2/reg => 01 var1/rm32 var2/r32
+    # var1/reg <- add var2/reg => 01/add var1/rm32 var2/r32
     "add"/imm32/name
     Single-int-var-in-some-register/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
-    "01"/imm32/subx-name
+    "01/add"/imm32/subx-name
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
     _Primitive-add-reg-to-mem/imm32/next
 _Primitive-add-reg-to-mem:
-    # add-to var1 var2/reg => 01 var1 var2/r32
+    # add-to var1 var2/reg => 01/add var1 var2/r32
     "add-to"/imm32/name
     Int-var-and-second-int-var-in-some-register/imm32/inouts
     0/imm32/outputs
-    "01"/imm32/subx-name
+    "01/add"/imm32/subx-name
     1/imm32/rm32-is-first-inout
     2/imm32/r32-is-second-inout
     0/imm32/no-imm32
     _Primitive-add-mem-to-reg/imm32/next
 _Primitive-add-mem-to-reg:
-    # var1/reg <- add var2 => 03 var2/rm32 var1/r32
+    # var1/reg <- add var2 => 03/add var2/rm32 var1/r32
     "add"/imm32/name
     Single-int-var-on-stack/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
-    "03"/imm32/subx-name
+    "03/add"/imm32/subx-name
     1/imm32/rm32-is-first-inout
     3/imm32/r32-is-first-output
     0/imm32/no-imm32
@@ -2985,6 +2995,66 @@ _Primitive-add-lit-to-mem:
     Int-var-and-literal/imm32/inouts
     0/imm32/outputs
     "81 0/subop/add"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    0/imm32/no-r32
+    2/imm32/imm32-is-first-inout
+    _Primitive-subtract-from-eax/imm32/next
+# - subtract
+_Primitive-subtract-from-eax:
+    "subtract"/imm32/name
+    Single-lit-var/imm32/inouts
+    Single-int-var-in-eax/imm32/outputs
+    "2d/subtract-from-eax"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    1/imm32/imm32-is-first-inout
+    _Primitive-subtract-reg-from-reg/imm32/next
+_Primitive-subtract-reg-from-reg:
+    # var1/reg <- subtract var2/reg => 29/subtract var1/rm32 var2/r32
+    "subtract"/imm32/name
+    Single-int-var-in-some-register/imm32/inouts
+    Single-int-var-in-some-register/imm32/outputs
+    "29/subtract"/imm32/subx-name
+    3/imm32/rm32-is-first-output
+    1/imm32/r32-is-first-inout
+    0/imm32/no-imm32
+    _Primitive-subtract-reg-from-mem/imm32/next
+_Primitive-subtract-reg-from-mem:
+    # subtract-from var1 var2/reg => 29/subtract var1 var2/r32
+    "subtract-from"/imm32/name
+    Int-var-and-second-int-var-in-some-register/imm32/inouts
+    0/imm32/outputs
+    "29/subtract"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    2/imm32/r32-is-second-inout
+    0/imm32/no-imm32
+    _Primitive-subtract-mem-from-reg/imm32/next
+_Primitive-subtract-mem-from-reg:
+    # var1/reg <- subtract var2 => 2b/subtract var2/rm32 var1/r32
+    "subtract"/imm32/name
+    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-some-register/imm32/outputs
+    "2b/subtract"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    3/imm32/r32-is-first-output
+    0/imm32/no-imm32
+    _Primitive-subtract-lit-from-reg/imm32/next
+_Primitive-subtract-lit-from-reg:
+    # var1/reg <- subtract lit => 81 5/subop/subtract var1/rm32 lit/imm32
+    "subtract"/imm32/name
+    Single-lit-var/imm32/inouts
+    Single-int-var-in-some-register/imm32/outputs
+    "81 5/subop/subtract"/imm32/subx-name
+    3/imm32/rm32-is-first-output
+    0/imm32/no-r32
+    1/imm32/imm32-is-first-inout
+    _Primitive-subtract-lit-from-mem/imm32/next
+_Primitive-subtract-lit-from-mem:
+    # subtract-from var1, lit => 81 5/subop/subtract var1/rm32 lit/imm32
+    "subtract-from"/imm32/name
+    Int-var-and-literal/imm32/inouts
+    0/imm32/outputs
+    "81 5/subop/subtract"/imm32/subx-name
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     2/imm32/imm32-is-first-inout
@@ -3396,19 +3466,25 @@ find-matching-primitive:  # primitives : (handle primitive), stmt : (handle stat
 $find-matching-primitive:loop:
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
-      74/jump-if-equal break/disp8
+      0f 84/jump-if-equal break/disp32
+#?       (write-buffered Stderr "prim: ")
+#?       (write-buffered Stderr *ecx)  # Primitive-name
+#?       (write-buffered Stderr " => ")
+#?       (write-buffered Stderr *(ecx+0xc))  # Primitive-subx-name
+#?       (write-buffered Stderr "\n")
+#?       (flush Stderr)
       # if match(curr, stmt) return curr
       {
         (mu-stmt-matches-primitive? *(ebp+0xc) %ecx)  # => eax
         3d/compare-eax-and 0/imm32
         74/jump-if-equal break/disp8
         89/<- %eax 1/r32/ecx
-        eb/jump $find-matching-function:end/disp8
+        eb/jump $find-matching-primitive:end/disp8
       }
 $find-matching-primitive:next-primitive:
       # curr = curr->next
       8b/-> *(ecx+0x1c) 1/r32/ecx  # Primitive-next
-      eb/jump loop/disp8
+      e9/jump loop/disp32
     }
     # return null
     b8/copy-to-eax 0/imm32
@@ -3471,7 +3547,7 @@ $mu-stmt-matches-primitive?:check-inouts:
     8b/-> *(ecx+8) 6/r32/esi  # Stmt1-inouts
     8b/-> *(edx+4) 7/r32/edi  # Primitive-inouts
     {
-      # if (curr == 0) return (curr2 == 0)
+      # if (curr == 0 && curr2 == 0) move on to check outputs
       {
         81 7/subop/compare %esi 0/imm32
         75/jump-if-not-equal break/disp8
@@ -3479,9 +3555,8 @@ $mu-stmt-matches-primitive?:stmt-inout-is-null:
         {
           81 7/subop/compare %edi 0/imm32
           75/jump-if-not-equal break/disp8
-          # return true
-          b8/copy-to-eax 1/imm32/true
-          e9/jump $mu-stmt-matches-primitive?:end/disp32
+          #
+          e9/jump $mu-stmt-matches-primitive?:check-outputs/disp32
         }
         # return false
         b8/copy-to-eax 0/imm32/false
@@ -3516,6 +3591,7 @@ $mu-stmt-matches-primitive?:check-outputs:
     {
       # if (curr == 0) return (curr2 == 0)
       {
+$mu-stmt-matches-primitive?:check-output:
         81 7/subop/compare %esi 0/imm32
         75/jump-if-not-equal break/disp8
         {
@@ -3545,9 +3621,9 @@ $mu-stmt-matches-primitive?:check-outputs:
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # curr=curr->next
-      8b/-> *(ecx+4) 1/r32/ecx  # Operand-next
+      8b/-> *(esi+4) 6/r32/esi  # Operand-next
       # curr2=curr2->next
-      8b/-> *(edx+4) 2/r32/edx  # Operand-next
+      8b/-> *(edi+4) 7/r32/edi  # Operand-next
       eb/jump loop/disp8
     }
 $mu-stmt-matches-primitive?:return-true:
@@ -4057,7 +4133,7 @@ test-increment-var:
 test-add-reg-to-reg:
     #   var1/reg <- add var2/reg
     # =>
-    #   01 %var1 var2
+    #   01/add %var1 var2
     #
     # . prologue
     55/push-ebp
@@ -4104,7 +4180,7 @@ test-add-reg-to-reg:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "01 %eax 0x00000001/r32" "F - test-add-reg-to-reg")
+    (check-next-stream-line-equal _test-output-stream "01/add %eax 0x00000001/r32" "F - test-add-reg-to-reg")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4113,7 +4189,7 @@ test-add-reg-to-reg:
 test-add-reg-to-mem:
     #   add-to var1 var2/reg
     # =>
-    #   01 *(ebp+__) var2
+    #   01/add *(ebp+__) var2
     #
     # . prologue
     55/push-ebp
@@ -4160,7 +4236,7 @@ test-add-reg-to-mem:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "01 *(ebp+0x00000008) 0x00000001/r32" "F - test-add-reg-to-mem")
+    (check-next-stream-line-equal _test-output-stream "01/add *(ebp+0x00000008) 0x00000001/r32" "F - test-add-reg-to-mem")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4169,7 +4245,7 @@ test-add-reg-to-mem:
 test-add-mem-to-reg:
     #   var1/reg <- add var2
     # =>
-    #   03 *(ebp+__) var1
+    #   03/add *(ebp+__) var1
     #
     # . prologue
     55/push-ebp
@@ -4216,16 +4292,16 @@ test-add-mem-to-reg:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "03 *(ebp+0x00000008) 0x00000000/r32" "F - test-add-mem-to-reg")
+    (check-next-stream-line-equal _test-output-stream "03/add *(ebp+0x00000008) 0x00000000/r32" "F - test-add-mem-to-reg")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-test-add-literal-to-reg:
+test-add-literal-to-eax:
     #   var1/eax <- add 0x34
     # =>
-    #   81 0/subop/add %eax 0x34/imm32
+    #   05/add-to-eax 0x34/imm32
     #
     # . prologue
     55/push-ebp
@@ -4272,7 +4348,63 @@ test-add-literal-to-reg:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "81 0/subop/add %eax 0x34/imm32" "F - test-add-literal-to-reg")
+    (check-next-stream-line-equal _test-output-stream "05/add-to-eax 0x34/imm32" "F - test-add-literal-to-eax")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-add-literal-to-reg:
+    #   var1/ecx <- add 0x34
+    # =>
+    #   81 0/subop/add %ecx 0x34/imm32
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    # var var-var1/ecx : (ref var) in ecx
+    68/push "ecx"/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 1/imm32/type-int
+    68/push "var1"/imm32
+    89/<- %ecx 4/r32/esp
+    # var var-var2/edx : (ref var) literal
+    68/push 0/imm32/no-register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    68/push 0/imm32/type-literal
+    68/push "0x34"/imm32
+    89/<- %edx 4/r32/esp
+    # var inouts/esi : (ref list var2)
+    68/push 0/imm32/next
+    52/push-edx/var-var2
+    89/<- %esi 4/r32/esp
+    # var outputs/edi : (ref list var1)
+    68/push 0/imm32/next
+    51/push-ecx/var-var1
+    89/<- %edi 4/r32/esp
+    # var stmt/esi : (ref statement)
+    68/push 0/imm32/next
+    57/push-edi/outputs
+    56/push-esi/inouts
+    68/push "add"/imm32/operation
+    68/push 1/imm32
+    89/<- %esi 4/r32/esp
+    # convert
+    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "81 0/subop/add %ecx 0x34/imm32" "F - test-add-literal-to-reg")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
