@@ -2789,6 +2789,117 @@ $emit-subx-statement:abort:
 # Primitives supported
 == data
 Primitives:
+# - hardcoded registers (must come first)
+_Primitive-inc-eax:
+    "increment"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-eax/imm32/outputs
+    "40/increment-eax"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-inc-ecx/imm32/next
+_Primitive-inc-ecx:
+    "increment"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-ecx/imm32/outputs
+    "41/increment-ecx"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-inc-edx/imm32/next
+_Primitive-inc-edx:
+    "increment"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-edx/imm32/outputs
+    "42/increment-edx"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-inc-ebx/imm32/next
+_Primitive-inc-ebx:
+    "increment"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-ebx/imm32/outputs
+    "43/increment-ebx"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-inc-esi/imm32/next
+_Primitive-inc-esi:
+    "increment"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-esi/imm32/outputs
+    "46/increment-esi"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-inc-edi/imm32/next
+_Primitive-inc-edi:
+    "increment"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-edi/imm32/outputs
+    "47/increment-edi"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-eax/imm32/next
+_Primitive-dec-eax:
+    "decrement"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-eax/imm32/outputs
+    "48/decrement-eax"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-ecx/imm32/next
+_Primitive-dec-ecx:
+    "decrement"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-ecx/imm32/outputs
+    "49/decrement-ecx"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-edx/imm32/next
+_Primitive-dec-edx:
+    "decrement"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-edx/imm32/outputs
+    "4a/decrement-edx"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-ebx/imm32/next
+_Primitive-dec-ebx:
+    "decrement"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-ebx/imm32/outputs
+    "4b/decrement-ebx"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-esi/imm32/next
+_Primitive-dec-esi:
+    "decrement"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-esi/imm32/outputs
+    "4e/decrement-esi"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-edi/imm32/next
+_Primitive-dec-edi:
+    "decrement"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-edi/imm32/outputs
+    "4f/decrement-edi"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-inc-mem/imm32/next
+# - flexible registers
+_Primitive-inc-mem:
     # increment var => ff 0/subop/increment *(ebp+__)
     "increment"/imm32/name
     Single-int-var-on-stack/imm32/inouts
@@ -2804,6 +2915,26 @@ _Primitive-inc-reg:
     0/imm32/no-inouts
     Single-int-var-in-some-register/imm32/outputs
     "ff 0/subop/increment"/imm32/subx-name
+    3/imm32/rm32-is-first-output
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-mem/imm32/next
+_Primitive-dec-mem:
+    # decrement var => ff 1/subop/decrement *(ebp+__)
+    "decrement"/imm32/name
+    Single-int-var-on-stack/imm32/inouts
+    0/imm32/no-outputs
+    "ff 1/subop/decrement"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    _Primitive-dec-reg/imm32/next
+_Primitive-dec-reg:
+    # var/reg <- decrement => ff 1/subop/decrement %__
+    "decrement"/imm32/name
+    0/imm32/no-inouts
+    Single-int-var-in-some-register/imm32/outputs
+    "ff 1/subop/decrement"/imm32/subx-name
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     0/imm32/no-imm32
@@ -2888,6 +3019,72 @@ Int-var-in-some-register:
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "*"/imm32/register
+
+Single-int-var-in-eax:
+    Int-var-in-eax/imm32
+    0/imm32/next
+
+Int-var-in-eax:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    "eax"/imm32/register
+
+Single-int-var-in-ecx:
+    Int-var-in-ecx/imm32
+    0/imm32/next
+
+Int-var-in-ecx:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    "ecx"/imm32/register
+
+Single-int-var-in-edx:
+    Int-var-in-edx/imm32
+    0/imm32/next
+
+Int-var-in-edx:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    "edx"/imm32/register
+
+Single-int-var-in-ebx:
+    Int-var-in-ebx/imm32
+    0/imm32/next
+
+Int-var-in-ebx:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    "ebx"/imm32/register
+
+Single-int-var-in-esi:
+    Int-var-in-esi/imm32
+    0/imm32/next
+
+Int-var-in-esi:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    "esi"/imm32/register
+
+Single-int-var-in-edi:
+    Int-var-in-edi/imm32
+    0/imm32/next
+
+Int-var-in-edi:
+    "arg1"/imm32/name
+    1/imm32/type-int
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    "edi"/imm32/register
 
 Single-lit-var:
     Lit-var/imm32
@@ -3751,7 +3948,7 @@ test-increment-register:
     # Select the right primitive between overloads.
     #   foo <- increment
     # =>
-    #   ff 0/subop/increment %eax  # sub-optimal, but should suffice
+    #   50/increment-eax
     #
     # There's a variable on the var stack as follows:
     #   name: 'foo'
@@ -3796,7 +3993,7 @@ test-increment-register:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-increment-register")
+    (check-next-stream-line-equal _test-output-stream "40/increment-eax" "F - test-increment-register")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
