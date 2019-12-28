@@ -685,7 +685,7 @@ test-convert-function-distinguishes-args:
 
 test-convert-function-returns-result:
     # function writes to output
-    #   fn foo a: int -> result/eax: int {
+    #   fn foo a: int, b: int -> result/eax: int {
     #     result <- copy a
     #     result <- increment
     #   }
@@ -711,7 +711,7 @@ test-convert-function-returns-result:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
     #
-    (write _test-input-stream "fn foo a: int -> result/eax: int {\n")
+    (write _test-input-stream "fn foo a: int, b: int -> result/eax: int {\n")
     (write _test-input-stream "  result <- copy a\n")
     (write _test-input-stream "  result <- increment\n")
     (write _test-input-stream "}\n")
@@ -2395,7 +2395,8 @@ lookup-var-helper:  # name: (address array byte), vars : (address stack (handle 
       3d/compare-eax-and 0/imm32
       8b/-> *ebx 0/r32/eax
       75/jump-if-not-equal break/disp8
-      8b/-> *(ebx+4) 3/r32/ebx  # List-next
+      # curr -= 4
+      81 5/subop/subtract %ebx 4/imm32
       e9/jump loop/disp32
     }
 $lookup-var-helper:end:
