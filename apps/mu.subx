@@ -2268,67 +2268,24 @@ $stmt-has-outputs:end:
     c3/return
 
 lookup-var:  # name: (address slice), vars : (address stack (handle var)) -> result/eax: (handle var)
-    # pseudocode:
-    #   var curr : (address handle var) = &vars->data[vars->top - 4]
-    #   var min = vars->data
-    #   while curr >= min
-    #     var v : (handle var) = *curr
-    #     if v->name == name
-    #       return v
-    #   abort
-    #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # . save registers
-    51/push-ecx
-    52/push-edx
-    53/push-ebx
-    56/push-esi
-    # var target/ecx : (handle array byte) = slice-to-string(name)
-    8b/-> *(ebp+8) 1/r32/ecx
-    (slice-to-string Heap %ecx)  # => eax
-    89/<- %ecx 0/r32/eax
-    # esi = vars
-    8b/-> *(ebp+0xc) 6/r32/esi
-    # ebx = vars->top
-    8b/-> *esi 3/r32/ebx
-    # if (vars->top > vars->length) abort
-    3b/compare 0/r32/eax *(esi+4)
-    0f 8f/jump-if-greater $lookup-var:error1/disp32
-    # var min/edx : (address handle var) = vars->data
-    8d/copy-address *(esi+8) 2/r32/edx
-    # var curr/ebx : (address handle var) = &vars->data[vars->top - 4]
-    81 5/subop/subtract %ebx 4/imm32
-    8d/copy-address *(esi+ebx+8) 3/r32/ebx
-    {
-      # if (curr < min) abort
-      39/compare %ebx 2/r32/edx
-      0f 82/jump-if-lesser-unsigned $lookup-var:error2/disp32
-      # var v/eax : (handle var) = *curr
-      8b/-> *ebx 0/r32/eax
-      # if (v->name == name) break
-      (string-equal? *eax %ecx)  # Var-name Var-name
-      3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
-      8b/-> *(ebx+4) 3/r32/ebx  # List-next
-      e9/jump loop/disp32
-    }
-    # return *curr
-    8b/-> *ebx 0/r32/eax
+    # var target/eax : (handle array byte) = slice-to-string(name)
+    (slice-to-string Heap *(ebp+8))  # => eax
+    #
+    (lookup-var-helper %eax *(ebp+0xc))  # => eax
+    # if (result == 0) abort
+    3d/compare-eax-and 0/imm32
+    74/jump-if-equal $lookup-var:abort/disp8
 $lookup-var:end:
-    # . restore registers
-    5e/pop-to-esi
-    5b/pop-to-ebx
-    5a/pop-to-edx
-    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-$lookup-var:error1:
-    (write-buffered Stderr "malformed stack when looking up '")
+$lookup-var:abort:
+    (write-buffered Stderr "unknown variable '")
     (write-slice-buffered Stderr *(ebp+8))
     (write-buffered Stderr "'\n")
     (flush Stderr)
@@ -2338,8 +2295,62 @@ $lookup-var:error1:
     cd/syscall  0x80/imm8
     # never gets here
 
-$lookup-var:error2:
-    (write-buffered Stderr "unknown variable '")
+lookup-var-helper:  # name: (address array byte), vars : (address stack (handle var)) -> result/eax: (handle var)
+    # pseudocode:
+    #   var curr : (address handle var) = &vars->data[vars->top - 4]
+    #   var min = vars->data
+    #   while curr >= min
+    #     var v : (handle var) = *curr
+    #     if v->name == name
+    #       return v
+    #   return 0
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = vars
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # ebx = vars->top
+    8b/-> *esi 3/r32/ebx
+    # if (vars->top > vars->length) abort
+    3b/compare 0/r32/eax *(esi+4)
+    0f 8f/jump-if-greater $lookup-var-helper:error1/disp32
+    # var min/edx : (address handle var) = vars->data
+    8d/copy-address *(esi+8) 2/r32/edx
+    # var curr/ebx : (address handle var) = &vars->data[vars->top - 4]
+    81 5/subop/subtract %ebx 4/imm32
+    8d/copy-address *(esi+ebx+8) 3/r32/ebx
+    {
+      # if (curr < min) return 0
+      39/compare %ebx 2/r32/edx
+      b8/copy-to-eax 0/imm32
+      0f 82/jump-if-lesser-unsigned break/disp32
+      # var v/eax : (handle var) = *curr
+      8b/-> *ebx 0/r32/eax
+      # if (v->name == name) return v
+      (string-equal? *eax *(ebp+8))  # Var-name
+      3d/compare-eax-and 0/imm32
+      8b/-> *ebx 0/r32/eax
+      75/jump-if-not-equal break/disp8
+      8b/-> *(ebx+4) 3/r32/ebx  # List-next
+      e9/jump loop/disp32
+    }
+$lookup-var-helper:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$lookup-var-helper:error1:
+    (write-buffered Stderr "malformed stack when looking up '")
     (write-slice-buffered Stderr *(ebp+8))
     (write-buffered Stderr "'\n")
     (flush Stderr)
