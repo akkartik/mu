@@ -191,14 +191,29 @@ vector<pair<size_t, size_t> > find_all_occurrences(const string& s, const string
   return result;
 }
 
-void render_line(int screen_row, const string& s, bool cursor_line) {  // -> screen
+int bg_color(int depth, int trace_index, int screen_row) {
+  if (screen_row == Cursor_row) {
+    if (trace_index == 0) return /*subtle grey*/240;  // ignore the zero-depth sentinel at start of trace
+    if (depth > 0) return /*subtle grey*/240;
+    else return /*subtle red*/88;
+  }
+  if (trace_index == 0) return TB_BLACK;  // ignore the zero-depth sentinel at start of trace
+  if (depth == 0) return /*red*/1;
+  if (depth == 1) return /*orange*/166;
+  // start at black, gradually lighten at deeper levels
+  if (depth > 10) return TB_BLACK + 16;
+  return TB_BLACK + (depth - 2)*2;
+}
+
+void render_line(int screen_row, const string& s, int bg) {  // -> screen
   int col = 0;
   int color = TB_WHITE;
-  int background_color = cursor_line ? /*subtle grey*/240 : TB_BLACK;
   vector<pair<size_t, size_t> > highlight_ranges = find_all_occurrences(s, Current_search_pattern);
   tb_set_cursor(0, screen_row);
-  for (col = 0;  col < tb_width() && col+Left_of_screen < SIZE(s);  ++col) {
-    char c = s.at(col+Left_of_screen);  // todo: unicode
+  for (col = 0;  col < tb_width();  ++col) {
+    char c = ' ';
+    if (col+Left_of_screen < SIZE(s))
+      c = s.at(col+Left_of_screen);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
     // escapes. hack: can't start a line with them.
     if (c == '\1') { color = /*red*/1;  continue; }
@@ -206,10 +221,8 @@ void render_line(int screen_row, const string& s, bool cursor_line) {  // -> scr
     if (in_range(highlight_ranges, col+Left_of_screen))
       tb_print(c, TB_BLACK, /*yellow*/11);
     else
-      tb_print(c, color, background_color);
+      tb_print(c, color, bg);
   }
-  for (;  col < tb_width();  ++col)
-    tb_print(' ', TB_WHITE, background_color);
 }
 
 void search_next(const string& pat) {
@@ -339,7 +352,8 @@ void render() {  // Trace_index -> Last_printed_row, screen
   int screen_row = 0;
   for (screen_row = 0;  screen_row < tb_height();  ++screen_row) {
     if (!contains_key(Trace_index, screen_row)) break;
-    trace_line& curr_line = Trace_stream->past_lines.at(get(Trace_index, screen_row));
+    int trace_index = get(Trace_index, screen_row);
+    trace_line& curr_line = Trace_stream->past_lines.at(trace_index);
     ostringstream out;
     if (screen_row < tb_height()-1) {
       int delta = lines_hidden(screen_row);
@@ -357,12 +371,13 @@ void render() {  // Trace_index -> Last_printed_row, screen
       out << "        ";
     }
     out << std::setw(2) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
-    render_line(screen_row, out.str(), screen_row == Cursor_row);
+    int bg = bg_color(curr_line.depth, trace_index, screen_row);
+    render_line(screen_row, out.str(), bg);
   }
   // clear rest of screen
   Last_printed_row = screen_row-1;
   for (;  screen_row < tb_height();  ++screen_row)
-    render_line(screen_row, "~", /*cursor_line?*/false);
+    render_line(screen_row, "~", /*bg*/TB_BLACK);
   // move cursor back to display row at the end
   tb_set_cursor(0, Cursor_row);
 }
