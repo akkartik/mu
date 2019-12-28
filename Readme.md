@@ -118,7 +118,7 @@ You can use SubX to translate itself. For example, running natively on Linux:
   42
 
   # or, automating the above steps
-  $ ./ntranslate init.linux ex1.subx
+  $ ./ntranslate init.linux examples/ex1.subx
   $ ./a.elf
   $ echo $?
   42
