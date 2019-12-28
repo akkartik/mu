@@ -683,6 +683,65 @@ test-convert-function-distinguishes-args:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-returns-result:
+    # function with two args refers to second one in body
+    #   fn foo a: int -> result/eax: int {
+    #     result <- copy a
+    #     result <- increment
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       89/-> *(ebp+8) 0/r32/eax
+    #       40/increment-eax
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo a: int -> result/eax: int {\n")
+    (write _test-input-stream "  result <- copy a\n")
+    (write _test-input-stream "  result <- increment\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-returns-result/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-returns-result/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-returns-result/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-returns-result/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-returns-result/4")
+    (check-next-stream-line-equal _test-output-stream "8b/copy-from *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-function-returns-result/5")
+    (check-next-stream-line-equal _test-output-stream "40/increment-eax"      "F - test-convert-function-returns-result/6")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-returns-result/7")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-returns-result/8")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-returns-result/9")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-returns-result/10")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-returns-result/11")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -1820,7 +1879,7 @@ populate-mu-function-body:  # in : (address buffered-file), out : (handle functi
     # edi = out
     8b/-> *(ebp+0xc) 7/r32/edi
     # var eax : (handle block) = parse-mu-block(in, vars)
-    (parse-mu-block %esi *(ebp+0x10))  # => eax
+    (parse-mu-block %esi *(ebp+0x10) %edi)  # => eax
     # out->body = eax
     89/<- *(edi+0x10) 0/r32/eax  # Function-body
 $populate-mu-function-body:end:
@@ -1834,7 +1893,7 @@ $populate-mu-function-body:end:
     c3/return
 
 # parses a block, assuming that the leading '{' has already been read by the caller
-parse-mu-block:  # in : (address buffered-file), vars : (address stack (handle var)) -> result/eax : (handle block)
+parse-mu-block:  # in : (address buffered-file), vars : (address stack (handle var)), fn : (handle function) -> result/eax : (handle block)
     # pseudocode:
     #   var line : (ref stream byte 512)
     #   var word-slice : (ref slice)
@@ -1851,18 +1910,18 @@ parse-mu-block:  # in : (address buffered-file), vars : (address stack (handle v
     #       continue
     #     else if slice-equal?(word-slice, "{")
     #       assert(no-tokens-in(line))
-    #       block = parse-mu-block(in, vars)
+    #       block = parse-mu-block(in, vars, fn)
     #       append-to-block(result, block)
     #     else if slice-equal?(word-slice, "}")
     #       break
     #     else if slice-ends-with?(word-slice, ":")
-    #       named-block = parse-mu-named-block(word-slice, line, in, vars)
+    #       named-block = parse-mu-named-block(word-slice, line, in, vars, fn)
     #       append-to-block(result, named-block)
     #     else if slice-equal?(word-slice, "var")
     #       var-def = parse-mu-var-def(line, vars)
     #       append-to-block(result, var-def)
     #     else
-    #       stmt = parse-mu-stmt(line, vars)
+    #       stmt = parse-mu-stmt(line, vars, fn)
     #       append-to-block(result, stmt)
     #   return result
     #
@@ -1926,7 +1985,7 @@ $parse-mu-block:check-for-block:
         74/jump-if-equal break/disp8
         (check-no-tokens-left %ecx)
         # parse new block and append
-        (parse-mu-block *(ebp+8) *(ebp+0xc))  # => eax
+        (parse-mu-block *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
         (append-to-block %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
@@ -1946,7 +2005,7 @@ $parse-mu-block:check-for-named-block:
         3d/compare-eax-and 0x23/imm32/hash
         0f 85/jump-if-not-equal break/disp32
         #
-        (parse-mu-named-block %edx %ecx *(ebp+8) *(ebp+0xc))  # => eax
+        (parse-mu-named-block %edx %ecx *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
         (append-to-block %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
@@ -1963,7 +2022,7 @@ $parse-mu-block:check-for-var:
       }
 $parse-mu-block:regular-stmt:
       # otherwise
-      (parse-mu-stmt %ecx *(ebp+0xc))  # => eax
+      (parse-mu-stmt %ecx *(ebp+0xc) *(ebp+0x10))  # => eax
       (append-to-block Heap %edi %eax)
       e9/jump loop/disp32
     } # end line loop
@@ -2070,7 +2129,7 @@ parse-mu-named-block:  # name : (address slice), first-line : (address stream by
     #       var-def = parse-mu-var-def(line, vars)
     #       append-to-block(result, var-def)
     #     else
-    #       stmt = parse-mu-stmt(line, vars)
+    #       stmt = parse-mu-stmt(line, vars, fn)
     #       append-to-block(result, stmt)
     #   return result
     #
@@ -2101,7 +2160,7 @@ $parse-mu-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-stmt:  # line : (address stream byte), vars : (address stack (handle var)) -> result/eax : (handle stmt)
+parse-mu-stmt:  # line : (address stream byte), vars : (address stack (handle var)), fn : (handle function) -> result/eax : (handle stmt)
     # pseudocode:
     #   var name : (ref slice)
     #   result = allocate(Heap, Stmt-size)
@@ -2110,12 +2169,12 @@ parse-mu-stmt:  # line : (address stream byte), vars : (address stack (handle va
     #       name = next-word(line)
     #       if (name == '<-') break
     #       assert(is-identifier?(name))
-    #       var v : (handle var) = lookup-var(name, vars)
+    #       var v : (handle var) = lookup-or-define-var(name, vars)
     #       result->outputs = append(result->outputs, v)
     #   result->name = slice-to-string(next-word(line))
     #   while true
     #     name = next-word-or-string(line)
-    #     v = parse-var-or-literal(name)
+    #     v = lookup-var-or-literal(name)
     #     result->inouts = append(result->inouts, v)
     #
     # . prologue
@@ -2155,7 +2214,7 @@ $parse-mu-stmt:read-outputs:
         3d/compare-eax-and 0/imm32
         0f 84/jump-if-equal $parse-mu-stmt:abort/disp32
         #
-        (lookup-var %ecx *(ebp+0xc))  # => eax
+        (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10))  # => eax
         (append-list Heap %eax *(edi+0xc))  # Stmt1-outputs => eax
         89/<- *(edi+0xc) 0/r32/eax  # Stmt1-outputs
         e9/jump loop/disp32
@@ -2178,7 +2237,7 @@ $parse-mu-stmt:read-inouts:
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $parse-mu-stmt:abort2/disp32
       #
-      (lookup-var %ecx *(ebp+0xc))  # => eax  # TODO: parse-var-or-literal
+      (lookup-var %ecx *(ebp+0xc))  # => eax  # TODO: lookup-var-or-literal
       (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts
       e9/jump loop/disp32
@@ -2359,6 +2418,71 @@ $lookup-var-helper:error1:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+lookup-or-define-var:  # name: (address slice), vars : (address stack (handle var)), fn : (handle function) -> result/eax: (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var target/ecx : (handle array byte) = slice-to-string(name)
+    (slice-to-string Heap *(ebp+8))  # => eax
+    89/<- %ecx 0/r32/eax
+    #
+    (lookup-var-helper *(ebp+8) *(ebp+0xc))  # => eax
+    {
+      # if (result != 0) return
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # if name is one of fn's outputs, return it
+      {
+        (find-in-function-outputs *(ebp+0x10) %ecx)  # => eax
+        3d/compare-eax-and 0/imm32
+        # otherwise abort
+        0f 84/jump-if-not-equal $lookup-var:abort/disp32
+      }
+    }
+$lookup-or-define-var:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+find-in-function-outputs:  # fn : (handle function), name : (handle array byte) => result/eax : (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx : (handle list var) = fn->outputs
+    8b/-> *(ebp+8) 1/r32/ecx
+    8b/-> *(ecx+0xc) 1/r32/ecx
+    # while curr != null
+    {
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-equal break/disp8
+      # var v : (handle var) = *curr
+      8b/-> *ecx 0/r32/eax  # List-value
+      # if (curr->name == name) return curr
+      50/push-eax
+      (string-equal? *eax *(ebp+0xc))
+      3d/compare-eax-and 0/imm32
+      58/pop-to-eax
+      75/jump-if-not-equal $find-in-function-outputs:end/disp8
+      # curr = curr->next
+      8b/-> *(ecx+4) 1/r32/ecx  # List-next
+      eb/jump loop/disp8
+    }
+    b8/copy-to-eax 0/imm32
+$find-in-function-outputs:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 test-parse-mu-stmt:
     # 'increment n'
