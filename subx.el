@@ -13,7 +13,7 @@
 ;;
 ;; I load this file like so in my .emacs:
 ;;    (load "/absolute/path/to/subx.el")
-;;    (add-to-list 'auto-mode-alist '("\\.subx\\'" . subx-mode))
+;;    (add-to-list 'auto-mode-alist '("\\.subx" . subx-mode))
 ;;
 ;; Education on the right way to do this most appreciated.
 
