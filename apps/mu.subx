@@ -742,6 +742,124 @@ test-convert-function-returns-result:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-literal-arg:
+    # function writes to output
+    #   fn foo a: int, b: int -> result/eax: int {
+    #     result <- copy a
+    #     result <- add 1
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       89/-> *(ebp+8) 0/r32/eax
+    #       05/add-to-eax 1/imm32
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo a: int, b: int -> result/eax: int {\n")
+    (write _test-input-stream "  result <- copy a\n")
+    (write _test-input-stream "  result <- add 1\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-literal-arg/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-literal-arg/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-literal-arg/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-literal-arg/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-literal-arg/4")
+    (check-next-stream-line-equal _test-output-stream "8b/copy-from *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-function-literal-arg/5")
+    (check-next-stream-line-equal _test-output-stream "05/add-to-eax 1/imm32"  "F - test-convert-function-literal-arg/6")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-literal-arg/7")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-literal-arg/8")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-literal-arg/9")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-literal-arg/10")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-literal-arg/11")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-literal-arg-2:
+    # function writes to output
+    #   fn foo a: int, b: int -> result/ebx: int {
+    #     result <- copy a
+    #     result <- add 1
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       89/-> *(ebp+8) 3/r32/ebx
+    #       81 0/subop/add %ebx 1/imm32
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo a: int, b: int -> result/ebx: int {\n")
+    (write _test-input-stream "  result <- copy a\n")
+    (write _test-input-stream "  result <- add 1\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-literal-arg-2/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-literal-arg-2/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-literal-arg-2/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-literal-arg-2/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-literal-arg-2/4")
+    (check-next-stream-line-equal _test-output-stream "8b/copy-from *(ebp+0x00000008) 0x00000003/r32"  "F - test-convert-function-literal-arg-2/5")
+    (check-next-stream-line-equal _test-output-stream "81 0/subop/add %ebx 1/imm32"  "F - test-convert-function-literal-arg-2/6")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-literal-arg-2/7")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-literal-arg-2/8")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-literal-arg-2/9")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-literal-arg-2/10")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-literal-arg-2/11")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -2237,7 +2355,7 @@ $parse-mu-stmt:read-inouts:
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $parse-mu-stmt:abort2/disp32
       #
-      (lookup-var %ecx *(ebp+0xc))  # => eax  # TODO: lookup-var-or-literal
+      (lookup-var-or-literal %ecx *(ebp+0xc))  # => eax
       (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts
       e9/jump loop/disp32
@@ -2325,6 +2443,55 @@ $stmt-has-outputs:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+# if 'name' starts with a digit, create a new literal var for it
+# otherwise return first 'name' from the top (back) of 'vars' and abort if not found
+lookup-var-or-literal:  # name: (address slice), vars : (address stack (handle var)) -> result/eax: (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    # esi = name
+    8b/-> *(ebp+8) 6/r32/esi
+    # if slice-empty?(name) abort
+    (slice-empty? %esi)  # => eax
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $lookup-var-or-literal:abort/disp32
+    # var ecx : byte = *name->start
+    8b/-> *esi 1/r32/ecx
+    8a/copy-byte *ecx 1/r32/CL
+    81 4/subop/and %ecx 0xff/imm32
+    # if is-decimal-digit?(*name->start) return new var(name)
+    (is-decimal-digit? %ecx)  # => eax
+    81 7/subop/compare %eax 0/imm32
+    {
+      74/jump-if-equal break/disp8
+      (new-literal-integer Heap %esi)  # => eax
+    }
+    # otherwise return lookup-var(name, vars)
+    {
+      75/jump-if-not-equal break/disp8
+      (lookup-var %esi *(ebp+0xc))  # => eax
+    }
+$lookup-var-or-literal:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$lookup-var-or-literal:abort:
+    (write-buffered Stderr "empty variable!")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 # return first 'name' from the top (back) of 'vars' and abort if not found
 lookup-var:  # name: (address slice), vars : (address stack (handle var)) -> result/eax: (handle var)
@@ -2577,6 +2744,45 @@ $new-var:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+new-literal-integer:  # ad: (address allocation-descriptor), name: (address slice) -> result/eax: (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # if (!is-hex-int?(name)) abort
+    (is-hex-int? *(ebp+0xc))  # => eax
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-equal $new-literal-integer:abort/disp32
+    # var s/ecx : (address array byte)
+    (slice-to-string Heap *(ebp+0xc))  # => eax
+    89/<- %ecx 0/r32/eax
+    #
+    (allocate *(ebp+8) *Var-size)  # => eax
+    89/<- *eax 1/r32/ecx  # Var-name
+    c7 0/subop/copy *(eax+4) 0/imm32/tag/literal  # Var-type
+    c7 0/subop/copy *(eax+8) 0/imm32  # Var-block
+    c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-stack-offset
+    c7 0/subop/copy *(eax+0x10) 0/imm32  # Var-register
+$new-literal-integer:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$new-literal-integer:abort:
+    (write-buffered Stderr "variable cannot begin with a digit '")
+    (write-slice-buffered Stderr *(ebp+0xc))
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 new-block:  # ad: (address allocation-descriptor), data: (handle list statement) -> result/eax: (handle statement)
     # . prologue
