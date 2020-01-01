@@ -246,7 +246,7 @@
 
 == data
 
-Program:  # (handle function)
+Program:  # (address (handle function))
   0/imm32
 
 Function-name:
@@ -860,13 +860,101 @@ test-convert-function-literal-arg-2:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-call-with-literal-arg:
+    # function writes to output
+    #   fn main -> result/ebx: int {
+    #     result <- do-add 3 4
+    #   }
+    #
+    #   fn do-add a: int, b: int -> result/ebx: int {
+    #     result <- copy a
+    #     result <- add b
+    #   }
+    # =>
+    #   main:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       (do-add 3 4)
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    #   do-add:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       8b/-> *(ebp+8) 3/r32/ebx
+    #       03/add-to 3/r32/ebx *(ebp+0xc)
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn main -> result/ebx: int {\n")
+    (write _test-input-stream "  result <- do-add 3 4\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn do-add a: int, b: int -> result/ebx: int {\n")
+    (write _test-input-stream "  result <- copy a\n")
+    (write _test-input-stream "  result <- add b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "main:"                 "F - test-convert-function-call-with-literal-arg/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-call-with-literal-arg/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-call-with-literal-arg/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-literal-arg/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-call-with-literal-arg/4")
+    (check-next-stream-line-equal _test-output-stream "(do-add 3 4)"          "F - test-convert-function-call-with-literal-arg/5")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-call-with-literal-arg/6")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-call-with-literal-arg/7")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-literal-arg/8")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-call-with-literal-arg/9")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-call-with-literal-arg/10")
+    (check-next-stream-line-equal _test-output-stream "do-add:"               "F - test-convert-function-call-with-literal-arg/11")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-call-with-literal-arg/12")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-call-with-literal-arg/13")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-literal-arg/14")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-call-with-literal-arg/15")
+    (check-next-stream-line-equal _test-output-stream "8b/copy-from *(ebp+0x00000008) 0x00000003/r32"  "F - test-convert-function-call-with-literal-arg/16")
+    (check-next-stream-line-equal _test-output-stream "03/add *(ebp+0x0000000c) 0x00000003/r32"  "F - test-convert-function-call-with-literal-arg/17")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-call-with-literal-arg/18")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-call-with-literal-arg/19")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-literal-arg/20")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-call-with-literal-arg/21")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-call-with-literal-arg/22")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
 
 parse-mu:  # in : (address buffered-file)
     # pseudocode
-    #   var curr-function : (handle function) = Program
+    #   var curr-function : (address (handle function)) = Program
     #   var line : (ref stream byte 512)
     #   var word-slice : (ref slice)
     #   while true                                  # line loop
@@ -908,7 +996,7 @@ parse-mu:  # in : (address buffered-file)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # var curr-function/edi : (handle function) = Program
+    # var curr-function/edi : (address (handle function)) = Program
     bf/copy-to-edi Program/imm32
     # var vars/ebx : (ref stack (address var) 256)
     81 5/subop/subtract %esp 0x400/imm32
@@ -1077,6 +1165,8 @@ populate-mu-function-header:  # first-line : (address stream byte), out : (handl
     # save function name
     (slice-to-string Heap %ecx)  # => eax
     89/<- *edi 0/r32/eax  # Function-name
+    # initialize default subx-name as well
+    89/<- *(edi+4) 0/r32/eax  # Function-subx-name
     # save function inouts
     {
 $populate-mu-function-header:check-for-inout:
@@ -3077,7 +3167,7 @@ $emit-subx-block:check-empty:
 $emit-subx-block:stmt:
         81 7/subop/compare %esi 0/imm32
         74/jump-if-equal break/disp8
-        (emit-subx-statement *(ebp+8) *esi Primitives 0)
+        (emit-subx-statement *(ebp+8) *esi Primitives *Program)
         (write-buffered *(ebp+8) Newline)
         8b/-> *(esi+4) 6/r32/esi  # List-next
         eb/jump loop/disp8
@@ -4064,6 +4154,7 @@ emit-subx-call:  # out : (address buffered-file), stmt : (handle statement), cal
       (emit-subx-call-operand *(ebp+8) *ecx)
       # curr = curr->next
       8b/-> *(ecx+4) 1/r32/ecx
+      eb/jump loop/disp8
     }
     #
     (write-buffered *(ebp+8) ")")
@@ -4158,7 +4249,7 @@ find-matching-function:  # functions : (address function), stmt : (handle statem
         eb/jump $find-matching-function:end/disp8
       }
       # curr = curr->next
-      8b/-> *(ecx+0x10) 1/r32/ecx  # Function-next
+      8b/-> *(ecx+0x14) 1/r32/ecx  # Function-next
       eb/jump loop/disp8
     }
     # return null
@@ -4219,10 +4310,10 @@ mu-stmt-matches-function?:  # stmt : (handle statement), function : (handle func
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # return primitive->name == stmt->operation
+    # return function->name == stmt->operation
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ebp+0xc) 0/r32/eax
-    (string-equal? *(ecx+4) *eax)  # Stmt1-operation, Primitive-name => eax
+    (string-equal? *(ecx+4) *eax)  # Stmt1-operation, Function-name => eax
 $mu-stmt-matches-function?:end:
     # . restore registers
     59/pop-to-ecx
