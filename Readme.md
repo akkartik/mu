@@ -10,10 +10,18 @@ Running the code you want to run, and nothing else.
   ```sh
   $ git clone https://github.com/akkartik/mu
   $ cd mu
-  $ ./subx
+  $ ./translate_mu apps/ex2.mu  # emits a.elf
+  $ ./a.elf  # adds 3 and 4
+  $ echo $?
+  7
   ```
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg?branch=master)](https://travis-ci.org/akkartik/mu)
+
+The Mu translator is built up from machine code and requires just a Unix-like
+kernel and nothing else. You can also bootstrap it from C++. Both C++ and
+self-hosted versions emit identical binaries. The generated binaries require
+just a Unix-like kernel and nothing else.
 
 ## Goals
 
@@ -44,11 +52,34 @@ In priority order:
   For now it's a thin veneer over machine code. I'm working on memory safety
   before expressive syntax.
 
-## What works so far
+## Language
 
-You get a thin syntax called SubX for programming in (a subset of) x86 machine
-code. (A memory-safe compiled language is [being designed](http://akkartik.name/post/mu-2019-2).)
-Here's a program (`apps/ex1.subx`) that returns 42:
+Mu's main language is [still being built](http://akkartik.name/post/mu-2019-2).
+When completed, it will be type- and memory-safe. At the moment it performs no
+checks and only supports variables of type `int`. Here's the program we
+translated above:
+
+  ```
+  fn main -> result/ebx: int {
+    result <- do-add 3 4
+  }
+
+  fn do-add a: int, b: int -> result/ebx: int {
+    result <- copy a
+    result <- add b
+  }
+  ```
+
+Most instructions here translate to a single machine code instruction.
+Programs must specify registers when they want to use them. Functions always
+return results in registers. Execution begins at the function `main`, which
+always returns its result in register `ebx`. [The post on Mu](http://akkartik.name/post/mu-2019-2)
+has more details.
+
+## SubX
+
+Mu is built out of a thin syntax called SubX for programming in (a subset of)
+x86 machine code. Here's a program (`apps/ex1.subx`) that returns 42:
 
   ```sh
   bb/copy-to-ebx  0x2a/imm32  # 42 in hex
@@ -56,7 +87,7 @@ Here's a program (`apps/ex1.subx`) that returns 42:
   cd/syscall  0x80/imm8
   ```
 
-You can generate tiny zero-dependency ELF binaries with it that run on Linux.
+You can generate tiny zero-dependency ELF binaries from SubX that run on Linux.
 
   ```sh
   $ ./subx translate init.linux apps/ex1.subx -o apps/ex1  # on Linux or BSD or Mac
@@ -158,9 +189,9 @@ kernel; that number will gradually go down.)
   $ qemu-system-x86_64 -m 256M -cdrom mu_linux.iso -boot d
   ```
 
-## What it looks like
+## What SubX looks like
 
-Here is the above example again:
+Here is the above SubX example again:
 
   ```sh
   bb/copy-to-ebx  0x2a/imm32  # 42 in hex
@@ -805,16 +836,6 @@ To falsify these hypotheses, here's a roadmap of the next few planned features:
   - Concurrency, and a framework for testing blocking code
   - Server-like blocking socket/file primitives
 
-* Higher-level notations. Like programming languages, but with thinner
-  implementations that you can -- and are expected to! -- modify.
-  - syntax for addressing modes: `%reg`, `*reg`, `*(reg+disp)`,
-    `*(reg+reg+disp)`, `*(reg+reg<<n + disp)`
-  - function calls in a single line, using addressing modes for arguments
-  - syntax for controlling a type checker, like [the mu1 prototype](https://github.com/akkartik/mu1).
-  - a register allocation _verifier_. Programmer provides registers for
-    variables; verifier checks that register reads are for the same type that
-    was last written -- across all control flow paths.
-
 * Gradually streamline the bundled kernel, stripping away code we don't need.
 
 ---
@@ -838,6 +859,9 @@ situation from within Vim.
 
 d) Try working on [the starter exercises](https://github.com/akkartik/mu/pulls)
 (labelled `hello`).
+
+e) SubX comes with some useful [syntax sugar](http://akkartik.name/post/mu-2019-1).
+Check it out.
 
 ## Credits
 
