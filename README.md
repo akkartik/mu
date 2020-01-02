@@ -329,13 +329,13 @@ transparently copy it to the `data` segment and replace it with its address.
 Strings are the only place where a SubX word is allowed to contain spaces.
 
 That should be enough information for writing SubX programs. The `apps/`
-directory provides some fodder for practice in the `apps/ex*` files, giving a
-more gradual introduction to SubX features. This repo includes binaries for
-all examples. At any commit, an example's binary should be identical bit for
-bit with the result of translating the corresponding `.subx` file. The binary
-should also be natively runnable on a Linux system running on Intel x86
-processors, either 32- or 64-bit. If either of these invariants is broken it's
-a bug on my part.
+directory provides some fodder for practice in the `apps/ex*.subx` files,
+giving a more gradual introduction to SubX features. This repo includes
+binaries for all examples. At any commit, an example's binary should be
+identical bit for bit with the result of translating the corresponding `.subx`
+file. The binary should also be natively runnable on a Linux system running on
+Intel x86 processors, either 32- or 64-bit. If either of these invariants is
+broken it's a bug on my part.
 
 ## Running
 
