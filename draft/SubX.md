@@ -80,7 +80,7 @@ and weaknesses make it easy to audit and debug.
   42
   ```
 
-Or, running in a VM on other platforms:
+Or, running in a VM on other platforms (much slower):
 
   ```sh
   $ ./translate init.linux ex1.subx  # generates identical a.elf to above
