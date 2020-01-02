@@ -118,16 +118,16 @@ You can use SubX to translate itself. For example, running natively on Linux:
   42
 
   # or, automating the above steps
-  $ ./ntranslate init.linux examples/ex1.subx
+  $ ./translate_subx init.linux examples/ex1.subx
   $ ./a.elf
   $ echo $?
   42
   ```
 
-Or, running in a VM on other platforms:
+Or, running in a VM on other platforms (much slower):
 
   ```sh
-  $ ./translate init.linux ex1.subx  # generates identical a.elf to above
+  $ ./translate_subx_emulated init.linux ex1.subx  # generates identical a.elf to above
   $ ./subx run a.elf
   $ echo $?
   42
@@ -433,8 +433,7 @@ runnable on a Linux system running on Intel x86 processors, either 32- or
   files into an executable ELF binary.
 
 * `subx run <ELF binary>`: simulates running the ELF binaries emitted by `subx
-  translate`. Useful for debugging, and also enables more thorough testing of
-  `translate`.
+  translate`. Useful for testing and debugging.
 
   Remember, not all 32-bit Linux binaries are guaranteed to run. I'm not
   building general infrastructure here for all of the x86 instruction set.
