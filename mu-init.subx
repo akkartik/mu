@@ -1,0 +1,25 @@
+# Initialize the minimal runtime for Mu programs.
+#
+# See translate_mu for how this file is used.
+#
+# Mu programs start at a function called 'main' with this signature:
+#   fn main args: (address array kernel-string) -> exit_status/ebx : int
+# If your program doesn't need commandline arguments you can drop it:
+#   fn main -> exit_status/ebx : int
+#
+# Notice that the output must be in ebx, so that the exit() syscall can pick
+# it up.
+
+== code
+
+Entry:
+    # we don't use ebp in Entry; just initialize it
+    bd/copy-to-ebp 0/imm32
+    # var args/eax : (address array kernel-string)
+    89/<- %eax 4/r32/esp
+    # initialize the heap
+    (new-segment *Heap-size Heap)
+    # run Mu program
+    (main %eax)
+    # exit
+    (syscall_exit)
