@@ -45,15 +45,6 @@ do
   process $f
 done
 
-for f in examples/*.subx
-do
-  test $# -gt 0  &&  test $1 != $f  &&  continue
-  ( cd examples
-    ctags -x `basename $f` > /tmp/tags
-  )
-  process $f
-done
-
 ctags -x *.subx  > /tmp/tags
 for f in *.subx
 do
@@ -62,6 +53,15 @@ do
 done
 
 for f in apps/*.subx
+do
+  test $# -gt 0  &&  test $1 != $f  &&  continue
+  ( cd apps
+    ctags -x ../*.subx `basename $f` > /tmp/tags
+  )
+  process $f
+done
+
+for f in apps/*.mu
 do
   test $# -gt 0  &&  test $1 != $f  &&  continue
   ( cd apps
