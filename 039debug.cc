@@ -7,12 +7,13 @@
 :(before "End Globals")
 map</*address*/uint32_t, string> Symbol_name;  // used only by 'bootstrap run'
 map</*address*/uint32_t, string> Source_line;  // used only by 'bootstrap run'
-:(before "End --debug Settings")
+:(before "End --trace Settings")
 load_labels();
 load_source_lines();
 :(code)
 void load_labels() {
   ifstream fin("labels");
+  if (fin.fail()) return;
   fin >> std::hex;
   while (has_data(fin)) {
     uint32_t addr = 0;
@@ -25,6 +26,7 @@ void load_labels() {
 
 void load_source_lines() {
   ifstream fin("source_lines");
+  if (fin.fail()) return;
   fin >> std::hex;
   while (has_data(fin)) {
     uint32_t addr = 0;

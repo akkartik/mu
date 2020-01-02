@@ -453,6 +453,7 @@ else if (is_equal(*arg, "--trace")) {
   // Add a dummy line up top; otherwise the `browse_trace` tool currently has
   // no way to expand any lines above an error.
   Trace_file << "   0 dummy: start\n";
+  // End --trace Settings
 }
 :(before "End trace Commit")
 if (Trace_file) {
