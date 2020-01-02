@@ -189,7 +189,7 @@ kernel; that number will gradually go down.)
   $ qemu-system-x86_64 -m 256M -cdrom mu_linux.iso -boot d
   ```
 
-## What SubX looks like
+## The syntax of SubX instructions
 
 Here is the above SubX example again:
 
@@ -205,160 +205,66 @@ performed) or _arguments_ (specifying the data the operation acts on). Any
 word can have extra _metadata_ attached to it after `/`. Some metadata is
 required (like the `/imm32` and `/imm8` above), but unrecognized metadata is
 silently skipped so you can attach comments to words (like the instruction
-name `/copy-to-eax` above, or the `/exit` operand).
+name `/copy-to-eax` above, or the `/exit` argument).
 
-SubX doesn't provide much syntax (there aren't even the usual mnemonics for
-opcodes), but it _does_ provide error-checking. If you miss an operand or
-accidentally add an extra operand you'll get a nice error. SubX won't arbitrarily
-interpret bytes of data as instructions or vice versa.
+What do all these numbers mean? SubX supports a small subset of the 32-bit x86
+instruction set that likely runs on your computer. (Think of the name as short
+for "sub-x86".) The instruction set contains instructions like `89/copy`,
+`01/add`, `3d/compare` and `51/push-ecx` which modify registers and a byte-addressable
+memory. For a complete list of supported instructions, run `subx help opcodes`.
 
-So much for syntax. What do all these numbers actually _mean_? SubX supports a
-small subset of the 32-bit x86 instruction set that likely runs on your
-computer. (Think of the name as short for "sub-x86".) Instructions operate on
-a few registers:
+The registers instructions operate on are as follows:
 
-* Six general-purpose 32-bit registers: `eax`, `ebx`, `ecx`, `edx`, `esi` and
-  `edi`
-* Two additional 32-bit registers: `esp` and `ebp` (I suggest you only use
-  these to manage the call stack.)
+* Six general-purpose 32-bit registers: `0/eax`, `1/ebx`, `2/ecx`, `3/edx`,
+  `6/esi` and `7/edi`.
+* Two additional 32-bit registers: `4/esp` and `5/ebp`. (I suggest you only
+  use these to manage the call stack.)
 * Four 1-bit _flag_ registers for conditional branching:
   - zero/equal flag `ZF`
   - sign flag `SF`
   - overflow flag `OF`
   - carry flag `CF`
 
-SubX programs consist of instructions like `89/copy`, `01/add`, `3d/compare`
-and `51/push-ecx` which modify these registers as well as a byte-addressable
-memory. For a complete list of supported instructions, run `subx help opcodes`.
-
 (SubX doesn't support floating-point registers yet. Intel processors support
 an 8-bit mode, 16-bit mode and 64-bit mode. SubX will never support them.
 There are other flags. SubX will never support them. There are also _many_
 more instructions that SubX will never support.)
 
-It's worth distinguishing between an instruction's _operands_ and its _arguments_.
+While SubX doesn't provide the usual mnemonics for opcodes, it _does_ provide
+error-checking. If you miss an argument or accidentally add an extra argument,
+you'll get a nice error. SubX won't arbitrarily interpret bytes of data as
+instructions or vice versa.
+
+It's worth distinguishing between an instruction's arguments and its _operands_.
 Arguments are provided directly in instructions. Operands are pieces of data
-in register or memory that are operated on by instructions. Intel processors
-determine operands from arguments in fairly complex ways.
+in register or memory that are operated on by instructions.
 
-## Lengthy interlude: How x86 instructions compute operands
+Intel processors typically operate on no more than two operands, and at most
+one of them (the 'reg/mem' operand) can access memory. The address of the
+reg/mem operand is constructed by expressions of one of these forms:
 
-The [Intel processor manual](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf)
-is the final source of truth on the x86 instruction set, but it can be
-forbidding to make sense of, so here's a quick orientation. You will need
-familiarity with binary numbers, and maybe a few other things. Email [me](mailto:mu@akkartik.com)
-any time if something isn't clear. I love explaining this stuff for as long as
-it takes. The bad news is that it takes some getting used to. The good news is
-that internalizing the next 500 words will give you a significantly deeper
-understanding of your computer.
+  * `%reg`: operate on just a register, not memory
+  * `*reg`: look up memory with the address in some register
+  * `*(reg + disp)`: add a constant to the address in some register
+  * `*(base + (index << scale) + disp)` where `base` and `index` are registers,
+    and `scale` and `disp` are 2- and 32-bit constants respectively.
 
-Most instructions operate on an operand in register or memory ('reg/mem'), and
-a second operand in a register. The register operand is specified fairly
-directly using the 3-bit `/r32` argument:
+Under the hood, SubX turns expressions of these forms into multiple arguments
+with metadata in some complex ways. See [SubX-addressing-modes.md](SubX-addressing-modes.md).
 
-  - 0 means register `eax`
-  - 1 means register `ecx`
-  - 2 means register `edx`
-  - 3 means register `ebx`
-  - 4 means register `esp`
-  - 5 means register `ebp`
-  - 6 means register `esi`
-  - 7 means register `edi`
+That covers the complexities of the reg/mem operand. The second operand is
+simpler. It comes from exactly one of the following argument types:
 
-The reg/mem operand, however, gets complex. It can be specified by 1-7
-arguments, each ranging in size from 2 bits to 4 bytes.
+  - `/r32`
+  - displacement: `/disp8` or `/disp32`
+  - immediate: `/imm8` or `/imm32`
 
-The key argument that's always present for reg/mem operands is `/mod`, the
-_addressing mode_. This is a 2-bit argument that can take 4 possible values,
-and it determines what other arguments are required, and how to interpret
-them.
-
-* If `/mod` is `3`: the operand is in the register described by the 3-bit
-  `/rm32` argument similarly to `/r32` above.
-
-* If `/mod` is `0`: the operand is in the address provided in the register
-  described by `/rm32`. That's `*rm32` in C syntax.
-
-* If `/mod` is `1`: the operand is in the address provided by adding the
-  register in `/rm32` with the (1-byte) displacement. That's `*(rm32 + /disp8)`
-  in C syntax.
-
-* If `/mod` is `2`: the operand is in the address provided by adding the
-  register in `/rm32` with the (4-byte) displacement. That's `*(/rm32 +
-  /disp32)` in C syntax.
-
-In the last three cases, one exception occurs when the `/rm32` argument
-contains `4`. Rather than encoding register `esp`, it means the address is
-provided by three _whole new_ arguments (`/base`, `/index` and `/scale`) in a
-_totally_ different way (where `<<` is the left-shift operator):
+Putting all this together, here's an example that adds the integer in `eax` to
+the one at address `edx`:
 
   ```
-  reg/mem = *(base + (index << scale))
+  01/add %edx 0/r32/eax
   ```
-
-(There are a couple more exceptions ☹; see [Table 2-2](modrm.pdf) and [Table 2-3](sib.pdf)
-of the Intel manual for the complete story.)
-
-Phew, that was a lot to take in. Some examples to work through as you reread
-and digest it:
-
-1. To read directly from the `eax` register, `/mod` must be `3` (direct mode),
-   and `/rm32` must be `0`. There must be no `/base`, `/index` or `/scale`
-   arguments.
-
-1. To read from `*eax` (in C syntax), `/mod` must be `0` (indirect mode), and
-   the `/rm32` argument must be `0`. There must be no `/base`, `/index` or
-   `/scale` arguments (Intel calls the trio the 'SIB byte'.).
-
-1. To read from `*(eax+4)`, `/mod` must be `1` (indirect + disp8 mode),
-   `/rm32` must be `0`, there must be no SIB byte, and there must be a single
-   displacement byte containing `4`.
-
-1. To read from `*(eax+ecx+4)`, one approach would be to set `/mod` to `1` as
-   above, `/rm32` to `4` (SIB byte next), `/base` to `0`, `/index` to `1`
-   (`ecx`) and a single displacement byte to `4`. (What should the `scale` bits
-   be? Can you think of another approach?)
-
-1. To read from `*(eax+ecx+1000)`, one approach would be:
-   - `/mod`: `2` (indirect + disp32)
-   - `/rm32`: `4` (`/base`, `/index` and `/scale` arguments required)
-   - `/base`: `0` (eax)
-   - `/index`: `1` (ecx)
-   - `/disp32`: 4 bytes containing `1000`
-
-## Putting it all together
-
-Here's a more meaty example:
-
-<img alt='apps/ex3.subx' src='html/ex3.png'>
-
-This program sums the first 10 natural numbers. By convention I use horizontal
-tabstops to help read instructions, dots to help follow the long lines,
-comments before groups of instructions to describe their high-level purpose,
-and comments at the end of complex instructions to state the low-level
-operation they perform. Numbers are always in hexadecimal (base 16) and must
-start with a digit ('0'..'9'); use the '0x' prefix when a number starts with a
-letter ('a'..'f'). I tend to also include it as a reminder when numbers look
-like decimal numbers.
-
-Try running this example now:
-
-```sh
-$ ./subx translate init.linux apps/ex3.subx -o apps/ex3
-$ ./subx run apps/ex3
-$ echo $?
-55
-```
-
-If you're on Linux you can also run it natively:
-
-```sh
-$ ./apps/ex3
-$ echo $?
-55
-```
-
-Use it now to follow along for a more complete tour of SubX syntax.
 
 ## The syntax of SubX programs
 
@@ -389,28 +295,6 @@ Within the `code` segment, each line contains a comment, label or instruction.
 Comments start with a `#` and are ignored. Labels should always be the first
 word on a line, and they end with a `:`.
 
-Instruction arguments must specify their type, from:
-  - `/mod`
-  - `/rm32`
-  - `/r32`
-  - `/subop` (sometimes the `/r32` bits in an instruction are used as an extra opcode)
-  - displacement: `/disp8` or `/disp32`
-  - immediate: `/imm8` or `/imm32`
-
-Different instructions (opcodes) require different arguments. SubX will
-validate each instruction in your programs, and raise an error anytime you
-miss or spuriously add an argument.
-
-I recommend you order arguments consistently in your programs. SubX allows
-arguments in any order, but only because that's simplest to explain/implement.
-Switching order from instruction to instruction is likely to add to the
-reader's burden. Here's the order I've been using after opcodes:
-
-```
-        |<--------- reg/mem --------->|        |<- reg/mem? ->|
-/subop  /mod /rm32  /base /index /scale  /r32   /displacement   /immediate
-```
-
 Instructions can refer to labels in displacement or immediate arguments, and
 they'll obtain a value based on the address of the label: immediate arguments
 will contain the address directly, while displacement arguments will contain
@@ -437,12 +321,11 @@ to provide a test harness: all functions that start with `test-` are called in
 turn by a special, auto-generated function called `run-tests`. How you choose
 to call it is up to you.
 
-I try to keep things simple so that there's less work to do when I eventually
-implement SubX in SubX. But there _is_ one convenience: instructions can
-provide a string literal surrounded by quotes (`"`) in an `imm32` argument.
-SubX will transparently copy it to the `data` segment and replace it with its
-address. Strings are the only place where a SubX word is allowed to contain
-spaces.
+I try to keep things simple so that there's less work to do when implementing
+SubX in SubX. But there _is_ one convenience: instructions can provide a
+string literal surrounded by quotes (`"`) in an `imm32` argument. SubX will
+transparently copy it to the `data` segment and replace it with its address.
+Strings are the only place where a SubX word is allowed to contain spaces.
 
 That should be enough information for writing SubX programs. The `apps/`
 directory provides some fodder for practice in the `apps/ex*` files, giving a
