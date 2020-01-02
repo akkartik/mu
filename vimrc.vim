@@ -44,15 +44,7 @@ else
 endif
 
 function! EditSubx(cmd, arg)
-  exec "silent! " . a:cmd . " " . SubxPath(a:arg)
-endfunction
-
-function! SubxPath(arg)
-  if a:arg =~ "^ex"
-    return "examples/" . a:arg . ".subx"
-  else
-    return "apps/" . a:arg . ".subx"
-  endif
+  exec "silent! " . a:cmd . " apps/" . a:arg . ".subx"
 endfunction
 
 " we often want to crib lines of machine code from other files

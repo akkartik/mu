@@ -48,7 +48,7 @@ In priority order:
 
 You get a thin syntax called SubX for programming in (a subset of) x86 machine
 code. (A memory-safe compiled language is [being designed](http://akkartik.name/post/mu-2019-2).)
-Here's a program (`examples/ex1.subx`) that returns 42:
+Here's a program (`apps/ex1.subx`) that returns 42:
 
   ```sh
   bb/copy-to-ebx  0x2a/imm32  # 42 in hex
@@ -59,8 +59,8 @@ Here's a program (`examples/ex1.subx`) that returns 42:
 You can generate tiny zero-dependency ELF binaries with it that run on Linux.
 
   ```sh
-  $ ./subx translate init.linux examples/ex1.subx -o examples/ex1  # on Linux or BSD or Mac
-  $ ./examples/ex1  # only on Linux
+  $ ./subx translate init.linux apps/ex1.subx -o apps/ex1  # on Linux or BSD or Mac
+  $ ./apps/ex1  # only on Linux
   $ echo $?
   42
  ```
@@ -72,7 +72,7 @@ You can run the generated binaries on an interpreter/VM for better error
 messages.
 
   ```sh
-  $ ./subx run examples/ex1  # on Linux or BSD or Mac
+  $ ./subx run apps/ex1  # on Linux or BSD or Mac
   $ echo $?
   42
   ```
@@ -80,11 +80,11 @@ messages.
 Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md).
 
   ```sh
-  $ ./subx --debug translate init.linux examples/factorial.subx -o examples/factorial
+  $ ./subx --debug translate init.linux apps/factorial.subx -o apps/factorial
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
 
-  $ ./subx --debug --trace run examples/factorial
+  $ ./subx --debug --trace run apps/factorial
   saving trace to 'last_run'
 
   $ tools/browse_trace last_run  # text-mode debugger UI
@@ -111,14 +111,14 @@ You can use SubX to translate itself. For example, running natively on Linux:
   $ chmod +x hex survey pack assort dquotes tests
 
   # use the generated translator phases to translate SubX programs
-  $ cat init.linux examples/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
+  $ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
   $ chmod +x a.elf
   $ ./a.elf
   $ echo $?
   42
 
   # or, automating the above steps
-  $ ./translate_subx init.linux examples/ex1.subx
+  $ ./translate_subx init.linux apps/ex1.subx
   $ ./a.elf
   $ echo $?
   42
@@ -142,7 +142,7 @@ work on a cloud server.)
   $ sudo apt install util-linux nasm xorriso  # maybe also dosfstools and mtools
   # package up a "hello world" program with a third-party kernel into mu_soso.iso
   # requires sudo
-  $ ./gen_soso_iso init.soso examples/ex6.subx
+  $ ./gen_soso_iso init.soso apps/ex6.subx
   # try it out
   $ qemu-system-i386 -cdrom mu_soso.iso
   ```
@@ -154,7 +154,7 @@ kernel; that number will gradually go down.)
 
   ```sh
   $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
-  $ ./gen_linux_iso init.linux examples/ex6.subx
+  $ ./gen_linux_iso init.linux apps/ex6.subx
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
   ```
 
@@ -299,7 +299,7 @@ and digest it:
 
 Here's a more meaty example:
 
-<img alt='examples/ex3.subx' src='html/ex3.png'>
+<img alt='apps/ex3.subx' src='html/ex3.png'>
 
 This program sums the first 10 natural numbers. By convention I use horizontal
 tabstops to help read instructions, dots to help follow the long lines,
@@ -313,8 +313,8 @@ like decimal numbers.
 Try running this example now:
 
 ```sh
-$ ./subx translate init.linux examples/ex3.subx -o examples/ex3
-$ ./subx run examples/ex3
+$ ./subx translate init.linux apps/ex3.subx -o apps/ex3
+$ ./subx run apps/ex3
 $ echo $?
 55
 ```
@@ -322,7 +322,7 @@ $ echo $?
 If you're on Linux you can also run it natively:
 
 ```sh
-$ ./examples/ex3
+$ ./apps/ex3
 $ echo $?
 55
 ```
@@ -413,13 +413,14 @@ SubX will transparently copy it to the `data` segment and replace it with its
 address. Strings are the only place where a SubX word is allowed to contain
 spaces.
 
-That should be enough information for writing SubX programs. The `examples/`
-directory provides some fodder for practice, giving a more gradual introduction
-to SubX features. This repo includes the binary for all examples. At any
-commit, an example's binary should be identical bit for bit with the result of
-translating the corresponding `.subx` file. The binary should also be natively
-runnable on a Linux system running on Intel x86 processors, either 32- or
-64-bit. If either of these invariants is broken it's a bug on my part.
+That should be enough information for writing SubX programs. The `apps/`
+directory provides some fodder for practice in the `apps/ex*` files, giving a
+more gradual introduction to SubX features. This repo includes binaries for
+all examples. At any commit, an example's binary should be identical bit for
+bit with the result of translating the corresponding `.subx` file. The binary
+should also be natively runnable on a Linux system running on Intel x86
+processors, either 32- or 64-bit. If either of these invariants is broken it's
+a bug on my part.
 
 ## Running
 
