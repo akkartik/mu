@@ -52,9 +52,9 @@ In priority order:
   For now it's a thin veneer over machine code. I'm working on memory safety
   before expressive syntax.
 
-## Language
+## Source Language
 
-Mu's main language is [still being built](http://akkartik.name/post/mu-2019-2).
+Mu's main source language is [still being built](http://akkartik.name/post/mu-2019-2).
 When completed, it will be type- and memory-safe. At the moment it performs no
 checks and only supports variables of type `int`. Here's the program we
 translated above:
