@@ -149,13 +149,13 @@ work on a cloud server.)
 
 You can also package up SubX binaries with a Linux kernel and run them on
 either Qemu or [a cloud server that supports custom images](http://akkartik.name/post/iso-on-linode).
-(Takes 12 minutes with 8GB RAM. Requires 12 million LoC of C for the Linux
+(Takes 12 minutes with 2GB RAM. Requires 12 million LoC of C for the Linux
 kernel; that number will gradually go down.)
 
   ```sh
   $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
-  $ ./gen_linux_iso init.linux apps/ex6.subx
-  $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
+  $ tools/iso/linux init.linux apps/ex6.subx
+  $ qemu-system-x86_64 -m 256M -cdrom mu_linux.iso -boot d
   ```
 
 ## What it looks like

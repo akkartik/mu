@@ -2,7 +2,7 @@
 # Build one or more .subx files into an ELF binary, and package it up into a
 # bootable ISO image with a Linux kernel.
 #
-# Must be run on Linux.
+# Must be run on Linux, and from the top-level mu/ directory.
 #
 # Dependencies:
 #   apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
@@ -20,7 +20,6 @@ fi
 echo "=== building SubX binary"
 ./translate_subx $*
 mv a.elf init
-chmod +x init
 
 echo "=== constructing initramfs out of SubX binary"
 rm -rf tmp_linux/isoimage
@@ -45,7 +44,7 @@ echo "=== unpacking syslinux"
 tar xf tmp_linux/syslinux-*.tar.xz -C tmp_linux
 
 mkdir -p tmp_linux/isoimage/boot/syslinux
-cp syslinux.cfg \
+cp tools/iso/syslinux.cfg \
    tmp_linux/syslinux-*/bios/core/isolinux.bin \
    tmp_linux/syslinux-*/bios/com32/elflink/ldlinux/ldlinux.c32 \
    tmp_linux/isoimage/boot/syslinux
