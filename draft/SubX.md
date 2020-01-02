@@ -2,7 +2,7 @@
 
 SubX is a notation for a subset of the x86 instruction set.
 
-Here's a program (`examples/ex1.subx`) that returns 42:
+Here's a program (`apps/ex1.subx`) that returns 42:
 
   ```sh
   bb/copy-to-ebx  0x2a/imm32  # 42 in hex
@@ -13,8 +13,8 @@ Here's a program (`examples/ex1.subx`) that returns 42:
 You can generate tiny zero-dependency ELF binaries with it that run on Linux.
 
   ```sh
-  $ ./ntranslate init.linux examples/ex1.subx -o examples/ex1
-  $ ./examples/ex1
+  $ ./translate_subx init.linux apps/ex1.subx -o apps/ex1
+  $ ./apps/ex1
   $ echo $?
   42
   ```
@@ -23,22 +23,22 @@ You can run the generated binaries on an interpreter/VM for better error
 messages.
 
   ```sh
-  $ ./subx run examples/ex1  # on Linux or BSD or Mac
+  $ ./subx run apps/ex1  # on Linux or BSD or Mac
   $ echo $?
   42
   ```
 
-Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
+Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md).
 
   ```sh
-  $ ./subx --debug translate init.linux examples/factorial.subx -o examples/factorial
+  $ ./subx --debug translate init.linux apps/factorial.subx -o apps/factorial
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
 
-  $ ./subx --debug --trace run examples/factorial
+  $ ./subx --debug --trace run apps/factorial
   saving trace to 'last_run'
 
-  $ ./browse_trace/browse_trace last_run  # text-mode debugger UI
+  $ tools/browse_trace last_run  # text-mode debugger UI
   ```
 
 You can write tests for your programs. The entire stack is thoroughly covered
@@ -52,7 +52,7 @@ by automated tests. SubX's tagline: tests before syntax.
 SubX is implemented in layers of syntax sugar over a tiny core. The core has
 two translators that emit identical binaries. The first, `subx`, is in C++. As
 a result it looks reasonable familiar but has a sprawling set of dependencies.
-The second, `ntranslate` is self-hosted, so it takes some practice to read.
+The second, `translate_subx` is self-hosted, so it takes some practice to read.
 However, it has a miniscule set of dependencies. These complementary strengths
 and weaknesses make it easy to audit and debug.
 
@@ -67,14 +67,14 @@ and weaknesses make it easy to audit and debug.
   $ chmod +x hex survey pack assort dquotes tests
 
   # use the generated translator phases to translate SubX programs
-  $ cat init.linux examples/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
+  $ cat init.linux apps/ex1.subx |./tests |./dquotes |./assort |./pack |./survey |./hex > a.elf
   $ chmod +x a.elf
   $ ./a.elf
   $ echo $?
   42
 
   # or, automating the above steps
-  $ ./ntranslate init.linux ex1.subx
+  $ ./translate_subx init.linux apps/ex1.subx
   $ ./a.elf
   $ echo $?
   42
@@ -98,7 +98,7 @@ work on a cloud server.)
   $ sudo apt install util-linux nasm xorriso  # maybe also dosfstools and mtools
   # package up a "hello world" program with a third-party kernel into mu_soso.iso
   # requires sudo
-  $ ./gen_soso_iso init.soso examples/ex6.subx
+  $ ./gen_soso_iso init.soso apps/ex6.subx
   # try it out
   $ qemu-system-i386 -cdrom mu_soso.iso
   ```
@@ -110,7 +110,7 @@ kernel; that number will gradually go down.)
 
   ```sh
   $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
-  $ ./gen_linux_iso init.linux examples/ex6.subx
+  $ ./gen_linux_iso init.linux apps/ex6.subx
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
   ```
 
@@ -255,7 +255,7 @@ and digest it:
 
 Here's a more meaty example:
 
-<img alt='examples/ex3.subx' src='html/ex3.png'>
+<img alt='apps/ex3.subx' src='html/ex3.png'>
 
 This program sums the first 10 natural numbers. By convention I use horizontal
 tabstops to help read instructions, dots to help follow the long lines,
@@ -269,8 +269,8 @@ like decimal numbers.
 Try running this example now:
 
 ```sh
-$ ./subx translate init.linux examples/ex3.subx -o examples/ex3
-$ ./subx run examples/ex3
+$ ./subx translate init.linux apps/ex3.subx -o apps/ex3
+$ ./subx run apps/ex3
 $ echo $?
 55
 ```
@@ -278,7 +278,7 @@ $ echo $?
 If you're on Linux you can also run it natively:
 
 ```sh
-$ ./examples/ex3
+$ ./apps/ex3
 $ echo $?
 55
 ```
@@ -369,7 +369,7 @@ SubX will transparently copy it to the `data` segment and replace it with its
 address. Strings are the only place where a SubX word is allowed to contain
 spaces.
 
-That should be enough information for writing SubX programs. The `examples/`
+That should be enough information for writing SubX programs. The `apps/`
 directory provides some fodder for practice, giving a more gradual introduction
 to SubX features. This repo includes the binary for all examples. At any
 commit, an example's binary should be identical bit for bit with the result of
@@ -498,7 +498,7 @@ rudimentary but hopefully still workable toolkit:
   layer. It makes the trace a lot more verbose and a lot less dense, necessitating
   a lot more scrolling around, so I keep it turned off most of the time.
 
-* If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md)
+* If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md)
   in the 'time-travel debugger'.
 
 Hopefully these hints are enough to get you started. The main thing to

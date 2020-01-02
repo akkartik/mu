@@ -67,8 +67,8 @@ details on the internal experience of the SubX notation itself, see [SubX.md](Su
 You can generate tiny zero-dependency ELF binaries with it.
 
   ```sh
-  $ ./ntranslate init.linux examples/ex1.subx -o examples/ex1
-  $ ./examples/ex1
+  $ ./translate_subx init.linux apps/ex1.subx -o apps/ex1
+  $ ./apps/ex1
   $ echo $?
   42
   ```
@@ -77,7 +77,7 @@ You can run the generated binaries on an interpreter/VM for better error
 messages.
 
   ```sh
-  $ ./subx run examples/ex1  # on Linux or BSD or Mac
+  $ ./subx run apps/ex1  # on Linux or BSD or Mac
   $ echo $?
   42
   ```
@@ -85,11 +85,11 @@ messages.
 Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/browse_trace/Readme.md).
 
   ```sh
-  $ ./subx --debug translate init.linux examples/factorial.subx -o examples/factorial
+  $ ./subx --debug translate init.linux apps/factorial.subx -o apps/factorial
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
 
-  $ ./subx --debug --trace run examples/factorial
+  $ ./subx --debug --trace run apps/factorial
   saving trace to 'last_run'
 
   $ ./browse_trace/browse_trace last_run  # text-mode debugger UI
@@ -112,7 +112,7 @@ work on a cloud server.)
   $ sudo apt install util-linux nasm xorriso  # maybe also dosfstools and mtools
   # package up a "hello world" program with a third-party kernel into mu_soso.iso
   # requires sudo
-  $ ./gen_soso_iso init.soso examples/ex6.subx
+  $ ./gen_soso_iso init.soso apps/ex6.subx
   # try it out
   $ qemu-system-i386 -cdrom mu_soso.iso
   ```
@@ -124,7 +124,7 @@ kernel; that number will gradually go down.)
 
   ```sh
   $ sudo apt install build-essential flex bison wget libelf-dev libssl-dev xorriso
-  $ ./gen_linux_iso init.linux examples/ex6.subx
+  $ ./gen_linux_iso init.linux apps/ex6.subx
   $ qemu-system-x86_64 -m 256M -cdrom mu.iso -boot d
   ```
 
