@@ -220,16 +220,10 @@ The registers instructions operate on are as follows:
   `6/esi` and `7/edi`.
 * Two additional 32-bit registers: `4/esp` and `5/ebp`. (I suggest you only
   use these to manage the call stack.)
-* Four 1-bit _flag_ registers for conditional branching:
-  - zero/equal flag `ZF`
-  - sign flag `SF`
-  - overflow flag `OF`
-  - carry flag `CF`
 
 (SubX doesn't support floating-point registers yet. Intel processors support
 an 8-bit mode, 16-bit mode and 64-bit mode. SubX will never support them.
-There are other flags. SubX will never support them. There are also _many_
-more instructions that SubX will never support.)
+There are also _many_ more instructions that SubX will never support.)
 
 While SubX doesn't provide the usual mnemonics for opcodes, it _does_ provide
 error-checking. If you miss an argument or accidentally add an extra argument,
