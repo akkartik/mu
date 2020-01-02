@@ -1,20 +1,9 @@
-//: The bedrock level 1 of abstraction is now done, and we're going to start
-//: building levels above it that make programming in x86 machine code a
-//: little more ergonomic.
-//:
-//: All levels will be "pass through by default". Whatever they don't
-//: understand they will silently pass through to lower levels.
-//:
-//: Since raw hex bytes of machine code are always possible to inject, SubX is
-//: not a language, and we aren't building a compiler. This is something
-//: deliberately leakier. Levels are more for improving auditing, checks and
-//: error messages rather than for hiding low-level details.
+//: After that lengthy prelude to define an x86 emulator, we are now ready to
+//: start translating SubX notation.
 
 //: Translator workflow: read 'source' file. Run a series of transforms on it,
 //: each passing through what it doesn't understand. The final program should
-//: be just machine code, suitable to write to an ELF binary.
-//:
-//: Higher levels usually transform code on the basis of metadata.
+//: be just machine code, suitable to emulate, or to write to an ELF binary.
 
 :(before "End Main")
 if (is_equal(argv[1], "translate")) {
@@ -69,6 +58,10 @@ if (is_equal(argv[1], "translate")) {
 }
 
 :(code)
+void transform(program& p) {
+  // End transform(program& p)
+}
+
 void print_translate_usage() {
   cerr << "Usage: subx translate file1 file2 ... -o output\n";
 }

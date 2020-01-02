@@ -1,5 +1,4 @@
-//: Beginning of "level 2": tagging bytes with metadata around what field of
-//: an x86 instruction they're for.
+//: Metadata for fields of an x86 instruction.
 //:
 //: The x86 instruction set is variable-length, and how a byte is interpreted
 //: affects later instruction boundaries. A lot of the pain in programming
@@ -26,6 +25,10 @@ put_new(Help, "instructions",
 );
 :(before "End Help Contents")
 cerr << "  instructions\n";
+
+:(before "Running Test Program")
+transform(p);
+if (trace_contains_errors()) return;
 
 :(code)
 void test_pack_immediate_constants() {

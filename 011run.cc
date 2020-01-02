@@ -78,15 +78,14 @@ void test_copy_imm32_to_EAX() {
   );
 }
 
-// top-level helper for scenarios: parse the input, transform any macros, load
-// the final hex bytes into memory, run it
+// top-level helper for tests: parse the input, load the hex bytes into memory, run
 void run(const string& text_bytes) {
   program p;
   istringstream in(text_bytes);
+  // Loading Test Program
   parse(in, p);
   if (trace_contains_errors()) return;  // if any stage raises errors, stop immediately
-  transform(p);
-  if (trace_contains_errors()) return;
+  // Running Test Program
   load(p);
   if (trace_contains_errors()) return;
   // convenience to keep tests concise: 'Entry' label need not be provided
@@ -242,19 +241,6 @@ void test_detect_duplicate_segments() {
   CHECK_TRACE_CONTENTS(
       "error: can't have multiple segments starting at address 0x000000ee\n"
   );
-}
-
-//:: transform
-
-:(before "End Types")
-typedef void (*transform_fn)(program&);
-:(before "End Globals")
-vector<transform_fn> Transform;
-
-:(code)
-void transform(program& p) {
-  for (int t = 0;  t < SIZE(Transform);  ++t)
-    (*Transform.at(t))(p);
 }
 
 //:: load

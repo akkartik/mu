@@ -1,11 +1,5 @@
-//: Core data structures for simulating the SubX VM (subset of an x86 processor)
-//:
-//: At the lowest level ("level 1") of abstraction, SubX executes x86
-//: instructions provided in the form of an array of bytes, loaded into memory
-//: starting at a specific address.
-//:
-//: SubX is fundamentally a translator. But having a VM to execute its
-//: translations affords greater confidence in it.
+//: Core data structures for simulating the SubX VM (subset of an x86 processor),
+//: either in tests or debug aids.
 
 //:: registers
 //: assume segment registers are hard-coded to 0
