@@ -139,10 +139,10 @@ work on a cloud server.)
 
   ```sh
   # dependencies
-  $ sudo apt install util-linux nasm xorriso  # maybe also dosfstools and mtools
+  $ sudo apt install build-essential util-linux nasm xorriso  # maybe also dosfstools and mtools
   # package up a "hello world" program with a third-party kernel into mu_soso.iso
   # requires sudo
-  $ ./gen_soso_iso init.soso apps/ex6.subx
+  $ tools/iso/soso init.soso apps/ex6.subx
   # try it out
   $ qemu-system-i386 -cdrom mu_soso.iso
   ```

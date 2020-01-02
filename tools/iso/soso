@@ -2,7 +2,7 @@
 # Build one or more .subx files into an ELF binary, and package it up into a
 # bootable ISO image with a Soso (https://github.com/ozkl/soso) kernel.
 #
-# Must be run on Linux.
+# Must be run on Linux, and from the top-level mu/ directory.
 #
 # Soso is published under the 2-clause BSD license.
 
@@ -16,8 +16,6 @@ fi
 
 echo "=== building SubX binary"
 ./translate_subx $*
-mv a.elf init
-chmod +x init
 
 echo "=== constructing initramfs out of SubX binary"
 dd if=/dev/zero of=initrd.fat bs=8M count=1
@@ -25,20 +23,20 @@ LOOP=`losetup -f`
 sudo losetup $LOOP initrd.fat
 sudo mkfs.vfat $LOOP
 sudo mount $LOOP /mnt
-cp init /mnt/
+mv a.elf /mnt/init
 umount /mnt
 losetup -d $LOOP
 sync
 chown $SUDO_USER:$SUDO_USER initrd.fat
 
 echo "=== building soso kernel"
-( cd kernel.soso
+( cd tools/iso/kernel.soso
   make
 )
 
 echo "=== generating mu_soso.iso"
 mkdir -p outfs/boot/grub
-cp kernel.soso/grub.cfg outfs/boot/grub
-cp kernel.soso/kernel.bin outfs/boot/
+cp tools/iso/kernel.soso/grub.cfg outfs/boot/grub
+cp tools/iso/kernel.soso/kernel.bin outfs/boot/
 cp initrd.fat outfs/boot/
 grub-mkrescue -o mu_soso.iso outfs
