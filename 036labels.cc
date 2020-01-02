@@ -179,7 +179,7 @@ void compute_byte_indices_for_labels(const segment& code, map<string, int32_t>& 
 }
 
 :(before "End Globals")
-bool Dump_debug_info = false;  // currently used only by 'subx translate'
+bool Dump_debug_info = false;  // currently used only by 'bootstrap translate'
 ofstream Labels_file;
 ofstream Source_lines_file;
 :(before "End Commandline Options")
@@ -188,14 +188,14 @@ else if (is_equal(*arg, "--debug")) {
   // End --debug Settings
 }
 //: wait to open "labels" for writing until we're sure we aren't trying to read it
-:(after "Begin subx translate")
+:(after "Begin bootstrap translate")
 if (Dump_debug_info) {
   cerr << "saving address->label information to 'labels'\n";
   Labels_file.open("labels");
   cerr << "saving address->source information to 'source_lines'\n";
   Source_lines_file.open("source_lines");
 }
-:(before "End subx translate")
+:(before "End bootstrap translate")
 if (Dump_debug_info) {
   Labels_file.close();
   Source_lines_file.close();
@@ -373,7 +373,7 @@ void test_duplicate_Entry_label() {
 }
 
 // This test could do with some refactoring.
-// We're duplicating the flow inside `subx translate`, but without
+// We're duplicating the flow inside `bootstrap translate`, but without
 // reading/writing files.
 // We can't just use run(string) because most of our tests allow programs
 // without 'Entry' labels, as a convenience.

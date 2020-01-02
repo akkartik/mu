@@ -1,12 +1,12 @@
 //:: Some helpers for debugging.
 
-//: Load the 'map' file generated during 'subx --debug translate' when running
-//: 'subx --debug --trace run'.
+//: Load the 'map' file generated during 'bootstrap --debug translate' when running
+//: 'bootstrap --trace run'.
 //: (It'll only affect the trace.)
 
 :(before "End Globals")
-map</*address*/uint32_t, string> Symbol_name;  // used only by 'subx run'
-map</*address*/uint32_t, string> Source_line;  // used only by 'subx run'
+map</*address*/uint32_t, string> Symbol_name;  // used only by 'bootstrap run'
+map</*address*/uint32_t, string> Source_line;  // used only by 'bootstrap run'
 :(before "End --debug Settings")
 load_labels();
 load_source_lines();

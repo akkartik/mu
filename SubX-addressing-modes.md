@@ -107,8 +107,8 @@ reader's burden. Here's the order I've been using after opcodes:
 Try running this example now:
 
 ```sh
-$ ./subx translate init.linux apps/ex3.subx -o apps/ex3
-$ ./subx run apps/ex3
+$ ./bootstrap translate init.linux apps/ex3.subx -o apps/ex3
+$ ./bootstrap run apps/ex3
 $ echo $?
 55
 ```

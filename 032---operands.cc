@@ -21,7 +21,7 @@ put_new(Help, "instructions",
   "The complete list of operand types: mod, subop, r32 (register), rm32\n"
   "(register or memory), scale, index, base, disp8, disp16, disp32, imm8,\n"
   "imm32.\n"
-  "Each of these has its own help page. Try reading 'subx help mod' next.\n"
+  "Each of these has its own help page. Try reading 'bootstrap help mod' next.\n"
 );
 :(before "End Help Contents")
 cerr << "  instructions\n";

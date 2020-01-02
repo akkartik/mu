@@ -10,10 +10,10 @@ if (is_equal(argv[1], "translate")) {
   // Outside of tests, traces must be explicitly requested.
   if (Trace_file.is_open()) Trace_stream = new trace_stream;
   reset();
-  // Begin subx translate
+  // Begin bootstrap translate
   program p;
   string output_filename;
-  for (int i = /*skip 'subx translate'*/2;  i < argc;  ++i) {
+  for (int i = /*skip 'bootstrap translate'*/2;  i < argc;  ++i) {
     if (is_equal(argv[i], "-o")) {
       ++i;
       if (i >= argc) {
@@ -53,7 +53,7 @@ if (is_equal(argv[1], "translate")) {
     unlink(output_filename.c_str());
     return 1;
   }
-  // End subx translate
+  // End bootstrap translate
   return 0;
 }
 
@@ -63,7 +63,7 @@ void transform(program& p) {
 }
 
 void print_translate_usage() {
-  cerr << "Usage: subx translate file1 file2 ... -o output\n";
+  cerr << "Usage: bootstrap translate file1 file2 ... -o output\n";
 }
 
 // write out a program to a bare-bones ELF file

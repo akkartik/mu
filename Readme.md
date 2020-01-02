@@ -90,20 +90,20 @@ x86 machine code. Here's a program (`apps/ex1.subx`) that returns 42:
 You can generate tiny zero-dependency ELF binaries from SubX that run on Linux.
 
   ```sh
-  $ ./subx translate init.linux apps/ex1.subx -o apps/ex1  # on Linux or BSD or Mac
+  $ ./bootstrap translate init.linux apps/ex1.subx -o apps/ex1  # on Linux or BSD or Mac
   $ ./apps/ex1  # only on Linux
   $ echo $?
   42
  ```
 
-(Running `subx` requires a C++ compiler, transparently invoking it as
+(Running `bootstrap` requires a C++ compiler, transparently invoking it as
 necessary.)
 
 You can run the generated binaries on an interpreter/VM for better error
 messages.
 
   ```sh
-  $ ./subx run apps/ex1  # on Linux or BSD or Mac
+  $ ./bootstrap run apps/ex1  # on Linux or BSD or Mac
   $ echo $?
   42
   ```
@@ -111,11 +111,11 @@ messages.
 Emulated runs can generate a trace that permits [time-travel debugging](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md).
 
   ```sh
-  $ ./subx --debug translate init.linux apps/factorial.subx -o apps/factorial
+  $ ./bootstrap --debug translate init.linux apps/factorial.subx -o apps/factorial
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
 
-  $ ./subx --debug --trace run apps/factorial
+  $ ./bootstrap --debug --trace run apps/factorial
   saving trace to 'last_run'
 
   $ tools/browse_trace last_run  # text-mode debugger UI
@@ -125,20 +125,20 @@ You can write tests for your programs. The entire stack is thoroughly covered
 by automated tests. SubX's tagline: tests before syntax.
 
   ```sh
-  $ ./subx test
-  $ ./subx run apps/factorial test
+  $ ./bootstrap test
+  $ ./bootstrap run apps/factorial test
   ```
 
 You can use SubX to translate itself. For example, running natively on Linux:
 
   ```sh
   # generate translator phases using the C++ translator
-  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
-  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx -o survey
-  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
-  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
-  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
-  $ ./subx translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/hex.subx    -o hex
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/survey.subx -o survey
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/pack.subx   -o pack
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/assort.subx -o assort
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/dquotes.subx -o dquotes
+  $ ./bootstrap translate init.linux 0*.subx apps/subx-params.subx apps/tests.subx  -o tests
   $ chmod +x hex survey pack assort dquotes tests
 
   # use the generated translator phases to translate SubX programs
@@ -159,7 +159,7 @@ Or, running in a VM on other platforms (much slower):
 
   ```sh
   $ ./translate_subx_emulated init.linux ex1.subx  # generates identical a.elf to above
-  $ ./subx run a.elf
+  $ ./bootstrap run a.elf
   $ echo $?
   42
   ```
@@ -382,8 +382,8 @@ rudimentary but hopefully still workable toolkit:
 * Generate a trace for the failing test while running your program in emulated
   mode (`subx run`):
   ```
-  $ ./subx translate input.subx -o binary
-  $ ./subx --trace run binary arg1 arg2  2>trace
+  $ ./bootstrap translate input.subx -o binary
+  $ ./bootstrap --trace run binary arg1 arg2  2>trace
   ```
   The ability to generate a trace is the essential reason for the existence of
   `subx run` mode. It gives far better visibility into program internals than
@@ -392,8 +392,8 @@ rudimentary but hopefully still workable toolkit:
 * As a further refinement, it is possible to render label names in the trace
   by adding a second flag to both the `translate` and `run` commands:
   ```
-  $ ./subx --debug translate input.subx -o binary
-  $ ./subx --debug --trace run binary arg1 arg2  2>trace
+  $ ./bootstrap --debug translate input.subx -o binary
+  $ ./bootstrap --debug --trace run binary arg1 arg2  2>trace
   ```
   `subx --debug translate` emits a mapping from label to address in a file
   called `labels`. `subx --debug --trace run` reads in the `labels` file at
@@ -731,10 +731,10 @@ a) Try running the tests:
   $ ./test_apps
   ```
 
-b) Check out the online help. Try typing just `./subx`, and then `./subx
+b) Check out the online help. Try typing just `./bootstrap`, and then `./bootstrap
 help`.
 
-c) Familiarize yourself with `./subx help opcodes`. You'll spend a lot of time
+c) Familiarize yourself with `./bootstrap help opcodes`. You'll spend a lot of time
 with it. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/opcodes).)
 [Here](https://lobste.rs/s/qglfdp/subx_minimalist_assembly_language_for#c_o9ddqk)
 are some tips on my setup for quickly finding the right opcode for any

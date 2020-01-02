@@ -3,9 +3,9 @@
 # non-zero exit status only on error during building
 set -e  # stop immediately on error
 
-# [0-9]*.cc -> subx.cc -> subx_bin
-# (layers)   |          |
-#          tangle      $CXX
+# [0-9]*.cc -> bootstrap.cc -> bootstrap_bin
+# (layers)   |               |
+#          tangle           $CXX
 
 # can also be called with a layer to only build until
 #   $ ./build --until 050
@@ -87,17 +87,17 @@ older_than tools/tangle tools/tangle.cc && {
 }
 
 LAYERS=$(tools/enumerate --until $UNTIL_LAYER  |grep '.cc$')
-older_than subx.cc $LAYERS tools/enumerate tools/tangle && {
+older_than bootstrap.cc $LAYERS tools/enumerate tools/tangle && {
   # no update here; rely on 'update' calls downstream
-  tools/tangle $LAYERS  > subx.cc
+  tools/tangle $LAYERS  > bootstrap.cc
 }
 
-grep -h "^[^[:space:]#].*) {$" subx.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |update function_list
-grep -h "^\s*void test_" subx.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |update test_list
-grep -h "^\s*void test_" subx.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
+grep -h "^[^[:space:]#].*) {$" bootstrap.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |update function_list
+grep -h "^\s*void test_" bootstrap.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |update test_list
+grep -h "^\s*void test_" bootstrap.cc  |sed 's/^\s*void \(.*\)() {.*/"\1",/'  |update test_name_list
 
-older_than subx_bin subx.cc *_list && {
-  $CXX $CFLAGS subx.cc -o subx_bin
+older_than bootstrap_bin bootstrap.cc *_list && {
+  $CXX $CFLAGS bootstrap.cc -o bootstrap_bin
 }
 
 exit 0

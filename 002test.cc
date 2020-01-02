@@ -1,6 +1,6 @@
 //: A simple test harness. To create new tests, define functions starting with
 //: 'test_'. To run all tests so defined, run:
-//:   $ ./mu test
+//:   $ ./bootstrap test
 //:
 //: Every layer should include tests, and can reach into previous layers.
 //: However, it seems like a good idea never to reach into tests from previous
@@ -72,7 +72,7 @@ if (Run_tests) {
 
 :(after "End Main")
 //: Raise other unrecognized sub-commands as errors.
-//: We couldn't do this until now because we want `./subx test` to always
+//: We couldn't do this until now because we want `./bootstrap test` to always
 //: succeed, no matter how many layers are included in the build.
 cerr << "nothing to do\n";
 return 1;

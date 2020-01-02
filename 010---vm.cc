@@ -362,7 +362,7 @@ if (key == "opcodes") {
     cerr << "  f3 " << p->first << ": " << p->second << '\n';
   for (map<string, string>::iterator p = Name_f3_0f.begin();  p != Name_f3_0f.end();  ++p)
     cerr << "  f3 0f " << p->first << ": " << p->second << '\n';
-  cerr << "Run `subx help instructions` for details on words like 'r32' and 'disp8'.\n"
+  cerr << "Run `bootstrap help instructions` for details on words like 'r32' and 'disp8'.\n"
           "For complete details on these instructions, consult the IA-32 manual (volume 2).\n"
           "There's various versions of it online, such as https://c9x.me/x86.\n"
           "The mnemonics in brackets will help you locate each instruction.\n";

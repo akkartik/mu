@@ -28,10 +28,10 @@ echo "== translating and running using C++"
 # example programs
 
 echo ex1
-./subx translate init.$OS apps/ex1.subx  -o apps/ex1
+./bootstrap translate init.$OS apps/ex1.subx  -o apps/ex1
 test "$1" = 'record'  ||  git diff --exit-code apps/ex1
 test $EMULATED  &&  {
-  ./subx run apps/ex1  ||  ret=$?
+  ./bootstrap run apps/ex1  ||  ret=$?
   test $ret -eq 42  # life, the universe and everything
 }
 test $NATIVE  &&  {
@@ -40,10 +40,10 @@ test $NATIVE  &&  {
 }
 
 echo ex2
-./subx translate init.$OS apps/ex2.subx  -o apps/ex2
+./bootstrap translate init.$OS apps/ex2.subx  -o apps/ex2
 test "$1" = 'record'  ||  git diff --exit-code apps/ex2
 test $EMULATED  &&  {
-  ./subx run apps/ex2  ||  ret=$?
+  ./bootstrap run apps/ex2  ||  ret=$?
   test $ret -eq 2  # 1 + 1
 }
 test $NATIVE  &&  {
@@ -52,10 +52,10 @@ test $NATIVE  &&  {
 }
 
 echo ex3
-./subx translate init.$OS apps/ex3.subx  -o apps/ex3
+./bootstrap translate init.$OS apps/ex3.subx  -o apps/ex3
 test "$1" = 'record'  ||  git diff --exit-code apps/ex3
 test $EMULATED  &&  {
-  ./subx run apps/ex3  ||  ret=$?
+  ./bootstrap run apps/ex3  ||  ret=$?
   test $ret -eq 55  # 1 + 2 + ... + 10
 }
 test $NATIVE  &&  {
@@ -64,10 +64,10 @@ test $NATIVE  &&  {
 }
 
 echo ex4
-./subx translate init.$OS apps/ex4.subx  -o apps/ex4
+./bootstrap translate init.$OS apps/ex4.subx  -o apps/ex4
 test "$1" = 'record'  ||  git diff --exit-code apps/ex4
 test $EMULATED  &&  {
-  echo a | ./subx run apps/ex4 >ex4.out  ||  true
+  echo a | ./bootstrap run apps/ex4 >ex4.out  ||  true
   test `cat ex4.out` = 'a'
 }
 test $NATIVE  &&  {
@@ -76,10 +76,10 @@ test $NATIVE  &&  {
 }
 
 echo ex5
-./subx translate init.$OS apps/ex5.subx  -o apps/ex5
+./bootstrap translate init.$OS apps/ex5.subx  -o apps/ex5
 test "$1" = 'record'  ||  git diff --exit-code apps/ex5
 test $EMULATED  &&  {
-  echo a | ./subx run apps/ex5 >ex5.out  ||  true
+  echo a | ./bootstrap run apps/ex5 >ex5.out  ||  true
   test `cat ex5.out` = 'a'
 }
 test $NATIVE  &&  {
@@ -88,10 +88,10 @@ test $NATIVE  &&  {
 }
 
 echo ex6
-./subx translate init.$OS apps/ex6.subx  -o apps/ex6
+./bootstrap translate init.$OS apps/ex6.subx  -o apps/ex6
 test "$1" = 'record'  ||  git diff --exit-code apps/ex6
 test $EMULATED  &&  {
-  ./subx run apps/ex6 >ex6.out  ||  true
+  ./bootstrap run apps/ex6 >ex6.out  ||  true
   test "`cat ex6.out`" = 'Hello, world!'
 }
 test $NATIVE  &&  {
@@ -100,10 +100,10 @@ test $NATIVE  &&  {
 }
 
 echo ex7
-./subx translate init.$OS apps/ex7.subx  -o apps/ex7
+./bootstrap translate init.$OS apps/ex7.subx  -o apps/ex7
 test "$1" = 'record'  ||  git diff --exit-code apps/ex7
 test $EMULATED  &&  {
-  ./subx run apps/ex7  ||  ret=$?
+  ./bootstrap run apps/ex7  ||  ret=$?
   test $ret -eq 97  # 'a'
 }
 test $NATIVE  &&  {
@@ -112,10 +112,10 @@ test $NATIVE  &&  {
 }
 
 echo ex8
-./subx translate init.$OS apps/ex8.subx  -o apps/ex8
+./bootstrap translate init.$OS apps/ex8.subx  -o apps/ex8
 test "$1" = 'record'  || git diff --exit-code apps/ex8
 test $EMULATED  &&  {
-  ./subx run apps/ex8 abcd  ||  ret=$?
+  ./bootstrap run apps/ex8 abcd  ||  ret=$?
   test $ret -eq 4  # length('abcd')
 }
 test $NATIVE  &&  {
@@ -124,10 +124,10 @@ test $NATIVE  &&  {
 }
 
 echo ex9
-./subx translate init.$OS apps/ex9.subx  -o apps/ex9
+./bootstrap translate init.$OS apps/ex9.subx  -o apps/ex9
 test "$1" = 'record'  || git diff --exit-code apps/ex9
 test $EMULATED  &&  {
-  ./subx run apps/ex9 z x  ||  ret=$?
+  ./bootstrap run apps/ex9 z x  ||  ret=$?
   test $ret -eq 2  # 'z' - 'x'
 }
 test $NATIVE  &&  {
@@ -136,12 +136,12 @@ test $NATIVE  &&  {
 }
 
 echo ex10
-./subx translate init.$OS apps/ex10.subx  -o apps/ex10
+./bootstrap translate init.$OS apps/ex10.subx  -o apps/ex10
 test "$1" = 'record'  || git diff --exit-code apps/ex10
 test $EMULATED  &&  {
-  ./subx run apps/ex10 abc abc  ||  ret=$?
+  ./bootstrap run apps/ex10 abc abc  ||  ret=$?
   test $ret -eq 1  # equal
-  ./subx run apps/ex10 abc abcd  # 0; not equal
+  ./bootstrap run apps/ex10 abc abcd  # 0; not equal
 }
 test $NATIVE  &&  {
   apps/ex10 abc abc  ||  ret=$?
@@ -150,10 +150,10 @@ test $NATIVE  &&  {
 }
 
 echo ex11
-./subx translate init.$OS apps/ex11.subx  -o apps/ex11
+./bootstrap translate init.$OS apps/ex11.subx  -o apps/ex11
 test "$1" = 'record'  || git diff --exit-code apps/ex11
 test $EMULATED  &&  {
-  ./subx run apps/ex11
+  ./bootstrap run apps/ex11
   echo
 }
 test $NATIVE  &&  {
@@ -162,20 +162,20 @@ test $NATIVE  &&  {
 }
 
 echo ex12
-./subx translate init.$OS apps/ex12.subx  -o apps/ex12
+./bootstrap translate init.$OS apps/ex12.subx  -o apps/ex12
 test "$1" = 'record'  || git diff --exit-code apps/ex12
-test $EMULATED  &&  ./subx run apps/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
+test $EMULATED  &&  ./bootstrap run apps/ex12  # final byte of mmap'd address is well-nigh guaranteed to be 0
 test $NATIVE  &&  apps/ex12
 
 # Larger apps that use the standard library.
 
 echo factorial
-./subx translate init.$OS 0*.subx apps/factorial.subx  -o apps/factorial
+./bootstrap translate init.$OS 0*.subx apps/factorial.subx  -o apps/factorial
 test "$1" = 'record'  ||  git diff --exit-code apps/factorial
 test $EMULATED  &&  {
-  ./subx run apps/factorial  ||  ret=$?
+  ./bootstrap run apps/factorial  ||  ret=$?
   test $ret -eq 120  # factorial(5)
-  ./subx run apps/factorial test
+  ./bootstrap run apps/factorial test
   echo
 }
 test $NATIVE  &&  {
@@ -186,10 +186,10 @@ test $NATIVE  &&  {
 }
 
 echo crenshaw2-1
-./subx translate init.$OS 0*.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
+./bootstrap translate init.$OS 0*.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
 test "$1" = 'record'  ||  git diff --exit-code apps/crenshaw2-1
 test $EMULATED  &&  {
-  ./subx run apps/crenshaw2-1 test
+  ./bootstrap run apps/crenshaw2-1 test
   echo
 }
 test $NATIVE  &&  {
@@ -198,10 +198,10 @@ test $NATIVE  &&  {
 }
 
 echo crenshaw2-1b
-./subx translate init.$OS 0*.subx apps/crenshaw2-1b.subx  -o apps/crenshaw2-1b
+./bootstrap translate init.$OS 0*.subx apps/crenshaw2-1b.subx  -o apps/crenshaw2-1b
 test "$1" = 'record'  ||  git diff --exit-code apps/crenshaw2-1b
 test $EMULATED  &&  {
-  ./subx run apps/crenshaw2-1b test
+  ./bootstrap run apps/crenshaw2-1b test
   echo
 }
 test $NATIVE  &&  {
@@ -210,10 +210,10 @@ test $NATIVE  &&  {
 }
 
 echo handle
-./subx translate init.$OS 0*.subx apps/handle.subx  -o apps/handle
+./bootstrap translate init.$OS 0*.subx apps/handle.subx  -o apps/handle
 test "$1" = 'record'  ||  git diff --exit-code apps/handle
 test $EMULATED  &&  {
-  ./subx run apps/handle > handle.out 2>&1  ||  true
+  ./bootstrap run apps/handle > handle.out 2>&1  ||  true
   grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
   grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
 }
@@ -228,10 +228,10 @@ test $NATIVE  &&  {
 for phase in hex survey pack assort dquotes tests
 do
   echo $phase
-  ./subx translate init.$OS 0*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
+  ./bootstrap translate init.$OS 0*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
   test "$1" = 'record'  ||  git diff --exit-code apps/hex
   test $EMULATED  &&  {
-    ./subx run apps/$phase test
+    ./bootstrap run apps/$phase test
     echo
   }
   test $NATIVE  &&  {
@@ -246,10 +246,10 @@ done
 # to go beyond functionality of the C++ bootstrap.
 
 echo sigils
-./subx translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
+./bootstrap translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
 [ "$1" != record ]  &&  git diff --exit-code apps/sigils
 test $EMULATED  &&  {
-  ./subx run apps/sigils test
+  ./bootstrap run apps/sigils test
   echo
 }
 test `uname` = 'Linux'  &&  {
@@ -259,10 +259,10 @@ test `uname` = 'Linux'  &&  {
 
 echo calls
 cat init.$OS 0*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
-./subx translate a.sigils -o apps/calls
+./bootstrap translate a.sigils -o apps/calls
 [ "$1" != record ]  &&  git diff --exit-code apps/calls
 test $EMULATED  &&  {
-  ./subx run apps/calls test
+  ./bootstrap run apps/calls test
   echo
 }
 test `uname` = 'Linux'  &&  {
@@ -272,10 +272,10 @@ test `uname` = 'Linux'  &&  {
 
 echo braces
 cat init.$OS 0*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
-./subx translate a.sigils -o apps/braces
+./bootstrap translate a.sigils -o apps/braces
 [ "$1" != record ]  &&  git diff --exit-code apps/braces
 test $EMULATED  &&  {
-  ./subx run apps/braces test
+  ./bootstrap run apps/braces test
   echo
 }
 test `uname` = 'Linux'  &&  {
@@ -285,10 +285,10 @@ test `uname` = 'Linux'  &&  {
 
 echo mu
 cat init.$OS 0*.subx apps/mu.subx  |  apps/braces  |  apps/calls  |  apps/sigils  > a.sigils
-./subx translate a.sigils -o apps/mu
+./bootstrap translate a.sigils -o apps/mu
 [ "$1" != record ]  &&  git diff --exit-code apps/mu
 test $EMULATED  &&  {
-  ./subx run apps/mu test
+  ./bootstrap run apps/mu test
   echo
 }
 test `uname` = 'Linux'  &&  {
