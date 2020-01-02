@@ -70,16 +70,17 @@ translated above:
   }
   ```
 
-Most instructions here translate to a single machine code instruction.
-Programs must specify registers when they want to use them. Functions always
-return results in registers. Execution begins at the function `main`, which
-always returns its result in register `ebx`. [The post on Mu](http://akkartik.name/post/mu-2019-2)
+There are no expressions, only statements that operate on variables. Most
+statements in Mu translate to a single machine code instruction. Variables
+reside in memory by default. Programs must specify registers when they want to
+use them. Functions must return results in registers. Execution begins at the
+function `main`, which always returns its result in register `ebx`. [This post](http://akkartik.name/post/mu-2019-2)
 has more details.
 
 ## SubX
 
-Mu is built out of a thin syntax called SubX for programming in (a subset of)
-x86 machine code. Here's a program (`apps/ex1.subx`) that returns 42:
+Mu is written in [a notation for a subset of x86 machine code called SubX](http://akkartik.name/post/mu-2019-1).
+Here's a program (`apps/ex1.subx`) that returns 42:
 
   ```sh
   bb/copy-to-ebx  0x2a/imm32  # 42 in hex
@@ -158,7 +159,7 @@ You can use SubX to translate itself. For example, running natively on Linux:
 Or, running in a VM on other platforms (much slower):
 
   ```sh
-  $ ./translate_subx_emulated init.linux ex1.subx  # generates identical a.elf to above
+  $ ./translate_subx_emulated init.linux apps/ex1.subx  # generates identical a.elf to above
   $ ./bootstrap run a.elf
   $ echo $?
   42
