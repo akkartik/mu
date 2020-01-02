@@ -116,7 +116,7 @@ Emulated runs can generate a trace that permits [time-travel debugging](https://
   saving address->label information to 'labels'
   saving address->source information to 'source_lines'
 
-  $ ./bootstrap --debug --trace run apps/factorial
+  $ ./bootstrap --trace run apps/factorial
   saving trace to 'last_run'
 
   $ tools/browse_trace last_run  # text-mode debugger UI
@@ -212,7 +212,7 @@ What do all these numbers mean? SubX supports a small subset of the 32-bit x86
 instruction set that likely runs on your computer. (Think of the name as short
 for "sub-x86".) The instruction set contains instructions like `89/copy`,
 `01/add`, `3d/compare` and `51/push-ecx` which modify registers and a byte-addressable
-memory. For a complete list of supported instructions, run `subx help opcodes`.
+memory. For a complete list of supported instructions, run `bootstrap help opcodes`.
 
 The registers instructions operate on are as follows:
 
@@ -339,17 +339,17 @@ broken it's a bug on my part.
 
 ## Running
 
-`subx` currently has the following sub-commands:
+`bootstrap` currently has the following sub-commands:
 
-* `subx help`: some helpful documentation to have at your fingertips.
+* `bootstrap help`: some helpful documentation to have at your fingertips.
 
-* `subx test`: runs all automated tests.
+* `bootstrap test`: runs all automated tests.
 
-* `subx translate <input files> -o <output ELF binary>`: translates `.subx`
+* `bootstrap translate <input files> -o <output ELF binary>`: translates `.subx`
   files into an executable ELF binary.
 
-* `subx run <ELF binary>`: simulates running the ELF binaries emitted by `subx
-  translate`. Useful for testing and debugging.
+* `bootstrap run <ELF binary> <args>`: simulates running the ELF binaries emitted
+  by `bootstrap translate`. Useful for testing and debugging.
 
   Remember, not all 32-bit Linux binaries are guaranteed to run. I'm not
   building general infrastructure here for all of the x86 instruction set.
@@ -376,29 +376,29 @@ rudimentary but hopefully still workable toolkit:
   write.
 
 * Start running the single failing test alone. This involves modifying the top
-  of the program (or the final `.subx` file passed in to `subx translate`) by
+  of the program (or the final `.subx` file passed in to `bootstrap translate`) by
   replacing the call to `run-tests` with a call to the appropriate `test-`
   function.
 
 * Generate a trace for the failing test while running your program in emulated
-  mode (`subx run`):
+  mode (`bootstrap run`):
   ```
   $ ./bootstrap translate input.subx -o binary
   $ ./bootstrap --trace run binary arg1 arg2  2>trace
   ```
   The ability to generate a trace is the essential reason for the existence of
-  `subx run` mode. It gives far better visibility into program internals than
+  `bootstrap run` mode. It gives far better visibility into program internals than
   running natively.
 
 * As a further refinement, it is possible to render label names in the trace
   by adding a second flag to both the `translate` and `run` commands:
   ```
   $ ./bootstrap --debug translate input.subx -o binary
-  $ ./bootstrap --debug --trace run binary arg1 arg2  2>trace
+  $ ./bootstrap --trace run binary arg1 arg2  2>trace
   ```
-  `subx --debug translate` emits a mapping from label to address in a file
-  called `labels`. `subx --debug --trace run` reads in the `labels` file at
-  the start and prints out any matching label name as it traces each instruction
+  `bootstrap --debug translate` emits a mapping from label to address in a file
+  called `labels`. `bootstrap --trace run` reads in the `labels` file if
+  it exists and prints out any matching label name as it traces each instruction
   executed.
 
   Here's a sample of what a trace looks like, with a few boxes highlighted:
@@ -441,7 +441,7 @@ rudimentary but hopefully still workable toolkit:
   reached, and precisely when the exit was taken.
 
 * If you find yourself wondering, "when did the contents of this memory
-  address change?", `subx run` has some rudimentary support for _watch
+  address change?", `bootstrap run` has some rudimentary support for _watch
   points_. Just insert a label starting with `$watch-` before an instruction
   that writes to the address, and its value will start getting dumped to the
   trace after every instruction thereafter.
@@ -726,17 +726,12 @@ To falsify these hypotheses, here's a roadmap of the next few planned features:
 
 If you're still reading, here are some more things to check out:
 
-a) Try running the tests:
+a) Try running the tests: `./test_apps`
 
-  ```shell
-  $ ./test_apps
-  ```
+b) Check out the online help. Starting point: `./bootstrap`
 
-b) Check out the online help. Try typing just `./bootstrap`, and then `./bootstrap
-help`.
-
-c) Familiarize yourself with `./bootstrap help opcodes`. You'll spend a lot of time
-with it. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/opcodes).)
+c) Familiarize yourself with `./bootstrap help opcodes`. If you program in Mu
+you'll spend a lot of time with it. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/opcodes).)
 [Here](https://lobste.rs/s/qglfdp/subx_minimalist_assembly_language_for#c_o9ddqk)
 are some tips on my setup for quickly finding the right opcode for any
 situation from within Vim.

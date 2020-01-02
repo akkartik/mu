@@ -97,8 +97,6 @@ const string Test_names[] = {
 };
 :(after "Test Runs")
 string maybe_single_test_to_run = argv[argc-1];
-if (!starts_with(maybe_single_test_to_run, "test_"))
-  maybe_single_test_to_run.insert(0, "test_");
 for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
   if (Test_names[i] == maybe_single_test_to_run) {
     run_test(i);
