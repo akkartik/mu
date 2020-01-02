@@ -59,12 +59,10 @@ init_help();
 :(code)
 void init_help() {
   put(Help, "usage",
-    "Welcome to SubX, a better way to program in machine code.\n"
-    "SubX uses a subset of the x86 instruction set. SubX programs will run\n"
-    "without modification on Linux computers.\n"
-    "It provides a better experience and better error messages than\n"
-    "programming directly in machine code, but you have to stick to the\n"
-    "instructions it supports.\n"
+    "bootstrap: the bootstrap translator for SubX.\n"
+    "This program also wraps some miscellaneous useful functionality:\n"
+    "  - an x86 emulator: `bootstrap run`\n"
+    "  - online help: `bootstrap help`\n"
     "\n"
     "== Ways to invoke bootstrap\n"
     "- Run tests:\n"
