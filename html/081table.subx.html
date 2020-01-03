@@ -61,7 +61,7 @@ if ('onhashchange' in window) {
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">   1 </span><span class="subxComment"># A table is a stream of (key, value) rows.</span>
 <span id="L2" class="LineNr">   2 </span><span class="subxComment">#</span>
-<span id="L3" class="LineNr">   3 </span><span class="subxComment"># Each row consists of a 4-byte key -- a 'string_key' which is (address array</span>
+<span id="L3" class="LineNr">   3 </span><span class="subxComment"># Each row consists of a 4-byte key -- a 'string_key' which is (addr array</span>
 <span id="L4" class="LineNr">   4 </span><span class="subxComment"># byte) -- and a variable-size value.</span>
 <span id="L5" class="LineNr">   5 </span><span class="subxComment">#</span>
 <span id="L6" class="LineNr">   6 </span><span class="subxComment"># Accessing the table performs a linear scan for a key string, and always</span>
@@ -84,8 +84,8 @@ if ('onhashchange' in window) {
 <span id="L23" class="LineNr">  23 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L24" class="LineNr">  24 </span>
 <span id="L25" class="LineNr">  25 </span><span class="subxComment"># if no row is found, abort</span>
-<span id="L26" class="LineNr">  26 </span><span class="subxComment"># type string_key = (address array byte)</span>
-<span id="L27" class="LineNr">  27 </span><span class="subxFunction">get</span>:  <span class="subxComment"># table : (address stream {string_key, T}), key : string_key, row-size : int, abort-message-prefix : (address array byte) -&gt; eax : (address T)</span>
+<span id="L26" class="LineNr">  26 </span><span class="subxComment"># type string_key = (addr array byte)</span>
+<span id="L27" class="LineNr">  27 </span><span class="subxFunction">get</span>:  <span class="subxComment"># table : (addr stream {string_key, T}), key : string_key, row-size : int, abort-message-prefix : (addr array byte) -&gt; eax : (addr T)</span>
 <span id="L28" class="LineNr">  28 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L29" class="LineNr">  29 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L30" class="LineNr">  30 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -104,9 +104,9 @@ if ('onhashchange' in window) {
 <span id="L43" class="LineNr">  43 </span>    56/push-esi
 <span id="L44" class="LineNr">  44 </span>    <span class="subxComment"># esi = table</span>
 <span id="L45" class="LineNr">  45 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L46" class="LineNr">  46 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L46" class="LineNr">  46 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L47" class="LineNr">  47 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L48" class="LineNr">  48 </span>    <span class="subxComment"># var max/edx : (address byte) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L48" class="LineNr">  48 </span>    <span class="subxComment"># var max/edx : (addr byte) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L49" class="LineNr">  49 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L50" class="LineNr">  50 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L51" class="LineNr">  51 </span><span class="Constant">$get:search-loop</span>:
@@ -259,7 +259,7 @@ if ('onhashchange' in window) {
 <span id="L198" class="LineNr"> 198 </span>    c3/return
 <span id="L199" class="LineNr"> 199 </span>
 <span id="L200" class="LineNr"> 200 </span><span class="subxComment"># if no row is found, abort</span>
-<span id="L201" class="LineNr"> 201 </span><span class="subxFunction">get-slice</span>:  <span class="subxComment"># table : (address stream {string_key, T}), key : (address slice), row-size : int, abort-message-prefix : (address array byte) -&gt; eax : (address T)</span>
+<span id="L201" class="LineNr"> 201 </span><span class="subxFunction">get-slice</span>:  <span class="subxComment"># table : (addr stream {string_key, T}), key : (addr slice), row-size : int, abort-message-prefix : (addr array byte) -&gt; eax : (addr T)</span>
 <span id="L202" class="LineNr"> 202 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L203" class="LineNr"> 203 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L204" class="LineNr"> 204 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -278,9 +278,9 @@ if ('onhashchange' in window) {
 <span id="L217" class="LineNr"> 217 </span>    56/push-esi
 <span id="L218" class="LineNr"> 218 </span>    <span class="subxComment"># esi = table</span>
 <span id="L219" class="LineNr"> 219 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L220" class="LineNr"> 220 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L220" class="LineNr"> 220 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L221" class="LineNr"> 221 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L222" class="LineNr"> 222 </span>    <span class="subxComment"># var max/edx : (address byte) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L222" class="LineNr"> 222 </span>    <span class="subxComment"># var max/edx : (addr byte) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L223" class="LineNr"> 223 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L224" class="LineNr"> 224 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L225" class="LineNr"> 225 </span><span class="Constant">$get-slice:search-loop</span>:
@@ -462,7 +462,7 @@ if ('onhashchange' in window) {
 <span id="L401" class="LineNr"> 401 </span><span class="subxComment"># return the address of the value</span>
 <span id="L402" class="LineNr"> 402 </span><span class="subxComment"># Beware: assume keys are immutable; they're inserted by reference</span>
 <span id="L403" class="LineNr"> 403 </span><span class="subxComment"># TODO: pass in an allocation descriptor</span>
-<span id="L404" class="LineNr"> 404 </span><span class="subxFunction">get-or-insert</span>:  <span class="subxComment"># table : (address stream {string_key, T}), key : string_key, row-size : int -&gt; eax : (address T)</span>
+<span id="L404" class="LineNr"> 404 </span><span class="subxFunction">get-or-insert</span>:  <span class="subxComment"># table : (addr stream {string_key, T}), key : string_key, row-size : int -&gt; eax : (addr T)</span>
 <span id="L405" class="LineNr"> 405 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L406" class="LineNr"> 406 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L407" class="LineNr"> 407 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -486,9 +486,9 @@ if ('onhashchange' in window) {
 <span id="L425" class="LineNr"> 425 </span>    56/push-esi
 <span id="L426" class="LineNr"> 426 </span>    <span class="subxComment"># esi = table</span>
 <span id="L427" class="LineNr"> 427 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L428" class="LineNr"> 428 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L428" class="LineNr"> 428 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L429" class="LineNr"> 429 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L430" class="LineNr"> 430 </span>    <span class="subxComment"># var max/edx : (address string_key) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L430" class="LineNr"> 430 </span>    <span class="subxComment"># var max/edx : (addr string_key) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L431" class="LineNr"> 431 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L432" class="LineNr"> 432 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L433" class="LineNr"> 433 </span><span class="Constant">$get-or-insert:search-loop</span>:
@@ -713,7 +713,7 @@ if ('onhashchange' in window) {
 <span id="L652" class="LineNr"> 652 </span><span class="subxComment"># if there are no rows free, abort</span>
 <span id="L653" class="LineNr"> 653 </span><span class="subxComment"># WARNING: leaks memory</span>
 <span id="L654" class="LineNr"> 654 </span><span class="subxComment"># TODO: pass in an allocation descriptor</span>
-<span id="L655" class="LineNr"> 655 </span><span class="subxFunction">leaky-get-or-insert-slice</span>:  <span class="subxComment"># table : (address stream {string_key, T}), key : (address slice), row-size : int -&gt; eax : (address T)</span>
+<span id="L655" class="LineNr"> 655 </span><span class="subxFunction">leaky-get-or-insert-slice</span>:  <span class="subxComment"># table : (addr stream {string_key, T}), key : (addr slice), row-size : int -&gt; eax : (addr T)</span>
 <span id="L656" class="LineNr"> 656 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L657" class="LineNr"> 657 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L658" class="LineNr"> 658 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -737,9 +737,9 @@ if ('onhashchange' in window) {
 <span id="L676" class="LineNr"> 676 </span>    56/push-esi
 <span id="L677" class="LineNr"> 677 </span>    <span class="subxComment"># esi = table</span>
 <span id="L678" class="LineNr"> 678 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L679" class="LineNr"> 679 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L679" class="LineNr"> 679 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L680" class="LineNr"> 680 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L681" class="LineNr"> 681 </span>    <span class="subxComment"># var max/edx : (address string_key) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L681" class="LineNr"> 681 </span>    <span class="subxComment"># var max/edx : (addr string_key) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L682" class="LineNr"> 682 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L683" class="LineNr"> 683 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L684" class="LineNr"> 684 </span><span class="Constant">$leaky-get-or-insert-slice:search-loop</span>:
@@ -985,9 +985,9 @@ if ('onhashchange' in window) {
 <span id="L924" class="LineNr"> 924 </span>    c3/return
 <span id="L925" class="LineNr"> 925 </span>
 <span id="L926" class="LineNr"> 926 </span><span class="subxComment"># if no row is found, stop(ed)</span>
-<span id="L927" class="LineNr"> 927 </span><span class="subxFunction">get-or-stop</span>:  <span class="subxComment"># table : (address stream {string_key, T}), key : string_key, row-size : int,</span>
-<span id="L928" class="LineNr"> 928 </span>              <span class="subxComment"># abort-message-prefix : (address array byte), err : (address buffered-file), ed : (address exit-descriptor)</span>
-<span id="L929" class="LineNr"> 929 </span>              <span class="subxComment"># -&gt; eax : (address T)</span>
+<span id="L927" class="LineNr"> 927 </span><span class="subxFunction">get-or-stop</span>:  <span class="subxComment"># table : (addr stream {string_key, T}), key : string_key, row-size : int,</span>
+<span id="L928" class="LineNr"> 928 </span>              <span class="subxComment"># abort-message-prefix : (addr array byte), err : (addr buffered-file), ed : (addr exit-descriptor)</span>
+<span id="L929" class="LineNr"> 929 </span>              <span class="subxComment"># -&gt; eax : (addr T)</span>
 <span id="L930" class="LineNr"> 930 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L931" class="LineNr"> 931 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L932" class="LineNr"> 932 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -1007,9 +1007,9 @@ if ('onhashchange' in window) {
 <span id="L946" class="LineNr"> 946 </span>    56/push-esi
 <span id="L947" class="LineNr"> 947 </span>    <span class="subxComment"># esi = table</span>
 <span id="L948" class="LineNr"> 948 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L949" class="LineNr"> 949 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L949" class="LineNr"> 949 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L950" class="LineNr"> 950 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L951" class="LineNr"> 951 </span>    <span class="subxComment"># var max/edx : (address byte) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L951" class="LineNr"> 951 </span>    <span class="subxComment"># var max/edx : (addr byte) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L952" class="LineNr"> 952 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L953" class="LineNr"> 953 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L954" class="LineNr"> 954 </span><span class="Constant">$get-or-stop:search-loop</span>:
@@ -1201,9 +1201,9 @@ if ('onhashchange' in window) {
 <span id="L1140" class="LineNr">1140 </span>    c3/return
 <span id="L1141" class="LineNr">1141 </span>
 <span id="L1142" class="LineNr">1142 </span><span class="subxComment"># if no row is found, stop(ed)</span>
-<span id="L1143" class="LineNr">1143 </span><span class="subxFunction">get-slice-or-stop</span>:  <span class="subxComment"># table : (address stream {string_key, _}), key : (address slice), row-size : int,</span>
-<span id="L1144" class="LineNr">1144 </span>                    <span class="subxComment"># abort-message-prefix : (address string), err : (address buffered-file), ed : (address exit-descriptor)</span>
-<span id="L1145" class="LineNr">1145 </span>                    <span class="subxComment"># -&gt; eax : (address _)</span>
+<span id="L1143" class="LineNr">1143 </span><span class="subxFunction">get-slice-or-stop</span>:  <span class="subxComment"># table : (addr stream {string_key, _}), key : (addr slice), row-size : int,</span>
+<span id="L1144" class="LineNr">1144 </span>                    <span class="subxComment"># abort-message-prefix : (addr string), err : (addr buffered-file), ed : (addr exit-descriptor)</span>
+<span id="L1145" class="LineNr">1145 </span>                    <span class="subxComment"># -&gt; eax : (addr _)</span>
 <span id="L1146" class="LineNr">1146 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1147" class="LineNr">1147 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L1148" class="LineNr">1148 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -1223,9 +1223,9 @@ if ('onhashchange' in window) {
 <span id="L1162" class="LineNr">1162 </span>    56/push-esi
 <span id="L1163" class="LineNr">1163 </span>    <span class="subxComment"># esi = table</span>
 <span id="L1164" class="LineNr">1164 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L1165" class="LineNr">1165 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L1165" class="LineNr">1165 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L1166" class="LineNr">1166 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L1167" class="LineNr">1167 </span>    <span class="subxComment"># var max/edx : (address byte) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L1167" class="LineNr">1167 </span>    <span class="subxComment"># var max/edx : (addr byte) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L1168" class="LineNr">1168 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L1169" class="LineNr">1169 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L1170" class="LineNr">1170 </span><span class="Constant">$get-slice-or-stop:search-loop</span>:
@@ -1440,7 +1440,7 @@ if ('onhashchange' in window) {
 <span id="L1379" class="LineNr">1379 </span>    c3/return
 <span id="L1380" class="LineNr">1380 </span>
 <span id="L1381" class="LineNr">1381 </span><span class="subxComment"># if no row is found, return null (0)</span>
-<span id="L1382" class="LineNr">1382 </span><span class="subxFunction">maybe-get</span>:  <span class="subxComment"># table : (address stream {string_key, T}), key : string_key, row-size : int -&gt; eax : (address T)</span>
+<span id="L1382" class="LineNr">1382 </span><span class="subxFunction">maybe-get</span>:  <span class="subxComment"># table : (addr stream {string_key, T}), key : string_key, row-size : int -&gt; eax : (addr T)</span>
 <span id="L1383" class="LineNr">1383 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1384" class="LineNr">1384 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L1385" class="LineNr">1385 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -1459,9 +1459,9 @@ if ('onhashchange' in window) {
 <span id="L1398" class="LineNr">1398 </span>    56/push-esi
 <span id="L1399" class="LineNr">1399 </span>    <span class="subxComment"># esi = table</span>
 <span id="L1400" class="LineNr">1400 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L1401" class="LineNr">1401 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L1401" class="LineNr">1401 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L1402" class="LineNr">1402 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L1403" class="LineNr">1403 </span>    <span class="subxComment"># var max/edx : (address byte) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L1403" class="LineNr">1403 </span>    <span class="subxComment"># var max/edx : (addr byte) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L1404" class="LineNr">1404 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L1405" class="LineNr">1405 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L1406" class="LineNr">1406 </span><span class="Constant">$maybe-get:search-loop</span>:
@@ -1587,7 +1587,7 @@ if ('onhashchange' in window) {
 <span id="L1526" class="LineNr">1526 </span>    c3/return
 <span id="L1527" class="LineNr">1527 </span>
 <span id="L1528" class="LineNr">1528 </span><span class="subxComment"># if no row is found, return null (0)</span>
-<span id="L1529" class="LineNr">1529 </span><span class="subxFunction">maybe-get-slice</span>:  <span class="subxComment"># table : (address stream {string_key, T}), key : (address slice), row-size : int -&gt; eax : (address T)</span>
+<span id="L1529" class="LineNr">1529 </span><span class="subxFunction">maybe-get-slice</span>:  <span class="subxComment"># table : (addr stream {string_key, T}), key : (addr slice), row-size : int -&gt; eax : (addr T)</span>
 <span id="L1530" class="LineNr">1530 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1531" class="LineNr">1531 </span>    <span class="subxComment">#   curr = table-&gt;data</span>
 <span id="L1532" class="LineNr">1532 </span>    <span class="subxComment">#   max = &amp;table-&gt;data[table-&gt;write]</span>
@@ -1606,9 +1606,9 @@ if ('onhashchange' in window) {
 <span id="L1545" class="LineNr">1545 </span>    56/push-esi
 <span id="L1546" class="LineNr">1546 </span>    <span class="subxComment"># esi = table</span>
 <span id="L1547" class="LineNr">1547 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L1548" class="LineNr">1548 </span>    <span class="subxComment"># var curr/ecx : (address string_key) = table-&gt;data</span>
+<span id="L1548" class="LineNr">1548 </span>    <span class="subxComment"># var curr/ecx : (addr string_key) = table-&gt;data</span>
 <span id="L1549" class="LineNr">1549 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy esi+12 to ecx</span>
-<span id="L1550" class="LineNr">1550 </span>    <span class="subxComment"># var max/edx : (address byte) = &amp;table-&gt;data[table-&gt;write]</span>
+<span id="L1550" class="LineNr">1550 </span>    <span class="subxComment"># var max/edx : (addr byte) = &amp;table-&gt;data[table-&gt;write]</span>
 <span id="L1551" class="LineNr">1551 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to edx</span>
 <span id="L1552" class="LineNr">1552 </span>    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx  <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+edx to edx</span>
 <span id="L1553" class="LineNr">1553 </span><span class="Constant">$maybe-get-slice:search-loop</span>:

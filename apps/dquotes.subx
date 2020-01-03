@@ -82,7 +82,7 @@ $subx-dquotes-main:end:
 #   line = words separated by ' ', maybe followed by comment starting with '#'
 #   word = datum until '/', then 0 or more metadata separated by '/'
 
-subx-dquotes:  # in : (address buffered-file), out : (address buffered-file)
+subx-dquotes:  # in : (addr buffered-file), out : (addr buffered-file)
     # pseudocode:
     #   var line : (ref stream byte 512)
     #   var new-data-segment : (handle stream byte) = new-stream(Heap, Segment-size, 1)
@@ -198,7 +198,7 @@ $subx-dquotes:check1:
     0f 85/jump-if-not-equal  $subx-dquotes:next-line/disp32
 $subx-dquotes:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
-    # . var start/esi : (address byte) = word-slice->start
+    # . var start/esi : (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           6/r32/esi   .               .                 # copy *edx to esi
     # . var c/eax : byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
@@ -287,7 +287,7 @@ $subx-dquotes:end:
 
 # Write out 'string-literal' in a new format to 'out-segment', assign it a new
 # label, and write the new label out to 'out'.
-process-string-literal:  # string-literal : (address slice), out : (address buffered-file), out-segment : (address stream byte)
+process-string-literal:  # string-literal : (addr slice), out : (addr buffered-file), out-segment : (addr stream byte)
     # pseudocode:
     #   print(out-segment, "_string#{Next-string-literal}:\n")
     #   emit-string-literal-data(out-segment, string-literal)
@@ -846,7 +846,7 @@ test-subx-dquotes-processes-string-literals:
     c3/return
 
 # generate the data segment contents byte by byte for a given slice
-emit-string-literal-data:  # out : (address stream byte), word : (address slice)
+emit-string-literal-data:  # out : (addr stream byte), word : (addr slice)
     # pseudocode
     #   len = string-length-at-start-of-slice(word->start, word->end)
     #   print(out, "#{len}/imm32 ")
@@ -887,9 +887,9 @@ emit-string-literal-data:  # out : (address stream byte), word : (address slice)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
     # var idx/ebx : int = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
-    # var curr/edx : (address byte) = word->start
+    # var curr/edx : (addr byte) = word->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
-    # var max/esi : (address byte) = word->end
+    # var max/esi : (addr byte) = word->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
 $emit-string-literal-data:emit-length:
     # var len/eax : int = string-length-at-start-of-slice(word->start, word->end)
@@ -1379,7 +1379,7 @@ test-emit-string-literal-data-handles-newline-escape:
     c3/return
 
 # emit everything from a word except the initial datum
-emit-metadata:  # out : (address buffered-file), word : (address slice)
+emit-metadata:  # out : (addr buffered-file), word : (addr slice)
     # pseudocode
     #   var slice : (ref slice) = {0, word->end}
     #   curr = word->start
@@ -1406,9 +1406,9 @@ emit-metadata:  # out : (address buffered-file), word : (address slice)
     56/push-esi
     # esi = word
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var curr/ecx : (address byte) = word->start
+    # var curr/ecx : (addr byte) = word->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-    # var end/edx : (address byte) = word->end
+    # var end/edx : (addr byte) = word->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   4/disp8         .                 # copy *(esi+4) to edx
     # var slice/ebx : (ref slice) = {0, end}
     52/push-edx
@@ -1778,7 +1778,7 @@ test-emit-metadata-in-string-literal:
     5d/pop-to-ebp
     c3/return
 
-string-length-at-start-of-slice:  # curr : (address byte), end : (address byte) -> length/eax
+string-length-at-start-of-slice:  # curr : (addr byte), end : (addr byte) -> length/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp

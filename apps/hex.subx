@@ -77,7 +77,7 @@ $subx-hex-main:end:
     cd/syscall  0x80/imm8
 
 # the main entry point
-subx-hex:  # in : (address buffered-file), out : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor)
+subx-hex:  # in : (addr buffered-file), out : (addr buffered-file), err : (addr buffered-file), ed : (addr exit-descriptor)
     # pseudocode:
     #   while true
     #     eax = convert-next-octet(in, err, ed)
@@ -135,7 +135,7 @@ $subx-hex:end:
 # raise an error and abort on all other unexpected bytes
 # return in eax an _octet_ containing the binary value of the two hex characters
 # return Eof on reaching end of file
-convert-next-octet:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-Eof/eax
+convert-next-octet:  # in : (addr buffered-file), err : (addr buffered-file), ed : (addr exit-descriptor) -> byte-or-Eof/eax
     # pseudocode:
     #   eax = scan-next-byte(in, err, ed)
     #   if (eax == Eof) return
@@ -481,7 +481,7 @@ $test-convert-next-octet-aborts-on-single-hex-byte:end:
 # return Eof if file ends without finding a hex byte
 # on '#' skip all bytes until newline
 # abort on any other byte
-scan-next-byte:  # in : (address buffered-file), err : (address buffered-file), ed : (address exit-descriptor) -> byte-or-Eof/eax
+scan-next-byte:  # in : (addr buffered-file), err : (addr buffered-file), ed : (addr exit-descriptor) -> byte-or-Eof/eax
     # pseudocode:
     #   while true
     #     eax = read-byte-buffered(in)
@@ -1350,7 +1350,7 @@ $test-scan-next-byte-aborts-on-invalid-byte:end:
     5d/pop-to-ebp
     c3/return
 
-skip-until-newline:  # in : (address buffered-file)
+skip-until-newline:  # in : (addr buffered-file)
     # pseudocode:
     #   push eax
     #   while true

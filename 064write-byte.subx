@@ -8,7 +8,7 @@
 
 # The buffered file for standard output.
 Stdout:  # (ref buffered-file)
-    # file descriptor or (address stream byte)
+    # file descriptor or (addr stream byte)
     1/imm32  # standard output
 $Stdout->buffer:
     # inlined fields for a stream
@@ -30,7 +30,7 @@ $Stdout->buffer:
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # Write lower byte of 'n' to 'f'.
-write-byte-buffered:  # f : (address buffered-file), n : int
+write-byte-buffered:  # f : (addr buffered-file), n : int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -78,7 +78,7 @@ $write-byte-buffered:end:
     5d/pop-to-ebp
     c3/return
 
-flush:  # f : (address buffered-file)
+flush:  # f : (addr buffered-file)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -205,7 +205,7 @@ test-write-byte-buffered-multiple-flushes:
 # - variant without buffering
 
 # Write lower byte of 'n' to 'f'.
-append-byte:  # f : (address stream byte), n : int
+append-byte:  # f : (addr stream byte), n : int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -326,7 +326,7 @@ _test-output-stream:  # (ref stream byte)
 
 # a test buffered file for _test-output-stream
 _test-output-buffered-file:  # (ref buffered-file)
-    # file descriptor or (address stream byte)
+    # file descriptor or (addr stream byte)
     _test-output-stream/imm32
 $_test-output-buffered-file->buffer:
     # current write index
@@ -357,7 +357,7 @@ _test-error-stream:  # (ref stream byte)
 
 # a test buffered file for _test-error-stream
 _test-error-buffered-file:  # (ref buffered-file)
-    # file descriptor or (address stream byte)
+    # file descriptor or (addr stream byte)
     _test-error-stream/imm32
 $_test-error-buffered-file->buffer:
     # current write index

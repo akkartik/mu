@@ -90,7 +90,7 @@ $main:end:
     cd/syscall  0x80/imm8
 
 # the main entry point
-compile:  # in : (address buffered-file), out : fd or (address stream byte), err : fd or (address stream byte), ed : (address exit-descriptor)
+compile:  # in : (addr buffered-file), out : fd or (addr stream byte), err : fd or (addr stream byte), ed : (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -191,7 +191,7 @@ $compile:end:
 # space in 'out'.
 # Input comes from the global variable 'Look' (first byte) and the argument
 # 'in' (rest). We leave the next byte from 'in' into 'Look' on exit.
-get-num:  # in : (address buffered-file), out : (address stream byte), err : fd or (address stream byte), ed : (address exit-descriptor)
+get-num:  # in : (addr buffered-file), out : (addr stream byte), err : fd or (addr stream byte), ed : (addr exit-descriptor)
     # pseudocode:
     #   if (!is-digit?(Look)) expected(ed, err, "integer")
     #   if out->write >= out->length
@@ -470,7 +470,7 @@ test-get-num-aborts-on-non-digit-in-Look:
 ## helpers
 
 # write(f, "Error: "+s+" expected\n") then stop(ed, 1)
-expected:  # ed : (address exit-descriptor), f : fd or (address stream byte), s : (address array byte)
+expected:  # ed : (addr exit-descriptor), f : fd or (addr stream byte), s : (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -512,7 +512,7 @@ $expected:dead-end:
     c3/return
 
 # read a byte from 'f', and save it in 'Look'
-get-char:  # f : (address buffered-file)
+get-char:  # f : (addr buffered-file)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp

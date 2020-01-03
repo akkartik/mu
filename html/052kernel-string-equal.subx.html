@@ -92,7 +92,7 @@ if ('onhashchange' in window) {
 <span id="L30" class="LineNr"> 30 </span>
 <span id="L31" class="LineNr"> 31 </span><span class="subxComment"># compare a null-terminated ascii string with a more idiomatic length-prefixed byte array</span>
 <span id="L32" class="LineNr"> 32 </span><span class="subxComment"># reason for the name: the only place we should have null-terminated ascii strings is from commandline args</span>
-<span id="L33" class="LineNr"> 33 </span><span class="subxFunction">kernel-string-equal?</span>:  <span class="subxComment"># s : (address kernel-string), benchmark : (address array byte) -&gt; eax : boolean</span>
+<span id="L33" class="LineNr"> 33 </span><span class="subxFunction">kernel-string-equal?</span>:  <span class="subxComment"># s : (addr kernel-string), benchmark : (addr array byte) -&gt; eax : boolean</span>
 <span id="L34" class="LineNr"> 34 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L35" class="LineNr"> 35 </span>    <span class="subxComment">#   n = benchmark-&gt;length</span>
 <span id="L36" class="LineNr"> 36 </span>    <span class="subxComment">#   s1 = s</span>
@@ -123,12 +123,12 @@ if ('onhashchange' in window) {
 <span id="L61" class="LineNr"> 61 </span>    53/push-ebx
 <span id="L62" class="LineNr"> 62 </span>    56/push-esi
 <span id="L63" class="LineNr"> 63 </span>    57/push-edi
-<span id="L64" class="LineNr"> 64 </span>    <span class="subxComment"># var s1/edi : (address byte) = s</span>
+<span id="L64" class="LineNr"> 64 </span>    <span class="subxComment"># var s1/edi : (addr byte) = s</span>
 <span id="L65" class="LineNr"> 65 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to edi</span>
 <span id="L66" class="LineNr"> 66 </span>    <span class="subxComment"># var n/edx : int = benchmark-&gt;length</span>
 <span id="L67" class="LineNr"> 67 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to edx</span>
 <span id="L68" class="LineNr"> 68 </span>    8b/copy                         0/mod/indirect  2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *edx to edx</span>
-<span id="L69" class="LineNr"> 69 </span>    <span class="subxComment"># var s2/esi : (address byte) = benchmark-&gt;data</span>
+<span id="L69" class="LineNr"> 69 </span>    <span class="subxComment"># var s2/esi : (addr byte) = benchmark-&gt;data</span>
 <span id="L70" class="LineNr"> 70 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to esi</span>
 <span id="L71" class="LineNr"> 71 </span>    81          0/subop/add         3/mod/direct    6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esi</span>
 <span id="L72" class="LineNr"> 72 </span>    <span class="subxComment"># var i/ecx : int = 0</span>
@@ -324,10 +324,10 @@ if ('onhashchange' in window) {
 <span id="L262" class="LineNr">262 </span>
 <span id="L263" class="LineNr">263 </span>== data
 <span id="L264" class="LineNr">264 </span>
-<span id="L265" class="LineNr">265 </span><span class="SpecialChar">Null-kernel-string</span>:  <span class="subxComment"># (address kernel-string)</span>
+<span id="L265" class="LineNr">265 </span><span class="SpecialChar">Null-kernel-string</span>:  <span class="subxComment"># (addr kernel-string)</span>
 <span id="L266" class="LineNr">266 </span>    00/null
 <span id="L267" class="LineNr">267 </span>
-<span id="L268" class="LineNr">268 </span><span class="subxMinorFunction">_test-Abc-kernel-string</span>:  <span class="subxComment"># (address kernel-string)</span>
+<span id="L268" class="LineNr">268 </span><span class="subxMinorFunction">_test-Abc-kernel-string</span>:  <span class="subxComment"># (addr kernel-string)</span>
 <span id="L269" class="LineNr">269 </span>    41/A 62/b 63/c 00/null
 <span id="L270" class="LineNr">270 </span>
 <span id="L271" class="LineNr">271 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>

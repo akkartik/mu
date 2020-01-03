@@ -107,7 +107,7 @@ if ('onhashchange' in window) {
 <span id="L49" class="LineNr"> 49 </span><span class="subxComment">#     NIL NUM CHAR STRING SYMBOL PAIR ARRAY</span>
 <span id="L50" class="LineNr"> 50 </span><span class="subxComment">#   memory type: a type specifying memory layout at the SubX level. Starts</span>
 <span id="L51" class="LineNr"> 51 </span><span class="subxComment">#   with a '$'.</span>
-<span id="L52" class="LineNr"> 52 </span><span class="subxComment">#     $int $array $(address _)</span>
+<span id="L52" class="LineNr"> 52 </span><span class="subxComment">#     $int $array $(addr _)</span>
 <span id="L53" class="LineNr"> 53 </span><span class="subxComment">#</span>
 <span id="L54" class="LineNr"> 54 </span><span class="subxComment"># Lisp values are represented in memory by the _cell_ data structure. A cell</span>
 <span id="L55" class="LineNr"> 55 </span><span class="subxComment"># is 12 bytes long:</span>
@@ -121,18 +121,18 @@ if ('onhashchange' in window) {
 <span id="L63" class="LineNr"> 63 </span><span class="subxComment">#   - char: cell{ tag: 2/CHAR, data: $int 0 }</span>
 <span id="L64" class="LineNr"> 64 </span><span class="subxComment">#     data contains the utf-8 code of the character (no compound glyphs, no</span>
 <span id="L65" class="LineNr"> 65 </span><span class="subxComment">#     modifiers, etc., etc.)</span>
-<span id="L66" class="LineNr"> 66 </span><span class="subxComment">#   - string: cell{ tag: 3/STRING, data: $(address stream byte)</span>
-<span id="L67" class="LineNr"> 67 </span><span class="subxComment">#     data contains an (address array byte) containing the string in utf-8</span>
-<span id="L68" class="LineNr"> 68 </span><span class="subxComment">#   - symbol: cell{ tag: 4/SYMBOL, data: $(address array byte) 0 }</span>
-<span id="L69" class="LineNr"> 69 </span><span class="subxComment">#     data contains an (address array byte) containing the name of the symbol in utf-8</span>
+<span id="L66" class="LineNr"> 66 </span><span class="subxComment">#   - string: cell{ tag: 3/STRING, data: $(addr stream byte)</span>
+<span id="L67" class="LineNr"> 67 </span><span class="subxComment">#     data contains an (addr array byte) containing the string in utf-8</span>
+<span id="L68" class="LineNr"> 68 </span><span class="subxComment">#   - symbol: cell{ tag: 4/SYMBOL, data: $(addr array byte) 0 }</span>
+<span id="L69" class="LineNr"> 69 </span><span class="subxComment">#     data contains an (addr array byte) containing the name of the symbol in utf-8</span>
 <span id="L70" class="LineNr"> 70 </span><span class="subxComment">#     alternatively, data could contain an index into the table of interned symbols</span>
-<span id="L71" class="LineNr"> 71 </span><span class="subxComment">#   - pair: cell{ tag: 5/PAIR, data: $(address cell) $(address cell)  }</span>
+<span id="L71" class="LineNr"> 71 </span><span class="subxComment">#   - pair: cell{ tag: 5/PAIR, data: $(addr cell) $(addr cell)  }</span>
 <span id="L72" class="LineNr"> 72 </span><span class="subxComment">#     data contains pointers to car and cdr</span>
-<span id="L73" class="LineNr"> 73 </span><span class="subxComment">#   - array: cell{ tag: 6/ARRAY, data: $tag $(address stream data)</span>
+<span id="L73" class="LineNr"> 73 </span><span class="subxComment">#   - array: cell{ tag: 6/ARRAY, data: $tag $(addr stream data)</span>
 <span id="L74" class="LineNr"> 74 </span><span class="subxComment">#     data contains a pointer to an array of 8-byte data fields and the common</span>
 <span id="L75" class="LineNr"> 75 </span><span class="subxComment">#     tag for them all</span>
 <span id="L76" class="LineNr"> 76 </span>
-<span id="L77" class="LineNr"> 77 </span><span class="subxFunction">repl</span>:  <span class="subxComment"># in : (address buffered-file), out : (address buffered-file)</span>
+<span id="L77" class="LineNr"> 77 </span><span class="subxFunction">repl</span>:  <span class="subxComment"># in : (addr buffered-file), out : (addr buffered-file)</span>
 <span id="L78" class="LineNr"> 78 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L79" class="LineNr"> 79 </span>    55/push-ebp
 <span id="L80" class="LineNr"> 80 </span>    89/&lt;- %ebp 4/r32/esp
@@ -162,7 +162,7 @@ if ('onhashchange' in window) {
 <span id="L104" class="LineNr">104 </span><span class="subxComment"># arrays start with '['</span>
 <span id="L105" class="LineNr">105 </span><span class="subxComment"># symbols start with anything else but quote, backquote, unquote or splice</span>
 <span id="L106" class="LineNr">106 </span><span class="subxComment"># only one s-expression per line</span>
-<span id="L107" class="LineNr">107 </span><span class="subxFunction">lisp-read</span>:  <span class="subxComment"># in : (address buffered-file) -&gt; eax : (handle cell)</span>
+<span id="L107" class="LineNr">107 </span><span class="subxFunction">lisp-read</span>:  <span class="subxComment"># in : (addr buffered-file) -&gt; eax : (handle cell)</span>
 <span id="L108" class="LineNr">108 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L109" class="LineNr">109 </span>    55/push-ebp
 <span id="L110" class="LineNr">110 </span>    89/&lt;- %ebp 4/r32/esp
@@ -200,14 +200,14 @@ if ('onhashchange' in window) {
 <span id="L142" class="LineNr">142 </span>    5d/pop-to-ebp
 <span id="L143" class="LineNr">143 </span>    c3/return
 <span id="L144" class="LineNr">144 </span>
-<span id="L145" class="LineNr">145 </span><span class="subxComment"># lisp-read:  in : (address buffered-file) -&gt; (handle cell)</span>
+<span id="L145" class="LineNr">145 </span><span class="subxComment"># lisp-read:  in : (addr buffered-file) -&gt; (handle cell)</span>
 <span id="L146" class="LineNr">146 </span><span class="subxComment">#   token tmp = next-mulisp-token(in)</span>
 <span id="L147" class="LineNr">147 </span><span class="subxComment">#   if is-int(tmp) return cell(tmp)</span>
 <span id="L148" class="LineNr">148 </span><span class="subxComment">#   if is-string(tmp) return cell(tmp)</span>
 <span id="L149" class="LineNr">149 </span><span class="subxComment">#   if is-pair(tmp) ...</span>
 <span id="L150" class="LineNr">150 </span><span class="subxComment">#   if is-array(tmp) ...</span>
 <span id="L151" class="LineNr">151 </span>
-<span id="L152" class="LineNr">152 </span><span class="subxFunction">next-mulisp-token</span>:  <span class="subxComment"># in : (address buffered-file), line : (address stream byte), result : (address slice)</span>
+<span id="L152" class="LineNr">152 </span><span class="subxFunction">next-mulisp-token</span>:  <span class="subxComment"># in : (addr buffered-file), line : (addr stream byte), result : (addr slice)</span>
 <span id="L153" class="LineNr">153 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L154" class="LineNr">154 </span>    <span class="subxComment">#   if (line-&gt;read &gt;= line-&gt;write)</span>
 <span id="L155" class="LineNr">155 </span>    <span class="subxComment">#     read-line-buffered(in, line)</span>
@@ -252,11 +252,11 @@ if ('onhashchange' in window) {
 <span id="L194" class="LineNr">194 </span>    5d/pop-to-ebp
 <span id="L195" class="LineNr">195 </span>    c3/return
 <span id="L196" class="LineNr">196 </span>
-<span id="L197" class="LineNr">197 </span><span class="subxFunction">new-int-cell</span>:  <span class="subxComment"># in : (address slice) -&gt; eax : (handle cell)</span>
+<span id="L197" class="LineNr">197 </span><span class="subxFunction">new-int-cell</span>:  <span class="subxComment"># in : (addr slice) -&gt; eax : (handle cell)</span>
 <span id="L198" class="LineNr">198 </span>
-<span id="L199" class="LineNr">199 </span><span class="subxFunction">new-string-cell</span>:  <span class="subxComment"># in : (address slice) -&gt; eax : (handle cell)</span>
+<span id="L199" class="LineNr">199 </span><span class="subxFunction">new-string-cell</span>:  <span class="subxComment"># in : (addr slice) -&gt; eax : (handle cell)</span>
 <span id="L200" class="LineNr">200 </span>
-<span id="L201" class="LineNr">201 </span><span class="subxFunction">lisp-eval</span>:  <span class="subxComment"># in : (address cell) -&gt; eax : (handle cell)</span>
+<span id="L201" class="LineNr">201 </span><span class="subxFunction">lisp-eval</span>:  <span class="subxComment"># in : (addr cell) -&gt; eax : (handle cell)</span>
 <span id="L202" class="LineNr">202 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L203" class="LineNr">203 </span>    55/push-ebp
 <span id="L204" class="LineNr">204 </span>    89/&lt;- %ebp 4/r32/esp
@@ -269,7 +269,7 @@ if ('onhashchange' in window) {
 <span id="L211" class="LineNr">211 </span>    5d/pop-to-ebp
 <span id="L212" class="LineNr">212 </span>    c3/return
 <span id="L213" class="LineNr">213 </span>
-<span id="L214" class="LineNr">214 </span><span class="subxFunction">lisp-print</span>:  <span class="subxComment"># out : (address buffered-file), x : (address cell)</span>
+<span id="L214" class="LineNr">214 </span><span class="subxFunction">lisp-print</span>:  <span class="subxComment"># out : (addr buffered-file), x : (addr cell)</span>
 <span id="L215" class="LineNr">215 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L216" class="LineNr">216 </span>    55/push-ebp
 <span id="L217" class="LineNr">217 </span>    89/&lt;- %ebp 4/r32/esp

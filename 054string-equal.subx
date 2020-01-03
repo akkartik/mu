@@ -13,7 +13,7 @@ Entry:  # run all tests
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
-string-equal?:  # s : (address array byte), benchmark : (address array byte) -> eax : boolean
+string-equal?:  # s : (addr array byte), benchmark : (addr array byte) -> eax : boolean
     # pseudocode:
     #   if (s->length != benchmark->length) return false
     #   currs = s->data
@@ -51,11 +51,11 @@ $string-equal?:lengths:
     # if (ecx != benchmark->length) return false
     39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # compare *edi and ecx
     75/jump-if-not-equal  $string-equal?:false/disp8
-    # var currs/esi : (address byte) = s->data
+    # var currs/esi : (addr byte) = s->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
-    # var maxs/ecx : (address byte) = &s->data[s->length]
+    # var maxs/ecx : (addr byte) = &s->data[s->length]
     01/add                          3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # add esi to ecx
-    # var currb/edi : (address byte) = benchmark->data
+    # var currb/edi : (addr byte) = benchmark->data
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
     # var c1/eax : byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
@@ -176,7 +176,7 @@ test-compare-inequal-strings-equal-lengths:
     c3/return
 
 # helper for later tests
-check-strings-equal:  # s : (address array byte), expected : (address array byte), msg : (address array byte)
+check-strings-equal:  # s : (addr array byte), expected : (addr array byte), msg : (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp

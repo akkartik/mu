@@ -104,7 +104,7 @@ $subx-sigils-main:end:
 
 # error messages considered:
 #   *x + 34                 -> error: base+disp addressing must be within '()'
-subx-sigils:  # in : (address buffered-file), out : (address buffered-file)
+subx-sigils:  # in : (addr buffered-file), out : (addr buffered-file)
     # pseudocode:
     #   var line : (stream byte 512)
     #   while true
@@ -1359,7 +1359,7 @@ test-subx-sigils-indirect-mode-without-register:
     5d/pop-to-ebp
     c3/return
 
-emit-direct-mode:  # out : (address buffered-file), word-slice : (address slice)
+emit-direct-mode:  # out : (addr buffered-file), word-slice : (addr slice)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1599,7 +1599,7 @@ test-emit-direct-mode-2:
 # error messages considered:
 #   * ...                   -> error: no space after '*'
 #   *(...                   -> error: *(...) expression must be all on a single line
-next-word-or-expression:  # line : (address stream byte), out : (address slice)
+next-word-or-expression:  # line : (addr stream byte), out : (addr slice)
     # pseudocode:
     #   skip-chars-matching(line, ' ')
     #   if line->read >= line->write              # end of line
@@ -2207,7 +2207,7 @@ test-next-word-or-expression-returns-whole-expression:
 #   *(reg1+reg2<<s+disp)    -> 2/mod 4/rm32 reg1/base reg2/index s/scale disp/disp32
 # Intermediate structure: base, index, scale, disp
 # Default values: base: 0, index: 4 (none), scale: 0, disp: 0
-parse-effective-address:  # word-slice : (address slice) -> base/eax, index/ecx, scale/edx, disp/ebx
+parse-effective-address:  # word-slice : (addr slice) -> base/eax, index/ecx, scale/edx, disp/ebx
     # pseudocode:
     #   var local-slice = {word-slice->start, word-slice->end}
     #   ++local-slice->start to skip '*'
@@ -2670,7 +2670,7 @@ $parse-effective-address:error4:
 
 # assumes 'in' starts with a register name, and returns pointer to its code
 # side-effect: modifies 'in' to scan past the initial register name
-next-register:  # in : (address slice) -> reg/eax : int
+next-register:  # in : (addr slice) -> reg/eax : int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3149,7 +3149,7 @@ test-parse-effective-address-base-index-scale-displacement:
 #   if index is none, then mod = 2 and rm32 = base and disp32 = disp
 # emit-sib:
 #   if index is not none, then mod = 2 and rm32 = 4 and base = base and index = index and disp32 = disp
-emit-indirect-mode:  # out : (address buffered-file), base : int, index : int, scale : int, disp : int
+emit-indirect-mode:  # out : (addr buffered-file), base : int, index : int, scale : int, disp : int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3858,7 +3858,7 @@ test-emit-indirect-mode-esp:
     5d/pop-to-ebp
     c3/return
 
-disp32-mode?:  # in : (address slice) -> reg/eax : boolean
+disp32-mode?:  # in : (addr slice) -> reg/eax : boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3917,7 +3917,7 @@ $disp32-mode?:end:
     5d/pop-to-ebp
     c3/return
 
-emit-indirect-disp32:  # out : (address buffered-file), word-slice : (address slice)
+emit-indirect-disp32:  # out : (addr buffered-file), word-slice : (addr slice)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3967,7 +3967,7 @@ $emit-indirect-disp32:end:
 # assumes 'in' starts with optional '+' or '-', optional whitespace, and an unsigned integer
 # returns the value of the integer
 # side-effect: modifies 'in' to skip past the integer
-next-hex-int:  # in : (address slice) -> result/eax
+next-hex-int:  # in : (addr slice) -> result/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -4382,7 +4382,7 @@ test-next-hex-int-negative-with-space:
 # assumes 'in' starts a positive unsigned integer
 # returns the value of the integer
 # side-effect: modifies 'in' to skip past the integer
-next-positive-hex-int:  # in : (address slice) -> result/eax
+next-positive-hex-int:  # in : (addr slice) -> result/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp

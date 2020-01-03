@@ -170,13 +170,13 @@ if ('onhashchange' in window) {
 <span id="L107" class="LineNr"> 107 </span>    cd/syscall  0x80/imm8
 <span id="L108" class="LineNr"> 108 </span>
 <span id="L109" class="LineNr"> 109 </span><span class="subxComment"># data structures:</span>
-<span id="L110" class="LineNr"> 110 </span><span class="subxComment">#   segment-info: {address, file-offset, size}            (12 bytes)</span>
-<span id="L111" class="LineNr"> 111 </span><span class="subxComment">#   segments: (address stream {string, segment-info})     (16 bytes per row)</span>
-<span id="L112" class="LineNr"> 112 </span><span class="subxComment">#   label-info: {segment-name, segment-offset, address}   (12 bytes)</span>
-<span id="L113" class="LineNr"> 113 </span><span class="subxComment">#   labels: (address stream {string, label-info})         (16 bytes per row)</span>
+<span id="L110" class="LineNr"> 110 </span><span class="subxComment">#   segment-info: {addr, file-offset, size}            (12 bytes)</span>
+<span id="L111" class="LineNr"> 111 </span><span class="subxComment">#   segments: (addr stream {string, segment-info})     (16 bytes per row)</span>
+<span id="L112" class="LineNr"> 112 </span><span class="subxComment">#   label-info: {segment-name, segment-offset, addr}   (12 bytes)</span>
+<span id="L113" class="LineNr"> 113 </span><span class="subxComment">#   labels: (addr stream {string, label-info})         (16 bytes per row)</span>
 <span id="L114" class="LineNr"> 114 </span><span class="subxComment"># these are all inefficient; use sequential scans for lookups</span>
 <span id="L115" class="LineNr"> 115 </span>
-<span id="L116" class="LineNr"> 116 </span><span class="subxFunction">subx-survey</span>:  <span class="subxComment"># infile : (address buffered-file), out : (address buffered-file)</span>
+<span id="L116" class="LineNr"> 116 </span><span class="subxFunction">subx-survey</span>:  <span class="subxComment"># infile : (addr buffered-file), out : (addr buffered-file)</span>
 <span id="L117" class="LineNr"> 117 </span>    <span class="subxComment"># pseudocode</span>
 <span id="L118" class="LineNr"> 118 </span>    <span class="subxComment">#   var in : (ref stream byte 4096)</span>
 <span id="L119" class="LineNr"> 119 </span>    <span class="subxComment">#   slurp(infile, in)</span>
@@ -449,7 +449,7 @@ if ('onhashchange' in window) {
 <span id="L618" class="LineNr"> 618 </span>
 <span id="L619" class="LineNr"> 619 </span>== code
 <span id="L620" class="LineNr"> 620 </span>
-<span id="L621" class="LineNr"> 621 </span><span class="subxFunction">compute-offsets</span>:  <span class="subxComment"># in : (address stream byte), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})</span>
+<span id="L621" class="LineNr"> 621 </span><span class="subxFunction">compute-offsets</span>:  <span class="subxComment"># in : (addr stream byte), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
 <span id="L622" class="LineNr"> 622 </span>    <span class="subxComment"># skeleton:</span>
 <span id="L623" class="LineNr"> 623 </span>    <span class="subxComment">#   for lines in 'in'</span>
 <span id="L624" class="LineNr"> 624 </span>    <span class="subxComment">#     for words in line</span>
@@ -460,7 +460,7 @@ if ('onhashchange' in window) {
 <span id="L629" class="LineNr"> 629 </span>    <span class="subxComment">#         default</span>
 <span id="L630" class="LineNr"> 630 </span>    <span class="subxComment">#</span>
 <span id="L631" class="LineNr"> 631 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L632" class="LineNr"> 632 </span>    <span class="subxComment">#   curr-segment-name : (address string) = 0</span>
+<span id="L632" class="LineNr"> 632 </span>    <span class="subxComment">#   curr-segment-name : (addr string) = 0</span>
 <span id="L633" class="LineNr"> 633 </span>    <span class="subxComment">#   var line : (stream byte 512)</span>
 <span id="L634" class="LineNr"> 634 </span>    <span class="subxComment">#   while true                                  # line loop</span>
 <span id="L635" class="LineNr"> 635 </span>    <span class="subxComment">#     clear-stream(line)</span>
@@ -492,7 +492,7 @@ if ('onhashchange' in window) {
 <span id="L661" class="LineNr"> 661 </span>    <span class="subxComment">#         break  (next line)</span>
 <span id="L662" class="LineNr"> 662 </span>    <span class="subxComment">#       else if is-label?(word-slice)</span>
 <span id="L663" class="LineNr"> 663 </span>    <span class="subxComment">#         strip trailing ':' from word-slice</span>
-<span id="L664" class="LineNr"> 664 </span>    <span class="subxComment">#         x : (address label-info) = get-or-insert(labels, name)</span>
+<span id="L664" class="LineNr"> 664 </span>    <span class="subxComment">#         x : (addr label-info) = get-or-insert(labels, name)</span>
 <span id="L665" class="LineNr"> 665 </span>    <span class="subxComment">#         x-&gt;segment-name = curr-segment-name</span>
 <span id="L666" class="LineNr"> 666 </span>    <span class="subxComment">#         trace(&quot;label '&quot;, word-slice, &quot;' is in segment '&quot;, curr-segment-name, &quot;'.&quot;)</span>
 <span id="L667" class="LineNr"> 667 </span>    <span class="subxComment">#         x-&gt;segment-offset = segment-offset</span>
@@ -995,9 +995,9 @@ if ('onhashchange' in window) {
 <span id="L1378" class="LineNr">1378 </span>    5d/pop-to-ebp
 <span id="L1379" class="LineNr">1379 </span>    c3/return
 <span id="L1380" class="LineNr">1380 </span>
-<span id="L1381" class="LineNr">1381 </span><span class="subxFunction">compute-addresses</span>:  <span class="subxComment"># segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})</span>
+<span id="L1381" class="LineNr">1381 </span><span class="subxFunction">compute-addresses</span>:  <span class="subxComment"># segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
 <span id="L1382" class="LineNr">1382 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L1383" class="LineNr">1383 </span>    <span class="subxComment">#   srow : (address segment-info) = segments-&gt;data</span>
+<span id="L1383" class="LineNr">1383 </span>    <span class="subxComment">#   srow : (addr segment-info) = segments-&gt;data</span>
 <span id="L1384" class="LineNr">1384 </span>    <span class="subxComment">#   max = &amp;segments-&gt;data[segments-&gt;write]</span>
 <span id="L1385" class="LineNr">1385 </span>    <span class="subxComment">#   num-segments = segments-&gt;write / 16</span>
 <span id="L1386" class="LineNr">1386 </span>    <span class="subxComment">#   starting-offset = 0x34 + (num-segments * 0x20)</span>
@@ -1008,12 +1008,12 @@ if ('onhashchange' in window) {
 <span id="L1391" class="LineNr">1391 </span>    <span class="subxComment">#     s-&gt;address += (s-&gt;file-offset &amp; 0x00000fff)</span>
 <span id="L1392" class="LineNr">1392 </span>    <span class="subxComment">#     trace-sssns(&quot;segment &quot; s-&gt;key &quot; starts at address &quot; s-&gt;address)</span>
 <span id="L1393" class="LineNr">1393 </span>    <span class="subxComment">#     srow += 16  # row-size</span>
-<span id="L1394" class="LineNr">1394 </span>    <span class="subxComment">#   lrow : (address label-info) = labels-&gt;data</span>
+<span id="L1394" class="LineNr">1394 </span>    <span class="subxComment">#   lrow : (addr label-info) = labels-&gt;data</span>
 <span id="L1395" class="LineNr">1395 </span>    <span class="subxComment">#   max = &amp;labels-&gt;data[labels-&gt;write]</span>
 <span id="L1396" class="LineNr">1396 </span>    <span class="subxComment">#   while true</span>
 <span id="L1397" class="LineNr">1397 </span>    <span class="subxComment">#     if (lrow &gt;= max) break</span>
-<span id="L1398" class="LineNr">1398 </span>    <span class="subxComment">#     seg-name : (address string) = lrow-&gt;segment-name</span>
-<span id="L1399" class="LineNr">1399 </span>    <span class="subxComment">#     label-seg : (address segment-info) = get(segments, seg-name)</span>
+<span id="L1398" class="LineNr">1398 </span>    <span class="subxComment">#     seg-name : (addr string) = lrow-&gt;segment-name</span>
+<span id="L1399" class="LineNr">1399 </span>    <span class="subxComment">#     label-seg : (addr segment-info) = get(segments, seg-name)</span>
 <span id="L1400" class="LineNr">1400 </span>    <span class="subxComment">#     lrow-&gt;address = label-seg-&gt;address + lrow-&gt;segment-offset</span>
 <span id="L1401" class="LineNr">1401 </span>    <span class="subxComment">#     trace-sssns(&quot;label &quot; lrow-&gt;key &quot; is at address &quot; lrow-&gt;address)</span>
 <span id="L1402" class="LineNr">1402 </span>    <span class="subxComment">#     lrow += 16  # row-size</span>
@@ -1092,7 +1092,7 @@ if ('onhashchange' in window) {
 <span id="L1525" class="LineNr">1525 </span>    <span class="subxComment"># seg-name/edx = lrow-&gt;segment-name</span>
 <span id="L1526" class="LineNr">1526 </span>    8b/copy                         1/mod/*+disp8   0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to edx</span>
 <span id="L1527" class="Folded">1527 </span><span class="Folded">+-- 26 lines: #?     # dump seg-name -------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1553" class="LineNr">1553 </span>    <span class="subxComment"># label-seg/edx : (address segment-info) = get(segments, seg-name, row-size=16, &quot;segment table&quot;)</span>
+<span id="L1553" class="LineNr">1553 </span>    <span class="subxComment"># label-seg/edx : (addr segment-info) = get(segments, seg-name, row-size=16, &quot;segment table&quot;)</span>
 <span id="L1554" class="LineNr">1554 </span>    <span class="subxS1Comment"># . save eax</span>
 <span id="L1555" class="LineNr">1555 </span>    50/push-eax
 <span id="L1556" class="LineNr">1556 </span>    <span class="subxS1Comment"># . eax = get(segments, seg-name, row-size=16)</span>
@@ -1388,7 +1388,7 @@ if ('onhashchange' in window) {
 <span id="L1871" class="LineNr">1871 </span>    5d/pop-to-ebp
 <span id="L1872" class="LineNr">1872 </span>    c3/return
 <span id="L1873" class="LineNr">1873 </span>
-<span id="L1874" class="LineNr">1874 </span><span class="subxFunction">emit-output</span>:  <span class="subxComment"># in : (address stream byte), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})</span>
+<span id="L1874" class="LineNr">1874 </span><span class="subxFunction">emit-output</span>:  <span class="subxComment"># in : (addr stream byte), out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
 <span id="L1875" class="LineNr">1875 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1876" class="LineNr">1876 </span>    <span class="subxComment">#   emit-headers(out, segments, labels)</span>
 <span id="L1877" class="LineNr">1877 </span>    <span class="subxComment">#   emit-segments(in, out, segments, labels)</span>
@@ -1423,7 +1423,7 @@ if ('onhashchange' in window) {
 <span id="L1922" class="LineNr">1922 </span>    5d/pop-to-ebp
 <span id="L1923" class="LineNr">1923 </span>    c3/return
 <span id="L1924" class="LineNr">1924 </span>
-<span id="L1925" class="LineNr">1925 </span><span class="subxFunction">emit-segments</span>:  <span class="subxComment"># in : (address stream byte), out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})</span>
+<span id="L1925" class="LineNr">1925 </span><span class="subxFunction">emit-segments</span>:  <span class="subxComment"># in : (addr stream byte), out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
 <span id="L1926" class="LineNr">1926 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1927" class="LineNr">1927 </span>    <span class="subxComment">#   var offset-of-next-instruction = 0</span>
 <span id="L1928" class="LineNr">1928 </span>    <span class="subxComment">#   var line : (stream byte 512)</span>
@@ -2425,7 +2425,7 @@ if ('onhashchange' in window) {
 <span id="L3173" class="LineNr">3173 </span>    5d/pop-to-ebp
 <span id="L3174" class="LineNr">3174 </span>    c3/return
 <span id="L3175" class="LineNr">3175 </span>
-<span id="L3176" class="LineNr">3176 </span><span class="subxFunction">emit-headers</span>:  <span class="subxComment"># out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})</span>
+<span id="L3176" class="LineNr">3176 </span><span class="subxFunction">emit-headers</span>:  <span class="subxComment"># out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
 <span id="L3177" class="LineNr">3177 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L3178" class="LineNr">3178 </span>    <span class="subxComment">#   emit-elf-header(out, segments, labels)</span>
 <span id="L3179" class="LineNr">3179 </span>    <span class="subxComment">#   curr-segment = segments-&gt;data</span>
@@ -2485,7 +2485,7 @@ if ('onhashchange' in window) {
 <span id="L3311" class="LineNr">3311 </span>    5d/pop-to-ebp
 <span id="L3312" class="LineNr">3312 </span>    c3/return
 <span id="L3313" class="LineNr">3313 </span>
-<span id="L3314" class="LineNr">3314 </span><span class="subxFunction">emit-elf-header</span>:  <span class="subxComment"># out : (address buffered-file), segments : (address stream {string, segment-info}), labels : (address stream {string, label-info})</span>
+<span id="L3314" class="LineNr">3314 </span><span class="subxFunction">emit-elf-header</span>:  <span class="subxComment"># out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
 <span id="L3315" class="LineNr">3315 </span>    <span class="subxComment"># pseudocode</span>
 <span id="L3316" class="LineNr">3316 </span>    <span class="subxComment">#   *$Elf_e_entry = get(labels, &quot;Entry&quot;)-&gt;address</span>
 <span id="L3317" class="LineNr">3317 </span>    <span class="subxComment">#   *$Elf_e_phnum = segments-&gt;write / 16         # size of a row</span>
@@ -2553,7 +2553,7 @@ if ('onhashchange' in window) {
 <span id="L3379" class="LineNr">3379 </span>    5d/pop-to-ebp
 <span id="L3380" class="LineNr">3380 </span>    c3/return
 <span id="L3381" class="LineNr">3381 </span>
-<span id="L3382" class="LineNr">3382 </span><span class="subxFunction">emit-elf-program-header-entry</span>:  <span class="subxComment"># out : (address buffered-file), curr-segment : (address {string, segment-info})</span>
+<span id="L3382" class="LineNr">3382 </span><span class="subxFunction">emit-elf-program-header-entry</span>:  <span class="subxComment"># out : (addr buffered-file), curr-segment : (addr {string, segment-info})</span>
 <span id="L3383" class="LineNr">3383 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L3384" class="LineNr">3384 </span>    <span class="subxComment">#   *$Elf_p_offset = curr-segment-&gt;file-offset</span>
 <span id="L3385" class="LineNr">3385 </span>    <span class="subxComment">#   *$Elf_p_vaddr = curr-segment-&gt;address</span>
@@ -2642,7 +2642,7 @@ if ('onhashchange' in window) {
 <span id="L3468" class="LineNr">3468 </span>
 <span id="L3469" class="LineNr">3469 </span><span class="subxH1Comment"># - some helpers for tests</span>
 <span id="L3470" class="LineNr">3470 </span>
-<span id="L3471" class="LineNr">3471 </span><span class="subxFunction">stream-add4</span>:  <span class="subxComment"># in : (address stream byte), key : address, val1 : address, val2 : address, val3 : address</span>
+<span id="L3471" class="LineNr">3471 </span><span class="subxFunction">stream-add4</span>:  <span class="subxComment"># in : (addr stream byte), key : addr, val1 : addr, val2 : addr, val3 : addr</span>
 <span id="L3472" class="LineNr">3472 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3473" class="LineNr">3473 </span>    55/push-ebp
 <span id="L3474" class="LineNr">3474 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2724,11 +2724,11 @@ if ('onhashchange' in window) {
 <span id="L3550" class="LineNr">3550 </span><span class="subxComment"># some variants of 'trace' that take multiple arguments in different combinations of types:</span>
 <span id="L3551" class="LineNr">3551 </span><span class="subxComment">#   n: int</span>
 <span id="L3552" class="LineNr">3552 </span><span class="subxComment">#   c: character [4-bytes, will eventually be UTF-8]</span>
-<span id="L3553" class="LineNr">3553 </span><span class="subxComment">#   s: (address string)</span>
-<span id="L3554" class="LineNr">3554 </span><span class="subxComment">#   l: (address slice)</span>
+<span id="L3553" class="LineNr">3553 </span><span class="subxComment">#   s: (addr string)</span>
+<span id="L3554" class="LineNr">3554 </span><span class="subxComment">#   l: (addr slice)</span>
 <span id="L3555" class="LineNr">3555 </span><span class="subxComment"># one gotcha: 's5' must not be empty</span>
 <span id="L3556" class="LineNr">3556 </span>
-<span id="L3557" class="LineNr">3557 </span><span class="subxFunction">trace-sssns</span>:  <span class="subxComment"># s1 : (address string), s2 : (address string), s3 : (address string), n4 : int, s5 : (address string)</span>
+<span id="L3557" class="LineNr">3557 </span><span class="subxFunction">trace-sssns</span>:  <span class="subxComment"># s1 : (addr string), s2 : (addr string), s3 : (addr string), n4 : int, s5 : (addr string)</span>
 <span id="L3558" class="LineNr">3558 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3559" class="LineNr">3559 </span>    55/push-ebp
 <span id="L3560" class="LineNr">3560 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2810,7 +2810,7 @@ if ('onhashchange' in window) {
 <span id="L3661" class="LineNr">3661 </span>    5d/pop-to-ebp
 <span id="L3662" class="LineNr">3662 </span>    c3/return
 <span id="L3663" class="LineNr">3663 </span>
-<span id="L3664" class="LineNr">3664 </span><span class="subxFunction">trace-snsns</span>:  <span class="subxComment"># s1 : (address string), n2 : int, s3 : (address string), n4 : int, s5 : (address string)</span>
+<span id="L3664" class="LineNr">3664 </span><span class="subxFunction">trace-snsns</span>:  <span class="subxComment"># s1 : (addr string), n2 : int, s3 : (addr string), n4 : int, s5 : (addr string)</span>
 <span id="L3665" class="LineNr">3665 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3666" class="LineNr">3666 </span>    55/push-ebp
 <span id="L3667" class="LineNr">3667 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2892,7 +2892,7 @@ if ('onhashchange' in window) {
 <span id="L3768" class="LineNr">3768 </span>    5d/pop-to-ebp
 <span id="L3769" class="LineNr">3769 </span>    c3/return
 <span id="L3770" class="LineNr">3770 </span>
-<span id="L3771" class="LineNr">3771 </span><span class="subxFunction">trace-slsls</span>:  <span class="subxComment"># s1 : (address string), l2 : (address slice), s3 : (address string), l4 : (address slice), s5 : (address string)</span>
+<span id="L3771" class="LineNr">3771 </span><span class="subxFunction">trace-slsls</span>:  <span class="subxComment"># s1 : (addr string), l2 : (addr slice), s3 : (addr string), l4 : (addr slice), s5 : (addr string)</span>
 <span id="L3772" class="LineNr">3772 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3773" class="LineNr">3773 </span>    55/push-ebp
 <span id="L3774" class="LineNr">3774 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2992,7 +2992,7 @@ if ('onhashchange' in window) {
 <span id="L3893" class="LineNr">3893 </span>    5d/pop-to-ebp
 <span id="L3894" class="LineNr">3894 </span>    c3/return
 <span id="L3895" class="LineNr">3895 </span>
-<span id="L3896" class="LineNr">3896 </span><span class="subxFunction">trace-slsns</span>:  <span class="subxComment"># s1 : (address string), l2 : (address slice), s3 : (address string), n4 : int, s5 : (address string)</span>
+<span id="L3896" class="LineNr">3896 </span><span class="subxFunction">trace-slsns</span>:  <span class="subxComment"># s1 : (addr string), l2 : (addr slice), s3 : (addr string), n4 : int, s5 : (addr string)</span>
 <span id="L3897" class="LineNr">3897 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3898" class="LineNr">3898 </span>    55/push-ebp
 <span id="L3899" class="LineNr">3899 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -3083,7 +3083,7 @@ if ('onhashchange' in window) {
 <span id="L4009" class="LineNr">4009 </span>    5d/pop-to-ebp
 <span id="L4010" class="LineNr">4010 </span>    c3/return
 <span id="L4011" class="LineNr">4011 </span>
-<span id="L4012" class="LineNr">4012 </span><span class="subxFunction">trace-slsss</span>:  <span class="subxComment"># s1 : (address string), l2 : (address slice), s3 : (address string), s4 : (address string), s5 : (address string)</span>
+<span id="L4012" class="LineNr">4012 </span><span class="subxFunction">trace-slsss</span>:  <span class="subxComment"># s1 : (addr string), l2 : (addr slice), s3 : (addr string), s4 : (addr string), s5 : (addr string)</span>
 <span id="L4013" class="LineNr">4013 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4014" class="LineNr">4014 </span>    55/push-ebp
 <span id="L4015" class="LineNr">4015 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -3174,7 +3174,7 @@ if ('onhashchange' in window) {
 <span id="L4125" class="LineNr">4125 </span>    5d/pop-to-ebp
 <span id="L4126" class="LineNr">4126 </span>    c3/return
 <span id="L4127" class="LineNr">4127 </span>
-<span id="L4128" class="LineNr">4128 </span><span class="subxFunction">num-bytes</span>:  <span class="subxComment"># line : (address stream byte) -&gt; eax : int</span>
+<span id="L4128" class="LineNr">4128 </span><span class="subxFunction">num-bytes</span>:  <span class="subxComment"># line : (addr stream byte) -&gt; eax : int</span>
 <span id="L4129" class="LineNr">4129 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L4130" class="LineNr">4130 </span>    <span class="subxComment">#   result = 0</span>
 <span id="L4131" class="LineNr">4131 </span>    <span class="subxComment">#   while true</span>

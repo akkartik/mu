@@ -136,7 +136,7 @@ if ('onhashchange' in window) {
 <span id="L75" class="LineNr">  75 </span>    b8/copy-to-eax 1/imm32/exit
 <span id="L76" class="LineNr">  76 </span>    cd/syscall 0x80/imm8
 <span id="L77" class="LineNr">  77 </span>
-<span id="L78" class="LineNr">  78 </span><span class="subxFunction">subx-calls</span>:  <span class="subxComment"># in : (address buffered-file), out : (address buffered-file)</span>
+<span id="L78" class="LineNr">  78 </span><span class="subxFunction">subx-calls</span>:  <span class="subxComment"># in : (addr buffered-file), out : (addr buffered-file)</span>
 <span id="L79" class="LineNr">  79 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L80" class="LineNr">  80 </span>    <span class="subxComment">#   var line : (ref stream byte 512)</span>
 <span id="L81" class="LineNr">  81 </span>    <span class="subxComment">#   var words : (ref stream slice 16)  # at most function name and 15 args</span>
@@ -292,7 +292,7 @@ if ('onhashchange' in window) {
 <span id="L231" class="LineNr"> 231 </span>    5d/pop-to-ebp
 <span id="L232" class="LineNr"> 232 </span>    c3/return
 <span id="L233" class="LineNr"> 233 </span>
-<span id="L234" class="LineNr"> 234 </span><span class="subxFunction">parse-line</span>:  <span class="subxComment"># line : (address stream byte), words : (address stream slice)</span>
+<span id="L234" class="LineNr"> 234 </span><span class="subxFunction">parse-line</span>:  <span class="subxComment"># line : (addr stream byte), words : (addr stream slice)</span>
 <span id="L235" class="LineNr"> 235 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L236" class="LineNr"> 236 </span>    <span class="subxComment">#   var word-slice : (ref slice)</span>
 <span id="L237" class="LineNr"> 237 </span>    <span class="subxComment">#   while true</span>
@@ -362,7 +362,7 @@ if ('onhashchange' in window) {
 <span id="L340" class="LineNr"> 340 </span>    5d/pop-to-ebp
 <span id="L341" class="LineNr"> 341 </span>    c3/return
 <span id="L342" class="LineNr"> 342 </span>
-<span id="L343" class="LineNr"> 343 </span><span class="subxFunction">emit-call</span>:  <span class="subxComment"># out : (address buffered-file), words : (address stream slice)</span>
+<span id="L343" class="LineNr"> 343 </span><span class="subxFunction">emit-call</span>:  <span class="subxComment"># out : (addr buffered-file), words : (addr stream slice)</span>
 <span id="L344" class="LineNr"> 344 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L345" class="LineNr"> 345 </span>    <span class="subxComment">#   if (words-&gt;write &lt; 8) abort</span>
 <span id="L346" class="LineNr"> 346 </span>    <span class="subxComment">#   curr = &amp;words-&gt;data[words-&gt;write-8]</span>
@@ -403,9 +403,9 @@ if ('onhashchange' in window) {
 <span id="L381" class="LineNr"> 381 </span>    8b/-&gt; *esi 1/r32/ecx
 <span id="L382" class="LineNr"> 382 </span>    81 5/subop/subtract %ecx 8/imm32
 <span id="L383" class="LineNr"> 383 </span>    0f 8c/jump-if-lesser $emit-call:error1/disp32
-<span id="L384" class="LineNr"> 384 </span>    <span class="subxComment"># var curr/ecx : (address slice) = &amp;words-&gt;data[words-&gt;write-8]</span>
+<span id="L384" class="LineNr"> 384 </span>    <span class="subxComment"># var curr/ecx : (addr slice) = &amp;words-&gt;data[words-&gt;write-8]</span>
 <span id="L385" class="LineNr"> 385 </span>    8d/copy-address *(esi+ecx+0xc) 1/r32/ecx
-<span id="L386" class="LineNr"> 386 </span>    <span class="subxComment"># var min/edx : (address byte) = words-&gt;data</span>
+<span id="L386" class="LineNr"> 386 </span>    <span class="subxComment"># var min/edx : (addr byte) = words-&gt;data</span>
 <span id="L387" class="LineNr"> 387 </span>    8d/copy-address *(esi+0xc) 2/r32/edx
 <span id="L388" class="LineNr"> 388 </span>    <span class="subxH1Comment"># - emit pushes</span>
 <span id="L389" class="LineNr"> 389 </span><span class="Constant">$emit-call:push-loop</span>:
@@ -413,7 +413,7 @@ if ('onhashchange' in window) {
 <span id="L391" class="LineNr"> 391 </span>    39/compare %ecx 2/r32/edx
 <span id="L392" class="LineNr"> 392 </span>    0f 8e/jump-if-lesser-or-equal $emit-call:call-instruction/disp32
 <span id="L393" class="LineNr"> 393 </span>    <span class="subxComment"># if (*curr-&gt;start in '%' '*') goto push-rm32</span>
-<span id="L394" class="LineNr"> 394 </span>    <span class="subxS1Comment"># . var start/eax : (address byte) = curr-&gt;start</span>
+<span id="L394" class="LineNr"> 394 </span>    <span class="subxS1Comment"># . var start/eax : (addr byte) = curr-&gt;start</span>
 <span id="L395" class="LineNr"> 395 </span>    8b/-&gt; *ecx 0/r32/eax
 <span id="L396" class="LineNr"> 396 </span>    <span class="subxS1Comment"># . var c/eax : byte = *eax</span>
 <span id="L397" class="LineNr"> 397 </span>    8b/-&gt; *eax 0/r32/eax
@@ -731,7 +731,7 @@ if ('onhashchange' in window) {
 <span id="L741" class="LineNr"> 741 </span>    5d/pop-to-ebp
 <span id="L742" class="LineNr"> 742 </span>    c3/return
 <span id="L743" class="LineNr"> 743 </span>
-<span id="L744" class="LineNr"> 744 </span><span class="subxFunction">next-word-string-or-expression-without-metadata</span>:  <span class="subxComment"># line : (address stream byte), out : (address slice)</span>
+<span id="L744" class="LineNr"> 744 </span><span class="subxFunction">next-word-string-or-expression-without-metadata</span>:  <span class="subxComment"># line : (addr stream byte), out : (addr slice)</span>
 <span id="L745" class="LineNr"> 745 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L746" class="LineNr"> 746 </span>    <span class="subxComment">#   skip-chars-matching(line, ' ')</span>
 <span id="L747" class="LineNr"> 747 </span>    <span class="subxComment">#   if line-&gt;read &gt;= line-&gt;write              # end of line</span>

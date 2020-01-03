@@ -75,7 +75,7 @@ $subx-calls-main:end:
     b8/copy-to-eax 1/imm32/exit
     cd/syscall 0x80/imm8
 
-subx-calls:  # in : (address buffered-file), out : (address buffered-file)
+subx-calls:  # in : (addr buffered-file), out : (addr buffered-file)
     # pseudocode:
     #   var line : (ref stream byte 512)
     #   var words : (ref stream slice 16)  # at most function name and 15 args
@@ -231,7 +231,7 @@ $subx-calls:end:
     5d/pop-to-ebp
     c3/return
 
-parse-line:  # line : (address stream byte), words : (address stream slice)
+parse-line:  # line : (addr stream byte), words : (addr stream slice)
     # pseudocode:
     #   var word-slice : (ref slice)
     #   while true
@@ -340,7 +340,7 @@ $parse-line:end:
     5d/pop-to-ebp
     c3/return
 
-emit-call:  # out : (address buffered-file), words : (address stream slice)
+emit-call:  # out : (addr buffered-file), words : (addr stream slice)
     # pseudocode:
     #   if (words->write < 8) abort
     #   curr = &words->data[words->write-8]
@@ -381,9 +381,9 @@ emit-call:  # out : (address buffered-file), words : (address stream slice)
     8b/-> *esi 1/r32/ecx
     81 5/subop/subtract %ecx 8/imm32
     0f 8c/jump-if-lesser $emit-call:error1/disp32
-    # var curr/ecx : (address slice) = &words->data[words->write-8]
+    # var curr/ecx : (addr slice) = &words->data[words->write-8]
     8d/copy-address *(esi+ecx+0xc) 1/r32/ecx
-    # var min/edx : (address byte) = words->data
+    # var min/edx : (addr byte) = words->data
     8d/copy-address *(esi+0xc) 2/r32/edx
     # - emit pushes
 $emit-call:push-loop:
@@ -391,7 +391,7 @@ $emit-call:push-loop:
     39/compare %ecx 2/r32/edx
     0f 8e/jump-if-lesser-or-equal $emit-call:call-instruction/disp32
     # if (*curr->start in '%' '*') goto push-rm32
-    # . var start/eax : (address byte) = curr->start
+    # . var start/eax : (addr byte) = curr->start
     8b/-> *ecx 0/r32/eax
     # . var c/eax : byte = *eax
     8b/-> *eax 0/r32/eax
@@ -741,7 +741,7 @@ test-subx-calls-processes-calls:
     5d/pop-to-ebp
     c3/return
 
-next-word-string-or-expression-without-metadata:  # line : (address stream byte), out : (address slice)
+next-word-string-or-expression-without-metadata:  # line : (addr stream byte), out : (addr slice)
     # pseudocode:
     #   skip-chars-matching(line, ' ')
     #   if line->read >= line->write              # end of line

@@ -64,7 +64,7 @@ if ('onhashchange' in window) {
 <span id="L5" class="LineNr">  5 </span><span class="subxS1Comment"># . op          subop               mod             rm32          base        index         scale       r32</span>
 <span id="L6" class="LineNr">  6 </span><span class="subxS1Comment"># . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes</span>
 <span id="L7" class="LineNr">  7 </span>
-<span id="L8" class="LineNr">  8 </span><span class="subxFunction">has-metadata?</span>:  <span class="subxComment"># word : (address slice), s : (address string) -&gt; eax : boolean</span>
+<span id="L8" class="LineNr">  8 </span><span class="subxFunction">has-metadata?</span>:  <span class="subxComment"># word : (addr slice), s : (addr string) -&gt; eax : boolean</span>
 <span id="L9" class="LineNr">  9 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L10" class="LineNr"> 10 </span>    <span class="subxComment">#   var twig : &amp;slice = next-token-from-slice(word-&gt;start, word-&gt;end, '/')  # skip name</span>
 <span id="L11" class="LineNr"> 11 </span>    <span class="subxComment">#   curr = twig-&gt;end</span>
@@ -84,7 +84,7 @@ if ('onhashchange' in window) {
 <span id="L25" class="LineNr"> 25 </span>    57/push-edi
 <span id="L26" class="LineNr"> 26 </span>    <span class="subxComment"># esi = word</span>
 <span id="L27" class="LineNr"> 27 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L28" class="LineNr"> 28 </span>    <span class="subxComment"># var edx : (address byte) = word-&gt;end</span>
+<span id="L28" class="LineNr"> 28 </span>    <span class="subxComment"># var edx : (addr byte) = word-&gt;end</span>
 <span id="L29" class="LineNr"> 29 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to edx</span>
 <span id="L30" class="LineNr"> 30 </span>    <span class="subxComment"># var twig/edi : (ref slice)</span>
 <span id="L31" class="LineNr"> 31 </span>    68/push  0/imm32/end
@@ -334,7 +334,7 @@ if ('onhashchange' in window) {
 <span id="L275" class="LineNr">275 </span><span class="subxComment">#: - if it starts with '0x' it's treated as a number. (redundant)</span>
 <span id="L276" class="LineNr">276 </span><span class="subxComment">#: - if it's two characters long, it can't be a name. Either it's a hex</span>
 <span id="L277" class="LineNr">277 </span><span class="subxComment">#:   byte, or it raises an error.</span>
-<span id="L278" class="LineNr">278 </span><span class="subxFunction">is-valid-name?</span>:  <span class="subxComment"># in : (address slice) -&gt; eax : boolean</span>
+<span id="L278" class="LineNr">278 </span><span class="subxFunction">is-valid-name?</span>:  <span class="subxComment"># in : (addr slice) -&gt; eax : boolean</span>
 <span id="L279" class="LineNr">279 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L280" class="LineNr">280 </span>    55/push-ebp
 <span id="L281" class="LineNr">281 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -343,7 +343,7 @@ if ('onhashchange' in window) {
 <span id="L284" class="LineNr">284 </span>    56/push-esi
 <span id="L285" class="LineNr">285 </span>    <span class="subxComment"># esi = in</span>
 <span id="L286" class="LineNr">286 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to esi</span>
-<span id="L287" class="LineNr">287 </span>    <span class="subxComment"># var start/ecx : (address byte) = in-&gt;start</span>
+<span id="L287" class="LineNr">287 </span>    <span class="subxComment"># var start/ecx : (addr byte) = in-&gt;start</span>
 <span id="L288" class="LineNr">288 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to ecx</span>
 <span id="L289" class="LineNr">289 </span><span class="Constant">$is-valid-name?:check0</span>:
 <span id="L290" class="LineNr">290 </span>    <span class="subxComment"># if (start &gt;= in-&gt;end) return false</span>
@@ -357,7 +357,7 @@ if ('onhashchange' in window) {
 <span id="L298" class="LineNr">298 </span>    3d/compare-eax-and  2/imm32
 <span id="L299" class="LineNr">299 </span>    74/jump-if-equal  $is-valid-name?:false/disp8
 <span id="L300" class="LineNr">300 </span><span class="Constant">$is-valid-name?:check2</span>:
-<span id="L301" class="LineNr">301 </span>    <span class="subxComment"># var c/eax : (address byte) = *start</span>
+<span id="L301" class="LineNr">301 </span>    <span class="subxComment"># var c/eax : (addr byte) = *start</span>
 <span id="L302" class="LineNr">302 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L303" class="LineNr">303 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L304" class="LineNr">304 </span>    <span class="subxComment"># if (c == &quot;-&quot;) return false</span>
@@ -591,7 +591,7 @@ if ('onhashchange' in window) {
 <span id="L532" class="LineNr">532 </span>    5d/pop-to-ebp
 <span id="L533" class="LineNr">533 </span>    c3/return
 <span id="L534" class="LineNr">534 </span>
-<span id="L535" class="LineNr">535 </span><span class="subxFunction">is-label?</span>: <span class="subxComment"># word : (address slice) -&gt; eax : boolean</span>
+<span id="L535" class="LineNr">535 </span><span class="subxFunction">is-label?</span>: <span class="subxComment"># word : (addr slice) -&gt; eax : boolean</span>
 <span id="L536" class="LineNr">536 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L537" class="LineNr">537 </span>    55/push-ebp
 <span id="L538" class="LineNr">538 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -599,7 +599,7 @@ if ('onhashchange' in window) {
 <span id="L540" class="LineNr">540 </span>    51/push-ecx
 <span id="L541" class="LineNr">541 </span>    <span class="subxComment"># ecx = word</span>
 <span id="L542" class="LineNr">542 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+8) to ecx</span>
-<span id="L543" class="LineNr">543 </span>    <span class="subxComment"># var end/ecx : (address byte) = word-&gt;end</span>
+<span id="L543" class="LineNr">543 </span>    <span class="subxComment"># var end/ecx : (addr byte) = word-&gt;end</span>
 <span id="L544" class="LineNr">544 </span>    8b/copy                         1/mod/*+disp8   1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(ecx+4) to ecx</span>
 <span id="L545" class="LineNr">545 </span>    <span class="subxComment"># return *(end - 1) == ':'</span>
 <span id="L546" class="LineNr">546 </span>    <span class="subxS1Comment"># . eax = *(end-1)</span>

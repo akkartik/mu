@@ -4,7 +4,7 @@
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
 # print 'arr' in hex with a space after every byte
-emit-hex-array:  # out : (address buffered-file), arr : (address array byte)
+emit-hex-array:  # out : (addr buffered-file), arr : (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -17,9 +17,9 @@ emit-hex-array:  # out : (address buffered-file), arr : (address array byte)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
     # edx = arr
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
-    # var curr/ecx : (address byte) = arr->data
+    # var curr/ecx : (addr byte) = arr->data
     8d/copy-address                 1/mod/*+disp8   2/rm32/edx    .           .             .           1/r32/ecx   4/disp8         .                 # copy edx+4 to ecx
-    # var max/edx : (address byte) = &arr->data[arr->length]
+    # var max/edx : (addr byte) = &arr->data[arr->length]
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
     01/add                          3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # add ecx to edx
     # var c/eax : byte = 0

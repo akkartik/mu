@@ -308,7 +308,7 @@ if ('onhashchange' in window) {
 <span id="L246" class="LineNr"> 246 </span>
 <span id="L247" class="LineNr"> 247 </span>== data
 <span id="L248" class="LineNr"> 248 </span>
-<span id="L249" class="LineNr"> 249 </span><span class="SpecialChar">Program</span>:  <span class="subxComment"># (address (handle function))</span>
+<span id="L249" class="LineNr"> 249 </span><span class="SpecialChar">Program</span>:  <span class="subxComment"># (addr (handle function))</span>
 <span id="L250" class="LineNr"> 250 </span>  0/imm32
 <span id="L251" class="LineNr"> 251 </span>
 <span id="L252" class="LineNr"> 252 </span><span class="SpecialChar">Function-name</span>:
@@ -440,7 +440,7 @@ if ('onhashchange' in window) {
 <span id="L378" class="LineNr"> 378 </span>    b8/copy-to-eax 1/imm32/exit
 <span id="L379" class="LineNr"> 379 </span>    cd/syscall 0x80/imm8
 <span id="L380" class="LineNr"> 380 </span>
-<span id="L381" class="LineNr"> 381 </span><span class="subxFunction">convert-mu</span>:  <span class="subxComment"># in : (address buffered-file), out : (address buffered-file)</span>
+<span id="L381" class="LineNr"> 381 </span><span class="subxFunction">convert-mu</span>:  <span class="subxComment"># in : (addr buffered-file), out : (addr buffered-file)</span>
 <span id="L382" class="LineNr"> 382 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L383" class="LineNr"> 383 </span>    55/push-ebp
 <span id="L384" class="LineNr"> 384 </span>    89/&lt;- %ebp 4/r32/esp
@@ -969,9 +969,9 @@ if ('onhashchange' in window) {
 <span id="L952" class="LineNr"> 952 </span><span class="subxComment"># Parsing</span>
 <span id="L953" class="LineNr"> 953 </span><span class="subxComment">#######################################################</span>
 <span id="L954" class="LineNr"> 954 </span>
-<span id="L955" class="LineNr"> 955 </span><span class="subxFunction">parse-mu</span>:  <span class="subxComment"># in : (address buffered-file)</span>
+<span id="L955" class="LineNr"> 955 </span><span class="subxFunction">parse-mu</span>:  <span class="subxComment"># in : (addr buffered-file)</span>
 <span id="L956" class="LineNr"> 956 </span>    <span class="subxComment"># pseudocode</span>
-<span id="L957" class="LineNr"> 957 </span>    <span class="subxComment">#   var curr-function : (address (handle function)) = Program</span>
+<span id="L957" class="LineNr"> 957 </span>    <span class="subxComment">#   var curr-function : (addr (handle function)) = Program</span>
 <span id="L958" class="LineNr"> 958 </span>    <span class="subxComment">#   var line : (ref stream byte 512)</span>
 <span id="L959" class="LineNr"> 959 </span>    <span class="subxComment">#   var word-slice : (ref slice)</span>
 <span id="L960" class="LineNr"> 960 </span>    <span class="subxComment">#   while true                                  # line loop</span>
@@ -985,7 +985,7 @@ if ('onhashchange' in window) {
 <span id="L968" class="LineNr"> 968 </span>    <span class="subxComment">#       continue                                # end of line</span>
 <span id="L969" class="LineNr"> 969 </span>    <span class="subxComment">#     else if slice-equal(word-slice, &quot;fn&quot;)</span>
 <span id="L970" class="LineNr"> 970 </span>    <span class="subxComment">#       var new-function : (handle function) = allocate(function)</span>
-<span id="L971" class="LineNr"> 971 </span>    <span class="subxComment">#       var vars : (ref stack (address var) 256)</span>
+<span id="L971" class="LineNr"> 971 </span>    <span class="subxComment">#       var vars : (ref stack (addr var) 256)</span>
 <span id="L972" class="LineNr"> 972 </span>    <span class="subxComment">#       populate-mu-function-header(in, new-function, vars)</span>
 <span id="L973" class="LineNr"> 973 </span>    <span class="subxComment">#       populate-mu-function-body(in, new-function, vars)</span>
 <span id="L974" class="LineNr"> 974 </span>    <span class="subxComment">#       assert(vars-&gt;top == 0)</span>
@@ -1013,9 +1013,9 @@ if ('onhashchange' in window) {
 <span id="L996" class="LineNr"> 996 </span>    68/push 0/imm32/end
 <span id="L997" class="LineNr"> 997 </span>    68/push 0/imm32/start
 <span id="L998" class="LineNr"> 998 </span>    89/&lt;- %edx 4/r32/esp
-<span id="L999" class="LineNr"> 999 </span>    <span class="subxComment"># var curr-function/edi : (address (handle function)) = Program</span>
+<span id="L999" class="LineNr"> 999 </span>    <span class="subxComment"># var curr-function/edi : (addr (handle function)) = Program</span>
 <span id="L1000" class="LineNr">1000 </span>    bf/copy-to-edi <span class="SpecialChar"><a href='mu.subx.html#L249'>Program</a></span>/imm32
-<span id="L1001" class="LineNr">1001 </span>    <span class="subxComment"># var vars/ebx : (ref stack (address var) 256)</span>
+<span id="L1001" class="LineNr">1001 </span>    <span class="subxComment"># var vars/ebx : (ref stack (addr var) 256)</span>
 <span id="L1002" class="LineNr">1002 </span>    81 5/subop/subtract %esp 0x400/imm32
 <span id="L1003" class="LineNr">1003 </span>    68/push 0x400/imm32/length
 <span id="L1004" class="LineNr">1004 </span>    68/push 0/imm32/top
@@ -1112,7 +1112,7 @@ if ('onhashchange' in window) {
 <span id="L1100" class="LineNr">1100 </span><span class="subxComment"># ✓ fn foo x : int {</span>
 <span id="L1101" class="LineNr">1101 </span><span class="subxComment"># ✓ fn foo x: int {</span>
 <span id="L1102" class="LineNr">1102 </span><span class="subxComment"># ✓ fn foo x: int -&gt; y/eax: int {</span>
-<span id="L1103" class="LineNr">1103 </span><span class="subxFunction">populate-mu-function-header</span>:  <span class="subxComment"># first-line : (address stream byte), out : (handle function), vars : (address stack (handle var))</span>
+<span id="L1103" class="LineNr">1103 </span><span class="subxFunction">populate-mu-function-header</span>:  <span class="subxComment"># first-line : (addr stream byte), out : (handle function), vars : (addr stack (handle var))</span>
 <span id="L1104" class="LineNr">1104 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1105" class="LineNr">1105 </span>    <span class="subxComment">#   var name : (ref slice)</span>
 <span id="L1106" class="LineNr">1106 </span>    <span class="subxComment">#   next-word(first-line, name)</span>
@@ -1309,7 +1309,7 @@ if ('onhashchange' in window) {
 <span id="L1297" class="LineNr">1297 </span>    2b/subtract-&gt; *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span> 4/r32/esp
 <span id="L1298" class="LineNr">1298 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L1299" class="LineNr">1299 </span>    (<a href='../080zero-out.subx.html#L8'>zero-out</a> %ecx *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span>)
-<span id="L1300" class="LineNr">1300 </span>    <span class="subxComment"># var vars/ebx : (ref stack (address var) 16)</span>
+<span id="L1300" class="LineNr">1300 </span>    <span class="subxComment"># var vars/ebx : (ref stack (addr var) 16)</span>
 <span id="L1301" class="LineNr">1301 </span>    81 5/subop/subtract %esp 0x10/imm32
 <span id="L1302" class="LineNr">1302 </span>    68/push 0x10/imm32/length
 <span id="L1303" class="LineNr">1303 </span>    68/push 0/imm32/top
@@ -1341,7 +1341,7 @@ if ('onhashchange' in window) {
 <span id="L1329" class="LineNr">1329 </span>    2b/subtract-&gt; *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span> 4/r32/esp
 <span id="L1330" class="LineNr">1330 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L1331" class="LineNr">1331 </span>    (<a href='../080zero-out.subx.html#L8'>zero-out</a> %ecx *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span>)
-<span id="L1332" class="LineNr">1332 </span>    <span class="subxComment"># var vars/ebx : (ref stack (address var) 16)</span>
+<span id="L1332" class="LineNr">1332 </span>    <span class="subxComment"># var vars/ebx : (ref stack (addr var) 16)</span>
 <span id="L1333" class="LineNr">1333 </span>    81 5/subop/subtract %esp 0x10/imm32
 <span id="L1334" class="LineNr">1334 </span>    68/push 0x10/imm32/length
 <span id="L1335" class="LineNr">1335 </span>    68/push 0/imm32/top
@@ -1388,7 +1388,7 @@ if ('onhashchange' in window) {
 <span id="L1376" class="LineNr">1376 </span>    2b/subtract-&gt; *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span> 4/r32/esp
 <span id="L1377" class="LineNr">1377 </span>    89/&lt;- %ecx 4/r32/esp
 <span id="L1378" class="LineNr">1378 </span>    (<a href='../080zero-out.subx.html#L8'>zero-out</a> %ecx *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span>)
-<span id="L1379" class="LineNr">1379 </span>    <span class="subxComment"># var vars/ebx : (ref stack (address var) 16)</span>
+<span id="L1379" class="LineNr">1379 </span>    <span class="subxComment"># var vars/ebx : (ref stack (addr var) 16)</span>
 <span id="L1380" class="LineNr">1380 </span>    81 5/subop/subtract %esp 0x10/imm32
 <span id="L1381" class="LineNr">1381 </span>    68/push 0x10/imm32/length
 <span id="L1382" class="LineNr">1382 </span>    68/push 0/imm32/top
@@ -1439,12 +1439,12 @@ if ('onhashchange' in window) {
 <span id="L1427" class="LineNr">1427 </span><span class="subxComment">#   x: int</span>
 <span id="L1428" class="LineNr">1428 </span><span class="subxComment">#   x: int,</span>
 <span id="L1429" class="LineNr">1429 </span><span class="subxComment"># ignores at most one trailing colon or comma</span>
-<span id="L1430" class="LineNr">1430 </span><span class="subxFunction">parse-var-with-type</span>:  <span class="subxComment"># name: (address slice), first-line: (address stream byte) -&gt; result/eax: (handle var)</span>
+<span id="L1430" class="LineNr">1430 </span><span class="subxFunction">parse-var-with-type</span>:  <span class="subxComment"># name: (addr slice), first-line: (addr stream byte) -&gt; result/eax: (handle var)</span>
 <span id="L1431" class="LineNr">1431 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1432" class="LineNr">1432 </span>    <span class="subxComment">#   var v : (handle var) = allocate(Heap, Var-size)</span>
 <span id="L1433" class="LineNr">1433 </span>    <span class="subxComment">#   var s : (ref slice)</span>
 <span id="L1434" class="LineNr">1434 </span>    <span class="subxComment">#   next-token-from-slice(name-&gt;start, name-&gt;end, '/', s)</span>
-<span id="L1435" class="LineNr">1435 </span>    <span class="subxComment">#   var end : (address byte) = s-&gt;end</span>
+<span id="L1435" class="LineNr">1435 </span>    <span class="subxComment">#   var end : (addr byte) = s-&gt;end</span>
 <span id="L1436" class="LineNr">1436 </span>    <span class="subxComment">#   if (slice-ends-with(s, &quot;:&quot;))</span>
 <span id="L1437" class="LineNr">1437 </span>    <span class="subxComment">#     decrement s-&gt;end</span>
 <span id="L1438" class="LineNr">1438 </span>    <span class="subxComment">#   if (slice-ends-with(s, &quot;,&quot;))</span>
@@ -1615,7 +1615,7 @@ if ('onhashchange' in window) {
 <span id="L1603" class="LineNr">1603 </span>    cd/syscall  0x80/imm8
 <span id="L1604" class="LineNr">1604 </span>    <span class="subxComment"># never gets here</span>
 <span id="L1605" class="LineNr">1605 </span>
-<span id="L1606" class="LineNr">1606 </span><span class="subxFunction">next-mu-token</span>:  <span class="subxComment"># in: (address stream byte), out: (address slice)</span>
+<span id="L1606" class="LineNr">1606 </span><span class="subxFunction">next-mu-token</span>:  <span class="subxComment"># in: (addr stream byte), out: (addr slice)</span>
 <span id="L1607" class="LineNr">1607 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L1608" class="LineNr">1608 </span>    55/push-ebp
 <span id="L1609" class="LineNr">1609 </span>    89/&lt;- %ebp 4/r32/esp
@@ -1656,7 +1656,7 @@ if ('onhashchange' in window) {
 <span id="L1644" class="LineNr">1644 </span>    5d/pop-to-ebp
 <span id="L1645" class="LineNr">1645 </span>    c3/return
 <span id="L1646" class="LineNr">1646 </span>
-<span id="L1647" class="LineNr">1647 </span><span class="subxFunction">type-for</span>:  <span class="subxComment"># name: (address slice) -&gt; result/eax: (handle s-expression type-id)</span>
+<span id="L1647" class="LineNr">1647 </span><span class="subxFunction">type-for</span>:  <span class="subxComment"># name: (addr slice) -&gt; result/eax: (handle s-expression type-id)</span>
 <span id="L1648" class="LineNr">1648 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L1649" class="LineNr">1649 </span>    55/push-ebp
 <span id="L1650" class="LineNr">1650 </span>    89/&lt;- %ebp 4/r32/esp
@@ -1790,7 +1790,7 @@ if ('onhashchange' in window) {
 <span id="L1778" class="LineNr">1778 </span><span class="subxComment"># identifier starts with a letter or '$' or '_'</span>
 <span id="L1779" class="LineNr">1779 </span><span class="subxComment"># no constraints at the moment on later letters</span>
 <span id="L1780" class="LineNr">1780 </span><span class="subxComment"># all we really want to do so far is exclude '{', '}' and '-&gt;'</span>
-<span id="L1781" class="LineNr">1781 </span><span class="subxFunction">is-identifier?</span>:  <span class="subxComment"># in : (address slice) -&gt; result/eax : boolean</span>
+<span id="L1781" class="LineNr">1781 </span><span class="subxFunction">is-identifier?</span>:  <span class="subxComment"># in : (addr slice) -&gt; result/eax : boolean</span>
 <span id="L1782" class="LineNr">1782 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L1783" class="LineNr">1783 </span>    55/push-ebp
 <span id="L1784" class="LineNr">1784 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2086,7 +2086,7 @@ if ('onhashchange' in window) {
 <span id="L2074" class="LineNr">2074 </span>    5d/pop-to-ebp
 <span id="L2075" class="LineNr">2075 </span>    c3/return
 <span id="L2076" class="LineNr">2076 </span>
-<span id="L2077" class="LineNr">2077 </span><span class="subxFunction">populate-mu-function-body</span>:  <span class="subxComment"># in : (address buffered-file), out : (handle function), vars : (address stack (handle var))</span>
+<span id="L2077" class="LineNr">2077 </span><span class="subxFunction">populate-mu-function-body</span>:  <span class="subxComment"># in : (addr buffered-file), out : (handle function), vars : (addr stack (handle var))</span>
 <span id="L2078" class="LineNr">2078 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2079" class="LineNr">2079 </span>    55/push-ebp
 <span id="L2080" class="LineNr">2080 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2113,7 +2113,7 @@ if ('onhashchange' in window) {
 <span id="L2101" class="LineNr">2101 </span>    c3/return
 <span id="L2102" class="LineNr">2102 </span>
 <span id="L2103" class="LineNr">2103 </span><span class="subxComment"># parses a block, assuming that the leading '{' has already been read by the caller</span>
-<span id="L2104" class="LineNr">2104 </span><span class="subxFunction">parse-mu-block</span>:  <span class="subxComment"># in : (address buffered-file), vars : (address stack (handle var)), fn : (handle function) -&gt; result/eax : (handle block)</span>
+<span id="L2104" class="LineNr">2104 </span><span class="subxFunction">parse-mu-block</span>:  <span class="subxComment"># in : (addr buffered-file), vars : (addr stack (handle var)), fn : (handle function) -&gt; result/eax : (handle block)</span>
 <span id="L2105" class="LineNr">2105 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L2106" class="LineNr">2106 </span>    <span class="subxComment">#   var line : (ref stream byte 512)</span>
 <span id="L2107" class="LineNr">2107 </span>    <span class="subxComment">#   var word-slice : (ref slice)</span>
@@ -2274,7 +2274,7 @@ if ('onhashchange' in window) {
 <span id="L2262" class="LineNr">2262 </span>    cd/syscall  0x80/imm8
 <span id="L2263" class="LineNr">2263 </span>    <span class="subxComment"># never gets here</span>
 <span id="L2264" class="LineNr">2264 </span>
-<span id="L2265" class="LineNr">2265 </span><span class="subxFunction">check-no-tokens-left</span>:  <span class="subxComment"># line : (address stream byte)</span>
+<span id="L2265" class="LineNr">2265 </span><span class="subxFunction">check-no-tokens-left</span>:  <span class="subxComment"># line : (addr stream byte)</span>
 <span id="L2266" class="LineNr">2266 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2267" class="LineNr">2267 </span>    55/push-ebp
 <span id="L2268" class="LineNr">2268 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2321,7 +2321,7 @@ if ('onhashchange' in window) {
 <span id="L2309" class="LineNr">2309 </span>    5d/pop-to-ebp
 <span id="L2310" class="LineNr">2310 </span>    c3/return
 <span id="L2311" class="LineNr">2311 </span>
-<span id="L2312" class="LineNr">2312 </span><span class="subxFunction">parse-mu-named-block</span>:  <span class="subxComment"># name : (address slice), first-line : (address stream byte), in : (address buffered-file), vars : (address stack (handle var)) -&gt; result/eax : (handle stmt)</span>
+<span id="L2312" class="LineNr">2312 </span><span class="subxFunction">parse-mu-named-block</span>:  <span class="subxComment"># name : (addr slice), first-line : (addr stream byte), in : (addr buffered-file), vars : (addr stack (handle var)) -&gt; result/eax : (handle stmt)</span>
 <span id="L2313" class="LineNr">2313 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L2314" class="LineNr">2314 </span>    <span class="subxComment">#   var line : (ref stream byte 512)</span>
 <span id="L2315" class="LineNr">2315 </span>    <span class="subxComment">#   var word-slice : (ref slice)</span>
@@ -2365,7 +2365,7 @@ if ('onhashchange' in window) {
 <span id="L2353" class="LineNr">2353 </span>    5d/pop-to-ebp
 <span id="L2354" class="LineNr">2354 </span>    c3/return
 <span id="L2355" class="LineNr">2355 </span>
-<span id="L2356" class="LineNr">2356 </span><span class="subxFunction">parse-mu-var-def</span>:  <span class="subxComment"># line : (address stream byte), vars : (address stack (handle var)) -&gt; result/eax : (handle stmt)</span>
+<span id="L2356" class="LineNr">2356 </span><span class="subxFunction">parse-mu-var-def</span>:  <span class="subxComment"># line : (addr stream byte), vars : (addr stack (handle var)) -&gt; result/eax : (handle stmt)</span>
 <span id="L2357" class="LineNr">2357 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L2358" class="LineNr">2358 </span>    <span class="subxComment">#</span>
 <span id="L2359" class="LineNr">2359 </span>    <span class="subxS1Comment"># . prologue</span>
@@ -2380,7 +2380,7 @@ if ('onhashchange' in window) {
 <span id="L2368" class="LineNr">2368 </span>    5d/pop-to-ebp
 <span id="L2369" class="LineNr">2369 </span>    c3/return
 <span id="L2370" class="LineNr">2370 </span>
-<span id="L2371" class="LineNr">2371 </span><span class="subxFunction">parse-mu-stmt</span>:  <span class="subxComment"># line : (address stream byte), vars : (address stack (handle var)), fn : (handle function) -&gt; result/eax : (handle stmt)</span>
+<span id="L2371" class="LineNr">2371 </span><span class="subxFunction">parse-mu-stmt</span>:  <span class="subxComment"># line : (addr stream byte), vars : (addr stack (handle var)), fn : (handle function) -&gt; result/eax : (handle stmt)</span>
 <span id="L2372" class="LineNr">2372 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L2373" class="LineNr">2373 </span>    <span class="subxComment">#   var name : (ref slice)</span>
 <span id="L2374" class="LineNr">2374 </span>    <span class="subxComment">#   result = allocate(Heap, Stmt-size)</span>
@@ -2500,7 +2500,7 @@ if ('onhashchange' in window) {
 <span id="L2488" class="LineNr">2488 </span>    cd/syscall  0x80/imm8
 <span id="L2489" class="LineNr">2489 </span>    <span class="subxComment"># never gets here</span>
 <span id="L2490" class="LineNr">2490 </span>
-<span id="L2491" class="LineNr">2491 </span><span class="subxFunction">stmt-has-outputs?</span>:  <span class="subxComment"># line : (address stream byte) -&gt; result/eax : boolean</span>
+<span id="L2491" class="LineNr">2491 </span><span class="subxFunction">stmt-has-outputs?</span>:  <span class="subxComment"># line : (addr stream byte) -&gt; result/eax : boolean</span>
 <span id="L2492" class="LineNr">2492 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2493" class="LineNr">2493 </span>    55/push-ebp
 <span id="L2494" class="LineNr">2494 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2548,7 +2548,7 @@ if ('onhashchange' in window) {
 <span id="L2536" class="LineNr">2536 </span>
 <span id="L2537" class="LineNr">2537 </span><span class="subxComment"># if 'name' starts with a digit, create a new literal var for it</span>
 <span id="L2538" class="LineNr">2538 </span><span class="subxComment"># otherwise return first 'name' from the top (back) of 'vars' and abort if not found</span>
-<span id="L2539" class="LineNr">2539 </span><span class="subxFunction">lookup-var-or-literal</span>:  <span class="subxComment"># name: (address slice), vars : (address stack (handle var)) -&gt; result/eax: (handle var)</span>
+<span id="L2539" class="LineNr">2539 </span><span class="subxFunction">lookup-var-or-literal</span>:  <span class="subxComment"># name: (addr slice), vars : (addr stack (handle var)) -&gt; result/eax: (handle var)</span>
 <span id="L2540" class="LineNr">2540 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2541" class="LineNr">2541 </span>    55/push-ebp
 <span id="L2542" class="LineNr">2542 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2596,7 +2596,7 @@ if ('onhashchange' in window) {
 <span id="L2584" class="LineNr">2584 </span>    <span class="subxComment"># never gets here</span>
 <span id="L2585" class="LineNr">2585 </span>
 <span id="L2586" class="LineNr">2586 </span><span class="subxComment"># return first 'name' from the top (back) of 'vars' and abort if not found</span>
-<span id="L2587" class="LineNr">2587 </span><span class="subxFunction">lookup-var</span>:  <span class="subxComment"># name: (address slice), vars : (address stack (handle var)) -&gt; result/eax: (handle var)</span>
+<span id="L2587" class="LineNr">2587 </span><span class="subxFunction">lookup-var</span>:  <span class="subxComment"># name: (addr slice), vars : (addr stack (handle var)) -&gt; result/eax: (handle var)</span>
 <span id="L2588" class="LineNr">2588 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2589" class="LineNr">2589 </span>    55/push-ebp
 <span id="L2590" class="LineNr">2590 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2625,9 +2625,9 @@ if ('onhashchange' in window) {
 <span id="L2613" class="LineNr">2613 </span>    <span class="subxComment"># never gets here</span>
 <span id="L2614" class="LineNr">2614 </span>
 <span id="L2615" class="LineNr">2615 </span><span class="subxComment"># return first 'name' from the top (back) of 'vars', and 0/null if not found</span>
-<span id="L2616" class="LineNr">2616 </span><span class="subxFunction">lookup-var-helper</span>:  <span class="subxComment"># name: (address array byte), vars : (address stack (handle var)) -&gt; result/eax: (handle var)</span>
+<span id="L2616" class="LineNr">2616 </span><span class="subxFunction">lookup-var-helper</span>:  <span class="subxComment"># name: (addr array byte), vars : (addr stack (handle var)) -&gt; result/eax: (handle var)</span>
 <span id="L2617" class="LineNr">2617 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L2618" class="LineNr">2618 </span>    <span class="subxComment">#   var curr : (address handle var) = &amp;vars-&gt;data[vars-&gt;top - 4]</span>
+<span id="L2618" class="LineNr">2618 </span>    <span class="subxComment">#   var curr : (addr handle var) = &amp;vars-&gt;data[vars-&gt;top - 4]</span>
 <span id="L2619" class="LineNr">2619 </span>    <span class="subxComment">#   var min = vars-&gt;data</span>
 <span id="L2620" class="LineNr">2620 </span>    <span class="subxComment">#   while curr &gt;= min</span>
 <span id="L2621" class="LineNr">2621 </span>    <span class="subxComment">#     var v : (handle var) = *curr</span>
@@ -2649,9 +2649,9 @@ if ('onhashchange' in window) {
 <span id="L2637" class="LineNr">2637 </span>    <span class="subxComment"># if (vars-&gt;top &gt; vars-&gt;length) abort</span>
 <span id="L2638" class="LineNr">2638 </span>    3b/compare 0/r32/eax *(esi+4)
 <span id="L2639" class="LineNr">2639 </span>    0f 8f/jump-if-greater $lookup-var-helper:error1/disp32
-<span id="L2640" class="LineNr">2640 </span>    <span class="subxComment"># var min/edx : (address handle var) = vars-&gt;data</span>
+<span id="L2640" class="LineNr">2640 </span>    <span class="subxComment"># var min/edx : (addr handle var) = vars-&gt;data</span>
 <span id="L2641" class="LineNr">2641 </span>    8d/copy-address *(esi+8) 2/r32/edx
-<span id="L2642" class="LineNr">2642 </span>    <span class="subxComment"># var curr/ebx : (address handle var) = &amp;vars-&gt;data[vars-&gt;top - 4]</span>
+<span id="L2642" class="LineNr">2642 </span>    <span class="subxComment"># var curr/ebx : (addr handle var) = &amp;vars-&gt;data[vars-&gt;top - 4]</span>
 <span id="L2643" class="LineNr">2643 </span>    81 5/subop/subtract %ebx 4/imm32
 <span id="L2644" class="LineNr">2644 </span>    8d/copy-address *(esi+ebx+8) 3/r32/ebx
 <span id="L2645" class="LineNr">2645 </span>    {
@@ -2692,7 +2692,7 @@ if ('onhashchange' in window) {
 <span id="L2680" class="LineNr">2680 </span>    <span class="subxComment"># never gets here</span>
 <span id="L2681" class="LineNr">2681 </span>
 <span id="L2682" class="LineNr">2682 </span><span class="subxComment"># return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found</span>
-<span id="L2683" class="LineNr">2683 </span><span class="subxFunction">lookup-or-define-var</span>:  <span class="subxComment"># name: (address slice), vars : (address stack (handle var)), fn : (handle function) -&gt; result/eax: (handle var)</span>
+<span id="L2683" class="LineNr">2683 </span><span class="subxFunction">lookup-or-define-var</span>:  <span class="subxComment"># name: (addr slice), vars : (addr stack (handle var)), fn : (handle function) -&gt; result/eax: (handle var)</span>
 <span id="L2684" class="LineNr">2684 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2685" class="LineNr">2685 </span>    55/push-ebp
 <span id="L2686" class="LineNr">2686 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2765,7 +2765,7 @@ if ('onhashchange' in window) {
 <span id="L2753" class="LineNr">2753 </span>    <span class="subxComment"># setup</span>
 <span id="L2754" class="LineNr">2754 </span>    (<a href='../055stream.subx.html#L17'>clear-stream</a> <a href='../061read-byte.subx.html#L287'>_test-input-stream</a>)
 <span id="L2755" class="LineNr">2755 </span>    (<a href='../057write.subx.html#L24'>write</a> <a href='../061read-byte.subx.html#L287'>_test-input-stream</a> <span class="Constant">&quot;increment n\n&quot;</span>)
-<span id="L2756" class="LineNr">2756 </span>    <span class="subxComment"># var vars/ecx : (ref stack (address var) 4)</span>
+<span id="L2756" class="LineNr">2756 </span>    <span class="subxComment"># var vars/ecx : (ref stack (addr var) 4)</span>
 <span id="L2757" class="LineNr">2757 </span>    81 5/subop/subtract %esp 0x10/imm32
 <span id="L2758" class="LineNr">2758 </span>    68/push 0x10/imm32/length
 <span id="L2759" class="LineNr">2759 </span>    68/push 0/imm32/top
@@ -2793,7 +2793,7 @@ if ('onhashchange' in window) {
 <span id="L2781" class="LineNr">2781 </span>    5d/pop-to-ebp
 <span id="L2782" class="LineNr">2782 </span>    c3/return
 <span id="L2783" class="LineNr">2783 </span>
-<span id="L2784" class="LineNr">2784 </span><span class="subxFunction">new-function</span>:  <span class="subxComment"># ad: (address allocation-descriptor), name: (address array byte), subx-name: (address array byte), inouts: (handle list var), outputs: (handle list var), body: (handle block), next: (handle function) -&gt; result/eax: (handle function)</span>
+<span id="L2784" class="LineNr">2784 </span><span class="subxFunction">new-function</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), name: (addr array byte), subx-name: (addr array byte), inouts: (handle list var), outputs: (handle list var), body: (handle block), next: (handle function) -&gt; result/eax: (handle function)</span>
 <span id="L2785" class="LineNr">2785 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2786" class="LineNr">2786 </span>    55/push-ebp
 <span id="L2787" class="LineNr">2787 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2821,7 +2821,7 @@ if ('onhashchange' in window) {
 <span id="L2809" class="LineNr">2809 </span>    5d/pop-to-ebp
 <span id="L2810" class="LineNr">2810 </span>    c3/return
 <span id="L2811" class="LineNr">2811 </span>
-<span id="L2812" class="LineNr">2812 </span><span class="subxFunction">new-var</span>:  <span class="subxComment"># ad: (address allocation-descriptor), name: (address array byte), type: int, block: int, stack-offset: int, register: (address array byte) -&gt; result/eax: (handle var)</span>
+<span id="L2812" class="LineNr">2812 </span><span class="subxFunction">new-var</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), name: (addr array byte), type: int, block: int, stack-offset: int, register: (addr array byte) -&gt; result/eax: (handle var)</span>
 <span id="L2813" class="LineNr">2813 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2814" class="LineNr">2814 </span>    55/push-ebp
 <span id="L2815" class="LineNr">2815 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2847,7 +2847,7 @@ if ('onhashchange' in window) {
 <span id="L2835" class="LineNr">2835 </span>    5d/pop-to-ebp
 <span id="L2836" class="LineNr">2836 </span>    c3/return
 <span id="L2837" class="LineNr">2837 </span>
-<span id="L2838" class="LineNr">2838 </span><span class="subxFunction">new-literal-integer</span>:  <span class="subxComment"># ad: (address allocation-descriptor), name: (address slice) -&gt; result/eax: (handle var)</span>
+<span id="L2838" class="LineNr">2838 </span><span class="subxFunction">new-literal-integer</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), name: (addr slice) -&gt; result/eax: (handle var)</span>
 <span id="L2839" class="LineNr">2839 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2840" class="LineNr">2840 </span>    55/push-ebp
 <span id="L2841" class="LineNr">2841 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2857,7 +2857,7 @@ if ('onhashchange' in window) {
 <span id="L2845" class="LineNr">2845 </span>    (<a href='../067parse-hex.subx.html#L9'>is-hex-int?</a> *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2846" class="LineNr">2846 </span>    3d/compare-eax-and 0/imm32
 <span id="L2847" class="LineNr">2847 </span>    0f 84/jump-if-equal $new-literal-integer:abort/disp32
-<span id="L2848" class="LineNr">2848 </span>    <span class="subxComment"># var s/ecx : (address array byte)</span>
+<span id="L2848" class="LineNr">2848 </span>    <span class="subxComment"># var s/ecx : (addr array byte)</span>
 <span id="L2849" class="LineNr">2849 </span>    (<a href='../072slice.subx.html#L1015'>slice-to-string</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2850" class="LineNr">2850 </span>    89/&lt;- %ecx 0/r32/eax
 <span id="L2851" class="LineNr">2851 </span>    <span class="subxComment">#</span>
@@ -2886,7 +2886,7 @@ if ('onhashchange' in window) {
 <span id="L2874" class="LineNr">2874 </span>    cd/syscall  0x80/imm8
 <span id="L2875" class="LineNr">2875 </span>    <span class="subxComment"># never gets here</span>
 <span id="L2876" class="LineNr">2876 </span>
-<span id="L2877" class="LineNr">2877 </span><span class="subxFunction">new-block</span>:  <span class="subxComment"># ad: (address allocation-descriptor), data: (handle list statement) -&gt; result/eax: (handle statement)</span>
+<span id="L2877" class="LineNr">2877 </span><span class="subxFunction">new-block</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), data: (handle list statement) -&gt; result/eax: (handle statement)</span>
 <span id="L2878" class="LineNr">2878 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2879" class="LineNr">2879 </span>    55/push-ebp
 <span id="L2880" class="LineNr">2880 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2906,7 +2906,7 @@ if ('onhashchange' in window) {
 <span id="L2894" class="LineNr">2894 </span>    5d/pop-to-ebp
 <span id="L2895" class="LineNr">2895 </span>    c3/return
 <span id="L2896" class="LineNr">2896 </span>
-<span id="L2897" class="LineNr">2897 </span><span class="subxFunction">new-stmt</span>:  <span class="subxComment"># ad: (address allocation-descriptor), operation: (address array byte), inouts: (handle list var), outputs: (handle list var) -&gt; result/eax: (handle statement)</span>
+<span id="L2897" class="LineNr">2897 </span><span class="subxFunction">new-stmt</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), operation: (addr array byte), inouts: (handle list var), outputs: (handle list var) -&gt; result/eax: (handle statement)</span>
 <span id="L2898" class="LineNr">2898 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2899" class="LineNr">2899 </span>    55/push-ebp
 <span id="L2900" class="LineNr">2900 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2930,7 +2930,7 @@ if ('onhashchange' in window) {
 <span id="L2918" class="LineNr">2918 </span>    5d/pop-to-ebp
 <span id="L2919" class="LineNr">2919 </span>    c3/return
 <span id="L2920" class="LineNr">2920 </span>
-<span id="L2921" class="LineNr">2921 </span><span class="subxFunction">new-vardef</span>:  <span class="subxComment"># ad: (address allocation-descriptor), name: (address array byte), type: int -&gt; result/eax: (handle statement)</span>
+<span id="L2921" class="LineNr">2921 </span><span class="subxFunction">new-vardef</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), name: (addr array byte), type: int -&gt; result/eax: (handle statement)</span>
 <span id="L2922" class="LineNr">2922 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2923" class="LineNr">2923 </span>    55/push-ebp
 <span id="L2924" class="LineNr">2924 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2952,7 +2952,7 @@ if ('onhashchange' in window) {
 <span id="L2940" class="LineNr">2940 </span>    5d/pop-to-ebp
 <span id="L2941" class="LineNr">2941 </span>    c3/return
 <span id="L2942" class="LineNr">2942 </span>
-<span id="L2943" class="LineNr">2943 </span><span class="subxFunction">new-regvardef</span>:  <span class="subxComment"># ad: (address allocation-descriptor), name: (address array byte), type: int, register: (address array byte) -&gt; result/eax: (handle statement)</span>
+<span id="L2943" class="LineNr">2943 </span><span class="subxFunction">new-regvardef</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), name: (addr array byte), type: int, register: (addr array byte) -&gt; result/eax: (handle statement)</span>
 <span id="L2944" class="LineNr">2944 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2945" class="LineNr">2945 </span>    55/push-ebp
 <span id="L2946" class="LineNr">2946 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2976,7 +2976,7 @@ if ('onhashchange' in window) {
 <span id="L2964" class="LineNr">2964 </span>    5d/pop-to-ebp
 <span id="L2965" class="LineNr">2965 </span>    c3/return
 <span id="L2966" class="LineNr">2966 </span>
-<span id="L2967" class="LineNr">2967 </span><span class="subxFunction">new-named-block</span>:  <span class="subxComment"># ad: (address allocation-descriptor), name: (address array byte), data: (handle list statement) -&gt; result/eax: (handle statement)</span>
+<span id="L2967" class="LineNr">2967 </span><span class="subxFunction">new-named-block</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), name: (addr array byte), data: (handle list statement) -&gt; result/eax: (handle statement)</span>
 <span id="L2968" class="LineNr">2968 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2969" class="LineNr">2969 </span>    55/push-ebp
 <span id="L2970" class="LineNr">2970 </span>    89/&lt;- %ebp 4/r32/esp
@@ -2998,7 +2998,7 @@ if ('onhashchange' in window) {
 <span id="L2986" class="LineNr">2986 </span>    5d/pop-to-ebp
 <span id="L2987" class="LineNr">2987 </span>    c3/return
 <span id="L2988" class="LineNr">2988 </span>
-<span id="L2989" class="LineNr">2989 </span><span class="subxFunction">new-list</span>:  <span class="subxComment"># ad: (address allocation-descriptor), value: _type, next: (handle list _type) -&gt; result/eax : (handle list _type)</span>
+<span id="L2989" class="LineNr">2989 </span><span class="subxFunction">new-list</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), value: _type, next: (handle list _type) -&gt; result/eax : (handle list _type)</span>
 <span id="L2990" class="LineNr">2990 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L2991" class="LineNr">2991 </span>    55/push-ebp
 <span id="L2992" class="LineNr">2992 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3018,7 +3018,7 @@ if ('onhashchange' in window) {
 <span id="L3006" class="LineNr">3006 </span>    5d/pop-to-ebp
 <span id="L3007" class="LineNr">3007 </span>    c3/return
 <span id="L3008" class="LineNr">3008 </span>
-<span id="L3009" class="LineNr">3009 </span><span class="subxFunction">append-list</span>:  <span class="subxComment"># ad: (address allocation-descriptor), value: _type, list: (handle list _type) -&gt; result/eax : (handle list _type)</span>
+<span id="L3009" class="LineNr">3009 </span><span class="subxFunction">append-list</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), value: _type, list: (handle list _type) -&gt; result/eax : (handle list _type)</span>
 <span id="L3010" class="LineNr">3010 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3011" class="LineNr">3011 </span>    55/push-ebp
 <span id="L3012" class="LineNr">3012 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3054,7 +3054,7 @@ if ('onhashchange' in window) {
 <span id="L3042" class="LineNr">3042 </span>    5d/pop-to-ebp
 <span id="L3043" class="LineNr">3043 </span>    c3/return
 <span id="L3044" class="LineNr">3044 </span>
-<span id="L3045" class="LineNr">3045 </span><span class="subxFunction">append-to-block</span>:  <span class="subxComment"># ad: (address allocation-descriptor), block: (handle block), x: (handle stmt)</span>
+<span id="L3045" class="LineNr">3045 </span><span class="subxFunction">append-to-block</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), block: (handle block), x: (handle stmt)</span>
 <span id="L3046" class="LineNr">3046 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3047" class="LineNr">3047 </span>    55/push-ebp
 <span id="L3048" class="LineNr">3048 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3087,7 +3087,7 @@ if ('onhashchange' in window) {
 <span id="L3075" class="LineNr">3075 </span>    5d/pop-to-ebp
 <span id="L3076" class="LineNr">3076 </span>    c3/return
 <span id="L3077" class="LineNr">3077 </span>
-<span id="L3078" class="LineNr">3078 </span><span class="subxFunction">size-of</span>:  <span class="subxComment"># n : (address var)</span>
+<span id="L3078" class="LineNr">3078 </span><span class="subxFunction">size-of</span>:  <span class="subxComment"># n : (addr var)</span>
 <span id="L3079" class="LineNr">3079 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3080" class="LineNr">3080 </span>    55/push-ebp
 <span id="L3081" class="LineNr">3081 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3103,7 +3103,7 @@ if ('onhashchange' in window) {
 <span id="L3091" class="LineNr">3091 </span><span class="subxComment"># Code-generation</span>
 <span id="L3092" class="LineNr">3092 </span><span class="subxComment">#######################################################</span>
 <span id="L3093" class="LineNr">3093 </span>
-<span id="L3094" class="LineNr">3094 </span><span class="subxFunction">emit-subx</span>:  <span class="subxComment"># out : (address buffered-file)</span>
+<span id="L3094" class="LineNr">3094 </span><span class="subxFunction">emit-subx</span>:  <span class="subxComment"># out : (addr buffered-file)</span>
 <span id="L3095" class="LineNr">3095 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3096" class="LineNr">3096 </span>    55/push-ebp
 <span id="L3097" class="LineNr">3097 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3134,7 +3134,7 @@ if ('onhashchange' in window) {
 <span id="L3122" class="LineNr">3122 </span>    5d/pop-to-ebp
 <span id="L3123" class="LineNr">3123 </span>    c3/return
 <span id="L3124" class="LineNr">3124 </span>
-<span id="L3125" class="LineNr">3125 </span><span class="subxFunction">emit-subx-function</span>:  <span class="subxComment"># out : (address buffered-file), f : (handle function)</span>
+<span id="L3125" class="LineNr">3125 </span><span class="subxFunction">emit-subx-function</span>:  <span class="subxComment"># out : (addr buffered-file), f : (handle function)</span>
 <span id="L3126" class="LineNr">3126 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3127" class="LineNr">3127 </span>    55/push-ebp
 <span id="L3128" class="LineNr">3128 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3162,7 +3162,7 @@ if ('onhashchange' in window) {
 <span id="L3150" class="LineNr">3150 </span>    5d/pop-to-ebp
 <span id="L3151" class="LineNr">3151 </span>    c3/return
 <span id="L3152" class="LineNr">3152 </span>
-<span id="L3153" class="LineNr">3153 </span><span class="subxFunction">emit-subx-block</span>:  <span class="subxComment"># out : (address buffered-file), block : (handle block)</span>
+<span id="L3153" class="LineNr">3153 </span><span class="subxFunction">emit-subx-block</span>:  <span class="subxComment"># out : (addr buffered-file), block : (handle block)</span>
 <span id="L3154" class="LineNr">3154 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3155" class="LineNr">3155 </span>    55/push-ebp
 <span id="L3156" class="LineNr">3156 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3192,7 +3192,7 @@ if ('onhashchange' in window) {
 <span id="L3180" class="LineNr">3180 </span>    5d/pop-to-ebp
 <span id="L3181" class="LineNr">3181 </span>    c3/return
 <span id="L3182" class="LineNr">3182 </span>
-<span id="L3183" class="LineNr">3183 </span><span class="subxFunction">emit-subx-statement</span>:  <span class="subxComment"># out : (address buffered-file), stmt : (handle statement), primitives : (handle primitive), functions : (handle function)</span>
+<span id="L3183" class="LineNr">3183 </span><span class="subxFunction">emit-subx-statement</span>:  <span class="subxComment"># out : (addr buffered-file), stmt : (handle statement), primitives : (handle primitive), functions : (handle function)</span>
 <span id="L3184" class="LineNr">3184 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3185" class="LineNr">3185 </span>    55/push-ebp
 <span id="L3186" class="LineNr">3186 </span>    89/&lt;- %ebp 4/r32/esp
@@ -3987,7 +3987,7 @@ if ('onhashchange' in window) {
 <span id="L3975" class="LineNr">3975 </span>    0/imm32/no-register
 <span id="L3976" class="LineNr">3976 </span>
 <span id="L3977" class="LineNr">3977 </span>== code
-<span id="L3978" class="LineNr">3978 </span><span class="subxFunction">emit-subx-primitive</span>:  <span class="subxComment"># out : (address buffered-file), stmt : (handle statement), primitive : (handle function)</span>
+<span id="L3978" class="LineNr">3978 </span><span class="subxFunction">emit-subx-primitive</span>:  <span class="subxComment"># out : (addr buffered-file), stmt : (handle statement), primitive : (handle function)</span>
 <span id="L3979" class="LineNr">3979 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3980" class="LineNr">3980 </span>    55/push-ebp
 <span id="L3981" class="LineNr">3981 </span>    89/&lt;- %ebp 4/r32/esp
@@ -4013,7 +4013,7 @@ if ('onhashchange' in window) {
 <span id="L4001" class="LineNr">4001 </span>    5d/pop-to-ebp
 <span id="L4002" class="LineNr">4002 </span>    c3/return
 <span id="L4003" class="LineNr">4003 </span>
-<span id="L4004" class="LineNr">4004 </span><span class="subxFunction">emit-subx-rm32</span>:  <span class="subxComment"># out : (address buffered-file), l : arg-location, stmt : (handle statement)</span>
+<span id="L4004" class="LineNr">4004 </span><span class="subxFunction">emit-subx-rm32</span>:  <span class="subxComment"># out : (addr buffered-file), l : arg-location, stmt : (handle statement)</span>
 <span id="L4005" class="LineNr">4005 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4006" class="LineNr">4006 </span>    55/push-ebp
 <span id="L4007" class="LineNr">4007 </span>    89/&lt;- %ebp 4/r32/esp
@@ -4093,7 +4093,7 @@ if ('onhashchange' in window) {
 <span id="L4081" class="LineNr">4081 </span>    cd/syscall  0x80/imm8
 <span id="L4082" class="LineNr">4082 </span>    <span class="subxComment"># never gets here</span>
 <span id="L4083" class="LineNr">4083 </span>
-<span id="L4084" class="LineNr">4084 </span><span class="subxFunction">emit-subx-r32</span>:  <span class="subxComment"># out : (address buffered-file), l : arg-location, stmt : (handle statement)</span>
+<span id="L4084" class="LineNr">4084 </span><span class="subxFunction">emit-subx-r32</span>:  <span class="subxComment"># out : (addr buffered-file), l : arg-location, stmt : (handle statement)</span>
 <span id="L4085" class="LineNr">4085 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4086" class="LineNr">4086 </span>    55/push-ebp
 <span id="L4087" class="LineNr">4087 </span>    89/&lt;- %ebp 4/r32/esp
@@ -4105,7 +4105,7 @@ if ('onhashchange' in window) {
 <span id="L4093" class="LineNr">4093 </span>    0f 84/jump-if-equal $emit-subx-r32:end/disp32
 <span id="L4094" class="LineNr">4094 </span>    <span class="subxComment">#</span>
 <span id="L4095" class="LineNr">4095 </span>    (<a href='mu.subx.html#L4024'>get-stmt-operand-from-arg-location</a> *(ebp+0x10) *(ebp+0xc))  <span class="subxComment"># stmt, l =&gt; var/eax</span>
-<span id="L4096" class="LineNr">4096 </span>    (<a href='../081table.subx.html#L1382'>maybe-get</a> <span class="SpecialChar"><a href='../085register-names.subx.html#L2'>Registers</a></span> *(eax+0x10) 8)  <span class="subxComment"># Var-register =&gt; eax : (address register-index)</span>
+<span id="L4096" class="LineNr">4096 </span>    (<a href='../081table.subx.html#L1382'>maybe-get</a> <span class="SpecialChar"><a href='../085register-names.subx.html#L2'>Registers</a></span> *(eax+0x10) 8)  <span class="subxComment"># Var-register =&gt; eax : (addr register-index)</span>
 <span id="L4097" class="LineNr">4097 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
 <span id="L4098" class="LineNr">4098 </span>    (<a href='../066print-int.subx.html#L266'>print-int32-buffered</a> *(ebp+8) *eax)
 <span id="L4099" class="LineNr">4099 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;/r32&quot;</span>)
@@ -4118,7 +4118,7 @@ if ('onhashchange' in window) {
 <span id="L4106" class="LineNr">4106 </span>    5d/pop-to-ebp
 <span id="L4107" class="LineNr">4107 </span>    c3/return
 <span id="L4108" class="LineNr">4108 </span>
-<span id="L4109" class="LineNr">4109 </span><span class="subxFunction">emit-subx-imm32</span>:  <span class="subxComment"># out : (address buffered-file), l : arg-location, stmt : (handle statement)</span>
+<span id="L4109" class="LineNr">4109 </span><span class="subxFunction">emit-subx-imm32</span>:  <span class="subxComment"># out : (addr buffered-file), l : arg-location, stmt : (handle statement)</span>
 <span id="L4110" class="LineNr">4110 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4111" class="LineNr">4111 </span>    55/push-ebp
 <span id="L4112" class="LineNr">4112 </span>    89/&lt;- %ebp 4/r32/esp
@@ -4142,7 +4142,7 @@ if ('onhashchange' in window) {
 <span id="L4130" class="LineNr">4130 </span>    5d/pop-to-ebp
 <span id="L4131" class="LineNr">4131 </span>    c3/return
 <span id="L4132" class="LineNr">4132 </span>
-<span id="L4133" class="LineNr">4133 </span><span class="subxFunction">emit-subx-call</span>:  <span class="subxComment"># out : (address buffered-file), stmt : (handle statement), callee : (handle function)</span>
+<span id="L4133" class="LineNr">4133 </span><span class="subxFunction">emit-subx-call</span>:  <span class="subxComment"># out : (addr buffered-file), stmt : (handle statement), callee : (handle function)</span>
 <span id="L4134" class="LineNr">4134 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4135" class="LineNr">4135 </span>    55/push-ebp
 <span id="L4136" class="LineNr">4136 </span>    89/&lt;- %ebp 4/r32/esp
@@ -4179,7 +4179,7 @@ if ('onhashchange' in window) {
 <span id="L4167" class="LineNr">4167 </span>    5d/pop-to-ebp
 <span id="L4168" class="LineNr">4168 </span>    c3/return
 <span id="L4169" class="LineNr">4169 </span>
-<span id="L4170" class="LineNr">4170 </span><span class="subxFunction">emit-subx-call-operand</span>:  <span class="subxComment"># out : (address buffered-file), operand : (handle variable)</span>
+<span id="L4170" class="LineNr">4170 </span><span class="subxFunction">emit-subx-call-operand</span>:  <span class="subxComment"># out : (addr buffered-file), operand : (handle variable)</span>
 <span id="L4171" class="LineNr">4171 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4172" class="LineNr">4172 </span>    55/push-ebp
 <span id="L4173" class="LineNr">4173 </span>    89/&lt;- %ebp 4/r32/esp
@@ -4205,7 +4205,7 @@ if ('onhashchange' in window) {
 <span id="L4193" class="LineNr">4193 </span>    5d/pop-to-ebp
 <span id="L4194" class="LineNr">4194 </span>    c3/return
 <span id="L4195" class="LineNr">4195 </span>
-<span id="L4196" class="LineNr">4196 </span><span class="subxFunction">emit-subx-var-as-rm32</span>:  <span class="subxComment"># out : (address buffered-file), operand : (handle variable)</span>
+<span id="L4196" class="LineNr">4196 </span><span class="subxFunction">emit-subx-var-as-rm32</span>:  <span class="subxComment"># out : (addr buffered-file), operand : (handle variable)</span>
 <span id="L4197" class="LineNr">4197 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4198" class="LineNr">4198 </span>    55/push-ebp
 <span id="L4199" class="LineNr">4199 </span>    89/&lt;- %ebp 4/r32/esp
@@ -4240,7 +4240,7 @@ if ('onhashchange' in window) {
 <span id="L4228" class="LineNr">4228 </span>    5d/pop-to-ebp
 <span id="L4229" class="LineNr">4229 </span>    c3/return
 <span id="L4230" class="LineNr">4230 </span>
-<span id="L4231" class="LineNr">4231 </span><span class="subxFunction">find-matching-function</span>:  <span class="subxComment"># functions : (address function), stmt : (handle statement) -&gt; result/eax : (handle function)</span>
+<span id="L4231" class="LineNr">4231 </span><span class="subxFunction">find-matching-function</span>:  <span class="subxComment"># functions : (addr function), stmt : (handle statement) -&gt; result/eax : (handle function)</span>
 <span id="L4232" class="LineNr">4232 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4233" class="LineNr">4233 </span>    55/push-ebp
 <span id="L4234" class="LineNr">4234 </span>    89/&lt;- %ebp 4/r32/esp
@@ -5344,7 +5344,7 @@ if ('onhashchange' in window) {
 <span id="L5402" class="LineNr">5402 </span>    5d/pop-to-ebp
 <span id="L5403" class="LineNr">5403 </span>    c3/return
 <span id="L5404" class="LineNr">5404 </span>
-<span id="L5405" class="LineNr">5405 </span><span class="subxFunction">emit-subx-prologue</span>:  <span class="subxComment"># out : (address buffered-file)</span>
+<span id="L5405" class="LineNr">5405 </span><span class="subxFunction">emit-subx-prologue</span>:  <span class="subxComment"># out : (addr buffered-file)</span>
 <span id="L5406" class="LineNr">5406 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L5407" class="LineNr">5407 </span>    55/push-ebp
 <span id="L5408" class="LineNr">5408 </span>    89/&lt;- %ebp 4/r32/esp
@@ -5358,7 +5358,7 @@ if ('onhashchange' in window) {
 <span id="L5416" class="LineNr">5416 </span>    5d/pop-to-ebp
 <span id="L5417" class="LineNr">5417 </span>    c3/return
 <span id="L5418" class="LineNr">5418 </span>
-<span id="L5419" class="LineNr">5419 </span><span class="subxFunction">emit-subx-epilogue</span>:  <span class="subxComment"># out : (address buffered-file)</span>
+<span id="L5419" class="LineNr">5419 </span><span class="subxFunction">emit-subx-epilogue</span>:  <span class="subxComment"># out : (addr buffered-file)</span>
 <span id="L5420" class="LineNr">5420 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L5421" class="LineNr">5421 </span>    55/push-ebp
 <span id="L5422" class="LineNr">5422 </span>    89/&lt;- %ebp 4/r32/esp

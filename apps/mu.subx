@@ -246,7 +246,7 @@
 
 == data
 
-Program:  # (address (handle function))
+Program:  # (addr (handle function))
   0/imm32
 
 Function-name:
@@ -378,7 +378,7 @@ $mu-main:end:
     b8/copy-to-eax 1/imm32/exit
     cd/syscall 0x80/imm8
 
-convert-mu:  # in : (address buffered-file), out : (address buffered-file)
+convert-mu:  # in : (addr buffered-file), out : (addr buffered-file)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -952,9 +952,9 @@ test-convert-function-call-with-literal-arg:
 # Parsing
 #######################################################
 
-parse-mu:  # in : (address buffered-file)
+parse-mu:  # in : (addr buffered-file)
     # pseudocode
-    #   var curr-function : (address (handle function)) = Program
+    #   var curr-function : (addr (handle function)) = Program
     #   var line : (ref stream byte 512)
     #   var word-slice : (ref slice)
     #   while true                                  # line loop
@@ -968,7 +968,7 @@ parse-mu:  # in : (address buffered-file)
     #       continue                                # end of line
     #     else if slice-equal(word-slice, "fn")
     #       var new-function : (handle function) = allocate(function)
-    #       var vars : (ref stack (address var) 256)
+    #       var vars : (ref stack (addr var) 256)
     #       populate-mu-function-header(in, new-function, vars)
     #       populate-mu-function-body(in, new-function, vars)
     #       assert(vars->top == 0)
@@ -996,9 +996,9 @@ parse-mu:  # in : (address buffered-file)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # var curr-function/edi : (address (handle function)) = Program
+    # var curr-function/edi : (addr (handle function)) = Program
     bf/copy-to-edi Program/imm32
-    # var vars/ebx : (ref stack (address var) 256)
+    # var vars/ebx : (ref stack (addr var) 256)
     81 5/subop/subtract %esp 0x400/imm32
     68/push 0x400/imm32/length
     68/push 0/imm32/top
@@ -1100,7 +1100,7 @@ $parse-mu:error2:
 # ✓ fn foo x : int {
 # ✓ fn foo x: int {
 # ✓ fn foo x: int -> y/eax: int {
-populate-mu-function-header:  # first-line : (address stream byte), out : (handle function), vars : (address stack (handle var))
+populate-mu-function-header:  # first-line : (addr stream byte), out : (handle function), vars : (addr stack (handle var))
     # pseudocode:
     #   var name : (ref slice)
     #   next-word(first-line, name)
@@ -1297,7 +1297,7 @@ test-function-header-with-arg:
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
-    # var vars/ebx : (ref stack (address var) 16)
+    # var vars/ebx : (ref stack (addr var) 16)
     81 5/subop/subtract %esp 0x10/imm32
     68/push 0x10/imm32/length
     68/push 0/imm32/top
@@ -1329,7 +1329,7 @@ test-function-header-with-multiple-args:
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
-    # var vars/ebx : (ref stack (address var) 16)
+    # var vars/ebx : (ref stack (addr var) 16)
     81 5/subop/subtract %esp 0x10/imm32
     68/push 0x10/imm32/length
     68/push 0/imm32/top
@@ -1376,7 +1376,7 @@ test-function-with-multiple-args-and-outputs:
     2b/subtract-> *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
-    # var vars/ebx : (ref stack (address var) 16)
+    # var vars/ebx : (ref stack (addr var) 16)
     81 5/subop/subtract %esp 0x10/imm32
     68/push 0x10/imm32/length
     68/push 0/imm32/top
@@ -1427,12 +1427,12 @@ test-function-with-multiple-args-and-outputs:
 #   x: int
 #   x: int,
 # ignores at most one trailing colon or comma
-parse-var-with-type:  # name: (address slice), first-line: (address stream byte) -> result/eax: (handle var)
+parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte) -> result/eax: (handle var)
     # pseudocode:
     #   var v : (handle var) = allocate(Heap, Var-size)
     #   var s : (ref slice)
     #   next-token-from-slice(name->start, name->end, '/', s)
-    #   var end : (address byte) = s->end
+    #   var end : (addr byte) = s->end
     #   if (slice-ends-with(s, ":"))
     #     decrement s->end
     #   if (slice-ends-with(s, ","))
@@ -1603,7 +1603,7 @@ $parse-var-with-type:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-next-mu-token:  # in: (address stream byte), out: (address slice)
+next-mu-token:  # in: (addr stream byte), out: (addr slice)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1644,7 +1644,7 @@ $next-mu-token:end:
     5d/pop-to-ebp
     c3/return
 
-type-for:  # name: (address slice) -> result/eax: (handle s-expression type-id)
+type-for:  # name: (addr slice) -> result/eax: (handle s-expression type-id)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1778,7 +1778,7 @@ test-parse-var-with-register-and-trailing-characters:
 # identifier starts with a letter or '$' or '_'
 # no constraints at the moment on later letters
 # all we really want to do so far is exclude '{', '}' and '->'
-is-identifier?:  # in : (address slice) -> result/eax : boolean
+is-identifier?:  # in : (addr slice) -> result/eax : boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2074,7 +2074,7 @@ test-is-identifier-hyphen:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-function-body:  # in : (address buffered-file), out : (handle function), vars : (address stack (handle var))
+populate-mu-function-body:  # in : (addr buffered-file), out : (handle function), vars : (addr stack (handle var))
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2101,7 +2101,7 @@ $populate-mu-function-body:end:
     c3/return
 
 # parses a block, assuming that the leading '{' has already been read by the caller
-parse-mu-block:  # in : (address buffered-file), vars : (address stack (handle var)), fn : (handle function) -> result/eax : (handle block)
+parse-mu-block:  # in : (addr buffered-file), vars : (addr stack (handle var)), fn : (handle function) -> result/eax : (handle block)
     # pseudocode:
     #   var line : (ref stream byte 512)
     #   var word-slice : (ref slice)
@@ -2262,7 +2262,7 @@ $parse-mu-block:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-check-no-tokens-left:  # line : (address stream byte)
+check-no-tokens-left:  # line : (addr stream byte)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2309,7 +2309,7 @@ $check-no-tokens-left:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-named-block:  # name : (address slice), first-line : (address stream byte), in : (address buffered-file), vars : (address stack (handle var)) -> result/eax : (handle stmt)
+parse-mu-named-block:  # name : (addr slice), first-line : (addr stream byte), in : (addr buffered-file), vars : (addr stack (handle var)) -> result/eax : (handle stmt)
     # pseudocode:
     #   var line : (ref stream byte 512)
     #   var word-slice : (ref slice)
@@ -2353,7 +2353,7 @@ $parse-mu-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-var-def:  # line : (address stream byte), vars : (address stack (handle var)) -> result/eax : (handle stmt)
+parse-mu-var-def:  # line : (addr stream byte), vars : (addr stack (handle var)) -> result/eax : (handle stmt)
     # pseudocode:
     #
     # . prologue
@@ -2368,7 +2368,7 @@ $parse-mu-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-stmt:  # line : (address stream byte), vars : (address stack (handle var)), fn : (handle function) -> result/eax : (handle stmt)
+parse-mu-stmt:  # line : (addr stream byte), vars : (addr stack (handle var)), fn : (handle function) -> result/eax : (handle stmt)
     # pseudocode:
     #   var name : (ref slice)
     #   result = allocate(Heap, Stmt-size)
@@ -2488,7 +2488,7 @@ $parse-mu-stmt:abort2:
     cd/syscall  0x80/imm8
     # never gets here
 
-stmt-has-outputs?:  # line : (address stream byte) -> result/eax : boolean
+stmt-has-outputs?:  # line : (addr stream byte) -> result/eax : boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2536,7 +2536,7 @@ $stmt-has-outputs:end:
 
 # if 'name' starts with a digit, create a new literal var for it
 # otherwise return first 'name' from the top (back) of 'vars' and abort if not found
-lookup-var-or-literal:  # name: (address slice), vars : (address stack (handle var)) -> result/eax: (handle var)
+lookup-var-or-literal:  # name: (addr slice), vars : (addr stack (handle var)) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2584,7 +2584,7 @@ $lookup-var-or-literal:abort:
     # never gets here
 
 # return first 'name' from the top (back) of 'vars' and abort if not found
-lookup-var:  # name: (address slice), vars : (address stack (handle var)) -> result/eax: (handle var)
+lookup-var:  # name: (addr slice), vars : (addr stack (handle var)) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2613,9 +2613,9 @@ $lookup-var:abort:
     # never gets here
 
 # return first 'name' from the top (back) of 'vars', and 0/null if not found
-lookup-var-helper:  # name: (address array byte), vars : (address stack (handle var)) -> result/eax: (handle var)
+lookup-var-helper:  # name: (addr array byte), vars : (addr stack (handle var)) -> result/eax: (handle var)
     # pseudocode:
-    #   var curr : (address handle var) = &vars->data[vars->top - 4]
+    #   var curr : (addr handle var) = &vars->data[vars->top - 4]
     #   var min = vars->data
     #   while curr >= min
     #     var v : (handle var) = *curr
@@ -2637,9 +2637,9 @@ lookup-var-helper:  # name: (address array byte), vars : (address stack (handle 
     # if (vars->top > vars->length) abort
     3b/compare 0/r32/eax *(esi+4)
     0f 8f/jump-if-greater $lookup-var-helper:error1/disp32
-    # var min/edx : (address handle var) = vars->data
+    # var min/edx : (addr handle var) = vars->data
     8d/copy-address *(esi+8) 2/r32/edx
-    # var curr/ebx : (address handle var) = &vars->data[vars->top - 4]
+    # var curr/ebx : (addr handle var) = &vars->data[vars->top - 4]
     81 5/subop/subtract %ebx 4/imm32
     8d/copy-address *(esi+ebx+8) 3/r32/ebx
     {
@@ -2680,7 +2680,7 @@ $lookup-var-helper:error1:
     # never gets here
 
 # return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found
-lookup-or-define-var:  # name: (address slice), vars : (address stack (handle var)), fn : (handle function) -> result/eax: (handle var)
+lookup-or-define-var:  # name: (addr slice), vars : (addr stack (handle var)), fn : (handle function) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2753,7 +2753,7 @@ test-parse-mu-stmt:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "increment n\n")
-    # var vars/ecx : (ref stack (address var) 4)
+    # var vars/ecx : (ref stack (addr var) 4)
     81 5/subop/subtract %esp 0x10/imm32
     68/push 0x10/imm32/length
     68/push 0/imm32/top
@@ -2781,7 +2781,7 @@ test-parse-mu-stmt:
     5d/pop-to-ebp
     c3/return
 
-new-function:  # ad: (address allocation-descriptor), name: (address array byte), subx-name: (address array byte), inouts: (handle list var), outputs: (handle list var), body: (handle block), next: (handle function) -> result/eax: (handle function)
+new-function:  # ad: (addr allocation-descriptor), name: (addr array byte), subx-name: (addr array byte), inouts: (handle list var), outputs: (handle list var), body: (handle block), next: (handle function) -> result/eax: (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2809,7 +2809,7 @@ $new-function:end:
     5d/pop-to-ebp
     c3/return
 
-new-var:  # ad: (address allocation-descriptor), name: (address array byte), type: int, block: int, stack-offset: int, register: (address array byte) -> result/eax: (handle var)
+new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), type: int, block: int, stack-offset: int, register: (addr array byte) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2835,7 +2835,7 @@ $new-var:end:
     5d/pop-to-ebp
     c3/return
 
-new-literal-integer:  # ad: (address allocation-descriptor), name: (address slice) -> result/eax: (handle var)
+new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2845,7 +2845,7 @@ new-literal-integer:  # ad: (address allocation-descriptor), name: (address slic
     (is-hex-int? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32
     0f 84/jump-if-equal $new-literal-integer:abort/disp32
-    # var s/ecx : (address array byte)
+    # var s/ecx : (addr array byte)
     (slice-to-string Heap *(ebp+0xc))  # => eax
     89/<- %ecx 0/r32/eax
     #
@@ -2874,7 +2874,7 @@ $new-literal-integer:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-new-block:  # ad: (address allocation-descriptor), data: (handle list statement) -> result/eax: (handle statement)
+new-block:  # ad: (addr allocation-descriptor), data: (handle list statement) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2894,7 +2894,7 @@ $new-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-stmt:  # ad: (address allocation-descriptor), operation: (address array byte), inouts: (handle list var), outputs: (handle list var) -> result/eax: (handle statement)
+new-stmt:  # ad: (addr allocation-descriptor), operation: (addr array byte), inouts: (handle list var), outputs: (handle list var) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2918,7 +2918,7 @@ $new-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-new-vardef:  # ad: (address allocation-descriptor), name: (address array byte), type: int -> result/eax: (handle statement)
+new-vardef:  # ad: (addr allocation-descriptor), name: (addr array byte), type: int -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2940,7 +2940,7 @@ $new-vardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-regvardef:  # ad: (address allocation-descriptor), name: (address array byte), type: int, register: (address array byte) -> result/eax: (handle statement)
+new-regvardef:  # ad: (addr allocation-descriptor), name: (addr array byte), type: int, register: (addr array byte) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2964,7 +2964,7 @@ $new-regvardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-named-block:  # ad: (address allocation-descriptor), name: (address array byte), data: (handle list statement) -> result/eax: (handle statement)
+new-named-block:  # ad: (addr allocation-descriptor), name: (addr array byte), data: (handle list statement) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2986,7 +2986,7 @@ $new-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-list:  # ad: (address allocation-descriptor), value: _type, next: (handle list _type) -> result/eax : (handle list _type)
+new-list:  # ad: (addr allocation-descriptor), value: _type, next: (handle list _type) -> result/eax : (handle list _type)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3006,7 +3006,7 @@ $new-list:end:
     5d/pop-to-ebp
     c3/return
 
-append-list:  # ad: (address allocation-descriptor), value: _type, list: (handle list _type) -> result/eax : (handle list _type)
+append-list:  # ad: (addr allocation-descriptor), value: _type, list: (handle list _type) -> result/eax : (handle list _type)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3042,7 +3042,7 @@ $append-list:end:
     5d/pop-to-ebp
     c3/return
 
-append-to-block:  # ad: (address allocation-descriptor), block: (handle block), x: (handle stmt)
+append-to-block:  # ad: (addr allocation-descriptor), block: (handle block), x: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3075,7 +3075,7 @@ $check-mu-types:end:
     5d/pop-to-ebp
     c3/return
 
-size-of:  # n : (address var)
+size-of:  # n : (addr var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3091,7 +3091,7 @@ $size-of:end:
 # Code-generation
 #######################################################
 
-emit-subx:  # out : (address buffered-file)
+emit-subx:  # out : (addr buffered-file)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3122,7 +3122,7 @@ $emit-subx:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-function:  # out : (address buffered-file), f : (handle function)
+emit-subx-function:  # out : (addr buffered-file), f : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3150,7 +3150,7 @@ $emit-subx-function:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-block:  # out : (address buffered-file), block : (handle block)
+emit-subx-block:  # out : (addr buffered-file), block : (handle block)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3180,7 +3180,7 @@ $emit-subx-block:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-statement:  # out : (address buffered-file), stmt : (handle statement), primitives : (handle primitive), functions : (handle function)
+emit-subx-statement:  # out : (addr buffered-file), stmt : (handle statement), primitives : (handle primitive), functions : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3975,7 +3975,7 @@ Lit-var:
     0/imm32/no-register
 
 == code
-emit-subx-primitive:  # out : (address buffered-file), stmt : (handle statement), primitive : (handle function)
+emit-subx-primitive:  # out : (addr buffered-file), stmt : (handle statement), primitive : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4001,7 +4001,7 @@ $emit-subx-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-rm32:  # out : (address buffered-file), l : arg-location, stmt : (handle statement)
+emit-subx-rm32:  # out : (addr buffered-file), l : arg-location, stmt : (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4081,7 +4081,7 @@ $get-stmt-operand-from-arg-location:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-emit-subx-r32:  # out : (address buffered-file), l : arg-location, stmt : (handle statement)
+emit-subx-r32:  # out : (addr buffered-file), l : arg-location, stmt : (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4093,7 +4093,7 @@ emit-subx-r32:  # out : (address buffered-file), l : arg-location, stmt : (handl
     0f 84/jump-if-equal $emit-subx-r32:end/disp32
     #
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
-    (maybe-get Registers *(eax+0x10) 8)  # Var-register => eax : (address register-index)
+    (maybe-get Registers *(eax+0x10) 8)  # Var-register => eax : (addr register-index)
     (write-buffered *(ebp+8) Space)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32")
@@ -4106,7 +4106,7 @@ $emit-subx-r32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-imm32:  # out : (address buffered-file), l : arg-location, stmt : (handle statement)
+emit-subx-imm32:  # out : (addr buffered-file), l : arg-location, stmt : (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4130,7 +4130,7 @@ $emit-subx-imm32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call:  # out : (address buffered-file), stmt : (handle statement), callee : (handle function)
+emit-subx-call:  # out : (addr buffered-file), stmt : (handle statement), callee : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4167,7 +4167,7 @@ $emit-subx-call:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call-operand:  # out : (address buffered-file), operand : (handle variable)
+emit-subx-call-operand:  # out : (addr buffered-file), operand : (handle variable)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4193,7 +4193,7 @@ $emit-subx-call-operand:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-as-rm32:  # out : (address buffered-file), operand : (handle variable)
+emit-subx-var-as-rm32:  # out : (addr buffered-file), operand : (handle variable)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4228,7 +4228,7 @@ $emit-subx-var-as-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-find-matching-function:  # functions : (address function), stmt : (handle statement) -> result/eax : (handle function)
+find-matching-function:  # functions : (addr function), stmt : (handle statement) -> result/eax : (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5402,7 +5402,7 @@ test-emit-subx-statement-function-call-with-literal-arg:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-prologue:  # out : (address buffered-file)
+emit-subx-prologue:  # out : (addr buffered-file)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5416,7 +5416,7 @@ $emit-subx-prologue:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-epilogue:  # out : (address buffered-file)
+emit-subx-epilogue:  # out : (addr buffered-file)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
