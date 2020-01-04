@@ -207,33 +207,6 @@ void dump_and_exit(int sig, siginfo_t* /*unused*/, void* /*unused*/) {
 :(before "End Includes")
 #include <signal.h>
 
-//: For good measure we'll also enable SIGFPE.
-:(before "atexit(reset)")
-feenableexcept(FE_OVERFLOW | FE_UNDERFLOW);
-//? assert(sizeof(int) == 4 && sizeof(float) == 4);
-//? //                          | exp   |  mantissa
-//? int smallest_subnormal = 0b00000000000000000000000000000001;
-//? float smallest_subnormal_f = *reinterpret_cast<float*>(&smallest_subnormal);
-//? cerr << "ε: " << smallest_subnormal_f << '\n';
-//? cerr << "ε/2: " << smallest_subnormal_f/2 << " (underflow)\n";  // test SIGFPE
-:(before "End Includes")
-#include <fenv.h>
-:(code)
-#ifdef __APPLE__
-// Public domain polyfill for feenableexcept on OS X
-// http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c
-int feenableexcept(unsigned int excepts) {
-  static fenv_t fenv;
-  unsigned int new_excepts = excepts & FE_ALL_EXCEPT;
-  unsigned int old_excepts;
-  if (fegetenv(&fenv)) return -1;
-  old_excepts = fenv.__control & FE_ALL_EXCEPT;
-  fenv.__control &= ~new_excepts;
-  fenv.__mxcsr &= ~(new_excepts << 7);
-  return fesetenv(&fenv) ? -1 : old_excepts;
-}
-#endif
-
 //: 6. Map's operator[] being non-const is fucking evil.
 :(before "Globals")  // can't generate prototypes for these
 // from http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map
