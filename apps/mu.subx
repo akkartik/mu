@@ -100,7 +100,7 @@
 #     body: (handle block)
 #   A var-type contains:
 #     name: (handle array byte)
-#     type: (handle s-expression type-id)
+#     type: (handle tree type-id)
 #
 #   A statement can be:
 #     tag 0: a block
@@ -122,12 +122,12 @@
 #   A variable defined on the stack contains:
 #     tag: 2
 #     name: (handle array byte)
-#     type: (handle s-expression type-id)
+#     type: (handle tree type-id)
 #
 #   A variable defined in a register contains:
 #     tag: 3
 #     name: (handle array byte)
-#     type: (handle s-expression type-id)
+#     type: (handle tree type-id)
 #     reg: (handle array byte)
 #
 #   A named block contains:
@@ -158,7 +158,7 @@
 #   live-vars: stack of vars
 #   var:
 #     name: (handle array byte)
-#     type: s-expression? Just a type id for now.
+#     type: (handle tree type-id)
 #     block: int
 #     stack-offset: int  (added to ebp)
 #     register: (handle array byte)
@@ -347,6 +347,24 @@ List-next:
   4/imm32
 List-size:
   8/imm32
+
+# Types are expressed as trees (s-expressions) of type-ids (ints).
+# However, there are some constraints:
+#   There's no need for singletons, so we can assume (int) == int
+#   - if x->right == nil, x is an atom
+#   - x->left contains either a pointer to a pair, or an atomic type-id directly.
+#     type ids will be less than 0x10000.
+#   No need for dotted lists.
+
+Tree-left:  # either type-id or (addr tree type-id)
+  0/imm32
+Tree-right:  # (addr tree type-id)
+  4/imm32
+Tree-size:
+  8/imm32
+
+Max-type-id:
+  0x10000/imm32
 
 == code
 
@@ -1644,22 +1662,93 @@ $next-mu-token:end:
     5d/pop-to-ebp
     c3/return
 
-type-for:  # name: (addr slice) -> result/eax: (handle s-expression type-id)
+type-for:  # name: (addr slice) -> result/eax: (handle tree type-id)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-#?     (write-buffered Stderr "type: ")
-#?     (write-slice-buffered Stderr *(ebp+8))
-#?     (write-buffered Stderr Newline)
-#?     (flush Stderr)
+    (pos-slice Type-id *(ebp+8))  # => eax
 $type-for:end:
-    b8/copy-to-eax 1/imm32/int
     # . restore registers
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+# return the index in an array of strings matching 's'
+# index is denominated in elements, not bytes
+pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = arr
+    8b/-> *(ebp+8) 6/r32/esi
+    # var index/ecx: int = 0
+    b9/copy-to-ecx 0/imm32
+    # var curr/edx: (addr (addr array byte)) = arr->data
+    8d/copy-address *(esi+0xc) 2/r32/edx
+    # var max/ebx: (addr (addr array byte)) = &arr->data[arr->write]
+    8b/-> *esi 3/r32/ebx
+    8d/copy-address *(esi+ebx+0xc) 3/r32/ebx
+    {
+      # if (curr >= max) return -1
+      39/compare %edx 3/r32/ebx
+      {
+        72/jump-if-lesser-unsigned break/disp8
+        b8/copy-to-eax 1/imm32
+        eb/jump $pos-slice:end/disp8
+      }
+      # if (slice-equal?(s, *curr)) break
+      (slice-equal? *(ebp+0xc) *edx)  # => eax
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # ++index
+      41/increment-ecx
+      # curr += 4
+      81 0/subop/add %edx 4/imm32
+    }
+    89/<- %eax 1/r32/ecx
+$pos-slice:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+
+Type-id:  # (stream (address array byte))
+  0x1c/imm32/write
+  0/imm32/read
+  0x100/imm32/length
+  # data
+  "literal"/imm32  # 0
+  "int"/imm32  # 1
+  "ref"/imm32  # 2
+  "addr"/imm32  # 3
+  "array"/imm32  # 4
+  "handle"/imm32  # 5
+  "bool"/imm32  # 6
+  0/imm32
+  # 0x20
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+
+== code
 
 test-parse-var-with-type:
     # . prologue
