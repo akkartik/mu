@@ -138,8 +138,8 @@ if ('onhashchange' in window) {
 <span id="L77" class="LineNr">  77 </span>
 <span id="L78" class="LineNr">  78 </span><span class="subxFunction">subx-calls</span>:  <span class="subxComment"># in : (addr buffered-file), out : (addr buffered-file)</span>
 <span id="L79" class="LineNr">  79 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L80" class="LineNr">  80 </span>    <span class="subxComment">#   var line : (ref stream byte 512)</span>
-<span id="L81" class="LineNr">  81 </span>    <span class="subxComment">#   var words : (ref stream slice 16)  # at most function name and 15 args</span>
+<span id="L80" class="LineNr">  80 </span>    <span class="subxComment">#   var line : (stream byte 512)</span>
+<span id="L81" class="LineNr">  81 </span>    <span class="subxComment">#   var words : (stream slice 16)  # at most function name and 15 args</span>
 <span id="L82" class="LineNr">  82 </span>    <span class="subxComment">#   while true</span>
 <span id="L83" class="LineNr">  83 </span>    <span class="subxComment">#     clear-stream(line)</span>
 <span id="L84" class="LineNr">  84 </span>    <span class="subxComment">#     read-line-buffered(in, line)</span>
@@ -166,13 +166,13 @@ if ('onhashchange' in window) {
 <span id="L105" class="LineNr"> 105 </span>    51/push-ecx
 <span id="L106" class="LineNr"> 106 </span>    52/push-edx
 <span id="L107" class="LineNr"> 107 </span>    56/push-esi
-<span id="L108" class="LineNr"> 108 </span>    <span class="subxComment"># var line/esi : (ref stream byte 512)</span>
+<span id="L108" class="LineNr"> 108 </span>    <span class="subxComment"># var line/esi : (stream byte 512)</span>
 <span id="L109" class="LineNr"> 109 </span>    81 5/subop/subtract %esp 0x200/imm32
 <span id="L110" class="LineNr"> 110 </span>    68/push 0x200/imm32/length
 <span id="L111" class="LineNr"> 111 </span>    68/push 0/imm32/read
 <span id="L112" class="LineNr"> 112 </span>    68/push 0/imm32/write
 <span id="L113" class="LineNr"> 113 </span>    89/&lt;- %esi 4/r32/esp
-<span id="L114" class="LineNr"> 114 </span>    <span class="subxComment"># var words/edx : (ref stream slice 128)  # 16 rows * 8 bytes/row</span>
+<span id="L114" class="LineNr"> 114 </span>    <span class="subxComment"># var words/edx : (stream slice 128)  # 16 rows * 8 bytes/row</span>
 <span id="L115" class="LineNr"> 115 </span>    81 5/subop/subtract %esp 0x80/imm32
 <span id="L116" class="LineNr"> 116 </span>    68/push 0x80/imm32/length
 <span id="L117" class="LineNr"> 117 </span>    68/push 0/imm32/read
@@ -294,7 +294,7 @@ if ('onhashchange' in window) {
 <span id="L233" class="LineNr"> 233 </span>
 <span id="L234" class="LineNr"> 234 </span><span class="subxFunction">parse-line</span>:  <span class="subxComment"># line : (addr stream byte), words : (addr stream slice)</span>
 <span id="L235" class="LineNr"> 235 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L236" class="LineNr"> 236 </span>    <span class="subxComment">#   var word-slice : (ref slice)</span>
+<span id="L236" class="LineNr"> 236 </span>    <span class="subxComment">#   var word-slice : slice</span>
 <span id="L237" class="LineNr"> 237 </span>    <span class="subxComment">#   while true</span>
 <span id="L238" class="LineNr"> 238 </span>    <span class="subxComment">#     word-slice = next-word-string-or-expression-without-metadata(line)</span>
 <span id="L239" class="LineNr"> 239 </span>    <span class="subxComment">#     if slice-empty?(word-slice)</span>
@@ -307,7 +307,7 @@ if ('onhashchange' in window) {
 <span id="L246" class="LineNr"> 246 </span>    89/&lt;- %ebp 4/r32/esp
 <span id="L247" class="LineNr"> 247 </span>    <span class="subxS1Comment"># . save registers</span>
 <span id="L248" class="LineNr"> 248 </span>    51/push-ecx
-<span id="L249" class="LineNr"> 249 </span>    <span class="subxComment"># var word-slice/ecx : (ref slice)</span>
+<span id="L249" class="LineNr"> 249 </span>    <span class="subxComment"># var word-slice/ecx : slice</span>
 <span id="L250" class="LineNr"> 250 </span>    68/push 0/imm32/end
 <span id="L251" class="LineNr"> 251 </span>    68/push 0/imm32/start
 <span id="L252" class="LineNr"> 252 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1181,7 +1181,7 @@ if ('onhashchange' in window) {
 <span id="L1191" class="LineNr">1191 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1192" class="LineNr">1192 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1193" class="LineNr">1193 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1194" class="LineNr">1194 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1194" class="LineNr">1194 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1195" class="LineNr">1195 </span>    68/push 0/imm32/end
 <span id="L1196" class="LineNr">1196 </span>    68/push 0/imm32/start
 <span id="L1197" class="LineNr">1197 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1254,7 +1254,7 @@ if ('onhashchange' in window) {
 <span id="L1264" class="LineNr">1264 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1265" class="LineNr">1265 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1266" class="LineNr">1266 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1267" class="LineNr">1267 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1267" class="LineNr">1267 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1268" class="LineNr">1268 </span>    68/push 0/imm32/end
 <span id="L1269" class="LineNr">1269 </span>    68/push 0/imm32/start
 <span id="L1270" class="LineNr">1270 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1327,7 +1327,7 @@ if ('onhashchange' in window) {
 <span id="L1337" class="LineNr">1337 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1338" class="LineNr">1338 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1339" class="LineNr">1339 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1340" class="LineNr">1340 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1340" class="LineNr">1340 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1341" class="LineNr">1341 </span>    68/push 0/imm32/end
 <span id="L1342" class="LineNr">1342 </span>    68/push 0/imm32/start
 <span id="L1343" class="LineNr">1343 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1369,7 +1369,7 @@ if ('onhashchange' in window) {
 <span id="L1379" class="LineNr">1379 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1380" class="LineNr">1380 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1381" class="LineNr">1381 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1382" class="LineNr">1382 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1382" class="LineNr">1382 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1383" class="LineNr">1383 </span>    68/push 0/imm32/end
 <span id="L1384" class="LineNr">1384 </span>    68/push 0/imm32/start
 <span id="L1385" class="LineNr">1385 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1432,7 +1432,7 @@ if ('onhashchange' in window) {
 <span id="L1442" class="LineNr">1442 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1443" class="LineNr">1443 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1444" class="LineNr">1444 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1445" class="LineNr">1445 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1445" class="LineNr">1445 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1446" class="LineNr">1446 </span>    68/push 0/imm32/end
 <span id="L1447" class="LineNr">1447 </span>    68/push 0/imm32/start
 <span id="L1448" class="LineNr">1448 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1495,7 +1495,7 @@ if ('onhashchange' in window) {
 <span id="L1505" class="LineNr">1505 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1506" class="LineNr">1506 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1507" class="LineNr">1507 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1508" class="LineNr">1508 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1508" class="LineNr">1508 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1509" class="LineNr">1509 </span>    68/push 0/imm32/end
 <span id="L1510" class="LineNr">1510 </span>    68/push 0/imm32/start
 <span id="L1511" class="LineNr">1511 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1558,7 +1558,7 @@ if ('onhashchange' in window) {
 <span id="L1568" class="LineNr">1568 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1569" class="LineNr">1569 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1570" class="LineNr">1570 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1571" class="LineNr">1571 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1571" class="LineNr">1571 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1572" class="LineNr">1572 </span>    68/push 0/imm32/end
 <span id="L1573" class="LineNr">1573 </span>    68/push 0/imm32/start
 <span id="L1574" class="LineNr">1574 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1613,7 +1613,7 @@ if ('onhashchange' in window) {
 <span id="L1623" class="LineNr">1623 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1624" class="LineNr">1624 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1625" class="LineNr">1625 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1626" class="LineNr">1626 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1626" class="LineNr">1626 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1627" class="LineNr">1627 </span>    68/push 0/imm32/end
 <span id="L1628" class="LineNr">1628 </span>    68/push 0/imm32/start
 <span id="L1629" class="LineNr">1629 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1668,7 +1668,7 @@ if ('onhashchange' in window) {
 <span id="L1678" class="LineNr">1678 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1679" class="LineNr">1679 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1680" class="LineNr">1680 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1681" class="LineNr">1681 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1681" class="LineNr">1681 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1682" class="LineNr">1682 </span>    68/push 0/imm32/end
 <span id="L1683" class="LineNr">1683 </span>    68/push 0/imm32/start
 <span id="L1684" class="LineNr">1684 </span>    89/&lt;- %ecx 4/r32/esp
@@ -1723,7 +1723,7 @@ if ('onhashchange' in window) {
 <span id="L1733" class="LineNr">1733 </span>    e8/call <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1734" class="LineNr">1734 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1735" class="LineNr">1735 </span>    81 0/subop/add %esp 4/imm32
-<span id="L1736" class="LineNr">1736 </span>    <span class="subxComment"># var slice/ecx : (ref slice)</span>
+<span id="L1736" class="LineNr">1736 </span>    <span class="subxComment"># var slice/ecx : slice</span>
 <span id="L1737" class="LineNr">1737 </span>    68/push 0/imm32/end
 <span id="L1738" class="LineNr">1738 </span>    68/push 0/imm32/start
 <span id="L1739" class="LineNr">1739 </span>    89/&lt;- %ecx 4/r32/esp
