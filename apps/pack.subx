@@ -55,7 +55,7 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $subx-pack-main:end/disp8
 $subx-pack-main:interactive:
     # - otherwise convert stdin
-    # var ed/eax : (ref exit-descriptor)
+    # var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -99,7 +99,7 @@ $subx-pack-main:end:
 
 subx-pack:  # in : (addr buffered-file), out : (addr buffered-file)
     # pseudocode:
-    #   var line : (ref stream byte 512)
+    #   var line : (stream byte 512)
     #   var in-code? = false
     #   while true
     #     clear-stream(line)
@@ -128,13 +128,13 @@ subx-pack:  # in : (addr buffered-file), out : (addr buffered-file)
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # var line/ecx : (ref stream byte 512)
+    # var line/ecx : (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx : (ref slice)
+    # var word-slice/edx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -911,7 +911,7 @@ test-subx-pack-code-and-data-segments:
 
 convert-data:  # line : (addr stream byte), out : (addr buffered-file)
     # pseudocode:
-    #   var word-slice : (ref slice)
+    #   var word-slice : slice
     #   while true
     #     word-slice = next-word(line)
     #     if slice-empty?(word-slice)                 # end of file (maybe including trailing whitespace)
@@ -936,7 +936,7 @@ convert-data:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : (ref slice)
+    # var word-slice/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1837,7 +1837,7 @@ convert-instruction:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : (ref slice)
+    # var word-slice/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1994,11 +1994,11 @@ emit-opcodes:  # line : (addr stream byte), out : (addr buffered-file)
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # var op1/ecx : (ref slice)
+    # var op1/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var op2/edx : (ref slice)
+    # var op2/edx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -2253,7 +2253,7 @@ emit-modrm:  # line : (addr stream byte), out : (addr buffered-file)
     # pseudocode:
     #   rewind-stream(line)
     #   var has-modrm? = false, mod = 0, rm32 = 0, r32 = 0
-    #   var word-slice : (ref slice)
+    #   var word-slice : slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -2285,7 +2285,7 @@ emit-modrm:  # line : (addr stream byte), out : (addr buffered-file)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var word-slice/ecx : (ref slice)
+    # var word-slice/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2569,7 +2569,7 @@ $emit-modrm:end:
 emit-sib:  # line : (addr stream byte), out : (addr buffered-file)
     # pseudocode:
     #   var has-sib? = false, base = 0, index = 0, scale = 0
-    #   var word-slice : (ref slice)
+    #   var word-slice : slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -2601,7 +2601,7 @@ emit-sib:  # line : (addr stream byte), out : (addr buffered-file)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var word-slice/ecx : (ref slice)
+    # var word-slice/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2850,7 +2850,7 @@ $emit-sib:end:
 emit-disp:  # line : (addr stream byte), out : (addr buffered-file)
     # pseudocode:
     #   rewind-stream(line)
-    #   var word-slice : (ref slice)
+    #   var word-slice : slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -2872,7 +2872,7 @@ emit-disp:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : (ref slice)
+    # var word-slice/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -3069,7 +3069,7 @@ $emit-disp:break:
 emit-imm:  # line : (addr stream byte), out : (addr buffered-file)
     # pseudocode:
     #   rewind-stream(line)
-    #   var word-slice : (ref slice)
+    #   var word-slice : slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -3091,7 +3091,7 @@ emit-imm:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : (ref slice)
+    # var word-slice/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -5846,7 +5846,7 @@ parse-datum-of-word:  # word : (addr slice) -> value/eax : int
     56/push-esi
     # esi = word
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var slice/ecx : (ref slice)
+    # var slice/ecx : slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

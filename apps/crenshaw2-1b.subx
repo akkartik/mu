@@ -67,7 +67,7 @@ Entry:  # run tests if necessary, call 'compile' if not
     eb/jump  $main:end/disp8
 $run-main:
     # - otherwise read a program from stdin and emit its translation to stdout
-    # var ed/eax : (ref exit-descriptor)
+    # var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -105,7 +105,7 @@ compile:  # in : (addr buffered-file), out : fd or (addr stream byte), err : fd 
     e8/call  get-char/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var num/ecx : (ref stream byte 7)
+    # var num/ecx : (stream byte 7)
     # Numbers can be 32 bits or 8 hex bytes long. One of them will be in 'Look', so we need space for 7 bytes.
     # Sizing the stream just right buys us overflow-handling for free inside 'get-num'.
     # Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.
@@ -355,7 +355,7 @@ test-get-num-reads-single-digit:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : (ref exit-descriptor)
+    # . var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)
@@ -444,7 +444,7 @@ test-get-num-aborts-on-non-digit-in-Look:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : (ref exit-descriptor)
+    # . var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)
@@ -527,7 +527,7 @@ test-get-num-reads-multiple-digits:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : (ref exit-descriptor)
+    # . var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)
@@ -616,7 +616,7 @@ test-get-num-reads-multiple-digits-followed-by-nondigit:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : (ref exit-descriptor)
+    # . var ed/eax : exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)

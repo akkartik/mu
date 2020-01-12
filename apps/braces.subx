@@ -77,7 +77,7 @@ $subx-braces-main:end:
 
 subx-braces:  # in : (addr buffered-file), out : (addr buffered-file)
     # pseudocode:
-    #   var line : (ref stream byte 512)
+    #   var line : (stream byte 512)
     #   var label-stack : (stack int 32)  # at most 32 levels of nesting
     #   var next-label-id : int = 1
     #   while true
@@ -123,20 +123,20 @@ subx-braces:  # in : (addr buffered-file), out : (addr buffered-file)
     57/push-edi
     # esi = in
     8b/-> *(ebp+8) 6/r32/esi
-    # var line/ecx : (ref stream byte 512)
+    # var line/ecx : (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/length
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
-    # var label-stack/edx : (ref stack int 32)
+    # var label-stack/edx : (stack int 32)
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/length
     68/push 0/imm32/top
     89/<- %edx 4/r32/esp
     # var next-label-id/ebx : int = 1
     c7 0/subop/copy %ebx 1/imm32
-    # var word-slice/edi : (ref slice)
+    # var word-slice/edi : slice
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edi 4/r32/esp

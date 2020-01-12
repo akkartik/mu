@@ -14,6 +14,10 @@
 
 == data
 
+# Handles are addresses created on the heap.
+# In safe Mu they'll be fat pointers. But in SubX they're just addresses, since
+# SubX programs never reclaim memory.
+
 Trace-stream:  # (handle stream byte)
     0/imm32
     # we don't have safe handles (fat pointers) yet
@@ -24,7 +28,7 @@ Trace-segment:
 
 # Fake trace-stream for tests.
 # Also illustrates the layout of the real trace-stream (segment).
-_test-trace-stream:  # (ref stream byte)
+_test-trace-stream:  # (stream byte)
     # current write index
     0/imm32
     # current read index
@@ -956,7 +960,7 @@ $_append-4:abort:
 
 == data
 
-_test-stream-line-ABABA:  # (ref stream byte)
+_test-stream-line-ABABA:  # (stream byte)
     # write
     8/imm32
     # read
@@ -966,7 +970,7 @@ _test-stream-line-ABABA:  # (ref stream byte)
     # data
     41 42 41 42 41 0a 00 00  # 8 bytes
 
-_test-stream-empty:  # (ref stream byte)
+_test-stream-empty:  # (stream byte)
     # write
     0/imm32
     # read
@@ -976,7 +980,7 @@ _test-stream-empty:  # (ref stream byte)
     # data
     00 00 00 00 00 00 00 00  # 8 bytes
 
-_test-stream-filled:  # (ref stream byte)
+_test-stream-filled:  # (stream byte)
     # write
     8/imm32
     # read

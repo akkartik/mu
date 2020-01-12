@@ -96,7 +96,7 @@ test-new:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var heap/edx : (ref allocation-descriptor)
+    # var heap/edx : allocation-descriptor
     68/push  0/imm32/limit
     68/push  0/imm32/curr
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -110,7 +110,7 @@ test-new:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # *Next-alloc-id = 0x34
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     Next-alloc-id/disp32  0x34/imm32        # copy to *Next-alloc-id
-    # var handle/ecx : (ref handle)
+    # var handle/ecx : handle
     68/push  0/imm32/address
     68/push  0/imm32/alloc-id
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -166,7 +166,7 @@ _pending-test-new-failure:
     # . *Next-alloc-id = 0x34
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x34/imm32  # copy to *Next-alloc-id
     # define an allocation-descriptor with no space left
-    # . var ad/eax : (ref allocation-descriptor) = {0x10, 0x10}
+    # . var ad/eax : allocation-descriptor = {0x10, 0x10}
     68/push  0x10/imm32/limit
     68/push  0x10/imm32/curr
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
@@ -282,7 +282,7 @@ test-lookup-success:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
-    # var heap/ebx : (ref allocation-descriptor)
+    # var heap/ebx : allocation-descriptor
     68/push  0/imm32/limit
     68/push  0/imm32/curr
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -294,7 +294,7 @@ test-lookup-success:
     e8/call  new-segment/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # var handle/ecx : (ref handle)
+    # var handle/ecx : handle
     68/push  0/imm32/address
     68/push  0/imm32/alloc-id
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -350,7 +350,7 @@ test-lookup-failure:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var heap/esi : (ref allocation-descriptor)
+    # var heap/esi : allocation-descriptor
     68/push  0/imm32/limit
     68/push  0/imm32/curr
     89/copy                         3/mod/direct    6/rm32/esi    .           .             .           4/r32/esp   .               .                 # copy esp to esi
@@ -362,7 +362,7 @@ test-lookup-failure:
     e8/call  new-segment/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # var h1/ecx : (ref handle)
+    # var h1/ecx : handle
     68/push  0/imm32/address
     68/push  0/imm32/alloc-id
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -381,7 +381,7 @@ test-lookup-failure:
     # reset heap->curr to mimic reclamation
     89/copy                         0/mod/indirect  6/rm32/esi    .           .             .           3/r32/ebx   .               .                 # copy ebx to *esi
     # second allocation that returns the same address as the first
-    # var h2/edx : (ref handle)
+    # var h2/edx : handle
     68/push  0/imm32/address
     68/push  0/imm32/alloc-id
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx

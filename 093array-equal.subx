@@ -93,10 +93,10 @@ test-compare-empty-with-empty-array:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx : (ref array _) = []
+    # var ecx : (array _) = []
     68/push  0/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx : (ref array _) = []
+    # var edx : (array _) = []
     68/push  0/imm32/size
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
     # eax = array-equal?(ecx, edx)
@@ -125,11 +125,11 @@ test-compare-empty-with-non-empty-array:  # also checks length-mismatch code pat
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx : (ref array int) = [1]
+    # var ecx : (array int) = [1]
     68/push  1/imm32
     68/push  4/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx : (ref array int) = []
+    # var edx : (array int) = []
     68/push  0/imm32/size
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
     # eax = array-equal?(ecx, edx)
@@ -158,13 +158,13 @@ test-compare-equal-arrays:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx : (ref array int) = [1, 2, 3]
+    # var ecx : (array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
     68/push  0xc/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx : (ref array int) = [1, 2, 3]
+    # var edx : (array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -196,13 +196,13 @@ test-compare-inequal-arrays-equal-lengths:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx : (ref array int) = [1, 4, 3]
+    # var ecx : (array int) = [1, 4, 3]
     68/push  3/imm32
     68/push  4/imm32
     68/push  1/imm32
     68/push  0xc/imm32/size
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var edx : (ref array int) = [1, 2, 3]
+    # var edx : (array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -243,7 +243,7 @@ parse-array-of-ints:  # ad : (addr allocation-descriptor), s : (addr string) -> 
     #     ++size
     #   result = allocate(ad, (size+1)*4)
     #   result->size = (size+1)*4
-    #   var slice : (ref slice) = {s->data, 0}
+    #   var slice : slice = {s->data, 0}
     #   out = result->data
     #   while true
     #     if (slice->start >= end) break
@@ -326,7 +326,7 @@ $parse-array-of-ints:break1:
     # result->size = size
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy ebx to *eax
 $parse-array-of-ints:pass2:
-    # var slice/ecx : (ref slice) = {s->data, 0}
+    # var slice/ecx : slice = {s->data, 0}
     # . push 0
     68/push  0/imm32/end
     # . push s->data
@@ -404,7 +404,7 @@ test-parse-array-of-ints:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx : (ref array int) = [1, 2, 3]
+    # var ecx : (array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -498,7 +498,7 @@ test-parse-array-of-ints-extra-whitespace:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx : (ref array int) = [1, 2, 3]
+    # var ecx : (array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
@@ -582,7 +582,7 @@ test-check-array-equal:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var ecx : (ref array int) = [1, 2, 3]
+    # var ecx : (array int) = [1, 2, 3]
     68/push  3/imm32
     68/push  2/imm32
     68/push  1/imm32
