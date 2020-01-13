@@ -465,11 +465,12 @@ trace, or if you have questions or complaints.
 
 ### Data Structures
 
-* Kernel strings: null-terminated arrays of bytes. Unsafe and to be avoided,
+* Kernel strings: null-terminated regions of memory. Unsafe and to be avoided,
   but needed for interacting with the kernel.
 
-* Strings: length-prefixed arrays of bytes. String contents are preceded by
-  4 bytes (32 bytes) containing the `length` of the array.
+* Arrays: length-prefixed regions of memory containing multiple elements of a
+  single type. Contents are preceded by 4 bytes (32 bits) containing the
+  `length` of the array in bytes.
 
 * Slices: a pair of 32-bit addresses denoting a [half-open](https://en.wikipedia.org/wiki/Interval_(mathematics))
   \[`start`, `end`) interval to live memory with a consistent lifetime.
