@@ -1327,7 +1327,9 @@ test-function-header-with-arg:
     # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "n" "F - test-function-header-with-arg/inout:0")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type")  # Var-type
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-arg/inout:0/type:0")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-arg/inout:0/type:1")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1360,21 +1362,27 @@ $test-function-header-with-multiple-args:inout0:
     # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:0/type")  # Var-type
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:0/type:0")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args/inout:0/type:1")  # Tree-right
     # edx = result->inouts->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
 $test-function-header-with-multiple-args:inout1:
     # ebx = result->inouts->next->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "b" "F - test-function-header-with-multiple-args/inout:1")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:1/type")  # Var-type
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:1/type:0")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args/inout:1/type:1")  # Tree-right
     # edx = result->inouts->next->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
 $test-function-header-with-multiple-args:inout2:
     # ebx = result->inouts->next->next->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args/inout:2")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:2/type")  # Var-type
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:2/type:0")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args/inout:2/type:1")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1405,34 +1413,44 @@ test-function-with-multiple-args-and-outputs:
     8b/-> *(ecx+8) 2/r32/edx  # Function-inouts
     # ebx : (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type")  # Var-type
+    (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args-and-outputs/inout:0")  # Var-name
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:0/type:0")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:0/type:1")  # Tree-right
     # edx = result->inouts->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
     # ebx = result->inouts->next->value
     8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "b" "F - test-function-header-with-multiple-args/inout:1")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:1/type")  # Var-type
+    (check-strings-equal *ebx "b" "F - test-function-header-with-multiple-args-and-outputs/inout:1")  # Var-name
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:1/type:0")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:1/type:1")  # Tree-right
     # edx = result->inouts->next->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
     # ebx = result->inouts->next->next->value
     8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args/inout:2")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:2/type")  # Var-type
+    (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args-and-outputs/inout:2")  # Var-name
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:2/type:0")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:2/type:1")  # Tree-right
     # edx : (handle list var) = result->outputs
     8b/-> *(ecx+0xc) 2/r32/edx  # Function-outputs
     # ebx : (handle var) = result->outputs->value
     8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "x" "F - test-function-header-with-multiple-args/output:0")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/output:0/type")  # Var-type
-    (check-strings-equal *(ebx+0x10) "ecx" "F - test-function-header-with-arg/output:0/register")  # Var-register
+    (check-strings-equal *ebx "x" "F - test-function-header-with-multiple-args-and-outputs/output:0")  # Var-name
+    (check-strings-equal *(ebx+0x10) "ecx" "F - test-function-header-with-multiple-args-and-outputs/output:0/register")  # Var-register
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/output:0/type:1")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/output:0/type:1")  # Tree-right
     # edx = result->outputs->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
     # ebx = result->outputs->next->value
     8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "y" "F - test-function-header-with-multiple-args/output:1")  # Var-name
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/output:1/type")  # Var-type
-    (check-strings-equal *(ebx+0x10) "edx" "F - test-function-header-with-arg/output:0/register")  # Var-register
+    (check-strings-equal *ebx "y" "F - test-function-header-with-multiple-args-and-outputs/output:1")  # Var-name
+    (check-strings-equal *(ebx+0x10) "edx" "F - test-function-header-with-multiple-args-and-outputs/output:0/register")  # Var-register
+    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/output:1/type:1")  # Tree-left
+    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/output:1/type:1")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1587,7 +1605,7 @@ $parse-var-with-type:write-register:
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
     }
-    (type-for %ecx)
+    (type-for %ecx)  # => eax
     89/<- *(edi+4) 0/r32/eax  # Var-type
 $parse-var-with-type:end:
     # return result
@@ -1665,9 +1683,16 @@ type-for:  # name: (addr slice) -> result/eax: (handle tree type-id)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
+    #
     (pos-slice Type-id *(ebp+8))  # => eax
+    89/<- %ecx 0/r32/eax
+    (allocate Heap *Tree-size)  # => eax
+    (zero-out %eax *Tree-size)
+    89/<- *eax 1/r32/ecx  # Tree-left
 $type-for:end:
     # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1769,7 +1794,8 @@ test-parse-var-with-type:
     8b/-> *eax 2/r32/edx  # Var-name
     (check-strings-equal %edx "x" "F - test-var-with-type/name")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal %edx 1 "F - test-var-with-type/type")
+    (check-ints-equal *edx 1 "F - test-var-with-type/type")
+    (check-ints-equal *(edx+4) 0 "F - test-var-with-register-and-trailing-characters/type")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1798,7 +1824,8 @@ test-parse-var-with-type-and-register:
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
     (check-strings-equal %edx "eax" "F - test-var-with-type-and-register/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal %edx 1 "F - test-var-with-type-and-register/type")
+    (check-ints-equal *edx 1 "F - test-var-with-type-and-register/type")
+    (check-ints-equal *(edx+4) 0 "F - test-var-with-register-and-trailing-characters/type")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1827,7 +1854,8 @@ test-parse-var-with-trailing-characters:
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
     (check-ints-equal %edx 0 "F - test-var-with-trailing-characters/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal %edx 1 "F - test-var-with-trailing-characters/type")
+    (check-ints-equal *edx 1 "F - test-var-with-trailing-characters/type")
+    (check-ints-equal *(edx+4) 0 "F - test-var-with-register-and-trailing-characters/type")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1856,7 +1884,8 @@ test-parse-var-with-register-and-trailing-characters:
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
     (check-strings-equal %edx "eax" "F - test-var-with-register-and-trailing-characters/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal %edx 1 "F - test-var-with-register-and-trailing-characters/type")
+    (check-ints-equal *edx 1 "F - test-var-with-register-and-trailing-characters/type")
+    (check-ints-equal *(edx+4) 0 "F - test-var-with-register-and-trailing-characters/type")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -2938,7 +2967,10 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> 
     #
     (allocate *(ebp+8) *Var-size)  # => eax
     89/<- *eax 1/r32/ecx  # Var-name
-    c7 0/subop/copy *(eax+4) 0/imm32/tag/literal  # Var-type
+    89/<- %ecx 0/r32/eax
+    (allocate *(ebp+8) *Tree-size)  # => eax
+    89/<- *(ecx+4) 0/r32/eax  # Var-type
+    89/<- %eax 1/r32/ecx
     c7 0/subop/copy *(eax+8) 0/imm32  # Var-block
     c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-stack-offset
     c7 0/subop/copy *(eax+0x10) 0/imm32  # Var-register
@@ -3960,7 +3992,7 @@ Single-int-var-on-stack:
 
 Int-var-on-stack:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     1/imm32/some-stack-offset
     0/imm32/no-register
@@ -3979,7 +4011,7 @@ Single-int-var-in-some-register:
 
 Int-var-in-some-register:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "*"/imm32/register
@@ -3990,7 +4022,7 @@ Single-int-var-in-eax:
 
 Int-var-in-eax:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "eax"/imm32/register
@@ -4001,7 +4033,7 @@ Single-int-var-in-ecx:
 
 Int-var-in-ecx:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "ecx"/imm32/register
@@ -4012,7 +4044,7 @@ Single-int-var-in-edx:
 
 Int-var-in-edx:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "edx"/imm32/register
@@ -4023,7 +4055,7 @@ Single-int-var-in-ebx:
 
 Int-var-in-ebx:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "ebx"/imm32/register
@@ -4034,7 +4066,7 @@ Single-int-var-in-esi:
 
 Int-var-in-esi:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "esi"/imm32/register
@@ -4045,7 +4077,7 @@ Single-int-var-in-edi:
 
 Int-var-in-edi:
     "arg1"/imm32/name
-    1/imm32/type-int
+    Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     "edi"/imm32/register
@@ -4056,10 +4088,18 @@ Single-lit-var:
 
 Lit-var:
     "literal"/imm32/name
-    0/imm32/type-literal
+    Type-literal/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     0/imm32/no-register
+
+Type-int:
+    1/imm32/left/int
+    0/imm32/right/null
+
+Type-literal:
+    0/imm32/left/literal
+    0/imm32/right/null
 
 == code
 emit-subx-primitive:  # out : (addr buffered-file), stmt : (handle statement), primitive : (handle function)
@@ -4262,11 +4302,33 @@ emit-subx-call-operand:  # out : (addr buffered-file), operand : (handle variabl
     50/push-eax
     # eax = operand
     8b/-> *(ebp+0xc) 0/r32/eax
-    # if non-literal, emit appropriately
-    (emit-subx-var-as-rm32 *(ebp+8) %eax)
+    # if (operand->register) emit "%__"
+    {
+      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+      74/jump-if-equal break/disp8
+$emit-subx-call-operand:register:
+      (write-buffered *(ebp+8) " %")
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
+      e9/jump $emit-subx-call-operand:end/disp32
+    }
+    # else if (operand->stack-offset) emit "*(ebp+__)"
+    {
+      81 7/subop/compare *(eax+0xc) 0/imm32  # Var-stack-offset
+      74/jump-if-equal break/disp8
+$emit-subx-call-operand:stack:
+      (write-buffered *(ebp+8) Space)
+      (write-buffered *(ebp+8) "*(ebp+")
+      8b/-> *(ebp+0xc) 0/r32/eax
+      (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-stack-offset
+      (write-buffered *(ebp+8) ")")
+      e9/jump $emit-subx-call-operand:end/disp32
+    }
     # else if (operand->type == literal) emit "__"
     {
-      81 7/subop/compare *(eax+4) 0/imm32  # Var-type
+      50/push-eax
+      8b/-> *(eax+4) 0/r32/eax  # Var-type
+      81 7/subop/compare *eax 0/imm32  # Tree-left
+      58/pop-to-eax
       75/jump-if-not-equal break/disp8
 $emit-subx-call-operand:literal:
       (write-buffered *(ebp+8) Space)
@@ -4509,7 +4571,7 @@ $mu-stmt-matches-primitive?:check-output:
       }
       # if (curr != curr2) return false
       {
-        (operand-matches-primitive? *esi *edi)  # => eax
+        (operand-matches-primitive? *esi *edi)  # List-value List-value => eax
         3d/compare-eax-and 0/imm32
         75/jump-if-not-equal break/disp8
         b8/copy-to-eax 0/imm32
@@ -4547,10 +4609,10 @@ operand-matches-primitive?:  # var : (handle var), prim-var : (handle var) => re
     # edi = prim-var
     8b/-> *(ebp+0xc) 7/r32/edi
     # if (var->type != prim-var->type) return false
-    8b/-> *(esi+4) 0/r32/eax  # Var-type
-    39/compare *(edi+4) 0/r32/eax  # Var-type
+    (type-equal? *(esi+4) *(edi+4))  # Var-type, Var-type => eax
+    3d/compare-eax-and 0/imm32
     b8/copy-to-eax 0/imm32/false
-    75/jump-if-not-equal $operand-matches-primitive?:end/disp8
+    74/jump-if-equal $operand-matches-primitive?:end/disp8
     # return false if var->register doesn't match prim-var->register
     {
       # if addresses are equal, don't return here
@@ -4584,6 +4646,45 @@ $operand-matches-primitive?:end:
     5d/pop-to-ebp
     c3/return
 
+type-equal?:  # a : (handle tree type-id), b : (handle tree type-id) => result/eax : boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # ecx = a
+    8b/-> *(ebp+8) 1/r32/ecx
+    # edx = b
+    8b/-> *(ebp+0xc) 2/r32/edx
+    # if (a == b) return true
+    8b/-> %ecx 0/r32/eax  # Var-type
+    39/compare %edx 0/r32/eax  # Var-type
+    b8/copy-to-eax 1/imm32/true
+    0f 84/jump-if-equal $type-equal?:end/disp32
+    # if (a == 0) return false
+    81 7/subop/compare %ecx 0/imm32
+    b8/copy-to-eax 0/imm32/false
+    0f 84/jump-if-equal $type-equal?:end/disp32
+    # if (b == 0) return false
+    81 7/subop/compare %edx 0/imm32
+    b8/copy-to-eax 0/imm32/false
+    0f 84/jump-if-equal $type-equal?:end/disp32
+    # if (!type-equal?(a->left, b->left)) return false
+    (type-equal? *ecx *edx)  # Tree-left, Tree-left => eax
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-equal $type-equal?:end/disp32
+    # return type-equal?(a->right, b->right
+    (type-equal? *(ecx+4) *(edx+4))  # Tree-right, Tree-right => eax
+$type-equal?:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-emit-subx-statement-primitive:
     # Primitive operation on a variable on the stack.
     #   increment foo
@@ -4608,11 +4709,15 @@ test-emit-subx-statement-primitive:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var
     68/push 0/imm32/no-register
     68/push -8/imm32/stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
     # var operand/ebx : (list var)
@@ -4677,11 +4782,15 @@ test-emit-subx-statement-primitive-register:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
     # var operand/ebx : (list var)
@@ -4699,7 +4808,7 @@ test-emit-subx-statement-primitive-register:
     68/push Any-register/imm32
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    ff 6/subop/push *(ecx+4)  # Var-type
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
     # var operand/ebx : (list var)
@@ -4760,11 +4869,15 @@ test-emit-subx-statement-select-primitive:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
     # var real-outputs/edi : (list var)
@@ -4782,7 +4895,7 @@ test-emit-subx-statement-select-primitive:
     68/push Any-register/imm32
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    ff 6/subop/push *(ecx+4)  # Var-type
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
     # var formal-outputs/ebx : (list var) = {formal-var, 0}
@@ -4854,11 +4967,15 @@ test-emit-subx-statement-select-primitive-2:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
     # var inouts/edi : (list var)
@@ -4876,7 +4993,7 @@ test-emit-subx-statement-select-primitive-2:
     68/push Any-register/imm32
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    ff 6/subop/push *(ecx+4)  # Var-type
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
     # var operand/ebx : (list var)
@@ -4942,11 +5059,15 @@ test-increment-register:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
     # var real-outputs/edi : (list var)
@@ -4958,7 +5079,7 @@ test-increment-register:
     57/push-edi/outputs
     68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
-    68/push 1/imm32
+    68/push 1/imm32/regular-statement
     89/<- %esi 4/r32/esp
     # convert
     (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
@@ -4997,11 +5118,15 @@ test-increment-var:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
     # var inouts/edi : (list var)
@@ -5042,18 +5167,22 @@ test-add-reg-to-reg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-var1/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
     # var var-var2/edx : var in ecx
     68/push "ecx"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
     # var inouts/esi : (list var2)
@@ -5098,18 +5227,22 @@ test-add-reg-to-mem:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-var1/ecx : var
     68/push 0/imm32/no-register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
     # var var-var2/edx : var in ecx
     68/push "ecx"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
     # var inouts/esi : (list var2)
@@ -5154,18 +5287,22 @@ test-add-mem-to-reg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-var1/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
     # var var-var2/edx : var
     68/push 0/imm32/no-register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
     # var inouts/esi : (list var2)
@@ -5210,18 +5347,26 @@ test-add-literal-to-eax:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-var1/ecx : var in eax
     68/push "eax"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
+    # var type/edx : (handle tree type-id) = literal
+    68/push 0/imm32/right/null
+    68/push 0/imm32/left/literal
+    89/<- %edx 4/r32/esp
     # var var-var2/edx : var literal
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 0/imm32/type-literal
+    52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
     # var inouts/esi : (list var2)
@@ -5266,18 +5411,26 @@ test-add-literal-to-reg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-var1/ecx : var in ecx
     68/push "ecx"/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
+    # var type/edx : (handle tree type-id) = literal
+    68/push 0/imm32/right/null
+    68/push 0/imm32/left/literal
+    89/<- %edx 4/r32/esp
     # var var-var2/edx : var literal
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 0/imm32/type-literal
+    52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
     # var inouts/esi : (list var2)
@@ -5322,18 +5475,26 @@ test-add-literal-to-mem:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-var1/ecx : var
     68/push 0/imm32/no-register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "var1"/imm32
     89/<- %ecx 4/r32/esp
+    # var type/edx : (handle tree type-id) = literal
+    68/push 0/imm32/right/null
+    68/push 0/imm32/left/literal
+    89/<- %edx 4/r32/esp
     # var var-var2/edx : var literal
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    68/push 0/imm32/type-literal
+    52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
     # var inouts/esi : (list var2)
@@ -5393,11 +5554,15 @@ test-emit-subx-statement-function-call:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = int
+    68/push 0/imm32/right/null
+    68/push 1/imm32/left/int
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var
     68/push 0/imm32/no-register
     68/push -8/imm32/stack-offset
     68/push 0/imm32/block-depth
-    68/push 1/imm32/type-int
+    51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
     # var operands/esi : (list var)
@@ -5447,11 +5612,15 @@ test-emit-subx-statement-function-call-with-literal-arg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    # var type/ecx : (handle tree type-id) = literal
+    68/push 0/imm32/right/null
+    68/push 0/imm32/left/literal
+    89/<- %ecx 4/r32/esp
     # var var-foo/ecx : var literal
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
     68/push 0/imm32/block-depth
-    68/push 0/imm32/type-literal
+    51/push-ecx
     68/push "34"/imm32
     89/<- %ecx 4/r32/esp
     # var operands/esi : (list var)
