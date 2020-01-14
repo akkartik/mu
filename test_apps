@@ -170,7 +170,7 @@ test $NATIVE  &&  apps/ex12
 # Larger apps that use the standard library.
 
 echo factorial
-./bootstrap translate init.$OS 0*.subx apps/factorial.subx  -o apps/factorial
+./bootstrap translate init.$OS 0[0-8]*.subx apps/factorial.subx  -o apps/factorial
 test "$1" = 'record'  ||  git diff --exit-code apps/factorial
 test $EMULATED  &&  {
   ./bootstrap run apps/factorial  ||  ret=$?
@@ -186,7 +186,7 @@ test $NATIVE  &&  {
 }
 
 echo crenshaw2-1
-./bootstrap translate init.$OS 0*.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
+./bootstrap translate init.$OS 0[0-8]*.subx apps/crenshaw2-1.subx  -o apps/crenshaw2-1
 test "$1" = 'record'  ||  git diff --exit-code apps/crenshaw2-1
 test $EMULATED  &&  {
   ./bootstrap run apps/crenshaw2-1 test
@@ -198,7 +198,7 @@ test $NATIVE  &&  {
 }
 
 echo crenshaw2-1b
-./bootstrap translate init.$OS 0*.subx apps/crenshaw2-1b.subx  -o apps/crenshaw2-1b
+./bootstrap translate init.$OS 0[0-8]*.subx apps/crenshaw2-1b.subx  -o apps/crenshaw2-1b
 test "$1" = 'record'  ||  git diff --exit-code apps/crenshaw2-1b
 test $EMULATED  &&  {
   ./bootstrap run apps/crenshaw2-1b test
@@ -210,7 +210,7 @@ test $NATIVE  &&  {
 }
 
 echo handle
-./bootstrap translate init.$OS 0*.subx apps/handle.subx  -o apps/handle
+./bootstrap translate init.$OS 0[0-8]*.subx apps/handle.subx  -o apps/handle
 test "$1" = 'record'  ||  git diff --exit-code apps/handle
 test $EMULATED  &&  {
   ./bootstrap run apps/handle > handle.out 2>&1  ||  true
@@ -228,7 +228,7 @@ test $NATIVE  &&  {
 for phase in hex survey pack assort dquotes tests
 do
   echo $phase
-  ./bootstrap translate init.$OS 0*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
+  ./bootstrap translate init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
   test "$1" = 'record'  ||  git diff --exit-code apps/hex
   test $EMULATED  &&  {
     ./bootstrap run apps/$phase test
@@ -313,13 +313,20 @@ done
 for app in factorial crenshaw2-1 crenshaw2-1b handle
 do
   echo $app
-  ./translate_subx init.$OS 0*.subx apps/$app.subx
+  ./translate_subx init.$OS 0[0-8]*.subx apps/$app.subx
   diff apps/$app a.elf
 done
 
 # Phases of the self-hosted SubX translator.
 
-for app in hex survey pack assort dquotes tests sigils calls braces
+for app in hex survey pack assort dquotes tests
+do
+  echo $app
+  ./translate_subx init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$app.subx
+  diff apps/$app a.elf
+done
+
+for app in sigils calls braces
 do
   echo $app
   ./translate_subx init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
