@@ -10,9 +10,7 @@
 //: We don't rely on any transforms running in previous layers, but this layer
 //: knows about labels and will emit labels for previous layers to transform.
 :(after "Begin Transforms")
-// Begin Level-4 Transforms
 Transform.push_back(create_test_function);
-// End Level-4 Transforms
 
 :(code)
 void test_run_test() {

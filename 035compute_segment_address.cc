@@ -25,7 +25,7 @@ void test_segment_name() {
 
 //: compute segment address
 
-:(before "End Level-2 Transforms")
+:(before "End Transforms")
 Transform.push_back(compute_segment_starts);
 
 :(code)

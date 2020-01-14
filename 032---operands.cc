@@ -159,9 +159,7 @@ void init_operand_type_help() {
 //:: transform packing operands into bytes in the right order
 
 :(after "Begin Transforms")
-// Begin Level-2 Transforms
 Transform.push_back(pack_operands);
-// End Level-2 Transforms
 
 :(code)
 void pack_operands(program& p) {

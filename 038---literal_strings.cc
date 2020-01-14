@@ -20,9 +20,7 @@ void test_transform_literal_string() {
 //: knows about labels and global variables and will emit them for previous
 //: layers to transform.
 :(after "Begin Transforms")
-// Begin Level-3 Transforms
 Transform.push_back(transform_literal_strings);
-// End Level-3 Transforms
 
 :(before "End Globals")
 int Next_auto_global = 1;

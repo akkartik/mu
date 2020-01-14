@@ -20,7 +20,7 @@ void test_global_variable() {
   );
 }
 
-:(before "End Level-2 Transforms")
+:(before "End Transforms")
 Transform.push_back(rewrite_global_variables);
 :(code)
 void rewrite_global_variables(program& p) {
@@ -157,7 +157,7 @@ bool valid_use_of_global_variable(const word& curr) {
 //:: a more complex sanity check for how we use global variables
 //: requires first saving some data early before we pack operands
 
-:(after "Begin Level-2 Transforms")
+:(after "Begin Transforms")
 Transform.push_back(correlate_disp32_with_mod);
 :(code)
 void correlate_disp32_with_mod(program& p) {

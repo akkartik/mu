@@ -111,7 +111,7 @@ void test_map_label() {
   );
 }
 
-:(before "End Level-2 Transforms")
+:(before "End Transforms")
 Transform.push_back(rewrite_labels);
 :(code)
 void rewrite_labels(program& p) {
