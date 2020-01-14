@@ -61,7 +61,7 @@ if ('onhashchange' in window) {
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: A simple test harness. To create new tests, define functions starting with</span>
 <span id="L2" class="LineNr">  2 </span><span class="Comment">//: 'test_'. To run all tests so defined, run:</span>
-<span id="L3" class="LineNr">  3 </span><span class="Comment">//:   $ ./mu test</span>
+<span id="L3" class="LineNr">  3 </span><span class="Comment">//:   $ ./bootstrap test</span>
 <span id="L4" class="LineNr">  4 </span><span class="Comment">//:</span>
 <span id="L5" class="LineNr">  5 </span><span class="Comment">//: Every layer should include tests, and can reach into previous layers.</span>
 <span id="L6" class="LineNr">  6 </span><span class="Comment">//: However, it seems like a good idea never to reach into tests from previous</span>
@@ -101,7 +101,7 @@ if ('onhashchange' in window) {
 <span id="L40" class="LineNr"> 40 </span><span class="Special"><a href='002test.cc.html#L21'>Passed</a></span> = <span class="Constant">true</span><span class="Delimiter">;</span>
 <span id="L41" class="LineNr"> 41 </span>
 <span id="L42" class="LineNr"> 42 </span><span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
-<span id="L43" class="LineNr"> 43 </span><span class="Normal">if</span> <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span> &amp;&amp; <a href='001help.cc.html#L101'>is_equal</a><span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;test&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L43" class="LineNr"> 43 </span><span class="Normal">if</span> <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span> &amp;&amp; <a href='001help.cc.html#L102'>is_equal</a><span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;test&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
 <span id="L44" class="LineNr"> 44 </span>  <span class="Special"><a href='002test.cc.html#L20'>Run_tests</a></span> = <span class="Constant">true</span><span class="Delimiter">;</span>  --argc<span class="Delimiter">;</span>  ++argv<span class="Delimiter">;</span>  <span class="Comment">// shift 'test' out of commandline args</span>
 <span id="L45" class="LineNr"> 45 </span><span class="Delimiter">}</span>
 <span id="L46" class="LineNr"> 46 </span>
@@ -133,7 +133,7 @@ if ('onhashchange' in window) {
 <span id="L72" class="LineNr"> 72 </span>
 <span id="L73" class="LineNr"> 73 </span><span class="Delimiter">:(after &quot;End Main&quot;)</span>
 <span id="L74" class="LineNr"> 74 </span><span class="Comment">//: Raise other unrecognized sub-commands as errors.</span>
-<span id="L75" class="LineNr"> 75 </span><span class="Comment">//: We couldn't do this until now because we want `./subx test` to always</span>
+<span id="L75" class="LineNr"> 75 </span><span class="Comment">//: We couldn't do this until now because we want `./bootstrap test` to always</span>
 <span id="L76" class="LineNr"> 76 </span><span class="Comment">//: succeed, no matter how many layers are included in the build.</span>
 <span id="L77" class="LineNr"> 77 </span>cerr &lt;&lt; <span class="Constant">&quot;nothing to do\n&quot;</span><span class="Delimiter">;</span>
 <span id="L78" class="LineNr"> 78 </span><span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
@@ -158,18 +158,16 @@ if ('onhashchange' in window) {
 <span id="L97" class="LineNr"> 97 </span><span class="Delimiter">};</span>
 <span id="L98" class="LineNr"> 98 </span><span class="Delimiter">:(after &quot;Test Runs&quot;)</span>
 <span id="L99" class="LineNr"> 99 </span>string <a href='002test.cc.html#L99'>maybe_single_test_to_run</a> = argv[argc-<span class="Constant">1</span>]<span class="Delimiter">;</span>
-<span id="L100" class="LineNr">100 </span><span class="Normal">if</span> <span class="Delimiter">(</span>!starts_with<span class="Delimiter">(</span><a href='002test.cc.html#L99'>maybe_single_test_to_run</a><span class="Delimiter">,</span> <span class="Constant">&quot;test_&quot;</span><span class="Delimiter">))</span>
-<span id="L101" class="LineNr">101 </span>  <a href='002test.cc.html#L99'>maybe_single_test_to_run</a><span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">&quot;test_&quot;</span><span class="Delimiter">);</span>
-<span id="L102" class="LineNr">102 </span><span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">size_t</span> i=<span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L15'>Tests</a></span><span class="Delimiter">)</span>/<span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L15'>Tests</a></span>[<span class="Constant">0</span>]<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L103" class="LineNr">103 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L95'>Test_names</a></span>[i] == <a href='002test.cc.html#L99'>maybe_single_test_to_run</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L104" class="LineNr">104 </span>    <a href='002test.cc.html#L81'>run_test</a><span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L105" class="LineNr">105 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L21'>Passed</a></span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.\n&quot;</span><span class="Delimiter">;</span>
-<span id="L106" class="LineNr">106 </span>    <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L107" class="LineNr">107 </span>  <span class="Delimiter">}</span>
-<span id="L108" class="LineNr">108 </span><span class="Delimiter">}</span>
-<span id="L109" class="LineNr">109 </span>
-<span id="L110" class="LineNr">110 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L111" class="LineNr">111 </span><span class="PreProc">#include </span><span class="Constant">&lt;stdlib.h&gt;</span>
+<span id="L100" class="LineNr">100 </span><span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">size_t</span> i=<span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L15'>Tests</a></span><span class="Delimiter">)</span>/<span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L15'>Tests</a></span>[<span class="Constant">0</span>]<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L101" class="LineNr">101 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L95'>Test_names</a></span>[i] == <a href='002test.cc.html#L99'>maybe_single_test_to_run</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L102" class="LineNr">102 </span>    <a href='002test.cc.html#L81'>run_test</a><span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L103" class="LineNr">103 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Special"><a href='002test.cc.html#L21'>Passed</a></span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.\n&quot;</span><span class="Delimiter">;</span>
+<span id="L104" class="LineNr">104 </span>    <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L105" class="LineNr">105 </span>  <span class="Delimiter">}</span>
+<span id="L106" class="LineNr">106 </span><span class="Delimiter">}</span>
+<span id="L107" class="LineNr">107 </span>
+<span id="L108" class="LineNr">108 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L109" class="LineNr">109 </span><span class="PreProc">#include </span><span class="Constant">&lt;stdlib.h&gt;</span>
 </pre>
 </body>
 </html>

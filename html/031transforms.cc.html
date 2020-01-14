@@ -15,8 +15,11 @@ body { font-size:12pt; font-family: monospace; color: #000000; background-color:
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
 .LineNr { }
+.Constant { color: #008787; }
 .Comment { color: #005faf; }
 .Delimiter { color: #c000c0; }
+.Special { color: #d70000; }
+.Normal { color: #000000; background-color: #c6c6c6; padding-bottom: 1px; }
 -->
 </style>
 
@@ -52,71 +55,18 @@ if ('onhashchange' in window) {
 <body onload='JumpToLine();'>
 <a href='https://github.com/akkartik/mu/blob/master/031transforms.cc'>https://github.com/akkartik/mu/blob/master/031transforms.cc</a>
 <pre id='vimCodeElement'>
-<span id="L1" class="LineNr"> 1 </span><span class="Comment">//: Ordering transforms is a well-known hard problem when building compilers.</span>
-<span id="L2" class="LineNr"> 2 </span><span class="Comment">//: In our case we also have the additional notion of layers. The ordering of</span>
-<span id="L3" class="LineNr"> 3 </span><span class="Comment">//: layers can have nothing in common with the ordering of transforms when</span>
-<span id="L4" class="LineNr"> 4 </span><span class="Comment">//: SubX is tangled and run. This can be confusing for readers, particularly</span>
-<span id="L5" class="LineNr"> 5 </span><span class="Comment">//: if later layers start inserting transforms at arbitrary points between</span>
-<span id="L6" class="LineNr"> 6 </span><span class="Comment">//: transforms introduced earlier. Over time adding transforms can get harder</span>
-<span id="L7" class="LineNr"> 7 </span><span class="Comment">//: and harder, having to meet the constraints of everything that's come</span>
-<span id="L8" class="LineNr"> 8 </span><span class="Comment">//: before. It's worth thinking about organization up-front so the ordering is</span>
-<span id="L9" class="LineNr"> 9 </span><span class="Comment">//: easy to hold in our heads, and it's obvious where to add a new transform.</span>
-<span id="L10" class="LineNr">10 </span><span class="Comment">//: Some constraints:</span>
-<span id="L11" class="LineNr">11 </span><span class="Comment">//:</span>
-<span id="L12" class="LineNr">12 </span><span class="Comment">//:   1. Layers force us to build SubX bottom-up; since we want to be able to</span>
-<span id="L13" class="LineNr">13 </span><span class="Comment">//:   build and run SubX after stopping loading at any layer, the overall</span>
-<span id="L14" class="LineNr">14 </span><span class="Comment">//:   organization has to be to introduce primitives before we start using</span>
-<span id="L15" class="LineNr">15 </span><span class="Comment">//:   them.</span>
-<span id="L16" class="LineNr">16 </span><span class="Comment">//:</span>
-<span id="L17" class="LineNr">17 </span><span class="Comment">//:   2. Transforms usually need to be run top-down, converting high-level</span>
-<span id="L18" class="LineNr">18 </span><span class="Comment">//:   representations to low-level ones so that low-level layers can be</span>
-<span id="L19" class="LineNr">19 </span><span class="Comment">//:   oblivious to them.</span>
-<span id="L20" class="LineNr">20 </span><span class="Comment">//:</span>
-<span id="L21" class="LineNr">21 </span><span class="Comment">//:   3. When running we'd often like new representations to be checked before</span>
-<span id="L22" class="LineNr">22 </span><span class="Comment">//:   they are transformed away. The whole reason for new representations is</span>
-<span id="L23" class="LineNr">23 </span><span class="Comment">//:   often to add new kinds of automatic checking for our machine code</span>
-<span id="L24" class="LineNr">24 </span><span class="Comment">//:   programs.</span>
-<span id="L25" class="LineNr">25 </span><span class="Comment">//:</span>
-<span id="L26" class="LineNr">26 </span><span class="Comment">//: Putting these constraints together, we'll use the following broad</span>
-<span id="L27" class="LineNr">27 </span><span class="Comment">//: organization:</span>
-<span id="L28" class="LineNr">28 </span><span class="Comment">//:</span>
-<span id="L29" class="LineNr">29 </span><span class="Comment">//:   a) We'll divide up our transforms into &quot;levels&quot;, each level consisting</span>
-<span id="L30" class="LineNr">30 </span><span class="Comment">//:   of multiple transforms, and dealing in some new set of representational</span>
-<span id="L31" class="LineNr">31 </span><span class="Comment">//:   ideas. Levels will be added in reverse order to the one their transforms</span>
-<span id="L32" class="LineNr">32 </span><span class="Comment">//:   will be run in.</span>
-<span id="L33" class="LineNr">33 </span><span class="Comment">//:</span>
-<span id="L34" class="LineNr">34 </span><span class="Comment">//:     To run all transforms:</span>
-<span id="L35" class="LineNr">35 </span><span class="Comment">//:       Load transforms for level n</span>
-<span id="L36" class="LineNr">36 </span><span class="Comment">//:       Load transforms for level n-1</span>
-<span id="L37" class="LineNr">37 </span><span class="Comment">//:       ...</span>
-<span id="L38" class="LineNr">38 </span><span class="Comment">//:       Load transforms for level 2</span>
-<span id="L39" class="LineNr">39 </span><span class="Comment">//:       Run code at level 1</span>
-<span id="L40" class="LineNr">40 </span><span class="Comment">//:</span>
-<span id="L41" class="LineNr">41 </span><span class="Comment">//:   b) *Within* a level we'll usually introduce transforms in the order</span>
-<span id="L42" class="LineNr">42 </span><span class="Comment">//:   they're run in.</span>
-<span id="L43" class="LineNr">43 </span><span class="Comment">//:</span>
-<span id="L44" class="LineNr">44 </span><span class="Comment">//:     To run transforms for level n:</span>
-<span id="L45" class="LineNr">45 </span><span class="Comment">//:       Perform transform of layer l</span>
-<span id="L46" class="LineNr">46 </span><span class="Comment">//:       Perform transform of layer l+1</span>
-<span id="L47" class="LineNr">47 </span><span class="Comment">//:       ...</span>
-<span id="L48" class="LineNr">48 </span><span class="Comment">//:</span>
-<span id="L49" class="LineNr">49 </span><span class="Comment">//:   c) Within a level it's often most natural to introduce a new</span>
-<span id="L50" class="LineNr">50 </span><span class="Comment">//:   representation by showing how it's transformed to the level below. To</span>
-<span id="L51" class="LineNr">51 </span><span class="Comment">//:   make such exceptions more obvious checks usually won't be first-class</span>
-<span id="L52" class="LineNr">52 </span><span class="Comment">//:   transforms; instead code that keeps the program unmodified will run</span>
-<span id="L53" class="LineNr">53 </span><span class="Comment">//:   within transforms before they mutate the program. As an example:</span>
-<span id="L54" class="LineNr">54 </span><span class="Comment">//:</span>
-<span id="L55" class="LineNr">55 </span><span class="Comment">//:     Layer l introduces a transform</span>
-<span id="L56" class="LineNr">56 </span><span class="Comment">//:     Layer l+1 adds precondition checks for the transform</span>
-<span id="L57" class="LineNr">57 </span><span class="Comment">//:</span>
-<span id="L58" class="LineNr">58 </span><span class="Comment">//: This may all seem abstract, but will hopefully make sense over time. The</span>
-<span id="L59" class="LineNr">59 </span><span class="Comment">//: goals are basically to always have a working program after any layer, to</span>
-<span id="L60" class="LineNr">60 </span><span class="Comment">//: have the order of layers make narrative sense, and to order transforms</span>
-<span id="L61" class="LineNr">61 </span><span class="Comment">//: correctly at runtime.</span>
-<span id="L62" class="LineNr">62 </span>
-<span id="L63" class="LineNr">63 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
-<span id="L64" class="LineNr">64 </span><span class="Comment">// Begin Transforms</span>
-<span id="L65" class="LineNr">65 </span><span class="Comment">// End Transforms</span>
+<span id="L1" class="LineNr"> 1 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
+<span id="L2" class="LineNr"> 2 </span><span class="Normal">typedef</span> <span class="Normal">void</span> <span class="Delimiter">(</span>*transform_fn<span class="Delimiter">)(</span>program&amp;<span class="Delimiter">);</span>
+<span id="L3" class="LineNr"> 3 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L4" class="LineNr"> 4 </span>vector&lt;transform_fn&gt; <span class="Special"><a href='031transforms.cc.html#L4'>Transform</a></span><span class="Delimiter">;</span>
+<span id="L5" class="LineNr"> 5 </span>
+<span id="L6" class="LineNr"> 6 </span><span class="Delimiter">:(before &quot;End transform(program&amp; p)&quot;)</span>
+<span id="L7" class="LineNr"> 7 </span><span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> t = <span class="Constant">0</span><span class="Delimiter">;</span>  t &lt; <a href='001help.cc.html#L170'>SIZE</a><span class="Delimiter">(</span><span class="Special"><a href='031transforms.cc.html#L4'>Transform</a></span><span class="Delimiter">);</span>  ++t<span class="Delimiter">)</span>
+<span id="L8" class="LineNr"> 8 </span>  <span class="Delimiter">(</span>*<span class="Special"><a href='031transforms.cc.html#L4'>Transform</a></span><span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span>p<span class="Delimiter">);</span>
+<span id="L9" class="LineNr"> 9 </span>
+<span id="L10" class="LineNr">10 </span><span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+<span id="L11" class="LineNr">11 </span><span class="Comment">// Begin Transforms</span>
+<span id="L12" class="LineNr">12 </span><span class="Comment">// End Transforms</span>
 </pre>
 </body>
 </html>
