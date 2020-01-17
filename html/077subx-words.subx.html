@@ -121,7 +121,7 @@ if ('onhashchange' in window) {
 <span id="L62" class="LineNr"> 62 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L63" class="LineNr"> 63 </span>    <span class="subxS1Comment"># . if (eax != false) return false</span>
 <span id="L64" class="LineNr"> 64 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L65" class="LineNr"> 65 </span>    75/jump-if-not-equal  $has-metadata?:false/disp8
+<span id="L65" class="LineNr"> 65 </span>    75/jump-if-!=  $has-metadata?:false/disp8
 <span id="L66" class="LineNr"> 66 </span>    <span class="subxComment"># if (slice-equal?(twig, s)) return true</span>
 <span id="L67" class="LineNr"> 67 </span>    <span class="subxS1Comment"># . eax = slice-equal?(twig, s)</span>
 <span id="L68" class="LineNr"> 68 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -134,7 +134,7 @@ if ('onhashchange' in window) {
 <span id="L75" class="LineNr"> 75 </span>    <span class="subxS1Comment"># . if (eax != false) return true</span>
 <span id="L76" class="LineNr"> 76 </span>    3d/compare-eax-and  0/imm32/false
 <span id="L77" class="LineNr"> 77 </span>    <span class="subxComment"># eax already contains true</span>
-<span id="L78" class="LineNr"> 78 </span>    75/jump-if-not-equal  $has-metadata?:end/disp8
+<span id="L78" class="LineNr"> 78 </span>    75/jump-if-!=  $has-metadata?:end/disp8
 <span id="L79" class="LineNr"> 79 </span>    eb/jump  $has-metadata?:<span class="Constant">loop</span>/disp8
 <span id="L80" class="LineNr"> 80 </span><span class="Constant">$has-metadata?:false</span>:
 <span id="L81" class="LineNr"> 81 </span>    b8/copy-to-eax  0/imm32/false
@@ -348,29 +348,29 @@ if ('onhashchange' in window) {
 <span id="L289" class="LineNr">289 </span><span class="Constant">$is-valid-name?:check0</span>:
 <span id="L290" class="LineNr">290 </span>    <span class="subxComment"># if (start &gt;= in-&gt;end) return false</span>
 <span id="L291" class="LineNr">291 </span>    3b/compare                      1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with *(esi+4)</span>
-<span id="L292" class="LineNr">292 </span>    73/jump-if-greater-or-equal-unsigned  $is-valid-name?:false/disp8
+<span id="L292" class="LineNr">292 </span>    73/jump-if-addr&gt;=  $is-valid-name?:false/disp8
 <span id="L293" class="LineNr">293 </span><span class="Constant">$is-valid-name?:check1</span>:
 <span id="L294" class="LineNr">294 </span>    <span class="subxComment"># var len/eax : int = in-&gt;end - start</span>
 <span id="L295" class="LineNr">295 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to eax</span>
 <span id="L296" class="LineNr">296 </span>    29/subtract                     3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># subtract ecx from eax</span>
 <span id="L297" class="LineNr">297 </span>    <span class="subxComment"># if (eax == 2) return false</span>
 <span id="L298" class="LineNr">298 </span>    3d/compare-eax-and  2/imm32
-<span id="L299" class="LineNr">299 </span>    74/jump-if-equal  $is-valid-name?:false/disp8
+<span id="L299" class="LineNr">299 </span>    74/jump-if-=  $is-valid-name?:false/disp8
 <span id="L300" class="LineNr">300 </span><span class="Constant">$is-valid-name?:check2</span>:
 <span id="L301" class="LineNr">301 </span>    <span class="subxComment"># var c/eax : (addr byte) = *start</span>
 <span id="L302" class="LineNr">302 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L303" class="LineNr">303 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L304" class="LineNr">304 </span>    <span class="subxComment"># if (c == &quot;-&quot;) return false</span>
 <span id="L305" class="LineNr">305 </span>    3d/compare-eax-and  2d/imm32/-
-<span id="L306" class="LineNr">306 </span>    74/jump-if-equal  $is-valid-name?:false/disp8
+<span id="L306" class="LineNr">306 </span>    74/jump-if-=  $is-valid-name?:false/disp8
 <span id="L307" class="LineNr">307 </span><span class="Constant">$is-valid-name?:check3a</span>:
 <span id="L308" class="LineNr">308 </span>    <span class="subxComment"># if (c &lt; &quot;0&quot;) return true</span>
 <span id="L309" class="LineNr">309 </span>    3d/compare-eax-with  30/imm32/0
-<span id="L310" class="LineNr">310 </span>    7c/jump-if-lesser  $is-valid-name?:true/disp8
+<span id="L310" class="LineNr">310 </span>    7c/jump-if-&lt;  $is-valid-name?:true/disp8
 <span id="L311" class="LineNr">311 </span><span class="Constant">$is-valid-name?:check3b</span>:
 <span id="L312" class="LineNr">312 </span>    <span class="subxComment"># if (c &gt; &quot;9&quot;) return true</span>
 <span id="L313" class="LineNr">313 </span>    3d/compare-eax-with  39/imm32/9
-<span id="L314" class="LineNr">314 </span>    7f/jump-if-greater  $is-valid-name?:true/disp8
+<span id="L314" class="LineNr">314 </span>    7f/jump-if-&gt;  $is-valid-name?:true/disp8
 <span id="L315" class="LineNr">315 </span><span class="Constant">$is-valid-name?:false</span>:
 <span id="L316" class="LineNr">316 </span>    <span class="subxComment"># return false</span>
 <span id="L317" class="LineNr">317 </span>    b8/copy-to-eax  0/imm32/false
@@ -608,7 +608,7 @@ if ('onhashchange' in window) {
 <span id="L549" class="LineNr">549 </span>    <span class="subxS1Comment"># . return (eax == ':')</span>
 <span id="L550" class="LineNr">550 </span>    3d/compare-eax-and  0x3a/imm32/colon
 <span id="L551" class="LineNr">551 </span>    b8/copy-to-eax  1/imm32/true
-<span id="L552" class="LineNr">552 </span>    74/jump-if-equal  $is-label?:end/disp8
+<span id="L552" class="LineNr">552 </span>    74/jump-if-=  $is-label?:end/disp8
 <span id="L553" class="LineNr">553 </span>    b8/copy-to-eax  0/imm32/false
 <span id="L554" class="LineNr">554 </span><span class="Constant">$is-label?:end</span>:
 <span id="L555" class="LineNr">555 </span>    <span class="subxS1Comment"># . restore registers</span>

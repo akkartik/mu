@@ -28,7 +28,7 @@ stream-data-equal?:  # f : (addr stream byte), s : (addr array byte) -> eax : bo
 $stream-data-equal?:compare-lengths:
     # if (f->write != s->length) return false
     39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # compare *edi and eax
-    75/jump-if-not-equal  $stream-data-equal?:false/disp8
+    75/jump-if-!=  $stream-data-equal?:false/disp8
     # var currs/edi : (addr byte) = s->data
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
     # var eax : byte = 0
@@ -38,14 +38,14 @@ $stream-data-equal?:compare-lengths:
 $stream-data-equal?:loop:
     # if (currf >= maxf) return true
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           2/r32/edx   .               .                 # compare esi with edx
-    73/jump-if-greater-or-equal-unsigned  $stream-data-equal?:true/disp8
+    73/jump-if-addr>=  $stream-data-equal?:true/disp8
     # AL = *currs
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # CL = *curr
     8a/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           1/r32/CL    .               .                 # copy byte at *edi to CL
     # if (eax != ecx) return false
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax and ecx
-    75/jump-if-not-equal  $stream-data-equal?:false/disp8
+    75/jump-if-!=  $stream-data-equal?:false/disp8
     # ++f
     46/increment-esi
     # ++curr
@@ -287,20 +287,20 @@ next-stream-line-equal?:  # f : (addr stream byte), s : (addr array byte) -> eax
 $next-stream-line-equal?:loop:
     # if (currf >= f->write) break
     3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare ecx with *esi
-    7d/jump-if-greater-or-equal  $next-stream-line-equal?:break/disp8
+    7d/jump-if->=  $next-stream-line-equal?:break/disp8
     # c1 = f->data[f->read]
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
     # if (c1 == '\n') break
     3d/compare-eax-and  0xa/imm32/newline
-    74/jump-if-equal  $next-stream-line-equal?:break/disp8
+    74/jump-if-=  $next-stream-line-equal?:break/disp8
     # if (currs >= s->length) return false
     3b/compare                      0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare edx with *edi
-    7d/jump-if-greater-or-equal  $next-stream-line-equal?:false/disp8
+    7d/jump-if->=  $next-stream-line-equal?:false/disp8
     # c2 = s->data[currs]
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    7/base/edi  2/index/edx   .           3/r32/BL    4/disp8         .                 # copy byte at *(edi+edx+4) to BL
     # if (c1 != c2) return false
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
-    75/jump-if-not-equal  $next-stream-line-equal?:false/disp8
+    75/jump-if-!=  $next-stream-line-equal?:false/disp8
     # ++currf
     41/increment-ecx
     # ++currs
@@ -311,7 +311,7 @@ $next-stream-line-equal?:break:
     41/increment-ecx
     # if (currs >= s->length) return true
     3b/compare                      0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare edx with *edi
-    7c/jump-if-lesser  $next-stream-line-equal?:false/disp8
+    7c/jump-if-<  $next-stream-line-equal?:false/disp8
 $next-stream-line-equal?:true:
     b8/copy-to-eax  1/imm32
     # persist f->read on success

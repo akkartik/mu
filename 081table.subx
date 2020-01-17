@@ -51,7 +51,7 @@ get:  # table : (addr stream {string_key, T}), key : string_key, row-size : int,
 $get:search-loop:
     # if (curr >= max) abort
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $get:abort/disp8
+    73/jump-if-addr>=  $get:abort/disp8
     # if (string-equal?(key, *curr)) return curr+4
     # . eax = string-equal?(key, *curr)
     # . . push args
@@ -63,7 +63,7 @@ $get:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $get:mismatch/disp8
+    74/jump-if-=  $get:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get:end/disp8
 $get:mismatch:
@@ -225,7 +225,7 @@ get-slice:  # table : (addr stream {string_key, T}), key : (addr slice), row-siz
 $get-slice:search-loop:
     # if (curr >= max) abort
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $get-slice:abort/disp8
+    73/jump-if-addr>=  $get-slice:abort/disp8
     # if (slice-equal?(key, *curr)) return curr+4
     # . eax = slice-equal?(key, *curr)
     # . . push args
@@ -237,7 +237,7 @@ $get-slice:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $get-slice:mismatch/disp8
+    74/jump-if-=  $get-slice:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-slice:end/disp8
 $get-slice:mismatch:
@@ -433,7 +433,7 @@ get-or-insert:  # table : (addr stream {string_key, T}), key : string_key, row-s
 $get-or-insert:search-loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $get-or-insert:not-found/disp8
+    73/jump-if-addr>=  $get-or-insert:not-found/disp8
     # if (string-equal?(key, *curr)) return curr+4
     # . eax = string-equal?(key, *curr)
     # . . push args
@@ -445,7 +445,7 @@ $get-or-insert:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $get-or-insert:mismatch/disp8
+    74/jump-if-=  $get-or-insert:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-or-insert:end/disp8
 $get-or-insert:mismatch:
@@ -459,7 +459,7 @@ $get-or-insert:not-found:
     # if (table->write >= table->length) abort
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
-    73/jump-if-greater-or-equal-unsigned  $get-or-insert:abort/disp8
+    73/jump-if-addr>=  $get-or-insert:abort/disp8
     # zero-out(max, row-size)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
@@ -684,7 +684,7 @@ leaky-get-or-insert-slice:  # table : (addr stream {string_key, T}), key : (addr
 $leaky-get-or-insert-slice:search-loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $leaky-get-or-insert-slice:not-found/disp8
+    73/jump-if-addr>=  $leaky-get-or-insert-slice:not-found/disp8
     # if (slice-equal?(key, *curr)) return curr+4
     # . eax = slice-equal?(key, *curr)
     # . . push args
@@ -696,7 +696,7 @@ $leaky-get-or-insert-slice:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $leaky-get-or-insert-slice:mismatch/disp8
+    74/jump-if-=  $leaky-get-or-insert-slice:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $leaky-get-or-insert-slice:end/disp8
 $leaky-get-or-insert-slice:mismatch:
@@ -710,7 +710,7 @@ $leaky-get-or-insert-slice:not-found:
     # if (table->write >= table->length) abort
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
-    7d/jump-if-greater-or-equal  $leaky-get-or-insert-slice:abort/disp8
+    7d/jump-if->=  $leaky-get-or-insert-slice:abort/disp8
     # zero-out(max, row-size)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
@@ -954,7 +954,7 @@ get-or-stop:  # table : (addr stream {string_key, T}), key : string_key, row-siz
 $get-or-stop:search-loop:
     # if (curr >= max) stop(ed)
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $get-or-stop:stop/disp8
+    73/jump-if-addr>=  $get-or-stop:stop/disp8
     # if (string-equal?(key, *curr)) return curr+4
     # . eax = string-equal?(key, *curr)
     # . . push args
@@ -966,7 +966,7 @@ $get-or-stop:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $get-or-stop:mismatch/disp8
+    74/jump-if-=  $get-or-stop:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-or-stop:end/disp8
 $get-or-stop:mismatch:
@@ -1170,7 +1170,7 @@ get-slice-or-stop:  # table : (addr stream {string_key, _}), key : (addr slice),
 $get-slice-or-stop:search-loop:
     # if (curr >= max) stop(ed)
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $get-slice-or-stop:stop/disp8
+    73/jump-if-addr>=  $get-slice-or-stop:stop/disp8
     # if (slice-equal?(key, *curr)) return curr+4
     # . eax = slice-equal?(key, *curr)
     # . . push args
@@ -1182,7 +1182,7 @@ $get-slice-or-stop:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $get-slice-or-stop:mismatch/disp8
+    74/jump-if-=  $get-slice-or-stop:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $get-slice-or-stop:end/disp8
 $get-slice-or-stop:mismatch:
@@ -1406,7 +1406,7 @@ maybe-get:  # table : (addr stream {string_key, T}), key : string_key, row-size 
 $maybe-get:search-loop:
     # if (curr >= max) return null
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $maybe-get:null/disp8
+    73/jump-if-addr>=  $maybe-get:null/disp8
     # if (string-equal?(key, *curr)) return curr+4
     # . eax = string-equal?(key, *curr)
     # . . push args
@@ -1418,7 +1418,7 @@ $maybe-get:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $maybe-get:mismatch/disp8
+    74/jump-if-=  $maybe-get:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $maybe-get:end/disp8
 $maybe-get:mismatch:
@@ -1553,7 +1553,7 @@ maybe-get-slice:  # table : (addr stream {string_key, T}), key : (addr slice), r
 $maybe-get-slice:search-loop:
     # if (curr >= max) return null
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $maybe-get-slice:null/disp8
+    73/jump-if-addr>=  $maybe-get-slice:null/disp8
     # if (slice-equal?(key, *curr)) return curr+4
     # . eax = slice-equal?(key, *curr)
     # . . push args
@@ -1565,7 +1565,7 @@ $maybe-get-slice:search-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) return eax = curr+4
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $maybe-get-slice:mismatch/disp8
+    74/jump-if-=  $maybe-get-slice:mismatch/disp8
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy ecx+4 to eax
     eb/jump  $maybe-get-slice:end/disp8
 $maybe-get-slice:mismatch:

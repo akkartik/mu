@@ -29,12 +29,12 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto run-main
     81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-lesser-or-equal $run-main/disp8
+    7e/jump-if-<= $run-main/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto run-main
     (kernel-string-equal? *(ebp+8) "test")  # => eax
     # . if (eax == false) goto run-main
     3d/compare-eax-and 0/imm32/false
-    74/jump-if-equal $run-main/disp8
+    74/jump-if-= $run-main/disp8
     #
     (run-tests)
     # syscall(exit, *Num-test-failures)

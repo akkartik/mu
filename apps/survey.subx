@@ -64,7 +64,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $subx-survey-main:interactive/disp8
+    7e/jump-if-<=  $subx-survey-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -76,7 +76,7 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto interactive
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-survey-main:interactive/disp8
+    74/jump-if-=  $subx-survey-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
@@ -709,7 +709,7 @@ $compute-offsets:line-loop:
     # if (line->write == 0) break
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
     3d/compare-eax-and  0/imm32
-    0f 84/jump-if-equal  $compute-offsets:break-line-loop/disp32
+    0f 84/jump-if-=  $compute-offsets:break-line-loop/disp32
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
 #?     # . . push args
@@ -793,7 +793,7 @@ $compute-offsets:word-loop:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . if (curr-segment-name == 0) print curr-segment-name
 #?     81          7/subop/compare     3/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm32           # compare esi
-#?     74/jump-if-equal  $compute-offsets:case-empty/disp8
+#?     74/jump-if-=  $compute-offsets:case-empty/disp8
 #?     # . write(2/stderr, "segment at start of word: ")
 #?     # . . push args
 #?     68/push  "segment at start of word: "/imm32
@@ -835,7 +835,7 @@ $compute-offsets:case-empty:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $compute-offsets:line-loop/disp32
+    0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
 $compute-offsets:case-comment:
     # if slice-starts-with?(word-slice, "#") continue
     68/push  "#"/imm32
@@ -845,7 +845,7 @@ $compute-offsets:case-comment:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $compute-offsets:line-loop/disp32
+    0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
 $compute-offsets:case-segment-header:
     # if (!slice-equal?(word-slice/edx, "==")) goto next case
     # . eax = slice-equal?(word-slice/edx, "==")
@@ -856,10 +856,10 @@ $compute-offsets:case-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next case
     3d/compare-eax-and  0/imm32/false
-    0f 84/jump-if-equal  $compute-offsets:case-label/disp32
+    0f 84/jump-if-=  $compute-offsets:case-label/disp32
     # if (curr-segment-name == 0) goto construct-next-segment
     81          7/subop/compare     3/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm32           # compare esi
-    74/jump-if-equal  $compute-offsets:construct-next-segment/disp8
+    74/jump-if-=  $compute-offsets:construct-next-segment/disp8
     # seg/eax = get-or-insert(segments, curr-segment-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
@@ -903,7 +903,7 @@ $compute-offsets:construct-next-segment:
 #?     # dump curr-segment-name if not null (clobbering eax) {{{
 #?     # . if (curr-segment-name == 0) goto update-curr-segment-name
 #?     81          7/subop/compare     3/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm32           # compare esi
-#?     74/jump-if-equal  $compute-offsets:update-curr-segment-name/disp8
+#?     74/jump-if-=  $compute-offsets:update-curr-segment-name/disp8
 #?     # . write(2/stderr, "setting segment to: ")
 #?     # . . push args
 #?     68/push  "setting segment to: "/imm32
@@ -960,7 +960,7 @@ $compute-offsets:update-curr-segment-name:
     # if empty?(curr-segment-name) abort
     # . if (eax == 0) abort
     3d/compare-eax-and  0/imm32
-    0f 84/jump-if-equal  $compute-offsets:abort/disp32
+    0f 84/jump-if-=  $compute-offsets:abort/disp32
     # next-word(line, segment-tmp)
     68/push  compute-offsets:segment-tmp/imm32
     51/push-ecx
@@ -975,7 +975,7 @@ $compute-offsets:update-curr-segment-name:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $compute-offsets:abort/disp32
+    0f 85/jump-if-!=  $compute-offsets:abort/disp32
     # seg/ebx = get-or-insert(segments, curr-segment-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
@@ -1024,7 +1024,7 @@ $compute-offsets:case-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) goto next case
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $compute-offsets:case-default/disp8
+    74/jump-if-=  $compute-offsets:case-default/disp8
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
     # x/eax = leaky-get-or-insert-slice(labels, word-slice, row-size=16)
@@ -1428,7 +1428,7 @@ compute-addresses:  # segments : (addr stream {string, segment-info}), labels : 
 $compute-addresses:segment-loop:
     # if (srow >= max) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
-    73/jump-if-greater-or-equal-unsigned  $compute-addresses:segment-break/disp8
+    73/jump-if-addr>=  $compute-addresses:segment-break/disp8
     # srow->file-offset += starting-offset
     01/add                          1/mod/*+disp8   0/rm32/eax    .           .             .           7/r32/edi   8/disp8         .                 # add edi to *(eax+8)
     # clear last 12 bits of srow->address for p_align=0x1000
@@ -1495,7 +1495,7 @@ $compute-addresses:segment-break:
 $compute-addresses:label-loop:
     # if (lrow >= max) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
-    0f 83/jump-if-greater-or-equal-unsigned  $compute-addresses:end/disp32
+    0f 83/jump-if-addr>=  $compute-addresses:end/disp32
 #?     # dump lrow->key {{{
 #?     # . write(2/stderr, "label: ")
 #?     # . . push args
@@ -2055,7 +2055,7 @@ $emit-segments:line-loop:
 $emit-segments:check-for-end-of-input:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $emit-segments:end/disp32
+    0f 84/jump-if-=  $emit-segments:end/disp32
     # offset-of-next-instruction += num-bytes(line)
     # . eax = num-bytes(line)
     # . . push args
@@ -2119,7 +2119,7 @@ $emit-segments:check-for-end-of-line:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != 0) break
     3d/compare-eax-and  0/imm32
-    0f 85/jump-if-not-equal  $emit-segments:next-line/disp32
+    0f 85/jump-if-!=  $emit-segments:next-line/disp32
 $emit-segments:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) break
     # . start/esi = word-slice->start
@@ -2129,7 +2129,7 @@ $emit-segments:check-for-comment:
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # . if (eax == '#') break
     3d/compare-eax-and  0x23/imm32/hash
-    0f 84/jump-if-equal  $emit-segments:next-line/disp32
+    0f 84/jump-if-=  $emit-segments:next-line/disp32
 $emit-segments:check-for-label:
     # if is-label?(word-slice) break
     # . eax = is-label?(word-slice)
@@ -2141,7 +2141,7 @@ $emit-segments:check-for-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $emit-segments:line-loop/disp32
+    0f 85/jump-if-!=  $emit-segments:line-loop/disp32
 $emit-segments:check-for-segment-header:
     # if (slice-equal?(word-slice, "==")) break
     # . eax = slice-equal?(word-slice, "==")
@@ -2154,7 +2154,7 @@ $emit-segments:check-for-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $emit-segments:line-loop/disp32
+    0f 85/jump-if-!=  $emit-segments:line-loop/disp32
 $emit-segments:2-character:
     # if (length(word-slice) != 2) goto next check
     # . eax = length(word-slice)
@@ -2162,7 +2162,7 @@ $emit-segments:2-character:
     2b/subtract                     0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # subtract *edx from eax
     # . if (eax != 2) goto next check
     3d/compare-eax-and  2/imm32
-    75/jump-if-not-equal  $emit-segments:check-metadata/disp8
+    75/jump-if-!=  $emit-segments:check-metadata/disp8
     # write-slice-buffered(out, word-slice)
     # . . push args
     52/push-edx
@@ -2277,7 +2277,7 @@ $emit-segments:check-global-variable:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) goto code label checks
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $emit-segments:check-code-label-for-imm8/disp32
+    0f 85/jump-if-!=  $emit-segments:check-code-label-for-imm8/disp32
 $emit-segments:check-global-variable-for-disp8:
     # if has-metadata?(word-slice, "disp8") abort
     # . eax = has-metadata?(word-slice, "disp8")
@@ -2290,7 +2290,7 @@ $emit-segments:check-global-variable-for-disp8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $emit-segments:global-variable-abort/disp32
+    0f 85/jump-if-!=  $emit-segments:global-variable-abort/disp32
 $emit-segments:check-global-variable-for-imm8:
     # if has-metadata?(word-slice, "imm8") abort
     # . eax = has-metadata?(word-slice, "imm8")
@@ -2303,7 +2303,7 @@ $emit-segments:check-global-variable-for-imm8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $emit-segments:global-variable-abort/disp32
+    0f 85/jump-if-!=  $emit-segments:global-variable-abort/disp32
 $emit-segments:emit-global-variable:
     # emit-hex(out, info->address, 4)
     # . . push args
@@ -2328,7 +2328,7 @@ $emit-segments:check-code-label-for-imm8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $emit-segments:imm8-abort/disp32
+    0f 85/jump-if-!=  $emit-segments:imm8-abort/disp32
 $emit-segments:check-code-label-for-imm32:
     # if (!has-metadata?(word-slice, "imm32")) goto next check
     # . eax = has-metadata?(edx, "imm32")
@@ -2341,7 +2341,7 @@ $emit-segments:check-code-label-for-imm32:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $emit-segments:check-code-label-for-disp8/disp8
+    74/jump-if-=  $emit-segments:check-code-label-for-disp8/disp8
 #?     # dump info->address {{{
 #?     # . write(2/stderr, "info->address: ")
 #?     # . . push args
@@ -2399,7 +2399,7 @@ $emit-segments:check-code-label-for-disp8:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $emit-segments:check-code-label-for-disp32/disp8
+    74/jump-if-=  $emit-segments:check-code-label-for-disp32/disp8
 $emit-segments:emit-code-label-disp8:
     # emit-hex(out, info->offset - offset-of-next-instruction, 1)
     # . . push args
@@ -2426,7 +2426,7 @@ $emit-segments:check-code-label-for-disp32:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) abort
     3d/compare-eax-and  0/imm32/false
-    0f 84/jump-if-equal  $emit-segments:abort/disp32
+    0f 84/jump-if-=  $emit-segments:abort/disp32
 $emit-segments:emit-code-label-disp32:
     # emit-hex(out, info->offset - offset-of-next-instruction, 4)
     # . . push args
@@ -3218,7 +3218,7 @@ emit-headers:  # out : (addr buffered-file), segments : (addr stream {string, se
 $emit-headers:loop:
     # if (curr-segment >= max) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
-    0f 83/jump-if-greater-or-equal-unsigned  $emit-headers:end/disp32
+    0f 83/jump-if-addr>=  $emit-headers:end/disp32
 #?     # dump curr-segment->name {{{
 #?     # . write(2/stderr, "about to emit ph entry: segment->name: ")
 #?     # . . push args
@@ -3433,7 +3433,7 @@ emit-elf-program-header-entry:  # out : (addr buffered-file), curr-segment : (ad
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto next check
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $emit-elf-program-header-entry:data/disp8
+    74/jump-if-=  $emit-elf-program-header-entry:data/disp8
     # *$Elf_p_flags = r-x
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           $Elf_p_flags/disp32  5/imm32      # copy to *$Elf_p_flags
     eb/jump  $emit-elf-program-header-entry:really-emit/disp8
@@ -3491,7 +3491,7 @@ stream-add4:  # in : (addr stream byte), key : addr, val1 : addr, val2 : addr, v
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  2/index/edx   .           2/r32/edx   0xc/disp8       .                 # copy esi+edx+12 to edx
     # if (curr >= max) abort
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax with edx
-    73/jump-if-greater-or-equal-unsigned  $stream-add4:abort/disp8
+    73/jump-if-addr>=  $stream-add4:abort/disp8
     # *curr = key
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
@@ -3499,7 +3499,7 @@ stream-add4:  # in : (addr stream byte), key : addr, val1 : addr, val2 : addr, v
     05/add-to-eax  4/imm32
     # if (curr >= max) abort
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax with edx
-    73/jump-if-greater-or-equal-unsigned  $stream-add4:abort/disp8
+    73/jump-if-addr>=  $stream-add4:abort/disp8
     # *curr = val1
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   0x10/disp8      .                 # copy *(ebp+16) to ecx
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
@@ -3507,7 +3507,7 @@ stream-add4:  # in : (addr stream byte), key : addr, val1 : addr, val2 : addr, v
     05/add-to-eax  4/imm32
     # if (curr >= max) abort
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax with edx
-    73/jump-if-greater-or-equal-unsigned  $stream-add4:abort/disp8
+    73/jump-if-addr>=  $stream-add4:abort/disp8
     # *curr = val2
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   0x14/disp8      .                 # copy *(ebp+20) to ecx
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
@@ -3515,7 +3515,7 @@ stream-add4:  # in : (addr stream byte), key : addr, val1 : addr, val2 : addr, v
     05/add-to-eax  4/imm32
     # if (curr >= max) abort
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax with edx
-    73/jump-if-greater-or-equal-unsigned  $stream-add4:abort/disp8
+    73/jump-if-addr>=  $stream-add4:abort/disp8
     # *curr = val3
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   0x18/disp8      .                 # copy *(ebp+24) to ecx
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
@@ -4251,7 +4251,7 @@ $num-bytes:check0:
     3d/compare-eax-and  0/imm32/false
     # . restore result now that ZF is set
     58/pop-to-eax
-    75/jump-if-not-equal  $num-bytes:end/disp8
+    75/jump-if-!=  $num-bytes:end/disp8
 $num-bytes:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) break
     # . start/edx = word-slice->start
@@ -4261,7 +4261,7 @@ $num-bytes:check-for-comment:
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           3/r32/BL    .               .                 # copy byte at *edx to BL
     # . if (ebx == '#') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x23/imm32/hash   # compare ebx
-    74/jump-if-equal  $num-bytes:end/disp8
+    74/jump-if-=  $num-bytes:end/disp8
 $num-bytes:check-for-label:
     # if (slice-ends-with?(word-slice, ":")) break
     # . end/edx = word-slice->end
@@ -4271,7 +4271,7 @@ $num-bytes:check-for-label:
     8a/copy-byte                    1/mod/*+disp8   2/rm32/edx    .           .             .           3/r32/BL    -1/disp8        .                 # copy byte at *ecx to BL
     # . if (ebx == ':') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x3a/imm32/colon  # compare ebx
-    74/jump-if-equal  $num-bytes:end/disp8
+    74/jump-if-=  $num-bytes:end/disp8
 $num-bytes:check-for-segment-header:
     # if (slice-equal?(word-slice, "==")) break
     # . push result
@@ -4288,7 +4288,7 @@ $num-bytes:check-for-segment-header:
     3d/compare-eax-and  0/imm32/false
     # . restore result now that ZF is set
     58/pop-to-eax
-    75/jump-if-not-equal  $num-bytes:end/disp8
+    75/jump-if-!=  $num-bytes:end/disp8
 $num-bytes:loop-body:
     # result += compute-width-of-slice(word-slice)
     # . copy result to edx

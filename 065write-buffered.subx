@@ -52,10 +52,10 @@ write-buffered:  # f : (addr buffered-file), msg : (addr array byte)
 $write-buffered:loop:
     # if (in >= inend) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
-    73/jump-if-greater-or-equal-unsigned  $write-buffered:loop-end/disp8
+    73/jump-if-addr>=  $write-buffered:loop-end/disp8
     # if (f->write >= f->length) flush and clear f's stream
     39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx with edx
-    7c/jump-if-lesser  $write-buffered:to-stream/disp8
+    7c/jump-if-<  $write-buffered:to-stream/disp8
     # . persist f->write
     89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(edi+4)
     # . flush(f)

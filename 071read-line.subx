@@ -37,10 +37,10 @@ read-line-buffered:  # f : (addr buffered-file), s : (addr stream byte)
 $read-line-buffered:loop:
     # if (s->write >= s->length) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # compare edx with *(edi+8)
-    7d/jump-if-greater-or-equal  $read-line-buffered:abort/disp8
+    7d/jump-if->=  $read-line-buffered:abort/disp8
     # if (f->read >= f->write) populate stream from file
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare ecx with *(esi+4)
-    7c/jump-if-lesser  $read-line-buffered:from-stream/disp8
+    7c/jump-if-<  $read-line-buffered:from-stream/disp8
     # . clear-stream(stream = f+4)
     # . . push args
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy esi+4 to eax
@@ -63,7 +63,7 @@ $read-line-buffered:loop:
     # since f->read was initially 0, eax is the same as f->write
     # . if (eax == 0) return true
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $read-line-buffered:end/disp8
+    74/jump-if-=  $read-line-buffered:end/disp8
 $read-line-buffered:from-stream:
     # AL = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
@@ -76,7 +76,7 @@ $read-line-buffered:from-stream:
     42/increment-edx
     # if (AL == '\n') return
     3d/compare-eax-and  0xa/imm32
-    75/jump-if-not-equal  $read-line-buffered:loop/disp8
+    75/jump-if-!=  $read-line-buffered:loop/disp8
 $read-line-buffered:end:
     # save f->read
     89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # copy ecx to *(esi+8)
@@ -246,10 +246,10 @@ read-line:  # f : (addr stream byte), s : (addr stream byte)
 $read-line:loop:
     # if (s->write >= s->length) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # compare edx with *(edi+8)
-    0f 8d/jump-if-greater-or-equal  $read-line:abort/disp32
+    0f 8d/jump-if->=  $read-line:abort/disp32
     # if (f->read >= f->write) break
     3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare ecx with *esi
-    7d/jump-if-greater-or-equal  $read-line:end/disp8
+    7d/jump-if->=  $read-line:end/disp8
     # AL = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
@@ -261,7 +261,7 @@ $read-line:loop:
     42/increment-edx
     # if (AL == '\n') return
     3d/compare-eax-and  0xa/imm32
-    0f 85/jump-if-not-equal  $read-line:loop/disp32
+    0f 85/jump-if-!=  $read-line:loop/disp32
 $read-line:end:
     # save f->read
     89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy ecx to *(esi+4)

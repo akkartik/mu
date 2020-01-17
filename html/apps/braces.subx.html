@@ -116,11 +116,11 @@ if ('onhashchange' in window) {
 <span id="L57" class="LineNr"> 57 </span>    (<a href='../053new-segment.subx.html#L41'>new-segment</a> *<span class="SpecialChar"><a href='../069allocate.subx.html#L29'>Heap-size</a></span> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span>)
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxComment"># if (argc &lt;= 1) goto interactive</span>
 <span id="L59" class="LineNr"> 59 </span>    81 7/subop/compare *ebp 1/imm32
-<span id="L60" class="LineNr"> 60 </span>    7e/jump-if-lesser-or-equal $subx-braces-main:interactive/disp8
+<span id="L60" class="LineNr"> 60 </span>    7e/jump-if-&lt;= $subx-braces-main:interactive/disp8
 <span id="L61" class="LineNr"> 61 </span>    <span class="subxComment"># if (argv[1] != &quot;test&quot;)) goto interactive</span>
 <span id="L62" class="LineNr"> 62 </span>    (<a href='../052kernel-string-equal.subx.html#L33'>kernel-string-equal?</a> *(ebp+8) <span class="Constant">&quot;test&quot;</span>)  <span class="subxComment"># =&gt; eax</span>
 <span id="L63" class="LineNr"> 63 </span>    3d/compare-eax-and 0/imm32
-<span id="L64" class="LineNr"> 64 </span>    74/jump-if-equal $subx-braces-main:interactive/disp8
+<span id="L64" class="LineNr"> 64 </span>    74/jump-if-= $subx-braces-main:interactive/disp8
 <span id="L65" class="LineNr"> 65 </span>    <span class="subxComment">#</span>
 <span id="L66" class="LineNr"> 66 </span>    (run-tests)
 <span id="L67" class="LineNr"> 67 </span>    <span class="subxComment"># syscall(exit, *Num-test-failures)</span>
@@ -205,7 +205,7 @@ if ('onhashchange' in window) {
 <span id="L146" class="LineNr">146 </span><span class="Constant">$subx-braces:check0</span>:
 <span id="L147" class="LineNr">147 </span>    <span class="subxComment"># if (line-&gt;write == 0) break</span>
 <span id="L148" class="LineNr">148 </span>    81 7/subop/compare *ecx 0/imm32
-<span id="L149" class="LineNr">149 </span>    0f 84/jump-if-equal  $subx-braces:<span class="Constant">break</span>/disp32
+<span id="L149" class="LineNr">149 </span>    0f 84/jump-if-=  $subx-braces:<span class="Constant">break</span>/disp32
 <span id="L150" class="LineNr">150 </span>    (<a href='../073next-token.subx.html#L464'>skip-chars-matching-whitespace</a> %ecx)
 <span id="L151" class="LineNr">151 </span><span class="Constant">$subx-braces:check-for-curly-open</span>:
 <span id="L152" class="LineNr">152 </span>    <span class="subxComment"># if (line-&gt;data[line-&gt;read] != '{') goto next check</span>
@@ -215,7 +215,7 @@ if ('onhashchange' in window) {
 <span id="L156" class="LineNr">156 </span>    81 4/subop/and %eax 0xff/imm32
 <span id="L157" class="LineNr">157 </span>    <span class="subxS1Comment"># . if (eax != '{') continue</span>
 <span id="L158" class="LineNr">158 </span>    3d/compare-eax-and 0x7b/imm32/open-curly
-<span id="L159" class="LineNr">159 </span>    0f 85/jump-if-not-equal $subx-braces:check-for-curly-closed/disp32
+<span id="L159" class="LineNr">159 </span>    0f 85/jump-if-!= $subx-braces:check-for-curly-closed/disp32
 <span id="L160" class="LineNr">160 </span><span class="Constant">$subx-braces:emit-curly-open</span>:
 <span id="L161" class="LineNr">161 </span>    <span class="subxComment"># print(out, &quot;_loop&quot; next-label-id &quot;:&quot;)</span>
 <span id="L162" class="LineNr">162 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+0xc) <span class="Constant">&quot;_loop&quot;</span>)
@@ -230,7 +230,7 @@ if ('onhashchange' in window) {
 <span id="L171" class="LineNr">171 </span><span class="Constant">$subx-braces:check-for-curly-closed</span>:
 <span id="L172" class="LineNr">172 </span>    <span class="subxComment"># if (line-&gt;data[line-&gt;read] != '}') goto next check</span>
 <span id="L173" class="LineNr">173 </span>    3d/compare-eax-and 0x7d/imm32/close-curly
-<span id="L174" class="LineNr">174 </span>    0f 85/jump-if-equal $subx-braces:word-loop/disp32
+<span id="L174" class="LineNr">174 </span>    0f 85/jump-if-= $subx-braces:word-loop/disp32
 <span id="L175" class="LineNr">175 </span><span class="Constant">$subx-braces:emit-curly-closed</span>:
 <span id="L176" class="LineNr">176 </span>    <span class="subxComment"># eax = pop(label-stack)</span>
 <span id="L177" class="LineNr">177 </span>    (<a href='../092stack.subx.html#L230'>pop</a> %edx)
@@ -246,7 +246,7 @@ if ('onhashchange' in window) {
 <span id="L187" class="LineNr">187 </span>    <span class="subxComment"># if (slice-empty?(word-slice)) break</span>
 <span id="L188" class="LineNr">188 </span>    (<a href='../072slice.subx.html#L9'>slice-empty?</a> %edi)
 <span id="L189" class="LineNr">189 </span>    3d/compare-eax-and 0/imm32
-<span id="L190" class="LineNr">190 </span>    0f 85/jump-if-not-equal $subx-braces:next-line/disp32
+<span id="L190" class="LineNr">190 </span>    0f 85/jump-if-!= $subx-braces:next-line/disp32
 <span id="L191" class="LineNr">191 </span><span class="Constant">$subx-braces:check-for-comment</span>:
 <span id="L192" class="LineNr">192 </span>    <span class="subxComment"># if (slice-starts-with?(word-slice, &quot;#&quot;)) continue</span>
 <span id="L193" class="LineNr">193 </span>    <span class="subxS1Comment"># . eax = *word-slice-&gt;start</span>
@@ -255,14 +255,14 @@ if ('onhashchange' in window) {
 <span id="L196" class="LineNr">196 </span>    81 4/subop/and %eax 0xff/imm32
 <span id="L197" class="LineNr">197 </span>    <span class="subxS1Comment"># . if (eax == '#') continue</span>
 <span id="L198" class="LineNr">198 </span>    3d/compare-eax-and 0x23/imm32/hash
-<span id="L199" class="LineNr">199 </span>    74/jump-if-equal $subx-braces:word-loop/disp8
+<span id="L199" class="LineNr">199 </span>    74/jump-if-= $subx-braces:word-loop/disp8
 <span id="L200" class="LineNr">200 </span><span class="Constant">$subx-braces:check-for-break</span>:
 <span id="L201" class="LineNr">201 </span>    <span class="subxComment"># if (!slice-starts-with?(word-slice, &quot;break/&quot;)) goto next check</span>
 <span id="L202" class="LineNr">202 </span>    <span class="subxS1Comment"># . eax = slice-starts-with?(word-slice, &quot;break/&quot;)</span>
 <span id="L203" class="LineNr">203 </span>    (<a href='../072slice.subx.html#L458'>slice-starts-with?</a> %edi <span class="Constant">&quot;break/&quot;</span>)
 <span id="L204" class="LineNr">204 </span>    <span class="subxS1Comment"># . if (eax == false) goto next check</span>
 <span id="L205" class="LineNr">205 </span>    3d/compare-eax-and 0/imm32/false
-<span id="L206" class="LineNr">206 </span>    74/jump-if-equal $subx-braces:check-for-loop/disp8
+<span id="L206" class="LineNr">206 </span>    74/jump-if-= $subx-braces:check-for-loop/disp8
 <span id="L207" class="LineNr">207 </span><span class="Constant">$subx-braces:emit-break</span>:
 <span id="L208" class="LineNr">208 </span>    (<a href='../092stack.subx.html#L334'>top</a> %edx)
 <span id="L209" class="LineNr">209 </span>    <span class="subxComment"># print(out, &quot;_break&quot; eax)</span>
@@ -278,7 +278,7 @@ if ('onhashchange' in window) {
 <span id="L219" class="LineNr">219 </span>    (<a href='../072slice.subx.html#L458'>slice-starts-with?</a> %edi <span class="Constant">&quot;loop/&quot;</span>)
 <span id="L220" class="LineNr">220 </span>    <span class="subxS1Comment"># . if (eax == false) goto next check</span>
 <span id="L221" class="LineNr">221 </span>    3d/compare-eax-and 0/imm32/false
-<span id="L222" class="LineNr">222 </span>    74/jump-if-equal $subx-braces:emit-word-slice/disp8
+<span id="L222" class="LineNr">222 </span>    74/jump-if-= $subx-braces:emit-word-slice/disp8
 <span id="L223" class="LineNr">223 </span><span class="Constant">$subx-braces:emit-loop</span>:
 <span id="L224" class="LineNr">224 </span>    (<a href='../092stack.subx.html#L334'>top</a> %edx)
 <span id="L225" class="LineNr">225 </span>    <span class="subxComment"># print(out, &quot;_loop&quot; eax)</span>

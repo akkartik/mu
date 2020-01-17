@@ -48,7 +48,7 @@ read-byte-buffered:  # f : (addr buffered-file) -> byte-or-Eof/eax
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(esi+8) to ecx
     # if (f->read >= f->write) populate stream from file
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare ecx with *(esi+4)
-    7c/jump-if-lesser  $read-byte-buffered:from-stream/disp8
+    7c/jump-if-<  $read-byte-buffered:from-stream/disp8
     # . clear-stream(stream = f+4)
     # . . push args
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy esi+4 to eax
@@ -69,7 +69,7 @@ read-byte-buffered:  # f : (addr buffered-file) -> byte-or-Eof/eax
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if (eax == 0) return 0xffffffff
     3d/compare-eax-and  0/imm32
-    75/jump-if-not-equal  $read-byte-buffered:from-stream/disp8
+    75/jump-if-!=  $read-byte-buffered:from-stream/disp8
     b8/copy-to-eax  0xffffffff/imm32/Eof
     eb/jump  $read-byte-buffered:end/disp8
 $read-byte-buffered:from-stream:

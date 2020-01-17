@@ -10,7 +10,7 @@ to-hex-char:  # in/eax : int -> out/eax : int
     # no error checking; accepts argument in eax
     # if (eax <= 9) return eax + '0'
     3d/compare-eax-with  0x9/imm32/9
-    7f/jump-if-greater  $to-hex-char:else/disp8
+    7f/jump-if->  $to-hex-char:else/disp8
     05/add-to-eax  0x30/imm32/0
     c3/return
 $to-hex-char:else:
@@ -206,7 +206,7 @@ $print-int32:print-hex-prefix:
 $print-int32:loop:
     # if (ecx < 0) break
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0/imm32           # compare ecx
-    7c/jump-if-lesser  $print-int32:end/disp8
+    7c/jump-if-<  $print-int32:end/disp8
     # eax = n >> ecx
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     d3/>>ecx    5/subop/pad-zeroes  3/mod/direct    0/rm32/eax    .           .             .           .           .               .                 # shift eax right by ecx bits, padding zeroes
@@ -294,7 +294,7 @@ $print-int32-buffered:print-hex-prefix:
 $print-int32-buffered:loop:
     # if (ecx < 0) break
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0/imm32           # compare ecx
-    7c/jump-if-lesser  $print-int32-buffered:end/disp8
+    7c/jump-if-<  $print-int32-buffered:end/disp8
     # eax = n >> ecx
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     d3/>>ecx    5/subop/pad-zeroes  3/mod/direct    0/rm32/eax    .           .             .           .           .               .                 # shift eax right by ecx bits, padding zeroes

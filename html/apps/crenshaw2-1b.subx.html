@@ -108,7 +108,7 @@ if ('onhashchange' in window) {
 <span id="L47" class="LineNr"> 47 </span>    <span class="subxH1Comment"># - if argc &gt; 1 and argv[1] == &quot;test&quot;, then return run_tests()</span>
 <span id="L48" class="LineNr"> 48 </span>    <span class="subxComment"># if (argc &lt;= 1) goto run-main</span>
 <span id="L49" class="LineNr"> 49 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0/disp8         1/imm32           <span class="subxComment"># compare *ebp</span>
-<span id="L50" class="LineNr"> 50 </span>    7e/jump-if-lesser-or-equal  $run-main/disp8
+<span id="L50" class="LineNr"> 50 </span>    7e/jump-if-&lt;=  $run-main/disp8
 <span id="L51" class="LineNr"> 51 </span>    <span class="subxComment"># if (!kernel-string-equal?(argv[1], &quot;test&quot;)) goto run-main</span>
 <span id="L52" class="LineNr"> 52 </span>    <span class="subxS1Comment"># . eax = kernel-string-equal?(argv[1], &quot;test&quot;)</span>
 <span id="L53" class="LineNr"> 53 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -120,7 +120,7 @@ if ('onhashchange' in window) {
 <span id="L59" class="LineNr"> 59 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L60" class="LineNr"> 60 </span>    <span class="subxS1Comment"># . if (eax == false) goto run-main</span>
 <span id="L61" class="LineNr"> 61 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L62" class="LineNr"> 62 </span>    74/jump-if-equal  $run-main/disp8
+<span id="L62" class="LineNr"> 62 </span>    74/jump-if-=  $run-main/disp8
 <span id="L63" class="LineNr"> 63 </span>    <span class="subxComment"># run-tests()</span>
 <span id="L64" class="LineNr"> 64 </span>    e8/call  run-tests/disp32
 <span id="L65" class="LineNr"> 65 </span>    <span class="subxComment"># syscall(exit, *Num-test-failures)</span>
@@ -290,7 +290,7 @@ if ('onhashchange' in window) {
 <span id="L229" class="LineNr">229 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L230" class="LineNr">230 </span>    <span class="subxS1Comment"># . if (eax == false)</span>
 <span id="L231" class="LineNr">231 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L232" class="LineNr">232 </span>    75/jump-if-not-equal  $get-num:<a href='../mu-init-test.subx.html#L7'>main</a>/disp8
+<span id="L232" class="LineNr">232 </span>    75/jump-if-!=  $get-num:<a href='../mu-init-test.subx.html#L7'>main</a>/disp8
 <span id="L233" class="LineNr">233 </span>    <span class="subxS1Comment"># . expected(ed, err, &quot;integer&quot;)</span>
 <span id="L234" class="LineNr">234 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L235" class="LineNr">235 </span>    68/push  <span class="Constant">&quot;integer&quot;</span>/imm32
@@ -321,7 +321,7 @@ if ('onhashchange' in window) {
 <span id="L260" class="LineNr">260 </span><span class="Constant">$get-num:loop</span>:
 <span id="L261" class="LineNr">261 </span>    <span class="subxComment"># if (out-&gt;write &gt;= out-&gt;length) error</span>
 <span id="L262" class="LineNr">262 </span>    39/compare                      3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare edx with ecx</span>
-<span id="L263" class="LineNr">263 </span>    7d/jump-if-lesser  $get-num:loop-stage2/disp8
+<span id="L263" class="LineNr">263 </span>    7d/jump-if-&lt;  $get-num:loop-stage2/disp8
 <span id="L264" class="LineNr">264 </span>    <span class="subxS1Comment"># . error(ed, err, msg)  # TODO: show full number</span>
 <span id="L265" class="LineNr">265 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L266" class="LineNr">266 </span>    68/push  <span class="Constant">&quot;get-num: too many digits in number&quot;</span>/imm32
@@ -355,7 +355,7 @@ if ('onhashchange' in window) {
 <span id="L294" class="LineNr">294 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L295" class="LineNr">295 </span>    <span class="subxS1Comment"># . if (eax != false) loop</span>
 <span id="L296" class="LineNr">296 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L297" class="LineNr">297 </span>    0f 85/jump-if-not-equal  $get-num:<span class="Constant">loop</span>/disp32
+<span id="L297" class="LineNr">297 </span>    0f 85/jump-if-!=  $get-num:<span class="Constant">loop</span>/disp32
 <span id="L298" class="LineNr">298 </span><span class="Constant">$get-num:loop-end</span>:
 <span id="L299" class="LineNr">299 </span>    <span class="subxComment"># persist necessary variables from registers</span>
 <span id="L300" class="LineNr">300 </span>    89/copy                         0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *edi</span>
@@ -798,10 +798,10 @@ if ('onhashchange' in window) {
 <span id="L737" class="LineNr">737 </span>    b8/copy-to-eax  0/imm32
 <span id="L738" class="LineNr">738 </span>    <span class="subxComment"># if (c &lt; '0') return false</span>
 <span id="L739" class="LineNr">739 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8         0x30/imm32        <span class="subxComment"># compare *(ebp+8)</span>
-<span id="L740" class="LineNr">740 </span>    7c/jump-if-lesser  $is-digit?:end/disp8
+<span id="L740" class="LineNr">740 </span>    7c/jump-if-&lt;  $is-digit?:end/disp8
 <span id="L741" class="LineNr">741 </span>    <span class="subxComment"># if (c &gt; '9') return false</span>
 <span id="L742" class="LineNr">742 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8         0x39/imm32        <span class="subxComment"># compare *(ebp+8)</span>
-<span id="L743" class="LineNr">743 </span>    7f/jump-if-greater  $is-digit?:end/disp8
+<span id="L743" class="LineNr">743 </span>    7f/jump-if-&gt;  $is-digit?:end/disp8
 <span id="L744" class="LineNr">744 </span>    <span class="subxComment"># otherwise return true</span>
 <span id="L745" class="LineNr">745 </span>    b8/copy-to-eax  1/imm32
 <span id="L746" class="LineNr">746 </span><span class="Constant">$is-digit?:end</span>:

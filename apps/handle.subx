@@ -69,7 +69,7 @@ new:  # ad : (addr allocation-descriptor), n : int, out : (handle _)
     89/copy                         1/mod/*+disp8   2/rm32/edx    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(edx+4)
     # if (eax == 0) out->alloc_id = 0, return
     3d/compare-eax-and  0/imm32
-    75/jump-if-not-equal  $new:continue/disp8
+    75/jump-if-!=  $new:continue/disp8
     c7          0/subop/copy        0/mod/indirect  2/rm32/edx    .           .             .           .           .               0/imm32           # copy to *edx
     eb/jump  $new:end/disp8
 $new:continue:
@@ -239,7 +239,7 @@ lookup:  # h : (handle T) -> eax : (addr T)
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # copy *eax to eax
     # if (eax != handle->alloc_id) abort
     39/compare                      1/mod/*+disp8   4/rm32/sib    4/base/esp  4/index/none  .           0/r32/eax   4/disp8         .                 # compare *(esp+4) and eax
-    75/jump-if-not-equal  $lookup:abort/disp8
+    75/jump-if-!=  $lookup:abort/disp8
     # eax = pop handle->address
     58/pop-to-eax
     # discard handle->alloc_id
@@ -254,7 +254,7 @@ lookup:  # h : (handle T) -> eax : (addr T)
 #?     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   4/disp8         .                 # copy *(eax+4) to eax
 #?     # if (ecx != *eax) abort
 #?     39/compare                      0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare *eax and ecx
-#?     75/jump-if-not-equal  $lookup:abort/disp8
+#?     75/jump-if-!=  $lookup:abort/disp8
 #?     # add 4 to eax
 #?     05/add-to-eax  4/imm32
     # - }

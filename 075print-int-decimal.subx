@@ -51,7 +51,7 @@ print-int32-decimal:  # out : (addr stream byte), n : int32
     # var eax : int = abs(n)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     3d/compare-eax-with  0/imm32
-    7d/jump-if-greater-or-equal  $print-int32-decimal:read-loop/disp8
+    7d/jump-if->=  $print-int32-decimal:read-loop/disp8
 $print-int32-decimal:negative:
     f7          3/subop/negate      3/mod/direct    0/rm32/eax    .           .             .           .           .               .                 # negate eax
 $print-int32-decimal:read-loop:
@@ -64,11 +64,11 @@ $print-int32-decimal:read-loop:
     52/push-edx
     # if (eax == 0) break
     3d/compare-eax-and  0/imm32
-    7f/jump-if-greater  $print-int32-decimal:read-loop/disp8
+    7f/jump-if->  $print-int32-decimal:read-loop/disp8
 $print-int32-decimal:read-break:
     # if (n < 0) push('-')
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       0/imm32           # compare *(ebp+12)
-    7d/jump-if-greater-or-equal  $print-int32-decimal:write/disp8
+    7d/jump-if->=  $print-int32-decimal:write/disp8
 $print-int32-decimal:push-negative:
     68/push  0x2d/imm32/-
 $print-int32-decimal:write:
@@ -86,10 +86,10 @@ $print-int32-decimal:write-loop:
     58/pop-to-eax
     # if (eax == sentinel) break
     3d/compare-eax-and  0/imm32/sentinel
-    74/jump-if-equal  $print-int32-decimal:write-break/disp8
+    74/jump-if-=  $print-int32-decimal:write-break/disp8
     # if (curr >= max) abort
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # compare ecx with ebx
-    73/jump-if-greater-or-equal-unsigned  $print-int32-decimal:abort/disp8
+    73/jump-if-addr>=  $print-int32-decimal:abort/disp8
 $print-int32-decimal:write-char:
     # *curr = AL
     88/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy AL to byte at *ecx
@@ -314,10 +314,10 @@ is-decimal-digit?:  # c : byte -> eax : boolean
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
     # return false if c < '0'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x30/imm32        # compare ecx
-    7c/jump-if-lesser  $is-decimal-digit?:false/disp8
+    7c/jump-if-<  $is-decimal-digit?:false/disp8
     # return true if c <= '9'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x39/imm32        # compare ecx
-    7e/jump-if-lesser-or-equal  $is-decimal-digit?:true/disp8
+    7e/jump-if-<=  $is-decimal-digit?:true/disp8
     # otherwise return false
 $is-decimal-digit?:false:
     b8/copy-to-eax  0/imm32/false

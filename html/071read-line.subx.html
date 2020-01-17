@@ -97,10 +97,10 @@ if ('onhashchange' in window) {
 <span id="L37" class="LineNr"> 37 </span><span class="Constant">$read-line-buffered:loop</span>:
 <span id="L38" class="LineNr"> 38 </span>    <span class="subxComment"># if (s-&gt;write &gt;= s-&gt;length) abort</span>
 <span id="L39" class="LineNr"> 39 </span>    3b/compare                      1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare edx with *(edi+8)</span>
-<span id="L40" class="LineNr"> 40 </span>    7d/jump-if-greater-or-equal  $read-line-buffered:abort/disp8
+<span id="L40" class="LineNr"> 40 </span>    7d/jump-if-&gt;=  $read-line-buffered:abort/disp8
 <span id="L41" class="LineNr"> 41 </span>    <span class="subxComment"># if (f-&gt;read &gt;= f-&gt;write) populate stream from file</span>
 <span id="L42" class="LineNr"> 42 </span>    3b/compare                      1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with *(esi+4)</span>
-<span id="L43" class="LineNr"> 43 </span>    7c/jump-if-lesser  $read-line-buffered:from-stream/disp8
+<span id="L43" class="LineNr"> 43 </span>    7c/jump-if-&lt;  $read-line-buffered:from-stream/disp8
 <span id="L44" class="LineNr"> 44 </span>    <span class="subxS1Comment"># . clear-stream(stream = f+4)</span>
 <span id="L45" class="LineNr"> 45 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L46" class="LineNr"> 46 </span>    8d/copy-address                 1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy esi+4 to eax</span>
@@ -123,7 +123,7 @@ if ('onhashchange' in window) {
 <span id="L63" class="LineNr"> 63 </span>    <span class="subxComment"># since f-&gt;read was initially 0, eax is the same as f-&gt;write</span>
 <span id="L64" class="LineNr"> 64 </span>    <span class="subxS1Comment"># . if (eax == 0) return true</span>
 <span id="L65" class="LineNr"> 65 </span>    3d/compare-eax-and  0/imm32
-<span id="L66" class="LineNr"> 66 </span>    74/jump-if-equal  $read-line-buffered:end/disp8
+<span id="L66" class="LineNr"> 66 </span>    74/jump-if-=  $read-line-buffered:end/disp8
 <span id="L67" class="LineNr"> 67 </span><span class="Constant">$read-line-buffered:from-stream</span>:
 <span id="L68" class="LineNr"> 68 </span>    <span class="subxComment"># AL = f-&gt;data[f-&gt;read]</span>
 <span id="L69" class="LineNr"> 69 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
@@ -136,7 +136,7 @@ if ('onhashchange' in window) {
 <span id="L76" class="LineNr"> 76 </span>    42/increment-edx
 <span id="L77" class="LineNr"> 77 </span>    <span class="subxComment"># if (AL == '\n') return</span>
 <span id="L78" class="LineNr"> 78 </span>    3d/compare-eax-and  0xa/imm32
-<span id="L79" class="LineNr"> 79 </span>    75/jump-if-not-equal  $read-line-buffered:<span class="Constant">loop</span>/disp8
+<span id="L79" class="LineNr"> 79 </span>    75/jump-if-!=  $read-line-buffered:<span class="Constant">loop</span>/disp8
 <span id="L80" class="LineNr"> 80 </span><span class="Constant">$read-line-buffered:end</span>:
 <span id="L81" class="LineNr"> 81 </span>    <span class="subxComment"># save f-&gt;read</span>
 <span id="L82" class="LineNr"> 82 </span>    89/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *(esi+8)</span>
@@ -306,10 +306,10 @@ if ('onhashchange' in window) {
 <span id="L246" class="LineNr">246 </span><span class="Constant">$read-line:loop</span>:
 <span id="L247" class="LineNr">247 </span>    <span class="subxComment"># if (s-&gt;write &gt;= s-&gt;length) abort</span>
 <span id="L248" class="LineNr">248 </span>    3b/compare                      1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare edx with *(edi+8)</span>
-<span id="L249" class="LineNr">249 </span>    0f 8d/jump-if-greater-or-equal  $read-line:abort/disp32
+<span id="L249" class="LineNr">249 </span>    0f 8d/jump-if-&gt;=  $read-line:abort/disp32
 <span id="L250" class="LineNr">250 </span>    <span class="subxComment"># if (f-&gt;read &gt;= f-&gt;write) break</span>
 <span id="L251" class="LineNr">251 </span>    3b/compare                      0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with *esi</span>
-<span id="L252" class="LineNr">252 </span>    7d/jump-if-greater-or-equal  $read-line:end/disp8
+<span id="L252" class="LineNr">252 </span>    7d/jump-if-&gt;=  $read-line:end/disp8
 <span id="L253" class="LineNr">253 </span>    <span class="subxComment"># AL = f-&gt;data[f-&gt;read]</span>
 <span id="L254" class="LineNr">254 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L255" class="LineNr">255 </span>    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx  <span class="Normal"> . </span>          0/r32/AL    0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *(esi+ecx+12) to AL</span>
@@ -321,7 +321,7 @@ if ('onhashchange' in window) {
 <span id="L261" class="LineNr">261 </span>    42/increment-edx
 <span id="L262" class="LineNr">262 </span>    <span class="subxComment"># if (AL == '\n') return</span>
 <span id="L263" class="LineNr">263 </span>    3d/compare-eax-and  0xa/imm32
-<span id="L264" class="LineNr">264 </span>    0f 85/jump-if-not-equal  $read-line:<span class="Constant">loop</span>/disp32
+<span id="L264" class="LineNr">264 </span>    0f 85/jump-if-!=  $read-line:<span class="Constant">loop</span>/disp32
 <span id="L265" class="LineNr">265 </span><span class="Constant">$read-line:end</span>:
 <span id="L266" class="LineNr">266 </span>    <span class="subxComment"># save f-&gt;read</span>
 <span id="L267" class="LineNr">267 </span>    89/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *(esi+4)</span>

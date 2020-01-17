@@ -26,7 +26,7 @@ clear-stack:  # s : (addr stack)
 $clear-stack:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
-    73/jump-if-greater-or-equal-unsigned  $clear-stack:end/disp8
+    73/jump-if-addr>=  $clear-stack:end/disp8
     # *curr = 0
     c6          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm8            # copy byte to *eax
     # ++curr
@@ -121,7 +121,7 @@ push:  # s : (addr stack), n : int
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     # if (s->top >= s->length) abort
     39/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare *(esi+4) and ecx
-    7e/jump-if-lesser-or-equal  $push:abort/disp8
+    7e/jump-if-<=  $push:abort/disp8
     # s->data[s->top] = n
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     89/copy                         1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/eax   8/disp8         .                 # copy eax to *(esi+ecx+8)
@@ -238,7 +238,7 @@ pop:  # s : (addr stack) -> n/eax : int
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # if (s->top <= 0) abort
     81          7/subop/compare     0/mod/indirect  6/rm32/esi    .           .             .           .           .               0/imm32           # compare *esi
-    7e/jump-if-lesser-or-equal  $pop:abort/disp8
+    7e/jump-if-<=  $pop:abort/disp8
     # s->top -= 4
     81          5/subop/subtract    0/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # subtract from *esi
     # eax = s->data[s->top]
@@ -342,7 +342,7 @@ top:  # s : (addr stack) -> n/eax : int
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # if (s->top <= 0) abort
     81          7/subop/compare     0/mod/indirect  6/rm32/esi    .           .             .           .           .               0/imm32           # compare *esi
-    7e/jump-if-lesser-or-equal  $top:abort/disp8
+    7e/jump-if-<=  $top:abort/disp8
     # n = s->data[s->top - 4]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     81          5/subop/subtract    3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # subtract from ecx

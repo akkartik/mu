@@ -62,7 +62,7 @@ $has-metadata?:loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) return false
     3d/compare-eax-and  0/imm32/false
-    75/jump-if-not-equal  $has-metadata?:false/disp8
+    75/jump-if-!=  $has-metadata?:false/disp8
     # if (slice-equal?(twig, s)) return true
     # . eax = slice-equal?(twig, s)
     # . . push args
@@ -75,7 +75,7 @@ $has-metadata?:loop:
     # . if (eax != false) return true
     3d/compare-eax-and  0/imm32/false
     # eax already contains true
-    75/jump-if-not-equal  $has-metadata?:end/disp8
+    75/jump-if-!=  $has-metadata?:end/disp8
     eb/jump  $has-metadata?:loop/disp8
 $has-metadata?:false:
     b8/copy-to-eax  0/imm32/false
@@ -289,29 +289,29 @@ is-valid-name?:  # in : (addr slice) -> eax : boolean
 $is-valid-name?:check0:
     # if (start >= in->end) return false
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare ecx with *(esi+4)
-    73/jump-if-greater-or-equal-unsigned  $is-valid-name?:false/disp8
+    73/jump-if-addr>=  $is-valid-name?:false/disp8
 $is-valid-name?:check1:
     # var len/eax : int = in->end - start
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
     # if (eax == 2) return false
     3d/compare-eax-and  2/imm32
-    74/jump-if-equal  $is-valid-name?:false/disp8
+    74/jump-if-=  $is-valid-name?:false/disp8
 $is-valid-name?:check2:
     # var c/eax : (addr byte) = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     # if (c == "-") return false
     3d/compare-eax-and  2d/imm32/-
-    74/jump-if-equal  $is-valid-name?:false/disp8
+    74/jump-if-=  $is-valid-name?:false/disp8
 $is-valid-name?:check3a:
     # if (c < "0") return true
     3d/compare-eax-with  30/imm32/0
-    7c/jump-if-lesser  $is-valid-name?:true/disp8
+    7c/jump-if-<  $is-valid-name?:true/disp8
 $is-valid-name?:check3b:
     # if (c > "9") return true
     3d/compare-eax-with  39/imm32/9
-    7f/jump-if-greater  $is-valid-name?:true/disp8
+    7f/jump-if->  $is-valid-name?:true/disp8
 $is-valid-name?:false:
     # return false
     b8/copy-to-eax  0/imm32/false
@@ -549,7 +549,7 @@ is-label?: # word : (addr slice) -> eax : boolean
     # . return (eax == ':')
     3d/compare-eax-and  0x3a/imm32/colon
     b8/copy-to-eax  1/imm32/true
-    74/jump-if-equal  $is-label?:end/disp8
+    74/jump-if-=  $is-label?:end/disp8
     b8/copy-to-eax  0/imm32/false
 $is-label?:end:
     # . restore registers

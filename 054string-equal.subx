@@ -50,7 +50,7 @@ string-equal?:  # s : (addr array byte), benchmark : (addr array byte) -> eax : 
 $string-equal?:lengths:
     # if (ecx != benchmark->length) return false
     39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # compare *edi and ecx
-    75/jump-if-not-equal  $string-equal?:false/disp8
+    75/jump-if-!=  $string-equal?:false/disp8
     # var currs/esi : (addr byte) = s->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
     # var maxs/ecx : (addr byte) = &s->data[s->length]
@@ -64,14 +64,14 @@ $string-equal?:lengths:
 $string-equal?:loop:
     # if (currs >= maxs) return true
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
-    73/jump-if-greater-or-equal-unsigned  $string-equal?:true/disp8
+    73/jump-if-addr>=  $string-equal?:true/disp8
     # c1 = *currs
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # c2 = *currb
     8a/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           2/r32/DL    .               .                 # copy byte at *edi to DL
     # if (c1 != c2) return false
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax and edx
-    75/jump-if-not-equal  $string-equal?:false/disp8
+    75/jump-if-!=  $string-equal?:false/disp8
     # ++currs
     46/increment-esi
     # ++currb

@@ -72,7 +72,7 @@ allocate:  # ad : (addr allocation-descriptor), n : int -> address-or-null/eax :
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to edx
     03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # add *(ebp+12) to edx
     3b/compare                      1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # compare edx with *(ecx+4)
-    73/jump-if-greater-or-equal-signed  $allocate:abort/disp8
+    73/jump-if->=-signed  $allocate:abort/disp8
 $allocate:commit:
     # update ad->curr
     89/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy edx to *ecx
@@ -196,7 +196,7 @@ allocate-region:  # ad : (addr allocation-descriptor), n : int -> new-ad : (hand
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if (eax == 0) abort
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $allocate-region:abort/disp8
+    74/jump-if-=  $allocate-region:abort/disp8
     # earmark 8 bytes at the start for a new allocation descriptor
     # . *eax = eax + 8
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy eax to ecx

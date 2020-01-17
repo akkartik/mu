@@ -21,7 +21,7 @@ write-stream:  # f : fd or (addr stream byte), s : (addr stream byte)
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # if (f < 0x08000000) _write-stream(f, s), return  # f can't be a user-mode address, so treat it as a kernel file descriptor
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         0x08000000/imm32  # compare *(ebp+8)
-    73/jump-if-greater-unsigned-or-equal  $write-stream:fake/disp8
+    73/jump-if-addr>=  $write-stream:fake/disp8
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
@@ -104,7 +104,7 @@ _write-stream:  # fd : int, s : (addr stream byte)
     cd/syscall  0x80/imm8
     # if (eax < 0) abort
     3d/compare-eax-with  0/imm32
-    0f 8c/jump-if-lesser  $_write-stream:abort/disp32
+    0f 8c/jump-if-<  $_write-stream:abort/disp32
     # s->read += eax
     01/add                          1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # add eax to *(esi+4)
     # . restore registers

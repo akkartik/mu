@@ -33,7 +33,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto run-main
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $subx-tests-main:interactive/disp8
+    7e/jump-if-<=  $subx-tests-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto run-main
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -45,7 +45,7 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto run-main
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-tests-main:interactive/disp8
+    74/jump-if-=  $subx-tests-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
@@ -160,7 +160,7 @@ $subx-gen-run-tests:loop:
 $subx-gen-run-tests:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $subx-gen-run-tests:break/disp32
+    0f 84/jump-if-=  $subx-gen-run-tests:break/disp32
     # next-word(line, word-slice)
     # . . push args
     52/push-edx
@@ -180,7 +180,7 @@ $subx-gen-run-tests:check-for-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) continue
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-gen-run-tests:continue/disp8
+    74/jump-if-=  $subx-gen-run-tests:continue/disp8
 $subx-gen-run-tests:check-label-prefix:
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
@@ -194,7 +194,7 @@ $subx-gen-run-tests:check-label-prefix:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) break
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-gen-run-tests:continue/disp8
+    74/jump-if-=  $subx-gen-run-tests:continue/disp8
 $subx-gen-run-tests:call-test-function:
     # tests-found? = true
     bb/copy-to-ebx  1/imm32/true
@@ -243,7 +243,7 @@ $subx-gen-run-tests:continue:
 $subx-gen-run-tests:break:
     # if (!tests-found?) goto end
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32/false     # compare ebx
-    74/jump-if-equal  $subx-gen-run-tests:end/disp8
+    74/jump-if-=  $subx-gen-run-tests:end/disp8
     # write(new-code-segment, "  c3/return\n")
     # . . push args
     68/push  "  c3/return\n"/imm32

@@ -117,7 +117,7 @@ trace:  # line : (addr array byte)
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # if (eax == 0) return
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $trace:end/disp8
+    74/jump-if-=  $trace:end/disp8
     # t->write += eax
     01/add                          0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # add eax to *edi
     # refresh ecx = t->write
@@ -335,7 +335,7 @@ trace-scan:  # line : (addr array byte) -> result/eax : boolean
 $trace-scan:loop:
     # if (Trace-stream->read >= Trace-stream->write) return false
     39/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare ecx with *(esi+4)
-    7d/jump-if-greater-or-equal  $trace-scan:false/disp8
+    7d/jump-if->=  $trace-scan:false/disp8
     # eax = next-line-matches?(Trace-stream, line)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
@@ -346,7 +346,7 @@ $trace-scan:loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if (eax == false) continue
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $trace-scan:continue/disp8
+    74/jump-if-=  $trace-scan:continue/disp8
 $trace-scan:true:
     # skip-next-line(Trace-stream)
     # . . push args
@@ -604,12 +604,12 @@ next-line-matches?:  # t : (addr stream byte), line : (addr array byte) -> resul
 $next-line-matches?:loop:
     # if (currl >= maxl) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi and ecx
-    73/jump-if-greater-or-equal-unsigned  $next-line-matches?:break/disp8
+    73/jump-if-addr>=  $next-line-matches?:break/disp8
     # if (currt >= maxt) return false
     # . eax = false
     b8/copy-to-eax  0/imm32/false
     39/compare                      3/mod/direct    7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare edi and edx
-    73/jump-if-greater-or-equal-unsigned  $next-line-matches?:end/disp8
+    73/jump-if-addr>=  $next-line-matches?:end/disp8
     # if (*currt != *currl) return false
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     31/xor                          3/mod/direct    3/rm32/eax    .           .             .           3/r32/eax   .               .                 # clear ebx
@@ -621,7 +621,7 @@ $next-line-matches?:loop:
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
     # . eax = false
     b8/copy-to-eax  0/imm32/false
-    75/jump-if-not-equal  $next-line-matches?:end/disp8
+    75/jump-if-!=  $next-line-matches?:end/disp8
     # ++currt
     47/increment-edi
     # ++currl
@@ -635,7 +635,7 @@ $next-line-matches?:break:
     3d/compare-eax-and  0xa/imm32/newline
     # . eax = false
     b8/copy-to-eax  1/imm32/true
-    74/jump-if-equal  $next-line-matches?:end/disp8
+    74/jump-if-=  $next-line-matches?:end/disp8
     b8/copy-to-eax  0/imm32/true
 $next-line-matches?:end:
     # . restore registers
@@ -771,14 +771,14 @@ skip-next-line:  # t : (addr stream byte)
 $skip-next-line:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # compare ecx and ebx
-    73/jump-if-greater-or-equal-unsigned  $skip-next-line:end/disp8
+    73/jump-if-addr>=  $skip-next-line:end/disp8
     # ++i
     42/increment-edx
     # if (*curr == '\n') break
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
     3d/compare-eax-and  0a/imm32/newline
-    74/jump-if-equal  $skip-next-line:end/disp8
+    74/jump-if-=  $skip-next-line:end/disp8
     # ++curr
     41/increment-ecx
     # loop
@@ -917,10 +917,10 @@ _append-4:  # out : (addr byte), outend : (addr byte), in : (addr byte), inend :
 $_append-4:loop:
     # if (in >= inend) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
-    73/jump-if-greater-or-equal-unsigned  $_append-4:end/disp8
+    73/jump-if-addr>=  $_append-4:end/disp8
     # if (out >= outend) abort  # just to catch test failures fast
     39/compare                      3/mod/direct    7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare edi with edx
-    73/jump-if-greater-or-equal-unsigned  $_append-4:abort/disp8
+    73/jump-if-addr>=  $_append-4:abort/disp8
     # *out = *in
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           3/r32/BL    .               .                 # copy byte at *esi to BL
     88/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *edi

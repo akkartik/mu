@@ -34,7 +34,7 @@ $next-word:check0:
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     # . if (eax < line->write) goto next check
     3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # compare eax with *esi
-    7c/jump-if-lesser  $next-word:check-for-comment/disp8
+    7c/jump-if-<  $next-word:check-for-comment/disp8
     # . return out
     c7          0/subop/copy        0/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32           # copy to *edi
     c7          0/subop/copy        1/mod/*+disp8   7/rm32/edi    .           .             .           .           4/disp8         0/imm32           # copy to *(edi+4)
@@ -50,7 +50,7 @@ $next-word:check-for-comment:
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
     # . compare
     3d/compare-eax-and  0x23/imm32/pound
-    75/jump-if-not-equal  $next-word:regular-word/disp8
+    75/jump-if-!=  $next-word:regular-word/disp8
 $next-word:comment:
     # . out->end = &line->data[line->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax

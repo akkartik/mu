@@ -102,7 +102,7 @@ if ('onhashchange' in window) {
 <span id="L42" class="LineNr"> 42 </span><span class="Constant">$array-equal?:lengths</span>:
 <span id="L43" class="LineNr"> 43 </span>    <span class="subxComment"># if (lena != b-&gt;length) return false</span>
 <span id="L44" class="LineNr"> 44 </span>    39/compare *edi 2/r32/edx
-<span id="L45" class="LineNr"> 45 </span>    75/jump-if-not-equal $array-equal?:false/disp8
+<span id="L45" class="LineNr"> 45 </span>    75/jump-if-!= $array-equal?:false/disp8
 <span id="L46" class="LineNr"> 46 </span>    <span class="subxComment"># var curra/esi : (addr byte) = a-&gt;data</span>
 <span id="L47" class="LineNr"> 47 </span>    81 0/subop/add %esi 4/imm32
 <span id="L48" class="LineNr"> 48 </span>    <span class="subxComment"># var currb/edi : (addr byte) = b-&gt;data</span>
@@ -114,14 +114,14 @@ if ('onhashchange' in window) {
 <span id="L54" class="LineNr"> 54 </span><span class="Constant">$array-equal?:loop</span>:
 <span id="L55" class="LineNr"> 55 </span>    <span class="subxComment"># if (i &gt;= lena) return true</span>
 <span id="L56" class="LineNr"> 56 </span>    39/compare %ecx 2/r32/edx
-<span id="L57" class="LineNr"> 57 </span>    7d/jump-if-greater-or-equal $array-equal?:true/disp8
+<span id="L57" class="LineNr"> 57 </span>    7d/jump-if-&gt;= $array-equal?:true/disp8
 <span id="L58" class="LineNr"> 58 </span>    <span class="subxComment"># var vala/eax : int = *curra</span>
 <span id="L59" class="LineNr"> 59 </span>    8b/-&gt; *esi 0/r32/eax
 <span id="L60" class="LineNr"> 60 </span>    <span class="subxComment"># var valb/ebx : int = *currb</span>
 <span id="L61" class="LineNr"> 61 </span>    8b/-&gt; *edi 3/r32/ebx
 <span id="L62" class="LineNr"> 62 </span>    <span class="subxComment"># if (vala != valb) return false</span>
 <span id="L63" class="LineNr"> 63 </span>    39/compare %eax 3/r32/ebx
-<span id="L64" class="LineNr"> 64 </span>    75/jump-if-not-equal $array-equal?:false/disp8
+<span id="L64" class="LineNr"> 64 </span>    75/jump-if-!= $array-equal?:false/disp8
 <span id="L65" class="LineNr"> 65 </span>    <span class="subxComment"># i += 4</span>
 <span id="L66" class="LineNr"> 66 </span>    81 0/subop/add %ecx 4/imm32
 <span id="L67" class="LineNr"> 67 </span>    <span class="subxComment"># currs += 4</span>
@@ -335,7 +335,7 @@ if ('onhashchange' in window) {
 <span id="L275" class="LineNr">275 </span><span class="Constant">$parse-array-of-ints:loop1</span>:
 <span id="L276" class="LineNr">276 </span>    <span class="subxComment"># if (curr &gt;= end) break</span>
 <span id="L277" class="LineNr">277 </span>    39/compare %ecx 2/r32/edx
-<span id="L278" class="LineNr">278 </span>    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:break1/disp8
+<span id="L278" class="LineNr">278 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:break1/disp8
 <span id="L279" class="LineNr">279 </span>    <span class="subxComment"># curr = skip-chars-matching-in-slice(curr, end, ' ')</span>
 <span id="L280" class="LineNr">280 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-in-slice(curr, end, ' ')</span>
 <span id="L281" class="LineNr">281 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -350,7 +350,7 @@ if ('onhashchange' in window) {
 <span id="L290" class="LineNr">290 </span>    89/&lt;- %ecx 0/r32/eax
 <span id="L291" class="LineNr">291 </span>    <span class="subxComment"># if (curr &gt;= end) break</span>
 <span id="L292" class="LineNr">292 </span>    39/compare %ecx 2/r32/edx
-<span id="L293" class="LineNr">293 </span>    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:break1/disp8
+<span id="L293" class="LineNr">293 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:break1/disp8
 <span id="L294" class="LineNr">294 </span>    <span class="subxComment"># curr = skip-chars-not-matching-in-slice(curr, end, ' ')</span>
 <span id="L295" class="LineNr">295 </span>    <span class="subxS1Comment"># . eax = skip-chars-not-matching-in-slice(curr, end, ' ')</span>
 <span id="L296" class="LineNr">296 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -393,7 +393,7 @@ if ('onhashchange' in window) {
 <span id="L333" class="LineNr">333 </span><span class="Constant">$parse-array-of-ints:loop2</span>:
 <span id="L334" class="LineNr">334 </span>    <span class="subxComment"># if (slice-&gt;start &gt;= end) break</span>
 <span id="L335" class="LineNr">335 </span>    39/compare *ecx 2/r32/edx
-<span id="L336" class="LineNr">336 </span>    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:end/disp8
+<span id="L336" class="LineNr">336 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:end/disp8
 <span id="L337" class="LineNr">337 </span>    <span class="subxComment"># slice-&gt;start = skip-chars-matching-in-slice(slice-&gt;start, end, ' ')</span>
 <span id="L338" class="LineNr">338 </span>    <span class="subxS1Comment"># . eax = skip-chars-matching-in-slice(slice-&gt;start, end, ' ')</span>
 <span id="L339" class="LineNr">339 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -408,7 +408,7 @@ if ('onhashchange' in window) {
 <span id="L348" class="LineNr">348 </span>    89/&lt;- *ecx 0/r32/eax
 <span id="L349" class="LineNr">349 </span>    <span class="subxComment"># if (slice-&gt;start &gt;= end) break</span>
 <span id="L350" class="LineNr">350 </span>    39/compare *ecx 2/r32/edx
-<span id="L351" class="LineNr">351 </span>    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:end/disp8
+<span id="L351" class="LineNr">351 </span>    73/jump-if-addr&gt;= $parse-array-of-ints:end/disp8
 <span id="L352" class="LineNr">352 </span>    <span class="subxComment"># slice-&gt;end = skip-chars-not-matching-in-slice(slice-&gt;start, end, ' ')</span>
 <span id="L353" class="LineNr">353 </span>    <span class="subxS1Comment"># . eax = skip-chars-not-matching-in-slice(curr, end, ' ')</span>
 <span id="L354" class="LineNr">354 </span>    <span class="subxS2Comment"># . . push args</span>

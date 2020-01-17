@@ -43,7 +43,7 @@ write-byte-buffered:  # f : (addr buffered-file), n : int
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(edi+4) to ecx
     # if (f->write >= f->length) flush and clear f's stream
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   0xc/disp8       .                 # compare ecx with *(edi+12)
-    7c/jump-if-lesser  $write-byte-buffered:to-stream/disp8
+    7c/jump-if-<  $write-byte-buffered:to-stream/disp8
     # . flush(f)
     # . . push args
     57/push-edi
@@ -218,7 +218,7 @@ append-byte:  # f : (addr stream byte), n : int
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
     # if (f->write >= f->length) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(edi+8)
-    7d/jump-if-greater-or-equal  $append-byte:abort/disp8
+    7d/jump-if->=  $append-byte:abort/disp8
 $append-byte:to-stream:
     # write to stream
     # f->data[f->write] = LSB(n)

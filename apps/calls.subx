@@ -41,7 +41,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto run-main
     81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-lesser-or-equal $subx-calls-main:interactive/disp8
+    7e/jump-if-<= $subx-calls-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto run-main
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -53,7 +53,7 @@ Entry:  # run tests if necessary, convert stdin if not
     81 0/subop/add %esp 8/imm32
     # . if (eax == false) goto run-main
     3d/compare-eax-and 0/imm32/false
-    74/jump-if-equal $subx-calls-main:interactive/disp8
+    74/jump-if-= $subx-calls-main:interactive/disp8
     # run-tests()
     e8/call run-tests/disp32
     # syscall(exit, *Num-test-failures)
@@ -136,7 +136,7 @@ $subx-calls:loop:
 $subx-calls:check0:
     # if (line->write == 0) break
     81 7/subop/compare *esi 0/imm32
-    0f 84/jump-if-equal $subx-calls:break/disp32
+    0f 84/jump-if-= $subx-calls:break/disp32
     # skip-chars-matching-whitespace(line)
     # . . push args
     56/push-esi
@@ -152,7 +152,7 @@ $subx-calls:check0:
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax == '(') goto convert-call
     3d/compare-eax-and 0x28/imm32/open-paren
-    74/jump-if-equal $subx-calls:convert-call/disp8
+    74/jump-if-= $subx-calls:convert-call/disp8
 $subx-calls:pass-through:
     # write-stream-data(out, line)
     # . . push args
@@ -270,7 +270,7 @@ $parse-line:check1:
     81 0/subop/add %esp 4/imm32
     # . if (eax != false) break
     3d/compare-eax-and 0/imm32/false
-    0f 85/jump-if-not-equal $parse-line:end/disp32
+    0f 85/jump-if-!= $parse-line:end/disp32
 #?     # dump word-slice {{{
 #?     # . write(2/stderr, "w: ")
 #?     # . . push args
@@ -380,7 +380,7 @@ emit-call:  # out : (addr buffered-file), words : (addr stream slice)
     # . ecx = words->write - 8
     8b/-> *esi 1/r32/ecx
     81 5/subop/subtract %ecx 8/imm32
-    0f 8c/jump-if-lesser $emit-call:error1/disp32
+    0f 8c/jump-if-< $emit-call:error1/disp32
     # var curr/ecx : (addr slice) = &words->data[words->write-8]
     8d/copy-address *(esi+ecx+0xc) 1/r32/ecx
     # var min/edx : (addr byte) = words->data
@@ -389,7 +389,7 @@ emit-call:  # out : (addr buffered-file), words : (addr stream slice)
 $emit-call:push-loop:
     # if (curr <= min) break
     39/compare %ecx 2/r32/edx
-    0f 8e/jump-if-lesser-or-equal $emit-call:call-instruction/disp32
+    0f 8e/jump-if-<= $emit-call:call-instruction/disp32
     # if (*curr->start in '%' '*') goto push-rm32
     # . var start/eax : (addr byte) = curr->start
     8b/-> *ecx 0/r32/eax
@@ -398,10 +398,10 @@ $emit-call:push-loop:
     81 4/subop/and %eax 0xff/imm32
     # . if (c == '%') goto push-rm32
     3d/compare-eax-and 0x25/imm32/percent
-    74/jump-if-equal $emit-call:push-rm32/disp8
+    74/jump-if-= $emit-call:push-rm32/disp8
     # . if (c == '*') goto push-rm32
     3d/compare-eax-and 0x2a/imm32/asterisk
-    74/jump-if-equal $emit-call:push-rm32/disp8
+    74/jump-if-= $emit-call:push-rm32/disp8
 $emit-call:push-imm32:
     # write-buffered(out, "68/push ")
     68/push "68/push "/imm32
@@ -824,7 +824,7 @@ $next-word-string-or-expression-without-metadata:check0:
     8b/-> *(esi+4) 1/r32/ecx
     # . if (ecx >= line->write) return out = {0, 0}
     3b/compare 1/r32/ecx *esi
-    0f 8d/jump-if-greater-or-equal $next-word-string-or-expression-without-metadata:return-eol/disp32
+    0f 8d/jump-if->= $next-word-string-or-expression-without-metadata:return-eol/disp32
 $next-word-string-or-expression-without-metadata:check-for-comment:
     # out->start = &line->data[line->read]
     8d/copy-address *(esi+ecx+0xc) 0/r32/eax
@@ -835,7 +835,7 @@ $next-word-string-or-expression-without-metadata:check-for-comment:
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax != '#') goto next check
     3d/compare-eax-and 0x23/imm32/pound
-    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:check-for-string-literal/disp8
+    75/jump-if-!= $next-word-string-or-expression-without-metadata:check-for-string-literal/disp8
 $next-word-string-or-expression-without-metadata:comment:
     # out->end = &line->data[line->write]
     8b/-> *esi 0/r32/eax
@@ -849,7 +849,7 @@ $next-word-string-or-expression-without-metadata:comment:
 $next-word-string-or-expression-without-metadata:check-for-string-literal:
     # if (line->data[line->read] != '"') goto next check
     3d/compare-eax-and 0x22/imm32/dquote
-    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:check-for-expression/disp8
+    75/jump-if-!= $next-word-string-or-expression-without-metadata:check-for-expression/disp8
 $next-word-string-or-expression-without-metadata:string-literal:
     # skip-string(line)
     # . . push args
@@ -867,14 +867,14 @@ $next-word-string-or-expression-without-metadata:string-literal:
 $next-word-string-or-expression-without-metadata:check-for-expression:
     # if (line->data[line->read] != '*') goto next check
     3d/compare-eax-and 0x2a/imm32/asterisk
-    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:check-for-end-of-call/disp8
+    75/jump-if-!= $next-word-string-or-expression-without-metadata:check-for-end-of-call/disp8
     # if (line->data[line->read + 1] == ' ') goto error1
     8a/copy-byte *(esi+ecx+0xd) 0/r32/AL
     3d/compare-eax-and 0x20/imm32/space
-    0f 84/jump-if-equal $next-word-string-or-expression-without-metadata:error1/disp32
+    0f 84/jump-if-= $next-word-string-or-expression-without-metadata:error1/disp32
     # if (line->data[line->read + 1] != '(') goto regular-word
     3d/compare-eax-and 0x28/imm32/open-paren
-    0f 85/jump-if-not-equal $next-word-string-or-expression-without-metadata:regular-word-without-metadata/disp32
+    0f 85/jump-if-!= $next-word-string-or-expression-without-metadata:regular-word-without-metadata/disp32
 $next-word-string-or-expression-without-metadata:paren:
     # skip-until-close-paren(line)
     # . . push args
@@ -889,7 +889,7 @@ $next-word-string-or-expression-without-metadata:paren:
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax != ')') goto error2
     3d/compare-eax-and 0x29/imm32/close-paren
-    0f 85/jump-if-not-equal $next-word-string-or-expression-without-metadata:error2/disp32
+    0f 85/jump-if-!= $next-word-string-or-expression-without-metadata:error2/disp32
     # ++line->read to skip ')'
     ff 0/subop/increment *(esi+4)
     # out->end = &line->data[line->read]
@@ -901,7 +901,7 @@ $next-word-string-or-expression-without-metadata:paren:
 $next-word-string-or-expression-without-metadata:check-for-end-of-call:
     # if (line->data[line->read] != ')') goto next check
     3d/compare-eax-and 0x29/imm32/close-paren
-    75/jump-if-not-equal $next-word-string-or-expression-without-metadata:regular-word-without-metadata/disp8
+    75/jump-if-!= $next-word-string-or-expression-without-metadata:regular-word-without-metadata/disp8
     # ++line->read to skip ')'
     ff 0/subop/increment *(esi+4)
     # - error checking: make sure there's nothing else of importance on the line
@@ -910,13 +910,13 @@ $next-word-string-or-expression-without-metadata:check-for-end-of-call:
     8b/-> *(esi+4) 1/r32/ecx
     # . if (ecx >= line->write) return {0, 0}
     3b/compare 1/r32/ecx *esi
-    0f 8d/jump-if-greater-or-equal $next-word-string-or-expression-without-metadata:return-eol/disp32
+    0f 8d/jump-if->= $next-word-string-or-expression-without-metadata:return-eol/disp32
     # if (line->data[line->read] == '/') goto error3
     # . eax = line->data[line->read]
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax == '/') goto error3
     3d/compare-eax-and 0x2f/imm32/slash
-    0f 84/jump-if-equal $next-word-string-or-expression-without-metadata:error3/disp32
+    0f 84/jump-if-= $next-word-string-or-expression-without-metadata:error3/disp32
     # skip-chars-matching-whitespace(line)
     # . . push args
     56/push-esi
@@ -929,14 +929,14 @@ $next-word-string-or-expression-without-metadata:check-for-end-of-call:
     8b/-> *(esi+4) 1/r32/ecx
     # . if (ecx >= line->write) return {0, 0}
     3b/compare 1/r32/ecx *esi
-    0f 8d/jump-if-greater-or-equal $next-word-string-or-expression-without-metadata:return-eol/disp32
+    0f 8d/jump-if->= $next-word-string-or-expression-without-metadata:return-eol/disp32
     # if (line->data[line->read] == '#') return out = {0, 0}
     # . eax = line->data[line->read]
     8b/-> *(esi+4) 1/r32/ecx
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax == '#') return out = {0, 0}
     3d/compare-eax-and 0x23/imm32/pound
-    74/jump-if-equal $next-word-string-or-expression-without-metadata:return-eol/disp8
+    74/jump-if-= $next-word-string-or-expression-without-metadata:return-eol/disp8
     # otherwise goto error4
     e9/jump $next-word-string-or-expression-without-metadata:error4/disp32
 $next-word-string-or-expression-without-metadata:regular-word-without-metadata:
@@ -945,20 +945,20 @@ $next-word-string-or-expression-without-metadata:regular-word-without-metadata:
     8b/-> *(esi+4) 1/r32/ecx
     # . if (ecx >= line->write) break
     3b/compare *esi 1/r32/ecx
-    7d/jump-if-greater-or-equal $next-word-string-or-expression-without-metadata:regular-word-break/disp8
+    7d/jump-if->= $next-word-string-or-expression-without-metadata:regular-word-break/disp8
     # if (line->data[line->read] == ' ') break
     # . eax = line->data[line->read]
     8b/-> *(esi+4) 1/r32/ecx
     8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
     # . if (eax == ' ') break
     3d/compare-eax-and 0x20/imm32/space
-    74/jump-if-equal $next-word-string-or-expression-without-metadata:regular-word-break/disp8
+    74/jump-if-= $next-word-string-or-expression-without-metadata:regular-word-break/disp8
     # if (line->data[line->read] == ')') break
     3d/compare-eax-and 0x29/imm32/close-paren
-    0f 84/jump-if-equal $next-word-string-or-expression-without-metadata:regular-word-break/disp32
+    0f 84/jump-if-= $next-word-string-or-expression-without-metadata:regular-word-break/disp32
     # if (line->data[line->read] == '/') goto error5
     3d/compare-eax-and 0x2f/imm32/slash
-    0f 84/jump-if-equal $next-word-string-or-expression-without-metadata:error5/disp32
+    0f 84/jump-if-= $next-word-string-or-expression-without-metadata:error5/disp32
     # ++line->read
     ff 0/subop/increment *(esi+4)
     # loop

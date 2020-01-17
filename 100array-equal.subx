@@ -42,7 +42,7 @@ array-equal?:  # a : (addr array int), b : (addr array int) -> eax : boolean
 $array-equal?:lengths:
     # if (lena != b->length) return false
     39/compare *edi 2/r32/edx
-    75/jump-if-not-equal $array-equal?:false/disp8
+    75/jump-if-!= $array-equal?:false/disp8
     # var curra/esi : (addr byte) = a->data
     81 0/subop/add %esi 4/imm32
     # var currb/edi : (addr byte) = b->data
@@ -54,14 +54,14 @@ $array-equal?:lengths:
 $array-equal?:loop:
     # if (i >= lena) return true
     39/compare %ecx 2/r32/edx
-    7d/jump-if-greater-or-equal $array-equal?:true/disp8
+    7d/jump-if->= $array-equal?:true/disp8
     # var vala/eax : int = *curra
     8b/-> *esi 0/r32/eax
     # var valb/ebx : int = *currb
     8b/-> *edi 3/r32/ebx
     # if (vala != valb) return false
     39/compare %eax 3/r32/ebx
-    75/jump-if-not-equal $array-equal?:false/disp8
+    75/jump-if-!= $array-equal?:false/disp8
     # i += 4
     81 0/subop/add %ecx 4/imm32
     # currs += 4
@@ -275,7 +275,7 @@ parse-array-of-ints:  # ad : (addr allocation-descriptor), s : (addr string) -> 
 $parse-array-of-ints:loop1:
     # if (curr >= end) break
     39/compare %ecx 2/r32/edx
-    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:break1/disp8
+    73/jump-if-addr>= $parse-array-of-ints:break1/disp8
     # curr = skip-chars-matching-in-slice(curr, end, ' ')
     # . eax = skip-chars-matching-in-slice(curr, end, ' ')
     # . . push args
@@ -290,7 +290,7 @@ $parse-array-of-ints:loop1:
     89/<- %ecx 0/r32/eax
     # if (curr >= end) break
     39/compare %ecx 2/r32/edx
-    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:break1/disp8
+    73/jump-if-addr>= $parse-array-of-ints:break1/disp8
     # curr = skip-chars-not-matching-in-slice(curr, end, ' ')
     # . eax = skip-chars-not-matching-in-slice(curr, end, ' ')
     # . . push args
@@ -333,7 +333,7 @@ $parse-array-of-ints:pass2:
 $parse-array-of-ints:loop2:
     # if (slice->start >= end) break
     39/compare *ecx 2/r32/edx
-    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:end/disp8
+    73/jump-if-addr>= $parse-array-of-ints:end/disp8
     # slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
     # . eax = skip-chars-matching-in-slice(slice->start, end, ' ')
     # . . push args
@@ -348,7 +348,7 @@ $parse-array-of-ints:loop2:
     89/<- *ecx 0/r32/eax
     # if (slice->start >= end) break
     39/compare *ecx 2/r32/edx
-    73/jump-if-greater-or-equal-unsigned $parse-array-of-ints:end/disp8
+    73/jump-if-addr>= $parse-array-of-ints:end/disp8
     # slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
     # . eax = skip-chars-not-matching-in-slice(curr, end, ' ')
     # . . push args

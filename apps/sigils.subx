@@ -68,7 +68,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $subx-sigils-main:interactive/disp8
+    7e/jump-if-<=  $subx-sigils-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -80,7 +80,7 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto interactive
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-sigils-main:interactive/disp8
+    74/jump-if-=  $subx-sigils-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
@@ -170,7 +170,7 @@ $subx-sigils:line-loop:
 $subx-sigils:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $subx-sigils:break/disp32
+    0f 84/jump-if-=  $subx-sigils:break/disp32
 $subx-sigils:word-loop:
     # next-word-or-expression(line, word-slice)
     # . . push args
@@ -191,7 +191,7 @@ $subx-sigils:check1:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $subx-sigils:next-line/disp32
+    0f 85/jump-if-!=  $subx-sigils:next-line/disp32
 $subx-sigils:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
     # . start/ebx = word-slice->start
@@ -201,11 +201,11 @@ $subx-sigils:check-for-comment:
     8a/copy-byte                    0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/AL    .               .                 # copy byte at *ebx to AL
     # . if (eax == '#') continue
     3d/compare-eax-and  0x23/imm32/hash
-    74/jump-if-equal  $subx-sigils:word-loop/disp8
+    74/jump-if-=  $subx-sigils:word-loop/disp8
 $subx-sigils:check-for-direct-mode:
     # if (!slice-starts-with?(word-slice, "%")) goto next check
     3d/compare-eax-and  0x25/imm32/percent
-    75/jump-if-not-equal  $subx-sigils:check-for-indirect-mode/disp8
+    75/jump-if-!=  $subx-sigils:check-for-indirect-mode/disp8
 $subx-sigils:direct-mode:
 #?     # dump word-slice {{{
 #?     # . write(2/stderr, "w: ")
@@ -260,7 +260,7 @@ $subx-sigils:direct-mode:
 $subx-sigils:check-for-indirect-mode:
     # if (!slice-starts-with?(word-slice, "*")) goto next check
     3d/compare-eax-and  0x2a/imm32/asterisk
-    75/jump-if-not-equal  $subx-sigils:check-for-invalid-addition/disp8
+    75/jump-if-!=  $subx-sigils:check-for-invalid-addition/disp8
     # if (!disp32-mode?(word-slice)) goto indirect mode
     # . eax = disp32-mode?(word-slice)
     # . . push args
@@ -271,7 +271,7 @@ $subx-sigils:check-for-indirect-mode:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) goto indirect mode
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-sigils:indirect-mode/disp8
+    74/jump-if-=  $subx-sigils:indirect-mode/disp8
 $subx-sigils:disp32-mode:
     # emit-indirect-mode(out, word-slice)
     # . . push args
@@ -317,11 +317,11 @@ $subx-sigils:indirect-mode:
 $subx-sigils:check-for-invalid-addition:
     # if (slice-starts-with?(word-slice, "+")) goto error1
     3d/compare-eax-and  0x2b/imm32/plus
-    74/jump-if-equal  $subx-sigils:error1/disp8
+    74/jump-if-=  $subx-sigils:error1/disp8
 $subx-sigils:check-for-invalid-left-shift:
     # if (slice-starts-with?(word-slice, "<")) goto error1
     3d/compare-eax-and  0x3c/imm32/less-than
-    74/jump-if-equal  $subx-sigils:error1/disp8
+    74/jump-if-=  $subx-sigils:error1/disp8
 $subx-sigils:regular-word:
     # write-slice-buffered(out, word-slice)
     # . . push args
@@ -1652,7 +1652,7 @@ $next-word-or-expression:check0:
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
     # . if (ecx < line->write) goto next check
     3b/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare ecx with *esi
-    7c/jump-if-lesser  $next-word-or-expression:check-for-comment/disp8
+    7c/jump-if-<  $next-word-or-expression:check-for-comment/disp8
     # . return out = {0, 0}
     c7          0/subop/copy        0/mod/direct    7/rm32/edi    .           .             .           .           .               0/imm32           # copy to *edi
     c7          0/subop/copy        1/mod/*+disp8   7/rm32/edi    .           .             .           .           4/disp8         0/imm32           # copy to *(edi+4)
@@ -1667,7 +1667,7 @@ $next-word-or-expression:check-for-comment:
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
     # . if (eax != '#') goto next check
     3d/compare-eax-and  0x23/imm32/pound
-    75/jump-if-not-equal  $next-word-or-expression:check-for-string-literal/disp8
+    75/jump-if-!=  $next-word-or-expression:check-for-string-literal/disp8
 $next-word-or-expression:comment:
     # out->end = &line->data[line->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
@@ -1681,7 +1681,7 @@ $next-word-or-expression:comment:
 $next-word-or-expression:check-for-string-literal:
     # if (line->data[line->read] != '"') goto next check
     3d/compare-eax-and  0x22/imm32/dquote
-    75/jump-if-not-equal  $next-word-or-expression:check-for-expression/disp8
+    75/jump-if-!=  $next-word-or-expression:check-for-expression/disp8
 $next-word-or-expression:string-literal:
     # skip-string(line)
     # . . push args
@@ -1695,14 +1695,14 @@ $next-word-or-expression:string-literal:
 $next-word-or-expression:check-for-expression:
     # if (line->data[line->read] != '*') goto next check
     3d/compare-eax-and  0x2a/imm32/asterisk
-    75/jump-if-not-equal  $next-word-or-expression:regular-word/disp8
+    75/jump-if-!=  $next-word-or-expression:regular-word/disp8
     # if (line->data[line->read + 1] == ' ') goto error1
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xd/disp8       .                 # copy byte at *(esi+ecx+12+1) to AL
     3d/compare-eax-and  0x20/imm32/space
-    74/jump-if-equal  $next-word-or-expression:error1/disp8
+    74/jump-if-=  $next-word-or-expression:error1/disp8
     # if (line->data[line->read + 1] != '(') goto regular word
     3d/compare-eax-and  0x28/imm32/open-paren
-    75/jump-if-not-equal  $next-word-or-expression:regular-word/disp8
+    75/jump-if-!=  $next-word-or-expression:regular-word/disp8
 $next-word-or-expression:paren:
     # skip-until-close-paren(line)
     # . . push args
@@ -1717,7 +1717,7 @@ $next-word-or-expression:paren:
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0xc/disp8       .                 # copy byte at *(esi+ecx+12) to AL
     # . if (eax != ')') goto error2
     3d/compare-eax-and  0x29/imm32/close-paren
-    75/jump-if-not-equal  $next-word-or-expression:error2/disp8
+    75/jump-if-!=  $next-word-or-expression:error2/disp8
     # skip ')'
     ff          0/subop/increment   1/mod/*+disp8   6/rm32/esi    .           .             .           .           4/disp8         .                 # increment *(esi+4)
     # fall through
@@ -2269,7 +2269,7 @@ $parse-effective-address:check-for-simple-register:
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x28/imm32/open-paren
-    74/jump-if-equal  $parse-effective-address:compound-expression/disp8
+    74/jump-if-=  $parse-effective-address:compound-expression/disp8
 $parse-effective-address:simple-register:
     # local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
     # . . push args
@@ -2335,13 +2335,13 @@ $parse-effective-address:compound-expression:
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
-    0f 84/jump-if-equal  $parse-effective-address:end/disp32
+    0f 84/jump-if-=  $parse-effective-address:end/disp32
     # if (*local-slice->start == '-') goto displacement
     3d/compare-eax-and  0x2d/imm32/minus
-    0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
+    0f 84/jump-if-=  $parse-effective-address:displacement/disp32
     # if (*local-slice->start != '+') goto error1
     3d/compare-eax-and  0x2b/imm32/plus
-    0f 85/jump-if-not-equal  $parse-effective-address:error1/disp32
+    0f 85/jump-if-!=  $parse-effective-address:error1/disp32
 $parse-effective-address:check-for-index:
     # ++local-slice->start to skip '+'
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
@@ -2385,7 +2385,7 @@ $parse-effective-address:resolve-ambiguity:
     59/pop-to-ecx
     # . if (eax == 0) goto displacement
     3d/compare-eax-and  0/imm32
-    0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
+    0f 84/jump-if-=  $parse-effective-address:displacement/disp32
 $parse-effective-address:index:
     # read register into index
     # . eax = next-register(local-slice)
@@ -2412,11 +2412,11 @@ $parse-effective-address:index:
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
-    0f 84/jump-if-equal  $parse-effective-address:end/disp32
+    0f 84/jump-if-=  $parse-effective-address:end/disp32
 $parse-effective-address:check-for-scale:
     # if (*local-slice->start != '<') goto next check
     3d/compare-eax-and  0x3c/imm32/less-than
-    75/jump-if-not-equal  $parse-effective-address:check-for-displacement/disp8
+    75/jump-if-!=  $parse-effective-address:check-for-displacement/disp8
     # ++local-slice->start to skip '<'
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
     # if (*local-slice->start != '<') goto error2
@@ -2424,7 +2424,7 @@ $parse-effective-address:check-for-scale:
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x3c/imm32/less-than
-    0f 85/jump-if-not-equal  $parse-effective-address:error2/disp32
+    0f 85/jump-if-!=  $parse-effective-address:error2/disp32
     # ++local-slice->start to skip '<'
     ff          0/subop/increment   0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # increment *esi
     # skip whitespace
@@ -2464,13 +2464,13 @@ $parse-effective-address:scale:
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
-    74/jump-if-equal  $parse-effective-address:end/disp8
+    74/jump-if-=  $parse-effective-address:end/disp8
 $parse-effective-address:check-for-displacement:
     # if (*local-slice->start not in '+' '-') goto error3
     3d/compare-eax-and  0x2b/imm32/plus
-    74/jump-if-equal  $parse-effective-address:displacement/disp8
+    74/jump-if-=  $parse-effective-address:displacement/disp8
     3d/compare-eax-and  0x2d/imm32/minus
-    74/jump-if-equal  $parse-effective-address:displacement/disp8
+    74/jump-if-=  $parse-effective-address:displacement/disp8
     e9/jump  $parse-effective-address:error3/disp32
 $parse-effective-address:displacement:
     # read integer into disp
@@ -2498,7 +2498,7 @@ $parse-effective-address:displacement:
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x29/imm32/close-paren
-    0f 85/jump-if-not-equal  $parse-effective-address:error4/disp32
+    0f 85/jump-if-!=  $parse-effective-address:error4/disp32
 $parse-effective-address:end:
     # return base in eax
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           7/r32/edi   .               .                 # copy edi to eax
@@ -3156,15 +3156,15 @@ emit-indirect-mode:  # out : (addr buffered-file), base : int, index : int, scal
 $emit-indirect-mode:check-for-ebp:
     # if (base == 5) goto emit-sib
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       5/imm32           # compare *(ebp+12)
-    74/jump-if-equal  $emit-indirect-mode:emit-sib/disp8
+    74/jump-if-=  $emit-indirect-mode:emit-sib/disp8
 $emit-indirect-mode:check-for-esp:
     # if (base == 4) goto emit-sib
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       4/imm32           # compare *(ebp+12)
-    74/jump-if-equal  $emit-indirect-mode:emit-sib/disp8
+    74/jump-if-=  $emit-indirect-mode:emit-sib/disp8
 $emit-indirect-mode:check-for-sib:
     # if (index == 4/none) goto next check
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      4/imm32           # compare *(ebp+16)
-    0f 84/jump-if-equal  $emit-indirect-mode:check-for-disp/disp32
+    0f 84/jump-if-=  $emit-indirect-mode:check-for-disp/disp32
 $emit-indirect-mode:emit-sib:
     # emit(out, "2/mod/indirect 4/rm32/sib " base "/base " index "/index " scale "/scale " disp "/disp32")
     # . write-buffered(out, "2/mod/*+disp32 4/rm32/sib ")
@@ -3243,7 +3243,7 @@ $emit-indirect-mode:emit-sib:
 $emit-indirect-mode:check-for-disp:
     # if (disp == 0) goto next check
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x18/disp8      0/imm32           # compare *(ebp+24)
-    74/jump-if-equal  $emit-indirect-mode:emit-indirect/disp8
+    74/jump-if-=  $emit-indirect-mode:emit-indirect/disp8
 $emit-indirect-mode:emit-disp:
     # emit(out, "2/mod/*+disp32 " base "/rm32 " disp "/disp32")
     # . write-buffered(out, "2/mod/*+disp32 ")
@@ -3877,7 +3877,7 @@ disp32-mode?:  # in : (addr slice) -> reg/eax : boolean
     8a/copy-byte                    0/mod/indirect  0/rm32/eax    .           .             .           0/r32/AL    .               .                 # copy byte at *eax to AL
     81          4/subop/and         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xff/imm32        # bitwise and of eax
     3d/compare-eax-and  0x28/imm32/open-paren
-    74/jump-if-equal  $disp32-mode?:false/disp8
+    74/jump-if-=  $disp32-mode?:false/disp8
 $disp32-mode?:check-for-register:
     # local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
     # . . push args
@@ -3900,7 +3900,7 @@ $disp32-mode?:check-for-register:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # if (eax != 0) return false
     3d/compare-eax-and  0/imm32
-    75/jump-if-not-equal  $disp32-mode?:false/disp8
+    75/jump-if-!=  $disp32-mode?:false/disp8
     # return true
     b8/copy-to-eax  1/imm32/true
     eb/jump  $disp32-mode?:end/disp8
@@ -3993,14 +3993,14 @@ next-hex-int:  # in : (addr slice) -> result/eax
 $next-hex-int:positive:
     # if (*curr == '+') ++curr
     3d/compare-eax-and  0x2b/imm32/+
-    75/jump-if-not-equal  $next-hex-int:negative/disp8
+    75/jump-if-!=  $next-hex-int:negative/disp8
     # . ++curr
     41/increment-ecx
     eb/jump  $next-hex-int:skip-whitespace/disp8
 $next-hex-int:negative:
     # else if (*curr == '-') ++curr, negate = true
     3d/compare-eax-and  0x2d/imm32/-
-    75/jump-if-not-equal  $next-hex-int:skip-whitespace/disp8
+    75/jump-if-!=  $next-hex-int:skip-whitespace/disp8
 $next-hex-int:need-to-negate:
     # . ++curr
     41/increment-ecx
@@ -4027,24 +4027,24 @@ $next-hex-int:initial-0:
     # . if (*curr != '0') jump to loop
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x30/imm32/0
-    75/jump-if-not-equal  $next-hex-int:loop/disp8
+    75/jump-if-!=  $next-hex-int:loop/disp8
     # . ++curr
     41/increment-ecx
 $next-hex-int:initial-0x:
     # . if (curr >= in->end) return result
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $next-hex-int:end/disp8
+    73/jump-if-addr>=  $next-hex-int:end/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x78/imm32/x
-    75/jump-if-not-equal  $next-hex-int:loop/disp8
+    75/jump-if-!=  $next-hex-int:loop/disp8
     # . ++curr
     41/increment-ecx
 $next-hex-int:loop:
     # if (curr >= in->end) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $next-hex-int:break/disp8
+    73/jump-if-addr>=  $next-hex-int:break/disp8
     # if (!is-hex-digit?(*curr)) break
     # . eax = *curr
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
@@ -4057,7 +4057,7 @@ $next-hex-int:loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) break
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $next-hex-int:break/disp8
+    74/jump-if-=  $next-hex-int:break/disp8
     # eax = from-hex-char(*curr)
     # . . copy arg to eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
@@ -4073,7 +4073,7 @@ $next-hex-int:loop:
 $next-hex-int:break:
     # if (negate?) result = -result
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32/false     # compare ebx
-    74/jump-if-equal  $next-hex-int:end/disp8
+    74/jump-if-=  $next-hex-int:end/disp8
 $next-hex-int:negate:
     f7          3/subop/negate      3/mod/direct    7/rm32/edi    .           .             .           .           .               .                 # negate edi
 $next-hex-int:end:
@@ -4410,24 +4410,24 @@ $next-positive-hex-int:initial-0:
     # . if (*curr != '0') jump to loop
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x30/imm32/0
-    75/jump-if-not-equal  $next-positive-hex-int:loop/disp8
+    75/jump-if-!=  $next-positive-hex-int:loop/disp8
     # . ++curr
     41/increment-ecx
 $next-positive-hex-int:initial-0x:
     # . if (curr >= in->end) return result
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $next-positive-hex-int:end/disp8
+    73/jump-if-addr>=  $next-positive-hex-int:end/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x78/imm32/x
-    75/jump-if-not-equal  $next-positive-hex-int:loop/disp8
+    75/jump-if-!=  $next-positive-hex-int:loop/disp8
     # . ++curr
     41/increment-ecx
 $next-positive-hex-int:loop:
     # if (curr >= in->end) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-or-equal-unsigned  $next-positive-hex-int:end/disp8
+    73/jump-if-addr>=  $next-positive-hex-int:end/disp8
     # if (!is-hex-digit?(*curr)) break
     # . eax = *curr
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
@@ -4440,7 +4440,7 @@ $next-positive-hex-int:loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) break
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $next-positive-hex-int:end/disp8
+    74/jump-if-=  $next-positive-hex-int:end/disp8
     # eax = from-hex-char(*curr)
     # . . copy arg to eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL

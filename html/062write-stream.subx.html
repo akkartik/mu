@@ -82,7 +82,7 @@ if ('onhashchange' in window) {
 <span id="L21" class="LineNr"> 21 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
 <span id="L22" class="LineNr"> 22 </span>    <span class="subxComment"># if (f &lt; 0x08000000) _write-stream(f, s), return  # f can't be a user-mode address, so treat it as a kernel file descriptor</span>
 <span id="L23" class="LineNr"> 23 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8         0x08000000/imm32  <span class="subxComment"># compare *(ebp+8)</span>
-<span id="L24" class="LineNr"> 24 </span>    73/jump-if-greater-unsigned-or-equal  $write-stream:fake/disp8
+<span id="L24" class="LineNr"> 24 </span>    73/jump-if-addr&gt;=  $write-stream:fake/disp8
 <span id="L25" class="LineNr"> 25 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L26" class="LineNr"> 26 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+12)</span>
 <span id="L27" class="LineNr"> 27 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
@@ -165,7 +165,7 @@ if ('onhashchange' in window) {
 <span id="L104" class="LineNr">104 </span>    cd/syscall  0x80/imm8
 <span id="L105" class="LineNr">105 </span>    <span class="subxComment"># if (eax &lt; 0) abort</span>
 <span id="L106" class="LineNr">106 </span>    3d/compare-eax-with  0/imm32
-<span id="L107" class="LineNr">107 </span>    0f 8c/jump-if-lesser  $_write-stream:abort/disp32
+<span id="L107" class="LineNr">107 </span>    0f 8c/jump-if-&lt;  $_write-stream:abort/disp32
 <span id="L108" class="LineNr">108 </span>    <span class="subxComment"># s-&gt;read += eax</span>
 <span id="L109" class="LineNr">109 </span>    01/add                          1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># add eax to *(esi+4)</span>
 <span id="L110" class="LineNr">110 </span>    <span class="subxS1Comment"># . restore registers</span>

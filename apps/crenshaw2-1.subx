@@ -47,7 +47,7 @@ Entry:  # run tests if necessary, call 'compile' if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto run-main
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
+    7e/jump-if-<=  $run-main/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto run-main
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -59,7 +59,7 @@ Entry:  # run tests if necessary, call 'compile' if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto run-main
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-=  $run-main/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
@@ -224,7 +224,7 @@ get-num:  # in : (addr buffered-file), out : (addr stream byte), err : fd or (ad
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false)
     3d/compare-eax-and  0/imm32/false
-    75/jump-if-not-equal  $get-num:main/disp8
+    75/jump-if-!=  $get-num:main/disp8
     # . expected(ed, err, "integer")
     # . . push args
     68/push  "integer"/imm32
@@ -255,7 +255,7 @@ $get-num:main:
 $get-num:loop:
     # if (out->write >= out->length) error
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # compare edx with ecx
-    7d/jump-if-lesser  $get-num:stage2/disp8
+    7d/jump-if-<  $get-num:stage2/disp8
     # . error(ed, err, msg)  # TODO: show full number
     # . . push args
     68/push  "get-num: too many digits in number"/imm32
@@ -543,10 +543,10 @@ is-digit?:  # c : int -> eax : boolean
     b8/copy-to-eax  0/imm32
     # if (c < '0') return false
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         0x30/imm32        # compare *(ebp+8)
-    7c/jump-if-lesser  $is-digit?:end/disp8
+    7c/jump-if-<  $is-digit?:end/disp8
     # if (c > '9') return false
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         0x39/imm32        # compare *(ebp+8)
-    7f/jump-if-greater  $is-digit?:end/disp8
+    7f/jump-if->  $is-digit?:end/disp8
     # otherwise return true
     b8/copy-to-eax  1/imm32
 $is-digit?:end:

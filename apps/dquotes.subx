@@ -36,7 +36,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run-tests()
     # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $subx-dquotes-main:interactive/disp8
+    7e/jump-if-<=  $subx-dquotes-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -48,7 +48,7 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto interactive
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-dquotes-main:interactive/disp8
+    74/jump-if-=  $subx-dquotes-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
@@ -174,7 +174,7 @@ $subx-dquotes:line-loop:
 $subx-dquotes:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $subx-dquotes:break/disp32
+    0f 84/jump-if-=  $subx-dquotes:break/disp32
 $subx-dquotes:word-loop:
     # next-word-or-string(line, word-slice)
     # . . push args
@@ -195,7 +195,7 @@ $subx-dquotes:check1:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) break
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $subx-dquotes:next-line/disp32
+    0f 85/jump-if-!=  $subx-dquotes:next-line/disp32
 $subx-dquotes:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
     # . var start/esi : (addr byte) = word-slice->start
@@ -205,11 +205,11 @@ $subx-dquotes:check-for-comment:
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # . if (c == '#') continue
     3d/compare-eax-and  0x23/imm32/hash
-    74/jump-if-equal  $subx-dquotes:word-loop/disp8
+    74/jump-if-=  $subx-dquotes:word-loop/disp8
 $subx-dquotes:check-for-string-literal:
     # if (slice-starts-with?(word-slice, '"')) continue
     3d/compare-eax-and  0x22/imm32/dquote
-    75/jump-if-not-equal  $subx-dquotes:regular-word/disp8
+    75/jump-if-!=  $subx-dquotes:regular-word/disp8
 $subx-dquotes:string-literal:
     # process-string-literal(word-slice, out, new-data-segment)
     # . . push args
@@ -925,25 +925,25 @@ $emit-string-literal-data:loop-init:
 $emit-string-literal-data:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           6/r32/esi   .               .                 # compare edx with esi
-    0f 83/jump-if-greater-or-equal-unsigned  $emit-string-literal-data:end/disp32
+    0f 83/jump-if-addr>=  $emit-string-literal-data:end/disp32
     # CL = *curr
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           1/r32/CL    .               .                 # copy byte at *edx to CL
     # if (c == '"') break
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x22/imm32/dquote # compare ecx
-    0f 84/jump-if-equal  $emit-string-literal-data:end/disp32
+    0f 84/jump-if-=  $emit-string-literal-data:end/disp32
     # if (c != '\') goto emit
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x5c/imm32/backslash  # compare ecx
-    75/jump-if-not-equal  $emit-string-literal-data:emit/disp8
+    75/jump-if-!=  $emit-string-literal-data:emit/disp8
     # ++curr
     42/increment-edx
     # if (curr >= max) break
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           6/r32/esi   .               .                 # compare edx with esi
-    0f 83/jump-if-greater-or-equal-unsigned  $emit-string-literal-data:end/disp32
+    0f 83/jump-if-addr>=  $emit-string-literal-data:end/disp32
     # c = *curr
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           1/r32/CL    .               .                 # copy byte at *edx to CL
     # if (c == 'n') c = newline
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x6e/imm32/n      # compare ecx
-    75/jump-if-not-equal  $emit-string-literal-data:emit/disp8
+    75/jump-if-!=  $emit-string-literal-data:emit/disp8
     b9/copy-to-ecx  0x0a/imm32/newline
 $emit-string-literal-data:emit:
     # append-byte-hex(out, CL)
@@ -964,7 +964,7 @@ $emit-string-literal-data:emit:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax == false) goto char-done
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $emit-string-literal-data:char-done/disp8
+    74/jump-if-=  $emit-string-literal-data:char-done/disp8
     # . write(out, "/")
     # . . push args
     68/push  Slash/imm32
@@ -996,7 +996,7 @@ $emit-string-literal-data:char-done:
     43/increment-ebx
     # if (idx < 0x40) continue
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x40/imm32        # compare ebx
-    7c/jump-if-lesser  $emit-string-literal-data:next-char/disp8
+    7c/jump-if-<  $emit-string-literal-data:next-char/disp8
     # idx = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
     # write(out, "\n")
@@ -1029,22 +1029,22 @@ is-alphanumeric?:  # c : int -> eax : boolean
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
     # if (c < '0') return false
     3d/compare-eax-with  0x30/imm32/0
-    7c/jump-if-lesser  $is-alphanumeric?:false/disp8
+    7c/jump-if-<  $is-alphanumeric?:false/disp8
     # if (c <= '9') return true
     3d/compare-eax-with  0x39/imm32/9
-    7e/jump-if-lesser-or-equal  $is-alphanumeric?:true/disp8
+    7e/jump-if-<=  $is-alphanumeric?:true/disp8
     # if (c < 'A') return false
     3d/compare-eax-with  0x41/imm32/A
-    7c/jump-if-lesser  $is-alphanumeric?:false/disp8
+    7c/jump-if-<  $is-alphanumeric?:false/disp8
     # if (c <= 'Z') return true
     3d/compare-eax-with  0x5a/imm32/Z
-    7e/jump-if-lesser-or-equal  $is-alphanumeric?:true/disp8
+    7e/jump-if-<=  $is-alphanumeric?:true/disp8
     # if (c < 'a') return false
     3d/compare-eax-with  0x61/imm32/a
-    7c/jump-if-lesser  $is-alphanumeric?:false/disp8
+    7c/jump-if-<  $is-alphanumeric?:false/disp8
     # if (c <= 'z') return true
     3d/compare-eax-with  0x7a/imm32/z
-    7e/jump-if-lesser-or-equal  $is-alphanumeric?:true/disp8
+    7e/jump-if-<=  $is-alphanumeric?:true/disp8
     # return false
 $is-alphanumeric?:false:
     b8/copy-to-eax  0/imm32/false
@@ -1420,7 +1420,7 @@ $emit-metadata:check-for-string-literal:
     # -  if (*curr == '"') curr = skip-string-in-slice(curr, end)
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x22/imm32/dquote
-    75/jump-if-not-equal  $emit-metadata:skip-datum-loop/disp8
+    75/jump-if-!=  $emit-metadata:skip-datum-loop/disp8
 $emit-metadata:skip-string-literal:
     # . eax = skip-string-in-slice(curr, end)
     # . . push args
@@ -1437,11 +1437,11 @@ $emit-metadata:skip-datum-loop:
     # - otherwise scan for '/'
     # if (curr == end) return
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx and edx
-    74/jump-if-equal  $emit-metadata:end/disp8
+    74/jump-if-=  $emit-metadata:end/disp8
     # if (*curr == '/') break
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x2f/imm32/slash
-    74/jump-if-equal  $emit-metadata:emit/disp8
+    74/jump-if-=  $emit-metadata:emit/disp8
     # ++curr
     41/increment-ecx
     eb/jump  $emit-metadata:skip-datum-loop/disp8
@@ -1799,17 +1799,17 @@ string-length-at-start-of-slice:  # curr : (addr byte), end : (addr byte) -> len
 $string-length-at-start-of-slice:loop:
     # if (curr >= end) return length
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-greater-unsigned-or-equal  $string-length-at-start-of-slice:end/disp8
+    73/jump-if-addr>=  $string-length-at-start-of-slice:end/disp8
     # c = *curr
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/BL    .               .                 # copy byte at *ecx to BL
 $string-length-at-start-of-slice:dquote:
     # if (c == '"') break
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x22/imm32/dquote # compare ebx
-    74/jump-if-equal  $string-length-at-start-of-slice:end/disp8
+    74/jump-if-=  $string-length-at-start-of-slice:end/disp8
 $string-length-at-start-of-slice:check-for-escape:
     # if (c == '\') escape next char
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x5c/imm32/backslash # compare ebx
-    75/jump-if-not-equal  $string-length-at-start-of-slice:continue/disp8
+    75/jump-if-!=  $string-length-at-start-of-slice:continue/disp8
 $string-length-at-start-of-slice:escape:
     # increment curr but not result
     41/increment-ecx

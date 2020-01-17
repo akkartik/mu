@@ -18,11 +18,11 @@ Entry:  # run tests if necessary, a REPL if not
     {
       # if (argc <= 1) break
       81 7/subop/compare *ebp 1/imm32
-      7e/jump-if-lesser-or-equal break/disp8
+      7e/jump-if-<= break/disp8
       # if (argv[1] != "test")) break
       (kernel-string-equal? *(ebp+8) "test")  # => eax
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       #
       (run-tests)
       # syscall(exit, *Num-test-failures)
@@ -84,7 +84,7 @@ repl:  # in : (addr buffered-file), out : (addr buffered-file)
       (lisp-read Stdin)  # => eax : (handle cell)
       # if (eax == 0) break
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       #
       (lisp-eval %eax)  # => eax : (handle cell)
       (lisp-print Stdout %eax)
@@ -123,7 +123,7 @@ lisp-read:  # in : (addr buffered-file) -> eax : (handle cell)
       # if (s->write == 0) return null
       {
         81 7/subop/compare *ecx 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32/eof
         eb/jump $lisp-read:end/disp8
       }

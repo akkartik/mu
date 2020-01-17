@@ -31,11 +31,11 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     {
       # if (argc <= 1) break
       81 7/subop/compare *ebp 1/imm32
-      7e/jump-if-lesser-or-equal break/disp8
+      7e/jump-if-<= break/disp8
       # if (!kernel-string-equal?(argv[1], "test")) break
       (kernel-string-equal? *(ebp+8) "test")  # => eax
       3d/compare-eax-and 0/imm32/false
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       #
       (run-tests)
       # eax = *Num-test-failures
@@ -45,7 +45,7 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     {
       # if (argc > 1) break
       81 7/subop/compare *ebp 1/imm32
-      7f/jump-if-greater break/disp8
+      7f/jump-if-> break/disp8
       # eax = factorial(5)
       (factorial 5)
       # syscall(exit, eax)
@@ -64,12 +64,12 @@ factorial:  # n : int -> int/eax
     # if (n <= 1) return 1
     81 7/subop/compare *(ebp+8) 1/imm32
     {
-      7f/jump-if-greater break/disp8
+      7f/jump-if-> break/disp8
       b8/copy-to-eax 1/imm32
     }
     # if (n > 1) return n * factorial(n-1)
     {
-      7e/jump-if-lesser-or-equal break/disp8
+      7e/jump-if-<= break/disp8
       # var ebx : int = n-1
       8b/-> *(ebp+8) 3/r32/ebx
       4b/decrement-ebx

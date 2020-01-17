@@ -16,11 +16,11 @@ main:  # args : (address array kernel-string) -> result/ebx : int
     {
       # if (argc <= 1) break
       81 7/subop/compare *esi 1/imm32
-      7e/jump-if-lesser-or-equal break/disp8
+      7e/jump-if-<= break/disp8
       # if (argv[1] != "test") break
       (kernel-string-equal? *(esi+8) "test")  # => eax
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       #
       (run-tests)
       # return *Num-test-failures

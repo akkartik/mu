@@ -35,7 +35,7 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto run-main
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $run-main/disp8
+    7e/jump-if-<=  $run-main/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto run-main
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -47,7 +47,7 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto run-main
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $run-main/disp8
+    74/jump-if-=  $run-main/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)

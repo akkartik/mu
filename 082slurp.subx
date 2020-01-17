@@ -35,10 +35,10 @@ slurp:  # f : (addr buffered-file), s : (addr stream byte)
 $slurp:loop:
     # if (s->write >= s->length) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # compare edx with *(edi+8)
-    7d/jump-if-greater-or-equal  $slurp:abort/disp8
+    7d/jump-if->=  $slurp:abort/disp8
     # if (f->read >= f->write) populate stream from file
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare ecx with *(esi+4)
-    7c/jump-if-lesser  $slurp:from-stream/disp8
+    7c/jump-if-<  $slurp:from-stream/disp8
     # . clear-stream(stream = f+4)
     # . . push args
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy esi+4 to eax
@@ -61,7 +61,7 @@ $slurp:loop:
     # since f->read was initially 0, eax is the same as f->write
     # . if (eax == 0) return true
     3d/compare-eax-and  0/imm32
-    74/jump-if-equal  $slurp:end/disp8
+    74/jump-if-=  $slurp:end/disp8
 $slurp:from-stream:
     # var c/eax : byte = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax

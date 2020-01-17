@@ -436,11 +436,11 @@ if ('onhashchange' in window) {
 <span id="L374" class="LineNr"> 374 </span>    {
 <span id="L375" class="LineNr"> 375 </span>      <span class="subxComment"># if (argc &lt;= 1) break</span>
 <span id="L376" class="LineNr"> 376 </span>      81 7/subop/compare *ebp 1/imm32
-<span id="L377" class="LineNr"> 377 </span>      7e/jump-if-lesser-or-equal <span class="Constant">break</span>/disp8
+<span id="L377" class="LineNr"> 377 </span>      7e/jump-if-&lt;= <span class="Constant">break</span>/disp8
 <span id="L378" class="LineNr"> 378 </span>      <span class="subxComment"># if (argv[1] != &quot;test&quot;) break</span>
 <span id="L379" class="LineNr"> 379 </span>      (<a href='../052kernel-string-equal.subx.html#L33'>kernel-string-equal?</a> *(ebp+8) <span class="Constant">&quot;test&quot;</span>)  <span class="subxComment"># =&gt; eax</span>
 <span id="L380" class="LineNr"> 380 </span>      3d/compare-eax-and 0/imm32
-<span id="L381" class="LineNr"> 381 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L381" class="LineNr"> 381 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L382" class="LineNr"> 382 </span>      <span class="subxComment">#</span>
 <span id="L383" class="LineNr"> 383 </span>      (run-tests)
 <span id="L384" class="LineNr"> 384 </span>      <span class="subxComment"># syscall(exit, *Num-test-failures)</span>
@@ -1042,13 +1042,13 @@ if ('onhashchange' in window) {
 <span id="L1025" class="LineNr">1025 </span>      (<a href='../071read-line.subx.html#L9'>read-line-buffered</a> *(ebp+8) %ecx)
 <span id="L1026" class="LineNr">1026 </span>      <span class="subxComment"># if (line-&gt;write == 0) break</span>
 <span id="L1027" class="LineNr">1027 </span>      81 7/subop/compare *ecx 0/imm32
-<span id="L1028" class="LineNr">1028 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L1028" class="LineNr">1028 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L1029" class="Folded">1029 </span><span class="Folded">+--  6 lines: #?       # dump line ---------------------------------------------------------------------------------------------------------------------------</span>
 <span id="L1035" class="LineNr">1035 </span>      (<a href='../085next-word-or-string.subx.html#L8'>next-word-or-string</a> %ecx %edx)
 <span id="L1036" class="LineNr">1036 </span>      <span class="subxComment"># if slice-empty?(word-slice) continue</span>
 <span id="L1037" class="LineNr">1037 </span>      (<a href='../072slice.subx.html#L9'>slice-empty?</a> %edx)
 <span id="L1038" class="LineNr">1038 </span>      3d/compare-eax-and 0/imm32
-<span id="L1039" class="LineNr">1039 </span>      0f 85/jump-if-not-equal <span class="Constant">loop</span>/disp32
+<span id="L1039" class="LineNr">1039 </span>      0f 85/jump-if-!= <span class="Constant">loop</span>/disp32
 <span id="L1040" class="LineNr">1040 </span>      <span class="subxComment"># if (*word-slice-&gt;start == &quot;#&quot;) continue</span>
 <span id="L1041" class="LineNr">1041 </span>      <span class="subxS1Comment"># . eax = *word-slice-&gt;start</span>
 <span id="L1042" class="LineNr">1042 </span>      8b/-&gt; *edx 0/r32/eax
@@ -1056,13 +1056,13 @@ if ('onhashchange' in window) {
 <span id="L1044" class="LineNr">1044 </span>      81 4/subop/and %eax 0xff/imm32
 <span id="L1045" class="LineNr">1045 </span>      <span class="subxS1Comment"># . if (eax == '#') continue</span>
 <span id="L1046" class="LineNr">1046 </span>      3d/compare-eax-and 0x23/imm32/hash
-<span id="L1047" class="LineNr">1047 </span>      0f 84/jump-if-equal <span class="Constant">loop</span>/disp32
+<span id="L1047" class="LineNr">1047 </span>      0f 84/jump-if-= <span class="Constant">loop</span>/disp32
 <span id="L1048" class="LineNr">1048 </span>      <span class="subxComment"># if (slice-equal?(word-slice, &quot;fn&quot;)) parse a function</span>
 <span id="L1049" class="LineNr">1049 </span>      {
 <span id="L1050" class="LineNr">1050 </span><span class="Constant">$parse-mu:fn</span>:
 <span id="L1051" class="LineNr">1051 </span>        (<a href='../072slice.subx.html#L91'>slice-equal?</a> %edx <span class="Constant">&quot;fn&quot;</span>)
 <span id="L1052" class="LineNr">1052 </span>        3d/compare-eax-and 0/imm32
-<span id="L1053" class="LineNr">1053 </span>        0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L1053" class="LineNr">1053 </span>        0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L1054" class="LineNr">1054 </span>        <span class="subxComment"># var new-function/eax : (handle function) = populate-mu-function(in, new-function, vars)</span>
 <span id="L1055" class="LineNr">1055 </span>        (<a href='../069allocate.subx.html#L59'>allocate</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span>)  <span class="subxComment"># =&gt; eax</span>
 <span id="L1056" class="LineNr">1056 </span>        (<a href='../080zero-out.subx.html#L8'>zero-out</a> %eax *<span class="SpecialChar"><a href='mu.subx.html#L264'>Function-size</a></span>)
@@ -1181,15 +1181,15 @@ if ('onhashchange' in window) {
 <span id="L1169" class="LineNr">1169 </span>    <span class="subxComment"># if (word-slice == '{') abort</span>
 <span id="L1170" class="LineNr">1170 </span>    (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;{&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1171" class="LineNr">1171 </span>    3d/compare-eax-and 0/imm32
-<span id="L1172" class="LineNr">1172 </span>    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+<span id="L1172" class="LineNr">1172 </span>    0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
 <span id="L1173" class="LineNr">1173 </span>    <span class="subxComment"># if (word-slice == '-&gt;') abort</span>
 <span id="L1174" class="LineNr">1174 </span>    (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;-&gt;&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1175" class="LineNr">1175 </span>    3d/compare-eax-and 0/imm32
-<span id="L1176" class="LineNr">1176 </span>    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+<span id="L1176" class="LineNr">1176 </span>    0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
 <span id="L1177" class="LineNr">1177 </span>    <span class="subxComment"># if (word-slice == '}') abort</span>
 <span id="L1178" class="LineNr">1178 </span>    (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;}&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1179" class="LineNr">1179 </span>    3d/compare-eax-and 0/imm32
-<span id="L1180" class="LineNr">1180 </span>    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+<span id="L1180" class="LineNr">1180 </span>    0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
 <span id="L1181" class="LineNr">1181 </span>    <span class="subxComment"># save function name</span>
 <span id="L1182" class="LineNr">1182 </span>    (<a href='../072slice.subx.html#L1015'>slice-to-string</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L1183" class="LineNr">1183 </span>    89/&lt;- *edi 0/r32/eax  <span class="subxComment"># Function-name</span>
@@ -1202,21 +1202,21 @@ if ('onhashchange' in window) {
 <span id="L1190" class="LineNr">1190 </span>      <span class="subxComment"># if (word-slice == '{') goto done</span>
 <span id="L1191" class="LineNr">1191 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;{&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1192" class="LineNr">1192 </span>      3d/compare-eax-and 0/imm32
-<span id="L1193" class="LineNr">1193 </span>      0f 85/jump-if-not-equal $populate-mu-function-header:done/disp32
+<span id="L1193" class="LineNr">1193 </span>      0f 85/jump-if-!= $populate-mu-function-header:done/disp32
 <span id="L1194" class="LineNr">1194 </span>      <span class="subxComment"># if (word-slice == '-&gt;') break</span>
 <span id="L1195" class="LineNr">1195 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;-&gt;&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1196" class="LineNr">1196 </span>      3d/compare-eax-and 0/imm32
-<span id="L1197" class="LineNr">1197 </span>      0f 85/jump-if-not-equal <span class="Constant">break</span>/disp32
+<span id="L1197" class="LineNr">1197 </span>      0f 85/jump-if-!= <span class="Constant">break</span>/disp32
 <span id="L1198" class="LineNr">1198 </span>      <span class="subxComment"># if (word-slice == '}') abort</span>
 <span id="L1199" class="LineNr">1199 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;}&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1200" class="LineNr">1200 </span>      3d/compare-eax-and 0/imm32
-<span id="L1201" class="LineNr">1201 </span>      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+<span id="L1201" class="LineNr">1201 </span>      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
 <span id="L1202" class="LineNr">1202 </span>      <span class="subxComment"># var v/ebx : (handle var) = parse-var-with-type(word-slice, first-line)</span>
 <span id="L1203" class="LineNr">1203 </span>      (<a href='mu.subx.html#L1464'>parse-var-with-type</a> %ecx *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
 <span id="L1204" class="LineNr">1204 </span>      89/&lt;- %ebx 0/r32/eax
 <span id="L1205" class="LineNr">1205 </span>      <span class="subxComment"># assert(v-&gt;register == null)</span>
 <span id="L1206" class="LineNr">1206 </span>      81 7/subop/compare *(ebx+0x10) 0/imm32  <span class="subxComment"># Var-register</span>
-<span id="L1207" class="LineNr">1207 </span>      0f 85/jump-if-not-equal $populate-mu-function-header:error2/disp32
+<span id="L1207" class="LineNr">1207 </span>      0f 85/jump-if-!= $populate-mu-function-header:error2/disp32
 <span id="L1208" class="LineNr">1208 </span>      <span class="subxComment"># v-&gt;stack-offset = next-offset</span>
 <span id="L1209" class="LineNr">1209 </span>      89/&lt;- *(ebx+0xc) 2/r32/edx  <span class="subxComment"># Var-stack-offset</span>
 <span id="L1210" class="LineNr">1210 </span>      <span class="subxComment"># next-offset += size-of(v)</span>
@@ -1236,21 +1236,21 @@ if ('onhashchange' in window) {
 <span id="L1224" class="LineNr">1224 </span>      <span class="subxComment"># if (word-slice == '{') break</span>
 <span id="L1225" class="LineNr">1225 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;{&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1226" class="LineNr">1226 </span>      3d/compare-eax-and 0/imm32
-<span id="L1227" class="LineNr">1227 </span>      0f 85/jump-if-not-equal <span class="Constant">break</span>/disp32
+<span id="L1227" class="LineNr">1227 </span>      0f 85/jump-if-!= <span class="Constant">break</span>/disp32
 <span id="L1228" class="LineNr">1228 </span>      <span class="subxComment"># if (word-slice == '-&gt;') abort</span>
 <span id="L1229" class="LineNr">1229 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;-&gt;&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1230" class="LineNr">1230 </span>      3d/compare-eax-and 0/imm32
-<span id="L1231" class="LineNr">1231 </span>      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+<span id="L1231" class="LineNr">1231 </span>      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
 <span id="L1232" class="LineNr">1232 </span>      <span class="subxComment"># if (word-slice == '}') abort</span>
 <span id="L1233" class="LineNr">1233 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;}&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1234" class="LineNr">1234 </span>      3d/compare-eax-and 0/imm32
-<span id="L1235" class="LineNr">1235 </span>      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+<span id="L1235" class="LineNr">1235 </span>      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
 <span id="L1236" class="LineNr">1236 </span>      <span class="subxComment">#</span>
 <span id="L1237" class="LineNr">1237 </span>      (<a href='mu.subx.html#L1464'>parse-var-with-type</a> %ecx *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
 <span id="L1238" class="LineNr">1238 </span>      89/&lt;- %ebx 0/r32/eax
 <span id="L1239" class="LineNr">1239 </span>      <span class="subxComment"># assert(var-&gt;register != null)</span>
 <span id="L1240" class="LineNr">1240 </span>      81 7/subop/compare *(ebx+0x10) 0/imm32  <span class="subxComment"># Var-register</span>
-<span id="L1241" class="LineNr">1241 </span>      0f 84/jump-if-equal $populate-mu-function-header:error3/disp32
+<span id="L1241" class="LineNr">1241 </span>      0f 84/jump-if-= $populate-mu-function-header:error3/disp32
 <span id="L1242" class="LineNr">1242 </span>      (<a href='mu.subx.html#L3128'>append-list</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> %ebx *(edi+0xc))  <span class="subxComment"># Function-outputs =&gt; eax</span>
 <span id="L1243" class="LineNr">1243 </span>      89/&lt;- *(edi+0xc) 0/r32/eax  <span class="subxComment"># Function-outputs</span>
 <span id="L1244" class="LineNr">1244 </span>      e9/jump <span class="Constant">loop</span>/disp32
@@ -1534,7 +1534,7 @@ if ('onhashchange' in window) {
 <span id="L1522" class="LineNr">1522 </span>      8a/copy-byte *eax 3/r32/BL
 <span id="L1523" class="LineNr">1523 </span>      81 4/subop/and %ebx 0xff/imm32
 <span id="L1524" class="LineNr">1524 </span>      81 7/subop/compare %ebx 0x3a/imm32/colon
-<span id="L1525" class="LineNr">1525 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1525" class="LineNr">1525 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L1526" class="LineNr">1526 </span>      89/&lt;- *(ecx+4) 0/r32/eax
 <span id="L1527" class="LineNr">1527 </span>    }
 <span id="L1528" class="LineNr">1528 </span>    <span class="subxS1Comment"># . if s ends with ',', decrement s-&gt;end</span>
@@ -1544,7 +1544,7 @@ if ('onhashchange' in window) {
 <span id="L1532" class="LineNr">1532 </span>      8a/copy-byte *eax 3/r32/BL
 <span id="L1533" class="LineNr">1533 </span>      81 4/subop/and %ebx 0xff/imm32
 <span id="L1534" class="LineNr">1534 </span>      81 7/subop/compare %ebx 0x2c/imm32/comma
-<span id="L1535" class="LineNr">1535 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1535" class="LineNr">1535 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L1536" class="LineNr">1536 </span>      89/&lt;- *(ecx+4) 0/r32/eax
 <span id="L1537" class="LineNr">1537 </span>    }
 <span id="L1538" class="LineNr">1538 </span><span class="Constant">$parse-var-with-type:write-name</span>:
@@ -1560,7 +1560,7 @@ if ('onhashchange' in window) {
 <span id="L1548" class="LineNr">1548 </span>      8a/copy-byte *eax 3/r32/BL
 <span id="L1549" class="LineNr">1549 </span>      81 4/subop/and %ebx 0xff/imm32
 <span id="L1550" class="LineNr">1550 </span>      81 7/subop/compare %ebx 0x3a/imm32/colon
-<span id="L1551" class="LineNr">1551 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1551" class="LineNr">1551 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L1552" class="LineNr">1552 </span>      89/&lt;- *(ecx+4) 0/r32/eax
 <span id="L1553" class="LineNr">1553 </span>    }
 <span id="L1554" class="LineNr">1554 </span>    <span class="subxS1Comment"># . if s ends with ',', decrement s-&gt;end</span>
@@ -1570,7 +1570,7 @@ if ('onhashchange' in window) {
 <span id="L1558" class="LineNr">1558 </span>      8a/copy-byte *eax 3/r32/BL
 <span id="L1559" class="LineNr">1559 </span>      81 4/subop/and %ebx 0xff/imm32
 <span id="L1560" class="LineNr">1560 </span>      81 7/subop/compare %ebx 0x2c/imm32/comma
-<span id="L1561" class="LineNr">1561 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1561" class="LineNr">1561 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L1562" class="LineNr">1562 </span>      89/&lt;- *(ecx+4) 0/r32/eax
 <span id="L1563" class="LineNr">1563 </span>    }
 <span id="L1564" class="LineNr">1564 </span>    <span class="subxComment"># if (!slice-empty?(s)) v-&gt;register = slice-to-string(s)</span>
@@ -1580,7 +1580,7 @@ if ('onhashchange' in window) {
 <span id="L1568" class="LineNr">1568 </span>      <span class="subxComment"># That's probably a sign we have the wrong algorithm for this function.</span>
 <span id="L1569" class="LineNr">1569 </span>      8b/-&gt; *ecx 0/r32/eax
 <span id="L1570" class="LineNr">1570 </span>      39/compare 0/r32/eax *(ecx+4)
-<span id="L1571" class="LineNr">1571 </span>      76/jump-if-lesser-or-equal <span class="Constant">break</span>/disp8
+<span id="L1571" class="LineNr">1571 </span>      76/jump-if-&lt;= <span class="Constant">break</span>/disp8
 <span id="L1572" class="LineNr">1572 </span>      (<a href='../072slice.subx.html#L1015'>slice-to-string</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> %ecx)
 <span id="L1573" class="LineNr">1573 </span>      89/&lt;- *(edi+0x10) 0/r32/eax  <span class="subxComment"># Var-register</span>
 <span id="L1574" class="LineNr">1574 </span>    }
@@ -1589,33 +1589,33 @@ if ('onhashchange' in window) {
 <span id="L1577" class="LineNr">1577 </span>    <span class="subxComment"># if (word-slice == '{') abort</span>
 <span id="L1578" class="LineNr">1578 </span>    (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;{&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1579" class="LineNr">1579 </span>    3d/compare-eax-and 0/imm32
-<span id="L1580" class="LineNr">1580 </span>    0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+<span id="L1580" class="LineNr">1580 </span>    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
 <span id="L1581" class="LineNr">1581 </span>    <span class="subxComment"># if (word-slice == '-&gt;') abort</span>
 <span id="L1582" class="LineNr">1582 </span>    (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;-&gt;&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1583" class="LineNr">1583 </span>    3d/compare-eax-and 0/imm32
-<span id="L1584" class="LineNr">1584 </span>    0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+<span id="L1584" class="LineNr">1584 </span>    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
 <span id="L1585" class="LineNr">1585 </span>    <span class="subxComment"># if (word-slice == '}') abort</span>
 <span id="L1586" class="LineNr">1586 </span>    (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;}&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1587" class="LineNr">1587 </span>    3d/compare-eax-and 0/imm32
-<span id="L1588" class="LineNr">1588 </span>    0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+<span id="L1588" class="LineNr">1588 </span>    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
 <span id="L1589" class="LineNr">1589 </span>    <span class="subxComment"># if (slice-empty?(type)) skip</span>
 <span id="L1590" class="LineNr">1590 </span>    (<a href='../072slice.subx.html#L9'>slice-empty?</a> %ecx)
 <span id="L1591" class="LineNr">1591 </span>    {
 <span id="L1592" class="LineNr">1592 </span>      3d/compare-eax-and 0/imm32
-<span id="L1593" class="LineNr">1593 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L1593" class="LineNr">1593 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L1594" class="LineNr">1594 </span>      (<a href='mu.subx.html#L1640'>next-mu-token</a> *(ebp+0xc) %ecx)
 <span id="L1595" class="LineNr">1595 </span>      <span class="subxComment"># if (word-slice == '{') abort</span>
 <span id="L1596" class="LineNr">1596 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;{&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1597" class="LineNr">1597 </span>      3d/compare-eax-and 0/imm32
-<span id="L1598" class="LineNr">1598 </span>      0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+<span id="L1598" class="LineNr">1598 </span>      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
 <span id="L1599" class="LineNr">1599 </span>      <span class="subxComment"># if (word-slice == '-&gt;') abort</span>
 <span id="L1600" class="LineNr">1600 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;-&gt;&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1601" class="LineNr">1601 </span>      3d/compare-eax-and 0/imm32
-<span id="L1602" class="LineNr">1602 </span>      0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+<span id="L1602" class="LineNr">1602 </span>      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
 <span id="L1603" class="LineNr">1603 </span>      <span class="subxComment"># if (word-slice == '}') abort</span>
 <span id="L1604" class="LineNr">1604 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;}&quot;</span>)   <span class="subxComment"># =&gt; eax</span>
 <span id="L1605" class="LineNr">1605 </span>      3d/compare-eax-and 0/imm32
-<span id="L1606" class="LineNr">1606 </span>      0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+<span id="L1606" class="LineNr">1606 </span>      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
 <span id="L1607" class="LineNr">1607 </span>    }
 <span id="L1608" class="LineNr">1608 </span>    (<a href='mu.subx.html#L1681'>type-for</a> %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L1609" class="LineNr">1609 </span>    89/&lt;- *(edi+4) 0/r32/eax  <span class="subxComment"># Var-type</span>
@@ -1667,7 +1667,7 @@ if ('onhashchange' in window) {
 <span id="L1655" class="LineNr">1655 </span>      8a/copy-byte *eax 3/r32/BL
 <span id="L1656" class="LineNr">1656 </span>      81 4/subop/and %ebx 0xff/imm32
 <span id="L1657" class="LineNr">1657 </span>      81 7/subop/compare %ebx 0x3a/imm32/colon
-<span id="L1658" class="LineNr">1658 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1658" class="LineNr">1658 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L1659" class="LineNr">1659 </span>      89/&lt;- *(edi+4) 0/r32/eax
 <span id="L1660" class="LineNr">1660 </span>    }
 <span id="L1661" class="LineNr">1661 </span>    <span class="subxComment"># if out ends with ',', decrement out-&gt;end</span>
@@ -1677,7 +1677,7 @@ if ('onhashchange' in window) {
 <span id="L1665" class="LineNr">1665 </span>      8a/copy-byte *eax 3/r32/BL
 <span id="L1666" class="LineNr">1666 </span>      81 4/subop/and %ebx 0xff/imm32
 <span id="L1667" class="LineNr">1667 </span>      81 7/subop/compare %ebx 0x2c/imm32/comma
-<span id="L1668" class="LineNr">1668 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1668" class="LineNr">1668 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L1669" class="LineNr">1669 </span>      89/&lt;- *(edi+4) 0/r32/eax
 <span id="L1670" class="LineNr">1670 </span>    }
 <span id="L1671" class="LineNr">1671 </span><span class="Constant">$next-mu-token:end</span>:
@@ -1734,14 +1734,14 @@ if ('onhashchange' in window) {
 <span id="L1722" class="LineNr">1722 </span>      <span class="subxComment"># if (curr &gt;= max) return -1</span>
 <span id="L1723" class="LineNr">1723 </span>      39/compare %edx 3/r32/ebx
 <span id="L1724" class="LineNr">1724 </span>      {
-<span id="L1725" class="LineNr">1725 </span>        72/jump-if-lesser-unsigned <span class="Constant">break</span>/disp8
+<span id="L1725" class="LineNr">1725 </span>        72/jump-if-addr&lt; <span class="Constant">break</span>/disp8
 <span id="L1726" class="LineNr">1726 </span>        b8/copy-to-eax 1/imm32
 <span id="L1727" class="LineNr">1727 </span>        eb/jump $pos-slice:end/disp8
 <span id="L1728" class="LineNr">1728 </span>      }
 <span id="L1729" class="LineNr">1729 </span>      <span class="subxComment"># if (slice-equal?(s, *curr)) break</span>
 <span id="L1730" class="LineNr">1730 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> *(ebp+0xc) *edx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L1731" class="LineNr">1731 </span>      3d/compare-eax-and 0/imm32
-<span id="L1732" class="LineNr">1732 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L1732" class="LineNr">1732 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L1733" class="LineNr">1733 </span>      <span class="subxComment"># ++index</span>
 <span id="L1734" class="LineNr">1734 </span>      41/increment-ecx
 <span id="L1735" class="LineNr">1735 </span>      <span class="subxComment"># curr += 4</span>
@@ -1913,7 +1913,7 @@ if ('onhashchange' in window) {
 <span id="L1901" class="LineNr">1901 </span>    <span class="subxComment"># if (slice-empty?(in)) return false</span>
 <span id="L1902" class="LineNr">1902 </span>    (<a href='../072slice.subx.html#L9'>slice-empty?</a> *(ebp+8))  <span class="subxComment"># =&gt; eax</span>
 <span id="L1903" class="LineNr">1903 </span>    3d/compare-eax-and 0/imm32
-<span id="L1904" class="LineNr">1904 </span>    75/jump-if-not-equal $is-identifier?:false/disp8
+<span id="L1904" class="LineNr">1904 </span>    75/jump-if-!= $is-identifier?:false/disp8
 <span id="L1905" class="LineNr">1905 </span>    <span class="subxComment"># var c/eax : byte = *in-&gt;start</span>
 <span id="L1906" class="LineNr">1906 </span>    8b/-&gt; *(ebp+8) 0/r32/eax
 <span id="L1907" class="LineNr">1907 </span>    8b/-&gt; *eax 0/r32/eax
@@ -1921,18 +1921,18 @@ if ('onhashchange' in window) {
 <span id="L1909" class="LineNr">1909 </span>    81 4/subop/and %eax 0xff/imm32
 <span id="L1910" class="LineNr">1910 </span>    <span class="subxComment"># if (c == '$') return true</span>
 <span id="L1911" class="LineNr">1911 </span>    3d/compare-eax-and 0x24/imm32/$
-<span id="L1912" class="LineNr">1912 </span>    74/jump-if-equal $is-identifier?:true/disp8
+<span id="L1912" class="LineNr">1912 </span>    74/jump-if-= $is-identifier?:true/disp8
 <span id="L1913" class="LineNr">1913 </span>    <span class="subxComment"># if (c == '_') return true</span>
 <span id="L1914" class="LineNr">1914 </span>    3d/compare-eax-and 0x5f/imm32/_
-<span id="L1915" class="LineNr">1915 </span>    74/jump-if-equal $is-identifier?:true/disp8
+<span id="L1915" class="LineNr">1915 </span>    74/jump-if-= $is-identifier?:true/disp8
 <span id="L1916" class="LineNr">1916 </span>    <span class="subxComment"># drop case</span>
 <span id="L1917" class="LineNr">1917 </span>    25/and-eax-with 0x5f/imm32
 <span id="L1918" class="LineNr">1918 </span>    <span class="subxComment"># if (c &lt; 'A') return false</span>
 <span id="L1919" class="LineNr">1919 </span>    3d/compare-eax-and 0x41/imm32/A
-<span id="L1920" class="LineNr">1920 </span>    7c/jump-if-lesser $is-identifier?:false/disp8
+<span id="L1920" class="LineNr">1920 </span>    7c/jump-if-&lt; $is-identifier?:false/disp8
 <span id="L1921" class="LineNr">1921 </span>    <span class="subxComment"># if (c &gt; 'Z') return false</span>
 <span id="L1922" class="LineNr">1922 </span>    3d/compare-eax-and 0x5a/imm32/Z
-<span id="L1923" class="LineNr">1923 </span>    7f/jump-if-greater $is-identifier?:false/disp8
+<span id="L1923" class="LineNr">1923 </span>    7f/jump-if-&gt; $is-identifier?:false/disp8
 <span id="L1924" class="LineNr">1924 </span>    <span class="subxComment"># otherwise return true</span>
 <span id="L1925" class="LineNr">1925 </span><span class="Constant">$is-identifier?:true</span>:
 <span id="L1926" class="LineNr">1926 </span>    b8/copy-to-eax 1/imm32/true
@@ -2294,7 +2294,7 @@ if ('onhashchange' in window) {
 <span id="L2282" class="LineNr">2282 </span><span class="CommentedCode">#?       (flush Stderr)</span>
 <span id="L2283" class="LineNr">2283 </span>      <span class="subxComment"># if (line-&gt;write == 0) break</span>
 <span id="L2284" class="LineNr">2284 </span>      81 7/subop/compare *ecx 0/imm32
-<span id="L2285" class="LineNr">2285 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L2285" class="LineNr">2285 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L2286" class="LineNr">2286 </span>      <span class="subxComment"># word-slice = next-word(line)</span>
 <span id="L2287" class="LineNr">2287 </span>      (<a href='../076next-word.subx.html#L10'>next-word</a> %ecx %edx)
 <span id="L2288" class="LineNr">2288 </span><span class="CommentedCode">#?       (write-buffered Stderr &quot;word: &quot;)</span>
@@ -2304,7 +2304,7 @@ if ('onhashchange' in window) {
 <span id="L2292" class="LineNr">2292 </span>      <span class="subxComment"># if slice-empty?(word-slice) continue</span>
 <span id="L2293" class="LineNr">2293 </span>      (<a href='../072slice.subx.html#L9'>slice-empty?</a> %edx)
 <span id="L2294" class="LineNr">2294 </span>      3d/compare-eax-and 0/imm32
-<span id="L2295" class="LineNr">2295 </span>      0f 85/jump-if-not-equal <span class="Constant">loop</span>/disp32
+<span id="L2295" class="LineNr">2295 </span>      0f 85/jump-if-!= <span class="Constant">loop</span>/disp32
 <span id="L2296" class="LineNr">2296 </span>      <span class="subxComment"># if (slice-starts-with?(word-slice, '#') continue</span>
 <span id="L2297" class="LineNr">2297 </span>      <span class="subxS1Comment"># . eax = *word-slice-&gt;start</span>
 <span id="L2298" class="LineNr">2298 </span>      8b/-&gt; *edx 0/r32/eax
@@ -2312,13 +2312,13 @@ if ('onhashchange' in window) {
 <span id="L2300" class="LineNr">2300 </span>      81 4/subop/and %eax 0xff/imm32
 <span id="L2301" class="LineNr">2301 </span>      <span class="subxS1Comment"># . if (eax == '#') continue</span>
 <span id="L2302" class="LineNr">2302 </span>      3d/compare-eax-and 0x23/imm32/hash
-<span id="L2303" class="LineNr">2303 </span>      0f 84/jump-if-equal <span class="Constant">loop</span>/disp32
+<span id="L2303" class="LineNr">2303 </span>      0f 84/jump-if-= <span class="Constant">loop</span>/disp32
 <span id="L2304" class="LineNr">2304 </span>      <span class="subxComment"># if slice-equal?(word-slice, &quot;{&quot;)</span>
 <span id="L2305" class="LineNr">2305 </span>      {
 <span id="L2306" class="LineNr">2306 </span><span class="Constant">$parse-mu-block:check-for-block</span>:
 <span id="L2307" class="LineNr">2307 </span>        (<a href='../072slice.subx.html#L91'>slice-equal?</a> %edx <span class="Constant">&quot;{&quot;</span>)
 <span id="L2308" class="LineNr">2308 </span>        3d/compare-eax-and 0/imm32
-<span id="L2309" class="LineNr">2309 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L2309" class="LineNr">2309 </span>        74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L2310" class="LineNr">2310 </span>        (<a href='mu.subx.html#L2381'>check-no-tokens-left</a> %ecx)
 <span id="L2311" class="LineNr">2311 </span>        <span class="subxComment"># parse new block and append</span>
 <span id="L2312" class="LineNr">2312 </span>        (<a href='mu.subx.html#L2220'>parse-mu-block</a> *(ebp+8) *(ebp+0xc) *(ebp+0x10))  <span class="subxComment"># =&gt; eax</span>
@@ -2329,7 +2329,7 @@ if ('onhashchange' in window) {
 <span id="L2317" class="LineNr">2317 </span><span class="Constant">$parse-mu-block:check-for-end</span>:
 <span id="L2318" class="LineNr">2318 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %edx <span class="Constant">&quot;}&quot;</span>)
 <span id="L2319" class="LineNr">2319 </span>      3d/compare-eax-and 0/imm32
-<span id="L2320" class="LineNr">2320 </span>      0f 85/jump-if-not-equal <span class="Constant">break</span>/disp32
+<span id="L2320" class="LineNr">2320 </span>      0f 85/jump-if-!= <span class="Constant">break</span>/disp32
 <span id="L2321" class="LineNr">2321 </span>      <span class="subxComment"># if slice-ends-with?(word-slice, &quot;:&quot;) parse named block and append</span>
 <span id="L2322" class="LineNr">2322 </span>      {
 <span id="L2323" class="LineNr">2323 </span><span class="Constant">$parse-mu-block:check-for-named-block</span>:
@@ -2339,7 +2339,7 @@ if ('onhashchange' in window) {
 <span id="L2327" class="LineNr">2327 </span>        81 4/subop/and %eax 0xff/imm32
 <span id="L2328" class="LineNr">2328 </span>        <span class="subxS1Comment"># . if (eax != ':') break</span>
 <span id="L2329" class="LineNr">2329 </span>        3d/compare-eax-and 0x23/imm32/hash
-<span id="L2330" class="LineNr">2330 </span>        0f 85/jump-if-not-equal <span class="Constant">break</span>/disp32
+<span id="L2330" class="LineNr">2330 </span>        0f 85/jump-if-!= <span class="Constant">break</span>/disp32
 <span id="L2331" class="LineNr">2331 </span>        <span class="subxComment">#</span>
 <span id="L2332" class="LineNr">2332 </span>        (<a href='mu.subx.html#L2428'>parse-mu-named-block</a> %edx %ecx *(ebp+8) *(ebp+0xc) *(ebp+0x10))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2333" class="LineNr">2333 </span>        (<a href='mu.subx.html#L3164'>append-to-block</a> %edi %eax)
@@ -2350,7 +2350,7 @@ if ('onhashchange' in window) {
 <span id="L2338" class="LineNr">2338 </span><span class="Constant">$parse-mu-block:check-for-var</span>:
 <span id="L2339" class="LineNr">2339 </span>        (<a href='../072slice.subx.html#L91'>slice-equal?</a> %edx <span class="Constant">&quot;var&quot;</span>)
 <span id="L2340" class="LineNr">2340 </span>        3d/compare-eax-and 0/imm32
-<span id="L2341" class="LineNr">2341 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L2341" class="LineNr">2341 </span>        74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L2342" class="LineNr">2342 </span>        <span class="subxComment">#</span>
 <span id="L2343" class="LineNr">2343 </span>        (<a href='mu.subx.html#L2472'>parse-mu-var-def</a> %ecx *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2344" class="LineNr">2344 </span>        (<a href='mu.subx.html#L3164'>append-to-block</a> %edi %eax)
@@ -2406,7 +2406,7 @@ if ('onhashchange' in window) {
 <span id="L2394" class="LineNr">2394 </span>    <span class="subxComment"># if slice-empty?(s) return</span>
 <span id="L2395" class="LineNr">2395 </span>    (<a href='../072slice.subx.html#L9'>slice-empty?</a> %ecx)
 <span id="L2396" class="LineNr">2396 </span>    3d/compare-eax-and 0/imm32
-<span id="L2397" class="LineNr">2397 </span>    75/jump-if-not-equal $check-no-tokens-left:end/disp8
+<span id="L2397" class="LineNr">2397 </span>    75/jump-if-!= $check-no-tokens-left:end/disp8
 <span id="L2398" class="LineNr">2398 </span>    <span class="subxComment"># if (slice-starts-with?(s, '#') return</span>
 <span id="L2399" class="LineNr">2399 </span>    <span class="subxS1Comment"># . eax = *s-&gt;start</span>
 <span id="L2400" class="LineNr">2400 </span>    8b/-&gt; *edx 0/r32/eax
@@ -2414,7 +2414,7 @@ if ('onhashchange' in window) {
 <span id="L2402" class="LineNr">2402 </span>    81 4/subop/and %eax 0xff/imm32
 <span id="L2403" class="LineNr">2403 </span>    <span class="subxS1Comment"># . if (eax == '#') continue</span>
 <span id="L2404" class="LineNr">2404 </span>    3d/compare-eax-and 0x23/imm32/hash
-<span id="L2405" class="LineNr">2405 </span>    74/jump-if-equal $check-no-tokens-left:end/disp8
+<span id="L2405" class="LineNr">2405 </span>    74/jump-if-= $check-no-tokens-left:end/disp8
 <span id="L2406" class="LineNr">2406 </span>    <span class="subxComment"># abort</span>
 <span id="L2407" class="LineNr">2407 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> <span class="SpecialChar"><a href='../065write-buffered.subx.html#L209'>Stderr</a></span> <span class="Constant">&quot;'{' or '}' should be on its own line, but got '&quot;</span>)
 <span id="L2408" class="LineNr">2408 </span>    (<a href='../055stream.subx.html#L54'>rewind-stream</a> %ecx)
@@ -2532,7 +2532,7 @@ if ('onhashchange' in window) {
 <span id="L2520" class="LineNr">2520 </span>    {
 <span id="L2521" class="LineNr">2521 </span>      (<a href='mu.subx.html#L2607'>stmt-has-outputs?</a> *(ebp+8))
 <span id="L2522" class="LineNr">2522 </span>      3d/compare-eax-and 0/imm32
-<span id="L2523" class="LineNr">2523 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L2523" class="LineNr">2523 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L2524" class="LineNr">2524 </span>      {
 <span id="L2525" class="LineNr">2525 </span><span class="Constant">$parse-mu-stmt:read-outputs</span>:
 <span id="L2526" class="LineNr">2526 </span>        <span class="subxComment"># name = next-word(line)</span>
@@ -2540,15 +2540,15 @@ if ('onhashchange' in window) {
 <span id="L2528" class="LineNr">2528 </span>        <span class="subxComment"># if slice-empty?(word-slice) break</span>
 <span id="L2529" class="LineNr">2529 </span>        (<a href='../072slice.subx.html#L9'>slice-empty?</a> %ecx)
 <span id="L2530" class="LineNr">2530 </span>        3d/compare-eax-and 0/imm32
-<span id="L2531" class="LineNr">2531 </span>        0f 85/jump-if-not-equal <span class="Constant">break</span>/disp32
+<span id="L2531" class="LineNr">2531 </span>        0f 85/jump-if-!= <span class="Constant">break</span>/disp32
 <span id="L2532" class="LineNr">2532 </span>        <span class="subxComment"># if (name == &quot;&lt;-&quot;) break</span>
 <span id="L2533" class="LineNr">2533 </span>        (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;&lt;-&quot;</span>)
 <span id="L2534" class="LineNr">2534 </span>        3d/compare-eax-and 0/imm32
-<span id="L2535" class="LineNr">2535 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L2535" class="LineNr">2535 </span>        75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L2536" class="LineNr">2536 </span>        <span class="subxComment"># assert(is-identifier?(name))</span>
 <span id="L2537" class="LineNr">2537 </span>        (<a href='mu.subx.html#L1897'>is-identifier?</a> %ecx)
 <span id="L2538" class="LineNr">2538 </span>        3d/compare-eax-and 0/imm32
-<span id="L2539" class="LineNr">2539 </span>        0f 84/jump-if-equal $parse-mu-stmt:abort/disp32
+<span id="L2539" class="LineNr">2539 </span>        0f 84/jump-if-= $parse-mu-stmt:abort/disp32
 <span id="L2540" class="LineNr">2540 </span>        <span class="subxComment">#</span>
 <span id="L2541" class="LineNr">2541 </span>        (<a href='mu.subx.html#L2799'>lookup-or-define-var</a> %ecx *(ebp+0xc) *(ebp+0x10))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2542" class="LineNr">2542 </span>        (<a href='mu.subx.html#L3128'>append-list</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> %eax *(edi+0xc))  <span class="subxComment"># Stmt1-outputs =&gt; eax</span>
@@ -2567,11 +2567,11 @@ if ('onhashchange' in window) {
 <span id="L2555" class="LineNr">2555 </span>      <span class="subxComment"># if slice-empty?(word-slice) break</span>
 <span id="L2556" class="LineNr">2556 </span>      (<a href='../072slice.subx.html#L9'>slice-empty?</a> %ecx)
 <span id="L2557" class="LineNr">2557 </span>      3d/compare-eax-and 0/imm32
-<span id="L2558" class="LineNr">2558 </span>      0f 85/jump-if-not-equal <span class="Constant">break</span>/disp32
+<span id="L2558" class="LineNr">2558 </span>      0f 85/jump-if-!= <span class="Constant">break</span>/disp32
 <span id="L2559" class="LineNr">2559 </span>      <span class="subxComment"># if (name == &quot;&lt;-&quot;) abort</span>
 <span id="L2560" class="LineNr">2560 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;&lt;-&quot;</span>)
 <span id="L2561" class="LineNr">2561 </span>      3d/compare-eax-and 0/imm32
-<span id="L2562" class="LineNr">2562 </span>      0f 85/jump-if-not-equal $parse-mu-stmt:abort2/disp32
+<span id="L2562" class="LineNr">2562 </span>      0f 85/jump-if-!= $parse-mu-stmt:abort2/disp32
 <span id="L2563" class="LineNr">2563 </span>      <span class="subxComment">#</span>
 <span id="L2564" class="LineNr">2564 </span>      (<a href='mu.subx.html#L2655'>lookup-var-or-literal</a> %ecx *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2565" class="LineNr">2565 </span>      (<a href='mu.subx.html#L3128'>append-list</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> %eax *(edi+8))  <span class="subxComment"># Stmt1-inouts =&gt; eax</span>
@@ -2635,7 +2635,7 @@ if ('onhashchange' in window) {
 <span id="L2623" class="LineNr">2623 </span>      (<a href='../072slice.subx.html#L9'>slice-empty?</a> %ecx)
 <span id="L2624" class="LineNr">2624 </span>      3d/compare-eax-and 0/imm32
 <span id="L2625" class="LineNr">2625 </span>      b8/copy-to-eax 0/imm32/false/result  <span class="subxComment"># restore result (if we're here it's still false)</span>
-<span id="L2626" class="LineNr">2626 </span>      0f 85/jump-if-not-equal <span class="Constant">break</span>/disp32
+<span id="L2626" class="LineNr">2626 </span>      0f 85/jump-if-!= <span class="Constant">break</span>/disp32
 <span id="L2627" class="LineNr">2627 </span>      <span class="subxComment"># if slice-starts-with?(word-slice, '#') break</span>
 <span id="L2628" class="LineNr">2628 </span>      <span class="subxS1Comment"># . eax = *word-slice-&gt;start</span>
 <span id="L2629" class="LineNr">2629 </span>      8b/-&gt; *ecx 0/r32/eax
@@ -2644,11 +2644,11 @@ if ('onhashchange' in window) {
 <span id="L2632" class="LineNr">2632 </span>      <span class="subxS1Comment"># . if (eax == '#') break</span>
 <span id="L2633" class="LineNr">2633 </span>      3d/compare-eax-and 0x23/imm32/hash
 <span id="L2634" class="LineNr">2634 </span>      b8/copy-to-eax 0/imm32/false/result  <span class="subxComment"># restore result (if we're here it's still false)</span>
-<span id="L2635" class="LineNr">2635 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L2635" class="LineNr">2635 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L2636" class="LineNr">2636 </span>      <span class="subxComment"># if slice-equal?(word-slice, '&lt;-') return true</span>
 <span id="L2637" class="LineNr">2637 </span>      (<a href='../072slice.subx.html#L91'>slice-equal?</a> %ecx <span class="Constant">&quot;&lt;-&quot;</span>)
 <span id="L2638" class="LineNr">2638 </span>      3d/compare-eax-and 0/imm32
-<span id="L2639" class="LineNr">2639 </span>      74/jump-if-equal <span class="Constant">loop</span>/disp8
+<span id="L2639" class="LineNr">2639 </span>      74/jump-if-= <span class="Constant">loop</span>/disp8
 <span id="L2640" class="LineNr">2640 </span>      b8/copy-to-eax 1/imm32/true
 <span id="L2641" class="LineNr">2641 </span>    }
 <span id="L2642" class="LineNr">2642 </span><span class="Constant">$stmt-has-outputs:end</span>:
@@ -2676,7 +2676,7 @@ if ('onhashchange' in window) {
 <span id="L2664" class="LineNr">2664 </span>    <span class="subxComment"># if slice-empty?(name) abort</span>
 <span id="L2665" class="LineNr">2665 </span>    (<a href='../072slice.subx.html#L9'>slice-empty?</a> %esi)  <span class="subxComment"># =&gt; eax</span>
 <span id="L2666" class="LineNr">2666 </span>    3d/compare-eax-and 0/imm32
-<span id="L2667" class="LineNr">2667 </span>    0f 85/jump-if-not-equal $lookup-var-or-literal:abort/disp32
+<span id="L2667" class="LineNr">2667 </span>    0f 85/jump-if-!= $lookup-var-or-literal:abort/disp32
 <span id="L2668" class="LineNr">2668 </span>    <span class="subxComment"># var ecx : byte = *name-&gt;start</span>
 <span id="L2669" class="LineNr">2669 </span>    8b/-&gt; *esi 1/r32/ecx
 <span id="L2670" class="LineNr">2670 </span>    8a/copy-byte *ecx 1/r32/CL
@@ -2685,12 +2685,12 @@ if ('onhashchange' in window) {
 <span id="L2673" class="LineNr">2673 </span>    (<a href='../075print-int-decimal.subx.html#L307'>is-decimal-digit?</a> %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L2674" class="LineNr">2674 </span>    81 7/subop/compare %eax 0/imm32
 <span id="L2675" class="LineNr">2675 </span>    {
-<span id="L2676" class="LineNr">2676 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L2676" class="LineNr">2676 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L2677" class="LineNr">2677 </span>      (<a href='mu.subx.html#L2954'>new-literal-integer</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> %esi)  <span class="subxComment"># =&gt; eax</span>
 <span id="L2678" class="LineNr">2678 </span>    }
 <span id="L2679" class="LineNr">2679 </span>    <span class="subxComment"># otherwise return lookup-var(name, vars)</span>
 <span id="L2680" class="LineNr">2680 </span>    {
-<span id="L2681" class="LineNr">2681 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L2681" class="LineNr">2681 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L2682" class="LineNr">2682 </span>      (<a href='mu.subx.html#L2703'>lookup-var</a> %esi *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2683" class="LineNr">2683 </span>    }
 <span id="L2684" class="LineNr">2684 </span><span class="Constant">$lookup-var-or-literal:end</span>:
@@ -2722,7 +2722,7 @@ if ('onhashchange' in window) {
 <span id="L2710" class="LineNr">2710 </span>    (<a href='mu.subx.html#L2732'>lookup-var-helper</a> %eax *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2711" class="LineNr">2711 </span>    <span class="subxComment"># if (result == 0) abort</span>
 <span id="L2712" class="LineNr">2712 </span>    3d/compare-eax-and 0/imm32
-<span id="L2713" class="LineNr">2713 </span>    74/jump-if-equal $lookup-var:abort/disp8
+<span id="L2713" class="LineNr">2713 </span>    74/jump-if-= $lookup-var:abort/disp8
 <span id="L2714" class="LineNr">2714 </span><span class="Constant">$lookup-var:end</span>:
 <span id="L2715" class="LineNr">2715 </span>    <span class="subxS1Comment"># . epilogue</span>
 <span id="L2716" class="LineNr">2716 </span>    89/&lt;- %esp 5/r32/ebp
@@ -2764,7 +2764,7 @@ if ('onhashchange' in window) {
 <span id="L2752" class="LineNr">2752 </span>    8b/-&gt; *esi 3/r32/ebx
 <span id="L2753" class="LineNr">2753 </span>    <span class="subxComment"># if (vars-&gt;top &gt; vars-&gt;length) abort</span>
 <span id="L2754" class="LineNr">2754 </span>    3b/compare 0/r32/eax *(esi+4)
-<span id="L2755" class="LineNr">2755 </span>    0f 8f/jump-if-greater $lookup-var-helper:error1/disp32
+<span id="L2755" class="LineNr">2755 </span>    0f 8f/jump-if-&gt; $lookup-var-helper:error1/disp32
 <span id="L2756" class="LineNr">2756 </span>    <span class="subxComment"># var min/edx : (addr handle var) = vars-&gt;data</span>
 <span id="L2757" class="LineNr">2757 </span>    8d/copy-address *(esi+8) 2/r32/edx
 <span id="L2758" class="LineNr">2758 </span>    <span class="subxComment"># var curr/ebx : (addr handle var) = &amp;vars-&gt;data[vars-&gt;top - 4]</span>
@@ -2774,14 +2774,14 @@ if ('onhashchange' in window) {
 <span id="L2762" class="LineNr">2762 </span>      <span class="subxComment"># if (curr &lt; min) return 0</span>
 <span id="L2763" class="LineNr">2763 </span>      39/compare %ebx 2/r32/edx
 <span id="L2764" class="LineNr">2764 </span>      b8/copy-to-eax 0/imm32
-<span id="L2765" class="LineNr">2765 </span>      0f 82/jump-if-lesser-unsigned <span class="Constant">break</span>/disp32
+<span id="L2765" class="LineNr">2765 </span>      0f 82/jump-if-addr&lt; <span class="Constant">break</span>/disp32
 <span id="L2766" class="LineNr">2766 </span>      <span class="subxComment"># var v/eax : (handle var) = *curr</span>
 <span id="L2767" class="LineNr">2767 </span>      8b/-&gt; *ebx 0/r32/eax
 <span id="L2768" class="LineNr">2768 </span>      <span class="subxComment"># if (v-&gt;name == name) return v</span>
 <span id="L2769" class="LineNr">2769 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *eax *(ebp+8))  <span class="subxComment"># Var-name</span>
 <span id="L2770" class="LineNr">2770 </span>      3d/compare-eax-and 0/imm32
 <span id="L2771" class="LineNr">2771 </span>      8b/-&gt; *ebx 0/r32/eax
-<span id="L2772" class="LineNr">2772 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L2772" class="LineNr">2772 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L2773" class="LineNr">2773 </span>      <span class="subxComment"># curr -= 4</span>
 <span id="L2774" class="LineNr">2774 </span>      81 5/subop/subtract %ebx 4/imm32
 <span id="L2775" class="LineNr">2775 </span>      e9/jump <span class="Constant">loop</span>/disp32
@@ -2822,13 +2822,13 @@ if ('onhashchange' in window) {
 <span id="L2810" class="LineNr">2810 </span>    {
 <span id="L2811" class="LineNr">2811 </span>      <span class="subxComment"># if (result != 0) return</span>
 <span id="L2812" class="LineNr">2812 </span>      3d/compare-eax-and 0/imm32
-<span id="L2813" class="LineNr">2813 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L2813" class="LineNr">2813 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L2814" class="LineNr">2814 </span>      <span class="subxComment"># if name is one of fn's outputs, return it</span>
 <span id="L2815" class="LineNr">2815 </span>      {
 <span id="L2816" class="LineNr">2816 </span>        (<a href='mu.subx.html#L2830'>find-in-function-outputs</a> *(ebp+0x10) %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L2817" class="LineNr">2817 </span>        3d/compare-eax-and 0/imm32
 <span id="L2818" class="LineNr">2818 </span>        <span class="subxComment"># otherwise abort</span>
-<span id="L2819" class="LineNr">2819 </span>        0f 84/jump-if-not-equal $lookup-var:abort/disp32
+<span id="L2819" class="LineNr">2819 </span>        0f 84/jump-if-!= $lookup-var:abort/disp32
 <span id="L2820" class="LineNr">2820 </span>      }
 <span id="L2821" class="LineNr">2821 </span>    }
 <span id="L2822" class="LineNr">2822 </span><span class="Constant">$lookup-or-define-var:end</span>:
@@ -2851,7 +2851,7 @@ if ('onhashchange' in window) {
 <span id="L2839" class="LineNr">2839 </span>    <span class="subxComment"># while curr != null</span>
 <span id="L2840" class="LineNr">2840 </span>    {
 <span id="L2841" class="LineNr">2841 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L2842" class="LineNr">2842 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L2842" class="LineNr">2842 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L2843" class="LineNr">2843 </span>      <span class="subxComment"># var v : (handle var) = *curr</span>
 <span id="L2844" class="LineNr">2844 </span>      8b/-&gt; *ecx 0/r32/eax  <span class="subxComment"># List-value</span>
 <span id="L2845" class="LineNr">2845 </span>      <span class="subxComment"># if (curr-&gt;name == name) return curr</span>
@@ -2859,7 +2859,7 @@ if ('onhashchange' in window) {
 <span id="L2847" class="LineNr">2847 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *eax *(ebp+0xc))
 <span id="L2848" class="LineNr">2848 </span>      3d/compare-eax-and 0/imm32
 <span id="L2849" class="LineNr">2849 </span>      58/pop-to-eax
-<span id="L2850" class="LineNr">2850 </span>      75/jump-if-not-equal $find-in-function-outputs:end/disp8
+<span id="L2850" class="LineNr">2850 </span>      75/jump-if-!= $find-in-function-outputs:end/disp8
 <span id="L2851" class="LineNr">2851 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
 <span id="L2852" class="LineNr">2852 </span>      8b/-&gt; *(ecx+4) 1/r32/ecx  <span class="subxComment"># List-next</span>
 <span id="L2853" class="LineNr">2853 </span>      eb/jump <span class="Constant">loop</span>/disp8
@@ -2972,7 +2972,7 @@ if ('onhashchange' in window) {
 <span id="L2960" class="LineNr">2960 </span>    <span class="subxComment"># if (!is-hex-int?(name)) abort</span>
 <span id="L2961" class="LineNr">2961 </span>    (<a href='../067parse-hex.subx.html#L9'>is-hex-int?</a> *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2962" class="LineNr">2962 </span>    3d/compare-eax-and 0/imm32
-<span id="L2963" class="LineNr">2963 </span>    0f 84/jump-if-equal $new-literal-integer:abort/disp32
+<span id="L2963" class="LineNr">2963 </span>    0f 84/jump-if-= $new-literal-integer:abort/disp32
 <span id="L2964" class="LineNr">2964 </span>    <span class="subxComment"># var s/ecx : (addr array byte)</span>
 <span id="L2965" class="LineNr">2965 </span>    (<a href='../072slice.subx.html#L1015'>slice-to-string</a> <span class="SpecialChar"><a href='../069allocate.subx.html#L22'>Heap</a></span> *(ebp+0xc))  <span class="subxComment"># =&gt; eax</span>
 <span id="L2966" class="LineNr">2966 </span>    89/&lt;- %ecx 0/r32/eax
@@ -3149,14 +3149,14 @@ if ('onhashchange' in window) {
 <span id="L3137" class="LineNr">3137 </span>    89/&lt;- *eax 1/r32/ecx  <span class="subxComment"># List-value</span>
 <span id="L3138" class="LineNr">3138 </span>    <span class="subxComment"># if (list == null) return result</span>
 <span id="L3139" class="LineNr">3139 </span>    81 7/subop/compare *(ebp+0x10) 0/imm32
-<span id="L3140" class="LineNr">3140 </span>    74/jump-if-equal $new-list:end/disp8
+<span id="L3140" class="LineNr">3140 </span>    74/jump-if-= $new-list:end/disp8
 <span id="L3141" class="LineNr">3141 </span>    <span class="subxComment"># otherwise append</span>
 <span id="L3142" class="LineNr">3142 </span>    <span class="subxComment"># var curr/ecx = list</span>
 <span id="L3143" class="LineNr">3143 </span>    8b/-&gt; *(ebp+0x10) 1/r32/ecx
 <span id="L3144" class="LineNr">3144 </span>    <span class="subxComment"># while (curr-&gt;next != null) curr = curr-&gt;next</span>
 <span id="L3145" class="LineNr">3145 </span>    {
 <span id="L3146" class="LineNr">3146 </span>      81 7/subop/compare *(ecx+4) 0/imm32  <span class="subxComment"># List-next</span>
-<span id="L3147" class="LineNr">3147 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L3147" class="LineNr">3147 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L3148" class="LineNr">3148 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
 <span id="L3149" class="LineNr">3149 </span>      8b/-&gt; *(ecx+4) 1/r32/ecx
 <span id="L3150" class="LineNr">3150 </span>      eb/jump <span class="Constant">loop</span>/disp8
@@ -3237,7 +3237,7 @@ if ('onhashchange' in window) {
 <span id="L3225" class="LineNr">3225 </span>    {
 <span id="L3226" class="LineNr">3226 </span>      <span class="subxComment"># if (curr == null) break</span>
 <span id="L3227" class="LineNr">3227 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L3228" class="LineNr">3228 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L3228" class="LineNr">3228 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L3229" class="LineNr">3229 </span>      (<a href='mu.subx.html#L3244'>emit-subx-function</a> %edi %ecx)
 <span id="L3230" class="LineNr">3230 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
 <span id="L3231" class="LineNr">3231 </span>      8b/-&gt; *(ecx+0x14) 1/r32/ecx  <span class="subxComment"># Function-next</span>
@@ -3292,12 +3292,12 @@ if ('onhashchange' in window) {
 <span id="L3280" class="LineNr">3280 </span>    {
 <span id="L3281" class="LineNr">3281 </span><span class="Constant">$emit-subx-block:check-empty</span>:
 <span id="L3282" class="LineNr">3282 </span>      81 7/subop/compare %esi 0/imm32
-<span id="L3283" class="LineNr">3283 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L3283" class="LineNr">3283 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L3284" class="LineNr">3284 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;{\n&quot;</span>)
 <span id="L3285" class="LineNr">3285 </span>      {
 <span id="L3286" class="LineNr">3286 </span><span class="Constant">$emit-subx-block:stmt</span>:
 <span id="L3287" class="LineNr">3287 </span>        81 7/subop/compare %esi 0/imm32
-<span id="L3288" class="LineNr">3288 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L3288" class="LineNr">3288 </span>        74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L3289" class="LineNr">3289 </span>        (<a href='mu.subx.html#L3302'>emit-subx-statement</a> *(ebp+8) *esi <span class="SpecialChar"><a href='mu.subx.html#L3353'>Primitives</a></span> *<span class="SpecialChar"><a href='mu.subx.html#L249'>Program</a></span>)
 <span id="L3290" class="LineNr">3290 </span>        (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="SpecialChar"><a href='../051test.subx.html#L83'>Newline</a></span>)
 <span id="L3291" class="LineNr">3291 </span>        8b/-&gt; *(esi+4) 6/r32/esi  <span class="subxComment"># List-next</span>
@@ -3323,7 +3323,7 @@ if ('onhashchange' in window) {
 <span id="L3311" class="LineNr">3311 </span><span class="Constant">$emit-subx-statement:primitive</span>:
 <span id="L3312" class="LineNr">3312 </span>      (<a href='mu.subx.html#L4414'>find-matching-primitive</a> *(ebp+0x10) *(ebp+0xc))  <span class="subxComment"># primitives, stmt =&gt; curr/eax</span>
 <span id="L3313" class="LineNr">3313 </span>      3d/compare-eax-and 0/imm32
-<span id="L3314" class="LineNr">3314 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L3314" class="LineNr">3314 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L3315" class="LineNr">3315 </span>      (<a href='mu.subx.html#L4105'>emit-subx-primitive</a> *(ebp+8) *(ebp+0xc) %eax)  <span class="subxComment"># out, stmt, curr</span>
 <span id="L3316" class="LineNr">3316 </span>      e9/jump $emit-subx-statement:end/disp32
 <span id="L3317" class="LineNr">3317 </span>    }
@@ -3332,7 +3332,7 @@ if ('onhashchange' in window) {
 <span id="L3320" class="LineNr">3320 </span><span class="Constant">$emit-subx-statement:call</span>:
 <span id="L3321" class="LineNr">3321 </span>      (<a href='mu.subx.html#L4380'>find-matching-function</a> *(ebp+0x14) *(ebp+0xc))  <span class="subxComment"># functions, stmt =&gt; curr/eax</span>
 <span id="L3322" class="LineNr">3322 </span>      3d/compare-eax-and 0/imm32
-<span id="L3323" class="LineNr">3323 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L3323" class="LineNr">3323 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L3324" class="LineNr">3324 </span>      (<a href='mu.subx.html#L4260'>emit-subx-call</a> *(ebp+8) *(ebp+0xc) %eax)  <span class="subxComment"># out, stmt, curr</span>
 <span id="L3325" class="LineNr">3325 </span>      e9/jump $emit-subx-statement:end/disp32
 <span id="L3326" class="LineNr">3326 </span>    }
@@ -4148,7 +4148,7 @@ if ('onhashchange' in window) {
 <span id="L4136" class="LineNr">4136 </span>    50/push-eax
 <span id="L4137" class="LineNr">4137 </span>    <span class="subxComment"># if (l == 0) return</span>
 <span id="L4138" class="LineNr">4138 </span>    81 7/subop/compare *(ebp+0xc) 0/imm32
-<span id="L4139" class="LineNr">4139 </span>    74/jump-if-equal $emit-subx-rm32:end/disp8
+<span id="L4139" class="LineNr">4139 </span>    74/jump-if-= $emit-subx-rm32:end/disp8
 <span id="L4140" class="LineNr">4140 </span>    <span class="subxComment">#</span>
 <span id="L4141" class="LineNr">4141 </span>    (<a href='mu.subx.html#L4151'>get-stmt-operand-from-arg-location</a> *(ebp+0x10) *(ebp+0xc))  <span class="subxComment"># stmt, l =&gt; var/eax</span>
 <span id="L4142" class="LineNr">4142 </span>    (<a href='mu.subx.html#L4345'>emit-subx-var-as-rm32</a> *(ebp+8) %eax)  <span class="subxComment"># out, var</span>
@@ -4173,7 +4173,7 @@ if ('onhashchange' in window) {
 <span id="L4161" class="LineNr">4161 </span>    <span class="subxComment"># if (l == 1) return stmt-&gt;inouts-&gt;var</span>
 <span id="L4162" class="LineNr">4162 </span>    {
 <span id="L4163" class="LineNr">4163 </span>      3d/compare-eax-and 1/imm32
-<span id="L4164" class="LineNr">4164 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4164" class="LineNr">4164 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4165" class="LineNr">4165 </span><span class="Constant">$get-stmt-operand-from-arg-location:1</span>:
 <span id="L4166" class="LineNr">4166 </span>      8b/-&gt; *(ecx+8) 0/r32/eax  <span class="subxComment"># Stmt1-inouts</span>
 <span id="L4167" class="LineNr">4167 </span>      8b/-&gt; *eax 0/r32/eax  <span class="subxComment"># Operand-var</span>
@@ -4182,7 +4182,7 @@ if ('onhashchange' in window) {
 <span id="L4170" class="LineNr">4170 </span>    <span class="subxComment"># if (l == 2) return stmt-&gt;inouts-&gt;next-&gt;var</span>
 <span id="L4171" class="LineNr">4171 </span>    {
 <span id="L4172" class="LineNr">4172 </span>      3d/compare-eax-and 2/imm32
-<span id="L4173" class="LineNr">4173 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4173" class="LineNr">4173 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4174" class="LineNr">4174 </span><span class="Constant">$get-stmt-operand-from-arg-location:2</span>:
 <span id="L4175" class="LineNr">4175 </span>      8b/-&gt; *(ecx+8) 0/r32/eax  <span class="subxComment"># Stmt1-inouts</span>
 <span id="L4176" class="LineNr">4176 </span>      8b/-&gt; *(eax+4) 0/r32/eax  <span class="subxComment"># Operand-next</span>
@@ -4192,7 +4192,7 @@ if ('onhashchange' in window) {
 <span id="L4180" class="LineNr">4180 </span>    <span class="subxComment"># if (l == 3) return stmt-&gt;outputs</span>
 <span id="L4181" class="LineNr">4181 </span>    {
 <span id="L4182" class="LineNr">4182 </span>      3d/compare-eax-and 3/imm32
-<span id="L4183" class="LineNr">4183 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4183" class="LineNr">4183 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4184" class="LineNr">4184 </span><span class="Constant">$get-stmt-operand-from-arg-location:3</span>:
 <span id="L4185" class="LineNr">4185 </span>      8b/-&gt; *(ecx+0xc) 0/r32/eax  <span class="subxComment"># Stmt1-outputs</span>
 <span id="L4186" class="LineNr">4186 </span>      8b/-&gt; *eax 0/r32/eax  <span class="subxComment"># Operand-var</span>
@@ -4229,7 +4229,7 @@ if ('onhashchange' in window) {
 <span id="L4217" class="LineNr">4217 </span>    51/push-ecx
 <span id="L4218" class="LineNr">4218 </span>    <span class="subxComment"># if (location == 0) return</span>
 <span id="L4219" class="LineNr">4219 </span>    81 7/subop/compare *(ebp+0xc) 0/imm32
-<span id="L4220" class="LineNr">4220 </span>    0f 84/jump-if-equal $emit-subx-r32:end/disp32
+<span id="L4220" class="LineNr">4220 </span>    0f 84/jump-if-= $emit-subx-r32:end/disp32
 <span id="L4221" class="LineNr">4221 </span>    <span class="subxComment">#</span>
 <span id="L4222" class="LineNr">4222 </span>    (<a href='mu.subx.html#L4151'>get-stmt-operand-from-arg-location</a> *(ebp+0x10) *(ebp+0xc))  <span class="subxComment"># stmt, l =&gt; var/eax</span>
 <span id="L4223" class="LineNr">4223 </span>    (<a href='../081table.subx.html#L1382'>maybe-get</a> <span class="SpecialChar"><a href='../090register-names.subx.html#L2'>Registers</a></span> *(eax+0x10) 8)  <span class="subxComment"># Var-register =&gt; eax : (addr register-index)</span>
@@ -4254,7 +4254,7 @@ if ('onhashchange' in window) {
 <span id="L4242" class="LineNr">4242 </span>    51/push-ecx
 <span id="L4243" class="LineNr">4243 </span>    <span class="subxComment"># if (location == 0) return</span>
 <span id="L4244" class="LineNr">4244 </span>    81 7/subop/compare *(ebp+0xc) 0/imm32
-<span id="L4245" class="LineNr">4245 </span>    74/jump-if-equal $emit-subx-imm32:end/disp8
+<span id="L4245" class="LineNr">4245 </span>    74/jump-if-= $emit-subx-imm32:end/disp8
 <span id="L4246" class="LineNr">4246 </span>    <span class="subxComment">#</span>
 <span id="L4247" class="LineNr">4247 </span>    (<a href='mu.subx.html#L4151'>get-stmt-operand-from-arg-location</a> *(ebp+0x10) *(ebp+0xc))  <span class="subxComment"># stmt, l =&gt; var/eax</span>
 <span id="L4248" class="LineNr">4248 </span>    (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
@@ -4288,7 +4288,7 @@ if ('onhashchange' in window) {
 <span id="L4276" class="LineNr">4276 </span>    {
 <span id="L4277" class="LineNr">4277 </span>      <span class="subxComment"># if (curr == null) break</span>
 <span id="L4278" class="LineNr">4278 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L4279" class="LineNr">4279 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4279" class="LineNr">4279 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4280" class="LineNr">4280 </span>      <span class="subxComment">#</span>
 <span id="L4281" class="LineNr">4281 </span>      (<a href='mu.subx.html#L4297'>emit-subx-call-operand</a> *(ebp+8) *ecx)
 <span id="L4282" class="LineNr">4282 </span>      <span class="subxComment"># curr = curr-&gt;next</span>
@@ -4317,7 +4317,7 @@ if ('onhashchange' in window) {
 <span id="L4305" class="LineNr">4305 </span>    <span class="subxComment"># if (operand-&gt;register) emit &quot;%__&quot;</span>
 <span id="L4306" class="LineNr">4306 </span>    {
 <span id="L4307" class="LineNr">4307 </span>      81 7/subop/compare *(eax+0x10) 0/imm32  <span class="subxComment"># Var-register</span>
-<span id="L4308" class="LineNr">4308 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4308" class="LineNr">4308 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4309" class="LineNr">4309 </span><span class="Constant">$emit-subx-call-operand:register</span>:
 <span id="L4310" class="LineNr">4310 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot; %&quot;</span>)
 <span id="L4311" class="LineNr">4311 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) *(eax+0x10))  <span class="subxComment"># Var-register</span>
@@ -4326,7 +4326,7 @@ if ('onhashchange' in window) {
 <span id="L4314" class="LineNr">4314 </span>    <span class="subxComment"># else if (operand-&gt;stack-offset) emit &quot;*(ebp+__)&quot;</span>
 <span id="L4315" class="LineNr">4315 </span>    {
 <span id="L4316" class="LineNr">4316 </span>      81 7/subop/compare *(eax+0xc) 0/imm32  <span class="subxComment"># Var-stack-offset</span>
-<span id="L4317" class="LineNr">4317 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4317" class="LineNr">4317 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4318" class="LineNr">4318 </span><span class="Constant">$emit-subx-call-operand:stack</span>:
 <span id="L4319" class="LineNr">4319 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
 <span id="L4320" class="LineNr">4320 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;*(ebp+&quot;</span>)
@@ -4341,7 +4341,7 @@ if ('onhashchange' in window) {
 <span id="L4329" class="LineNr">4329 </span>      8b/-&gt; *(eax+4) 0/r32/eax  <span class="subxComment"># Var-type</span>
 <span id="L4330" class="LineNr">4330 </span>      81 7/subop/compare *eax 0/imm32  <span class="subxComment"># Tree-left</span>
 <span id="L4331" class="LineNr">4331 </span>      58/pop-to-eax
-<span id="L4332" class="LineNr">4332 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4332" class="LineNr">4332 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4333" class="LineNr">4333 </span><span class="Constant">$emit-subx-call-operand:literal</span>:
 <span id="L4334" class="LineNr">4334 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
 <span id="L4335" class="LineNr">4335 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) *eax)
@@ -4365,7 +4365,7 @@ if ('onhashchange' in window) {
 <span id="L4353" class="LineNr">4353 </span>    <span class="subxComment"># if (operand-&gt;register) emit &quot;%__&quot;</span>
 <span id="L4354" class="LineNr">4354 </span>    {
 <span id="L4355" class="LineNr">4355 </span>      81 7/subop/compare *(eax+0x10) 0/imm32  <span class="subxComment"># Var-register</span>
-<span id="L4356" class="LineNr">4356 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4356" class="LineNr">4356 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4357" class="LineNr">4357 </span><span class="Constant">$emit-subx-var-as-rm32:register</span>:
 <span id="L4358" class="LineNr">4358 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot; %&quot;</span>)
 <span id="L4359" class="LineNr">4359 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) *(eax+0x10))  <span class="subxComment"># Var-register</span>
@@ -4373,7 +4373,7 @@ if ('onhashchange' in window) {
 <span id="L4361" class="LineNr">4361 </span>    <span class="subxComment"># else if (operand-&gt;stack-offset) emit &quot;*(ebp+__)&quot;</span>
 <span id="L4362" class="LineNr">4362 </span>    {
 <span id="L4363" class="LineNr">4363 </span>      81 7/subop/compare *(eax+0xc) 0/imm32  <span class="subxComment"># Var-stack-offset</span>
-<span id="L4364" class="LineNr">4364 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4364" class="LineNr">4364 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4365" class="LineNr">4365 </span><span class="Constant">$emit-subx-var-as-rm32:stack</span>:
 <span id="L4366" class="LineNr">4366 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="SpecialChar"><a href='../051test.subx.html#L94'>Space</a></span>)
 <span id="L4367" class="LineNr">4367 </span>      (<a href='../065write-buffered.subx.html#L8'>write-buffered</a> *(ebp+8) <span class="Constant">&quot;*(ebp+&quot;</span>)
@@ -4400,12 +4400,12 @@ if ('onhashchange' in window) {
 <span id="L4388" class="LineNr">4388 </span>    {
 <span id="L4389" class="LineNr">4389 </span>      <span class="subxComment"># if (curr == null) break</span>
 <span id="L4390" class="LineNr">4390 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L4391" class="LineNr">4391 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4391" class="LineNr">4391 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4392" class="LineNr">4392 </span>      <span class="subxComment"># if match(stmt, curr) return curr</span>
 <span id="L4393" class="LineNr">4393 </span>      {
 <span id="L4394" class="LineNr">4394 </span>        (<a href='mu.subx.html#L4456'>mu-stmt-matches-function?</a> *(ebp+0xc) %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L4395" class="LineNr">4395 </span>        3d/compare-eax-and 0/imm32
-<span id="L4396" class="LineNr">4396 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4396" class="LineNr">4396 </span>        74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4397" class="LineNr">4397 </span>        89/&lt;- %eax 1/r32/ecx
 <span id="L4398" class="LineNr">4398 </span>        eb/jump $find-matching-function:end/disp8
 <span id="L4399" class="LineNr">4399 </span>      }
@@ -4435,7 +4435,7 @@ if ('onhashchange' in window) {
 <span id="L4423" class="LineNr">4423 </span><span class="Constant">$find-matching-primitive:loop</span>:
 <span id="L4424" class="LineNr">4424 </span>      <span class="subxComment"># if (curr == null) break</span>
 <span id="L4425" class="LineNr">4425 </span>      81 7/subop/compare %ecx 0/imm32
-<span id="L4426" class="LineNr">4426 </span>      0f 84/jump-if-equal <span class="Constant">break</span>/disp32
+<span id="L4426" class="LineNr">4426 </span>      0f 84/jump-if-= <span class="Constant">break</span>/disp32
 <span id="L4427" class="LineNr">4427 </span><span class="CommentedCode">#?       (write-buffered Stderr &quot;prim: &quot;)</span>
 <span id="L4428" class="LineNr">4428 </span><span class="CommentedCode">#?       (write-buffered Stderr *ecx)  # Primitive-name</span>
 <span id="L4429" class="LineNr">4429 </span><span class="CommentedCode">#?       (write-buffered Stderr &quot; =&gt; &quot;)</span>
@@ -4446,7 +4446,7 @@ if ('onhashchange' in window) {
 <span id="L4434" class="LineNr">4434 </span>      {
 <span id="L4435" class="LineNr">4435 </span>        (<a href='mu.subx.html#L4474'>mu-stmt-matches-primitive?</a> *(ebp+0xc) %ecx)  <span class="subxComment"># =&gt; eax</span>
 <span id="L4436" class="LineNr">4436 </span>        3d/compare-eax-and 0/imm32
-<span id="L4437" class="LineNr">4437 </span>        74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4437" class="LineNr">4437 </span>        74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4438" class="LineNr">4438 </span>        89/&lt;- %eax 1/r32/ecx
 <span id="L4439" class="LineNr">4439 </span>        eb/jump $find-matching-primitive:end/disp8
 <span id="L4440" class="LineNr">4440 </span>      }
@@ -4507,7 +4507,7 @@ if ('onhashchange' in window) {
 <span id="L4495" class="LineNr">4495 </span>      <span class="subxComment"># if (primitive-&gt;name != stmt-&gt;operation) return false</span>
 <span id="L4496" class="LineNr">4496 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *(ecx+4) *edx)  <span class="subxComment"># Stmt1-operation, Primitive-name =&gt; eax</span>
 <span id="L4497" class="LineNr">4497 </span>      3d/compare-eax-and 0/imm32
-<span id="L4498" class="LineNr">4498 </span>      75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4498" class="LineNr">4498 </span>      75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4499" class="LineNr">4499 </span>      b8/copy-to-eax 0/imm32
 <span id="L4500" class="LineNr">4500 </span>      e9/jump $mu-stmt-matches-primitive?:end/disp32
 <span id="L4501" class="LineNr">4501 </span>    }
@@ -4519,11 +4519,11 @@ if ('onhashchange' in window) {
 <span id="L4507" class="LineNr">4507 </span>      <span class="subxComment"># if (curr == 0 &amp;&amp; curr2 == 0) move on to check outputs</span>
 <span id="L4508" class="LineNr">4508 </span>      {
 <span id="L4509" class="LineNr">4509 </span>        81 7/subop/compare %esi 0/imm32
-<span id="L4510" class="LineNr">4510 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4510" class="LineNr">4510 </span>        75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4511" class="LineNr">4511 </span><span class="Constant">$mu-stmt-matches-primitive?:stmt-inout-is-null</span>:
 <span id="L4512" class="LineNr">4512 </span>        {
 <span id="L4513" class="LineNr">4513 </span>          81 7/subop/compare %edi 0/imm32
-<span id="L4514" class="LineNr">4514 </span>          75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4514" class="LineNr">4514 </span>          75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4515" class="LineNr">4515 </span>          <span class="subxComment">#</span>
 <span id="L4516" class="LineNr">4516 </span>          e9/jump $mu-stmt-matches-primitive?:check-outputs/disp32
 <span id="L4517" class="LineNr">4517 </span>        }
@@ -4534,7 +4534,7 @@ if ('onhashchange' in window) {
 <span id="L4522" class="LineNr">4522 </span>      <span class="subxComment"># if (curr2 == 0) return false</span>
 <span id="L4523" class="LineNr">4523 </span>      {
 <span id="L4524" class="LineNr">4524 </span>        81 7/subop/compare %edi 0/imm32
-<span id="L4525" class="LineNr">4525 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4525" class="LineNr">4525 </span>        75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4526" class="LineNr">4526 </span><span class="Constant">$mu-stmt-matches-primitive?:prim-inout-is-null</span>:
 <span id="L4527" class="LineNr">4527 </span>        b8/copy-to-eax 0/imm32/false
 <span id="L4528" class="LineNr">4528 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
@@ -4543,7 +4543,7 @@ if ('onhashchange' in window) {
 <span id="L4531" class="LineNr">4531 </span>      {
 <span id="L4532" class="LineNr">4532 </span>        (<a href='mu.subx.html#L4600'>operand-matches-primitive?</a> *esi *edi)  <span class="subxComment"># =&gt; eax</span>
 <span id="L4533" class="LineNr">4533 </span>        3d/compare-eax-and 0/imm32
-<span id="L4534" class="LineNr">4534 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4534" class="LineNr">4534 </span>        75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4535" class="LineNr">4535 </span>        b8/copy-to-eax 0/imm32/false
 <span id="L4536" class="LineNr">4536 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
 <span id="L4537" class="LineNr">4537 </span>      }
@@ -4562,10 +4562,10 @@ if ('onhashchange' in window) {
 <span id="L4550" class="LineNr">4550 </span>      {
 <span id="L4551" class="LineNr">4551 </span><span class="Constant">$mu-stmt-matches-primitive?:check-output</span>:
 <span id="L4552" class="LineNr">4552 </span>        81 7/subop/compare %esi 0/imm32
-<span id="L4553" class="LineNr">4553 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4553" class="LineNr">4553 </span>        75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4554" class="LineNr">4554 </span>        {
 <span id="L4555" class="LineNr">4555 </span>          81 7/subop/compare %edi 0/imm32
-<span id="L4556" class="LineNr">4556 </span>          75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4556" class="LineNr">4556 </span>          75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4557" class="LineNr">4557 </span>          <span class="subxComment"># return true</span>
 <span id="L4558" class="LineNr">4558 </span>          b8/copy-to-eax 1/imm32
 <span id="L4559" class="LineNr">4559 </span>          e9/jump $mu-stmt-matches-primitive?:end/disp32
@@ -4577,7 +4577,7 @@ if ('onhashchange' in window) {
 <span id="L4565" class="LineNr">4565 </span>      <span class="subxComment"># if (curr2 == 0) return false</span>
 <span id="L4566" class="LineNr">4566 </span>      {
 <span id="L4567" class="LineNr">4567 </span>        81 7/subop/compare %edi 0/imm32
-<span id="L4568" class="LineNr">4568 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4568" class="LineNr">4568 </span>        75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4569" class="LineNr">4569 </span>        b8/copy-to-eax 0/imm32
 <span id="L4570" class="LineNr">4570 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
 <span id="L4571" class="LineNr">4571 </span>      }
@@ -4585,7 +4585,7 @@ if ('onhashchange' in window) {
 <span id="L4573" class="LineNr">4573 </span>      {
 <span id="L4574" class="LineNr">4574 </span>        (<a href='mu.subx.html#L4600'>operand-matches-primitive?</a> *esi *edi)  <span class="subxComment"># List-value List-value =&gt; eax</span>
 <span id="L4575" class="LineNr">4575 </span>        3d/compare-eax-and 0/imm32
-<span id="L4576" class="LineNr">4576 </span>        75/jump-if-not-equal <span class="Constant">break</span>/disp8
+<span id="L4576" class="LineNr">4576 </span>        75/jump-if-!= <span class="Constant">break</span>/disp8
 <span id="L4577" class="LineNr">4577 </span>        b8/copy-to-eax 0/imm32
 <span id="L4578" class="LineNr">4578 </span>        e9/jump $mu-stmt-matches-primitive?:end/disp32
 <span id="L4579" class="LineNr">4579 </span>      }
@@ -4624,28 +4624,28 @@ if ('onhashchange' in window) {
 <span id="L4612" class="LineNr">4612 </span>    (<a href='mu.subx.html#L4649'>type-equal?</a> *(esi+4) *(edi+4))  <span class="subxComment"># Var-type, Var-type =&gt; eax</span>
 <span id="L4613" class="LineNr">4613 </span>    3d/compare-eax-and 0/imm32
 <span id="L4614" class="LineNr">4614 </span>    b8/copy-to-eax 0/imm32/false
-<span id="L4615" class="LineNr">4615 </span>    74/jump-if-equal $operand-matches-primitive?:end/disp8
+<span id="L4615" class="LineNr">4615 </span>    74/jump-if-= $operand-matches-primitive?:end/disp8
 <span id="L4616" class="LineNr">4616 </span>    <span class="subxComment"># return false if var-&gt;register doesn't match prim-var-&gt;register</span>
 <span id="L4617" class="LineNr">4617 </span>    {
 <span id="L4618" class="LineNr">4618 </span>      <span class="subxComment"># if addresses are equal, don't return here</span>
 <span id="L4619" class="LineNr">4619 </span>      8b/-&gt; *(esi+0x10) 0/r32/eax
 <span id="L4620" class="LineNr">4620 </span>      39/compare *(edi+0x10) 0/r32/eax
-<span id="L4621" class="LineNr">4621 </span>      74/jump-if-equal <span class="Constant">break</span>/disp8
+<span id="L4621" class="LineNr">4621 </span>      74/jump-if-= <span class="Constant">break</span>/disp8
 <span id="L4622" class="LineNr">4622 </span>      <span class="subxComment"># if either address is 0, return false</span>
 <span id="L4623" class="LineNr">4623 </span>      3d/compare-eax-and 0/imm32
-<span id="L4624" class="LineNr">4624 </span>      74/jump-if-equal  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
+<span id="L4624" class="LineNr">4624 </span>      74/jump-if-=  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
 <span id="L4625" class="LineNr">4625 </span>      81 7/subop/compare *(edi+0x10) 0/imm32
-<span id="L4626" class="LineNr">4626 </span>      74/jump-if-equal  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
+<span id="L4626" class="LineNr">4626 </span>      74/jump-if-=  $operand-matches-primitive?:end/disp8  <span class="subxComment"># eax goes from meaning var-&gt;register to result</span>
 <span id="L4627" class="LineNr">4627 </span>      <span class="subxComment"># if prim-var-&gt;register is &quot;*&quot;, return true</span>
 <span id="L4628" class="LineNr">4628 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *(edi+0x10) <span class="Constant">&quot;*&quot;</span>)  <span class="subxComment"># Var-register</span>
 <span id="L4629" class="LineNr">4629 </span>      3d/compare-eax-and 0/imm32
 <span id="L4630" class="LineNr">4630 </span>      b8/copy-to-eax 1/imm32/true
-<span id="L4631" class="LineNr">4631 </span>      75/jump-if-not-equal $operand-matches-primitive?:end/disp8
+<span id="L4631" class="LineNr">4631 </span>      75/jump-if-!= $operand-matches-primitive?:end/disp8
 <span id="L4632" class="LineNr">4632 </span>      <span class="subxComment"># if string contents don't match, return false</span>
 <span id="L4633" class="LineNr">4633 </span>      (<a href='../054string-equal.subx.html#L16'>string-equal?</a> *(esi+0x10) *(edi+0x10))  <span class="subxComment"># Var-register Var-register</span>
 <span id="L4634" class="LineNr">4634 </span>      3d/compare-eax-and 0/imm32
 <span id="L4635" class="LineNr">4635 </span>      b8/copy-to-eax 0/imm32/false
-<span id="L4636" class="LineNr">4636 </span>      74/jump-if-equal $operand-matches-primitive?:end/disp8
+<span id="L4636" class="LineNr">4636 </span>      74/jump-if-= $operand-matches-primitive?:end/disp8
 <span id="L4637" class="LineNr">4637 </span>    }
 <span id="L4638" class="LineNr">4638 </span>    <span class="subxComment"># return true</span>
 <span id="L4639" class="LineNr">4639 </span>    b8/copy-to-eax 1/imm32/true
@@ -4673,19 +4673,19 @@ if ('onhashchange' in window) {
 <span id="L4661" class="LineNr">4661 </span>    8b/-&gt; %ecx 0/r32/eax  <span class="subxComment"># Var-type</span>
 <span id="L4662" class="LineNr">4662 </span>    39/compare %edx 0/r32/eax  <span class="subxComment"># Var-type</span>
 <span id="L4663" class="LineNr">4663 </span>    b8/copy-to-eax 1/imm32/true
-<span id="L4664" class="LineNr">4664 </span>    0f 84/jump-if-equal $type-equal?:end/disp32
+<span id="L4664" class="LineNr">4664 </span>    0f 84/jump-if-= $type-equal?:end/disp32
 <span id="L4665" class="LineNr">4665 </span>    <span class="subxComment"># if (a == 0) return false</span>
 <span id="L4666" class="LineNr">4666 </span>    81 7/subop/compare %ecx 0/imm32
 <span id="L4667" class="LineNr">4667 </span>    b8/copy-to-eax 0/imm32/false
-<span id="L4668" class="LineNr">4668 </span>    0f 84/jump-if-equal $type-equal?:end/disp32
+<span id="L4668" class="LineNr">4668 </span>    0f 84/jump-if-= $type-equal?:end/disp32
 <span id="L4669" class="LineNr">4669 </span>    <span class="subxComment"># if (b == 0) return false</span>
 <span id="L4670" class="LineNr">4670 </span>    81 7/subop/compare %edx 0/imm32
 <span id="L4671" class="LineNr">4671 </span>    b8/copy-to-eax 0/imm32/false
-<span id="L4672" class="LineNr">4672 </span>    0f 84/jump-if-equal $type-equal?:end/disp32
+<span id="L4672" class="LineNr">4672 </span>    0f 84/jump-if-= $type-equal?:end/disp32
 <span id="L4673" class="LineNr">4673 </span>    <span class="subxComment"># if (!type-equal?(a-&gt;left, b-&gt;left)) return false</span>
 <span id="L4674" class="LineNr">4674 </span>    (<a href='mu.subx.html#L4649'>type-equal?</a> *ecx *edx)  <span class="subxComment"># Tree-left, Tree-left =&gt; eax</span>
 <span id="L4675" class="LineNr">4675 </span>    3d/compare-eax-and 0/imm32
-<span id="L4676" class="LineNr">4676 </span>    0f 84/jump-if-equal $type-equal?:end/disp32
+<span id="L4676" class="LineNr">4676 </span>    0f 84/jump-if-= $type-equal?:end/disp32
 <span id="L4677" class="LineNr">4677 </span>    <span class="subxComment"># return type-equal?(a-&gt;right, b-&gt;right</span>
 <span id="L4678" class="LineNr">4678 </span>    (<a href='mu.subx.html#L4649'>type-equal?</a> *(ecx+4) *(edx+4))  <span class="subxComment"># Tree-right, Tree-right =&gt; eax</span>
 <span id="L4679" class="LineNr">4679 </span><span class="Constant">$type-equal?:end</span>:

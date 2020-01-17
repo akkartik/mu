@@ -180,7 +180,7 @@ if ('onhashchange' in window) {
 <span id="L117" class="LineNr">117 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
 <span id="L118" class="LineNr">118 </span>    <span class="subxComment"># if (eax == 0) return</span>
 <span id="L119" class="LineNr">119 </span>    3d/compare-eax-and  0/imm32
-<span id="L120" class="LineNr">120 </span>    74/jump-if-equal  $trace:end/disp8
+<span id="L120" class="LineNr">120 </span>    74/jump-if-=  $trace:end/disp8
 <span id="L121" class="LineNr">121 </span>    <span class="subxComment"># t-&gt;write += eax</span>
 <span id="L122" class="LineNr">122 </span>    01/add                          0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># add eax to *edi</span>
 <span id="L123" class="LineNr">123 </span>    <span class="subxComment"># refresh ecx = t-&gt;write</span>
@@ -398,7 +398,7 @@ if ('onhashchange' in window) {
 <span id="L335" class="LineNr">335 </span><span class="Constant">$trace-scan:loop</span>:
 <span id="L336" class="LineNr">336 </span>    <span class="subxComment"># if (Trace-stream-&gt;read &gt;= Trace-stream-&gt;write) return false</span>
 <span id="L337" class="LineNr">337 </span>    39/compare                      1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with *(esi+4)</span>
-<span id="L338" class="LineNr">338 </span>    7d/jump-if-greater-or-equal  $trace-scan:false/disp8
+<span id="L338" class="LineNr">338 </span>    7d/jump-if-&gt;=  $trace-scan:false/disp8
 <span id="L339" class="LineNr">339 </span>    <span class="subxComment"># eax = next-line-matches?(Trace-stream, line)</span>
 <span id="L340" class="LineNr">340 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L341" class="LineNr">341 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
@@ -409,7 +409,7 @@ if ('onhashchange' in window) {
 <span id="L346" class="LineNr">346 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L347" class="LineNr">347 </span>    <span class="subxComment"># if (eax == false) continue</span>
 <span id="L348" class="LineNr">348 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L349" class="LineNr">349 </span>    74/jump-if-equal  $trace-scan:continue/disp8
+<span id="L349" class="LineNr">349 </span>    74/jump-if-=  $trace-scan:continue/disp8
 <span id="L350" class="LineNr">350 </span><span class="Constant">$trace-scan:true</span>:
 <span id="L351" class="LineNr">351 </span>    <span class="subxComment"># skip-next-line(Trace-stream)</span>
 <span id="L352" class="LineNr">352 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -667,12 +667,12 @@ if ('onhashchange' in window) {
 <span id="L604" class="LineNr">604 </span><span class="Constant">$next-line-matches?:loop</span>:
 <span id="L605" class="LineNr">605 </span>    <span class="subxComment"># if (currl &gt;= maxl) break</span>
 <span id="L606" class="LineNr">606 </span>    39/compare                      3/mod/direct    6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare esi and ecx</span>
-<span id="L607" class="LineNr">607 </span>    73/jump-if-greater-or-equal-unsigned  $next-line-matches?:<span class="Constant">break</span>/disp8
+<span id="L607" class="LineNr">607 </span>    73/jump-if-addr&gt;=  $next-line-matches?:<span class="Constant">break</span>/disp8
 <span id="L608" class="LineNr">608 </span>    <span class="subxComment"># if (currt &gt;= maxt) return false</span>
 <span id="L609" class="LineNr">609 </span>    <span class="subxS1Comment"># . eax = false</span>
 <span id="L610" class="LineNr">610 </span>    b8/copy-to-eax  0/imm32/false
 <span id="L611" class="LineNr">611 </span>    39/compare                      3/mod/direct    7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare edi and edx</span>
-<span id="L612" class="LineNr">612 </span>    73/jump-if-greater-or-equal-unsigned  $next-line-matches?:end/disp8
+<span id="L612" class="LineNr">612 </span>    73/jump-if-addr&gt;=  $next-line-matches?:end/disp8
 <span id="L613" class="LineNr">613 </span>    <span class="subxComment"># if (*currt != *currl) return false</span>
 <span id="L614" class="LineNr">614 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L615" class="LineNr">615 </span>    31/xor                          3/mod/direct    3/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear ebx</span>
@@ -684,7 +684,7 @@ if ('onhashchange' in window) {
 <span id="L621" class="LineNr">621 </span>    39/compare                      3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare eax and ebx</span>
 <span id="L622" class="LineNr">622 </span>    <span class="subxS1Comment"># . eax = false</span>
 <span id="L623" class="LineNr">623 </span>    b8/copy-to-eax  0/imm32/false
-<span id="L624" class="LineNr">624 </span>    75/jump-if-not-equal  $next-line-matches?:end/disp8
+<span id="L624" class="LineNr">624 </span>    75/jump-if-!=  $next-line-matches?:end/disp8
 <span id="L625" class="LineNr">625 </span>    <span class="subxComment"># ++currt</span>
 <span id="L626" class="LineNr">626 </span>    47/increment-edi
 <span id="L627" class="LineNr">627 </span>    <span class="subxComment"># ++currl</span>
@@ -698,7 +698,7 @@ if ('onhashchange' in window) {
 <span id="L635" class="LineNr">635 </span>    3d/compare-eax-and  0xa/imm32/newline
 <span id="L636" class="LineNr">636 </span>    <span class="subxS1Comment"># . eax = false</span>
 <span id="L637" class="LineNr">637 </span>    b8/copy-to-eax  1/imm32/true
-<span id="L638" class="LineNr">638 </span>    74/jump-if-equal  $next-line-matches?:end/disp8
+<span id="L638" class="LineNr">638 </span>    74/jump-if-=  $next-line-matches?:end/disp8
 <span id="L639" class="LineNr">639 </span>    b8/copy-to-eax  0/imm32/true
 <span id="L640" class="LineNr">640 </span><span class="Constant">$next-line-matches?:end</span>:
 <span id="L641" class="LineNr">641 </span>    <span class="subxS1Comment"># . restore registers</span>
@@ -834,14 +834,14 @@ if ('onhashchange' in window) {
 <span id="L771" class="LineNr">771 </span><span class="Constant">$skip-next-line:loop</span>:
 <span id="L772" class="LineNr">772 </span>    <span class="subxComment"># if (curr &gt;= max) break</span>
 <span id="L773" class="LineNr">773 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx and ebx</span>
-<span id="L774" class="LineNr">774 </span>    73/jump-if-greater-or-equal-unsigned  $skip-next-line:end/disp8
+<span id="L774" class="LineNr">774 </span>    73/jump-if-addr&gt;=  $skip-next-line:end/disp8
 <span id="L775" class="LineNr">775 </span>    <span class="subxComment"># ++i</span>
 <span id="L776" class="LineNr">776 </span>    42/increment-edx
 <span id="L777" class="LineNr">777 </span>    <span class="subxComment"># if (*curr == '\n') break</span>
 <span id="L778" class="LineNr">778 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L779" class="LineNr">779 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ecx to eax</span>
 <span id="L780" class="LineNr">780 </span>    3d/compare-eax-and  0a/imm32/newline
-<span id="L781" class="LineNr">781 </span>    74/jump-if-equal  $skip-next-line:end/disp8
+<span id="L781" class="LineNr">781 </span>    74/jump-if-=  $skip-next-line:end/disp8
 <span id="L782" class="LineNr">782 </span>    <span class="subxComment"># ++curr</span>
 <span id="L783" class="LineNr">783 </span>    41/increment-ecx
 <span id="L784" class="LineNr">784 </span>    <span class="subxComment"># loop</span>
@@ -980,10 +980,10 @@ if ('onhashchange' in window) {
 <span id="L917" class="LineNr">917 </span><span class="Constant">$_append-4:loop</span>:
 <span id="L918" class="LineNr">918 </span>    <span class="subxComment"># if (in &gt;= inend) break</span>
 <span id="L919" class="LineNr">919 </span>    39/compare                      3/mod/direct    6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare esi with ecx</span>
-<span id="L920" class="LineNr">920 </span>    73/jump-if-greater-or-equal-unsigned  $_append-4:end/disp8
+<span id="L920" class="LineNr">920 </span>    73/jump-if-addr&gt;=  $_append-4:end/disp8
 <span id="L921" class="LineNr">921 </span>    <span class="subxComment"># if (out &gt;= outend) abort  # just to catch test failures fast</span>
 <span id="L922" class="LineNr">922 </span>    39/compare                      3/mod/direct    7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare edi with edx</span>
-<span id="L923" class="LineNr">923 </span>    73/jump-if-greater-or-equal-unsigned  $_append-4:abort/disp8
+<span id="L923" class="LineNr">923 </span>    73/jump-if-addr&gt;=  $_append-4:abort/disp8
 <span id="L924" class="LineNr">924 </span>    <span class="subxComment"># *out = *in</span>
 <span id="L925" class="LineNr">925 </span>    8a/copy-byte                    0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/BL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *esi to BL</span>
 <span id="L926" class="LineNr">926 </span>    88/copy-byte                    0/mod/indirect  7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/BL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at BL to *edi</span>

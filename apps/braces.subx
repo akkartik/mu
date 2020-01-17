@@ -57,11 +57,11 @@ Entry:  # run tests if necessary, a REPL if not
     (new-segment *Heap-size Heap)
     # if (argc <= 1) goto interactive
     81 7/subop/compare *ebp 1/imm32
-    7e/jump-if-lesser-or-equal $subx-braces-main:interactive/disp8
+    7e/jump-if-<= $subx-braces-main:interactive/disp8
     # if (argv[1] != "test")) goto interactive
     (kernel-string-equal? *(ebp+8) "test")  # => eax
     3d/compare-eax-and 0/imm32
-    74/jump-if-equal $subx-braces-main:interactive/disp8
+    74/jump-if-= $subx-braces-main:interactive/disp8
     #
     (run-tests)
     # syscall(exit, *Num-test-failures)
@@ -146,7 +146,7 @@ $subx-braces:line-loop:
 $subx-braces:check0:
     # if (line->write == 0) break
     81 7/subop/compare *ecx 0/imm32
-    0f 84/jump-if-equal  $subx-braces:break/disp32
+    0f 84/jump-if-=  $subx-braces:break/disp32
     (skip-chars-matching-whitespace %ecx)
 $subx-braces:check-for-curly-open:
     # if (line->data[line->read] != '{') goto next check
@@ -156,7 +156,7 @@ $subx-braces:check-for-curly-open:
     81 4/subop/and %eax 0xff/imm32
     # . if (eax != '{') continue
     3d/compare-eax-and 0x7b/imm32/open-curly
-    0f 85/jump-if-not-equal $subx-braces:check-for-curly-closed/disp32
+    0f 85/jump-if-!= $subx-braces:check-for-curly-closed/disp32
 $subx-braces:emit-curly-open:
     # print(out, "_loop" next-label-id ":")
     (write-buffered *(ebp+0xc) "_loop")
@@ -171,7 +171,7 @@ $subx-braces:emit-curly-open:
 $subx-braces:check-for-curly-closed:
     # if (line->data[line->read] != '}') goto next check
     3d/compare-eax-and 0x7d/imm32/close-curly
-    0f 85/jump-if-equal $subx-braces:word-loop/disp32
+    0f 85/jump-if-= $subx-braces:word-loop/disp32
 $subx-braces:emit-curly-closed:
     # eax = pop(label-stack)
     (pop %edx)
@@ -187,7 +187,7 @@ $subx-braces:check1:
     # if (slice-empty?(word-slice)) break
     (slice-empty? %edi)
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $subx-braces:next-line/disp32
+    0f 85/jump-if-!= $subx-braces:next-line/disp32
 $subx-braces:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
     # . eax = *word-slice->start
@@ -196,14 +196,14 @@ $subx-braces:check-for-comment:
     81 4/subop/and %eax 0xff/imm32
     # . if (eax == '#') continue
     3d/compare-eax-and 0x23/imm32/hash
-    74/jump-if-equal $subx-braces:word-loop/disp8
+    74/jump-if-= $subx-braces:word-loop/disp8
 $subx-braces:check-for-break:
     # if (!slice-starts-with?(word-slice, "break/")) goto next check
     # . eax = slice-starts-with?(word-slice, "break/")
     (slice-starts-with? %edi "break/")
     # . if (eax == false) goto next check
     3d/compare-eax-and 0/imm32/false
-    74/jump-if-equal $subx-braces:check-for-loop/disp8
+    74/jump-if-= $subx-braces:check-for-loop/disp8
 $subx-braces:emit-break:
     (top %edx)
     # print(out, "_break" eax)
@@ -219,7 +219,7 @@ $subx-braces:check-for-loop:
     (slice-starts-with? %edi "loop/")
     # . if (eax == false) goto next check
     3d/compare-eax-and 0/imm32/false
-    74/jump-if-equal $subx-braces:emit-word-slice/disp8
+    74/jump-if-= $subx-braces:emit-word-slice/disp8
 $subx-braces:emit-loop:
     (top %edx)
     # print(out, "_loop" eax)

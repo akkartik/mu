@@ -40,7 +40,7 @@ Entry:  # run tests if necessary, convert stdin if not
     # - if argc > 1 and argv[1] == "test", then return run_tests()
     # if (argc <= 1) goto interactive
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0/disp8         1/imm32           # compare *ebp
-    7e/jump-if-lesser-or-equal  $subx-assort-main:interactive/disp8
+    7e/jump-if-<=  $subx-assort-main:interactive/disp8
     # if (!kernel-string-equal?(argv[1], "test")) goto interactive
     # . eax = kernel-string-equal?(argv[1], "test")
     # . . push args
@@ -52,7 +52,7 @@ Entry:  # run tests if necessary, convert stdin if not
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto interactive
     3d/compare-eax-and  0/imm32/false
-    74/jump-if-equal  $subx-assort-main:interactive/disp8
+    74/jump-if-=  $subx-assort-main:interactive/disp8
     # run-tests()
     e8/call  run-tests/disp32
     # syscall(exit, *Num-test-failures)
@@ -525,7 +525,7 @@ $read-segments:loop:
 $read-segments:check0:
     # if (line->write == 0) break
     81          7/subop/compare     0/mod/indirect  1/rm32/ecx    .           .             .           .           .               0/imm32           # compare *ecx
-    0f 84/jump-if-equal  $read-segments:break/disp32
+    0f 84/jump-if-=  $read-segments:break/disp32
 #?     # dump line {{{
 #?     # . write(2/stderr, "LL: ")
 #?     # . . push args
@@ -587,7 +587,7 @@ $read-segments:check1:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . if (eax != false) continue
     3d/compare-eax-and  0/imm32/false
-    0f 85/jump-if-not-equal  $read-segments:loop/disp32
+    0f 85/jump-if-!=  $read-segments:loop/disp32
 $read-segments:check-for-comment:
 #?     # print("check for comment\n") {{{
 #?     # . . push args
@@ -606,7 +606,7 @@ $read-segments:check-for-comment:
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # . if (c == '#') continue
     3d/compare-eax-and  0x23/imm32/hash
-    0f 84/jump-if-equal  $read-segments:loop/disp32
+    0f 84/jump-if-=  $read-segments:loop/disp32
 $read-segments:check-for-segment-header:
 #?     # print("check for segment header\n") {{{
 #?     # . . push args
@@ -668,7 +668,7 @@ $read-segments:check-for-segment-header:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . if (eax == false) goto check3
     3d/compare-eax-and  0/imm32/false
-    0f 84/jump-if-equal  $read-segments:regular-line/disp32
+    0f 84/jump-if-=  $read-segments:regular-line/disp32
     # segment-name = next-word-or-string(line)
     # . . push args
     52/push-edx
@@ -730,7 +730,7 @@ $read-segments:check-for-segment-header:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy *eax to ebx
     # if (curr-segment != 0) continue
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
-    0f 85/jump-if-not-equal  $read-segments:loop/disp32
+    0f 85/jump-if-!=  $read-segments:loop/disp32
     # curr-segment = new-stream(Heap, Segment-size, 1)
     # . save segment-slot
     50/push-eax
@@ -871,7 +871,7 @@ write-segments:  # out : (addr buffered-file), table : (addr stream {string_key,
 $write-segments:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           2/r32/edx   .               .                 # compare esi with edx
-    73/jump-if-greater-or-equal-unsigned  $write-segments:break/disp8
+    73/jump-if-addr>=  $write-segments:break/disp8
     # var stream/eax : (addr stream byte) = table[i].stream
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     # write-stream-data(out, stream)

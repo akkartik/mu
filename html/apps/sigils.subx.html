@@ -130,7 +130,7 @@ if ('onhashchange' in window) {
 <span id="L68" class="LineNr">  68 </span>    <span class="subxH1Comment"># - if argc &gt; 1 and argv[1] == &quot;test&quot;, then return run_tests()</span>
 <span id="L69" class="LineNr">  69 </span>    <span class="subxComment"># if (argc &lt;= 1) goto interactive</span>
 <span id="L70" class="LineNr">  70 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0/disp8         1/imm32           <span class="subxComment"># compare *ebp</span>
-<span id="L71" class="LineNr">  71 </span>    7e/jump-if-lesser-or-equal  $subx-sigils-main:interactive/disp8
+<span id="L71" class="LineNr">  71 </span>    7e/jump-if-&lt;=  $subx-sigils-main:interactive/disp8
 <span id="L72" class="LineNr">  72 </span>    <span class="subxComment"># if (!kernel-string-equal?(argv[1], &quot;test&quot;)) goto interactive</span>
 <span id="L73" class="LineNr">  73 </span>    <span class="subxS1Comment"># . eax = kernel-string-equal?(argv[1], &quot;test&quot;)</span>
 <span id="L74" class="LineNr">  74 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -142,7 +142,7 @@ if ('onhashchange' in window) {
 <span id="L80" class="LineNr">  80 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L81" class="LineNr">  81 </span>    <span class="subxS1Comment"># . if (eax == false) goto interactive</span>
 <span id="L82" class="LineNr">  82 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L83" class="LineNr">  83 </span>    74/jump-if-equal  $subx-sigils-main:interactive/disp8
+<span id="L83" class="LineNr">  83 </span>    74/jump-if-=  $subx-sigils-main:interactive/disp8
 <span id="L84" class="LineNr">  84 </span>    <span class="subxComment"># run-tests()</span>
 <span id="L85" class="LineNr">  85 </span>    e8/call  run-tests/disp32
 <span id="L86" class="LineNr">  86 </span>    <span class="subxComment"># syscall(exit, *Num-test-failures)</span>
@@ -232,7 +232,7 @@ if ('onhashchange' in window) {
 <span id="L170" class="LineNr"> 170 </span><span class="Constant">$subx-sigils:check0</span>:
 <span id="L171" class="LineNr"> 171 </span>    <span class="subxComment"># if (line-&gt;write == 0) break</span>
 <span id="L172" class="LineNr"> 172 </span>    81          7/subop/compare     0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32           <span class="subxComment"># compare *ecx</span>
-<span id="L173" class="LineNr"> 173 </span>    0f 84/jump-if-equal  $subx-sigils:<span class="Constant">break</span>/disp32
+<span id="L173" class="LineNr"> 173 </span>    0f 84/jump-if-=  $subx-sigils:<span class="Constant">break</span>/disp32
 <span id="L174" class="LineNr"> 174 </span><span class="Constant">$subx-sigils:word-loop</span>:
 <span id="L175" class="LineNr"> 175 </span>    <span class="subxComment"># next-word-or-expression(line, word-slice)</span>
 <span id="L176" class="LineNr"> 176 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -253,7 +253,7 @@ if ('onhashchange' in window) {
 <span id="L191" class="LineNr"> 191 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L192" class="LineNr"> 192 </span>    <span class="subxS1Comment"># . if (eax != false) break</span>
 <span id="L193" class="LineNr"> 193 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L194" class="LineNr"> 194 </span>    0f 85/jump-if-not-equal  $subx-sigils:next-line/disp32
+<span id="L194" class="LineNr"> 194 </span>    0f 85/jump-if-!=  $subx-sigils:next-line/disp32
 <span id="L195" class="LineNr"> 195 </span><span class="Constant">$subx-sigils:check-for-comment</span>:
 <span id="L196" class="LineNr"> 196 </span>    <span class="subxComment"># if (slice-starts-with?(word-slice, &quot;#&quot;)) continue</span>
 <span id="L197" class="LineNr"> 197 </span>    <span class="subxS1Comment"># . start/ebx = word-slice-&gt;start</span>
@@ -263,11 +263,11 @@ if ('onhashchange' in window) {
 <span id="L201" class="LineNr"> 201 </span>    8a/copy-byte                    0/mod/indirect  3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ebx to AL</span>
 <span id="L202" class="LineNr"> 202 </span>    <span class="subxS1Comment"># . if (eax == '#') continue</span>
 <span id="L203" class="LineNr"> 203 </span>    3d/compare-eax-and  0x23/imm32/hash
-<span id="L204" class="LineNr"> 204 </span>    74/jump-if-equal  $subx-sigils:word-loop/disp8
+<span id="L204" class="LineNr"> 204 </span>    74/jump-if-=  $subx-sigils:word-loop/disp8
 <span id="L205" class="LineNr"> 205 </span><span class="Constant">$subx-sigils:check-for-direct-mode</span>:
 <span id="L206" class="LineNr"> 206 </span>    <span class="subxComment"># if (!slice-starts-with?(word-slice, &quot;%&quot;)) goto next check</span>
 <span id="L207" class="LineNr"> 207 </span>    3d/compare-eax-and  0x25/imm32/percent
-<span id="L208" class="LineNr"> 208 </span>    75/jump-if-not-equal  $subx-sigils:check-for-indirect-mode/disp8
+<span id="L208" class="LineNr"> 208 </span>    75/jump-if-!=  $subx-sigils:check-for-indirect-mode/disp8
 <span id="L209" class="LineNr"> 209 </span><span class="Constant">$subx-sigils:direct-mode</span>:
 <span id="L210" class="Folded"> 210 </span><span class="Folded">+-- 40 lines: #?     # dump word-slice -----------------------------------------------------------------------------------------------------------------------</span>
 <span id="L250" class="LineNr"> 250 </span>    <span class="subxComment"># emit-direct-mode(out, word-slice)</span>
@@ -283,7 +283,7 @@ if ('onhashchange' in window) {
 <span id="L260" class="LineNr"> 260 </span><span class="Constant">$subx-sigils:check-for-indirect-mode</span>:
 <span id="L261" class="LineNr"> 261 </span>    <span class="subxComment"># if (!slice-starts-with?(word-slice, &quot;*&quot;)) goto next check</span>
 <span id="L262" class="LineNr"> 262 </span>    3d/compare-eax-and  0x2a/imm32/asterisk
-<span id="L263" class="LineNr"> 263 </span>    75/jump-if-not-equal  $subx-sigils:check-for-invalid-addition/disp8
+<span id="L263" class="LineNr"> 263 </span>    75/jump-if-!=  $subx-sigils:check-for-invalid-addition/disp8
 <span id="L264" class="LineNr"> 264 </span>    <span class="subxComment"># if (!disp32-mode?(word-slice)) goto indirect mode</span>
 <span id="L265" class="LineNr"> 265 </span>    <span class="subxS1Comment"># . eax = disp32-mode?(word-slice)</span>
 <span id="L266" class="LineNr"> 266 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -294,7 +294,7 @@ if ('onhashchange' in window) {
 <span id="L271" class="LineNr"> 271 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L272" class="LineNr"> 272 </span>    <span class="subxS1Comment"># . if (eax == false) goto indirect mode</span>
 <span id="L273" class="LineNr"> 273 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L274" class="LineNr"> 274 </span>    74/jump-if-equal  $subx-sigils:indirect-mode/disp8
+<span id="L274" class="LineNr"> 274 </span>    74/jump-if-=  $subx-sigils:indirect-mode/disp8
 <span id="L275" class="LineNr"> 275 </span><span class="Constant">$subx-sigils:disp32-mode</span>:
 <span id="L276" class="LineNr"> 276 </span>    <span class="subxComment"># emit-indirect-mode(out, word-slice)</span>
 <span id="L277" class="LineNr"> 277 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -340,11 +340,11 @@ if ('onhashchange' in window) {
 <span id="L317" class="LineNr"> 317 </span><span class="Constant">$subx-sigils:check-for-invalid-addition</span>:
 <span id="L318" class="LineNr"> 318 </span>    <span class="subxComment"># if (slice-starts-with?(word-slice, &quot;+&quot;)) goto error1</span>
 <span id="L319" class="LineNr"> 319 </span>    3d/compare-eax-and  0x2b/imm32/plus
-<span id="L320" class="LineNr"> 320 </span>    74/jump-if-equal  $subx-sigils:error1/disp8
+<span id="L320" class="LineNr"> 320 </span>    74/jump-if-=  $subx-sigils:error1/disp8
 <span id="L321" class="LineNr"> 321 </span><span class="Constant">$subx-sigils:check-for-invalid-left-shift</span>:
 <span id="L322" class="LineNr"> 322 </span>    <span class="subxComment"># if (slice-starts-with?(word-slice, &quot;&lt;&quot;)) goto error1</span>
 <span id="L323" class="LineNr"> 323 </span>    3d/compare-eax-and  0x3c/imm32/less-than
-<span id="L324" class="LineNr"> 324 </span>    74/jump-if-equal  $subx-sigils:error1/disp8
+<span id="L324" class="LineNr"> 324 </span>    74/jump-if-=  $subx-sigils:error1/disp8
 <span id="L325" class="LineNr"> 325 </span><span class="Constant">$subx-sigils:regular-word</span>:
 <span id="L326" class="LineNr"> 326 </span>    <span class="subxComment"># write-slice-buffered(out, word-slice)</span>
 <span id="L327" class="LineNr"> 327 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -1425,7 +1425,7 @@ if ('onhashchange' in window) {
 <span id="L1652" class="LineNr">1652 </span>    8b/copy                         1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *(esi+4) to ecx</span>
 <span id="L1653" class="LineNr">1653 </span>    <span class="subxS1Comment"># . if (ecx &lt; line-&gt;write) goto next check</span>
 <span id="L1654" class="LineNr">1654 </span>    3b/compare                      0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with *esi</span>
-<span id="L1655" class="LineNr">1655 </span>    7c/jump-if-lesser  $next-word-or-expression:check-for-comment/disp8
+<span id="L1655" class="LineNr">1655 </span>    7c/jump-if-&lt;  $next-word-or-expression:check-for-comment/disp8
 <span id="L1656" class="LineNr">1656 </span>    <span class="subxS1Comment"># . return out = {0, 0}</span>
 <span id="L1657" class="LineNr">1657 </span>    c7          0/subop/copy        0/mod/direct    7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32           <span class="subxComment"># copy to *edi</span>
 <span id="L1658" class="LineNr">1658 </span>    c7          0/subop/copy        1/mod/*+disp8   7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8         0/imm32           <span class="subxComment"># copy to *(edi+4)</span>
@@ -1440,7 +1440,7 @@ if ('onhashchange' in window) {
 <span id="L1667" class="LineNr">1667 </span>    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx  <span class="Normal"> . </span>          0/r32/AL    0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *(esi+ecx+12) to AL</span>
 <span id="L1668" class="LineNr">1668 </span>    <span class="subxS1Comment"># . if (eax != '#') goto next check</span>
 <span id="L1669" class="LineNr">1669 </span>    3d/compare-eax-and  0x23/imm32/pound
-<span id="L1670" class="LineNr">1670 </span>    75/jump-if-not-equal  $next-word-or-expression:check-for-string-literal/disp8
+<span id="L1670" class="LineNr">1670 </span>    75/jump-if-!=  $next-word-or-expression:check-for-string-literal/disp8
 <span id="L1671" class="LineNr">1671 </span><span class="Constant">$next-word-or-expression:comment</span>:
 <span id="L1672" class="LineNr">1672 </span>    <span class="subxComment"># out-&gt;end = &amp;line-&gt;data[line-&gt;write]</span>
 <span id="L1673" class="LineNr">1673 </span>    8b/copy                         0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *esi to eax</span>
@@ -1454,7 +1454,7 @@ if ('onhashchange' in window) {
 <span id="L1681" class="LineNr">1681 </span><span class="Constant">$next-word-or-expression:check-for-string-literal</span>:
 <span id="L1682" class="LineNr">1682 </span>    <span class="subxComment"># if (line-&gt;data[line-&gt;read] != '&quot;') goto next check</span>
 <span id="L1683" class="LineNr">1683 </span>    3d/compare-eax-and  0x22/imm32/dquote
-<span id="L1684" class="LineNr">1684 </span>    75/jump-if-not-equal  $next-word-or-expression:check-for-expression/disp8
+<span id="L1684" class="LineNr">1684 </span>    75/jump-if-!=  $next-word-or-expression:check-for-expression/disp8
 <span id="L1685" class="LineNr">1685 </span><span class="Constant">$next-word-or-expression:string-literal</span>:
 <span id="L1686" class="LineNr">1686 </span>    <span class="subxComment"># skip-string(line)</span>
 <span id="L1687" class="LineNr">1687 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -1468,14 +1468,14 @@ if ('onhashchange' in window) {
 <span id="L1695" class="LineNr">1695 </span><span class="Constant">$next-word-or-expression:check-for-expression</span>:
 <span id="L1696" class="LineNr">1696 </span>    <span class="subxComment"># if (line-&gt;data[line-&gt;read] != '*') goto next check</span>
 <span id="L1697" class="LineNr">1697 </span>    3d/compare-eax-and  0x2a/imm32/asterisk
-<span id="L1698" class="LineNr">1698 </span>    75/jump-if-not-equal  $next-word-or-expression:regular-word/disp8
+<span id="L1698" class="LineNr">1698 </span>    75/jump-if-!=  $next-word-or-expression:regular-word/disp8
 <span id="L1699" class="LineNr">1699 </span>    <span class="subxComment"># if (line-&gt;data[line-&gt;read + 1] == ' ') goto error1</span>
 <span id="L1700" class="LineNr">1700 </span>    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx  <span class="Normal"> . </span>          0/r32/AL    0xd/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *(esi+ecx+12+1) to AL</span>
 <span id="L1701" class="LineNr">1701 </span>    3d/compare-eax-and  0x20/imm32/space
-<span id="L1702" class="LineNr">1702 </span>    74/jump-if-equal  $next-word-or-expression:error1/disp8
+<span id="L1702" class="LineNr">1702 </span>    74/jump-if-=  $next-word-or-expression:error1/disp8
 <span id="L1703" class="LineNr">1703 </span>    <span class="subxComment"># if (line-&gt;data[line-&gt;read + 1] != '(') goto regular word</span>
 <span id="L1704" class="LineNr">1704 </span>    3d/compare-eax-and  0x28/imm32/open-paren
-<span id="L1705" class="LineNr">1705 </span>    75/jump-if-not-equal  $next-word-or-expression:regular-word/disp8
+<span id="L1705" class="LineNr">1705 </span>    75/jump-if-!=  $next-word-or-expression:regular-word/disp8
 <span id="L1706" class="LineNr">1706 </span><span class="Constant">$next-word-or-expression:paren</span>:
 <span id="L1707" class="LineNr">1707 </span>    <span class="subxComment"># skip-until-close-paren(line)</span>
 <span id="L1708" class="LineNr">1708 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -1490,7 +1490,7 @@ if ('onhashchange' in window) {
 <span id="L1717" class="LineNr">1717 </span>    8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx  <span class="Normal"> . </span>          0/r32/AL    0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *(esi+ecx+12) to AL</span>
 <span id="L1718" class="LineNr">1718 </span>    <span class="subxS1Comment"># . if (eax != ')') goto error2</span>
 <span id="L1719" class="LineNr">1719 </span>    3d/compare-eax-and  0x29/imm32/close-paren
-<span id="L1720" class="LineNr">1720 </span>    75/jump-if-not-equal  $next-word-or-expression:error2/disp8
+<span id="L1720" class="LineNr">1720 </span>    75/jump-if-!=  $next-word-or-expression:error2/disp8
 <span id="L1721" class="LineNr">1721 </span>    <span class="subxComment"># skip ')'</span>
 <span id="L1722" class="LineNr">1722 </span>    ff          0/subop/increment   1/mod/*+disp8   6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># increment *(esi+4)</span>
 <span id="L1723" class="LineNr">1723 </span>    <span class="subxComment"># fall through</span>
@@ -2042,7 +2042,7 @@ if ('onhashchange' in window) {
 <span id="L2269" class="LineNr">2269 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2270" class="LineNr">2270 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2271" class="LineNr">2271 </span>    3d/compare-eax-and  0x28/imm32/open-paren
-<span id="L2272" class="LineNr">2272 </span>    74/jump-if-equal  $parse-effective-address:compound-expression/disp8
+<span id="L2272" class="LineNr">2272 </span>    74/jump-if-=  $parse-effective-address:compound-expression/disp8
 <span id="L2273" class="LineNr">2273 </span><span class="Constant">$parse-effective-address:simple-register</span>:
 <span id="L2274" class="LineNr">2274 </span>    <span class="subxComment"># local-slice = next-token-from-slice(local-slice-&gt;start, local-slice-&gt;end, &quot;/&quot;)</span>
 <span id="L2275" class="LineNr">2275 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -2108,13 +2108,13 @@ if ('onhashchange' in window) {
 <span id="L2335" class="LineNr">2335 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2336" class="LineNr">2336 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2337" class="LineNr">2337 </span>    3d/compare-eax-and  0x29/imm32/close-paren
-<span id="L2338" class="LineNr">2338 </span>    0f 84/jump-if-equal  $parse-effective-address:end/disp32
+<span id="L2338" class="LineNr">2338 </span>    0f 84/jump-if-=  $parse-effective-address:end/disp32
 <span id="L2339" class="LineNr">2339 </span>    <span class="subxComment"># if (*local-slice-&gt;start == '-') goto displacement</span>
 <span id="L2340" class="LineNr">2340 </span>    3d/compare-eax-and  0x2d/imm32/minus
-<span id="L2341" class="LineNr">2341 </span>    0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
+<span id="L2341" class="LineNr">2341 </span>    0f 84/jump-if-=  $parse-effective-address:displacement/disp32
 <span id="L2342" class="LineNr">2342 </span>    <span class="subxComment"># if (*local-slice-&gt;start != '+') goto error1</span>
 <span id="L2343" class="LineNr">2343 </span>    3d/compare-eax-and  0x2b/imm32/plus
-<span id="L2344" class="LineNr">2344 </span>    0f 85/jump-if-not-equal  $parse-effective-address:error1/disp32
+<span id="L2344" class="LineNr">2344 </span>    0f 85/jump-if-!=  $parse-effective-address:error1/disp32
 <span id="L2345" class="LineNr">2345 </span><span class="Constant">$parse-effective-address:check-for-index</span>:
 <span id="L2346" class="LineNr">2346 </span>    <span class="subxComment"># ++local-slice-&gt;start to skip '+'</span>
 <span id="L2347" class="LineNr">2347 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
@@ -2158,7 +2158,7 @@ if ('onhashchange' in window) {
 <span id="L2385" class="LineNr">2385 </span>    59/pop-to-ecx
 <span id="L2386" class="LineNr">2386 </span>    <span class="subxS1Comment"># . if (eax == 0) goto displacement</span>
 <span id="L2387" class="LineNr">2387 </span>    3d/compare-eax-and  0/imm32
-<span id="L2388" class="LineNr">2388 </span>    0f 84/jump-if-equal  $parse-effective-address:displacement/disp32
+<span id="L2388" class="LineNr">2388 </span>    0f 84/jump-if-=  $parse-effective-address:displacement/disp32
 <span id="L2389" class="LineNr">2389 </span><span class="Constant">$parse-effective-address:index</span>:
 <span id="L2390" class="LineNr">2390 </span>    <span class="subxComment"># read register into index</span>
 <span id="L2391" class="LineNr">2391 </span>    <span class="subxS1Comment"># . eax = next-register(local-slice)</span>
@@ -2185,11 +2185,11 @@ if ('onhashchange' in window) {
 <span id="L2412" class="LineNr">2412 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2413" class="LineNr">2413 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2414" class="LineNr">2414 </span>    3d/compare-eax-and  0x29/imm32/close-paren
-<span id="L2415" class="LineNr">2415 </span>    0f 84/jump-if-equal  $parse-effective-address:end/disp32
+<span id="L2415" class="LineNr">2415 </span>    0f 84/jump-if-=  $parse-effective-address:end/disp32
 <span id="L2416" class="LineNr">2416 </span><span class="Constant">$parse-effective-address:check-for-scale</span>:
 <span id="L2417" class="LineNr">2417 </span>    <span class="subxComment"># if (*local-slice-&gt;start != '&lt;') goto next check</span>
 <span id="L2418" class="LineNr">2418 </span>    3d/compare-eax-and  0x3c/imm32/less-than
-<span id="L2419" class="LineNr">2419 </span>    75/jump-if-not-equal  $parse-effective-address:check-for-displacement/disp8
+<span id="L2419" class="LineNr">2419 </span>    75/jump-if-!=  $parse-effective-address:check-for-displacement/disp8
 <span id="L2420" class="LineNr">2420 </span>    <span class="subxComment"># ++local-slice-&gt;start to skip '&lt;'</span>
 <span id="L2421" class="LineNr">2421 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
 <span id="L2422" class="LineNr">2422 </span>    <span class="subxComment"># if (*local-slice-&gt;start != '&lt;') goto error2</span>
@@ -2197,7 +2197,7 @@ if ('onhashchange' in window) {
 <span id="L2424" class="LineNr">2424 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2425" class="LineNr">2425 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2426" class="LineNr">2426 </span>    3d/compare-eax-and  0x3c/imm32/less-than
-<span id="L2427" class="LineNr">2427 </span>    0f 85/jump-if-not-equal  $parse-effective-address:error2/disp32
+<span id="L2427" class="LineNr">2427 </span>    0f 85/jump-if-!=  $parse-effective-address:error2/disp32
 <span id="L2428" class="LineNr">2428 </span>    <span class="subxComment"># ++local-slice-&gt;start to skip '&lt;'</span>
 <span id="L2429" class="LineNr">2429 </span>    ff          0/subop/increment   0/mod/indirect  6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># increment *esi</span>
 <span id="L2430" class="LineNr">2430 </span>    <span class="subxComment"># skip whitespace</span>
@@ -2237,13 +2237,13 @@ if ('onhashchange' in window) {
 <span id="L2464" class="LineNr">2464 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2465" class="LineNr">2465 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2466" class="LineNr">2466 </span>    3d/compare-eax-and  0x29/imm32/close-paren
-<span id="L2467" class="LineNr">2467 </span>    74/jump-if-equal  $parse-effective-address:end/disp8
+<span id="L2467" class="LineNr">2467 </span>    74/jump-if-=  $parse-effective-address:end/disp8
 <span id="L2468" class="LineNr">2468 </span><span class="Constant">$parse-effective-address:check-for-displacement</span>:
 <span id="L2469" class="LineNr">2469 </span>    <span class="subxComment"># if (*local-slice-&gt;start not in '+' '-') goto error3</span>
 <span id="L2470" class="LineNr">2470 </span>    3d/compare-eax-and  0x2b/imm32/plus
-<span id="L2471" class="LineNr">2471 </span>    74/jump-if-equal  $parse-effective-address:displacement/disp8
+<span id="L2471" class="LineNr">2471 </span>    74/jump-if-=  $parse-effective-address:displacement/disp8
 <span id="L2472" class="LineNr">2472 </span>    3d/compare-eax-and  0x2d/imm32/minus
-<span id="L2473" class="LineNr">2473 </span>    74/jump-if-equal  $parse-effective-address:displacement/disp8
+<span id="L2473" class="LineNr">2473 </span>    74/jump-if-=  $parse-effective-address:displacement/disp8
 <span id="L2474" class="LineNr">2474 </span>    e9/jump  $parse-effective-address:error3/disp32
 <span id="L2475" class="LineNr">2475 </span><span class="Constant">$parse-effective-address:displacement</span>:
 <span id="L2476" class="LineNr">2476 </span>    <span class="subxComment"># read integer into disp</span>
@@ -2271,7 +2271,7 @@ if ('onhashchange' in window) {
 <span id="L2498" class="LineNr">2498 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L2499" class="LineNr">2499 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L2500" class="LineNr">2500 </span>    3d/compare-eax-and  0x29/imm32/close-paren
-<span id="L2501" class="LineNr">2501 </span>    0f 85/jump-if-not-equal  $parse-effective-address:error4/disp32
+<span id="L2501" class="LineNr">2501 </span>    0f 85/jump-if-!=  $parse-effective-address:error4/disp32
 <span id="L2502" class="LineNr">2502 </span><span class="Constant">$parse-effective-address:end</span>:
 <span id="L2503" class="LineNr">2503 </span>    <span class="subxComment"># return base in eax</span>
 <span id="L2504" class="LineNr">2504 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          7/r32/edi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy edi to eax</span>
@@ -2929,15 +2929,15 @@ if ('onhashchange' in window) {
 <span id="L3156" class="LineNr">3156 </span><span class="Constant">$emit-indirect-mode:check-for-ebp</span>:
 <span id="L3157" class="LineNr">3157 </span>    <span class="subxComment"># if (base == 5) goto emit-sib</span>
 <span id="L3158" class="LineNr">3158 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0xc/disp8       5/imm32           <span class="subxComment"># compare *(ebp+12)</span>
-<span id="L3159" class="LineNr">3159 </span>    74/jump-if-equal  $emit-indirect-mode:emit-sib/disp8
+<span id="L3159" class="LineNr">3159 </span>    74/jump-if-=  $emit-indirect-mode:emit-sib/disp8
 <span id="L3160" class="LineNr">3160 </span><span class="Constant">$emit-indirect-mode:check-for-esp</span>:
 <span id="L3161" class="LineNr">3161 </span>    <span class="subxComment"># if (base == 4) goto emit-sib</span>
 <span id="L3162" class="LineNr">3162 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0xc/disp8       4/imm32           <span class="subxComment"># compare *(ebp+12)</span>
-<span id="L3163" class="LineNr">3163 </span>    74/jump-if-equal  $emit-indirect-mode:emit-sib/disp8
+<span id="L3163" class="LineNr">3163 </span>    74/jump-if-=  $emit-indirect-mode:emit-sib/disp8
 <span id="L3164" class="LineNr">3164 </span><span class="Constant">$emit-indirect-mode:check-for-sib</span>:
 <span id="L3165" class="LineNr">3165 </span>    <span class="subxComment"># if (index == 4/none) goto next check</span>
 <span id="L3166" class="LineNr">3166 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0x10/disp8      4/imm32           <span class="subxComment"># compare *(ebp+16)</span>
-<span id="L3167" class="LineNr">3167 </span>    0f 84/jump-if-equal  $emit-indirect-mode:check-for-disp/disp32
+<span id="L3167" class="LineNr">3167 </span>    0f 84/jump-if-=  $emit-indirect-mode:check-for-disp/disp32
 <span id="L3168" class="LineNr">3168 </span><span class="Constant">$emit-indirect-mode:emit-sib</span>:
 <span id="L3169" class="LineNr">3169 </span>    <span class="subxComment"># emit(out, &quot;2/mod/indirect 4/rm32/sib &quot; base &quot;/base &quot; index &quot;/index &quot; scale &quot;/scale &quot; disp &quot;/disp32&quot;)</span>
 <span id="L3170" class="LineNr">3170 </span>    <span class="subxS1Comment"># . write-buffered(out, &quot;2/mod/*+disp32 4/rm32/sib &quot;)</span>
@@ -3016,7 +3016,7 @@ if ('onhashchange' in window) {
 <span id="L3243" class="LineNr">3243 </span><span class="Constant">$emit-indirect-mode:check-for-disp</span>:
 <span id="L3244" class="LineNr">3244 </span>    <span class="subxComment"># if (disp == 0) goto next check</span>
 <span id="L3245" class="LineNr">3245 </span>    81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          0x18/disp8      0/imm32           <span class="subxComment"># compare *(ebp+24)</span>
-<span id="L3246" class="LineNr">3246 </span>    74/jump-if-equal  $emit-indirect-mode:emit-indirect/disp8
+<span id="L3246" class="LineNr">3246 </span>    74/jump-if-=  $emit-indirect-mode:emit-indirect/disp8
 <span id="L3247" class="LineNr">3247 </span><span class="Constant">$emit-indirect-mode:emit-disp</span>:
 <span id="L3248" class="LineNr">3248 </span>    <span class="subxComment"># emit(out, &quot;2/mod/*+disp32 &quot; base &quot;/rm32 &quot; disp &quot;/disp32&quot;)</span>
 <span id="L3249" class="LineNr">3249 </span>    <span class="subxS1Comment"># . write-buffered(out, &quot;2/mod/*+disp32 &quot;)</span>
@@ -3475,7 +3475,7 @@ if ('onhashchange' in window) {
 <span id="L3877" class="LineNr">3877 </span>    8a/copy-byte                    0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *eax to AL</span>
 <span id="L3878" class="LineNr">3878 </span>    81          4/subop/and         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xff/imm32        <span class="subxComment"># bitwise and of eax</span>
 <span id="L3879" class="LineNr">3879 </span>    3d/compare-eax-and  0x28/imm32/open-paren
-<span id="L3880" class="LineNr">3880 </span>    74/jump-if-equal  $disp32-mode?:false/disp8
+<span id="L3880" class="LineNr">3880 </span>    74/jump-if-=  $disp32-mode?:false/disp8
 <span id="L3881" class="LineNr">3881 </span><span class="Constant">$disp32-mode?:check-for-register</span>:
 <span id="L3882" class="LineNr">3882 </span>    <span class="subxComment"># local-slice = next-token-from-slice(local-slice-&gt;start, local-slice-&gt;end, &quot;/&quot;)</span>
 <span id="L3883" class="LineNr">3883 </span>    <span class="subxS2Comment"># . . push args</span>
@@ -3498,7 +3498,7 @@ if ('onhashchange' in window) {
 <span id="L3900" class="LineNr">3900 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xc/imm32         <span class="subxComment"># add to esp</span>
 <span id="L3901" class="LineNr">3901 </span>    <span class="subxComment"># if (eax != 0) return false</span>
 <span id="L3902" class="LineNr">3902 </span>    3d/compare-eax-and  0/imm32
-<span id="L3903" class="LineNr">3903 </span>    75/jump-if-not-equal  $disp32-mode?:false/disp8
+<span id="L3903" class="LineNr">3903 </span>    75/jump-if-!=  $disp32-mode?:false/disp8
 <span id="L3904" class="LineNr">3904 </span>    <span class="subxComment"># return true</span>
 <span id="L3905" class="LineNr">3905 </span>    b8/copy-to-eax  1/imm32/true
 <span id="L3906" class="LineNr">3906 </span>    eb/jump  $disp32-mode?:end/disp8
@@ -3591,14 +3591,14 @@ if ('onhashchange' in window) {
 <span id="L3993" class="LineNr">3993 </span><span class="Constant">$next-hex-int:positive</span>:
 <span id="L3994" class="LineNr">3994 </span>    <span class="subxComment"># if (*curr == '+') ++curr</span>
 <span id="L3995" class="LineNr">3995 </span>    3d/compare-eax-and  0x2b/imm32/+
-<span id="L3996" class="LineNr">3996 </span>    75/jump-if-not-equal  $next-hex-int:negative/disp8
+<span id="L3996" class="LineNr">3996 </span>    75/jump-if-!=  $next-hex-int:negative/disp8
 <span id="L3997" class="LineNr">3997 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L3998" class="LineNr">3998 </span>    41/increment-ecx
 <span id="L3999" class="LineNr">3999 </span>    eb/jump  $next-hex-int:skip-whitespace/disp8
 <span id="L4000" class="LineNr">4000 </span><span class="Constant">$next-hex-int:negative</span>:
 <span id="L4001" class="LineNr">4001 </span>    <span class="subxComment"># else if (*curr == '-') ++curr, negate = true</span>
 <span id="L4002" class="LineNr">4002 </span>    3d/compare-eax-and  0x2d/imm32/-
-<span id="L4003" class="LineNr">4003 </span>    75/jump-if-not-equal  $next-hex-int:skip-whitespace/disp8
+<span id="L4003" class="LineNr">4003 </span>    75/jump-if-!=  $next-hex-int:skip-whitespace/disp8
 <span id="L4004" class="LineNr">4004 </span><span class="Constant">$next-hex-int:need-to-negate</span>:
 <span id="L4005" class="LineNr">4005 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L4006" class="LineNr">4006 </span>    41/increment-ecx
@@ -3625,24 +3625,24 @@ if ('onhashchange' in window) {
 <span id="L4027" class="LineNr">4027 </span>    <span class="subxS1Comment"># . if (*curr != '0') jump to loop</span>
 <span id="L4028" class="LineNr">4028 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L4029" class="LineNr">4029 </span>    3d/compare-eax-and  0x30/imm32/0
-<span id="L4030" class="LineNr">4030 </span>    75/jump-if-not-equal  $next-hex-int:<span class="Constant">loop</span>/disp8
+<span id="L4030" class="LineNr">4030 </span>    75/jump-if-!=  $next-hex-int:<span class="Constant">loop</span>/disp8
 <span id="L4031" class="LineNr">4031 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L4032" class="LineNr">4032 </span>    41/increment-ecx
 <span id="L4033" class="LineNr">4033 </span><span class="Constant">$next-hex-int:initial-0x</span>:
 <span id="L4034" class="LineNr">4034 </span>    <span class="subxS1Comment"># . if (curr &gt;= in-&gt;end) return result</span>
 <span id="L4035" class="LineNr">4035 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with edx</span>
-<span id="L4036" class="LineNr">4036 </span>    73/jump-if-greater-or-equal-unsigned  $next-hex-int:end/disp8
+<span id="L4036" class="LineNr">4036 </span>    73/jump-if-addr&gt;=  $next-hex-int:end/disp8
 <span id="L4037" class="LineNr">4037 </span>    <span class="subxS1Comment"># . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again</span>
 <span id="L4038" class="LineNr">4038 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L4039" class="LineNr">4039 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L4040" class="LineNr">4040 </span>    3d/compare-eax-and  0x78/imm32/x
-<span id="L4041" class="LineNr">4041 </span>    75/jump-if-not-equal  $next-hex-int:<span class="Constant">loop</span>/disp8
+<span id="L4041" class="LineNr">4041 </span>    75/jump-if-!=  $next-hex-int:<span class="Constant">loop</span>/disp8
 <span id="L4042" class="LineNr">4042 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L4043" class="LineNr">4043 </span>    41/increment-ecx
 <span id="L4044" class="LineNr">4044 </span><span class="Constant">$next-hex-int:loop</span>:
 <span id="L4045" class="LineNr">4045 </span>    <span class="subxComment"># if (curr &gt;= in-&gt;end) break</span>
 <span id="L4046" class="LineNr">4046 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with edx</span>
-<span id="L4047" class="LineNr">4047 </span>    73/jump-if-greater-or-equal-unsigned  $next-hex-int:<span class="Constant">break</span>/disp8
+<span id="L4047" class="LineNr">4047 </span>    73/jump-if-addr&gt;=  $next-hex-int:<span class="Constant">break</span>/disp8
 <span id="L4048" class="LineNr">4048 </span>    <span class="subxComment"># if (!is-hex-digit?(*curr)) break</span>
 <span id="L4049" class="LineNr">4049 </span>    <span class="subxS1Comment"># . eax = *curr</span>
 <span id="L4050" class="LineNr">4050 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
@@ -3655,7 +3655,7 @@ if ('onhashchange' in window) {
 <span id="L4057" class="LineNr">4057 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L4058" class="LineNr">4058 </span>    <span class="subxS1Comment"># . if (eax == false) break</span>
 <span id="L4059" class="LineNr">4059 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L4060" class="LineNr">4060 </span>    74/jump-if-equal  $next-hex-int:<span class="Constant">break</span>/disp8
+<span id="L4060" class="LineNr">4060 </span>    74/jump-if-=  $next-hex-int:<span class="Constant">break</span>/disp8
 <span id="L4061" class="LineNr">4061 </span>    <span class="subxComment"># eax = from-hex-char(*curr)</span>
 <span id="L4062" class="LineNr">4062 </span>    <span class="subxS2Comment"># . . copy arg to eax</span>
 <span id="L4063" class="LineNr">4063 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
@@ -3671,7 +3671,7 @@ if ('onhashchange' in window) {
 <span id="L4073" class="LineNr">4073 </span><span class="Constant">$next-hex-int:break</span>:
 <span id="L4074" class="LineNr">4074 </span>    <span class="subxComment"># if (negate?) result = -result</span>
 <span id="L4075" class="LineNr">4075 </span>    81          7/subop/compare     3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32/false     <span class="subxComment"># compare ebx</span>
-<span id="L4076" class="LineNr">4076 </span>    74/jump-if-equal  $next-hex-int:end/disp8
+<span id="L4076" class="LineNr">4076 </span>    74/jump-if-=  $next-hex-int:end/disp8
 <span id="L4077" class="LineNr">4077 </span><span class="Constant">$next-hex-int:negate</span>:
 <span id="L4078" class="LineNr">4078 </span>    f7          3/subop/negate      3/mod/direct    7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># negate edi</span>
 <span id="L4079" class="LineNr">4079 </span><span class="Constant">$next-hex-int:end</span>:
@@ -4008,24 +4008,24 @@ if ('onhashchange' in window) {
 <span id="L4410" class="LineNr">4410 </span>    <span class="subxS1Comment"># . if (*curr != '0') jump to loop</span>
 <span id="L4411" class="LineNr">4411 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L4412" class="LineNr">4412 </span>    3d/compare-eax-and  0x30/imm32/0
-<span id="L4413" class="LineNr">4413 </span>    75/jump-if-not-equal  $next-positive-hex-int:<span class="Constant">loop</span>/disp8
+<span id="L4413" class="LineNr">4413 </span>    75/jump-if-!=  $next-positive-hex-int:<span class="Constant">loop</span>/disp8
 <span id="L4414" class="LineNr">4414 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L4415" class="LineNr">4415 </span>    41/increment-ecx
 <span id="L4416" class="LineNr">4416 </span><span class="Constant">$next-positive-hex-int:initial-0x</span>:
 <span id="L4417" class="LineNr">4417 </span>    <span class="subxS1Comment"># . if (curr &gt;= in-&gt;end) return result</span>
 <span id="L4418" class="LineNr">4418 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with edx</span>
-<span id="L4419" class="LineNr">4419 </span>    73/jump-if-greater-or-equal-unsigned  $next-positive-hex-int:end/disp8
+<span id="L4419" class="LineNr">4419 </span>    73/jump-if-addr&gt;=  $next-positive-hex-int:end/disp8
 <span id="L4420" class="LineNr">4420 </span>    <span class="subxS1Comment"># . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again</span>
 <span id="L4421" class="LineNr">4421 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L4422" class="LineNr">4422 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L4423" class="LineNr">4423 </span>    3d/compare-eax-and  0x78/imm32/x
-<span id="L4424" class="LineNr">4424 </span>    75/jump-if-not-equal  $next-positive-hex-int:<span class="Constant">loop</span>/disp8
+<span id="L4424" class="LineNr">4424 </span>    75/jump-if-!=  $next-positive-hex-int:<span class="Constant">loop</span>/disp8
 <span id="L4425" class="LineNr">4425 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L4426" class="LineNr">4426 </span>    41/increment-ecx
 <span id="L4427" class="LineNr">4427 </span><span class="Constant">$next-positive-hex-int:loop</span>:
 <span id="L4428" class="LineNr">4428 </span>    <span class="subxComment"># if (curr &gt;= in-&gt;end) break</span>
 <span id="L4429" class="LineNr">4429 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with edx</span>
-<span id="L4430" class="LineNr">4430 </span>    73/jump-if-greater-or-equal-unsigned  $next-positive-hex-int:end/disp8
+<span id="L4430" class="LineNr">4430 </span>    73/jump-if-addr&gt;=  $next-positive-hex-int:end/disp8
 <span id="L4431" class="LineNr">4431 </span>    <span class="subxComment"># if (!is-hex-digit?(*curr)) break</span>
 <span id="L4432" class="LineNr">4432 </span>    <span class="subxS1Comment"># . eax = *curr</span>
 <span id="L4433" class="LineNr">4433 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
@@ -4038,7 +4038,7 @@ if ('onhashchange' in window) {
 <span id="L4440" class="LineNr">4440 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L4441" class="LineNr">4441 </span>    <span class="subxS1Comment"># . if (eax == false) break</span>
 <span id="L4442" class="LineNr">4442 </span>    3d/compare-eax-and  0/imm32/false
-<span id="L4443" class="LineNr">4443 </span>    74/jump-if-equal  $next-positive-hex-int:end/disp8
+<span id="L4443" class="LineNr">4443 </span>    74/jump-if-=  $next-positive-hex-int:end/disp8
 <span id="L4444" class="LineNr">4444 </span>    <span class="subxComment"># eax = from-hex-char(*curr)</span>
 <span id="L4445" class="LineNr">4445 </span>    <span class="subxS2Comment"># . . copy arg to eax</span>
 <span id="L4446" class="LineNr">4446 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>

@@ -374,11 +374,11 @@ Entry:
     {
       # if (argc <= 1) break
       81 7/subop/compare *ebp 1/imm32
-      7e/jump-if-lesser-or-equal break/disp8
+      7e/jump-if-<= break/disp8
       # if (argv[1] != "test") break
       (kernel-string-equal? *(ebp+8) "test")  # => eax
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       #
       (run-tests)
       # syscall(exit, *Num-test-failures)
@@ -1025,7 +1025,7 @@ $parse-mu:line-loop:
       (read-line-buffered *(ebp+8) %ecx)
       # if (line->write == 0) break
       81 7/subop/compare *ecx 0/imm32
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
 #?       # dump line {{{
 #?       (write 2 "parse-mu: ^")
 #?       (write-stream 2 %ecx)
@@ -1036,7 +1036,7 @@ $parse-mu:line-loop:
       # if slice-empty?(word-slice) continue
       (slice-empty? %edx)
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal loop/disp32
+      0f 85/jump-if-!= loop/disp32
       # if (*word-slice->start == "#") continue
       # . eax = *word-slice->start
       8b/-> *edx 0/r32/eax
@@ -1044,13 +1044,13 @@ $parse-mu:line-loop:
       81 4/subop/and %eax 0xff/imm32
       # . if (eax == '#') continue
       3d/compare-eax-and 0x23/imm32/hash
-      0f 84/jump-if-equal loop/disp32
+      0f 84/jump-if-= loop/disp32
       # if (slice-equal?(word-slice, "fn")) parse a function
       {
 $parse-mu:fn:
         (slice-equal? %edx "fn")
         3d/compare-eax-and 0/imm32
-        0f 84/jump-if-equal break/disp32
+        0f 84/jump-if-= break/disp32
         # var new-function/eax : (handle function) = populate-mu-function(in, new-function, vars)
         (allocate Heap *Function-size)  # => eax
         (zero-out %eax *Function-size)
@@ -1169,15 +1169,15 @@ populate-mu-function-header:  # first-line : (addr stream byte), out : (handle f
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+    0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
     # if (word-slice == '->') abort
     (slice-equal? %ecx "->")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+    0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
     # if (word-slice == '}') abort
     (slice-equal? %ecx "}")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+    0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
     # save function name
     (slice-to-string Heap %ecx)  # => eax
     89/<- *edi 0/r32/eax  # Function-name
@@ -1190,21 +1190,21 @@ $populate-mu-function-header:check-for-inout:
       # if (word-slice == '{') goto done
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $populate-mu-function-header:done/disp32
+      0f 85/jump-if-!= $populate-mu-function-header:done/disp32
       # if (word-slice == '->') break
       (slice-equal? %ecx "->")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal break/disp32
+      0f 85/jump-if-!= break/disp32
       # if (word-slice == '}') abort
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # var v/ebx : (handle var) = parse-var-with-type(word-slice, first-line)
       (parse-var-with-type %ecx *(ebp+8))  # => eax
       89/<- %ebx 0/r32/eax
       # assert(v->register == null)
       81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
-      0f 85/jump-if-not-equal $populate-mu-function-header:error2/disp32
+      0f 85/jump-if-!= $populate-mu-function-header:error2/disp32
       # v->stack-offset = next-offset
       89/<- *(ebx+0xc) 2/r32/edx  # Var-stack-offset
       # next-offset += size-of(v)
@@ -1224,21 +1224,21 @@ $parse-var-with-type:check-for-out:
       # if (word-slice == '{') break
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal break/disp32
+      0f 85/jump-if-!= break/disp32
       # if (word-slice == '->') abort
       (slice-equal? %ecx "->")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       # if (word-slice == '}') abort
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $populate-mu-function-header:error1/disp32
+      0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
       #
       (parse-var-with-type %ecx *(ebp+8))  # => eax
       89/<- %ebx 0/r32/eax
       # assert(var->register != null)
       81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
-      0f 84/jump-if-equal $populate-mu-function-header:error3/disp32
+      0f 84/jump-if-= $populate-mu-function-header:error3/disp32
       (append-list Heap %ebx *(edi+0xc))  # Function-outputs => eax
       89/<- *(edi+0xc) 0/r32/eax  # Function-outputs
       e9/jump loop/disp32
@@ -1522,7 +1522,7 @@ $parse-var-with-type:save-name:
       8a/copy-byte *eax 3/r32/BL
       81 4/subop/and %ebx 0xff/imm32
       81 7/subop/compare %ebx 0x3a/imm32/colon
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       89/<- *(ecx+4) 0/r32/eax
     }
     # . if s ends with ',', decrement s->end
@@ -1532,7 +1532,7 @@ $parse-var-with-type:save-name:
       8a/copy-byte *eax 3/r32/BL
       81 4/subop/and %ebx 0xff/imm32
       81 7/subop/compare %ebx 0x2c/imm32/comma
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       89/<- *(ecx+4) 0/r32/eax
     }
 $parse-var-with-type:write-name:
@@ -1548,7 +1548,7 @@ $parse-var-with-type:save-register:
       8a/copy-byte *eax 3/r32/BL
       81 4/subop/and %ebx 0xff/imm32
       81 7/subop/compare %ebx 0x3a/imm32/colon
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       89/<- *(ecx+4) 0/r32/eax
     }
     # . if s ends with ',', decrement s->end
@@ -1558,7 +1558,7 @@ $parse-var-with-type:save-register:
       8a/copy-byte *eax 3/r32/BL
       81 4/subop/and %ebx 0xff/imm32
       81 7/subop/compare %ebx 0x2c/imm32/comma
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       89/<- *(ecx+4) 0/r32/eax
     }
     # if (!slice-empty?(s)) v->register = slice-to-string(s)
@@ -1568,7 +1568,7 @@ $parse-var-with-type:write-register:
       # That's probably a sign we have the wrong algorithm for this function.
       8b/-> *ecx 0/r32/eax
       39/compare 0/r32/eax *(ecx+4)
-      76/jump-if-lesser-or-equal break/disp8
+      76/jump-if-<= break/disp8
       (slice-to-string Heap %ecx)
       89/<- *(edi+0x10) 0/r32/eax  # Var-register
     }
@@ -1577,33 +1577,33 @@ $parse-var-with-type:write-register:
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
     # if (word-slice == '->') abort
     (slice-equal? %ecx "->")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
     # if (word-slice == '}') abort
     (slice-equal? %ecx "}")   # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
     # if (slice-empty?(type)) skip
     (slice-empty? %ecx)
     {
       3d/compare-eax-and 0/imm32
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
       (next-mu-token *(ebp+0xc) %ecx)
       # if (word-slice == '{') abort
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
       # if (word-slice == '->') abort
       (slice-equal? %ecx "->")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
       # if (word-slice == '}') abort
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $parse-var-with-type:abort/disp32
+      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
     }
     (type-for %ecx)  # => eax
     89/<- *(edi+4) 0/r32/eax  # Var-type
@@ -1655,7 +1655,7 @@ next-mu-token:  # in: (addr stream byte), out: (addr slice)
       8a/copy-byte *eax 3/r32/BL
       81 4/subop/and %ebx 0xff/imm32
       81 7/subop/compare %ebx 0x3a/imm32/colon
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       89/<- *(edi+4) 0/r32/eax
     }
     # if out ends with ',', decrement out->end
@@ -1665,7 +1665,7 @@ next-mu-token:  # in: (addr stream byte), out: (addr slice)
       8a/copy-byte *eax 3/r32/BL
       81 4/subop/and %ebx 0xff/imm32
       81 7/subop/compare %ebx 0x2c/imm32/comma
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       89/<- *(edi+4) 0/r32/eax
     }
 $next-mu-token:end:
@@ -1722,14 +1722,14 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
       # if (curr >= max) return -1
       39/compare %edx 3/r32/ebx
       {
-        72/jump-if-lesser-unsigned break/disp8
+        72/jump-if-addr< break/disp8
         b8/copy-to-eax 1/imm32
         eb/jump $pos-slice:end/disp8
       }
       # if (slice-equal?(s, *curr)) break
       (slice-equal? *(ebp+0xc) *edx)  # => eax
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       # ++index
       41/increment-ecx
       # curr += 4
@@ -1901,7 +1901,7 @@ is-identifier?:  # in : (addr slice) -> result/eax : boolean
     # if (slice-empty?(in)) return false
     (slice-empty? *(ebp+8))  # => eax
     3d/compare-eax-and 0/imm32
-    75/jump-if-not-equal $is-identifier?:false/disp8
+    75/jump-if-!= $is-identifier?:false/disp8
     # var c/eax : byte = *in->start
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *eax 0/r32/eax
@@ -1909,18 +1909,18 @@ is-identifier?:  # in : (addr slice) -> result/eax : boolean
     81 4/subop/and %eax 0xff/imm32
     # if (c == '$') return true
     3d/compare-eax-and 0x24/imm32/$
-    74/jump-if-equal $is-identifier?:true/disp8
+    74/jump-if-= $is-identifier?:true/disp8
     # if (c == '_') return true
     3d/compare-eax-and 0x5f/imm32/_
-    74/jump-if-equal $is-identifier?:true/disp8
+    74/jump-if-= $is-identifier?:true/disp8
     # drop case
     25/and-eax-with 0x5f/imm32
     # if (c < 'A') return false
     3d/compare-eax-and 0x41/imm32/A
-    7c/jump-if-lesser $is-identifier?:false/disp8
+    7c/jump-if-< $is-identifier?:false/disp8
     # if (c > 'Z') return false
     3d/compare-eax-and 0x5a/imm32/Z
-    7f/jump-if-greater $is-identifier?:false/disp8
+    7f/jump-if-> $is-identifier?:false/disp8
     # otherwise return true
 $is-identifier?:true:
     b8/copy-to-eax 1/imm32/true
@@ -2282,7 +2282,7 @@ $parse-mu-block:line-loop:
 #?       (flush Stderr)
       # if (line->write == 0) break
       81 7/subop/compare *ecx 0/imm32
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
       # word-slice = next-word(line)
       (next-word %ecx %edx)
 #?       (write-buffered Stderr "word: ")
@@ -2292,7 +2292,7 @@ $parse-mu-block:line-loop:
       # if slice-empty?(word-slice) continue
       (slice-empty? %edx)
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal loop/disp32
+      0f 85/jump-if-!= loop/disp32
       # if (slice-starts-with?(word-slice, '#') continue
       # . eax = *word-slice->start
       8b/-> *edx 0/r32/eax
@@ -2300,13 +2300,13 @@ $parse-mu-block:line-loop:
       81 4/subop/and %eax 0xff/imm32
       # . if (eax == '#') continue
       3d/compare-eax-and 0x23/imm32/hash
-      0f 84/jump-if-equal loop/disp32
+      0f 84/jump-if-= loop/disp32
       # if slice-equal?(word-slice, "{")
       {
 $parse-mu-block:check-for-block:
         (slice-equal? %edx "{")
         3d/compare-eax-and 0/imm32
-        74/jump-if-equal break/disp8
+        74/jump-if-= break/disp8
         (check-no-tokens-left %ecx)
         # parse new block and append
         (parse-mu-block *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
@@ -2317,7 +2317,7 @@ $parse-mu-block:check-for-block:
 $parse-mu-block:check-for-end:
       (slice-equal? %edx "}")
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal break/disp32
+      0f 85/jump-if-!= break/disp32
       # if slice-ends-with?(word-slice, ":") parse named block and append
       {
 $parse-mu-block:check-for-named-block:
@@ -2327,7 +2327,7 @@ $parse-mu-block:check-for-named-block:
         81 4/subop/and %eax 0xff/imm32
         # . if (eax != ':') break
         3d/compare-eax-and 0x23/imm32/hash
-        0f 85/jump-if-not-equal break/disp32
+        0f 85/jump-if-!= break/disp32
         #
         (parse-mu-named-block %edx %ecx *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
         (append-to-block %edi %eax)
@@ -2338,7 +2338,7 @@ $parse-mu-block:check-for-named-block:
 $parse-mu-block:check-for-var:
         (slice-equal? %edx "var")
         3d/compare-eax-and 0/imm32
-        74/jump-if-equal break/disp8
+        74/jump-if-= break/disp8
         #
         (parse-mu-var-def %ecx *(ebp+0xc))  # => eax
         (append-to-block %edi %eax)
@@ -2394,7 +2394,7 @@ check-no-tokens-left:  # line : (addr stream byte)
     # if slice-empty?(s) return
     (slice-empty? %ecx)
     3d/compare-eax-and 0/imm32
-    75/jump-if-not-equal $check-no-tokens-left:end/disp8
+    75/jump-if-!= $check-no-tokens-left:end/disp8
     # if (slice-starts-with?(s, '#') return
     # . eax = *s->start
     8b/-> *edx 0/r32/eax
@@ -2402,7 +2402,7 @@ check-no-tokens-left:  # line : (addr stream byte)
     81 4/subop/and %eax 0xff/imm32
     # . if (eax == '#') continue
     3d/compare-eax-and 0x23/imm32/hash
-    74/jump-if-equal $check-no-tokens-left:end/disp8
+    74/jump-if-= $check-no-tokens-left:end/disp8
     # abort
     (write-buffered Stderr "'{' or '}' should be on its own line, but got '")
     (rewind-stream %ecx)
@@ -2520,7 +2520,7 @@ parse-mu-stmt:  # line : (addr stream byte), vars : (addr stack (handle var)), f
     {
       (stmt-has-outputs? *(ebp+8))
       3d/compare-eax-and 0/imm32
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
       {
 $parse-mu-stmt:read-outputs:
         # name = next-word(line)
@@ -2528,15 +2528,15 @@ $parse-mu-stmt:read-outputs:
         # if slice-empty?(word-slice) break
         (slice-empty? %ecx)
         3d/compare-eax-and 0/imm32
-        0f 85/jump-if-not-equal break/disp32
+        0f 85/jump-if-!= break/disp32
         # if (name == "<-") break
         (slice-equal? %ecx "<-")
         3d/compare-eax-and 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
         # assert(is-identifier?(name))
         (is-identifier? %ecx)
         3d/compare-eax-and 0/imm32
-        0f 84/jump-if-equal $parse-mu-stmt:abort/disp32
+        0f 84/jump-if-= $parse-mu-stmt:abort/disp32
         #
         (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10))  # => eax
         (append-list Heap %eax *(edi+0xc))  # Stmt1-outputs => eax
@@ -2555,11 +2555,11 @@ $parse-mu-stmt:read-inouts:
       # if slice-empty?(word-slice) break
       (slice-empty? %ecx)
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal break/disp32
+      0f 85/jump-if-!= break/disp32
       # if (name == "<-") abort
       (slice-equal? %ecx "<-")
       3d/compare-eax-and 0/imm32
-      0f 85/jump-if-not-equal $parse-mu-stmt:abort2/disp32
+      0f 85/jump-if-!= $parse-mu-stmt:abort2/disp32
       #
       (lookup-var-or-literal %ecx *(ebp+0xc))  # => eax
       (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
@@ -2623,7 +2623,7 @@ stmt-has-outputs?:  # line : (addr stream byte) -> result/eax : boolean
       (slice-empty? %ecx)
       3d/compare-eax-and 0/imm32
       b8/copy-to-eax 0/imm32/false/result  # restore result (if we're here it's still false)
-      0f 85/jump-if-not-equal break/disp32
+      0f 85/jump-if-!= break/disp32
       # if slice-starts-with?(word-slice, '#') break
       # . eax = *word-slice->start
       8b/-> *ecx 0/r32/eax
@@ -2632,11 +2632,11 @@ stmt-has-outputs?:  # line : (addr stream byte) -> result/eax : boolean
       # . if (eax == '#') break
       3d/compare-eax-and 0x23/imm32/hash
       b8/copy-to-eax 0/imm32/false/result  # restore result (if we're here it's still false)
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
       # if slice-equal?(word-slice, '<-') return true
       (slice-equal? %ecx "<-")
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal loop/disp8
+      74/jump-if-= loop/disp8
       b8/copy-to-eax 1/imm32/true
     }
 $stmt-has-outputs:end:
@@ -2664,7 +2664,7 @@ lookup-var-or-literal:  # name: (addr slice), vars : (addr stack (handle var)) -
     # if slice-empty?(name) abort
     (slice-empty? %esi)  # => eax
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $lookup-var-or-literal:abort/disp32
+    0f 85/jump-if-!= $lookup-var-or-literal:abort/disp32
     # var ecx : byte = *name->start
     8b/-> *esi 1/r32/ecx
     8a/copy-byte *ecx 1/r32/CL
@@ -2673,12 +2673,12 @@ lookup-var-or-literal:  # name: (addr slice), vars : (addr stack (handle var)) -
     (is-decimal-digit? %ecx)  # => eax
     81 7/subop/compare %eax 0/imm32
     {
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       (new-literal-integer Heap %esi)  # => eax
     }
     # otherwise return lookup-var(name, vars)
     {
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       (lookup-var %esi *(ebp+0xc))  # => eax
     }
 $lookup-var-or-literal:end:
@@ -2710,7 +2710,7 @@ lookup-var:  # name: (addr slice), vars : (addr stack (handle var)) -> result/ea
     (lookup-var-helper %eax *(ebp+0xc))  # => eax
     # if (result == 0) abort
     3d/compare-eax-and 0/imm32
-    74/jump-if-equal $lookup-var:abort/disp8
+    74/jump-if-= $lookup-var:abort/disp8
 $lookup-var:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -2752,7 +2752,7 @@ lookup-var-helper:  # name: (addr array byte), vars : (addr stack (handle var)) 
     8b/-> *esi 3/r32/ebx
     # if (vars->top > vars->length) abort
     3b/compare 0/r32/eax *(esi+4)
-    0f 8f/jump-if-greater $lookup-var-helper:error1/disp32
+    0f 8f/jump-if-> $lookup-var-helper:error1/disp32
     # var min/edx : (addr handle var) = vars->data
     8d/copy-address *(esi+8) 2/r32/edx
     # var curr/ebx : (addr handle var) = &vars->data[vars->top - 4]
@@ -2762,14 +2762,14 @@ lookup-var-helper:  # name: (addr array byte), vars : (addr stack (handle var)) 
       # if (curr < min) return 0
       39/compare %ebx 2/r32/edx
       b8/copy-to-eax 0/imm32
-      0f 82/jump-if-lesser-unsigned break/disp32
+      0f 82/jump-if-addr< break/disp32
       # var v/eax : (handle var) = *curr
       8b/-> *ebx 0/r32/eax
       # if (v->name == name) return v
       (string-equal? *eax *(ebp+8))  # Var-name
       3d/compare-eax-and 0/imm32
       8b/-> *ebx 0/r32/eax
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       # curr -= 4
       81 5/subop/subtract %ebx 4/imm32
       e9/jump loop/disp32
@@ -2810,13 +2810,13 @@ lookup-or-define-var:  # name: (addr slice), vars : (addr stack (handle var)), f
     {
       # if (result != 0) return
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       # if name is one of fn's outputs, return it
       {
         (find-in-function-outputs *(ebp+0x10) %ecx)  # => eax
         3d/compare-eax-and 0/imm32
         # otherwise abort
-        0f 84/jump-if-not-equal $lookup-var:abort/disp32
+        0f 84/jump-if-!= $lookup-var:abort/disp32
       }
     }
 $lookup-or-define-var:end:
@@ -2839,7 +2839,7 @@ find-in-function-outputs:  # fn : (handle function), name : (handle array byte) 
     # while curr != null
     {
       81 7/subop/compare %ecx 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       # var v : (handle var) = *curr
       8b/-> *ecx 0/r32/eax  # List-value
       # if (curr->name == name) return curr
@@ -2847,7 +2847,7 @@ find-in-function-outputs:  # fn : (handle function), name : (handle array byte) 
       (string-equal? *eax *(ebp+0xc))
       3d/compare-eax-and 0/imm32
       58/pop-to-eax
-      75/jump-if-not-equal $find-in-function-outputs:end/disp8
+      75/jump-if-!= $find-in-function-outputs:end/disp8
       # curr = curr->next
       8b/-> *(ecx+4) 1/r32/ecx  # List-next
       eb/jump loop/disp8
@@ -2960,7 +2960,7 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> 
     # if (!is-hex-int?(name)) abort
     (is-hex-int? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32
-    0f 84/jump-if-equal $new-literal-integer:abort/disp32
+    0f 84/jump-if-= $new-literal-integer:abort/disp32
     # var s/ecx : (addr array byte)
     (slice-to-string Heap *(ebp+0xc))  # => eax
     89/<- %ecx 0/r32/eax
@@ -3137,14 +3137,14 @@ append-list:  # ad: (addr allocation-descriptor), value: _type, list: (handle li
     89/<- *eax 1/r32/ecx  # List-value
     # if (list == null) return result
     81 7/subop/compare *(ebp+0x10) 0/imm32
-    74/jump-if-equal $new-list:end/disp8
+    74/jump-if-= $new-list:end/disp8
     # otherwise append
     # var curr/ecx = list
     8b/-> *(ebp+0x10) 1/r32/ecx
     # while (curr->next != null) curr = curr->next
     {
       81 7/subop/compare *(ecx+4) 0/imm32  # List-next
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       # curr = curr->next
       8b/-> *(ecx+4) 1/r32/ecx
       eb/jump loop/disp8
@@ -3225,7 +3225,7 @@ emit-subx:  # out : (addr buffered-file)
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
       (emit-subx-function %edi %ecx)
       # curr = curr->next
       8b/-> *(ecx+0x14) 1/r32/ecx  # Function-next
@@ -3280,12 +3280,12 @@ emit-subx-block:  # out : (addr buffered-file), block : (handle block)
     {
 $emit-subx-block:check-empty:
       81 7/subop/compare %esi 0/imm32
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
       (write-buffered *(ebp+8) "{\n")
       {
 $emit-subx-block:stmt:
         81 7/subop/compare %esi 0/imm32
-        74/jump-if-equal break/disp8
+        74/jump-if-= break/disp8
         (emit-subx-statement *(ebp+8) *esi Primitives *Program)
         (write-buffered *(ebp+8) Newline)
         8b/-> *(esi+4) 6/r32/esi  # List-next
@@ -3311,7 +3311,7 @@ emit-subx-statement:  # out : (addr buffered-file), stmt : (handle statement), p
 $emit-subx-statement:primitive:
       (find-matching-primitive *(ebp+0x10) *(ebp+0xc))  # primitives, stmt => curr/eax
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       (emit-subx-primitive *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-statement:end/disp32
     }
@@ -3320,7 +3320,7 @@ $emit-subx-statement:primitive:
 $emit-subx-statement:call:
       (find-matching-function *(ebp+0x14) *(ebp+0xc))  # functions, stmt => curr/eax
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       (emit-subx-call *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-statement:end/disp32
     }
@@ -4136,7 +4136,7 @@ emit-subx-rm32:  # out : (addr buffered-file), l : arg-location, stmt : (handle 
     50/push-eax
     # if (l == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
-    74/jump-if-equal $emit-subx-rm32:end/disp8
+    74/jump-if-= $emit-subx-rm32:end/disp8
     #
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
     (emit-subx-var-as-rm32 *(ebp+8) %eax)  # out, var
@@ -4161,7 +4161,7 @@ get-stmt-operand-from-arg-location:  # stmt : (handle statement), l : arg-locati
     # if (l == 1) return stmt->inouts->var
     {
       3d/compare-eax-and 1/imm32
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:1:
       8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
       8b/-> *eax 0/r32/eax  # Operand-var
@@ -4170,7 +4170,7 @@ $get-stmt-operand-from-arg-location:1:
     # if (l == 2) return stmt->inouts->next->var
     {
       3d/compare-eax-and 2/imm32
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:2:
       8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
       8b/-> *(eax+4) 0/r32/eax  # Operand-next
@@ -4180,7 +4180,7 @@ $get-stmt-operand-from-arg-location:2:
     # if (l == 3) return stmt->outputs
     {
       3d/compare-eax-and 3/imm32
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:3:
       8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
       8b/-> *eax 0/r32/eax  # Operand-var
@@ -4217,7 +4217,7 @@ emit-subx-r32:  # out : (addr buffered-file), l : arg-location, stmt : (handle s
     51/push-ecx
     # if (location == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
-    0f 84/jump-if-equal $emit-subx-r32:end/disp32
+    0f 84/jump-if-= $emit-subx-r32:end/disp32
     #
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
     (maybe-get Registers *(eax+0x10) 8)  # Var-register => eax : (addr register-index)
@@ -4242,7 +4242,7 @@ emit-subx-imm32:  # out : (addr buffered-file), l : arg-location, stmt : (handle
     51/push-ecx
     # if (location == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
-    74/jump-if-equal $emit-subx-imm32:end/disp8
+    74/jump-if-= $emit-subx-imm32:end/disp8
     #
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
     (write-buffered *(ebp+8) Space)
@@ -4276,7 +4276,7 @@ emit-subx-call:  # out : (addr buffered-file), stmt : (handle statement), callee
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       #
       (emit-subx-call-operand *(ebp+8) *ecx)
       # curr = curr->next
@@ -4305,7 +4305,7 @@ emit-subx-call-operand:  # out : (addr buffered-file), operand : (handle variabl
     # if (operand->register) emit "%__"
     {
       81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
 $emit-subx-call-operand:register:
       (write-buffered *(ebp+8) " %")
       (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
@@ -4314,7 +4314,7 @@ $emit-subx-call-operand:register:
     # else if (operand->stack-offset) emit "*(ebp+__)"
     {
       81 7/subop/compare *(eax+0xc) 0/imm32  # Var-stack-offset
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
 $emit-subx-call-operand:stack:
       (write-buffered *(ebp+8) Space)
       (write-buffered *(ebp+8) "*(ebp+")
@@ -4329,7 +4329,7 @@ $emit-subx-call-operand:stack:
       8b/-> *(eax+4) 0/r32/eax  # Var-type
       81 7/subop/compare *eax 0/imm32  # Tree-left
       58/pop-to-eax
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
 $emit-subx-call-operand:literal:
       (write-buffered *(ebp+8) Space)
       (write-buffered *(ebp+8) *eax)
@@ -4353,7 +4353,7 @@ emit-subx-var-as-rm32:  # out : (addr buffered-file), operand : (handle variable
     # if (operand->register) emit "%__"
     {
       81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
 $emit-subx-var-as-rm32:register:
       (write-buffered *(ebp+8) " %")
       (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
@@ -4361,7 +4361,7 @@ $emit-subx-var-as-rm32:register:
     # else if (operand->stack-offset) emit "*(ebp+__)"
     {
       81 7/subop/compare *(eax+0xc) 0/imm32  # Var-stack-offset
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
 $emit-subx-var-as-rm32:stack:
       (write-buffered *(ebp+8) Space)
       (write-buffered *(ebp+8) "*(ebp+")
@@ -4388,12 +4388,12 @@ find-matching-function:  # functions : (addr function), stmt : (handle statement
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       # if match(stmt, curr) return curr
       {
         (mu-stmt-matches-function? *(ebp+0xc) %ecx)  # => eax
         3d/compare-eax-and 0/imm32
-        74/jump-if-equal break/disp8
+        74/jump-if-= break/disp8
         89/<- %eax 1/r32/ecx
         eb/jump $find-matching-function:end/disp8
       }
@@ -4423,7 +4423,7 @@ find-matching-primitive:  # primitives : (handle primitive), stmt : (handle stat
 $find-matching-primitive:loop:
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
-      0f 84/jump-if-equal break/disp32
+      0f 84/jump-if-= break/disp32
 #?       (write-buffered Stderr "prim: ")
 #?       (write-buffered Stderr *ecx)  # Primitive-name
 #?       (write-buffered Stderr " => ")
@@ -4434,7 +4434,7 @@ $find-matching-primitive:loop:
       {
         (mu-stmt-matches-primitive? *(ebp+0xc) %ecx)  # => eax
         3d/compare-eax-and 0/imm32
-        74/jump-if-equal break/disp8
+        74/jump-if-= break/disp8
         89/<- %eax 1/r32/ecx
         eb/jump $find-matching-primitive:end/disp8
       }
@@ -4495,7 +4495,7 @@ $mu-stmt-matches-primitive?:check-name:
       # if (primitive->name != stmt->operation) return false
       (string-equal? *(ecx+4) *edx)  # Stmt1-operation, Primitive-name => eax
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       b8/copy-to-eax 0/imm32
       e9/jump $mu-stmt-matches-primitive?:end/disp32
     }
@@ -4507,11 +4507,11 @@ $mu-stmt-matches-primitive?:check-inouts:
       # if (curr == 0 && curr2 == 0) move on to check outputs
       {
         81 7/subop/compare %esi 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
 $mu-stmt-matches-primitive?:stmt-inout-is-null:
         {
           81 7/subop/compare %edi 0/imm32
-          75/jump-if-not-equal break/disp8
+          75/jump-if-!= break/disp8
           #
           e9/jump $mu-stmt-matches-primitive?:check-outputs/disp32
         }
@@ -4522,7 +4522,7 @@ $mu-stmt-matches-primitive?:stmt-inout-is-null:
       # if (curr2 == 0) return false
       {
         81 7/subop/compare %edi 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
 $mu-stmt-matches-primitive?:prim-inout-is-null:
         b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
@@ -4531,7 +4531,7 @@ $mu-stmt-matches-primitive?:prim-inout-is-null:
       {
         (operand-matches-primitive? *esi *edi)  # => eax
         3d/compare-eax-and 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
@@ -4550,10 +4550,10 @@ $mu-stmt-matches-primitive?:check-outputs:
       {
 $mu-stmt-matches-primitive?:check-output:
         81 7/subop/compare %esi 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
         {
           81 7/subop/compare %edi 0/imm32
-          75/jump-if-not-equal break/disp8
+          75/jump-if-!= break/disp8
           # return true
           b8/copy-to-eax 1/imm32
           e9/jump $mu-stmt-matches-primitive?:end/disp32
@@ -4565,7 +4565,7 @@ $mu-stmt-matches-primitive?:check-output:
       # if (curr2 == 0) return false
       {
         81 7/subop/compare %edi 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
@@ -4573,7 +4573,7 @@ $mu-stmt-matches-primitive?:check-output:
       {
         (operand-matches-primitive? *esi *edi)  # List-value List-value => eax
         3d/compare-eax-and 0/imm32
-        75/jump-if-not-equal break/disp8
+        75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
@@ -4612,28 +4612,28 @@ operand-matches-primitive?:  # var : (handle var), prim-var : (handle var) => re
     (type-equal? *(esi+4) *(edi+4))  # Var-type, Var-type => eax
     3d/compare-eax-and 0/imm32
     b8/copy-to-eax 0/imm32/false
-    74/jump-if-equal $operand-matches-primitive?:end/disp8
+    74/jump-if-= $operand-matches-primitive?:end/disp8
     # return false if var->register doesn't match prim-var->register
     {
       # if addresses are equal, don't return here
       8b/-> *(esi+0x10) 0/r32/eax
       39/compare *(edi+0x10) 0/r32/eax
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       # if either address is 0, return false
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
+      74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
       81 7/subop/compare *(edi+0x10) 0/imm32
-      74/jump-if-equal  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
+      74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
       # if prim-var->register is "*", return true
       (string-equal? *(edi+0x10) "*")  # Var-register
       3d/compare-eax-and 0/imm32
       b8/copy-to-eax 1/imm32/true
-      75/jump-if-not-equal $operand-matches-primitive?:end/disp8
+      75/jump-if-!= $operand-matches-primitive?:end/disp8
       # if string contents don't match, return false
       (string-equal? *(esi+0x10) *(edi+0x10))  # Var-register Var-register
       3d/compare-eax-and 0/imm32
       b8/copy-to-eax 0/imm32/false
-      74/jump-if-equal $operand-matches-primitive?:end/disp8
+      74/jump-if-= $operand-matches-primitive?:end/disp8
     }
     # return true
     b8/copy-to-eax 1/imm32/true
@@ -4661,19 +4661,19 @@ type-equal?:  # a : (handle tree type-id), b : (handle tree type-id) => result/e
     8b/-> %ecx 0/r32/eax  # Var-type
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
-    0f 84/jump-if-equal $type-equal?:end/disp32
+    0f 84/jump-if-= $type-equal?:end/disp32
     # if (a == 0) return false
     81 7/subop/compare %ecx 0/imm32
     b8/copy-to-eax 0/imm32/false
-    0f 84/jump-if-equal $type-equal?:end/disp32
+    0f 84/jump-if-= $type-equal?:end/disp32
     # if (b == 0) return false
     81 7/subop/compare %edx 0/imm32
     b8/copy-to-eax 0/imm32/false
-    0f 84/jump-if-equal $type-equal?:end/disp32
+    0f 84/jump-if-= $type-equal?:end/disp32
     # if (!type-equal?(a->left, b->left)) return false
     (type-equal? *ecx *edx)  # Tree-left, Tree-left => eax
     3d/compare-eax-and 0/imm32
-    0f 84/jump-if-equal $type-equal?:end/disp32
+    0f 84/jump-if-= $type-equal?:end/disp32
     # return type-equal?(a->right, b->right
     (type-equal? *(ecx+4) *(edx+4))  # Tree-right, Tree-right => eax
 $type-equal?:end:

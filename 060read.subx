@@ -51,7 +51,7 @@ read:  # f : fd or (addr stream byte), s : (addr stream byte) -> num-bytes-read/
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # if (f < 0x08000000) return _read(f, s)  # f can't be a user-mode address, so treat it as a kernel file descriptor
     81          7/subop/compare     1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         0x08000000/imm32  # compare *(ebp+8)
-    73/jump-if-greater-unsigned-or-equal  $read:fake/disp8
+    73/jump-if-addr>=  $read:fake/disp8
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
@@ -165,10 +165,10 @@ _buffer-4:  # out : address, outend : address, in : address, inend : address -> 
 $_buffer-4:loop:
     # if (in >= inend) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
-    73/jump-if-greater-or-equal-unsigned  $_buffer-4:end/disp8
+    73/jump-if-addr>=  $_buffer-4:end/disp8
     # if (out >= outend) break  # for now silently ignore filled up buffer
     39/compare                      3/mod/direct    7/rm32/edi    .           .             .           2/r32/edx   .               .                 # compare edi with edx
-    73/jump-if-greater-or-equal-unsigned  $_buffer-4:end/disp8
+    73/jump-if-addr>=  $_buffer-4:end/disp8
     # *out = *in
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           3/r32/BL    .               .                 # copy byte at *esi to BL
     88/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           3/r32/BL    .               .                 # copy byte at BL to *edi
