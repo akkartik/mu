@@ -352,7 +352,7 @@ List-size:  # (addr int)
 # However, there's no need for singletons, so we can assume (int) == int
 #   - if x->right == nil, x is an atom
 #   - x->left contains either a pointer to a pair, or an atomic type-id directly.
-#     type ids will be less than 0x10000.
+#     type ids will be less than 0x10000 (MAX_TYPE_ID).
 
 Tree-left:  # either type-id or (addr tree type-id)
   0/imm32
@@ -1622,8 +1622,6 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     # . save registers
     51/push-ecx
     52/push-edx
-#?     (write-buffered Stderr "-- parse-type\n")
-#?     (flush Stderr)
     # var s/ecx: slice
     68/push 0/imm32
     68/push 0/imm32
@@ -1997,10 +1995,10 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
     52/push-edx
     53/push-ebx
     56/push-esi
-    (write-buffered Stderr "pos-slice: ")
-    (write-slice-buffered Stderr *(ebp+0xc))
-    (write-buffered Stderr "\n")
-    (flush Stderr)
+#?     (write-buffered Stderr "pos-slice: ")
+#?     (write-slice-buffered Stderr *(ebp+0xc))
+#?     (write-buffered Stderr "\n")
+#?     (flush Stderr)
     # esi = arr
     8b/-> *(ebp+8) 6/r32/esi
     # var index/ecx: int = 0
@@ -2033,9 +2031,9 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
     # return index
     89/<- %eax 1/r32/ecx
 $pos-slice:end:
-    (write-buffered Stderr "=> ")
-    (print-int32-buffered Stderr %eax)
-    (write-buffered Stderr "\n")
+#?     (write-buffered Stderr "=> ")
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr "\n")
     # . restore registers
     5e/pop-to-esi
     5b/pop-to-ebx
@@ -4998,19 +4996,19 @@ type-equal?:  # a : (handle tree type-id), b : (handle tree type-id) => result/e
     8b/-> %ecx 0/r32/eax  # Var-type
     39/compare %edx 0/r32/eax  # Var-type
     b8/copy-to-eax 1/imm32/true
-    0f 84/jump-if-= $type-equal?:end/disp32
+    74/jump-if-= $type-equal?:end/disp8
     # if (a < MAX_TYPE_ID) return false
     81 7/subop/compare %ecx 0x10000/imm32
     b8/copy-to-eax 0/imm32/false
-    0f 8c/jump-if-< $type-equal?:end/disp32
-    # if (b == 0) return false
+    72/jump-if-addr< $type-equal?:end/disp8
+    # if (b < MAX_TYPE_ID) return false
     81 7/subop/compare %edx 0x10000/imm32
     b8/copy-to-eax 0/imm32/false
-    0f 8c/jump-if-< $type-equal?:end/disp32
+    72/jump-if-addr< $type-equal?:end/disp8
     # if (!type-equal?(a->left, b->left)) return false
     (type-equal? *ecx *edx)  # Tree-left, Tree-left => eax
     3d/compare-eax-and 0/imm32
-    0f 84/jump-if-= $type-equal?:end/disp32
+    74/jump-if-= $type-equal?:end/disp8
     # return type-equal?(a->right, b->right)
     (type-equal? *(ecx+4) *(edx+4))  # Tree-right, Tree-right => eax
 $type-equal?:end:
