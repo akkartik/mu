@@ -201,8 +201,7 @@ int bg_color(int depth, int trace_index, int screen_row) {
   if (depth == 0) return /*red*/1;
   if (depth == 1) return /*orange*/166;
   // start at black, gradually lighten at deeper levels
-  if (depth > 10) return TB_BLACK + 16;
-  return TB_BLACK + (depth - 2)*2;
+  return TB_BLACK + ((depth-2) % 6)*2;
 }
 
 void render_line(int screen_row, const string& s, int bg) {  // -> screen
