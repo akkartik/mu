@@ -1481,13 +1481,7 @@ parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte) -> re
     #   if (!slice-empty?(s))
     #     v->register = slice-to-string(s)
     #   ## type
-    #   s = next-mu-token(first-line)
-    #   assert(s not in '{' '}' '->')
-    #   if (slice-empty?(s)) {
-    #     s = next-mu-token(first-line)
-    #     assert(type not in '{' '}' '->')
-    #   }
-    #   type = type-for(s)
+    #   var type : (handle tree type-id) = parse-type(first-line)
     #   v->type = type
     #   return v
     #
@@ -1572,40 +1566,8 @@ $parse-var-with-type:write-register:
       (slice-to-string Heap %ecx)
       89/<- *(edi+0x10) 0/r32/eax  # Var-register
     }
-    # save v->type
-    (next-mu-token *(ebp+0xc) %ecx)
-    # if (word-slice == '{') abort
-    (slice-equal? %ecx "{")   # => eax
-    3d/compare-eax-and 0/imm32
-    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
-    # if (word-slice == '->') abort
-    (slice-equal? %ecx "->")   # => eax
-    3d/compare-eax-and 0/imm32
-    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
-    # if (word-slice == '}') abort
-    (slice-equal? %ecx "}")   # => eax
-    3d/compare-eax-and 0/imm32
-    0f 85/jump-if-!= $parse-var-with-type:abort/disp32
-    # if (slice-empty?(type)) skip
-    (slice-empty? %ecx)
-    {
-      3d/compare-eax-and 0/imm32
-      0f 84/jump-if-= break/disp32
-      (next-mu-token *(ebp+0xc) %ecx)
-      # if (word-slice == '{') abort
-      (slice-equal? %ecx "{")   # => eax
-      3d/compare-eax-and 0/imm32
-      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
-      # if (word-slice == '->') abort
-      (slice-equal? %ecx "->")   # => eax
-      3d/compare-eax-and 0/imm32
-      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
-      # if (word-slice == '}') abort
-      (slice-equal? %ecx "}")   # => eax
-      3d/compare-eax-and 0/imm32
-      0f 85/jump-if-!= $parse-var-with-type:abort/disp32
-    }
-    (type-for %ecx)  # => eax
+$parse-var-with-type:save-type:
+    (parse-type Heap *(ebp+0xc))  # => eax
     89/<- *(edi+4) 0/r32/eax  # Var-type
 $parse-var-with-type:end:
     # return result
@@ -1637,62 +1599,304 @@ $parse-var-with-type:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-next-mu-token:  # in: (addr stream byte), out: (addr slice)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    50/push-eax
-    57/push-edi
-    # edi = out
-    8b/-> *(ebp+0xc) 7/r32/edi
+parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> result/eax: (handle tree type-id)
+    # pseudocode:
+    #   var s: slice = next-mu-token(in)
+    #   assert s != ""
+    #   assert s != "->"
+    #   assert s != "{"
+    #   assert s != "}"
+    #   if s == ")"
+    #     return 0
+    #   result = allocate(Tree)
+    #   zero-out(result, *Tree-size)
+    #   if s != "("
+    #     result->left = pos-slice(Type-id, s)
+    #     return
+    #   result->left = parse-type(ad, in)
+    #   result->right = parse-type(ad, in)
     #
-    (next-word *(ebp+8) %edi)  # TODO: support s-expressions
-    # if out ends with ':', decrement out->end
-    {
-      8b/-> *(edi+4) 0/r32/eax
-      48/decrement-eax
-      8a/copy-byte *eax 3/r32/BL
-      81 4/subop/and %ebx 0xff/imm32
-      81 7/subop/compare %ebx 0x3a/imm32/colon
-      75/jump-if-!= break/disp8
-      89/<- *(edi+4) 0/r32/eax
-    }
-    # if out ends with ',', decrement out->end
-    {
-      8b/-> *(edi+4) 0/r32/eax
-      48/decrement-eax
-      8a/copy-byte *eax 3/r32/BL
-      81 4/subop/and %ebx 0xff/imm32
-      81 7/subop/compare %ebx 0x2c/imm32/comma
-      75/jump-if-!= break/disp8
-      89/<- *(edi+4) 0/r32/eax
-    }
-$next-mu-token:end:
-    b8/copy-to-eax 1/imm32/int
-    # . restore registers
-    5f/pop-to-edi
-    58/pop-to-eax
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-type-for:  # name: (addr slice) -> result/eax: (handle tree type-id)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    #
-    (pos-slice Type-id *(ebp+8))  # => eax
-    89/<- %ecx 0/r32/eax
-    (allocate Heap *Tree-size)  # => eax
+    52/push-edx
+#?     (write-buffered Stderr "-- parse-type\n")
+#?     (flush Stderr)
+    # var s/ecx: slice
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # s = next-mu-token(in)
+    (next-mu-token *(ebp+0xc) %ecx)
+#?     (write-buffered Stderr "tok: ")
+#?     (write-slice-buffered Stderr %ecx)
+#?     (write-buffered Stderr "$\n")
+#?     (flush Stderr)
+    # assert s != ""
+    (slice-equal? %ecx "")
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    # assert s != "{"
+    (slice-equal? %ecx "{")
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    # assert s != "}"
+    (slice-equal? %ecx "}")
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    # assert s != "->"
+    (slice-equal? %ecx "->")
+    3d/compare-eax-and 0/imm32
+    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    # if (s == ")") return 0
+    (slice-equal? %ecx "}")
+    3d/compare-eax-and 0/imm32
+    b8/copy-to-eax 0/imm32
+    0f 85/jump-if-not-equal $parse-type:end/disp32
+#?     {
+#?       74/jump-if-equal break/disp8
+#?       (write-buffered Stderr "=> 0\n")
+#?       (flush Stderr)
+#?       e9/jump $parse-type:end/disp32
+#?     }
+    # var result/edx: (handle tree type-id)
+    (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)
-    89/<- *eax 1/r32/ecx  # Tree-left
-$type-for:end:
+    89/<- %edx 0/r32/eax
+    {
+      # if (s != "(") break
+      (slice-equal? %ecx "(")
+      3d/compare-eax-and 0/imm32
+      75/jump-if-not-equal break/disp8
+      # result->left = pos-slice(Type-id, s)
+      (pos-slice Type-id %ecx)
+#?       (write-buffered Stderr "=> {")
+#?       (print-int32-buffered Stderr %eax)
+#?       (write-buffered Stderr ", 0}\n")
+#?       (flush Stderr)
+      89/<- *edx 0/r32/eax  # Tree-left
+      e9/jump $parse-type:return-edx/disp32
+    }
+    # otherwise s == "("
+    # result->left = parse-type(ad, in)
+    (parse-type *(ebp+8) *(ebp+0xc))
+#?     (write-buffered Stderr "=> {")
+#?     (print-int32-buffered Stderr %eax)
+    89/<- *edx 0/r32/eax  # Tree-left
+    # result->right = parse-type(ad, in)
+    (parse-type *(ebp+8) *(ebp+0xc))
+#?     (write-buffered Stderr Space)
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr "}\n")
+#?     (flush Stderr)
+    89/<- *(edx+4) 0/r32/eax  # Tree-right
+$parse-type:return-edx:
+    89/<- %eax 2/r32/edx
+$parse-type:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
+    5a/pop-to-edx
     59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$parse-type:abort:
+    # error("unexpected token when parsing type: '" s "'\n")
+    (write-buffered Stderr "unexpected token when parsing type: '")
+    (write-slice-buffered Stderr %ecx)
+    (write-buffered Stderr "'\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+next-mu-token:  # in: (addr stream byte), out: (addr slice)
+    # pseudocode:
+    # start:
+    #   skip-chars-matching(in, ' ')
+    #   if in->read >= in->write              # end of in
+    #     out = {0, 0}
+    #     return
+    #   out->start = &in->data[in->read]
+    #   var curr-byte/eax: byte = in->data[in->read]
+    #   if curr->byte == ':'                  # comment token
+    #     ++in->read
+    #     goto start
+    #   if curr->byte == ','                  # comment token
+    #     ++in->read
+    #     goto start
+    #   if curr-byte == '#'                   # comment
+    #     in->read = in->write                # skip to end of in
+    #     goto done
+    #   if curr-byte == '"'                   # string literal
+    #     skip-string(in)
+    #     goto done                           # no metadata
+    #   if curr-byte == '('
+    #     ++in->read
+    #     goto done
+    #   if curr-byte == ')'
+    #     ++in->read
+    #     goto done
+    #   # read a word
+    #   while true
+    #     if in->read >= in->write
+    #       break
+    #     var c/eax: byte = in->data[in->read]
+    #     if c == ' '
+    #       break
+    #     if c == '('
+    #       break
+    #     if c == ')'
+    #       break
+    #     ++in->read
+    #     # hack: skip a few trailing delimiters, because we don't always use
+    #     # this correct tokenizer
+    #     if c == ':'
+    #       break
+    #     if c == ','
+    #       break
+    # done:
+    #   out->end = &in->data[in->read]
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = in
+    8b/-> *(ebp+8) 6/r32/esi
+    # edi = out
+    8b/-> *(ebp+0xc) 7/r32/edi
+$next-mu-token:start:
+    # skip-chars-matching(in, ' ')
+    (skip-chars-matching %esi 0x20)  # ' '
+$next-mu-token:check0:
+    # if (in->read >= in->write) return out = {0, 0}
+    # . ecx = in->read
+    8b/-> *(esi+4) 1/r32/ecx
+    # . if (ecx >= in->write) return out = {0, 0}
+    3b/compare 1/r32/ecx *esi
+    c7 0/subop/copy *edi 0/imm32
+    c7 0/subop/copy *(edi+4) 0/imm32
+    0f 8d/jump-if->= $next-mu-token:end/disp32
+    # out->start = &in->data[in->read]
+    8d/copy-address *(esi+ecx+0xc) 0/r32/eax
+    89/<- *edi 0/r32/eax
+    # var curr-byte/eax : byte = in->data[in->read]
+    31/xor %eax 0/r32/eax
+    8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
+    {
+$next-mu-token:check-for-colon:
+      # if (curr-byte != ':') break
+      3d/compare-eax-and 0x3a/imm32/colon
+      75/jump-if-!= break/disp8
+      # ++in->read
+      ff 0/subop/increment *(esi+4)
+      # restart
+      e9/jump $next-mu-token:start/disp32
+    }
+    {
+$next-mu-token:check-for-comma:
+      # if (curr-byte != ',') break
+      3d/compare-eax-and 0x2c/imm32/comma
+      75/jump-if-!= break/disp8
+      # ++in->read
+      ff 0/subop/increment *(esi+4)
+      # restart
+      e9/jump $next-mu-token:start/disp32
+    }
+    {
+$next-mu-token:check-for-comment:
+      # if (curr-byte != '#') break
+      3d/compare-eax-and 0x23/imm32/pound
+      75/jump-if-!= break/disp8
+      # in->read = in->write  # skip rest of in
+      8b/-> *esi 0/r32/eax
+      89/<- *(esi+4) 0/r32/eax
+      # return
+      e9/jump $next-mu-token:done/disp32
+    }
+    {
+$next-mu-token:check-for-string-literal:
+      # if (curr-byte != '"') break
+      3d/compare-eax-and 0x22/imm32/dquote
+      75/jump-if-!= break/disp8
+      (skip-string %esi)
+      # return
+      e9/jump $next-mu-token:done/disp32
+    }
+    {
+$next-mu-token:check-for-open-paren:
+      # if (curr-byte != '(') break
+      3d/compare-eax-and 0x28/imm32/open-paren
+      75/jump-if-!= break/disp8
+      # ++in->read
+      ff 0/subop/increment *(esi+4)
+      # return
+      e9/jump $next-mu-token:done/disp32
+    }
+    {
+$next-mu-token:check-for-close-paren:
+      # if (curr-byte != ')') break
+      3d/compare-eax-and 0x29/imm32/close-paren
+      75/jump-if-!= break/disp8
+      # ++in->read
+      ff 0/subop/increment *(esi+4)
+      # return
+      e9/jump $next-mu-token:done/disp32
+    }
+$next-mu-token:regular-word-without-metadata:
+    {
+      # if (in->read >= in->write) break
+      # . ecx = in->read
+      8b/-> *(esi+4) 1/r32/ecx
+      # . if (ecx >= in->write) break
+      3b/compare *esi 1/r32/ecx
+      7d/jump-if->= break/disp8
+      # var c/eax: byte = in->data[in->read]
+      31/xor %eax 0/r32/eax
+      8a/copy-byte *(esi+ecx+0xc) 0/r32/AL
+      # if (c == ' ') break
+      3d/compare-eax-and 0x20/imm32/space
+      74/jump-if-= break/disp8
+      # if (c == '(') break
+      3d/compare-eax-and 0x28/imm32/open-paren
+      0f 84/jump-if-= break/disp32
+      # if (c == ')') break
+      3d/compare-eax-and 0x29/imm32/close-paren
+      0f 84/jump-if-= break/disp32
+      # ++in->read
+      ff 0/subop/increment *(esi+4)
+      # if (c == ':') break
+      3d/compare-eax-and 0x3a/imm32/colon
+      0f 84/jump-if-= break/disp32
+      # if (c == ',') break
+      3d/compare-eax-and 0x2c/imm32/comma
+      0f 84/jump-if-= break/disp32
+      #
+      e9/jump loop/disp32
+    }
+$next-mu-token:done:
+    # out->end = &in->data[in->read]
+    8b/-> *(esi+4) 1/r32/ecx
+    8d/copy-address *(esi+ecx+0xc) 0/r32/eax
+    89/<- *(edi+4) 0/r32/eax
+$next-mu-token:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1709,6 +1913,10 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
     52/push-edx
     53/push-ebx
     56/push-esi
+#?     (write-buffered Stderr "pos-slice: ")
+#?     (write-slice-buffered Stderr *(ebp+0xc))
+#?     (write-buffered Stderr "\n")
+#?     (flush Stderr)
     # esi = arr
     8b/-> *(ebp+8) 6/r32/esi
     # var index/ecx: int = 0
@@ -1719,13 +1927,14 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
     8b/-> *esi 3/r32/ebx
     8d/copy-address *(esi+ebx+0xc) 3/r32/ebx
     {
+#?       (write-buffered Stderr "  ")
+#?       (print-int32-buffered Stderr %ecx)
+#?       (write-buffered Stderr "\n")
+#?       (flush Stderr)
       # if (curr >= max) return -1
       39/compare %edx 3/r32/ebx
-      {
-        72/jump-if-addr< break/disp8
-        b8/copy-to-eax 1/imm32
-        eb/jump $pos-slice:end/disp8
-      }
+      b8/copy-to-eax -1/imm32
+      73/jump-if-addr>= $pos-slice:end/disp8
       # if (slice-equal?(s, *curr)) break
       (slice-equal? *(ebp+0xc) *edx)  # => eax
       3d/compare-eax-and 0/imm32
@@ -1735,6 +1944,7 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
       # curr += 4
       81 0/subop/add %edx 4/imm32
     }
+    # return index
     89/<- %eax 1/r32/ecx
 $pos-slice:end:
     # . restore registers
@@ -1750,7 +1960,7 @@ $pos-slice:end:
 == data
 
 Type-id:  # (stream (address array byte))
-  0x1c/imm32/write
+  0x18/imm32/write
   0/imm32/read
   0x100/imm32/length
   # data
@@ -1886,6 +2096,41 @@ test-parse-var-with-register-and-trailing-characters:
     8b/-> *(eax+4) 2/r32/edx  # Var-type
     (check-ints-equal *edx 1 "F - test-var-with-register-and-trailing-characters/type")
     (check-ints-equal *(edx+4) 0 "F - test-var-with-register-and-trailing-characters/type")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-var-with-compound-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # (eax..ecx) = "x:"
+    b8/copy-to-eax "x:"/imm32
+    8b/-> *eax 1/r32/ecx
+    8d/copy-address *(eax+ecx+4) 1/r32/ecx
+    05/add-to-eax 4/imm32
+    # var slice/ecx : slice = {eax, ecx}
+    51/push-ecx
+    50/push-eax
+    89/<- %ecx 4/r32/esp
+    # _test-input-stream contains "(addr int)"
+    (clear-stream _test-input-stream)
+    (write _test-input-stream "(addr int)")
+    #
+    (parse-var-with-type %ecx _test-input-stream)
+    8b/-> *eax 2/r32/edx  # Var-name
+    (check-strings-equal %edx "x" "F - test-var-with-compound-type/name")
+    8b/-> *(eax+0x10) 2/r32/edx  # Var-register
+    (check-ints-equal %edx 0 "F - test-var-with-compound-type/register")
+    # type->left == addr
+    8b/-> *(eax+4) 2/r32/edx  # Var-type
+    (check-ints-equal *edx 2 "F - test-var-with-compound-type/type:0")  # Tree-left
+    # type->right->left == int
+    8b/-> *(edx+4) 2/r32/edx
+    (check-ints-equal *edx 1 "F - test-var-with-compound-type/type:1")  # Tree-left
+    # type->right->right == null
+    (check-ints-equal *(edx+4) 0 "F - test-var-with-compound-type/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
