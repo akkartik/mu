@@ -1956,10 +1956,10 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
     52/push-edx
     53/push-ebx
     56/push-esi
-#?     (write-buffered Stderr "pos-slice: ")
-#?     (write-slice-buffered Stderr *(ebp+0xc))
-#?     (write-buffered Stderr "\n")
-#?     (flush Stderr)
+    (write-buffered Stderr "pos-slice: ")
+    (write-slice-buffered Stderr *(ebp+0xc))
+    (write-buffered Stderr "\n")
+    (flush Stderr)
     # esi = arr
     8b/-> *(ebp+8) 6/r32/esi
     # var index/ecx: int = 0
@@ -1986,6 +1986,8 @@ pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/e
       41/increment-ecx
       # curr += 4
       81 0/subop/add %edx 4/imm32
+      #
+      eb/jump loop/disp8
     }
     # return index
     89/<- %eax 1/r32/ecx
