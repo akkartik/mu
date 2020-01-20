@@ -83,7 +83,7 @@ subx-calls:  # in : (addr buffered-file), out : (addr buffered-file)
     #     clear-stream(line)
     #     read-line-buffered(in, line)
     #     if (line->write == 0) break                           # end of file
-    #     skip-chars-matching-whitespace(line)
+    #     skip-chars-matching(line, ' ')
     #     if line->data[line->read] != '('
     #       write-stream-data(out, line)
     #       continue
@@ -137,13 +137,14 @@ $subx-calls:check0:
     # if (line->write == 0) break
     81 7/subop/compare *esi 0/imm32
     0f 84/jump-if-= $subx-calls:break/disp32
-    # skip-chars-matching-whitespace(line)
+    # skip-chars-matching(line, ' ')
     # . . push args
+    68/push 0x20/imm32/space
     56/push-esi
     # . . call
-    e8/call skip-chars-matching-whitespace/disp32
+    e8/call skip-chars-matching/disp32
     # . . discard args
-    81 0/subop/add %esp 4/imm32
+    81 0/subop/add %esp 8/imm32
     # if (line->data[line->read] == '(') goto convert-call
     # . ecx = line->read
     8b/-> *(esi+4) 1/r32/ecx
