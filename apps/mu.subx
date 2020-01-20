@@ -1651,7 +1651,7 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-not-equal $parse-type:abort/disp32
     # if (s == ")") return 0
-    (slice-equal? %ecx "}")
+    (slice-equal? %ecx ")")
     3d/compare-eax-and 0/imm32
     b8/copy-to-eax 0/imm32
     0f 85/jump-if-not-equal $parse-type:end/disp32
@@ -1719,23 +1719,33 @@ $parse-type:abort:
 
 parse-type-tree:  # ad: (address allocation-descriptor), in: (addr stream byte) -> result/eax: (handle tree type-id)
     # pseudocode:
+    #   var tmp: (handle tree type-id) = parse-type(ad, in)
+    #   if tmp == 0
+    #     return 0
     #   result = allocate(Tree)
     #   zero-out(result, *Tree-size)
-    #   result->left = parse-type(ad, in)
+    #   result->left = tmp
     #   result->right = parse-type-tree(ad, in)
     #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
     52/push-edx
+    # var tmp/eax: (handle tree type-id) = parse-type(ad, in)
+    (parse-type *(ebp+8) *(ebp+0xc))
+    # if (tmp == 0) return tmp
+    3d/compare-eax-and 0/imm32
+    74/jump-if-equal $parse-type-tree:end/disp8
+    # var tmp2/ecx = tmp
+    89/<- %ecx 0/r32/eax
     # var result/edx: (handle tree type-id)
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)
     89/<- %edx 0/r32/eax
-    # result->left = parse-type(ad, in)
-    (parse-type *(ebp+8) *(ebp+0xc))
-    89/<- *edx 0/r32/eax  # Tree-left
+    # result->left = tmp2
+    89/<- *edx 1/r32/ecx  # Tree-left
     # result->right = parse-type-tree(ad, in)
     (parse-type-tree *(ebp+8) *(ebp+0xc))
     89/<- *(edx+4) 0/r32/eax  # Tree-right
@@ -1744,6 +1754,7 @@ $parse-type-tree:return-edx:
 $parse-type-tree:end:
     # . restore registers
     5a/pop-to-edx
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -2155,12 +2166,15 @@ test-parse-var-with-compound-type:
     (check-strings-equal %edx "x" "F - test-var-with-compound-type/name")
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
     (check-ints-equal %edx 0 "F - test-var-with-compound-type/register")
-    # type->left == addr
+    # var type/edx: (handle tree type-id) = var->type
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal *edx 2 "F - test-var-with-compound-type/type:0")  # Tree-left
-    # type->right->left == int
-    8b/-> *(edx+4) 2/r32/edx
-    (check-ints-equal *edx 1 "F - test-var-with-compound-type/type:1")  # Tree-left
+    # type->left == atom(addr)
+    8b/-> *edx 0/r32/eax  # Atom-value
+    (check-ints-equal *eax 2 "F - test-var-with-compound-type/type:0")  # Tree-left
+    # type->right->left == atom(int)
+    8b/-> *(edx+4) 2/r32/edx  # Tree-right
+    8b/-> *edx 0/r32/eax  # Tree-left
+    (check-ints-equal *eax 1 "F - test-var-with-compound-type/type:1")  # Atom-value
     # type->right->right == null
     (check-ints-equal *(edx+4) 0 "F - test-var-with-compound-type/type:2")  # Tree-right
     # . epilogue
