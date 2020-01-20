@@ -1614,7 +1614,7 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     #     result->left = pos-slice(Type-id, s)
     #     return
     #   result->left = parse-type(ad, in)
-    #   result->right = parse-type(ad, in)
+    #   result->right = parse-type-tree(ad, in)
     #
     # . prologue
     55/push-ebp
@@ -1685,8 +1685,8 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
 #?     (write-buffered Stderr "=> {")
 #?     (print-int32-buffered Stderr %eax)
     89/<- *edx 0/r32/eax  # Tree-left
-    # result->right = parse-type(ad, in)
-    (parse-type *(ebp+8) *(ebp+0xc))
+    # result->right = parse-type-tree(ad, in)
+    (parse-type-tree *(ebp+8) *(ebp+0xc))
 #?     (write-buffered Stderr Space)
 #?     (print-int32-buffered Stderr %eax)
 #?     (write-buffered Stderr "}\n")
@@ -1716,6 +1716,38 @@ $parse-type:abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+parse-type-tree:  # ad: (address allocation-descriptor), in: (addr stream byte) -> result/eax: (handle tree type-id)
+    # pseudocode:
+    #   result = allocate(Tree)
+    #   zero-out(result, *Tree-size)
+    #   result->left = parse-type(ad, in)
+    #   result->right = parse-type-tree(ad, in)
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    52/push-edx
+    # var result/edx: (handle tree type-id)
+    (allocate *(ebp+8) *Tree-size)  # => eax
+    (zero-out %eax *Tree-size)
+    89/<- %edx 0/r32/eax
+    # result->left = parse-type(ad, in)
+    (parse-type *(ebp+8) *(ebp+0xc))
+    89/<- *edx 0/r32/eax  # Tree-left
+    # result->right = parse-type-tree(ad, in)
+    (parse-type-tree *(ebp+8) *(ebp+0xc))
+    89/<- *(edx+4) 0/r32/eax  # Tree-right
+$parse-type-tree:return-edx:
+    89/<- %eax 2/r32/edx
+$parse-type-tree:end:
+    # . restore registers
+    5a/pop-to-edx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 next-mu-token:  # in: (addr stream byte), out: (addr slice)
     # pseudocode:
