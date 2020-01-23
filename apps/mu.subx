@@ -2639,7 +2639,7 @@ $parse-mu-block:check-for-block:
         (check-no-tokens-left %ecx)
         # parse new block and append
         (parse-mu-block *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
-        (append-to-block %edi %eax)
+        (append-to-block Heap %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
       # if slice-equal?(word-slice, "}") break
@@ -2659,7 +2659,7 @@ $parse-mu-block:check-for-named-block:
         0f 85/jump-if-!= break/disp32
         #
         (parse-mu-named-block %edx %ecx *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
-        (append-to-block %edi %eax)
+        (append-to-block Heap %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
       # if slice-equal?(word-slice, "var")
@@ -2670,7 +2670,7 @@ $parse-mu-block:check-for-var:
         74/jump-if-= break/disp8
         #
         (parse-mu-var-def %ecx *(ebp+0xc))  # => eax
-        (append-to-block %edi %eax)
+        (append-to-block Heap %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
       }
 $parse-mu-block:regular-stmt:
