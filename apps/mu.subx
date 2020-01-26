@@ -3336,30 +3336,6 @@ $new-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-stmt:  # ad: (addr allocation-descriptor), operation: (addr array byte), inouts: (handle list var), outputs: (handle list var) -> result/eax: (handle statement)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    51/push-ecx
-    #
-    (allocate *(ebp+8) *Stmt-size)  # => eax
-    (zero-out %eax *Stmt-size)
-    c7 0/subop/copy *eax 1/imm32/tag/regular-stmt  # Stmt-tag
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # Stmt1-operation
-    8b/-> *(ebp+0x10) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Stmt1-inouts
-    8b/-> *(ebp+0x14) 1/r32/ecx
-    89/<- *(eax+0xc) 1/r32/ecx  # Stmt1-outputs
-$new-stmt:end:
-    # . restore registers
-    59/pop-to-ecx
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
 new-vardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
