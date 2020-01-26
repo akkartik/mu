@@ -2816,13 +2816,9 @@ parse-mu-stmt:  # line : (addr stream byte), vars : (addr stack (handle var)), f
     #       name = next-word(line)
     #       if (name == '<-') break
     #       assert(is-identifier?(name))
-    #       var v : (handle var) = lookup-or-define-var(name, vars)
+    #       var v : (handle var) = lookup-or-define-var(name, vars, fn)  # regular stmts may define vars in fn outputs
     #       result->outputs = append(result->outputs, v)
-    #   result->name = slice-to-string(next-word(line))
-    #   while true
-    #     name = next-word-or-string(line)
-    #     v = lookup-var-or-literal(name)
-    #     result->inouts = append(result->inouts, v)
+    #   add-operation-and-inputs-to-stmt(result, line, vars)
     #
     # . prologue
     55/push-ebp
@@ -2867,28 +2863,7 @@ $parse-mu-stmt:read-outputs:
         e9/jump loop/disp32
       }
     }
-$parse-mu-stmt:read-operation:
-    (next-word *(ebp+8) %ecx)
-    (slice-to-string Heap %ecx)
-    89/<- *(edi+4) 0/r32/eax  # Stmt1-operation
-    {
-$parse-mu-stmt:read-inouts:
-      # name = next-word-or-string(line)
-      (next-word-or-string *(ebp+8) %ecx)
-      # if slice-empty?(word-slice) break
-      (slice-empty? %ecx)
-      3d/compare-eax-and 0/imm32
-      0f 85/jump-if-!= break/disp32
-      # if (name == "<-") abort
-      (slice-equal? %ecx "<-")
-      3d/compare-eax-and 0/imm32
-      0f 85/jump-if-!= $parse-mu-stmt:abort2/disp32
-      #
-      (lookup-var-or-literal %ecx *(ebp+0xc))  # => eax
-      (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
-      89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts
-      e9/jump loop/disp32
-    }
+    (add-operation-and-inputs-to-stmt %edi *(ebp+8) *(ebp+0xc))
 $parse-mu-stmt:end:
     # return result
     89/<- %eax 7/r32/edi
@@ -2914,7 +2889,60 @@ $parse-mu-stmt:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-$parse-mu-stmt:abort2:
+add-operation-and-inputs-to-stmt:  # stmt : (handle stmt), line : (addr stream byte)
+    # pseudocode:
+    #   stmt->name = slice-to-string(next-word(line))
+    #   while true
+    #     name = next-word-or-string(line)
+    #     v = lookup-var-or-literal(name)
+    #     stmt->inouts = append(stmt->inouts, v)
+    #
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    57/push-edi
+    # edi = stmt
+    8b/-> *(ebp+8) 7/r32/edi
+    # var name/ecx : slice
+    68/push 0/imm32/end
+    68/push 0/imm32/start
+    89/<- %ecx 4/r32/esp
+$add-operation-and-inputs-to-stmt:read-operation:
+    (next-word *(ebp+0xc) %ecx)
+    (slice-to-string Heap %ecx)  # => eax
+    89/<- *(edi+4) 0/r32/eax  # Stmt1-operation or Regvardef-operation
+    {
+$add-operation-and-inputs-to-stmt:read-inouts:
+      # name = next-word-or-string(line)
+      (next-word-or-string *(ebp+0xc) %ecx)
+      # if slice-empty?(word-slice) break
+      (slice-empty? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-!= break/disp32
+      # if (name == "<-") abort
+      (slice-equal? %ecx "<-")
+      3d/compare-eax-and 0/imm32
+      0f 85/jump-if-!= $add-operation-and-inputs-to-stmt:abort/disp32
+      #
+      (lookup-var-or-literal %ecx *(ebp+0x10))  # => eax
+      (append-list Heap %eax *(edi+8))  # Stmt1-inouts or Regvardef-inouts => eax
+      89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
+      e9/jump loop/disp32
+    }
+$add-operation-and-inputs-to-stmt:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    5f/pop-to-edi
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$add-operation-and-inputs-to-stmt:abort:
     # error("invalid statement '" line "'\n")
     (rewind-stream *(ebp+8))
     (write-buffered Stderr "invalid identifier '")
