@@ -298,21 +298,15 @@ Stmt1-inouts:  # (handle list var)
 Stmt1-outputs:  # (handle list var)
   0xc/imm32
 
-Vardef-name:  # (handle array byte)
+Vardef-var:  # (handle var)
   4/imm32
-Vardef-type:  # (handle tree type-id)
-  8/imm32
 
-Regvardef-name:  # (handle array byte)
-  4/imm32
-Regvardef-type:  # (handle tree type-id)
-  8/imm32
-Regvardef-register:  # (handle array byte)
-  0xc/imm32
 Regvardef-operation:  # (handle array byte)
-  0x10/imm32
-Regvardef-inputs:  # (handle list var)
-  0x14/imm32
+  4/imm32
+Regvardef-inouts:  # (handle list var)
+  8/imm32
+Regvardef-var:  # (handle var)
+  0xc/imm32
 
 Named-block-name:
   4/imm32
@@ -320,7 +314,7 @@ Named-block-statements:  # (handle list statement)
   8/imm32
 
 Stmt-size:  # (addr int)
-  0x18/imm32
+  0x10/imm32
 
 Var-name:
   0/imm32
@@ -3366,7 +3360,7 @@ $new-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-new-vardef:  # ad: (addr allocation-descriptor), name: (addr array byte), type: int -> result/eax: (handle statement)
+new-vardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3376,10 +3370,9 @@ new-vardef:  # ad: (addr allocation-descriptor), name: (addr array byte), type: 
     (allocate *(ebp+8) *Stmt-size)  # => eax
     (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 2/imm32/tag/var-on-stack  # Stmt-tag
+    # result->var = var
     8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # Vardef-name
-    8b/-> *(ebp+0x10) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Vardef-type
+    89/<- *(eax+4) 1/r32/ecx  # Vardef-var
 $new-vardef:end:
     # . restore registers
     59/pop-to-ecx
@@ -3388,7 +3381,7 @@ $new-vardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-regvardef:  # ad: (addr allocation-descriptor), name: (addr array byte), type: int, register: (addr array byte) -> result/eax: (handle statement)
+new-regvardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3397,13 +3390,9 @@ new-regvardef:  # ad: (addr allocation-descriptor), name: (addr array byte), typ
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
     (zero-out %eax *Stmt-size)
-    c7 0/subop/copy *eax 3/imm32/tag/var-in-register
+    c7 0/subop/copy *eax 3/imm32/tag/var-in-register  # Stmt-tag
     8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # Regvardef-name
-    8b/-> *(ebp+0x10) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Regvardef-type
-    8b/-> *(ebp+0x14) 1/r32/ecx
-    89/<- *(eax+0xc) 1/r32/ecx  # Regvardef-register
+    89/<- *(eax+0xc) 1/r32/ecx  # Regvardef-var
 $new-regvardef:end:
     # . restore registers
     59/pop-to-ecx
