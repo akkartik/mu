@@ -128,7 +128,7 @@ if ('onhashchange' in window) {
 <span id="L67" class="LineNr"> 67 </span>    eb/jump  $main:end/disp8
 <span id="L68" class="LineNr"> 68 </span><span class="Constant">$run-main</span>:
 <span id="L69" class="LineNr"> 69 </span>    <span class="subxH1Comment"># - otherwise read a program from stdin and emit its translation to stdout</span>
-<span id="L70" class="LineNr"> 70 </span>    <span class="subxComment"># var ed/eax : exit-descriptor</span>
+<span id="L70" class="LineNr"> 70 </span>    <span class="subxComment"># var ed/eax: exit-descriptor</span>
 <span id="L71" class="LineNr"> 71 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L72" class="LineNr"> 72 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L73" class="LineNr"> 73 </span>    <span class="subxComment"># configure ed to really exit()</span>
@@ -151,7 +151,7 @@ if ('onhashchange' in window) {
 <span id="L90" class="LineNr"> 90 </span>    cd/syscall  0x80/imm8
 <span id="L91" class="LineNr"> 91 </span>
 <span id="L92" class="LineNr"> 92 </span><span class="subxComment"># the main entry point</span>
-<span id="L93" class="LineNr"> 93 </span><span class="subxFunction">compile</span>:  <span class="subxComment"># in : (addr buffered-file), out : fd or (addr stream byte), err : fd or (addr stream byte), ed : (addr exit-descriptor)</span>
+<span id="L93" class="LineNr"> 93 </span><span class="subxFunction">compile</span>:  <span class="subxComment"># in: (addr buffered-file), out: fd or (addr stream byte), err: fd or (addr stream byte), ed: (addr exit-descriptor)</span>
 <span id="L94" class="LineNr"> 94 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L95" class="LineNr"> 95 </span>    55/push-ebp
 <span id="L96" class="LineNr"> 96 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -166,7 +166,7 @@ if ('onhashchange' in window) {
 <span id="L105" class="LineNr">105 </span>    e8/call  <a href='crenshaw2-1.subx.html#L515'>get-char</a>/disp32
 <span id="L106" class="LineNr">106 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L107" class="LineNr">107 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L108" class="LineNr">108 </span>    <span class="subxComment"># var num/ecx : (stream byte 7)</span>
+<span id="L108" class="LineNr">108 </span>    <span class="subxComment"># var num/ecx: (stream byte 7)</span>
 <span id="L109" class="LineNr">109 </span>    <span class="subxComment"># Numbers can be 32 bits or 8 hex bytes long. One of them will be in 'Look', so we need space for 7 bytes.</span>
 <span id="L110" class="LineNr">110 </span>    <span class="subxComment"># Sizing the stream just right buys us overflow-handling for free inside 'get-num'.</span>
 <span id="L111" class="LineNr">111 </span>    <span class="subxComment"># Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.</span>
@@ -252,7 +252,7 @@ if ('onhashchange' in window) {
 <span id="L191" class="LineNr">191 </span><span class="subxComment"># space in 'out'.</span>
 <span id="L192" class="LineNr">192 </span><span class="subxComment"># Input comes from the global variable 'Look' (first byte) and the argument</span>
 <span id="L193" class="LineNr">193 </span><span class="subxComment"># 'in' (rest). We leave the next byte from 'in' into 'Look' on exit.</span>
-<span id="L194" class="LineNr">194 </span><span class="subxFunction">get-num</span>:  <span class="subxComment"># in : (addr buffered-file), out : (addr stream byte), err : fd or (addr stream byte), ed : (addr exit-descriptor)</span>
+<span id="L194" class="LineNr">194 </span><span class="subxFunction">get-num</span>:  <span class="subxComment"># in: (addr buffered-file), out: (addr stream byte), err: fd or (addr stream byte), ed: (addr exit-descriptor)</span>
 <span id="L195" class="LineNr">195 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L196" class="LineNr">196 </span>    <span class="subxComment">#   if (!is-digit?(Look)) expected(ed, err, &quot;integer&quot;)</span>
 <span id="L197" class="LineNr">197 </span>    <span class="subxComment">#   if out-&gt;write &gt;= out-&gt;length</span>
@@ -400,7 +400,7 @@ if ('onhashchange' in window) {
 <span id="L339" class="LineNr">339 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L340" class="LineNr">340 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L341" class="LineNr">341 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
-<span id="L342" class="LineNr">342 </span>    <span class="subxS1Comment"># . var ed/eax : exit-descriptor</span>
+<span id="L342" class="LineNr">342 </span>    <span class="subxS1Comment"># . var ed/eax: exit-descriptor</span>
 <span id="L343" class="LineNr">343 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L344" class="LineNr">344 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L345" class="LineNr">345 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
@@ -489,7 +489,7 @@ if ('onhashchange' in window) {
 <span id="L428" class="LineNr">428 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L429" class="LineNr">429 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
 <span id="L430" class="LineNr">430 </span>    <span class="subxComment"># initialize exit-descriptor 'ed' for the call to 'get-num' below</span>
-<span id="L431" class="LineNr">431 </span>    <span class="subxS1Comment"># . var ed/eax : exit-descriptor</span>
+<span id="L431" class="LineNr">431 </span>    <span class="subxS1Comment"># . var ed/eax: exit-descriptor</span>
 <span id="L432" class="LineNr">432 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># subtract from esp</span>
 <span id="L433" class="LineNr">433 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to eax</span>
 <span id="L434" class="LineNr">434 </span>    <span class="subxS1Comment"># . tailor-exit-descriptor(ed, 16)</span>
@@ -531,7 +531,7 @@ if ('onhashchange' in window) {
 <span id="L470" class="LineNr">470 </span><span class="subxComment">## helpers</span>
 <span id="L471" class="LineNr">471 </span>
 <span id="L472" class="LineNr">472 </span><span class="subxComment"># write(f, &quot;Error: &quot;+s+&quot; expected\n&quot;) then stop(ed, 1)</span>
-<span id="L473" class="LineNr">473 </span><span class="subxFunction">expected</span>:  <span class="subxComment"># ed : (addr exit-descriptor), f : fd or (addr stream byte), s : (addr array byte)</span>
+<span id="L473" class="LineNr">473 </span><span class="subxFunction">expected</span>:  <span class="subxComment"># ed: (addr exit-descriptor), f: fd or (addr stream byte), s: (addr array byte)</span>
 <span id="L474" class="LineNr">474 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L475" class="LineNr">475 </span>    55/push-ebp
 <span id="L476" class="LineNr">476 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -573,7 +573,7 @@ if ('onhashchange' in window) {
 <span id="L512" class="LineNr">512 </span>    c3/return
 <span id="L513" class="LineNr">513 </span>
 <span id="L514" class="LineNr">514 </span><span class="subxComment"># read a byte from 'f', and save it in 'Look'</span>
-<span id="L515" class="LineNr">515 </span><span class="subxFunction">get-char</span>:  <span class="subxComment"># f : (addr buffered-file)</span>
+<span id="L515" class="LineNr">515 </span><span class="subxFunction">get-char</span>:  <span class="subxComment"># f: (addr buffered-file)</span>
 <span id="L516" class="LineNr">516 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L517" class="LineNr">517 </span>    55/push-ebp
 <span id="L518" class="LineNr">518 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -596,7 +596,7 @@ if ('onhashchange' in window) {
 <span id="L535" class="LineNr">535 </span>    5d/pop-to-ebp
 <span id="L536" class="LineNr">536 </span>    c3/return
 <span id="L537" class="LineNr">537 </span>
-<span id="L538" class="LineNr">538 </span><span class="subxFunction">is-digit?</span>:  <span class="subxComment"># c : int -&gt; eax : boolean</span>
+<span id="L538" class="LineNr">538 </span><span class="subxFunction">is-digit?</span>:  <span class="subxComment"># c: int -&gt; eax: boolean</span>
 <span id="L539" class="LineNr">539 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L540" class="LineNr">540 </span>    55/push-ebp
 <span id="L541" class="LineNr">541 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>

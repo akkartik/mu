@@ -176,12 +176,12 @@ if ('onhashchange' in window) {
 <span id="L113" class="LineNr"> 113 </span><span class="subxComment">#   labels: (addr stream {string, label-info})         (16 bytes per row)</span>
 <span id="L114" class="LineNr"> 114 </span><span class="subxComment"># these are all inefficient; use sequential scans for lookups</span>
 <span id="L115" class="LineNr"> 115 </span>
-<span id="L116" class="LineNr"> 116 </span><span class="subxFunction">subx-survey</span>:  <span class="subxComment"># infile : (addr buffered-file), out : (addr buffered-file)</span>
+<span id="L116" class="LineNr"> 116 </span><span class="subxFunction">subx-survey</span>:  <span class="subxComment"># infile: (addr buffered-file), out: (addr buffered-file)</span>
 <span id="L117" class="LineNr"> 117 </span>    <span class="subxComment"># pseudocode</span>
-<span id="L118" class="LineNr"> 118 </span>    <span class="subxComment">#   var in : (stream byte 4096)</span>
+<span id="L118" class="LineNr"> 118 </span>    <span class="subxComment">#   var in: (stream byte 4096)</span>
 <span id="L119" class="LineNr"> 119 </span>    <span class="subxComment">#   slurp(infile, in)</span>
-<span id="L120" class="LineNr"> 120 </span>    <span class="subxComment">#   var segments : (stream segment-info)</span>
-<span id="L121" class="LineNr"> 121 </span>    <span class="subxComment">#   var labels : (stream label-info Max-labels)</span>
+<span id="L120" class="LineNr"> 120 </span>    <span class="subxComment">#   var segments: (stream segment-info)</span>
+<span id="L121" class="LineNr"> 121 </span>    <span class="subxComment">#   var labels: (stream label-info Max-labels)</span>
 <span id="L122" class="LineNr"> 122 </span>    <span class="subxComment">#   compute-offsets(in, segments, labels)</span>
 <span id="L123" class="LineNr"> 123 </span>    <span class="subxComment">#   compute-addresses(segments, labels)</span>
 <span id="L124" class="LineNr"> 124 </span>    <span class="subxComment">#   rewind-stream(in)</span>
@@ -194,13 +194,13 @@ if ('onhashchange' in window) {
 <span id="L131" class="LineNr"> 131 </span>    51/push-ecx
 <span id="L132" class="LineNr"> 132 </span>    52/push-edx
 <span id="L133" class="LineNr"> 133 </span>    56/push-esi
-<span id="L134" class="LineNr"> 134 </span>    <span class="subxComment"># var segments/ecx : (stream {string, segment-info} 160)   # 10 rows * 16 bytes/row</span>
+<span id="L134" class="LineNr"> 134 </span>    <span class="subxComment"># var segments/ecx: (stream {string, segment-info} 160)   # 10 rows * 16 bytes/row</span>
 <span id="L135" class="LineNr"> 135 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa0/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L136" class="LineNr"> 136 </span>    68/push  0xa0/imm32/length
 <span id="L137" class="LineNr"> 137 </span>    68/push  0/imm32/read
 <span id="L138" class="LineNr"> 138 </span>    68/push  0/imm32/write
 <span id="L139" class="LineNr"> 139 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L140" class="LineNr"> 140 </span>    <span class="subxComment"># var labels/edx : (stream label-info Max-labels*16)</span>
+<span id="L140" class="LineNr"> 140 </span>    <span class="subxComment"># var labels/edx: (stream label-info Max-labels*16)</span>
 <span id="L141" class="LineNr"> 141 </span>    <span class="subxS1Comment"># . data</span>
 <span id="L142" class="LineNr"> 142 </span>    2b/subtract                     0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp   <span class="SpecialChar">Max-labels</span>/disp32                 <span class="subxComment"># subtract *Max-labels from esp</span>
 <span id="L143" class="LineNr"> 143 </span>    <span class="subxS1Comment"># . length</span>
@@ -210,7 +210,7 @@ if ('onhashchange' in window) {
 <span id="L147" class="LineNr"> 147 </span>    <span class="subxS1Comment"># . write</span>
 <span id="L148" class="LineNr"> 148 </span>    68/push  0/imm32/write
 <span id="L149" class="LineNr"> 149 </span>    89/copy                         3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to edx</span>
-<span id="L150" class="LineNr"> 150 </span>    <span class="subxComment"># var in/esi : (stream byte Input-size)</span>
+<span id="L150" class="LineNr"> 150 </span>    <span class="subxComment"># var in/esi: (stream byte Input-size)</span>
 <span id="L151" class="LineNr"> 151 </span>    <span class="subxS1Comment"># . data</span>
 <span id="L152" class="LineNr"> 152 </span>    2b/subtract                     0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp   <span class="SpecialChar">Input-size</span>/disp32                 <span class="subxComment"># subtract *Input-size from esp</span>
 <span id="L153" class="LineNr"> 153 </span>    <span class="subxS1Comment"># . length</span>
@@ -449,7 +449,7 @@ if ('onhashchange' in window) {
 <span id="L618" class="LineNr"> 618 </span>
 <span id="L619" class="LineNr"> 619 </span>== code
 <span id="L620" class="LineNr"> 620 </span>
-<span id="L621" class="LineNr"> 621 </span><span class="subxFunction">compute-offsets</span>:  <span class="subxComment"># in : (addr stream byte), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
+<span id="L621" class="LineNr"> 621 </span><span class="subxFunction">compute-offsets</span>:  <span class="subxComment"># in: (addr stream byte), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})</span>
 <span id="L622" class="LineNr"> 622 </span>    <span class="subxComment"># skeleton:</span>
 <span id="L623" class="LineNr"> 623 </span>    <span class="subxComment">#   for lines in 'in'</span>
 <span id="L624" class="LineNr"> 624 </span>    <span class="subxComment">#     for words in line</span>
@@ -460,8 +460,8 @@ if ('onhashchange' in window) {
 <span id="L629" class="LineNr"> 629 </span>    <span class="subxComment">#         default</span>
 <span id="L630" class="LineNr"> 630 </span>    <span class="subxComment">#</span>
 <span id="L631" class="LineNr"> 631 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L632" class="LineNr"> 632 </span>    <span class="subxComment">#   curr-segment-name : (addr string) = 0</span>
-<span id="L633" class="LineNr"> 633 </span>    <span class="subxComment">#   var line : (stream byte 512)</span>
+<span id="L632" class="LineNr"> 632 </span>    <span class="subxComment">#   curr-segment-name: (addr string) = 0</span>
+<span id="L633" class="LineNr"> 633 </span>    <span class="subxComment">#   var line: (stream byte 512)</span>
 <span id="L634" class="LineNr"> 634 </span>    <span class="subxComment">#   while true                                  # line loop</span>
 <span id="L635" class="LineNr"> 635 </span>    <span class="subxComment">#     clear-stream(line)</span>
 <span id="L636" class="LineNr"> 636 </span>    <span class="subxComment">#     read-line(in, line)</span>
@@ -492,7 +492,7 @@ if ('onhashchange' in window) {
 <span id="L661" class="LineNr"> 661 </span>    <span class="subxComment">#         break  (next line)</span>
 <span id="L662" class="LineNr"> 662 </span>    <span class="subxComment">#       else if is-label?(word-slice)</span>
 <span id="L663" class="LineNr"> 663 </span>    <span class="subxComment">#         strip trailing ':' from word-slice</span>
-<span id="L664" class="LineNr"> 664 </span>    <span class="subxComment">#         x : (addr label-info) = get-or-insert(labels, name)</span>
+<span id="L664" class="LineNr"> 664 </span>    <span class="subxComment">#         x: (addr label-info) = get-or-insert(labels, name)</span>
 <span id="L665" class="LineNr"> 665 </span>    <span class="subxComment">#         x-&gt;segment-name = curr-segment-name</span>
 <span id="L666" class="LineNr"> 666 </span>    <span class="subxComment">#         trace(&quot;label '&quot;, word-slice, &quot;' is in segment '&quot;, curr-segment-name, &quot;'.&quot;)</span>
 <span id="L667" class="LineNr"> 667 </span>    <span class="subxComment">#         x-&gt;segment-offset = segment-offset</span>
@@ -519,7 +519,7 @@ if ('onhashchange' in window) {
 <span id="L688" class="LineNr"> 688 </span>    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          <a href='survey.subx.html#L621'>compute-offsets</a>:file-offset/disp32  0/imm32               <span class="subxComment"># copy to *compute-offsets:word-slice</span>
 <span id="L689" class="LineNr"> 689 </span>    <span class="subxComment"># segment-offset = 0</span>
 <span id="L690" class="LineNr"> 690 </span>    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32           <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          <a href='survey.subx.html#L621'>compute-offsets</a>:segment-offset/disp32  0/imm32            <span class="subxComment"># copy to *compute-offsets:word-slice</span>
-<span id="L691" class="LineNr"> 691 </span>    <span class="subxComment"># var line/ecx : (stream byte 512)</span>
+<span id="L691" class="LineNr"> 691 </span>    <span class="subxComment"># var line/ecx: (stream byte 512)</span>
 <span id="L692" class="LineNr"> 692 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x200/imm32       <span class="subxComment"># subtract from esp</span>
 <span id="L693" class="LineNr"> 693 </span>    68/push  0x200/imm32/length
 <span id="L694" class="LineNr"> 694 </span>    68/push  0/imm32/read
@@ -861,13 +861,13 @@ if ('onhashchange' in window) {
 <span id="L1219" class="LineNr">1219 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L1220" class="LineNr">1220 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L1221" class="LineNr">1221 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L1222" class="LineNr">1222 </span>    <span class="subxComment"># var segments/ecx : (stream byte 2*16)</span>
+<span id="L1222" class="LineNr">1222 </span>    <span class="subxComment"># var segments/ecx: (stream byte 2*16)</span>
 <span id="L1223" class="LineNr">1223 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x20/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L1224" class="LineNr">1224 </span>    68/push  0x20/imm32/length
 <span id="L1225" class="LineNr">1225 </span>    68/push  0/imm32/read
 <span id="L1226" class="LineNr">1226 </span>    68/push  0/imm32/write
 <span id="L1227" class="LineNr">1227 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L1228" class="LineNr">1228 </span>    <span class="subxComment"># var labels/edx : (stream byte 2*16)</span>
+<span id="L1228" class="LineNr">1228 </span>    <span class="subxComment"># var labels/edx: (stream byte 2*16)</span>
 <span id="L1229" class="LineNr">1229 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x20/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L1230" class="LineNr">1230 </span>    68/push  0x20/imm32/length
 <span id="L1231" class="LineNr">1231 </span>    68/push  0/imm32/read
@@ -995,9 +995,9 @@ if ('onhashchange' in window) {
 <span id="L1378" class="LineNr">1378 </span>    5d/pop-to-ebp
 <span id="L1379" class="LineNr">1379 </span>    c3/return
 <span id="L1380" class="LineNr">1380 </span>
-<span id="L1381" class="LineNr">1381 </span><span class="subxFunction">compute-addresses</span>:  <span class="subxComment"># segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
+<span id="L1381" class="LineNr">1381 </span><span class="subxFunction">compute-addresses</span>:  <span class="subxComment"># segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})</span>
 <span id="L1382" class="LineNr">1382 </span>    <span class="subxComment"># pseudocode:</span>
-<span id="L1383" class="LineNr">1383 </span>    <span class="subxComment">#   srow : (addr segment-info) = segments-&gt;data</span>
+<span id="L1383" class="LineNr">1383 </span>    <span class="subxComment">#   srow: (addr segment-info) = segments-&gt;data</span>
 <span id="L1384" class="LineNr">1384 </span>    <span class="subxComment">#   max = &amp;segments-&gt;data[segments-&gt;write]</span>
 <span id="L1385" class="LineNr">1385 </span>    <span class="subxComment">#   num-segments = segments-&gt;write / 16</span>
 <span id="L1386" class="LineNr">1386 </span>    <span class="subxComment">#   starting-offset = 0x34 + (num-segments * 0x20)</span>
@@ -1008,12 +1008,12 @@ if ('onhashchange' in window) {
 <span id="L1391" class="LineNr">1391 </span>    <span class="subxComment">#     s-&gt;address += (s-&gt;file-offset &amp; 0x00000fff)</span>
 <span id="L1392" class="LineNr">1392 </span>    <span class="subxComment">#     trace-sssns(&quot;segment &quot; s-&gt;key &quot; starts at address &quot; s-&gt;address)</span>
 <span id="L1393" class="LineNr">1393 </span>    <span class="subxComment">#     srow += 16  # row-size</span>
-<span id="L1394" class="LineNr">1394 </span>    <span class="subxComment">#   lrow : (addr label-info) = labels-&gt;data</span>
+<span id="L1394" class="LineNr">1394 </span>    <span class="subxComment">#   lrow: (addr label-info) = labels-&gt;data</span>
 <span id="L1395" class="LineNr">1395 </span>    <span class="subxComment">#   max = &amp;labels-&gt;data[labels-&gt;write]</span>
 <span id="L1396" class="LineNr">1396 </span>    <span class="subxComment">#   while true</span>
 <span id="L1397" class="LineNr">1397 </span>    <span class="subxComment">#     if (lrow &gt;= max) break</span>
-<span id="L1398" class="LineNr">1398 </span>    <span class="subxComment">#     seg-name : (addr string) = lrow-&gt;segment-name</span>
-<span id="L1399" class="LineNr">1399 </span>    <span class="subxComment">#     label-seg : (addr segment-info) = get(segments, seg-name)</span>
+<span id="L1398" class="LineNr">1398 </span>    <span class="subxComment">#     var seg-name: (addr string) = lrow-&gt;segment-name</span>
+<span id="L1399" class="LineNr">1399 </span>    <span class="subxComment">#     var label-seg: (addr segment-info) = get(segments, seg-name)</span>
 <span id="L1400" class="LineNr">1400 </span>    <span class="subxComment">#     lrow-&gt;address = label-seg-&gt;address + lrow-&gt;segment-offset</span>
 <span id="L1401" class="LineNr">1401 </span>    <span class="subxComment">#     trace-sssns(&quot;label &quot; lrow-&gt;key &quot; is at address &quot; lrow-&gt;address)</span>
 <span id="L1402" class="LineNr">1402 </span>    <span class="subxComment">#     lrow += 16  # row-size</span>
@@ -1089,10 +1089,10 @@ if ('onhashchange' in window) {
 <span id="L1497" class="LineNr">1497 </span>    39/compare                      3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare eax with ecx</span>
 <span id="L1498" class="LineNr">1498 </span>    0f 83/jump-if-addr&gt;=  $compute-addresses:end/disp32
 <span id="L1499" class="Folded">1499 </span><span class="Folded">+-- 26 lines: #?     # dump lrow-&gt;key ------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1525" class="LineNr">1525 </span>    <span class="subxComment"># seg-name/edx = lrow-&gt;segment-name</span>
+<span id="L1525" class="LineNr">1525 </span>    <span class="subxComment"># var seg-name/edx: (addr array byte) = lrow-&gt;segment-name</span>
 <span id="L1526" class="LineNr">1526 </span>    8b/copy                         1/mod/*+disp8   0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to edx</span>
 <span id="L1527" class="Folded">1527 </span><span class="Folded">+-- 26 lines: #?     # dump seg-name -------------------------------------------------------------------------------------------------------------------------</span>
-<span id="L1553" class="LineNr">1553 </span>    <span class="subxComment"># label-seg/edx : (addr segment-info) = get(segments, seg-name, row-size=16, &quot;segment table&quot;)</span>
+<span id="L1553" class="LineNr">1553 </span>    <span class="subxComment"># var label-seg/edx: (addr segment-info) = get(segments, seg-name, row-size=16, &quot;segment table&quot;)</span>
 <span id="L1554" class="LineNr">1554 </span>    <span class="subxS1Comment"># . save eax</span>
 <span id="L1555" class="LineNr">1555 </span>    50/push-eax
 <span id="L1556" class="LineNr">1556 </span>    <span class="subxS1Comment"># . eax = get(segments, seg-name, row-size=16)</span>
@@ -1163,13 +1163,13 @@ if ('onhashchange' in window) {
 <span id="L1621" class="LineNr">1621 </span>    55/push-ebp
 <span id="L1622" class="LineNr">1622 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
 <span id="L1623" class="LineNr">1623 </span>    <span class="subxComment"># setup</span>
-<span id="L1624" class="LineNr">1624 </span>    <span class="subxS1Comment"># . var segments/ecx : (stream byte 10*16)</span>
+<span id="L1624" class="LineNr">1624 </span>    <span class="subxS1Comment"># . var segments/ecx: (stream byte 10*16)</span>
 <span id="L1625" class="LineNr">1625 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa0/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L1626" class="LineNr">1626 </span>    68/push  0xa0/imm32/length
 <span id="L1627" class="LineNr">1627 </span>    68/push  0/imm32/read
 <span id="L1628" class="LineNr">1628 </span>    68/push  0/imm32/write
 <span id="L1629" class="LineNr">1629 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L1630" class="LineNr">1630 </span>    <span class="subxS1Comment"># . var labels/edx : (stream byte 512*16)</span>
+<span id="L1630" class="LineNr">1630 </span>    <span class="subxS1Comment"># . var labels/edx: (stream byte 512*16)</span>
 <span id="L1631" class="LineNr">1631 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x2000/imm32      <span class="subxComment"># subtract from esp</span>
 <span id="L1632" class="LineNr">1632 </span>    68/push  0x2000/imm32/length
 <span id="L1633" class="LineNr">1633 </span>    68/push  0/imm32/read
@@ -1307,13 +1307,13 @@ if ('onhashchange' in window) {
 <span id="L1790" class="LineNr">1790 </span>    55/push-ebp
 <span id="L1791" class="LineNr">1791 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
 <span id="L1792" class="LineNr">1792 </span>    <span class="subxComment"># setup</span>
-<span id="L1793" class="LineNr">1793 </span>    <span class="subxS1Comment"># . var segments/ecx : (stream byte 10*16)</span>
+<span id="L1793" class="LineNr">1793 </span>    <span class="subxS1Comment"># . var segments/ecx: (stream byte 10*16)</span>
 <span id="L1794" class="LineNr">1794 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa0/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L1795" class="LineNr">1795 </span>    68/push  0xa0/imm32/length
 <span id="L1796" class="LineNr">1796 </span>    68/push  0/imm32/read
 <span id="L1797" class="LineNr">1797 </span>    68/push  0/imm32/write
 <span id="L1798" class="LineNr">1798 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L1799" class="LineNr">1799 </span>    <span class="subxS1Comment"># . var labels/edx : (stream byte 512*16)</span>
+<span id="L1799" class="LineNr">1799 </span>    <span class="subxS1Comment"># . var labels/edx: (stream byte 512*16)</span>
 <span id="L1800" class="LineNr">1800 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x2000/imm32      <span class="subxComment"># subtract from esp</span>
 <span id="L1801" class="LineNr">1801 </span>    68/push  0x2000/imm32/length
 <span id="L1802" class="LineNr">1802 </span>    68/push  0/imm32/read
@@ -1388,7 +1388,7 @@ if ('onhashchange' in window) {
 <span id="L1871" class="LineNr">1871 </span>    5d/pop-to-ebp
 <span id="L1872" class="LineNr">1872 </span>    c3/return
 <span id="L1873" class="LineNr">1873 </span>
-<span id="L1874" class="LineNr">1874 </span><span class="subxFunction">emit-output</span>:  <span class="subxComment"># in : (addr stream byte), out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
+<span id="L1874" class="LineNr">1874 </span><span class="subxFunction">emit-output</span>:  <span class="subxComment"># in: (addr stream byte), out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})</span>
 <span id="L1875" class="LineNr">1875 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1876" class="LineNr">1876 </span>    <span class="subxComment">#   emit-headers(out, segments, labels)</span>
 <span id="L1877" class="LineNr">1877 </span>    <span class="subxComment">#   emit-segments(in, out, segments, labels)</span>
@@ -1423,10 +1423,10 @@ if ('onhashchange' in window) {
 <span id="L1922" class="LineNr">1922 </span>    5d/pop-to-ebp
 <span id="L1923" class="LineNr">1923 </span>    c3/return
 <span id="L1924" class="LineNr">1924 </span>
-<span id="L1925" class="LineNr">1925 </span><span class="subxFunction">emit-segments</span>:  <span class="subxComment"># in : (addr stream byte), out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
+<span id="L1925" class="LineNr">1925 </span><span class="subxFunction">emit-segments</span>:  <span class="subxComment"># in: (addr stream byte), out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})</span>
 <span id="L1926" class="LineNr">1926 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L1927" class="LineNr">1927 </span>    <span class="subxComment">#   var offset-of-next-instruction = 0</span>
-<span id="L1928" class="LineNr">1928 </span>    <span class="subxComment">#   var line : (stream byte 512)</span>
+<span id="L1928" class="LineNr">1928 </span>    <span class="subxComment">#   var line: (stream byte 512)</span>
 <span id="L1929" class="LineNr">1929 </span>    <span class="subxComment">#   line-loop:</span>
 <span id="L1930" class="LineNr">1930 </span>    <span class="subxComment">#   while true</span>
 <span id="L1931" class="LineNr">1931 </span>    <span class="subxComment">#     clear-stream(line)</span>
@@ -1488,17 +1488,17 @@ if ('onhashchange' in window) {
 <span id="L1987" class="LineNr">1987 </span>    53/push-ebx
 <span id="L1988" class="LineNr">1988 </span>    56/push-esi
 <span id="L1989" class="LineNr">1989 </span>    57/push-edi
-<span id="L1990" class="LineNr">1990 </span>    <span class="subxComment"># var line/ecx : (stream byte 512)</span>
+<span id="L1990" class="LineNr">1990 </span>    <span class="subxComment"># var line/ecx: (stream byte 512)</span>
 <span id="L1991" class="LineNr">1991 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x200/imm32       <span class="subxComment"># subtract from esp</span>
 <span id="L1992" class="LineNr">1992 </span>    68/push  0x200/imm32/length
 <span id="L1993" class="LineNr">1993 </span>    68/push  0/imm32/read
 <span id="L1994" class="LineNr">1994 </span>    68/push  0/imm32/write
 <span id="L1995" class="LineNr">1995 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L1996" class="LineNr">1996 </span>    <span class="subxComment"># var word-slice/edx : slice</span>
+<span id="L1996" class="LineNr">1996 </span>    <span class="subxComment"># var word-slice/edx: slice</span>
 <span id="L1997" class="LineNr">1997 </span>    68/push  0/imm32/end
 <span id="L1998" class="LineNr">1998 </span>    68/push  0/imm32/start
 <span id="L1999" class="LineNr">1999 </span>    89/copy                         3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to edx</span>
-<span id="L2000" class="LineNr">2000 </span>    <span class="subxComment"># var datum/edi : slice</span>
+<span id="L2000" class="LineNr">2000 </span>    <span class="subxComment"># var datum/edi: slice</span>
 <span id="L2001" class="LineNr">2001 </span>    68/push  0/imm32/end
 <span id="L2002" class="LineNr">2002 </span>    68/push  0/imm32/start
 <span id="L2003" class="LineNr">2003 </span>    89/copy                         3/mod/direct    7/rm32/edi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to edi</span>
@@ -1925,13 +1925,13 @@ if ('onhashchange' in window) {
 <span id="L2577" class="LineNr">2577 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L2578" class="LineNr">2578 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2579" class="LineNr">2579 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2580" class="LineNr">2580 </span>    <span class="subxS1Comment"># . var segments/ecx : (stream byte 10*16)</span>
+<span id="L2580" class="LineNr">2580 </span>    <span class="subxS1Comment"># . var segments/ecx: (stream byte 10*16)</span>
 <span id="L2581" class="LineNr">2581 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa0/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L2582" class="LineNr">2582 </span>    68/push  0xa0/imm32/length
 <span id="L2583" class="LineNr">2583 </span>    68/push  0/imm32/read
 <span id="L2584" class="LineNr">2584 </span>    68/push  0/imm32/write
 <span id="L2585" class="LineNr">2585 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L2586" class="LineNr">2586 </span>    <span class="subxS1Comment"># . var labels/edx : (stream byte 512*16)</span>
+<span id="L2586" class="LineNr">2586 </span>    <span class="subxS1Comment"># . var labels/edx: (stream byte 512*16)</span>
 <span id="L2587" class="LineNr">2587 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x2000/imm32      <span class="subxComment"># subtract from esp</span>
 <span id="L2588" class="LineNr">2588 </span>    68/push  0x2000/imm32/length
 <span id="L2589" class="LineNr">2589 </span>    68/push  0/imm32/read
@@ -2130,13 +2130,13 @@ if ('onhashchange' in window) {
 <span id="L2814" class="LineNr">2814 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L2815" class="LineNr">2815 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L2816" class="LineNr">2816 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L2817" class="LineNr">2817 </span>    <span class="subxS1Comment"># . var segments/ecx : (stream byte 10*16)</span>
+<span id="L2817" class="LineNr">2817 </span>    <span class="subxS1Comment"># . var segments/ecx: (stream byte 10*16)</span>
 <span id="L2818" class="LineNr">2818 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa0/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L2819" class="LineNr">2819 </span>    68/push  0xa0/imm32/length
 <span id="L2820" class="LineNr">2820 </span>    68/push  0/imm32/read
 <span id="L2821" class="LineNr">2821 </span>    68/push  0/imm32/write
 <span id="L2822" class="LineNr">2822 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L2823" class="LineNr">2823 </span>    <span class="subxS1Comment"># . var labels/edx : (stream byte 512*16)</span>
+<span id="L2823" class="LineNr">2823 </span>    <span class="subxS1Comment"># . var labels/edx: (stream byte 512*16)</span>
 <span id="L2824" class="LineNr">2824 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x2000/imm32      <span class="subxComment"># subtract from esp</span>
 <span id="L2825" class="LineNr">2825 </span>    68/push  0x2000/imm32/length
 <span id="L2826" class="LineNr">2826 </span>    68/push  0/imm32/read
@@ -2300,13 +2300,13 @@ if ('onhashchange' in window) {
 <span id="L3016" class="LineNr">3016 </span>    e8/call  <a href='../055stream.subx.html#L17'>clear-stream</a>/disp32
 <span id="L3017" class="LineNr">3017 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L3018" class="LineNr">3018 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
-<span id="L3019" class="LineNr">3019 </span>    <span class="subxS1Comment"># . var segments/ecx : (stream byte 10*16)</span>
+<span id="L3019" class="LineNr">3019 </span>    <span class="subxS1Comment"># . var segments/ecx: (stream byte 10*16)</span>
 <span id="L3020" class="LineNr">3020 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0xa0/imm32        <span class="subxComment"># subtract from esp</span>
 <span id="L3021" class="LineNr">3021 </span>    68/push  0xa0/imm32/length
 <span id="L3022" class="LineNr">3022 </span>    68/push  0/imm32/read
 <span id="L3023" class="LineNr">3023 </span>    68/push  0/imm32/write
 <span id="L3024" class="LineNr">3024 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L3025" class="LineNr">3025 </span>    <span class="subxS1Comment"># . var labels/edx : (stream byte 512*16)</span>
+<span id="L3025" class="LineNr">3025 </span>    <span class="subxS1Comment"># . var labels/edx: (stream byte 512*16)</span>
 <span id="L3026" class="LineNr">3026 </span>    81          5/subop/subtract    3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0x2000/imm32      <span class="subxComment"># subtract from esp</span>
 <span id="L3027" class="LineNr">3027 </span>    68/push  0x2000/imm32/length
 <span id="L3028" class="LineNr">3028 </span>    68/push  0/imm32/read
@@ -2425,7 +2425,7 @@ if ('onhashchange' in window) {
 <span id="L3173" class="LineNr">3173 </span>    5d/pop-to-ebp
 <span id="L3174" class="LineNr">3174 </span>    c3/return
 <span id="L3175" class="LineNr">3175 </span>
-<span id="L3176" class="LineNr">3176 </span><span class="subxFunction">emit-headers</span>:  <span class="subxComment"># out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
+<span id="L3176" class="LineNr">3176 </span><span class="subxFunction">emit-headers</span>:  <span class="subxComment"># out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})</span>
 <span id="L3177" class="LineNr">3177 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L3178" class="LineNr">3178 </span>    <span class="subxComment">#   emit-elf-header(out, segments, labels)</span>
 <span id="L3179" class="LineNr">3179 </span>    <span class="subxComment">#   curr-segment = segments-&gt;data</span>
@@ -2485,7 +2485,7 @@ if ('onhashchange' in window) {
 <span id="L3311" class="LineNr">3311 </span>    5d/pop-to-ebp
 <span id="L3312" class="LineNr">3312 </span>    c3/return
 <span id="L3313" class="LineNr">3313 </span>
-<span id="L3314" class="LineNr">3314 </span><span class="subxFunction">emit-elf-header</span>:  <span class="subxComment"># out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})</span>
+<span id="L3314" class="LineNr">3314 </span><span class="subxFunction">emit-elf-header</span>:  <span class="subxComment"># out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})</span>
 <span id="L3315" class="LineNr">3315 </span>    <span class="subxComment"># pseudocode</span>
 <span id="L3316" class="LineNr">3316 </span>    <span class="subxComment">#   *$Elf_e_entry = get(labels, &quot;Entry&quot;)-&gt;address</span>
 <span id="L3317" class="LineNr">3317 </span>    <span class="subxComment">#   *$Elf_e_phnum = segments-&gt;write / 16         # size of a row</span>
@@ -2553,7 +2553,7 @@ if ('onhashchange' in window) {
 <span id="L3379" class="LineNr">3379 </span>    5d/pop-to-ebp
 <span id="L3380" class="LineNr">3380 </span>    c3/return
 <span id="L3381" class="LineNr">3381 </span>
-<span id="L3382" class="LineNr">3382 </span><span class="subxFunction">emit-elf-program-header-entry</span>:  <span class="subxComment"># out : (addr buffered-file), curr-segment : (addr {string, segment-info})</span>
+<span id="L3382" class="LineNr">3382 </span><span class="subxFunction">emit-elf-program-header-entry</span>:  <span class="subxComment"># out: (addr buffered-file), curr-segment: (addr {string, segment-info})</span>
 <span id="L3383" class="LineNr">3383 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L3384" class="LineNr">3384 </span>    <span class="subxComment">#   *$Elf_p_offset = curr-segment-&gt;file-offset</span>
 <span id="L3385" class="LineNr">3385 </span>    <span class="subxComment">#   *$Elf_p_vaddr = curr-segment-&gt;address</span>
@@ -2642,7 +2642,7 @@ if ('onhashchange' in window) {
 <span id="L3468" class="LineNr">3468 </span>
 <span id="L3469" class="LineNr">3469 </span><span class="subxH1Comment"># - some helpers for tests</span>
 <span id="L3470" class="LineNr">3470 </span>
-<span id="L3471" class="LineNr">3471 </span><span class="subxFunction">stream-add4</span>:  <span class="subxComment"># in : (addr stream byte), key : addr, val1 : addr, val2 : addr, val3 : addr</span>
+<span id="L3471" class="LineNr">3471 </span><span class="subxFunction">stream-add4</span>:  <span class="subxComment"># in: (addr stream byte), key: addr, val1: addr, val2: addr, val3: addr</span>
 <span id="L3472" class="LineNr">3472 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3473" class="LineNr">3473 </span>    55/push-ebp
 <span id="L3474" class="LineNr">3474 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2728,7 +2728,7 @@ if ('onhashchange' in window) {
 <span id="L3554" class="LineNr">3554 </span><span class="subxComment">#   l: (addr slice)</span>
 <span id="L3555" class="LineNr">3555 </span><span class="subxComment"># one gotcha: 's5' must not be empty</span>
 <span id="L3556" class="LineNr">3556 </span>
-<span id="L3557" class="LineNr">3557 </span><span class="subxFunction">trace-sssns</span>:  <span class="subxComment"># s1 : (addr string), s2 : (addr string), s3 : (addr string), n4 : int, s5 : (addr string)</span>
+<span id="L3557" class="LineNr">3557 </span><span class="subxFunction">trace-sssns</span>:  <span class="subxComment"># s1: (addr string), s2: (addr string), s3: (addr string), n4: int, s5: (addr string)</span>
 <span id="L3558" class="LineNr">3558 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3559" class="LineNr">3559 </span>    55/push-ebp
 <span id="L3560" class="LineNr">3560 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2810,7 +2810,7 @@ if ('onhashchange' in window) {
 <span id="L3661" class="LineNr">3661 </span>    5d/pop-to-ebp
 <span id="L3662" class="LineNr">3662 </span>    c3/return
 <span id="L3663" class="LineNr">3663 </span>
-<span id="L3664" class="LineNr">3664 </span><span class="subxFunction">trace-snsns</span>:  <span class="subxComment"># s1 : (addr string), n2 : int, s3 : (addr string), n4 : int, s5 : (addr string)</span>
+<span id="L3664" class="LineNr">3664 </span><span class="subxFunction">trace-snsns</span>:  <span class="subxComment"># s1: (addr string), n2: int, s3: (addr string), n4: int, s5: (addr string)</span>
 <span id="L3665" class="LineNr">3665 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3666" class="LineNr">3666 </span>    55/push-ebp
 <span id="L3667" class="LineNr">3667 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2892,7 +2892,7 @@ if ('onhashchange' in window) {
 <span id="L3768" class="LineNr">3768 </span>    5d/pop-to-ebp
 <span id="L3769" class="LineNr">3769 </span>    c3/return
 <span id="L3770" class="LineNr">3770 </span>
-<span id="L3771" class="LineNr">3771 </span><span class="subxFunction">trace-slsls</span>:  <span class="subxComment"># s1 : (addr string), l2 : (addr slice), s3 : (addr string), l4 : (addr slice), s5 : (addr string)</span>
+<span id="L3771" class="LineNr">3771 </span><span class="subxFunction">trace-slsls</span>:  <span class="subxComment"># s1: (addr string), l2: (addr slice), s3: (addr string), l4: (addr slice), s5: (addr string)</span>
 <span id="L3772" class="LineNr">3772 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3773" class="LineNr">3773 </span>    55/push-ebp
 <span id="L3774" class="LineNr">3774 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -2954,7 +2954,7 @@ if ('onhashchange' in window) {
 <span id="L3830" class="LineNr">3830 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
 <span id="L3831" class="LineNr">3831 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx  <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax+ecx+4 to ecx</span>
 <span id="L3832" class="LineNr">3832 </span>    05/add-to-eax  4/imm32
-<span id="L3833" class="LineNr">3833 </span>    <span class="subxComment"># var b/ebx : slice = {eax, ecx}</span>
+<span id="L3833" class="LineNr">3833 </span>    <span class="subxComment"># var b/ebx: slice = {eax, ecx}</span>
 <span id="L3834" class="LineNr">3834 </span>    51/push-ecx
 <span id="L3835" class="LineNr">3835 </span>    50/push-eax
 <span id="L3836" class="LineNr">3836 </span>    89/copy                         3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebx</span>
@@ -2963,7 +2963,7 @@ if ('onhashchange' in window) {
 <span id="L3839" class="LineNr">3839 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
 <span id="L3840" class="LineNr">3840 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx  <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax+ecx+4 to ecx</span>
 <span id="L3841" class="LineNr">3841 </span>    05/add-to-eax  4/imm32
-<span id="L3842" class="LineNr">3842 </span>    <span class="subxComment"># var d/edx : slice = {eax, ecx}</span>
+<span id="L3842" class="LineNr">3842 </span>    <span class="subxComment"># var d/edx: slice = {eax, ecx}</span>
 <span id="L3843" class="LineNr">3843 </span>    51/push-ecx
 <span id="L3844" class="LineNr">3844 </span>    50/push-eax
 <span id="L3845" class="LineNr">3845 </span>    89/copy                         3/mod/direct    2/rm32/edx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to edx</span>
@@ -2992,7 +2992,7 @@ if ('onhashchange' in window) {
 <span id="L3893" class="LineNr">3893 </span>    5d/pop-to-ebp
 <span id="L3894" class="LineNr">3894 </span>    c3/return
 <span id="L3895" class="LineNr">3895 </span>
-<span id="L3896" class="LineNr">3896 </span><span class="subxFunction">trace-slsns</span>:  <span class="subxComment"># s1 : (addr string), l2 : (addr slice), s3 : (addr string), n4 : int, s5 : (addr string)</span>
+<span id="L3896" class="LineNr">3896 </span><span class="subxFunction">trace-slsns</span>:  <span class="subxComment"># s1: (addr string), l2: (addr slice), s3: (addr string), n4: int, s5: (addr string)</span>
 <span id="L3897" class="LineNr">3897 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L3898" class="LineNr">3898 </span>    55/push-ebp
 <span id="L3899" class="LineNr">3899 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -3054,7 +3054,7 @@ if ('onhashchange' in window) {
 <span id="L3955" class="LineNr">3955 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
 <span id="L3956" class="LineNr">3956 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx  <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax+ecx+4 to ecx</span>
 <span id="L3957" class="LineNr">3957 </span>    05/add-to-eax  4/imm32
-<span id="L3958" class="LineNr">3958 </span>    <span class="subxComment"># var b/ebx : slice = {eax, ecx}</span>
+<span id="L3958" class="LineNr">3958 </span>    <span class="subxComment"># var b/ebx: slice = {eax, ecx}</span>
 <span id="L3959" class="LineNr">3959 </span>    51/push-ecx
 <span id="L3960" class="LineNr">3960 </span>    50/push-eax
 <span id="L3961" class="LineNr">3961 </span>    89/copy                         3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebx</span>
@@ -3083,7 +3083,7 @@ if ('onhashchange' in window) {
 <span id="L4009" class="LineNr">4009 </span>    5d/pop-to-ebp
 <span id="L4010" class="LineNr">4010 </span>    c3/return
 <span id="L4011" class="LineNr">4011 </span>
-<span id="L4012" class="LineNr">4012 </span><span class="subxFunction">trace-slsss</span>:  <span class="subxComment"># s1 : (addr string), l2 : (addr slice), s3 : (addr string), s4 : (addr string), s5 : (addr string)</span>
+<span id="L4012" class="LineNr">4012 </span><span class="subxFunction">trace-slsss</span>:  <span class="subxComment"># s1: (addr string), l2: (addr slice), s3: (addr string), s4: (addr string), s5: (addr string)</span>
 <span id="L4013" class="LineNr">4013 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L4014" class="LineNr">4014 </span>    55/push-ebp
 <span id="L4015" class="LineNr">4015 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -3145,7 +3145,7 @@ if ('onhashchange' in window) {
 <span id="L4071" class="LineNr">4071 </span>    8b/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *eax to ecx</span>
 <span id="L4072" class="LineNr">4072 </span>    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx  <span class="Normal"> . </span>          1/r32/ecx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy eax+ecx+4 to ecx</span>
 <span id="L4073" class="LineNr">4073 </span>    05/add-to-eax  4/imm32
-<span id="L4074" class="LineNr">4074 </span>    <span class="subxComment"># var b/ebx : slice = {eax, ecx}</span>
+<span id="L4074" class="LineNr">4074 </span>    <span class="subxComment"># var b/ebx: slice = {eax, ecx}</span>
 <span id="L4075" class="LineNr">4075 </span>    51/push-ecx
 <span id="L4076" class="LineNr">4076 </span>    50/push-eax
 <span id="L4077" class="LineNr">4077 </span>    89/copy                         3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebx</span>
@@ -3174,7 +3174,7 @@ if ('onhashchange' in window) {
 <span id="L4125" class="LineNr">4125 </span>    5d/pop-to-ebp
 <span id="L4126" class="LineNr">4126 </span>    c3/return
 <span id="L4127" class="LineNr">4127 </span>
-<span id="L4128" class="LineNr">4128 </span><span class="subxFunction">num-bytes</span>:  <span class="subxComment"># line : (addr stream byte) -&gt; eax : int</span>
+<span id="L4128" class="LineNr">4128 </span><span class="subxFunction">num-bytes</span>:  <span class="subxComment"># line: (addr stream byte) -&gt; eax: int</span>
 <span id="L4129" class="LineNr">4129 </span>    <span class="subxComment"># pseudocode:</span>
 <span id="L4130" class="LineNr">4130 </span>    <span class="subxComment">#   result = 0</span>
 <span id="L4131" class="LineNr">4131 </span>    <span class="subxComment">#   while true</span>
@@ -3199,7 +3199,7 @@ if ('onhashchange' in window) {
 <span id="L4150" class="LineNr">4150 </span>    53/push-ebx
 <span id="L4151" class="LineNr">4151 </span>    <span class="subxComment"># var result/eax = 0</span>
 <span id="L4152" class="LineNr">4152 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
-<span id="L4153" class="LineNr">4153 </span>    <span class="subxComment"># var word-slice/ecx : slice</span>
+<span id="L4153" class="LineNr">4153 </span>    <span class="subxComment"># var word-slice/ecx: slice</span>
 <span id="L4154" class="LineNr">4154 </span>    68/push  0/imm32/end
 <span id="L4155" class="LineNr">4155 </span>    68/push  0/imm32/start
 <span id="L4156" class="LineNr">4156 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
