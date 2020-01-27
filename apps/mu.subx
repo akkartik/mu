@@ -1032,7 +1032,7 @@ parse-mu:  # in: (addr buffered-file)
     #     clear-stream(line)
     #     read-line-buffered(in, line)
     #     if (line->write == 0) break               # end of file
-    #     word-slice = next-word-or-string(line)
+    #     word-slice = next-mu-token(line)
     #     if slice-empty?(word-slice)               # end of line
     #       continue
     #     else if slice-starts-with?(word-slice, "#")  # comment
@@ -1087,7 +1087,7 @@ $parse-mu:line-loop:
 #?       (write 2 "$\n")
 #?       (rewind-stream %ecx)
 #?       # }}}
-      (next-word-or-string %ecx %edx)
+      (next-mu-token %ecx %edx)
       # if slice-empty?(word-slice) continue
       (slice-empty? %edx)
       3d/compare-eax-and 0/imm32
@@ -3015,7 +3015,7 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn:
     #   result = allocate(Heap, Stmt-size)
     #   if stmt-has-outputs?(line)
     #     while true
-    #       name = next-word(line)
+    #       name = next-mu-token(line)
     #       if (name == '<-') break
     #       assert(is-identifier?(name))
     #       var v: (handle var) = lookup-or-define-var(name, vars, fn)  # regular stmts may define vars in fn outputs
@@ -3044,8 +3044,11 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn:
       0f 84/jump-if-= break/disp32
       {
 $parse-mu-stmt:read-outputs:
-        # name = next-word(line)
-        (next-word *(ebp+8) %ecx)
+        # name = next-mu-token(line)
+        (next-mu-token *(ebp+8) %ecx)
+#?         (write-slice-buffered Stderr %ecx)
+#?         (write-buffered Stderr Newline)
+#?         (flush Stderr)
         # if slice-empty?(word-slice) break
         (slice-empty? %ecx)
         3d/compare-eax-and 0/imm32
@@ -3093,9 +3096,9 @@ $parse-mu-stmt:abort:
 
 add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byte)
     # pseudocode:
-    #   stmt->name = slice-to-string(next-word(line))
+    #   stmt->name = slice-to-string(next-mu-token(line))
     #   while true
-    #     name = next-word-or-string(line)
+    #     name = next-mu-token(line)
     #     v = lookup-var-or-literal(name)
     #     stmt->inouts = append(stmt->inouts, v)
     #
@@ -3113,13 +3116,13 @@ add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byt
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
 $add-operation-and-inputs-to-stmt:read-operation:
-    (next-word *(ebp+0xc) %ecx)
+    (next-mu-token *(ebp+0xc) %ecx)
     (slice-to-string Heap %ecx)  # => eax
     89/<- *(edi+4) 0/r32/eax  # Stmt1-operation or Regvardef-operation
     {
 $add-operation-and-inputs-to-stmt:read-inouts:
-      # name = next-word-or-string(line)
-      (next-word-or-string *(ebp+0xc) %ecx)
+      # name = next-mu-token(line)
+      (next-mu-token *(ebp+0xc) %ecx)
       # if slice-empty?(word-slice) break
       (slice-empty? %ecx)  # => eax
       3d/compare-eax-and 0/imm32
@@ -3174,7 +3177,7 @@ stmt-has-outputs?:  # line: (addr stream byte) -> result/eax: boolean
     b8/copy-to-eax 0/imm32/false
     (rewind-stream *(ebp+8))
     {
-      (next-word-or-string *(ebp+8) %ecx)
+      (next-mu-token *(ebp+8) %ecx)
       # if slice-empty?(word-slice) break
       (slice-empty? %ecx)
       3d/compare-eax-and 0/imm32
@@ -3449,6 +3452,43 @@ test-parse-mu-stmt:
     # ebx: (handle var) = result->inouts->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "n" "F - test-parse-mu-stmt/inout:0")  # Var-name
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-parse-mu-stmt-with-comma:
+    # 'increment n'
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (write _test-input-stream "copy-to n, 3\n")
+    # var vars/ecx: (stack (addr var) 4)
+    81 5/subop/subtract %esp 0x10/imm32
+    68/push 0x10/imm32/length
+    68/push 0/imm32/top
+    89/<- %ecx 4/r32/esp
+    (clear-stack %ecx)
+    # var v/edx: var
+    81 5/subop/subtract %esp 0x14/imm32  # Var-size
+    89/<- %edx 4/r32/esp
+    (zero-out %edx 0x14)
+    # v->name = "n"
+    c7 0/subop/copy *edx "n"/imm32  # Var-name
+    #
+    (push %ecx %edx)
+    # convert
+    (parse-mu-stmt _test-input-stream %ecx)  # => eax
+    # check result
+    (check-ints-equal *eax 1 "F - test-parse-mu-stmt-with-comma/tag")  # Stmt-tag is Stmt1
+    (check-strings-equal *(eax+4) "copy-to" "F - test-parse-mu-stmt-with-comma/name")  # Stmt1-operation
+    # edx: (handle list var) = result->inouts
+    8b/-> *(eax+8) 2/r32/edx  # Stmt1-inouts
+    # ebx: (handle var) = result->inouts->value
+    8b/-> *edx 3/r32/ebx  # List-value
+    (check-strings-equal *ebx "n" "F - test-parse-mu-stmt-with-comma/inout:0")  # Var-name
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
