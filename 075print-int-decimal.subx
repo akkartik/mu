@@ -5,7 +5,7 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-print-int32-decimal:  # out : (addr stream byte), n : int32
+print-int32-decimal:  # out: (addr stream byte), n: int32
     # works by generating characters from lowest to highest and pushing them
     # to the stack, before popping them one by one into the stream
     #
@@ -48,7 +48,7 @@ print-int32-decimal:  # out : (addr stream byte), n : int32
     b9/copy-to-ecx  0xa/imm32
     # push sentinel
     68/push  0/imm32/sentinel
-    # var eax : int = abs(n)
+    # var eax: int = abs(n)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     3d/compare-eax-with  0/imm32
     7d/jump-if->=  $print-int32-decimal:read-loop/disp8
@@ -74,11 +74,11 @@ $print-int32-decimal:push-negative:
 $print-int32-decimal:write:
     # edi = out
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # var w/edx : int = out->write
+    # var w/edx: int = out->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
-    # var curr/ecx : (addr byte) = &out->data[out->write]
+    # var curr/ecx: (addr byte) = &out->data[out->write]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  2/index/edx   .           1/r32/ecx   0xc/disp8       .                 # copy ebx+edx+12 to ecx
-    # var max/ebx : (addr byte) = &out->data[out->length]
+    # var max/ebx: (addr byte) = &out->data[out->length]
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(edi+8) to ebx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  3/index/ebx   .           3/r32/ebx   0xc/disp8       .                 # copy edi+ebx+12 to ebx
 $print-int32-decimal:write-loop:
@@ -304,7 +304,7 @@ test-print-int32-decimal-negative-multiple-digits:
     # . end
     c3/return
 
-is-decimal-digit?:  # c : byte -> eax : boolean
+is-decimal-digit?:  # c: byte -> eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp

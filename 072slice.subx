@@ -6,7 +6,7 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-slice-empty?:  # s : (addr slice) -> eax : boolean
+slice-empty?:  # s: (addr slice) -> eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -34,7 +34,7 @@ test-slice-empty-true:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var slice/ecx : slice = {34, 34}
+    # var slice/ecx: slice = {34, 34}
     68/push  34/imm32/end
     68/push  34/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -63,7 +63,7 @@ test-slice-empty-false:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var slice/ecx : slice = {32, 34}
+    # var slice/ecx: slice = {32, 34}
     68/push  34/imm32/end
     68/push  32/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -92,7 +92,7 @@ test-slice-empty-if-start-greater-than-end:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var slice/ecx : slice = {34, 32}
+    # var slice/ecx: slice = {34, 32}
     68/push  32/imm32/end
     68/push  34/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -117,7 +117,7 @@ test-slice-empty-if-start-greater-than-end:
     5d/pop-to-ebp
     c3/return
 
-slice-equal?:  # s : (addr slice), p : (addr array byte) -> eax : boolean
+slice-equal?:  # s: (addr slice), p: (addr array byte) -> eax: boolean
     # pseudocode:
     #   if (p == 0) return (s == 0)
     #   currs = s->start
@@ -147,11 +147,11 @@ slice-equal?:  # s : (addr slice), p : (addr array byte) -> eax : boolean
     56/push-esi
     # esi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var currs/edx : (addr byte) = s->start
+    # var currs/edx: (addr byte) = s->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
-    # var maxs/esi : (addr byte) = s->end
+    # var maxs/esi: (addr byte) = s->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
-    # var slen/eax : int = maxs - currs
+    # var slen/eax: int = maxs - currs
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           6/r32/esi   .               .                 # copy esi to eax
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # subtract edx from eax
     # ebx = p
@@ -168,11 +168,11 @@ $slice-equal?:nonnull-string:
     # if (slen != p->length) return false
     39/compare                      0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # compare *ebx and eax
     75/jump-if-!=  $slice-equal?:false/disp8
-    # var currp/ebx : (addr byte) = p->data
+    # var currp/ebx: (addr byte) = p->data
     81          0/subop/add         3/mod/direct    3/rm32/ebx    .           .             .           .           .               4/imm32           # add to ebx
-    # var c1/eax : byte = 0
+    # var c1/eax: byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # var c2/ecx : byte = 0
+    # var c2/ecx: byte = 0
     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
 $slice-equal?:loop:
     # if (currs >= maxs) return true
@@ -216,7 +216,7 @@ test-slice-equal:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -252,7 +252,7 @@ test-slice-equal-false:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -288,7 +288,7 @@ test-slice-equal-too-long:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -324,7 +324,7 @@ test-slice-equal-too-short:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -355,7 +355,7 @@ test-slice-equal-empty:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var slice/ecx : slice
+    # var slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -391,7 +391,7 @@ test-slice-equal-with-empty:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -422,7 +422,7 @@ test-slice-equal-empty-with-empty:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var slice/ecx : slice
+    # var slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -458,7 +458,7 @@ test-slice-equal-with-null:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -484,7 +484,7 @@ test-slice-equal-with-null:
     5d/pop-to-ebp
     c3/return
 
-slice-starts-with?:  # s : (addr slice), head : (addr array byte) -> eax : boolean
+slice-starts-with?:  # s: (addr slice), head: (addr array byte) -> eax: boolean
     # pseudocode
     #   lenh = head->length
     #   if (lenh > s->end - s->start) return false
@@ -517,25 +517,25 @@ slice-starts-with?:  # s : (addr slice), head : (addr array byte) -> eax : boole
     57/push-edi
     # esi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var lens/ecx : int = s->end - s->start
+    # var lens/ecx: int = s->end - s->start
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(esi+4) to ecx
     2b/subtract                     0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # subtract *esi from ecx
     # edi = head
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
-    # var lenh/edx : int = head->length
+    # var lenh/edx: int = head->length
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
     # if (lenh > lens) return false
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # compare edx with ecx
     7f/jump-if->  $slice-starts-with?:false/disp8
-    # var currs/esi : (addr byte) = s->start
+    # var currs/esi: (addr byte) = s->start
     8b/subtract                     0/mod/indirect  6/rm32/esi    .           .             .           6/r32/esi   .               .                 # copy *esi to esi
-    # var currh/edi : (addr byte) = head->data
+    # var currh/edi: (addr byte) = head->data
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
-    # var i/ecx : int = 0
+    # var i/ecx: int = 0
     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
-    # var c1/eax : byte = 0
+    # var c1/eax: byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # var c2/ebx : byte = 0
+    # var c2/ebx: byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $slice-starts-with?:loop:
     # if (i >= lenh) return true
@@ -582,7 +582,7 @@ test-slice-starts-with-single-character:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -618,7 +618,7 @@ test-slice-starts-with-empty-string:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -654,7 +654,7 @@ test-slice-starts-with-multiple-characters:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -690,7 +690,7 @@ test-slice-starts-with-entire-string:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -726,7 +726,7 @@ test-slice-starts-with-fails:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -762,7 +762,7 @@ test-slice-starts-with-fails-2:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -790,7 +790,7 @@ test-slice-starts-with-fails-2:
 
 # write a slice to a stream
 # abort if the stream doesn't have enough space
-write-slice:  # out : (addr stream byte), s : (addr slice)
+write-slice:  # out: (addr stream byte), s: (addr slice)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -803,9 +803,9 @@ write-slice:  # out : (addr stream byte), s : (addr slice)
     57/push-edi
     # esi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var curr/ecx : (addr byte) = s->start
+    # var curr/ecx: (addr byte) = s->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-    # var max/esi : (addr byte) = s->end
+    # var max/esi: (addr byte) = s->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
     # edi = out
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
@@ -879,7 +879,7 @@ test-write-slice:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -906,7 +906,7 @@ test-write-slice:
     c3/return
 
 # write a slice to a buffered-file
-write-slice-buffered:  # out : (addr buffered-file), s : (addr slice)
+write-slice-buffered:  # out: (addr buffered-file), s: (addr slice)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -919,9 +919,9 @@ write-slice-buffered:  # out : (addr buffered-file), s : (addr slice)
     57/push-edi
     # esi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var curr/ecx : (addr byte) = s->start
+    # var curr/ecx: (addr byte) = s->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-    # var max/esi : (addr byte) = s->end
+    # var max/esi: (addr byte) = s->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
     # edi = out
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
@@ -1007,7 +1007,7 @@ test-write-slice-buffered:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1041,7 +1041,7 @@ test-write-slice-buffered:
     c3/return
 
 # copy a slice into a new (dynamically allocated) string
-slice-to-string:  # ad : (addr allocation-descriptor), in : (addr slice) -> out/eax : (addr array byte)
+slice-to-string:  # ad: (addr allocation-descriptor), in: (addr slice) -> out/eax: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1052,15 +1052,15 @@ slice-to-string:  # ad : (addr allocation-descriptor), in : (addr slice) -> out/
     56/push-esi
     # esi = in
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var curr/edx : (addr byte) = in->start
+    # var curr/edx: (addr byte) = in->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
-    # var max/ebx : (addr byte) = in->end
+    # var max/ebx: (addr byte) = in->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           3/r32/ebx   4/disp8         .                 # copy *(esi+4) to ebx
-    # var size/ecx : int = max - curr + 4  # total size of output string (including the initial length)
+    # var size/ecx: int = max - curr + 4  # total size of output string (including the initial length)
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy ebx to ecx
     29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # subtract edx from ecx
     81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # add to ecx
-    # var out/eax : (handle array byte) = allocate(ad, size)
+    # var out/eax: (handle array byte) = allocate(ad, size)
     # . . push args
     51/push-ecx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
@@ -1123,7 +1123,7 @@ test-slice-to-string:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var heap/edx : allocation-descriptor
+    # var heap/edx: allocation-descriptor
     68/push  0/imm32/limit
     68/push  0/imm32/curr
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -1140,7 +1140,7 @@ test-slice-to-string:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var slice/ecx : slice = {eax, ecx}
+    # var slice/ecx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

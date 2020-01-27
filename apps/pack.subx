@@ -55,7 +55,7 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $subx-pack-main:end/disp8
 $subx-pack-main:interactive:
     # - otherwise convert stdin
-    # var ed/eax : exit-descriptor
+    # var ed/eax: exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -97,9 +97,9 @@ $subx-pack-main:end:
 #   next-token-from-slice(start, end, delim char) -> slice
 #   slice-equal?(slice, string)
 
-subx-pack:  # in : (addr buffered-file), out : (addr buffered-file)
+subx-pack:  # in: (addr buffered-file), out: (addr buffered-file)
     # pseudocode:
-    #   var line : (stream byte 512)
+    #   var line: (stream byte 512)
     #   var in-code? = false
     #   while true
     #     clear-stream(line)
@@ -128,17 +128,17 @@ subx-pack:  # in : (addr buffered-file), out : (addr buffered-file)
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # var line/ecx : (stream byte 512)
+    # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx : slice
+    # var word-slice/edx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var in-code?/ebx : boolean = false
+    # var in-code?/ebx: boolean = false
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $subx-pack:loop:
     # clear-stream(line)
@@ -909,9 +909,9 @@ test-subx-pack-code-and-data-segments:
     5d/pop-to-ebp
     c3/return
 
-convert-data:  # line : (addr stream byte), out : (addr buffered-file)
+convert-data:  # line: (addr stream byte), out: (addr buffered-file)
     # pseudocode:
-    #   var word-slice : slice
+    #   var word-slice: slice
     #   while true
     #     word-slice = next-word(line)
     #     if slice-empty?(word-slice)                 # end of file (maybe including trailing whitespace)
@@ -936,7 +936,7 @@ convert-data:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : slice
+    # var word-slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1029,9 +1029,9 @@ $convert-data:check0:
     0f 85/jump-if-!=  $convert-data:break/disp32
 $convert-data:check-for-comment:
     # if (slice-starts-with?(word-slice, "#"))
-    # . var start/edx : (addr byte) = word-slice->start
+    # . var start/edx: (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           0/r32/AL    .               .                 # copy byte at *edx to AL
     # . if (c != '#') goto next check
@@ -1050,9 +1050,9 @@ $convert-data:comment:
     0f 85/jump-if-!=  $convert-data:end/disp32
 $convert-data:check-for-label:
     # if (slice-ends-with?(word-slice, ":"))
-    # . var end/edx : (addr byte) = word-slice->end
+    # . var end/edx: (addr byte) = word-slice->end
     8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # copy *(ecx+4) to edx
-    # . var c/eax : byte = *(end-1)
+    # . var c/eax: byte = *(end-1)
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   2/rm32/edx    .           .             .           0/r32/AL    -1/disp8        .                 # copy byte at *ecx to AL
     # . if (c != ':') goto next check
@@ -1809,7 +1809,7 @@ test-convert-data-trailing-comment:
 #   unceremoniously abort on non-numeric operands except disp or imm
 #   opcodes must be lowercase and zero padded
 #   opcodes with misleading operand metadata may get duplicated as operands as well. don't rely on this.
-convert-instruction:  # line : (addr stream byte), out : (addr buffered-file)
+convert-instruction:  # line: (addr stream byte), out: (addr buffered-file)
     # pseudocode:
     #   # some early exits
     #   var word-slice = next-word(line)
@@ -1837,7 +1837,7 @@ convert-instruction:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : slice
+    # var word-slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1863,9 +1863,9 @@ $convert-instruction:check0:
     75/jump-if-!=  $convert-instruction:pass-through/disp8
 $convert-instruction:check1:
     # if (slice-starts-with?(word-slice, "#")) write-stream-data(out, line)
-    # . var start/edx : (addr byte) = word-slice->start
+    # . var start/edx: (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           0/r32/AL    .               .                 # copy byte at *edx to AL
     # . if (c == '#') pass through
@@ -1873,9 +1873,9 @@ $convert-instruction:check1:
     74/jump-if-=  $convert-instruction:pass-through/disp8
 $convert-instruction:check2:
     # if (slice-ends-with?(word-slice, ":")) write-stream-data(out, line)
-    # . var end/edx : (addr byte) = word-slice->end
+    # . var end/edx: (addr byte) = word-slice->end
     8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # copy *(ecx+4) to edx
-    # . var c/eax : byte = *(end-1)
+    # . var c/eax: byte = *(end-1)
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   2/rm32/edx    .           .             .           0/r32/AL    -1/disp8        .                 # copy byte at *ecx to AL
     # . if (c == ':') pass through
@@ -1953,7 +1953,7 @@ $convert-instruction:end:
     5d/pop-to-ebp
     c3/return
 
-emit-opcodes:  # line : (addr stream byte), out : (addr buffered-file)
+emit-opcodes:  # line: (addr stream byte), out: (addr buffered-file)
     # opcodes occupy 1-3 bytes:
     #   xx
     #   0f xx
@@ -1994,11 +1994,11 @@ emit-opcodes:  # line : (addr stream byte), out : (addr buffered-file)
     51/push-ecx
     52/push-edx
     53/push-ebx
-    # var op1/ecx : slice
+    # var op1/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var op2/edx : slice
+    # var op2/edx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -2030,9 +2030,9 @@ $emit-opcodes:op1:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $emit-opcodes:end/disp32
     # if (slice-starts-with?(op1, "#")) return
-    # . var start/ebx : (addr byte) = op1->start
+    # . var start/ebx: (addr byte) = op1->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy *ecx to ebx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/AL    .               .                 # copy byte at *ebx to AL
     # . if (c == '#') return
@@ -2123,9 +2123,9 @@ $emit-opcodes:op2:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $emit-opcodes:end/disp32
     # if (slice-starts-with?(op2, "#")) return
-    # . var start/ebx : (addr byte) = op2->start
+    # . var start/ebx: (addr byte) = op2->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           3/r32/ebx   .               .                 # copy *edx to ebx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/AL    .               .                 # copy byte at *ebx to AL
     # . if (c == '#') return
@@ -2202,9 +2202,9 @@ $emit-opcodes:op3:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $emit-opcodes:end/disp32
     # if (slice-starts-with?(op3, "#")) return
-    # . var start/ebx : (addr byte) = op2->start
+    # . var start/ebx: (addr byte) = op2->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           3/r32/ebx   .               .                 # copy *edx to ebx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/AL    .               .                 # copy byte at *ebx to AL
     # . if (c == '#') return
@@ -2249,11 +2249,11 @@ $emit-opcodes:end:
     5d/pop-to-ebp
     c3/return
 
-emit-modrm:  # line : (addr stream byte), out : (addr buffered-file)
+emit-modrm:  # line: (addr stream byte), out: (addr buffered-file)
     # pseudocode:
     #   rewind-stream(line)
     #   var has-modrm? = false, mod = 0, rm32 = 0, r32 = 0
-    #   var word-slice : slice
+    #   var word-slice: slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -2285,17 +2285,17 @@ emit-modrm:  # line : (addr stream byte), out : (addr buffered-file)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var word-slice/ecx : slice
+    # var word-slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var has-modrm?/edx : boolean = false
+    # var has-modrm?/edx: boolean = false
     31/xor                          3/mod/direct    2/rm32/edx    .           .             .           2/r32/edx   .               .                 # clear edx
-    # var mod/ebx : byte = 0
+    # var mod/ebx: byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
-    # var rm32/esi : byte = 0
+    # var rm32/esi: byte = 0
     31/xor                          3/mod/direct    6/rm32/esi    .           .             .           6/r32/esi   .               .                 # clear esi
-    # var r32/edi : byte = 0
+    # var r32/edi: byte = 0
     31/xor                          3/mod/direct    7/rm32/edi    .           .             .           7/r32/edi   .               .                 # clear edi
     # rewind-stream(line)
     # . . push args
@@ -2402,9 +2402,9 @@ $emit-modrm:check1:
     # if (slice-starts-with?(word-slice, "#")) break
     # . spill edx
     52/push-edx
-    # . var start/edx : (addr byte) = word-slice->start
+    # . var start/edx: (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           0/r32/AL    .               .                 # copy byte at *edx to AL
     # . restore edx
@@ -2529,7 +2529,7 @@ $emit-modrm:break:
     81          7/subop/compare     3/mod/direct    2/rm32/edx    .           .             .           .           .               0/imm32/false     # compare edx
     74/jump-if-=  $emit-modrm:end/disp8
 $emit-modrm:calculate:
-    # var modrm/ebx : byte = mod & 0b11
+    # var modrm/ebx: byte = mod & 0b11
     81          4/subop/and         3/mod/direct    3/rm32/ebx    .           .             .           .           .               3/imm32/0b11      # bitwise and of ebx
     # modrm <<= 3
     c1/shift    4/subop/left        3/mod/direct    3/rm32/ebx    .           .             .           .           .               3/imm8            # shift ebx left by 3 bits
@@ -2566,10 +2566,10 @@ $emit-modrm:end:
     5d/pop-to-ebp
     c3/return
 
-emit-sib:  # line : (addr stream byte), out : (addr buffered-file)
+emit-sib:  # line: (addr stream byte), out: (addr buffered-file)
     # pseudocode:
     #   var has-sib? = false, base = 0, index = 0, scale = 0
-    #   var word-slice : slice
+    #   var word-slice: slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -2601,17 +2601,17 @@ emit-sib:  # line : (addr stream byte), out : (addr buffered-file)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var word-slice/ecx : slice
+    # var word-slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var has-sib?/edx : boolean = false
+    # var has-sib?/edx: boolean = false
     31/xor                          3/mod/direct    2/rm32/edx    .           .             .           2/r32/edx   .               .                 # clear edx
-    # var scale/ebx : byte = 0
+    # var scale/ebx: byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
-    # var base/esi : byte = 0
+    # var base/esi: byte = 0
     31/xor                          3/mod/direct    6/rm32/esi    .           .             .           6/r32/esi   .               .                 # clear esi
-    # var index/edi : byte = 0
+    # var index/edi: byte = 0
     31/xor                          3/mod/direct    7/rm32/edi    .           .             .           7/r32/edi   .               .                 # clear edi
     # rewind-stream(line)
     # . . push args
@@ -2711,9 +2711,9 @@ $emit-sib:check1:
     # if (slice-starts-with?(word-slice, "#")) break
     # . spill edx
     52/push-edx
-    # . var start/edx : (addr byte) = word-slice->start
+    # . var start/edx: (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           0/r32/AL    .               .                 # copy byte at *edx to AL
     # . restore edx
@@ -2810,7 +2810,7 @@ $emit-sib:break:
     81          7/subop/compare     3/mod/direct    2/rm32/edx    .           .             .           .           .               0/imm32/false     # compare edx
     74/jump-if-=  $emit-sib:end/disp8
 $emit-sib:calculate:
-    # var sib/ebx : byte = scale & 0b11
+    # var sib/ebx: byte = scale & 0b11
     81          4/subop/and         3/mod/direct    3/rm32/ebx    .           .             .           .           .               3/imm32/0b11      # bitwise and of ebx
     # sib <<= 2
     c1/shift    4/subop/left        3/mod/direct    3/rm32/ebx    .           .             .           .           .               2/imm8            # shift ebx left by 2 bits
@@ -2847,10 +2847,10 @@ $emit-sib:end:
     5d/pop-to-ebp
     c3/return
 
-emit-disp:  # line : (addr stream byte), out : (addr buffered-file)
+emit-disp:  # line: (addr stream byte), out: (addr buffered-file)
     # pseudocode:
     #   rewind-stream(line)
-    #   var word-slice : slice
+    #   var word-slice: slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -2872,7 +2872,7 @@ emit-disp:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : slice
+    # var word-slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2972,9 +2972,9 @@ $emit-disp:check0:
     0f 85/jump-if-!=  $emit-disp:break/disp32
 $emit-disp:check1:
     # if (slice-starts-with?(word-slice, "#")) break
-    # . var start/edx : (addr byte) = word-slice->start
+    # . var start/edx: (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           0/r32/AL    .               .                 # copy byte at *edx to AL
     # . if (c == '#') break
@@ -3066,10 +3066,10 @@ $emit-disp:break:
     5d/pop-to-ebp
     c3/return
 
-emit-imm:  # line : (addr stream byte), out : (addr buffered-file)
+emit-imm:  # line: (addr stream byte), out: (addr buffered-file)
     # pseudocode:
     #   rewind-stream(line)
-    #   var word-slice : slice
+    #   var word-slice: slice
     #   while true
     #     word-slice = next-word(line)
     #     if (slice-empty?(word-slice)) break
@@ -3091,7 +3091,7 @@ emit-imm:  # line : (addr stream byte), out : (addr buffered-file)
     50/push-eax
     51/push-ecx
     52/push-edx
-    # var word-slice/ecx : slice
+    # var word-slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -3191,9 +3191,9 @@ $emit-imm:check0:
     0f 85/jump-if-!=  $emit-imm:break/disp32
 $emit-imm:check1:
     # if (slice-starts-with?(word-slice, "#")) break
-    # . var start/edx : (addr byte) = slice->start
+    # . var start/edx: (addr byte) = slice->start
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  2/rm32/edx    .           .             .           0/r32/AL    .               .                 # copy byte at *edx to AL
     # . if (c == '#') break
@@ -3285,7 +3285,7 @@ $emit-imm:break:
     5d/pop-to-ebp
     c3/return
 
-emit-line-in-comment:  # line : (addr stream byte), out : (addr buffered-file)
+emit-line-in-comment:  # line: (addr stream byte), out: (addr buffered-file)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -5837,7 +5837,7 @@ test-convert-instruction-handles-imm8-operand:
     c3/return
 
 # shortcut for parse-hex-int(next-token-from-slice(word->start, word->end, '/'))
-parse-datum-of-word:  # word : (addr slice) -> value/eax : int
+parse-datum-of-word:  # word: (addr slice) -> value/eax: int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -5846,7 +5846,7 @@ parse-datum-of-word:  # word : (addr slice) -> value/eax : int
     56/push-esi
     # esi = word
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var slice/ecx : slice
+    # var slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

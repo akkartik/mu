@@ -15,7 +15,7 @@
 #?     b8/copy-to-eax  1/imm32/exit
 #?     cd/syscall  0x80/imm8
 
-write-stream:  # f : fd or (addr stream byte), s : (addr stream byte)
+write-stream:  # f: fd or (addr stream byte), s: (addr stream byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -75,7 +75,7 @@ $write-stream:end:
     5d/pop-to-ebp
     c3/return
 
-_write-stream:  # fd : int, s : (addr stream byte)
+_write-stream:  # fd: int, s: (addr stream byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -93,11 +93,11 @@ _write-stream:  # fd : int, s : (addr stream byte)
     # edx = s->write
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     # syscall(write, fd, &s->data[s->read], s->write - s->read)
-    # . . fd : ebx
+    # . . fd: ebx
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
-    # . . data : ecx = &s->data[s->read]
+    # . . data: ecx = &s->data[s->read]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  7/index/edi   .           1/r32/ecx   0xc/disp8       .                 # copy esi+edi+12 to ecx
-    # . . size : edx = s->write - s->read
+    # . . size: edx = s->write - s->read
     29/subtract                     3/mod/direct    2/rm32/edx    .           .             .           7/r32/edi   .               .                 # subtract edi from edx
     # . . syscall
     b8/copy-to-eax  4/imm32/write

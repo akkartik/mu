@@ -67,7 +67,7 @@ Entry:  # run tests if necessary, call 'compile' if not
     eb/jump  $main:end/disp8
 $run-main:
     # - otherwise read a program from stdin and emit its translation to stdout
-    # var ed/eax : exit-descriptor
+    # var ed/eax: exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -90,7 +90,7 @@ $main:end:
     cd/syscall  0x80/imm8
 
 # the main entry point
-compile:  # in : (addr buffered-file), out : fd or (addr stream byte), err : fd or (addr stream byte), ed : (addr exit-descriptor)
+compile:  # in: (addr buffered-file), out: fd or (addr stream byte), err: fd or (addr stream byte), ed: (addr exit-descriptor)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -105,7 +105,7 @@ compile:  # in : (addr buffered-file), out : fd or (addr stream byte), err : fd 
     e8/call  get-char/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var num/ecx : (stream byte 7)
+    # var num/ecx: (stream byte 7)
     # Numbers can be 32 bits or 8 hex bytes long. One of them will be in 'Look', so we need space for 7 bytes.
     # Sizing the stream just right buys us overflow-handling for free inside 'get-num'.
     # Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.
@@ -191,7 +191,7 @@ $compile:end:
 # space in 'out'.
 # Input comes from the global variable 'Look' (first byte) and the argument
 # 'in' (rest). We leave the next byte from 'in' into 'Look' on exit.
-get-num:  # in : (addr buffered-file), out : (addr stream byte), err : fd or (addr stream byte), ed : (addr exit-descriptor)
+get-num:  # in: (addr buffered-file), out: (addr stream byte), err: fd or (addr stream byte), ed: (addr exit-descriptor)
     # pseudocode:
     #   if (!is-digit?(Look)) expected(ed, err, "integer")
     #   if out->write >= out->length
@@ -339,7 +339,7 @@ test-get-num-reads-single-digit:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : exit-descriptor
+    # . var ed/eax: exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)
@@ -428,7 +428,7 @@ test-get-num-aborts-on-non-digit-in-Look:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # initialize exit-descriptor 'ed' for the call to 'get-num' below
-    # . var ed/eax : exit-descriptor
+    # . var ed/eax: exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # . tailor-exit-descriptor(ed, 16)
@@ -470,7 +470,7 @@ test-get-num-aborts-on-non-digit-in-Look:
 ## helpers
 
 # write(f, "Error: "+s+" expected\n") then stop(ed, 1)
-expected:  # ed : (addr exit-descriptor), f : fd or (addr stream byte), s : (addr array byte)
+expected:  # ed: (addr exit-descriptor), f: fd or (addr stream byte), s: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -512,7 +512,7 @@ $expected:dead-end:
     c3/return
 
 # read a byte from 'f', and save it in 'Look'
-get-char:  # f : (addr buffered-file)
+get-char:  # f: (addr buffered-file)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -535,7 +535,7 @@ $get-char:end:
     5d/pop-to-ebp
     c3/return
 
-is-digit?:  # c : int -> eax : boolean
+is-digit?:  # c: int -> eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp

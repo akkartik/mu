@@ -56,7 +56,7 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $subx-dquotes-main:end/disp8
 $subx-dquotes-main:interactive:
     # - otherwise convert stdin
-    # var ed/eax : exit-descriptor
+    # var ed/eax: exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -82,10 +82,10 @@ $subx-dquotes-main:end:
 #   line = words separated by ' ', maybe followed by comment starting with '#'
 #   word = datum until '/', then 0 or more metadata separated by '/'
 
-subx-dquotes:  # in : (addr buffered-file), out : (addr buffered-file)
+subx-dquotes:  # in: (addr buffered-file), out: (addr buffered-file)
     # pseudocode:
-    #   var line : (stream byte 512)
-    #   var new-data-segment : (handle stream byte) = new-stream(Heap, Segment-size, 1)
+    #   var line: (stream byte 512)
+    #   var new-data-segment: (handle stream byte) = new-stream(Heap, Segment-size, 1)
     #
     #   write(new-data-segment, "== data\n")
     #      # TODO: When it was originally written dquotes ran before assort, so
@@ -125,13 +125,13 @@ subx-dquotes:  # in : (addr buffered-file), out : (addr buffered-file)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var line/ecx : (stream byte 512)
+    # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx : slice
+    # var word-slice/edx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -198,9 +198,9 @@ $subx-dquotes:check1:
     0f 85/jump-if-!=  $subx-dquotes:next-line/disp32
 $subx-dquotes:check-for-comment:
     # if (slice-starts-with?(word-slice, "#")) continue
-    # . var start/esi : (addr byte) = word-slice->start
+    # . var start/esi: (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           6/r32/esi   .               .                 # copy *edx to esi
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # . if (c == '#') continue
@@ -287,7 +287,7 @@ $subx-dquotes:end:
 
 # Write out 'string-literal' in a new format to 'out-segment', assign it a new
 # label, and write the new label out to 'out'.
-process-string-literal:  # string-literal : (addr slice), out : (addr buffered-file), out-segment : (addr stream byte)
+process-string-literal:  # string-literal: (addr slice), out: (addr buffered-file), out-segment: (addr stream byte)
     # pseudocode:
     #   print(out-segment, "_string#{Next-string-literal}:\n")
     #   emit-string-literal-data(out-segment, string-literal)
@@ -300,7 +300,7 @@ process-string-literal:  # string-literal : (addr slice), out : (addr buffered-f
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     51/push-ecx
-    # var int32-stream/ecx : (stream byte 10)  # number of decimal digits a 32-bit number can have
+    # var int32-stream/ecx: (stream byte 10)  # number of decimal digits a 32-bit number can have
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa/imm32         # subtract from esp
     68/push  0xa/imm32/decimal-digits-in-32bit-number
     68/push  0/imm32/read
@@ -846,7 +846,7 @@ test-subx-dquotes-processes-string-literals:
     c3/return
 
 # generate the data segment contents byte by byte for a given slice
-emit-string-literal-data:  # out : (addr stream byte), word : (addr slice)
+emit-string-literal-data:  # out: (addr stream byte), word: (addr slice)
     # pseudocode
     #   len = string-length-at-start-of-slice(word->start, word->end)
     #   print(out, "#{len}/imm32 ")
@@ -885,14 +885,14 @@ emit-string-literal-data:  # out : (addr stream byte), word : (addr slice)
     56/push-esi
     # esi = word
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var idx/ebx : int = 0
+    # var idx/ebx: int = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
-    # var curr/edx : (addr byte) = word->start
+    # var curr/edx: (addr byte) = word->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
-    # var max/esi : (addr byte) = word->end
+    # var max/esi: (addr byte) = word->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
 $emit-string-literal-data:emit-length:
-    # var len/eax : int = string-length-at-start-of-slice(word->start, word->end)
+    # var len/eax: int = string-length-at-start-of-slice(word->start, word->end)
     # . . push args
     56/push-esi
     52/push-edx
@@ -920,7 +920,7 @@ $emit-string-literal-data:emit-length:
 $emit-string-literal-data:loop-init:
     # ++curr  # skip initial '"'
     42/increment-edx
-    # var c/ecx : byte = 0
+    # var c/ecx: byte = 0
     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
 $emit-string-literal-data:loop:
     # if (curr >= max) break
@@ -955,7 +955,7 @@ $emit-string-literal-data:emit:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if (is-alphanumeric?(*curr)) print(out, "/#{*curr}")
-    # . var eax : boolean = is-alphanumeric?(CL)
+    # . var eax: boolean = is-alphanumeric?(CL)
     # . . push args
     51/push-ecx
     # . . call
@@ -1021,7 +1021,7 @@ $emit-string-literal-data:end:
     5d/pop-to-ebp
     c3/return
 
-is-alphanumeric?:  # c : int -> eax : boolean
+is-alphanumeric?:  # c: int -> eax: boolean
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1379,9 +1379,9 @@ test-emit-string-literal-data-handles-newline-escape:
     c3/return
 
 # emit everything from a word except the initial datum
-emit-metadata:  # out : (addr buffered-file), word : (addr slice)
+emit-metadata:  # out: (addr buffered-file), word: (addr slice)
     # pseudocode
-    #   var slice : slice = {0, word->end}
+    #   var slice: slice = {0, word->end}
     #   curr = word->start
     #   if *curr == '"'
     #     curr = skip-string-in-slice(curr, word->end)
@@ -1406,11 +1406,11 @@ emit-metadata:  # out : (addr buffered-file), word : (addr slice)
     56/push-esi
     # esi = word
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var curr/ecx : (addr byte) = word->start
+    # var curr/ecx: (addr byte) = word->start
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-    # var end/edx : (addr byte) = word->end
+    # var end/edx: (addr byte) = word->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   4/disp8         .                 # copy *(esi+4) to edx
-    # var slice/ebx : slice = {0, end}
+    # var slice/ebx: slice = {0, end}
     52/push-edx
     68/push  0/imm32
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -1778,7 +1778,7 @@ test-emit-metadata-in-string-literal:
     5d/pop-to-ebp
     c3/return
 
-string-length-at-start-of-slice:  # curr : (addr byte), end : (addr byte) -> length/eax
+string-length-at-start-of-slice:  # curr: (addr byte), end: (addr byte) -> length/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -1790,9 +1790,9 @@ string-length-at-start-of-slice:  # curr : (addr byte), end : (addr byte) -> len
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
     # edx = end
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         2/r32/edx   0xc/disp8         .               # copy *(ebp+12) to edx
-    # var length/eax : int = 0
+    # var length/eax: int = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # var c/ebx : byte = 0
+    # var c/ebx: byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
     # skip initial dquote
     41/increment-ecx

@@ -24,7 +24,7 @@
 
 # if no row is found, abort
 # type string_key = (addr array byte)
-get:  # table : (addr stream {string_key, T}), key : string_key, row-size : int, abort-message-prefix : (addr array byte) -> eax : (addr T)
+get:  # table: (addr stream {string_key, T}), key: string_key, row-size: int, abort-message-prefix: (addr array byte) -> eax: (addr T)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -43,9 +43,9 @@ get:  # table : (addr stream {string_key, T}), key : string_key, row-size : int,
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr byte) = &table->data[table->write]
+    # var max/edx: (addr byte) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get:search-loop:
@@ -125,7 +125,7 @@ test-get:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with a couple of keys
-    # var table/ecx : (stream {string, number} 16)  # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
@@ -198,7 +198,7 @@ $test-get:end:
     c3/return
 
 # if no row is found, abort
-get-slice:  # table : (addr stream {string_key, T}), key : (addr slice), row-size : int, abort-message-prefix : (addr array byte) -> eax : (addr T)
+get-slice:  # table: (addr stream {string_key, T}), key: (addr slice), row-size: int, abort-message-prefix: (addr array byte) -> eax: (addr T)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -217,9 +217,9 @@ get-slice:  # table : (addr stream {string_key, T}), key : (addr slice), row-siz
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr byte) = &table->data[table->write]
+    # var max/edx: (addr byte) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-slice:search-loop:
@@ -306,7 +306,7 @@ test-get-slice:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with a couple of keys
-    # var table/ecx : (stream {string, number} 16)  # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
@@ -336,7 +336,7 @@ $test-get-slice:check1:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
     05/add-to-eax  4/imm32
-    # var slice/edx : slice = {eax, edx}
+    # var slice/edx: slice = {eax, edx}
     52/push-edx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -366,7 +366,7 @@ $test-get-slice:check2:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
     05/add-to-eax  4/imm32
-    # var slice/edx : slice = {eax, edx}
+    # var slice/edx: slice = {eax, edx}
     52/push-edx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -401,7 +401,7 @@ $test-get-slice:end:
 # return the address of the value
 # Beware: assume keys are immutable; they're inserted by reference
 # TODO: pass in an allocation descriptor
-get-or-insert:  # table : (addr stream {string_key, T}), key : string_key, row-size : int -> eax : (addr T)
+get-or-insert:  # table: (addr stream {string_key, T}), key: string_key, row-size: int -> eax: (addr T)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -425,9 +425,9 @@ get-or-insert:  # table : (addr stream {string_key, T}), key : string_key, row-s
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr string_key) = &table->data[table->write]
+    # var max/edx: (addr string_key) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-or-insert:search-loop:
@@ -512,7 +512,7 @@ test-get-or-insert:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var table/ecx : (stream {string, number} 16)  # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
@@ -652,7 +652,7 @@ $test-get-or-insert:end:
 # if there are no rows free, abort
 # WARNING: leaks memory
 # TODO: pass in an allocation descriptor
-leaky-get-or-insert-slice:  # table : (addr stream {string_key, T}), key : (addr slice), row-size : int -> eax : (addr T)
+leaky-get-or-insert-slice:  # table: (addr stream {string_key, T}), key: (addr slice), row-size: int -> eax: (addr T)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -676,9 +676,9 @@ leaky-get-or-insert-slice:  # table : (addr stream {string_key, T}), key : (addr
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr string_key) = &table->data[table->write]
+    # var max/edx: (addr string_key) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $leaky-get-or-insert-slice:search-loop:
@@ -769,7 +769,7 @@ test-leaky-get-or-insert-slice:
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
-    # var table/ecx : (stream {string, number} 16)  # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
@@ -780,7 +780,7 @@ test-leaky-get-or-insert-slice:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
     05/add-to-eax  4/imm32
-    # var slice/edx : slice = {eax, edx}
+    # var slice/edx: slice = {eax, edx}
     52/push-edx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -873,7 +873,7 @@ $test-leaky-get-or-insert-slice:third-call:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
     05/add-to-eax  4/imm32
-    # var slice/edx : slice = {eax, edx}
+    # var slice/edx: slice = {eax, edx}
     52/push-edx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -924,9 +924,9 @@ $test-leaky-get-or-insert-slice:end:
     c3/return
 
 # if no row is found, stop(ed)
-get-or-stop:  # table : (addr stream {string_key, T}), key : string_key, row-size : int,
-              # abort-message-prefix : (addr array byte), err : (addr buffered-file), ed : (addr exit-descriptor)
-              # -> eax : (addr T)
+get-or-stop:  # table: (addr stream {string_key, T}), key: string_key, row-size: int,
+              # abort-message-prefix: (addr array byte), err: (addr buffered-file), ed: (addr exit-descriptor)
+              # -> eax: (addr T)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -946,9 +946,9 @@ get-or-stop:  # table : (addr stream {string_key, T}), key : string_key, row-siz
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr byte) = &table->data[table->write]
+    # var max/edx: (addr byte) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-or-stop:search-loop:
@@ -1051,13 +1051,13 @@ test-get-or-stop:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var table/ecx : (stream {string, number} 16)  # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var ed/edx : exit-descriptor
+    # var ed/edx: exit-descriptor
     68/push  0/imm32
     68/push  0/imm32
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -1140,9 +1140,9 @@ $test-get-or-stop:end:
     c3/return
 
 # if no row is found, stop(ed)
-get-slice-or-stop:  # table : (addr stream {string_key, _}), key : (addr slice), row-size : int,
-                    # abort-message-prefix : (addr string), err : (addr buffered-file), ed : (addr exit-descriptor)
-                    # -> eax : (addr _)
+get-slice-or-stop:  # table: (addr stream {string_key, _}), key: (addr slice), row-size: int,
+                    # abort-message-prefix: (addr string), err: (addr buffered-file), ed: (addr exit-descriptor)
+                    # -> eax: (addr _)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -1162,9 +1162,9 @@ get-slice-or-stop:  # table : (addr stream {string_key, _}), key : (addr slice),
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr byte) = &table->data[table->write]
+    # var max/edx: (addr byte) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $get-slice-or-stop:search-loop:
@@ -1267,17 +1267,17 @@ test-get-slice-or-stop:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var table/ecx : (stream {string, number} 16)  # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var ed/edx : exit-descriptor
+    # var ed/edx: exit-descriptor
     68/push  0/imm32
     68/push  0/imm32
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var slice/ebx : slice = "code"
+    # var slice/ebx: slice = "code"
     # . (eax..ebx) = "code"
     b8/copy-to-eax  "code"/imm32
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy *eax to ebx
@@ -1379,7 +1379,7 @@ $test-get-slice-or-stop:end:
     c3/return
 
 # if no row is found, return null (0)
-maybe-get:  # table : (addr stream {string_key, T}), key : string_key, row-size : int -> eax : (addr T)
+maybe-get:  # table: (addr stream {string_key, T}), key: string_key, row-size: int -> eax: (addr T)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -1398,9 +1398,9 @@ maybe-get:  # table : (addr stream {string_key, T}), key : string_key, row-size 
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr byte) = &table->data[table->write]
+    # var max/edx: (addr byte) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $maybe-get:search-loop:
@@ -1443,7 +1443,7 @@ test-maybe-get:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with one row
-    # var table/ecx : (stream {string, number} 16)   # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)   # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
@@ -1526,7 +1526,7 @@ $test-maybe-get:end:
     c3/return
 
 # if no row is found, return null (0)
-maybe-get-slice:  # table : (addr stream {string_key, T}), key : (addr slice), row-size : int -> eax : (addr T)
+maybe-get-slice:  # table: (addr stream {string_key, T}), key: (addr slice), row-size: int -> eax: (addr T)
     # pseudocode:
     #   curr = table->data
     #   max = &table->data[table->write]
@@ -1545,9 +1545,9 @@ maybe-get-slice:  # table : (addr stream {string_key, T}), key : (addr slice), r
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var curr/ecx : (addr string_key) = table->data
+    # var curr/ecx: (addr string_key) = table->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
-    # var max/edx : (addr byte) = &table->data[table->write]
+    # var max/edx: (addr byte) = &table->data[table->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
 $maybe-get-slice:search-loop:
@@ -1590,7 +1590,7 @@ test-maybe-get-slice:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # - setup: create a table with one row
-    # var table/ecx : (stream {string, number} 16)   # 2 rows * 8 bytes/row
+    # var table/ecx: (stream {string, number} 16)   # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
     68/push  0x10/imm32/length
     68/push  0/imm32/read
@@ -1612,7 +1612,7 @@ $test-maybe-get-slice:success:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
     05/add-to-eax  4/imm32
-    # var slice/edx : slice = {eax, edx}
+    # var slice/edx: slice = {eax, edx}
     52/push-edx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -1662,7 +1662,7 @@ $test-maybe-get-slice:failure:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
     05/add-to-eax  4/imm32
-    # var slice/edx : slice = {eax, edx}
+    # var slice/edx: slice = {eax, edx}
     52/push-edx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx

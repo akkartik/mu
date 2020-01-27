@@ -30,7 +30,7 @@ Entry:  # run all tests
 
 # compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
-kernel-string-equal?:  # s : (addr kernel-string), benchmark : (addr array byte) -> eax : boolean
+kernel-string-equal?:  # s: (addr kernel-string), benchmark: (addr array byte) -> eax: boolean
     # pseudocode:
     #   n = benchmark->length
     #   s1 = s
@@ -61,19 +61,19 @@ kernel-string-equal?:  # s : (addr kernel-string), benchmark : (addr array byte)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var s1/edi : (addr byte) = s
+    # var s1/edi: (addr byte) = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # var n/edx : int = benchmark->length
+    # var n/edx: int = benchmark->length
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
-    # var s2/esi : (addr byte) = benchmark->data
+    # var s2/esi: (addr byte) = benchmark->data
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
-    # var i/ecx : int = 0
+    # var i/ecx: int = 0
     b9/copy-to-ecx  0/imm32/exit
-    # var c1/eax : byte = 0
+    # var c1/eax: byte = 0
     b8/copy-to-eax  0/imm32
-    # var c2/ebx : byte = 0
+    # var c2/ebx: byte = 0
     bb/copy-to-ebx  0/imm32
 $kernel-string-equal?:loop:
     # if (i >= n) break

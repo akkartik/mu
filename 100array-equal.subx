@@ -2,7 +2,7 @@
 
 == code
 
-array-equal?:  # a : (addr array int), b : (addr array int) -> eax : boolean
+array-equal?:  # a: (addr array int), b: (addr array int) -> eax: boolean
     # pseudocode:
     #   lena = a->length
     #   if (lena != b->length) return false
@@ -37,27 +37,27 @@ array-equal?:  # a : (addr array int), b : (addr array int) -> eax : boolean
     8b/-> *(ebp+8) 6/r32/esi
     # edi = b
     8b/-> *(ebp+0xc) 7/r32/edi
-    # var lena/edx : int = a->length
+    # var lena/edx: int = a->length
     8b/-> *esi 2/r32/edx
 $array-equal?:lengths:
     # if (lena != b->length) return false
     39/compare *edi 2/r32/edx
     75/jump-if-!= $array-equal?:false/disp8
-    # var curra/esi : (addr byte) = a->data
+    # var curra/esi: (addr byte) = a->data
     81 0/subop/add %esi 4/imm32
-    # var currb/edi : (addr byte) = b->data
+    # var currb/edi: (addr byte) = b->data
     81 0/subop/add %edi 4/imm32
-    # var i/ecx : int = 0
+    # var i/ecx: int = 0
     31/xor %ecx 1/r32/ecx
-    # var vala/eax : int
-    # var valb/ebx : int
+    # var vala/eax: int
+    # var valb/ebx: int
 $array-equal?:loop:
     # if (i >= lena) return true
     39/compare %ecx 2/r32/edx
     7d/jump-if->= $array-equal?:true/disp8
-    # var vala/eax : int = *curra
+    # var vala/eax: int = *curra
     8b/-> *esi 0/r32/eax
-    # var valb/ebx : int = *currb
+    # var valb/ebx: int = *currb
     8b/-> *edi 3/r32/ebx
     # if (vala != valb) return false
     39/compare %eax 3/r32/ebx
@@ -90,10 +90,10 @@ test-compare-empty-with-empty-array:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var ecx : (array _) = []
+    # var ecx: (array _) = []
     68/push 0/imm32/size
     89/<- %ecx 4/r32/esp
-    # var edx : (array _) = []
+    # var edx: (array _) = []
     68/push 0/imm32/size
     89/<- %edx 4/r32/esp
     # eax = array-equal?(ecx, edx)
@@ -122,11 +122,11 @@ test-compare-empty-with-non-empty-array:  # also checks length-mismatch code pat
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var ecx : (array int) = [1]
+    # var ecx: (array int) = [1]
     68/push 1/imm32
     68/push 4/imm32/size
     89/<- %ecx 4/r32/esp
-    # var edx : (array int) = []
+    # var edx: (array int) = []
     68/push 0/imm32/size
     89/<- %edx 4/r32/esp
     # eax = array-equal?(ecx, edx)
@@ -155,13 +155,13 @@ test-compare-equal-arrays:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var ecx : (array int) = [1, 2, 3]
+    # var ecx: (array int) = [1, 2, 3]
     68/push 3/imm32
     68/push 2/imm32
     68/push 1/imm32
     68/push 0xc/imm32/size
     89/<- %ecx 4/r32/esp
-    # var edx : (array int) = [1, 2, 3]
+    # var edx: (array int) = [1, 2, 3]
     68/push 3/imm32
     68/push 2/imm32
     68/push 1/imm32
@@ -193,13 +193,13 @@ test-compare-inequal-arrays-equal-lengths:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var ecx : (array int) = [1, 4, 3]
+    # var ecx: (array int) = [1, 4, 3]
     68/push 3/imm32
     68/push 4/imm32
     68/push 1/imm32
     68/push 0xc/imm32/size
     89/<- %ecx 4/r32/esp
-    # var edx : (array int) = [1, 2, 3]
+    # var edx: (array int) = [1, 2, 3]
     68/push 3/imm32
     68/push 2/imm32
     68/push 1/imm32
@@ -227,7 +227,7 @@ test-compare-inequal-arrays-equal-lengths:
     5d/pop-to-ebp
     c3/return
 
-parse-array-of-ints:  # ad : (addr allocation-descriptor), s : (addr string) -> result/eax : (handle array int)
+parse-array-of-ints:  # ad: (addr allocation-descriptor), s: (addr string) -> result/eax: (handle array int)
     # pseudocode
     #   end = &s->data[s->length]
     #   curr = s->data
@@ -240,7 +240,7 @@ parse-array-of-ints:  # ad : (addr allocation-descriptor), s : (addr string) -> 
     #     ++size
     #   result = allocate(ad, (size+1)*4)
     #   result->size = (size+1)*4
-    #   var slice : slice = {s->data, 0}
+    #   var slice: slice = {s->data, 0}
     #   out = result->data
     #   while true
     #     if (slice->start >= end) break
@@ -263,14 +263,14 @@ parse-array-of-ints:  # ad : (addr allocation-descriptor), s : (addr string) -> 
     57/push-edi
     # esi = s
     8b/-> *(ebp+0xc) 6/r32/esi
-    # var curr/ecx : (addr byte) = s->data
+    # var curr/ecx: (addr byte) = s->data
     8d/copy-address *(esi+4) 1/r32/ecx
-    # var end/edx : (addr byte) = &s->data[s->length]
+    # var end/edx: (addr byte) = &s->data[s->length]
     # . edx = s->length
     8b/-> *esi 2/r32/edx
     # . edx += curr
     01/add %edx 1/r32/ecx
-    # var size/ebx : int = 0
+    # var size/ebx: int = 0
     31/xor %ebx 3/r32/ebx
 $parse-array-of-ints:loop1:
     # if (curr >= end) break
@@ -307,7 +307,7 @@ $parse-array-of-ints:loop1:
     81 0/subop/add %ebx 4/imm32
     eb/jump $parse-array-of-ints:loop1/disp8
 $parse-array-of-ints:break1:
-    # var result/edi : (handle array int) = allocate(ad, size+4)
+    # var result/edi: (handle array int) = allocate(ad, size+4)
     # . eax = allocate(ad, size+4)
     # . . push args
     89/<- %eax 3/r32/ebx
@@ -323,12 +323,12 @@ $parse-array-of-ints:break1:
     # result->size = size
     89/<- *eax 3/r32/ebx
 $parse-array-of-ints:pass2:
-    # var slice/ecx : slice = {s->data, 0}
+    # var slice/ecx: slice = {s->data, 0}
     68/push 0/imm32/end
     8d/copy-address *(esi+4) 1/r32/ecx
     51/push-ecx
     89/<- %ecx 4/r32/esp
-    # var out/ebx : (addr byte) = result->data
+    # var out/ebx: (addr byte) = result->data
     8d/copy-address *(eax+4) 3/r32/ebx
 $parse-array-of-ints:loop2:
     # if (slice->start >= end) break
@@ -398,7 +398,7 @@ test-parse-array-of-ints:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var ecx : (array int) = [1, 2, 3]
+    # var ecx: (array int) = [1, 2, 3]
     68/push 3/imm32
     68/push 2/imm32
     68/push 1/imm32
@@ -492,7 +492,7 @@ test-parse-array-of-ints-extra-whitespace:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var ecx : (array int) = [1, 2, 3]
+    # var ecx: (array int) = [1, 2, 3]
     68/push 3/imm32
     68/push 2/imm32
     68/push 1/imm32
@@ -530,13 +530,13 @@ test-parse-array-of-ints-extra-whitespace:
 
 # helper for later tests
 # compare an array with a string representation of an array literal
-check-array-equal:  # a : (addr array int), expected : (addr string), msg : (addr string)
+check-array-equal:  # a: (addr array int), expected: (addr string), msg: (addr string)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    # var b/ecx : (handle array int) = parse-array-of-ints(Heap, expected)
+    # var b/ecx: (handle array int) = parse-array-of-ints(Heap, expected)
     # . eax = parse-array-of-ints(Heap, expected)
     # . . push args
     ff 6/subop/push *(ebp+0xc)
@@ -576,7 +576,7 @@ test-check-array-equal:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var ecx : (array int) = [1, 2, 3]
+    # var ecx: (array int) = [1, 2, 3]
     68/push 3/imm32
     68/push 2/imm32
     68/push 1/imm32

@@ -11,7 +11,7 @@ Entry:  # just exit; can't test _write just yet
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
-_write:  # fd : int, s : (addr array byte)
+_write:  # fd: int, s: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -21,12 +21,12 @@ _write:  # fd : int, s : (addr array byte)
     52/push-edx
     53/push-ebx
     # syscall(write, fd, (data) s+4, (size) *s)
-    # . fd : ebx
+    # . ebx = fd
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
-    # . data : ecx = s+4
+    # . var data/ecx: (addr byte) = s+4
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+12) to ecx
     81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # add to ecx
-    # . size : edx = *s
+    # . var size/edx: int = *s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
     # . syscall

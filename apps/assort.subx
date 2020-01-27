@@ -60,7 +60,7 @@ Entry:  # run tests if necessary, convert stdin if not
     eb/jump  $subx-assort-main:end/disp8
 $subx-assort-main:interactive:
     # - otherwise convert stdin
-    # var ed/eax : exit-descriptor
+    # var ed/eax: exit-descriptor
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # subtract from esp
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           4/r32/esp   .               .                 # copy esp to eax
     # configure ed to really exit()
@@ -86,9 +86,9 @@ $subx-assort-main:end:
 #   table: (addr stream {string, (addr stream byte)})     (8 bytes per row)
 # inefficient; uses sequential search for looking up segments by name
 
-subx-assort:  # in : (addr buffered-file), out : (addr buffered-file)
+subx-assort:  # in: (addr buffered-file), out: (addr buffered-file)
     # pseudocode:
-    #   var table : (addr stream {string, (addr stream byte)} 10/rows)
+    #   var table: (addr stream {string, (addr stream byte)} 10/rows)
     #   read-segments(in, table)
     #   write-segments(out, table)
     #
@@ -97,7 +97,7 @@ subx-assort:  # in : (addr buffered-file), out : (addr buffered-file)
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     51/push-ecx
-    # var table/ecx : (stream {string, (addr stream byte)} 80)  # 10 rows * 8 bytes/row
+    # var table/ecx: (stream {string, (addr stream byte)} 80)  # 10 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x50/imm32        # subtract from esp
     68/push  0x50/imm32/length
     68/push  0/imm32/read
@@ -453,10 +453,10 @@ test-subx-assort:
 # type string_key = (addr array byte)
 
 # beware: leaks memory (one name per segment read)
-read-segments:  # in : (addr buffered-file), table : (addr stream {string_key, (handle stream byte)})
+read-segments:  # in: (addr buffered-file), table: (addr stream {string_key, (handle stream byte)})
     # pseudocode:
-    #   var curr-segment : (handle stream byte) = 0
-    #   var line : (stream byte 512)
+    #   var curr-segment: (handle stream byte) = 0
+    #   var line: (stream byte 512)
     #   while true
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -496,13 +496,13 @@ read-segments:  # in : (addr buffered-file), table : (addr stream {string_key, (
     52/push-edx
     53/push-ebx
     56/push-esi
-    # var line/ecx : (stream byte 512)
+    # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx : slice
+    # var word-slice/edx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -599,9 +599,9 @@ $read-segments:check-for-comment:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # if (slice-starts-with?(word-slice, "#")) continue
-    # . var start/esi : (addr byte) = word-slice->start
+    # . var start/esi: (addr byte) = word-slice->start
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           6/r32/esi   .               .                 # copy *ecx to esi
-    # . var c/eax : byte = *start
+    # . var c/eax: byte = *start
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # . if (c == '#') continue
@@ -717,7 +717,7 @@ $read-segments:check-for-segment-header:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # var segment-slot/eax : (addr handle stream byte) = leaky-get-or-insert-slice(table, segment-name, row-size=8)
+    # var segment-slot/eax: (addr handle stream byte) = leaky-get-or-insert-slice(table, segment-name, row-size=8)
     # . . push args
     68/push  8/imm32/row-size
     52/push-edx
@@ -726,7 +726,7 @@ $read-segments:check-for-segment-header:
     e8/call  leaky-get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # var curr-segment/ebx : (handle stream byte) = *segment-slot
+    # var curr-segment/ebx: (handle stream byte) = *segment-slot
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy *eax to ebx
     # if (curr-segment != 0) continue
     81          7/subop/compare     3/mod/direct    3/rm32/ebx    .           .             .           .           .               0/imm32           # compare ebx
@@ -843,7 +843,7 @@ $read-segments:end:
     5d/pop-to-ebp
     c3/return
 
-write-segments:  # out : (addr buffered-file), table : (addr stream {string_key, (handle stream byte)})
+write-segments:  # out: (addr buffered-file), table: (addr stream {string_key, (handle stream byte)})
     # pseudocode:
     #   var curr = table->data
     #   var max = &table->data[table->write]
@@ -862,17 +862,17 @@ write-segments:  # out : (addr buffered-file), table : (addr stream {string_key,
     56/push-esi
     # esi = table
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var write/edx : int = table->write
+    # var write/edx: int = table->write
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
-    # var curr/esi : (addr byte) = table->data
+    # var curr/esi: (addr byte) = table->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               0xc/imm32         # add to eax
-    # var max/edx : (addr byte) = curr + write
+    # var max/edx: (addr byte) = curr + write
     01/add                          3/mod/direct    2/rm32/edx    .           .             .           6/r32/esi   .               .                 # add esi to edx
 $write-segments:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           2/r32/edx   .               .                 # compare esi with edx
     73/jump-if-addr>=  $write-segments:break/disp8
-    # var stream/eax : (addr stream byte) = table[i].stream
+    # var stream/eax: (addr stream byte) = table[i].stream
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     # write-stream-data(out, stream)
     # . . push args

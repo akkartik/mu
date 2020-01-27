@@ -113,12 +113,12 @@ $subx-survey-main:end:
 #   labels: (addr stream {string, label-info})         (16 bytes per row)
 # these are all inefficient; use sequential scans for lookups
 
-subx-survey:  # infile : (addr buffered-file), out : (addr buffered-file)
+subx-survey:  # infile: (addr buffered-file), out: (addr buffered-file)
     # pseudocode
-    #   var in : (stream byte 4096)
+    #   var in: (stream byte 4096)
     #   slurp(infile, in)
-    #   var segments : (stream segment-info)
-    #   var labels : (stream label-info Max-labels)
+    #   var segments: (stream segment-info)
+    #   var labels: (stream label-info Max-labels)
     #   compute-offsets(in, segments, labels)
     #   compute-addresses(segments, labels)
     #   rewind-stream(in)
@@ -131,13 +131,13 @@ subx-survey:  # infile : (addr buffered-file), out : (addr buffered-file)
     51/push-ecx
     52/push-edx
     56/push-esi
-    # var segments/ecx : (stream {string, segment-info} 160)   # 10 rows * 16 bytes/row
+    # var segments/ecx: (stream {string, segment-info} 160)   # 10 rows * 16 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var labels/edx : (stream label-info Max-labels*16)
+    # var labels/edx: (stream label-info Max-labels*16)
     # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/esp   Max-labels/disp32                 # subtract *Max-labels from esp
     # . length
@@ -147,7 +147,7 @@ subx-survey:  # infile : (addr buffered-file), out : (addr buffered-file)
     # . write
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var in/esi : (stream byte Input-size)
+    # var in/esi: (stream byte Input-size)
     # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/esp   Input-size/disp32                 # subtract *Input-size from esp
     # . length
@@ -618,7 +618,7 @@ compute-offsets:segment-tmp:  # slice
 
 == code
 
-compute-offsets:  # in : (addr stream byte), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})
+compute-offsets:  # in: (addr stream byte), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
     # skeleton:
     #   for lines in 'in'
     #     for words in line
@@ -629,8 +629,8 @@ compute-offsets:  # in : (addr stream byte), segments : (addr stream {string, se
     #         default
     #
     # pseudocode:
-    #   curr-segment-name : (addr string) = 0
-    #   var line : (stream byte 512)
+    #   curr-segment-name: (addr string) = 0
+    #   var line: (stream byte 512)
     #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line(in, line)
@@ -661,7 +661,7 @@ compute-offsets:  # in : (addr stream byte), segments : (addr stream {string, se
     #         break  (next line)
     #       else if is-label?(word-slice)
     #         strip trailing ':' from word-slice
-    #         x : (addr label-info) = get-or-insert(labels, name)
+    #         x: (addr label-info) = get-or-insert(labels, name)
     #         x->segment-name = curr-segment-name
     #         trace("label '", word-slice, "' is in segment '", curr-segment-name, "'.")
     #         x->segment-offset = segment-offset
@@ -688,7 +688,7 @@ compute-offsets:  # in : (addr stream byte), segments : (addr stream {string, se
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:file-offset/disp32  0/imm32               # copy to *compute-offsets:word-slice
     # segment-offset = 0
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32            # copy to *compute-offsets:word-slice
-    # var line/ecx : (stream byte 512)
+    # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
@@ -1219,13 +1219,13 @@ test-compute-offsets:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # var segments/ecx : (stream byte 2*16)
+    # var segments/ecx: (stream byte 2*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # subtract from esp
     68/push  0x20/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var labels/edx : (stream byte 2*16)
+    # var labels/edx: (stream byte 2*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # subtract from esp
     68/push  0x20/imm32/length
     68/push  0/imm32/read
@@ -1378,9 +1378,9 @@ test-compute-offsets:
     5d/pop-to-ebp
     c3/return
 
-compute-addresses:  # segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})
+compute-addresses:  # segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
     # pseudocode:
-    #   srow : (addr segment-info) = segments->data
+    #   srow: (addr segment-info) = segments->data
     #   max = &segments->data[segments->write]
     #   num-segments = segments->write / 16
     #   starting-offset = 0x34 + (num-segments * 0x20)
@@ -1391,12 +1391,12 @@ compute-addresses:  # segments : (addr stream {string, segment-info}), labels : 
     #     s->address += (s->file-offset & 0x00000fff)
     #     trace-sssns("segment " s->key " starts at address " s->address)
     #     srow += 16  # row-size
-    #   lrow : (addr label-info) = labels->data
+    #   lrow: (addr label-info) = labels->data
     #   max = &labels->data[labels->write]
     #   while true
     #     if (lrow >= max) break
-    #     seg-name : (addr string) = lrow->segment-name
-    #     label-seg : (addr segment-info) = get(segments, seg-name)
+    #     var seg-name: (addr string) = lrow->segment-name
+    #     var label-seg: (addr segment-info) = get(segments, seg-name)
     #     lrow->address = label-seg->address + lrow->segment-offset
     #     trace-sssns("label " lrow->key " is at address " lrow->address)
     #     lrow += 16  # row-size
@@ -1522,7 +1522,7 @@ $compute-addresses:label-loop:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # seg-name/edx = lrow->segment-name
+    # var seg-name/edx: (addr array byte) = lrow->segment-name
     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           2/r32/edx   4/disp8         .                 # copy *eax to edx
 #?     # dump seg-name {{{
 #?     # . write(2/stderr, "compute-addresses: seg-name: ")
@@ -1550,7 +1550,7 @@ $compute-addresses:label-loop:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # label-seg/edx : (addr segment-info) = get(segments, seg-name, row-size=16, "segment table")
+    # var label-seg/edx: (addr segment-info) = get(segments, seg-name, row-size=16, "segment table")
     # . save eax
     50/push-eax
     # . eax = get(segments, seg-name, row-size=16)
@@ -1621,13 +1621,13 @@ test-compute-addresses:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
-    # . var segments/ecx : (stream byte 10*16)
+    # . var segments/ecx: (stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx : (stream byte 512*16)
+    # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -1790,13 +1790,13 @@ test-compute-addresses-large-segments:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
-    # . var segments/ecx : (stream byte 10*16)
+    # . var segments/ecx: (stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx : (stream byte 512*16)
+    # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -1871,7 +1871,7 @@ test-compute-addresses-large-segments:
     5d/pop-to-ebp
     c3/return
 
-emit-output:  # in : (addr stream byte), out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})
+emit-output:  # in: (addr stream byte), out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
     # pseudocode:
     #   emit-headers(out, segments, labels)
     #   emit-segments(in, out, segments, labels)
@@ -1922,10 +1922,10 @@ $emit-output:end:
     5d/pop-to-ebp
     c3/return
 
-emit-segments:  # in : (addr stream byte), out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})
+emit-segments:  # in: (addr stream byte), out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
     # pseudocode:
     #   var offset-of-next-instruction = 0
-    #   var line : (stream byte 512)
+    #   var line: (stream byte 512)
     #   line-loop:
     #   while true
     #     clear-stream(line)
@@ -1987,17 +1987,17 @@ emit-segments:  # in : (addr stream byte), out : (addr buffered-file), segments 
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var line/ecx : (stream byte 512)
+    # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # var word-slice/edx : slice
+    # var word-slice/edx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
-    # var datum/edi : slice
+    # var datum/edi: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    7/rm32/edi    .           .             .           4/r32/esp   .               .                 # copy esp to edi
@@ -2577,13 +2577,13 @@ test-emit-segments-global-variable:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . var segments/ecx : (stream byte 10*16)
+    # . var segments/ecx: (stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx : (stream byte 512*16)
+    # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -2814,13 +2814,13 @@ test-emit-segments-code-label:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . var segments/ecx : (stream byte 10*16)
+    # . var segments/ecx: (stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx : (stream byte 512*16)
+    # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -3016,13 +3016,13 @@ test-emit-segments-code-label-absolute:
     e8/call  clear-stream/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
-    # . var segments/ecx : (stream byte 10*16)
+    # . var segments/ecx: (stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
     68/push  0xa0/imm32/length
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx : (stream byte 512*16)
+    # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
     68/push  0x2000/imm32/length
     68/push  0/imm32/read
@@ -3173,7 +3173,7 @@ test-emit-segments-code-label-absolute:
     5d/pop-to-ebp
     c3/return
 
-emit-headers:  # out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})
+emit-headers:  # out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
     # pseudocode:
     #   emit-elf-header(out, segments, labels)
     #   curr-segment = segments->data
@@ -3311,7 +3311,7 @@ $emit-headers:end:
     5d/pop-to-ebp
     c3/return
 
-emit-elf-header:  # out : (addr buffered-file), segments : (addr stream {string, segment-info}), labels : (addr stream {string, label-info})
+emit-elf-header:  # out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
     # pseudocode
     #   *$Elf_e_entry = get(labels, "Entry")->address
     #   *$Elf_e_phnum = segments->write / 16         # size of a row
@@ -3379,7 +3379,7 @@ $emit-elf-header:end:
     5d/pop-to-ebp
     c3/return
 
-emit-elf-program-header-entry:  # out : (addr buffered-file), curr-segment : (addr {string, segment-info})
+emit-elf-program-header-entry:  # out: (addr buffered-file), curr-segment: (addr {string, segment-info})
     # pseudocode:
     #   *$Elf_p_offset = curr-segment->file-offset
     #   *$Elf_p_vaddr = curr-segment->address
@@ -3468,7 +3468,7 @@ $emit-elf-program-header-entry:end:
 
 # - some helpers for tests
 
-stream-add4:  # in : (addr stream byte), key : addr, val1 : addr, val2 : addr, val3 : addr
+stream-add4:  # in: (addr stream byte), key: addr, val1: addr, val2: addr, val3: addr
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3554,7 +3554,7 @@ $stream-add4:abort:
 #   l: (addr slice)
 # one gotcha: 's5' must not be empty
 
-trace-sssns:  # s1 : (addr string), s2 : (addr string), s3 : (addr string), n4 : int, s5 : (addr string)
+trace-sssns:  # s1: (addr string), s2: (addr string), s3: (addr string), n4: int, s5: (addr string)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3661,7 +3661,7 @@ test-trace-sssns:
     5d/pop-to-ebp
     c3/return
 
-trace-snsns:  # s1 : (addr string), n2 : int, s3 : (addr string), n4 : int, s5 : (addr string)
+trace-snsns:  # s1: (addr string), n2: int, s3: (addr string), n4: int, s5: (addr string)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3768,7 +3768,7 @@ test-trace-snsns:
     5d/pop-to-ebp
     c3/return
 
-trace-slsls:  # s1 : (addr string), l2 : (addr slice), s3 : (addr string), l4 : (addr slice), s5 : (addr string)
+trace-slsls:  # s1: (addr string), l2: (addr slice), s3: (addr string), l4: (addr slice), s5: (addr string)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3830,7 +3830,7 @@ test-trace-slsls:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var b/ebx : slice = {eax, ecx}
+    # var b/ebx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -3839,7 +3839,7 @@ test-trace-slsls:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var d/edx : slice = {eax, ecx}
+    # var d/edx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -3893,7 +3893,7 @@ test-trace-slsls:
     5d/pop-to-ebp
     c3/return
 
-trace-slsns:  # s1 : (addr string), l2 : (addr slice), s3 : (addr string), n4 : int, s5 : (addr string)
+trace-slsns:  # s1: (addr string), l2: (addr slice), s3: (addr string), n4: int, s5: (addr string)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3955,7 +3955,7 @@ test-trace-slsns:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var b/ebx : slice = {eax, ecx}
+    # var b/ebx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -4009,7 +4009,7 @@ test-trace-slsns:
     5d/pop-to-ebp
     c3/return
 
-trace-slsss:  # s1 : (addr string), l2 : (addr slice), s3 : (addr string), s4 : (addr string), s5 : (addr string)
+trace-slsss:  # s1: (addr string), l2: (addr slice), s3: (addr string), s4: (addr string), s5: (addr string)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -4071,7 +4071,7 @@ test-trace-slsss:
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
     05/add-to-eax  4/imm32
-    # var b/ebx : slice = {eax, ecx}
+    # var b/ebx: slice = {eax, ecx}
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
@@ -4125,7 +4125,7 @@ test-trace-slsss:
     5d/pop-to-ebp
     c3/return
 
-num-bytes:  # line : (addr stream byte) -> eax : int
+num-bytes:  # line: (addr stream byte) -> eax: int
     # pseudocode:
     #   result = 0
     #   while true
@@ -4150,7 +4150,7 @@ num-bytes:  # line : (addr stream byte) -> eax : int
     53/push-ebx
     # var result/eax = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # var word-slice/ecx : slice
+    # var word-slice/ecx: slice
     68/push  0/imm32/end
     68/push  0/imm32/start
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

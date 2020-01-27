@@ -45,7 +45,7 @@
 # . op          subop               mod             rm32          base        index         scale       r32
 # . 1-3 bytes   3 bits              2 bits          3 bits        3 bits      3 bits        2 bits      2 bits      0/1/2/4 bytes   0/1/2/4 bytes
 
-read:  # f : fd or (addr stream byte), s : (addr stream byte) -> num-bytes-read/eax : int
+read:  # f: fd or (addr stream byte), s: (addr stream byte) -> num-bytes-read/eax: int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -110,7 +110,7 @@ $read:end:
 # '_buffer' is like '_append', but silently stops instead of aborting when it runs out of space
 
 # 3-argument variant of _buffer
-_buffer-3:  # out : address, outend : address, s : (array byte) -> num_bytes_buffered/eax
+_buffer-3:  # out: address, outend: address, s: (array byte) -> num_bytes_buffered/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -142,7 +142,7 @@ $_buffer-3:end:
     c3/return
 
 # 4-argument variant of _buffer
-_buffer-4:  # out : address, outend : address, in : address, inend : address -> num_bytes_buffered/eax
+_buffer-4:  # out: address, outend: address, in: address, inend: address -> num_bytes_buffered/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -195,7 +195,7 @@ $_buffer-4:end:
 # Unclear how I'd use it, though. Callers seem to need the check anyway.
 # Maybe a better helper would be 'empty-stream?'
 
-_read:  # fd : int, s : (addr stream byte) -> num-bytes-read/eax : int
+_read:  # fd: int, s: (addr stream byte) -> num-bytes-read/eax: int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -211,11 +211,11 @@ _read:  # fd : int, s : (addr stream byte) -> num-bytes-read/eax : int
     # edx = s->length
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(esi+8) to edx
     # syscall(read, fd, &s->data[s->write], s->length - s->write)
-    # . . fd : ebx
+    # . . fd: ebx
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
-    # . . data : ecx = &s->data[s->write]
+    # . . data: ecx = &s->data[s->write]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           1/r32/ecx   0xc/disp8       .                 # copy esi+eax+12 to ecx
-    # . . size : edx = s->length - s->write
+    # . . size: edx = s->length - s->write
     29/subtract                     3/mod/direct    2/rm32/edx    .           .             .           0/r32/eax   .               .                 # subtract eax from edx
     # . . syscall
     b8/copy-to-eax  3/imm32/read

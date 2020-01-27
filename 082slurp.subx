@@ -5,7 +5,7 @@
 
 # read all bytes from 'f' and store them into 's'
 # abort if 's' is too small
-slurp:  # f : (addr buffered-file), s : (addr stream byte)
+slurp:  # f: (addr buffered-file), s: (addr stream byte)
     # pseudocode:
     #   while true
     #     if (s->write >= s->length) abort
@@ -63,7 +63,7 @@ $slurp:loop:
     3d/compare-eax-and  0/imm32
     74/jump-if-=  $slurp:end/disp8
 $slurp:from-stream:
-    # var c/eax : byte = f->data[f->read]
+    # var c/eax: byte = f->data[f->read]
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           0/r32/AL    0x10/disp8      .                 # copy byte at *(esi+ecx+16) to AL
     # s->data[s->write] = c

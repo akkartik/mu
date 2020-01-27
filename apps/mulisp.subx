@@ -74,19 +74,19 @@ $main:end:
 #     data contains a pointer to an array of 8-byte data fields and the common
 #     tag for them all
 
-repl:  # in : (addr buffered-file), out : (addr buffered-file)
+repl:  # in: (addr buffered-file), out: (addr buffered-file)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
     {
-      (lisp-read Stdin)  # => eax : (handle cell)
+      (lisp-read Stdin)  # => eax: (handle cell)
       # if (eax == 0) break
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
       #
-      (lisp-eval %eax)  # => eax : (handle cell)
+      (lisp-eval %eax)  # => eax: (handle cell)
       (lisp-print Stdout %eax)
       eb/jump loop/disp8
     }
@@ -104,13 +104,13 @@ $repl:end:
 # arrays start with '['
 # symbols start with anything else but quote, backquote, unquote or splice
 # only one s-expression per line
-lisp-read:  # in : (addr buffered-file) -> eax : (handle cell)
+lisp-read:  # in: (addr buffered-file) -> eax: (handle cell)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var s/ecx : (stream byte 512)
+    # var s/ecx: (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
     68/push 0x200/imm32/size
     68/push 0/imm32/read
@@ -142,14 +142,14 @@ $lisp-read:end:
     5d/pop-to-ebp
     c3/return
 
-# lisp-read:  in : (addr buffered-file) -> (handle cell)
+# lisp-read:  in: (addr buffered-file) -> (handle cell)
 #   token tmp = next-mulisp-token(in)
 #   if is-int(tmp) return cell(tmp)
 #   if is-string(tmp) return cell(tmp)
 #   if is-pair(tmp) ...
 #   if is-array(tmp) ...
 
-next-mulisp-token:  # in : (addr buffered-file), line : (addr stream byte), result : (addr slice)
+next-mulisp-token:  # in: (addr buffered-file), line: (addr stream byte), result: (addr slice)
     # pseudocode:
     #   if (line->read >= line->write)
     #     read-line-buffered(in, line)
@@ -194,11 +194,11 @@ $next-mulisp-token:end:
     5d/pop-to-ebp
     c3/return
 
-new-int-cell:  # in : (addr slice) -> eax : (handle cell)
+new-int-cell:  # in: (addr slice) -> eax: (handle cell)
 
-new-string-cell:  # in : (addr slice) -> eax : (handle cell)
+new-string-cell:  # in: (addr slice) -> eax: (handle cell)
 
-lisp-eval:  # in : (addr cell) -> eax : (handle cell)
+lisp-eval:  # in: (addr cell) -> eax: (handle cell)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -211,7 +211,7 @@ $lisp-eval:end:
     5d/pop-to-ebp
     c3/return
 
-lisp-print:  # out : (addr buffered-file), x : (addr cell)
+lisp-print:  # out: (addr buffered-file), x: (addr cell)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp

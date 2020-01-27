@@ -13,7 +13,7 @@ Entry:  # run all tests
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
-string-equal?:  # s : (addr array byte), benchmark : (addr array byte) -> eax : boolean
+string-equal?:  # s: (addr array byte), benchmark: (addr array byte) -> eax: boolean
     # pseudocode:
     #   if (s->length != benchmark->length) return false
     #   currs = s->data
@@ -51,15 +51,15 @@ $string-equal?:lengths:
     # if (ecx != benchmark->length) return false
     39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # compare *edi and ecx
     75/jump-if-!=  $string-equal?:false/disp8
-    # var currs/esi : (addr byte) = s->data
+    # var currs/esi: (addr byte) = s->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
-    # var maxs/ecx : (addr byte) = &s->data[s->length]
+    # var maxs/ecx: (addr byte) = &s->data[s->length]
     01/add                          3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # add esi to ecx
-    # var currb/edi : (addr byte) = benchmark->data
+    # var currb/edi: (addr byte) = benchmark->data
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
-    # var c1/eax : byte = 0
+    # var c1/eax: byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # var c2/edx : byte = 0
+    # var c2/edx: byte = 0
     31/xor                          3/mod/direct    2/rm32/edx    .           .             .           2/r32/edx   .               .                 # clear edx
 $string-equal?:loop:
     # if (currs >= maxs) return true
@@ -176,13 +176,13 @@ test-compare-inequal-strings-equal-lengths:
     c3/return
 
 # helper for later tests
-check-strings-equal:  # s : (addr array byte), expected : (addr array byte), msg : (addr array byte)
+check-strings-equal:  # s: (addr array byte), expected: (addr array byte), msg: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     50/push-eax
-    # var eax : boolean = string-equal?(s, expected)
+    # var eax: boolean = string-equal?(s, expected)
     # . . push args
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)

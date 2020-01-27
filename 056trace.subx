@@ -1,9 +1,9 @@
 # primitives for emitting traces to a 'trace' stream, and for tests to make assertions on its contents
 #
 # A trace stream looks like a regular stream:
-#   write : int  # index at which writes go
-#   read : int  # index that we've read until
-#   data : (array byte)  # prefixed by length as usual
+#   write: int  # index at which writes go
+#   read: int  # index that we've read until
+#   data: (array byte)  # prefixed by length as usual
 # Usually the trace stream will be in a separate segment set aside for the purpose.
 #
 # primitives for operating on traces (arguments in quotes):
@@ -45,7 +45,7 @@ _test-trace-stream:  # (stream byte)
 
 # Allocate a new segment for the trace stream, initialize its length, and save its address to Trace-stream.
 # The Trace-stream segment will consist of variable-length lines separated by newlines (0x0a)
-initialize-trace-stream:  # n : int
+initialize-trace-stream:  # n: int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -83,7 +83,7 @@ $initialize-trace-stream:end:
 
 # Append a string to the given trace stream.
 # Silently give up if it's already full. Or truncate the string if there isn't enough room.
-trace:  # line : (addr array byte)
+trace:  # line: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -94,13 +94,13 @@ trace:  # line : (addr array byte)
     53/push-ebx
     56/push-esi
     57/push-edi
-    # var edi : (addr stream byte) = *Trace-stream
+    # var edi: (addr stream byte) = *Trace-stream
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           7/r32/edi   Trace-stream/disp32               # copy *Trace-stream to edi
     # esi = line
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # var ecx : int = t->write
+    # var ecx: int = t->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
-    # var edx : int = t->length
+    # var edx: int = t->length
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(edi+8) to edx
     # eax = _append-3(&t->data[t->write], &t->data[t->length], line)
     # . . push line
@@ -250,7 +250,7 @@ test-trace-empty-line:
     # end
     c3/return
 
-check-trace-contains:  # line : (addr string), msg : (addr string)
+check-trace-contains:  # line: (addr string), msg: (addr string)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -275,7 +275,7 @@ $check-trace-contains:end:
     5d/pop-to-ebp
     c3/return
 
-check-trace-scans-to:  # line : (addr string), msg : (addr string)
+check-trace-scans-to:  # line: (addr string), msg: (addr string)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -306,7 +306,7 @@ $check-trace-scans-to:end:
     c3/return
 
 # Start scanning from Trace-stream->read for 'line'. If found, update Trace-stream->read and return true.
-trace-scan:  # line : (addr array byte) -> result/eax : boolean
+trace-scan:  # line: (addr array byte) -> result/eax: boolean
     # pseudocode:
     #   push Trace-stream->read
     #   while true:
@@ -558,7 +558,7 @@ test-trace-scan-failure-leaves-read-index-untouched:
     # . end
     c3/return
 
-next-line-matches?:  # t : (addr stream byte), line : (addr array byte) -> result/eax : boolean
+next-line-matches?:  # t: (addr stream byte), line: (addr array byte) -> result/eax: boolean
     # pseudocode:
     #   while true:
     #     if (currl >= maxl) break
@@ -579,24 +579,24 @@ next-line-matches?:  # t : (addr stream byte), line : (addr array byte) -> resul
     57/push-edi
     # edx = line
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
-    # var currl/esi : (addr byte) = line->data
+    # var currl/esi: (addr byte) = line->data
     # . esi = line/edx->data
     8d/copy-address                 1/mod/*+disp8   2/rm32/edx    .           .             .           6/r32/esi   4/disp8         .                 # copy edx+4 to esi
-    # var maxl/ecx : (addr byte) = &line->data[line->size]
+    # var maxl/ecx: (addr byte) = &line->data[line->size]
     # . eax = line/edx->size
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .                         0/r32/eax   .               .                 # copy *edx to eax
     # . maxl = &line->data[line->size]
     8d/copy-address                 0/mod/indirect  4/rm32/sib    6/base/esi  0/index/eax   .           1/r32/ecx   .               .                 # copy edx+eax to ecx
     # edi = t
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # var ebx : (addr byte) = t->data
+    # var ebx: (addr byte) = t->data
     8d/copy-address                 1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy edi+12 to ebx
-    # var maxt/edx : (addr byte) = &t->data[t->write]
+    # var maxt/edx: (addr byte) = &t->data[t->write]
     # . eax = t->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .                         0/r32/eax   .               .                 # copy *edi to eax
     # . maxt = &t->data[t->write]
     8d/copy-address                 0/mod/indirect  4/rm32/sib    3/base/ebx  0/index/eax   .           2/r32/edx   .               .                 # copy ebx+eax to edx
-    # var currt/edi : (addr byte) = &t->data[t->read]
+    # var currt/edi: (addr byte) = &t->data[t->read]
     # . eax = t/edi->read
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .                         0/r32/eax   4/disp8         .                 # copy *(edi+4) to eax
     # . currt = &t->data[t->read]
@@ -613,9 +613,9 @@ $next-line-matches?:loop:
     # if (*currt != *currl) return false
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     31/xor                          3/mod/direct    3/rm32/eax    .           .             .           3/r32/eax   .               .                 # clear ebx
-    # . eax : byte = *currt
+    # . eax: byte = *currt
     8a/copy-byte                    0/mod/indirect  7/rm32/edi    .           .                         0/r32/eax   .               .                 # copy *edi to eax
-    # . ebx : byte = *currl
+    # . ebx: byte = *currl
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .                         3/r32/ebx   .               .                 # copy *esi to ebx
     # . eax >= ebx
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # compare eax and ebx
@@ -630,7 +630,7 @@ $next-line-matches?:loop:
 $next-line-matches?:break:
     # return *currt == '\n'
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # . eax : byte = *currt
+    # . eax: byte = *currt
     8a/copy-byte                    0/mod/indirect  7/rm32/edi    .           .                         0/r32/eax   .               .                 # copy *edi to eax
     3d/compare-eax-and  0xa/imm32/newline
     # . eax = false
@@ -734,7 +734,7 @@ test-next-line-matches?-match:
     c3/return
 
 # move t->read to _after_ next newline
-skip-next-line:  # t : (addr stream byte)
+skip-next-line:  # t: (addr stream byte)
     # pseudocode:
     #   max = &t->data[t->write]
     #   i = t->read
@@ -760,13 +760,13 @@ skip-next-line:  # t : (addr stream byte)
     8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   0xc/disp8       .                 # copy ecx+12 to edx
     # eax = t->write
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/eax   .               .                 # copy *ecx to eax
-    # var max/ebx : (addr byte) = &t->data[t->write]
+    # var max/ebx: (addr byte) = &t->data[t->write]
     8d/copy-address                 0/mod/indirect  4/rm32/sib    2/base/edx  0/index/eax   .           3/r32/ebx   .               .                 # copy edx+eax to ebx
     # eax = t->read
     8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ecx+4) to edx
-    # var curr/ecx : (addr byte) = &t->data[t->read]
+    # var curr/ecx: (addr byte) = &t->data[t->read]
     8d/copy-address                 0/mod/indirect  4/rm32/sib    2/base/edx  0/index/eax   .           1/r32/ecx   .               .                 # copy edx+eax to ecx
-    # var i/edx : int = t->read
+    # var i/edx: int = t->read
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to edx
 $skip-next-line:loop:
     # if (curr >= max) break
@@ -862,7 +862,7 @@ $clear-trace-stream:end:
 # - helpers
 
 # 3-argument variant of _append
-_append-3:  # out : (addr byte), outend : (addr byte), s : (addr array byte) -> num_bytes_appended/eax
+_append-3:  # out: (addr byte), outend: (addr byte), s: (addr array byte) -> num_bytes_appended/eax
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -894,7 +894,7 @@ $_append-3:end:
     c3/return
 
 # 4-argument variant of _append
-_append-4:  # out : (addr byte), outend : (addr byte), in : (addr byte), inend : (addr byte) -> num_bytes_appended/eax : int
+_append-4:  # out: (addr byte), outend: (addr byte), in: (addr byte), inend: (addr byte) -> num_bytes_appended/eax: int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
