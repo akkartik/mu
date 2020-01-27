@@ -103,6 +103,18 @@ void test_string_literal_in_data_segment() {
   );
 }
 
+void test_string_literal_with_missing_quote() {
+  Hide_errors = true;
+  run(
+      "== code 0x1\n"
+      "b8/copy  \"test/imm32\n"
+      "== data 0x2000\n"
+  );
+  CHECK_TRACE_CONTENTS(
+      "error: unclosed string in: b8/copy  \"test/imm32"
+  );
+}
+
 :(before "End Line Parsing Special-cases(line_data -> l)")
 if (line_data.find('"') != string::npos) {  // can cause false-positives, but we can handle them
   parse_instruction_character_by_character(line_data, l);
@@ -137,7 +149,11 @@ void parse_instruction_character_by_character(const string& line_data, vector<li
       // string literal; slurp everything between quotes into data
       ostringstream d;
       d << c;
-      while (has_data(in)) {
+      while (true) {
+        if (!has_data(in)) {
+          raise << "unclosed string in: " << line_data << end();
+          return;
+        }
         in >> c;
         if (c == '\\') {
           in >> c;
