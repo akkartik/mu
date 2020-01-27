@@ -3720,7 +3720,10 @@ emit-subx-block:  # out : (addr buffered-file), block : (handle block)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # curr/esi : (handle list statement) = block->statements
+    # . save registers
+    50/push-eax
+    56/push-esi
+    # var stmts/esi : (handle list statement) = block->statements
     8b/-> *(ebp+0xc) 6/r32/esi
     8b/-> *(esi+4) 6/r32/esi  # Block-statements
     #
@@ -3730,10 +3733,46 @@ $emit-subx-block:check-empty:
       0f 84/jump-if-= break/disp32
       (write-buffered *(ebp+8) "{\n")
       {
-$emit-subx-block:stmt:
+$emit-subx-block:loop:
         81 7/subop/compare %esi 0/imm32
         74/jump-if-= break/disp8
-        (emit-subx-statement *(ebp+8) *esi Primitives *Program)
+        # var curr/eax = stmts->value
+        8b/-> *esi 0/r32/eax  # List-value
+        {
+$emit-subx-block:check-for-block:
+          81 7/subop/compare *eax 0/imm32/block  # Stmt-tag
+          75/jump-if-not-equal break/disp8
+$emit-subx-block:block:
+          # TODO
+        }
+        {
+$emit-subx-block:check-for-stmt:
+          81 7/subop/compare *eax 1/imm32/stmt1  # Stmt-tag
+          75/jump-if-not-equal break/disp8
+$emit-subx-block:stmt:
+          (emit-subx-statement *(ebp+8) %eax Primitives *Program)
+        }
+        {
+$emit-subx-block:check-for-vardef:
+          81 7/subop/compare *eax 2/imm32/vardef  # Stmt-tag
+          75/jump-if-not-equal break/disp8
+$emit-subx-block:vardef:
+          # TODO
+        }
+        {
+$emit-subx-block:check-for-regvardef:
+          81 7/subop/compare *eax 3/imm32/regvardef  # Stmt-tag
+          75/jump-if-not-equal break/disp8
+$emit-subx-block:regvardef:
+          # TODO
+        }
+        {
+$emit-subx-block:check-for-named-block:
+          81 7/subop/compare *eax 4/imm32/named-block  # Stmt-tag
+          75/jump-if-not-equal break/disp8
+$emit-subx-block:named-block:
+          # TODO
+        }
         (write-buffered *(ebp+8) Newline)
         8b/-> *(esi+4) 6/r32/esi  # List-next
         eb/jump loop/disp8
@@ -3741,6 +3780,9 @@ $emit-subx-block:stmt:
       (write-buffered *(ebp+8) "}\n")
     }
 $emit-subx-block:end:
+    # . restore registers
+    5e/pop-to-esi
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
