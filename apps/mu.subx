@@ -1629,24 +1629,24 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     # assert s != ""
     (slice-equal? %ecx "")
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    0f 85/jump-if-!= $parse-type:abort/disp32
     # assert s != "{"
     (slice-equal? %ecx "{")
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    0f 85/jump-if-!= $parse-type:abort/disp32
     # assert s != "}"
     (slice-equal? %ecx "}")
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    0f 85/jump-if-!= $parse-type:abort/disp32
     # assert s != "->"
     (slice-equal? %ecx "->")
     3d/compare-eax-and 0/imm32
-    0f 85/jump-if-not-equal $parse-type:abort/disp32
+    0f 85/jump-if-!= $parse-type:abort/disp32
     # if (s == ")") return 0
     (slice-equal? %ecx ")")
     3d/compare-eax-and 0/imm32
     b8/copy-to-eax 0/imm32
-    0f 85/jump-if-not-equal $parse-type:end/disp32
+    0f 85/jump-if-!= $parse-type:end/disp32
     # var result/edx: (handle tree type-id)
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)
@@ -1655,7 +1655,7 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
       # if (s != "(") break
       (slice-equal? %ecx "(")
       3d/compare-eax-and 0/imm32
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       # result->left = pos-slice(Type-id, s)
       (pos-slice Type-id %ecx)
 #?       (write-buffered Stderr "=> {")
@@ -1723,7 +1723,7 @@ parse-type-tree:  # ad: (address allocation-descriptor), in: (addr stream byte) 
     (parse-type *(ebp+8) *(ebp+0xc))
     # if (tmp == 0) return tmp
     3d/compare-eax-and 0/imm32
-    74/jump-if-equal $parse-type-tree:end/disp8
+    74/jump-if-= $parse-type-tree:end/disp8
     # var tmp2/ecx = tmp
     89/<- %ecx 0/r32/eax
     # var result/edx: (handle tree type-id)
@@ -2822,19 +2822,19 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -
     8b/-> *(edx+0x10) 0/r32/eax  # Var-register
     3d/compare-eax-and 0/imm32
     {
-      75/jump-if-not-equal break/disp8
+      75/jump-if-!= break/disp8
       # TODO: ensure that there's nothing else on this line
       (new-vardef Heap %edx)  # => eax
       eb/jump $parse-mu-var-def:end/disp8
     }
     # or v has a register and there's more to this line
     {
-      74/jump-if-equal break/disp8
+      74/jump-if-= break/disp8
       # ensure that the next word is '<-'
       (next-word *(ebp+8) %ecx)
       (slice-equal? %ecx "<-")  # => eax
       3d/compare-eax-and 0/imm32
-      74/jump-if-equal $parse-mu-var-def:abort/disp8
+      74/jump-if-= $parse-mu-var-def:abort/disp8
       #
       (new-regvardef Heap %edx)  # => eax
       (add-operation-and-inputs-to-stmt %eax *(ebp+8) *(ebp+0xc))
@@ -3741,35 +3741,35 @@ $emit-subx-block:loop:
         {
 $emit-subx-block:check-for-block:
           81 7/subop/compare *eax 0/imm32/block  # Stmt-tag
-          75/jump-if-not-equal break/disp8
+          75/jump-if-!= break/disp8
 $emit-subx-block:block:
           # TODO
         }
         {
 $emit-subx-block:check-for-stmt:
           81 7/subop/compare *eax 1/imm32/stmt1  # Stmt-tag
-          75/jump-if-not-equal break/disp8
+          75/jump-if-!= break/disp8
 $emit-subx-block:stmt:
           (emit-subx-statement *(ebp+8) %eax Primitives *Program)
         }
         {
 $emit-subx-block:check-for-vardef:
           81 7/subop/compare *eax 2/imm32/vardef  # Stmt-tag
-          75/jump-if-not-equal break/disp8
+          75/jump-if-!= break/disp8
 $emit-subx-block:vardef:
           # TODO
         }
         {
 $emit-subx-block:check-for-regvardef:
           81 7/subop/compare *eax 3/imm32/regvardef  # Stmt-tag
-          75/jump-if-not-equal break/disp8
+          75/jump-if-!= break/disp8
 $emit-subx-block:regvardef:
           # TODO
         }
         {
 $emit-subx-block:check-for-named-block:
           81 7/subop/compare *eax 4/imm32/named-block  # Stmt-tag
-          75/jump-if-not-equal break/disp8
+          75/jump-if-!= break/disp8
 $emit-subx-block:named-block:
           # TODO
         }
