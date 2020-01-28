@@ -305,7 +305,7 @@ Regvardef-operation:  # (handle array byte)
   4/imm32
 Regvardef-inouts:  # (handle list var)
   8/imm32
-Regvardef-var:  # (handle var)
+Regvardef-outputs:  # (handle list var)  # will have exactly one element
   0xc/imm32
 
 Named-block-name:
@@ -1014,6 +1014,69 @@ test-convert-function-with-local-var-in-mem:
     (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-mem/10")
     (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-mem/11")
     (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-local-var-in-mem/12")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-local-var-in-reg:
+    # empty function decl => function prologue and epilogue
+    #   fn foo {
+    #     var x/ecx: int <- copy 3
+    #     x <- increment
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       ff 6/subop/push %ecx
+    #       b9/copy-to-ecx 3/imm32
+    #       41/increment-ecx
+    #       8f 0/subop/pop %ecx
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "var x/ecx: int <- copy 3\n")
+    (write _test-input-stream "x <- increment\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-with-local-var-in-reg/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-with-local-var-in-reg/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-with-local-var-in-reg/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-reg/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-local-var-in-reg/4")
+    (check-next-stream-line-equal _test-output-stream "ff 6/subop/push %ecx"  "F - test-convert-function-with-local-var-in-reg/5")
+    (check-next-stream-line-equal _test-output-stream "b9/copy-to-ecx 3/imm32"  "F - test-convert-function-with-local-var-in-reg/6")
+    (check-next-stream-line-equal _test-output-stream "41/increment-ecx"      "F - test-convert-function-with-local-var-in-reg/7")
+    (check-next-stream-line-equal _test-output-stream "8f 0/subop/pop %ecx"   "F - test-convert-function-with-local-var-in-reg/8")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-local-var-in-reg/9")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-local-var-in-reg/10")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-reg/11")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-reg/12")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-local-var-in-reg/13")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -2995,15 +3058,17 @@ test-parse-mu-reg-var-def:
     (parse-mu-var-def _test-input-stream %ecx)  # => eax
     # check result
     (check-ints-equal *eax 3 "F - test-parse-mu-reg-var-def/tag")  # Stmt-tag is regvardef
-    8b/-> *(eax+0xc) 0/r32/eax  # Regvardef-var
-    (check-strings-equal *eax "n" "F - test-parse-mu-reg-var-def/var-name")  # Var-name
-    (check-strings-equal *(eax+0x10) "eax" "F - test-parse-mu-reg-var-def/var-register")  # Var-register
+    8b/-> *(eax+0xc) 0/r32/eax  # Regvardef-outputs
+    (check-ints-equal *(eax+4) 0 "F - test-parse-mu-reg-var-def/single-output")  # List-next
+    8b/-> *eax 0/r32/eax  # List-value
+    (check-strings-equal *eax "n" "F - test-parse-mu-reg-var-def/output-name")  # Var-name
+    (check-strings-equal *(eax+0x10) "eax" "F - test-parse-mu-reg-var-def/output-register")  # Var-register
     # TODO: ensure stack-offset is -4
     # TODO: ensure block-depth is 1
     # ensure type is int
     8b/-> *(eax+4) 0/r32/eax  # Var-type
-    (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/var-type:0")  # Tree-left
-    (check-ints-equal *(eax+4) 0 "F - test-parse-mu-reg-var-def/var-type:0")  # Tree-right
+    (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-left
+    (check-ints-equal *(eax+4) 0 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3362,7 +3427,7 @@ lookup-or-define-var:  # name: (addr slice), vars: (addr stack (handle var)), fn
     (slice-to-string Heap *(ebp+8))  # => eax
     89/<- %ecx 0/r32/eax
     #
-    (lookup-var-helper *(ebp+8) *(ebp+0xc))  # => eax
+    (lookup-var-helper %ecx *(ebp+0xc))  # => eax
     {
       # if (result != 0) return
       3d/compare-eax-and 0/imm32
@@ -3634,14 +3699,22 @@ new-regvardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    #
-    (allocate *(ebp+8) *Stmt-size)  # => eax
-    (zero-out %eax *Stmt-size)
-    c7 0/subop/copy *eax 3/imm32/tag/var-in-register  # Stmt-tag
+    57/push-edi
+    # ecx = var
     8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *(eax+0xc) 1/r32/ecx  # Regvardef-var
+    # edi = result
+    (allocate *(ebp+8) *Stmt-size)  # => eax
+    89/<- %edi 0/r32/eax
+    (zero-out %edi *Stmt-size)
+    # set tag
+    c7 0/subop/copy *edi 3/imm32/tag/var-in-register  # Stmt-tag
+    # set output
+    (append-list Heap %ecx *(edi+0xc))  # Regvardef-outputs => eax
+    89/<- *(edi+0xc) 0/r32/eax  # Regvardef-outputs
 $new-regvardef:end:
+    89/<- %eax 7/r32/edi
     # . restore registers
+    5f/pop-to-edi
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -3876,6 +3949,7 @@ emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (add
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
+    51/push-ecx
     56/push-esi
     # var stmts/esi: (handle list statement) = block->statements
     8b/-> *(ebp+0xc) 6/r32/esi
@@ -3890,40 +3964,54 @@ $emit-subx-block:check-empty:
 $emit-subx-block:loop:
         81 7/subop/compare %esi 0/imm32
         0f 84/jump-if-= break/disp32
-        # var curr/eax = stmts->value
-        8b/-> *esi 0/r32/eax  # List-value
+        # var curr-stmt/ecx = stmts->value
+        8b/-> *esi 1/r32/ecx  # List-value
         {
 $emit-subx-block:check-for-block:
-          81 7/subop/compare *eax 0/imm32/block  # Stmt-tag
+          81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
           75/jump-if-!= break/disp8
 $emit-subx-block:block:
           # TODO
         }
         {
 $emit-subx-block:check-for-stmt:
-          81 7/subop/compare *eax 1/imm32/stmt1  # Stmt-tag
+          81 7/subop/compare *ecx 1/imm32/stmt1  # Stmt-tag
           75/jump-if-!= break/disp8
 $emit-subx-block:stmt:
-          (emit-subx-statement *(ebp+8) %eax Primitives *Program)
+          (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
         }
         {
 $emit-subx-block:check-for-vardef:
-          81 7/subop/compare *eax 2/imm32/vardef  # Stmt-tag
+          81 7/subop/compare *ecx 2/imm32/vardef  # Stmt-tag
           75/jump-if-!= break/disp8
 $emit-subx-block:vardef:
-          (emit-subx-var-def *(ebp+8) %eax)
-          (push *(ebp+0x10) %eax)
+          (emit-subx-var-def *(ebp+8) %ecx)
+          (push *(ebp+0x10) *(ecx+4))  # Vardef-var
         }
         {
 $emit-subx-block:check-for-regvardef:
-          81 7/subop/compare *eax 3/imm32/regvardef  # Stmt-tag
-          75/jump-if-!= break/disp8
+          81 7/subop/compare *ecx 3/imm32/regvardef  # Stmt-tag
+          0f 85/jump-if-!= break/disp32
 $emit-subx-block:regvardef:
-          # TODO
+          # TODO: ensure that there's exactly one output
+          # var output/eax: (handle var) = curr-stmt->outputs->value
+          8b/-> *(ecx+0xc) 0/r32/eax
+          8b/-> *eax 0/r32/eax
+          # ensure that output is in a register
+          81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+          0f 84/jump-if-equal $emit-subx-block:abort-regvardef-without-register/disp32
+          # emit spill
+          (write-buffered *(ebp+8) "ff 6/subop/push %")
+          (write-buffered *(ebp+8) *(eax+0x10))
+          (write-buffered *(ebp+8) Newline)
+          # register variable definition
+          (push *(ebp+0x10) %eax)
+          # emit the instruction as usual
+          (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
         }
         {
 $emit-subx-block:check-for-named-block:
-          81 7/subop/compare *eax 4/imm32/named-block  # Stmt-tag
+          81 7/subop/compare *ecx 4/imm32/named-block  # Stmt-tag
           75/jump-if-!= break/disp8
 $emit-subx-block:named-block:
           # TODO
@@ -3935,15 +4023,32 @@ $emit-subx-block:named-block:
       # reclaim locals
       # TODO: support nested blocks; take block-ids into account
       {
-        8b/-> *(ebp+0x10) 0/r32/eax)
+$emit-subx-block:reclaim-loop:
+        8b/-> *(ebp+0x10) 0/r32/eax
         81 7/subop/compare *eax 0/imm32  # Stack-top
-        74/jump-if-= break/disp8
+        0f 84/jump-if-= break/disp32
+        # var v/ecx : (handle var) = top(vars)
         (top %eax)  # => eax
-        (size-of %eax)  # => eax
-        01/add *Next-local-stack-offset 0/r32/eax
-        (write-buffered *(ebp+8) "81 0/subop/add %esp ")
-        (print-int32-buffered *(ebp+8) %eax)
-        (write-buffered *(ebp+8) "/imm32\n")
+        89/<- %ecx 0/r32/eax
+        # if v is in a register
+        81 7/subop/compare *(ecx+0x10) 0/imm32  # Var-register
+        {
+          74/jump-if-= break/disp8
+$emit-subx-block:reclaim-var-in-register:
+          (write-buffered *(ebp+8) "8f 0/subop/pop %")
+          (write-buffered *(ebp+8) *(ecx+0x10))
+          (write-buffered *(ebp+8) Newline)
+        }
+        # if v is on the stack
+        {
+          75/jump-if-!= break/disp8
+$emit-subx-block:reclaim-var-on-stack:
+          (size-of %ecx)  # => eax
+          01/add *Next-local-stack-offset 0/r32/eax
+          (write-buffered *(ebp+8) "81 0/subop/add %esp ")
+          (print-int32-buffered *(ebp+8) %eax)
+          (write-buffered *(ebp+8) "/imm32\n")
+        }
         #
         (pop *(ebp+0x10))
         e9/jump loop/disp32
@@ -3954,17 +4059,32 @@ $emit-subx-block:named-block:
 $emit-subx-block:end:
     # . restore registers
     5e/pop-to-esi
+    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
+$emit-subx-block:abort-regvardef-without-register:
+    # error("var '" var->name "' initialized from an instruction must live in a register\n")
+    (write-buffered Stderr "var '")
+    (write-buffered Stderr *eax)  # Var-name
+    (write-buffered Stderr "' initialized from an instruction must live in a register\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
 emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle statement)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
+    51/push-ecx
     # eax = stmt
     8b/-> *(ebp+0xc) 0/r32/eax
     # var n/eax: int = size-of(stmt->var)
