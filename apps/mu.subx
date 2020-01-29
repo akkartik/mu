@@ -988,8 +988,8 @@ test-convert-function-with-local-var-in-mem:
     (clear-stream $_test-output-buffered-file->buffer)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "var x: int\n")
-    (write _test-input-stream "increment x\n")
+    (write _test-input-stream "  var x: int\n")
+    (write _test-input-stream "  increment x\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file)
@@ -1050,8 +1050,8 @@ test-convert-function-with-local-var-in-reg:
     (clear-stream $_test-output-buffered-file->buffer)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "var x/ecx: int <- copy 3\n")
-    (write _test-input-stream "x <- increment\n")
+    (write _test-input-stream "  var x/ecx: int <- copy 3\n")
+    (write _test-input-stream "  x <- increment\n")
     (write _test-input-stream "}\n")
     # convert
     (convert-mu _test-input-buffered-file _test-output-buffered-file)
@@ -1077,6 +1077,75 @@ test-convert-function-with-local-var-in-reg:
     (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-reg/11")
     (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-reg/12")
     (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-local-var-in-reg/13")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-local-var-in-block:
+    # empty function decl => function prologue and epilogue
+    #   fn foo {
+    #     {
+    #       var x: int
+    #       increment x
+    #     }
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       {
+    #         68/push 0/imm32
+    #         ff 0/subop/increment *(ebp-4)
+    #         81 0/subop/add %esp 4/imm32
+    #       }
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    var x: int\n")
+    (write _test-input-stream "    increment x\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-with-local-var-in-block/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-with-local-var-in-block/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-with-local-var-in-block/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-block/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-local-var-in-block/4")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-local-var-in-block/5")
+    (check-next-stream-line-equal _test-output-stream "68/push 0/imm32"       "F - test-convert-function-with-local-var-in-block/6")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-block/7")
+    (check-next-stream-line-equal _test-output-stream "81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-block/8")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-local-var-in-block/9")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-local-var-in-block/10")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-local-var-in-block/11")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-block/12")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-block/13")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-local-var-in-block/14")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3971,7 +4040,7 @@ $emit-subx-block:check-for-block:
           81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
           75/jump-if-!= break/disp8
 $emit-subx-block:block:
-          # TODO
+          (emit-subx-block *(ebp+8) %ecx *(ebp+0x10))
         }
         {
 $emit-subx-block:check-for-stmt:
@@ -4016,7 +4085,6 @@ $emit-subx-block:check-for-named-block:
 $emit-subx-block:named-block:
           # TODO
         }
-        (write-buffered *(ebp+8) Newline)
         8b/-> *(esi+4) 6/r32/esi  # List-next
         e9/jump loop/disp32
       }
@@ -4093,7 +4161,7 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle statement)
     {
       3d/compare-eax-with 0/imm32
       7e/jump-if-<= break/disp8
-      (write-buffered *(ebp+8) "68/push 0/imm32")
+      (write-buffered *(ebp+8) "68/push 0/imm32\n")
       # n -= 4
       2d/subtract-from-eax 4/imm32
       #
@@ -4928,6 +4996,7 @@ emit-subx-primitive:  # out: (addr buffered-file), stmt: (handle statement), pri
     (emit-subx-r32 *(ebp+8) *(ecx+0x14) *(ebp+0xc))  # out, Primitive-subx-r32, stmt
     # emit imm32 if necessary
     (emit-subx-imm32 *(ebp+8) *(ecx+0x18) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
+    (write-buffered *(ebp+8) Newline)
 $emit-subx-primitive:end:
     # . restore registers
     59/pop-to-ecx
@@ -5093,7 +5162,7 @@ emit-subx-call:  # out: (addr buffered-file), stmt: (handle statement), callee: 
       eb/jump loop/disp8
     }
     #
-    (write-buffered *(ebp+8) ")")
+    (write-buffered *(ebp+8) ")\n")
 $emit-subx-call:end:
     # . restore registers
     59/pop-to-ecx
