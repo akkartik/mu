@@ -258,16 +258,16 @@ void check_operands(const line& inst, const word& op) {
   uint8_t expected_bitvector = get(Permitted_operands, op.data);
   if (HAS(expected_bitvector, MODRM)) {
     check_operands_modrm(inst, op);
-    compare_bitvector_modrm(inst, expected_bitvector, op);
+    compare_bitvector_modrm(inst, expected_bitvector, maybe_name(op));
   }
   else {
-    compare_bitvector(inst, expected_bitvector, op);
+    compare_bitvector(inst, expected_bitvector, maybe_name(op));
   }
 }
 
 //: Many instructions can be checked just by comparing bitvectors.
 
-void compare_bitvector(const line& inst, uint8_t expected, const word& op) {
+void compare_bitvector(const line& inst, uint8_t expected, const string& maybe_op_name) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
   uint8_t bitvector = compute_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
@@ -277,9 +277,9 @@ void compare_bitvector(const line& inst, uint8_t expected, const word& op) {
     if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
     const string& optype = Operand_type_name.at(i);
     if ((bitvector & 0x1) > (expected & 0x1))
-      raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "'" << maybe_op_name << ": unexpected " << optype << " operand\n" << end();
     else
-      raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": missing " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "'" << maybe_op_name << ": missing " << optype << " operand\n" << end();
     // continue giving all errors for a single instruction
   }
   // ignore settings in any unused bits
@@ -395,7 +395,7 @@ void check_operands_modrm(const line& inst, const word& op) {
 
 // same as compare_bitvector, with one additional exception for modrm-based
 // instructions: they may use an extra displacement on occasion
-void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op) {
+void compare_bitvector_modrm(const line& inst, uint8_t expected, const string& maybe_op_name) {
   if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
   uint8_t bitvector = compute_expected_operand_bitvector(inst);
   if (trace_contains_errors()) return;  // duplicate operand type
@@ -421,9 +421,9 @@ void compare_bitvector_modrm(const line& inst, uint8_t expected, const word& op)
     if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
     const string& optype = Operand_type_name.at(i);
     if ((bitvector & 0x1) > (expected & 0x1))
-      raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": unexpected " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "'" << maybe_op_name << ": unexpected " << optype << " operand\n" << end();
     else
-      raise << "'" << to_string(inst) << "'" << maybe_name(op) << ": missing " << optype << " operand\n" << end();
+      raise << "'" << to_string(inst) << "'" << maybe_op_name << ": missing " << optype << " operand\n" << end();
     // continue giving all errors for a single instruction
   }
   // ignore settings in any unused bits
@@ -647,25 +647,7 @@ void check_operands_0f(const line& inst, const word& op) {
   uint8_t expected_bitvector = get(Permitted_operands_0f, op.data);
   if (HAS(expected_bitvector, MODRM))
     check_operands_modrm(inst, op);
-  compare_bitvector_0f(inst, CLEAR(expected_bitvector, MODRM), op);
-}
-
-void compare_bitvector_0f(const line& inst, uint8_t expected, const word& op) {
-  if (all_hex_bytes(inst) && has_operands(inst)) return;  // deliberately programming in raw hex; we'll raise a warning elsewhere
-  uint8_t bitvector = compute_expected_operand_bitvector(inst);
-  if (trace_contains_errors()) return;  // duplicate operand type
-  if (bitvector == expected) return;  // all good with this instruction
-  for (int i = 0;  i < NUM_OPERAND_TYPES;  ++i, bitvector >>= 1, expected >>= 1) {
-//?     cerr << "comparing " << HEXBYTE << NUM(bitvector) << " with " << NUM(expected) << '\n';
-    if ((bitvector & 0x1) == (expected & 0x1)) continue;  // all good with this operand
-    const string& optype = Operand_type_name.at(i);
-    if ((bitvector & 0x1) > (expected & 0x1))
-      raise << "'" << to_string(inst) << "'" << maybe_name_0f(op) << ": unexpected " << optype << " operand\n" << end();
-    else
-      raise << "'" << to_string(inst) << "'" << maybe_name_0f(op) << ": missing " << optype << " operand\n" << end();
-    // continue giving all errors for a single instruction
-  }
-  // ignore settings in any unused bits
+  compare_bitvector(inst, CLEAR(expected_bitvector, MODRM), maybe_name_0f(op));
 }
 
 string maybe_name_0f(const word& op) {
