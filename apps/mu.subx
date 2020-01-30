@@ -3930,14 +3930,13 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> 
     89/<- %ecx 0/r32/eax
     #
     (allocate *(ebp+8) *Var-size)  # => eax
+    (zero-out %eax *Var-size)
     89/<- *eax 1/r32/ecx  # Var-name
     89/<- %ecx 0/r32/eax
     (allocate *(ebp+8) *Tree-size)  # => eax
+    (zero-out %eax *Tree-size)  # default type is 'literal'
     89/<- *(ecx+4) 0/r32/eax  # Var-type
     89/<- %eax 1/r32/ecx
-    c7 0/subop/copy *(eax+8) 0/imm32  # Var-block
-    c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-stack-offset
-    c7 0/subop/copy *(eax+0x10) 0/imm32  # Var-register
 $new-literal-integer:end:
     # . restore registers
     59/pop-to-ecx
