@@ -221,6 +221,7 @@
 #     subx-rm32: enum arg-location
 #     subx-r32: enum arg-location
 #     subx-imm32: enum arg-location
+#     subx-disp32: enum arg-location
 #     output-is-write-only: boolean
 #   arg-location: enum
 #     0 means none
@@ -278,12 +279,14 @@ Primitive-subx-r32:  # enum arg-location
   0x14/imm32
 Primitive-subx-imm32:  # enum arg-location
   0x18/imm32
-Primitive-write-only-output:  # boolean
+Primitive-subx-disp32:  # enum arg-location  -- only for branches
   0x1c/imm32
-Primitive-next:  # (handle function)
+Primitive-output-is-write-only:  # boolean
   0x20/imm32
+Primitive-next:  # (handle function)
+  0x24/imm32
 Primitive-size:  # (addr int)
-  0x24/imm32/36
+  0x28/imm32/36
 
 Stmt-tag:
   0/imm32
@@ -4426,6 +4429,7 @@ _Primitive-inc-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-inc-ecx/imm32/next
 _Primitive-inc-ecx:
@@ -4437,6 +4441,7 @@ _Primitive-inc-ecx:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-inc-edx/imm32/next
 _Primitive-inc-edx:
@@ -4448,6 +4453,7 @@ _Primitive-inc-edx:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-inc-ebx/imm32/next
 _Primitive-inc-ebx:
@@ -4459,6 +4465,7 @@ _Primitive-inc-ebx:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-inc-esi/imm32/next
 _Primitive-inc-esi:
@@ -4470,6 +4477,7 @@ _Primitive-inc-esi:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-inc-edi/imm32/next
 _Primitive-inc-edi:
@@ -4481,6 +4489,7 @@ _Primitive-inc-edi:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-eax/imm32/next
 _Primitive-dec-eax:
@@ -4492,6 +4501,7 @@ _Primitive-dec-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-ecx/imm32/next
 _Primitive-dec-ecx:
@@ -4503,6 +4513,7 @@ _Primitive-dec-ecx:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-edx/imm32/next
 _Primitive-dec-edx:
@@ -4514,6 +4525,7 @@ _Primitive-dec-edx:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-ebx/imm32/next
 _Primitive-dec-ebx:
@@ -4525,6 +4537,7 @@ _Primitive-dec-ebx:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-esi/imm32/next
 _Primitive-dec-esi:
@@ -4536,6 +4549,7 @@ _Primitive-dec-esi:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-edi/imm32/next
 _Primitive-dec-edi:
@@ -4547,6 +4561,7 @@ _Primitive-dec-edi:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-inc-mem/imm32/next
 _Primitive-inc-mem:
@@ -4558,6 +4573,7 @@ _Primitive-inc-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-inc-reg/imm32/next
 _Primitive-inc-reg:
@@ -4569,6 +4585,7 @@ _Primitive-inc-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-mem/imm32/next
 _Primitive-dec-mem:
@@ -4580,6 +4597,7 @@ _Primitive-dec-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-dec-reg/imm32/next
 _Primitive-dec-reg:
@@ -4591,6 +4609,7 @@ _Primitive-dec-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-add-to-eax/imm32/next
 # - add
@@ -4603,6 +4622,7 @@ _Primitive-add-to-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-add-reg-to-reg/imm32/next
 _Primitive-add-reg-to-reg:
@@ -4614,6 +4634,7 @@ _Primitive-add-reg-to-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-add-reg-to-mem/imm32/next
 _Primitive-add-reg-to-mem:
@@ -4625,6 +4646,7 @@ _Primitive-add-reg-to-mem:
     1/imm32/rm32-is-first-inout
     2/imm32/r32-is-second-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-add-mem-to-reg/imm32/next
 _Primitive-add-mem-to-reg:
@@ -4636,6 +4658,7 @@ _Primitive-add-mem-to-reg:
     1/imm32/rm32-is-first-inout
     3/imm32/r32-is-first-output
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-add-lit-to-reg/imm32/next
 _Primitive-add-lit-to-reg:
@@ -4647,6 +4670,7 @@ _Primitive-add-lit-to-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-add-lit-to-mem/imm32/next
 _Primitive-add-lit-to-mem:
@@ -4658,6 +4682,7 @@ _Primitive-add-lit-to-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     2/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-subtract-from-eax/imm32/next
 # - subtract
@@ -4670,6 +4695,7 @@ _Primitive-subtract-from-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-subtract-reg-from-reg/imm32/next
 _Primitive-subtract-reg-from-reg:
@@ -4681,6 +4707,7 @@ _Primitive-subtract-reg-from-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-subtract-reg-from-mem/imm32/next
 _Primitive-subtract-reg-from-mem:
@@ -4692,6 +4719,7 @@ _Primitive-subtract-reg-from-mem:
     1/imm32/rm32-is-first-inout
     2/imm32/r32-is-second-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-subtract-mem-from-reg/imm32/next
 _Primitive-subtract-mem-from-reg:
@@ -4703,6 +4731,7 @@ _Primitive-subtract-mem-from-reg:
     1/imm32/rm32-is-first-inout
     3/imm32/r32-is-first-output
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-subtract-lit-from-reg/imm32/next
 _Primitive-subtract-lit-from-reg:
@@ -4714,6 +4743,7 @@ _Primitive-subtract-lit-from-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-subtract-lit-from-mem/imm32/next
 _Primitive-subtract-lit-from-mem:
@@ -4725,6 +4755,7 @@ _Primitive-subtract-lit-from-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     2/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-and-with-eax/imm32/next
 # - and
@@ -4737,6 +4768,7 @@ _Primitive-and-with-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-and-reg-with-reg/imm32/next
 _Primitive-and-reg-with-reg:
@@ -4748,6 +4780,7 @@ _Primitive-and-reg-with-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-and-reg-with-mem/imm32/next
 _Primitive-and-reg-with-mem:
@@ -4759,6 +4792,7 @@ _Primitive-and-reg-with-mem:
     1/imm32/rm32-is-first-inout
     2/imm32/r32-is-second-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-and-mem-with-reg/imm32/next
 _Primitive-and-mem-with-reg:
@@ -4770,6 +4804,7 @@ _Primitive-and-mem-with-reg:
     1/imm32/rm32-is-first-inout
     3/imm32/r32-is-first-output
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-and-lit-with-reg/imm32/next
 _Primitive-and-lit-with-reg:
@@ -4781,6 +4816,7 @@ _Primitive-and-lit-with-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-and-lit-with-mem/imm32/next
 _Primitive-and-lit-with-mem:
@@ -4792,6 +4828,7 @@ _Primitive-and-lit-with-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     2/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-or-with-eax/imm32/next
 # - or
@@ -4804,6 +4841,7 @@ _Primitive-or-with-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-or-reg-with-reg/imm32/next
 _Primitive-or-reg-with-reg:
@@ -4815,6 +4853,7 @@ _Primitive-or-reg-with-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-or-reg-with-mem/imm32/next
 _Primitive-or-reg-with-mem:
@@ -4826,6 +4865,7 @@ _Primitive-or-reg-with-mem:
     1/imm32/rm32-is-first-inout
     2/imm32/r32-is-second-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-or-mem-with-reg/imm32/next
 _Primitive-or-mem-with-reg:
@@ -4837,6 +4877,7 @@ _Primitive-or-mem-with-reg:
     1/imm32/rm32-is-first-inout
     3/imm32/r32-is-first-output
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-or-lit-with-reg/imm32/next
 _Primitive-or-lit-with-reg:
@@ -4848,6 +4889,7 @@ _Primitive-or-lit-with-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-or-lit-with-mem/imm32/next
 _Primitive-or-lit-with-mem:
@@ -4859,6 +4901,7 @@ _Primitive-or-lit-with-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     2/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-xor-with-eax/imm32/next
 # - xor
@@ -4871,6 +4914,7 @@ _Primitive-xor-with-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-xor-reg-with-reg/imm32/next
 _Primitive-xor-reg-with-reg:
@@ -4882,6 +4926,7 @@ _Primitive-xor-reg-with-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-xor-reg-with-mem/imm32/next
 _Primitive-xor-reg-with-mem:
@@ -4893,6 +4938,7 @@ _Primitive-xor-reg-with-mem:
     1/imm32/rm32-is-first-inout
     2/imm32/r32-is-second-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-xor-mem-with-reg/imm32/next
 _Primitive-xor-mem-with-reg:
@@ -4904,6 +4950,7 @@ _Primitive-xor-mem-with-reg:
     1/imm32/rm32-is-first-inout
     3/imm32/r32-is-first-output
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-xor-lit-with-reg/imm32/next
 _Primitive-xor-lit-with-reg:
@@ -4915,6 +4962,7 @@ _Primitive-xor-lit-with-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-xor-lit-with-mem/imm32/next
 _Primitive-xor-lit-with-mem:
@@ -4926,6 +4974,7 @@ _Primitive-xor-lit-with-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     2/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-copy-to-eax/imm32/next
 # - copy
@@ -4938,6 +4987,7 @@ _Primitive-copy-to-eax:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-to-ecx/imm32/next
 _Primitive-copy-to-ecx:
@@ -4949,6 +4999,7 @@ _Primitive-copy-to-ecx:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-to-edx/imm32/next
 _Primitive-copy-to-edx:
@@ -4960,6 +5011,7 @@ _Primitive-copy-to-edx:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-to-ebx/imm32/next
 _Primitive-copy-to-ebx:
@@ -4971,6 +5023,7 @@ _Primitive-copy-to-ebx:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-to-esi/imm32/next
 _Primitive-copy-to-esi:
@@ -4982,6 +5035,7 @@ _Primitive-copy-to-esi:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-to-edi/imm32/next
 _Primitive-copy-to-edi:
@@ -4993,6 +5047,7 @@ _Primitive-copy-to-edi:
     0/imm32/no-rm32
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-reg-to-reg/imm32/next
 _Primitive-copy-reg-to-reg:
@@ -5004,6 +5059,7 @@ _Primitive-copy-reg-to-reg:
     3/imm32/rm32-is-first-output
     1/imm32/r32-is-first-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-reg-to-mem/imm32/next
 _Primitive-copy-reg-to-mem:
@@ -5015,6 +5071,7 @@ _Primitive-copy-reg-to-mem:
     1/imm32/rm32-is-first-inout
     2/imm32/r32-is-second-inout
     0/imm32/no-imm32
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-mem-to-reg/imm32/next
 _Primitive-copy-mem-to-reg:
@@ -5026,6 +5083,7 @@ _Primitive-copy-mem-to-reg:
     1/imm32/rm32-is-first-inout
     3/imm32/r32-is-first-output
     0/imm32/no-imm32
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-lit-to-reg/imm32/next
 _Primitive-copy-lit-to-reg:
@@ -5037,6 +5095,7 @@ _Primitive-copy-lit-to-reg:
     3/imm32/rm32-is-first-output
     0/imm32/no-r32
     1/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-copy-lit-to-mem/imm32/next
 _Primitive-copy-lit-to-mem:
@@ -5048,8 +5107,10 @@ _Primitive-copy-lit-to-mem:
     1/imm32/rm32-is-first-inout
     0/imm32/no-r32
     2/imm32/imm32-is-first-inout
+    0/imm32/no-disp32
     1/imm32/output-is-write-only
     _Primitive-break-if-addr</imm32/next
+# - branches
 _Primitive-break-if-addr<:
     "break-if-addr<"/imm32/name
     0/imm32/inouts
@@ -5058,6 +5119,7 @@ _Primitive-break-if-addr<:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if-addr>=/imm32/next
 _Primitive-break-if-addr>=:
@@ -5068,6 +5130,7 @@ _Primitive-break-if-addr>=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if-=/imm32/next
 _Primitive-break-if-=:
@@ -5078,6 +5141,7 @@ _Primitive-break-if-=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if-!=/imm32/next
 _Primitive-break-if-!=:
@@ -5088,6 +5152,7 @@ _Primitive-break-if-!=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if-addr<=/imm32/next
 _Primitive-break-if-addr<=:
@@ -5098,6 +5163,7 @@ _Primitive-break-if-addr<=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if-addr>/imm32/next
 _Primitive-break-if-addr>:
@@ -5108,6 +5174,7 @@ _Primitive-break-if-addr>:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if-</imm32/next
 _Primitive-break-if-<:
@@ -5118,6 +5185,7 @@ _Primitive-break-if-<:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if->=/imm32/next
 _Primitive-break-if->=:
@@ -5128,6 +5196,7 @@ _Primitive-break-if->=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if-<=/imm32/next
 _Primitive-break-if-<=:
@@ -5138,6 +5207,7 @@ _Primitive-break-if-<=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-break-if->/imm32/next
 _Primitive-break-if->:
@@ -5148,6 +5218,7 @@ _Primitive-break-if->:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-addr</imm32/next
 _Primitive-loop-if-addr<:
@@ -5158,6 +5229,7 @@ _Primitive-loop-if-addr<:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-addr>=/imm32/next
 _Primitive-loop-if-addr>=:
@@ -5168,6 +5240,7 @@ _Primitive-loop-if-addr>=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-=/imm32/next
 _Primitive-loop-if-=:
@@ -5178,6 +5251,7 @@ _Primitive-loop-if-=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-!=/imm32/next
 _Primitive-loop-if-!=:
@@ -5188,6 +5262,7 @@ _Primitive-loop-if-!=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-addr<=/imm32/next
 _Primitive-loop-if-addr<=:
@@ -5198,6 +5273,7 @@ _Primitive-loop-if-addr<=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-addr>/imm32/next
 _Primitive-loop-if-addr>:
@@ -5208,6 +5284,7 @@ _Primitive-loop-if-addr>:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-</imm32/next
 _Primitive-loop-if-<:
@@ -5218,6 +5295,7 @@ _Primitive-loop-if-<:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if->=/imm32/next
 _Primitive-loop-if->=:
@@ -5228,6 +5306,7 @@ _Primitive-loop-if->=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if-<=/imm32/next
 _Primitive-loop-if-<=:
@@ -5238,6 +5317,7 @@ _Primitive-loop-if-<=:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop-if->/imm32/next
 _Primitive-loop-if->:
@@ -5248,6 +5328,7 @@ _Primitive-loop-if->:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     _Primitive-loop/imm32/next  # we probably don't need an unconditional break
 _Primitive-loop:
@@ -5258,6 +5339,7 @@ _Primitive-loop:
     0/imm32/no-rm32
     0/imm32/no-r32
     0/imm32/no-imm32
+    0/imm32/no-disp32
     0/imm32/no-output
     0/imm32/next
 
@@ -5717,7 +5799,7 @@ $find-matching-primitive:loop:
       }
 $find-matching-primitive:next-primitive:
       # curr = curr->next
-      8b/-> *(ecx+0x20) 1/r32/ecx  # Primitive-next
+      8b/-> *(ecx+0x24) 1/r32/ecx  # Primitive-next
       e9/jump loop/disp32
     }
     # return null
@@ -6011,6 +6093,7 @@ test-emit-subx-statement-primitive:
     # var primitives/ebx: primitive
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 1/imm32/rm32-is-first-inout
@@ -6095,6 +6178,7 @@ test-emit-subx-statement-primitive-register:
     # var primitives/ebx: primitive
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 3/imm32/rm32-in-first-output
@@ -6182,6 +6266,7 @@ test-emit-subx-statement-select-primitive:
     # var primitive1/ebx: primitive
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 3/imm32/rm32-in-first-output
@@ -6193,6 +6278,7 @@ test-emit-subx-statement-select-primitive:
     # var primitives/ebx: primitive
     53/push-ebx/next
     68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 1/imm32/rm32-is-first-inout
@@ -6280,6 +6366,7 @@ test-emit-subx-statement-select-primitive-2:
     # var primitive1/ebx: primitive
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 3/imm32/rm32-in-first-output
@@ -6291,6 +6378,7 @@ test-emit-subx-statement-select-primitive-2:
     # var primitives/ebx: primitive
     53/push-ebx/next
     68/push 0/imm32/output-is-write-only
+    68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 1/imm32/rm32-is-first-inout
