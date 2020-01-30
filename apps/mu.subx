@@ -3591,20 +3591,27 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)) ->
     (slice-empty? %esi)  # => eax
     3d/compare-eax-and 0/imm32
     0f 85/jump-if-!= $lookup-var-or-literal:abort/disp32
-    # var ecx: byte = *name->start
+    # var c/ecx: byte = *name->start
     8b/-> *esi 1/r32/ecx
     8a/copy-byte *ecx 1/r32/CL
     81 4/subop/and %ecx 0xff/imm32
-    # if is-decimal-digit?(*name->start) return new var(name)
-    (is-decimal-digit? %ecx)  # => eax
-    81 7/subop/compare %eax 0/imm32
+    # if is-decimal-digit?(c) return new var(name)
     {
+      (is-decimal-digit? %ecx)  # => eax
+      81 7/subop/compare %eax 0/imm32
       74/jump-if-= break/disp8
       (new-literal-integer Heap %esi)  # => eax
+      eb/jump $lookup-var-or-literal:end/disp8
+    }
+    # else if (c == '"') return new var(name)
+    {
+      81 7/subop/compare %ecx 0x22/imm32/dquote
+      75/jump-if-!= break/disp8
+      (new-literal-string Heap %esi)  # => eax
+      eb/jump $lookup-var-or-literal:end/disp8
     }
     # otherwise return lookup-var(name, vars)
     {
-      75/jump-if-!= break/disp8
       (lookup-var %esi *(ebp+0xc))  # => eax
     }
 $lookup-var-or-literal:end:
@@ -3928,14 +3935,16 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> 
     # var s/ecx: (addr array byte)
     (slice-to-string Heap *(ebp+0xc))  # => eax
     89/<- %ecx 0/r32/eax
-    #
+    # result/ecx = new var(s)
     (allocate *(ebp+8) *Var-size)  # => eax
     (zero-out %eax *Var-size)
     89/<- *eax 1/r32/ecx  # Var-name
     89/<- %ecx 0/r32/eax
+    # result->type = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)  # default type is 'literal'
     89/<- *(ecx+4) 0/r32/eax  # Var-type
+    # move result to eax
     89/<- %eax 1/r32/ecx
 $new-literal-integer:end:
     # . restore registers
@@ -3955,6 +3964,34 @@ $new-literal-integer:abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+new-literal-string:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var s/ecx: (addr array byte)
+    (slice-to-string Heap *(ebp+0xc))  # => eax
+    89/<- %ecx 0/r32/eax
+    # result/ecx = new var(s)
+    (allocate *(ebp+8) *Var-size)  # => eax
+    (zero-out %eax)
+    89/<- *eax 1/r32/ecx  # Var-name
+    89/<- %ecx 0/r32/eax
+    # result->type = new type()
+    (allocate *(ebp+8) *Tree-size)  # => eax
+    (zero-out %eax)  # default type is 'literal'
+    89/<- *(ecx+4) 0/r32/eax  # Var-type
+    # move result to eax
+    89/<- %eax 1/r32/ecx
+$new-literal-string:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 new-label:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
     # . prologue
