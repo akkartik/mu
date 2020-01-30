@@ -84,7 +84,7 @@ syntax keyword muControl start-running
 syntax keyword muControl call-with-continuation-mark return-continuation-until-mark
 highlight link muControl Identifier
 
-syntax match muRecipe "->"
+syntax match muRecipe " -> "
 syntax match muRecipe "^recipe\>\|^def\>\|^before\>\|^after\>\| -> "
 syntax keyword muRecipe recipe! def! function fn
 highlight link muRecipe PreProc
