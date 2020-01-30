@@ -132,7 +132,7 @@
 #
 #   A named block contains:
 #     tag: 4
-#     name: (handle array byte)
+#     name: (handle array byte) -- starting with '$'
 #     statements: (handle list statement)
 
 # == Translation: managing the stack
@@ -1157,7 +1157,7 @@ test-convert-function-with-local-var-in-block:
 test-convert-function-with-local-var-in-named-block:
     # empty function decl => function prologue and epilogue
     #   fn foo {
-    #     bar: {
+    #     $bar: {
     #       var x: int
     #       increment x
     #     }
@@ -1169,12 +1169,12 @@ test-convert-function-with-local-var-in-named-block:
     #     89/<- %ebp 4/r32/esp
     #     {
     #       {
-    #     bar:loop:
+    #     $bar:loop:
     #         68/push 0/imm32
     #         ff 0/subop/increment *(ebp-4)
     #         81 0/subop/add %esp 4/imm32
     #       }
-    #     bar:break:
+    #     $bar:break:
     #     }
     #     # . epilogue
     #     89/<- %esp 5/r32/ebp
@@ -1190,7 +1190,7 @@ test-convert-function-with-local-var-in-named-block:
     (clear-stream $_test-output-buffered-file->buffer)
     #
     (write _test-input-stream "fn foo {\n")
-    (write _test-input-stream "  bar: {\n")
+    (write _test-input-stream "  $bar: {\n")
     (write _test-input-stream "    var x: int\n")
     (write _test-input-stream "    increment x\n")
     (write _test-input-stream "  }\n")
@@ -1211,12 +1211,12 @@ test-convert-function-with-local-var-in-named-block:
     (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-named-block/3")
     (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-local-var-in-named-block/4")
     (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-local-var-in-named-block/5")
-    (check-next-stream-line-equal _test-output-stream "bar:loop:"             "F - test-convert-function-with-local-var-in-named-block/6")
+    (check-next-stream-line-equal _test-output-stream "$bar:loop:"            "F - test-convert-function-with-local-var-in-named-block/6")
     (check-next-stream-line-equal _test-output-stream "68/push 0/imm32"       "F - test-convert-function-with-local-var-in-named-block/7")
     (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-named-block/8")
     (check-next-stream-line-equal _test-output-stream "81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-named-block/9")
     (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-local-var-in-named-block/10")
-    (check-next-stream-line-equal _test-output-stream "bar:break:"            "F - test-convert-function-with-local-var-in-named-block/11")
+    (check-next-stream-line-equal _test-output-stream "$bar:break:"           "F - test-convert-function-with-local-var-in-named-block/11")
     (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-local-var-in-named-block/12")
     (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-local-var-in-named-block/13")
     (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-named-block/14")
@@ -1297,6 +1297,85 @@ test-convert-function-with-branches-in-block:
     (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-in-block/14")
     (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-branches-in-block/15")
     (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-branches-in-block/16")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-branches-in-named-block:
+    # empty function decl => function prologue and epilogue
+    #   fn foo x: int {
+    #     $bar: {
+    #       break-if->= $bar
+    #       loop-if-addr< $bar
+    #       increment x
+    #       loop
+    #     }
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       {
+    #   $bar:loop:
+    #         0f 8d/jump-if->= $bar:break/disp32
+    #         0f 82/jump-if-addr< $bar:loop/disp32
+    #         ff 0/subop/increment *(ebp+8)
+    #         e9/jump loop/disp32
+    #       }
+    #   $bar:break:
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo x: int {\n")
+    (write _test-input-stream "  $bar: {\n")
+    (write _test-input-stream "    break-if->= $bar\n")
+    (write _test-input-stream "    loop-if-addr< $bar\n")
+    (write _test-input-stream "    increment x\n")
+    (write _test-input-stream "    loop\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-with-branches-in-named-block/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-with-branches-in-named-block/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-with-branches-in-named-block/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-branches-in-named-block/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-branches-in-named-block/4")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-branches-in-named-block/5")
+    (check-next-stream-line-equal _test-output-stream "$bar:loop:"            "F - test-convert-function-with-branches-in-named-block/6")
+    (check-next-stream-line-equal _test-output-stream "0f 8d/jump-if->= $bar:break/disp32"  "F - test-convert-function-with-branches-in-named-block/7")
+    (check-next-stream-line-equal _test-output-stream "0f 82/jump-if-addr< $bar:loop/disp32"  "F - test-convert-function-with-branches-in-named-block/8")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-branches-in-named-block/9")
+    (check-next-stream-line-equal _test-output-stream "e9/jump loop/disp32"   "F - test-convert-function-with-branches-in-named-block/10")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-branches-in-named-block/11")
+    (check-next-stream-line-equal _test-output-stream "$bar:break:"           "F - test-convert-function-with-branches-in-named-block/12")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-branches-in-named-block/13")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-branches-in-named-block/14")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-in-named-block/15")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-branches-in-named-block/16")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-branches-in-named-block/17")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3401,7 +3480,25 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       (slice-equal? %ecx "<-")
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= $add-operation-and-inputs-to-stmt:abort/disp32
-      #
+      # if (name starts with "$") treat it as a literal
+      {
+        # var eax: byte = name[0]
+        8b/-> *ecx 0/r32/eax
+        8a/copy-byte *eax 0/r32/AL
+        81 4/subop/and %eax 0xff/imm32
+        # if (eax != '$') goto next condition
+        3d/compare-eax-and 0x24/imm32/dollar
+        75/jump-if-!= break/disp8
+        # var eax: (handle var)
+        (new-label Heap %ecx)  # => eax
+        # stmt->inouts = append(eax, stmt->inouts)
+        (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
+        89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts
+        # continue
+        e9/jump $add-operation-and-inputs-to-stmt:read-inouts/disp32
+      }
+$add-operation-and-inputs-to-stmt:regular-inout:
+      # otherwise
       (lookup-var-or-literal %ecx *(ebp+0x10))  # => eax
       (append-list Heap %eax *(edi+8))  # Stmt1-inouts or Regvardef-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
@@ -3860,6 +3957,33 @@ $new-literal-integer:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+new-label:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var s/ecx: (addr array byte)
+    (slice-to-string Heap *(ebp+0xc))  # => eax
+    89/<- %ecx 0/r32/eax
+    #
+    (allocate *(ebp+8) *Var-size)  # => eax
+    89/<- *eax 1/r32/ecx  # Var-name
+    89/<- %ecx 0/r32/eax
+    (allocate *(ebp+8) *Tree-size)  # => eax
+    89/<- *(ecx+4) 0/r32/eax  # Var-type
+    89/<- %eax 1/r32/ecx
+    c7 0/subop/copy *(eax+8) 0/imm32  # Var-block
+    c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-stack-offset
+    c7 0/subop/copy *(eax+0x10) 0/imm32  # Var-register
+$new-label:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 new-block:  # ad: (addr allocation-descriptor), data: (handle list statement) -> result/eax: (handle statement)
     # . prologue
     55/push-ebp
@@ -4227,7 +4351,7 @@ $emit-subx-stmt-list:regvardef:
         8b/-> *eax 0/r32/eax
         # ensure that output is in a register
         81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
-        0f 84/jump-if-equal $emit-subx-stmt-list:abort-regvardef-without-register/disp32
+        0f 84/jump-if-= $emit-subx-stmt-list:abort-regvardef-without-register/disp32
         # emit spill
         (write-buffered *(ebp+8) "ff 6/subop/push %")
         (write-buffered *(ebp+8) *(eax+0x10))
@@ -4341,19 +4465,21 @@ emit-subx-statement:  # out: (addr buffered-file), stmt: (handle statement), pri
     51/push-ecx
     # if stmt matches a primitive, emit it
     {
-$emit-subx-statement:primitive:
+$emit-subx-statement:check-for-primitive:
       (find-matching-primitive *(ebp+0x10) *(ebp+0xc))  # primitives, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
+$emit-subx-statement:primitive:
       (emit-subx-primitive *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-statement:end/disp32
     }
     # else if stmt matches a function, emit a call to it
     {
-$emit-subx-statement:call:
+$emit-subx-statement:check-for-call:
       (find-matching-function *(ebp+0x14) *(ebp+0xc))  # functions, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
+$emit-subx-statement:call:
       (emit-subx-call *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-statement:end/disp32
     }
@@ -4370,8 +4496,9 @@ $emit-subx-statement:end:
 
 $emit-subx-statement:abort:
     # error("couldn't translate '" stmt "'\n")
-    (write-buffered Stderr "couldn't translate '")
-#?     (emit-string Stderr *(ebp+0xc))  # TODO
+    (write-buffered Stderr "couldn't translate an instruction with operation '")
+    8b/-> *(ebp+0xc) 0/r32/eax
+    (write-buffered Stderr *(eax+4))  # Stmt1-operation
     (write-buffered Stderr "'\n")
     (flush Stderr)
     # . syscall(exit, 1)
@@ -5341,6 +5468,238 @@ _Primitive-loop:
     0/imm32/no-imm32
     0/imm32/no-disp32
     0/imm32/no-output
+    _Primitive-break-if-addr<-named/imm32/next
+# - branches to named blocks
+_Primitive-break-if-addr<-named:
+    "break-if-addr<"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 82/jump-if-addr<"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if-addr>=-named/imm32/next
+_Primitive-break-if-addr>=-named:
+    "break-if-addr>="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 83/jump-if-addr>="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if-=-named/imm32/next
+_Primitive-break-if-=-named:
+    "break-if-="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 84/jump-if-="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if-!=-named/imm32/next
+_Primitive-break-if-!=-named:
+    "break-if-!="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 85/jump-if-!="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if-addr<=-named/imm32/next
+_Primitive-break-if-addr<=-named:
+    "break-if-addr<="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 86/jump-if-addr<="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if-addr>-named/imm32/next
+_Primitive-break-if-addr>-named:
+    "break-if-addr>"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 87/jump-if-addr>"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if-<-named/imm32/next
+_Primitive-break-if-<-named:
+    "break-if-<"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8c/jump-if-<"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if->=-named/imm32/next
+_Primitive-break-if->=-named:
+    "break-if->="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8d/jump-if->="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if-<=-named/imm32/next
+_Primitive-break-if-<=-named:
+    "break-if-<="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8e/jump-if-<="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-break-if->-named/imm32/next
+_Primitive-break-if->-named:
+    "break-if->"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8f/jump-if->"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-addr<-named/imm32/next
+_Primitive-loop-if-addr<-named:
+    "loop-if-addr<"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 82/jump-if-addr<"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-addr>=-named/imm32/next
+_Primitive-loop-if-addr>=-named:
+    "loop-if-addr>="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 83/jump-if-addr>="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-=-named/imm32/next
+_Primitive-loop-if-=-named:
+    "loop-if-="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 84/jump-if-="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-!=-named/imm32/next
+_Primitive-loop-if-!=-named:
+    "loop-if-!="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 85/jump-if-!="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-addr<=-named/imm32/next
+_Primitive-loop-if-addr<=-named:
+    "loop-if-addr<="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 86/jump-if-addr<="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-addr>-named/imm32/next
+_Primitive-loop-if-addr>-named:
+    "loop-if-addr>"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 87/jump-if-addr>"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-<-named/imm32/next
+_Primitive-loop-if-<-named:
+    "loop-if-<"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8c/jump-if-<"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if->=-named/imm32/next
+_Primitive-loop-if->=-named:
+    "loop-if->="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8d/jump-if->="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if-<=-named/imm32/next
+_Primitive-loop-if-<=-named:
+    "loop-if-<="/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8e/jump-if-<="/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-if->-named/imm32/next
+_Primitive-loop-if->-named:
+    "loop-if->"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "0f 8f/jump-if->"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
+    _Primitive-loop-named/imm32/next  # we probably don't need an unconditional break
+_Primitive-loop-named:
+    "loop"/imm32/name
+    Single-lit-var/imm32/inouts
+    0/imm32/outputs
+    "e9/jump"/imm32/subx-name
+    0/imm32/no-rm32
+    0/imm32/no-r32
+    0/imm32/no-imm32
+    1/imm32/disp32-is-first-inout
+    0/imm32/no-output
     0/imm32/next
 
 Single-int-var-on-stack:
@@ -5476,6 +5835,8 @@ emit-subx-primitive:  # out: (addr buffered-file), stmt: (handle statement), pri
     (emit-subx-r32 *(ebp+8) *(ecx+0x14) *(ebp+0xc))  # out, Primitive-subx-r32, stmt
     # emit imm32 if necessary
     (emit-subx-imm32 *(ebp+8) *(ecx+0x18) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
+    # emit disp32 if necessary
+    (emit-subx-disp32 *(ebp+8) *(ecx+0x1c) *(ebp+0xc))  # out, Primitive-subx-disp32, stmt
     (write-buffered *(ebp+8) Newline)
 $emit-subx-primitive:end:
     # . restore registers
@@ -5607,6 +5968,47 @@ emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle st
     (write-buffered *(ebp+8) *eax)  # Var-name
     (write-buffered *(ebp+8) "/imm32")
 $emit-subx-imm32:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (handle statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # if (location == 0) return
+    81 7/subop/compare *(ebp+0xc) 0/imm32
+    0f 84/jump-if-= $emit-subx-disp32:end/disp32
+    #
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
+    (write-buffered *(ebp+8) Space)
+    (write-buffered *(ebp+8) *eax)  # Var-name
+    # hack: if instruction operation starts with "break", emit ":break"
+    # var name/ecx: (addr array byte) = stmt->operation
+    8b/-> *(ebp+0x10) 0/r32/eax
+    8b/-> *(eax+4) 1/r32/ecx
+    {
+      (string-starts-with? %ecx "break")  # => eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= break/disp8
+      (write-buffered *(ebp+8) ":break")
+    }
+    # hack: if instruction operation starts with "loop", emit ":loop"
+    {
+      (string-starts-with? %ecx "loop")  # => eax
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= break/disp8
+      (write-buffered *(ebp+8) ":loop")
+    }
+    (write-buffered *(ebp+8) "/disp32")
+$emit-subx-disp32:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax

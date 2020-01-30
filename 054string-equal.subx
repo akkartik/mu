@@ -16,10 +16,52 @@ Entry:  # run all tests
 string-equal?:  # s: (addr array byte), benchmark: (addr array byte) -> eax: boolean
     # pseudocode:
     #   if (s->length != benchmark->length) return false
+    #   return string-starts-with?(s, benchmark)
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    56/push-esi
+    57/push-edi
+    # esi = s
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # edi = benchmark
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
+    # ecx = s->length
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+$string-equal?:lengths:
+    # if (ecx != benchmark->length) return false
+    39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # compare *edi and ecx
+    b8/copy-to-eax  0/imm32/false
+    75/jump-if-!=  $string-equal?:end/disp8
+$string-equal?:contents:
+    # string-starts-with?(s, benchmark)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+0xc)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  string-starts-with?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$string-equal?:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+string-starts-with?:  # s: (addr array byte), benchmark: (addr array byte) -> eax: boolean
+    # pseudocode:
+    #   if (s->length < benchmark->length) return false
     #   currs = s->data
     #   currb = benchmark->data
-    #   maxs = &s->data[s->length]
-    #   while currs < maxs
+    #   maxb = &benchmark->data[benchmark->length]
+    #   while currb < maxb
     #     c1 = *currs
     #     c2 = *currb
     #     if (c1 != c2) return false
@@ -45,44 +87,44 @@ string-equal?:  # s: (addr array byte), benchmark: (addr array byte) -> eax: boo
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # edi = benchmark
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
-    # ecx = s->length
-    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-$string-equal?:lengths:
-    # if (ecx != benchmark->length) return false
-    39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # compare *edi and ecx
-    75/jump-if-!=  $string-equal?:false/disp8
+    # var blen/ecx: int = benchmark->length
+    8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
+$string-starts-with?:lengths:
+    # if (s->length < blen) return false
+    39/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare *esi with ecx
+    7c/jump-if-<  $string-starts-with?:false/disp8
     # var currs/esi: (addr byte) = s->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
-    # var maxs/ecx: (addr byte) = &s->data[s->length]
-    01/add                          3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # add esi to ecx
     # var currb/edi: (addr byte) = benchmark->data
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
+    # var maxb/ecx: (addr byte) = &benchmark->data[benchmark->length]
+    01/add                          3/mod/direct    1/rm32/ecx    .           .             .           7/r32/edi   .               .                 # add edi to ecx
     # var c1/eax: byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     # var c2/edx: byte = 0
     31/xor                          3/mod/direct    2/rm32/edx    .           .             .           2/r32/edx   .               .                 # clear edx
-$string-equal?:loop:
+$string-starts-with?:loop:
     # if (currs >= maxs) return true
-    39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
-    73/jump-if-addr>=  $string-equal?:true/disp8
+    39/compare                      3/mod/direct    7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # compare edi with ecx
+    73/jump-if-addr>=  $string-starts-with?:true/disp8
     # c1 = *currs
     8a/copy-byte                    0/mod/indirect  6/rm32/esi    .           .             .           0/r32/AL    .               .                 # copy byte at *esi to AL
     # c2 = *currb
     8a/copy-byte                    0/mod/indirect  7/rm32/edi    .           .             .           2/r32/DL    .               .                 # copy byte at *edi to DL
     # if (c1 != c2) return false
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # compare eax and edx
-    75/jump-if-!=  $string-equal?:false/disp8
+    75/jump-if-!=  $string-starts-with?:false/disp8
     # ++currs
     46/increment-esi
     # ++currb
     47/increment-edi
-    eb/jump  $string-equal?:loop/disp8
-$string-equal?:true:
+    eb/jump  $string-starts-with?:loop/disp8
+$string-starts-with?:true:
     b8/copy-to-eax  1/imm32
-    eb/jump  $string-equal?:end/disp8
-$string-equal?:false:
+    eb/jump  $string-starts-with?:end/disp8
+$string-starts-with?:false:
     b8/copy-to-eax  0/imm32
-$string-equal?:end:
+$string-starts-with?:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
