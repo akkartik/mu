@@ -92,6 +92,7 @@ highlight link muRecipe PreProc
 syntax match muScenario "^scenario\>"  | highlight link muScenario Statement
 syntax keyword muPendingScenario pending-scenario  | highlight link muPendingScenario SpecialChar
 syntax match muData "^type\>\|^container\>"
+syntax match muData "\<eax\>\|\<ecx\>\|\<edx\>\|\<ebx\>\|\<esi\>\|\<edi\>"
 syntax keyword muData exclusive-container
 highlight link muData Constant
 
