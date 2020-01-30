@@ -620,6 +620,14 @@ void test_check_missing_disp32_operand() {
   );
 }
 
+void test_0f_opcode_with_modrm() {
+  transform(
+      "== code 0x1\n"
+      "0f af/multiply 2/mod/*+disp32 5/rm32/ebp 8/disp32 0/r32\n"
+  );
+  CHECK_TRACE_DOESNT_CONTAIN_ERRORS();
+}
+
 :(before "End Globals")
 map</*op*/string, /*bitvector*/uint8_t> Permitted_operands_0f;
 :(before "End Init Permitted Operands")
@@ -645,9 +653,13 @@ put_new(Permitted_operands_0f, "af", 0x01);
 :(code)
 void check_operands_0f(const line& inst, const word& op) {
   uint8_t expected_bitvector = get(Permitted_operands_0f, op.data);
-  if (HAS(expected_bitvector, MODRM))
+  if (HAS(expected_bitvector, MODRM)) {
     check_operands_modrm(inst, op);
-  compare_bitvector(inst, CLEAR(expected_bitvector, MODRM), maybe_name_0f(op));
+    compare_bitvector_modrm(inst, expected_bitvector, maybe_name_0f(op));
+  }
+  else {
+    compare_bitvector(inst, CLEAR(expected_bitvector, MODRM), maybe_name_0f(op));
+  }
 }
 
 string maybe_name_0f(const word& op) {
