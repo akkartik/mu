@@ -66,8 +66,8 @@ statements in Mu translate to a single machine code instruction. Variables
 reside in memory by default. Programs must specify registers when they want to
 use them. Functions must return results in registers. Execution begins at the
 function `main`, which always returns its result in register `ebx`. [This post](http://akkartik.name/post/mu-2019-2)
-has more details. You can see a complete list of supported instructions and
-their translations in [this summary](mu_instructions).
+has more details, and there's a [summary](mu_summary) of all supported
+instructions.
 
 ## SubX
 
@@ -715,19 +715,21 @@ If you're still reading, here are some more things to check out:
 
 a) Try running the tests: `./test_apps`
 
-b) Check out the online help. Starting point: `./bootstrap`
+b) There's a handy [summary](mu_instructions) of how the Mu compiler translates
+instructions to SubX.
 
-c) Familiarize yourself with `./bootstrap help opcodes`. If you program in Mu
-you'll spend a lot of time with it. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/subx_opcodes).)
+c) Check out the online help on SubX. Starting point: `./bootstrap`
+
+d) Familiarize yourself with the list of opcodes supported in SubX: `./bootstrap
+help opcodes`. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/subx_opcodes).)
 [Here](https://lobste.rs/s/qglfdp/subx_minimalist_assembly_language_for#c_o9ddqk)
 are some tips on my setup for quickly finding the right opcode for any
 situation from within Vim.
 
-d) Try working on [the starter exercises](https://github.com/akkartik/mu/pulls)
+e) Try working on [some starter SubX exercises](https://github.com/akkartik/mu/pulls)
 (labelled `hello`).
 
-e) SubX comes with some useful [syntax sugar](http://akkartik.name/post/mu-2019-1).
-Check it out.
+f) SubX comes with some useful [syntax sugar](http://akkartik.name/post/mu-2019-1).
 
 ## Credits
 
