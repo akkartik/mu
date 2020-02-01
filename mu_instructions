@@ -1,0 +1,186 @@
+## Mu's instructions and their table-driven translation
+
+Mu is a statement-oriented language. Blocks consist of flat lists of instructions.
+The chart at the bottom of this page shows all the instruction forms supported
+by Mu, one to a line. Each line shows an example of the instruction on the
+left. Past the first column, everything inside the {..} is a summary of the
+data structure the Mu compiler uses (`Primitives` in apps/mu.subx) to translate
+it.
+
+The syntax of the data structure is intended to be similar to C++'s aggregate
+initializers (https://en.cppreference.com/w/cpp/language/aggregate_initialization)
+However, there are differences:
+  - We use adjacency for string concatenation.
+  - We use [] for array literals.
+  - The objects inside [] are not fully described. They include various
+    metadata about the variable in the instruction. For our purposes, assume
+    that variables on the stack have a stack offset computed for them, and
+    register variables evaluate to their register.
+  - registers may be specified by name: /eax /ecx /edx /ebx /esi /edi
+  - registers may be specified as a wildcard: /reg
+  - integer literals are always called 'n'
+  - any other variable names that don't specify a register are assumed to be on the stack
+
+There are no checks for types yet, because Mu programs only have `int` types so far.
+
+Example 1 (use the widest screen you can for this page):
+   -- instruction form --   |         -------------------------- data structure ----------------------------
+                            |<------------- pattern matching ---------->|<--- code generation ------------------->
+  var/reg <- add var2/reg   {.name="add", .inouts=[reg], .outputs=[reg], .subx-name="01/add<-", .rm32=outputs[0], .r32=inouts[0]}
+
+Read this as:
+  if an instruction's name is "add"
+    and it has one inout that's in a register
+    and it has one output that's in a register,
+  then emit the following on a single line
+    "01/add<-" (the opcode or subx-name)
+    "%{reg}", interpolating the output's register
+    "{reg}/r32", interpolating the inout's register code.
+
+Example 2:
+   -- instruction form --   |         -------------------------- data structure ----------------------------
+                            |<------- pattern matching ------>|<--- code generation ------------------->
+  add-to var, n             {.name="add-to", .inouts=[var, n], .subx-name="81 0/subop/add", .rm32="*(ebp+" inouts[0].stack-offset ")", .imm32=inouts[1]}
+
+Read this as:
+  if an instruction's name is "add-to"
+    and it has two inouts
+    the first on the stack
+    and the second a literal,
+  then emit the following on a single line
+    "81 0/subop/add" (the opcode or subx-name)
+    "*(ebp+{stack})", interpolating the first inout's stack offset
+    "{n}/imm32", interpolating the second inout's contents
+
+Ok, here's the complete chart.
+
+ -- instruction form --     |         -------------------------- data structure ----------------------------
+                            |<------------------- pattern matching ------------------->|<---- code generation ------------------->
+var/eax <- increment        {.name="increment",                       .outputs=[eax],   .subx-name="40/increment-eax"}
+var/ecx <- increment        {.name="increment",                       .outputs=[ecx],   .subx-name="41/increment-ecx"}
+var/edx <- increment        {.name="increment",                       .outputs=[edx],   .subx-name="42/increment-edx"}
+var/ebx <- increment        {.name="increment",                       .outputs=[ebx],   .subx-name="43/increment-ebx"}
+var/esi <- increment        {.name="increment",                       .outputs=[esi],   .subx-name="46/increment-esi"}
+var/edi <- increment        {.name="increment",                       .outputs=[edi],   .subx-name="47/increment-edi"}
+increment var               {.name="increment",       .inouts=[var],                    .subx-name="ff 0/subop/increment",  .rm32="*(ebp+" inouts[0].stack-offset ")"}
+
+var/eax <- decrement        {.name="decrement",                       .outputs=[eax],   .subx-name="48/decrement-eax"}
+var/ecx <- decrement        {.name="decrement",                       .outputs=[ecx],   .subx-name="49/decrement-ecx"}
+var/edx <- decrement        {.name="decrement",                       .outputs=[edx],   .subx-name="4a/decrement-edx"}
+var/ebx <- decrement        {.name="decrement",                       .outputs=[ebx],   .subx-name="4b/decrement-ebx"}
+var/esi <- decrement        {.name="decrement",                       .outputs=[esi],   .subx-name="4e/decrement-esi"}
+var/edi <- decrement        {.name="decrement",                       .outputs=[edi],   .subx-name="4f/decrement-edi"}
+decrement var               {.name="decrement",       .inouts=[var],                    .subx-name="ff 1/subop/decrement",  .rm32="*(ebp+" inouts[0].stack-offset ")"}
+
+var1/reg1 <- add var2/reg2  {.name="add",             .inouts=[reg2], .outputs=[reg1],  .subx-name="01/add<-",              .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- add var2         {.name="add",             .inouts=[var2], .outputs=[reg],   .subx-name="03/add->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+add-to var1, var2/reg       {.name="add-to",          .inouts=[var1, var2],             .subx-name="01/add<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/eax <- add n            {.name="add",             .inouts=[n],    .outputs=[eax],   .subx-name="05/add-to-eax",                                                                         .imm32=inouts[0]}
+var/reg <- add n            {.name="add",             .inouts=[n],    .outputs=[reg],   .subx-name="81 0/subop/add",        .rm32=outputs[0],                                               .imm32=inouts[0]}
+add-to var, n               {.name="add-to",          .inouts=[var, n],                 .subx-name="81 0/subop/add",        .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+
+var1/reg1 <- sub var2/reg2  {.name="sub",             .inouts=[reg2], .outputs=[reg1],  .subx-name="29/sub<-",              .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- sub var2         {.name="sub",             .inouts=[var2], .outputs=[reg],   .subx-name="2b/sub->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+sub-from var1, var2/reg     {.name="sub-from",        .inouts=[var1, var2],             .subx-name="29/sub<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/eax <- sub n            {.name="sub",             .inouts=[n],    .outputs=[eax],   .subx-name="2d/sub-from-eax",                                                                       .imm32=inouts[0]}
+var/reg <- sub n            {.name="sub",             .inouts=[n],    .outputs=[reg],   .subx-name="81 5/subop/subtract",   .rm32=outputs[0],                                               .imm32=inouts[0]}
+sub-from var, n             {.name="sub-from",        .inouts=[var, n],                 .subx-name="81 5/subop/subtract",   .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+
+var1/reg1 <- and var2/reg2  {.name="and",             .inouts=[reg2], .outputs=[reg1],  .subx-name="21/and<-",              .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- and var2         {.name="and",             .inouts=[var2], .outputs=[reg],   .subx-name="23/and->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+and-with var1, var2/reg     {.name="and-with",        .inouts=[var1, reg],              .subx-name="21/and<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/eax <- and n            {.name="and",             .inouts=[n],    .outputs=[eax],   .subx-name="25/and-with-eax",                                                                       .imm32=inouts[0]}
+var/reg <- and n            {.name="and",             .inouts=[n],    .outputs=[reg],   .subx-name="81 4/subop/and",        .rm32=outputs[0],                                               .imm32=inouts[0]}
+and-with var, n             {.name="and-with",        .inouts=[var, n],                 .subx-name="81 4/subop/and",        .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+
+var1/reg1 <- or var2/reg2   {.name="or",              .inouts=[reg2], .outputs=[reg1],  .subx-name="09/or<-",               .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- or var2          {.name="or",              .inouts=[var2], .outputs=[reg],   .subx-name="0b/or->",               .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+or-with var1, var2/reg      {.name="or-with",         .inouts=[var1, reg],              .subx-name="09/or<-",               .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/eax <- or n             {.name="or",              .inouts=[n],    .outputs=[eax],   .subx-name="0d/or-with-eax",                                                                        .imm32=inouts[0]}
+var/reg <- or n             {.name="or",              .inouts=[n],    .outputs=[reg],   .subx-name="81 1/subop/or",         .rm32=outputs[0],                                               .imm32=inouts[0]}
+or-with var, n              {.name="or-with",         .inouts=[var, n],                 .subx-name="81 1/subop/or",         .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+
+var1/reg1 <- xor var2/reg2  {.name="xor",             .inouts=[reg2], .outputs=[reg1],  .subx-name="31/xor<-",              .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- xor var2         {.name="xor",             .inouts=[var2], .outputs=[reg],   .subx-name="33/xor->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+xor-with var1, var2/reg     {.name="xor-with",        .inouts=[var1, reg],              .subx-name="31/xor<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/eax <- xor n            {.name="xor",             .inouts=[n],    .outputs=[eax],   .subx-name="35/xor-with-eax",                                                                       .imm32=inouts[0]}
+var/reg <- xor n            {.name="xor",             .inouts=[n],    .outputs=[reg],   .subx-name="81 6/subop/xor",        .rm32=outputs[0],                                               .imm32=inouts[0]}
+xor-with var, n             {.name="xor-with",        .inouts=[var, n],                 .subx-name="81 6/subop/xor",        .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+
+var/eax <- copy n           {.name="copy",            .inouts=[n],    .outputs=[eax],   .subx-name="b8/copy-to-eax",                                                                        .imm32=inouts[0]}
+var/ecx <- copy n           {.name="copy",            .inouts=[n],    .outputs=[ecx],   .subx-name="b9/copy-to-ecx",                                                                        .imm32=inouts[0]}
+var/edx <- copy n           {.name="copy",            .inouts=[n],    .outputs=[edx],   .subx-name="ba/copy-to-edx",                                                                        .imm32=inouts[0]}
+var/ebx <- copy n           {.name="copy",            .inouts=[n],    .outputs=[ebx],   .subx-name="bb/copy-to-ebx",                                                                        .imm32=inouts[0]}
+var/esi <- copy n           {.name="copy",            .inouts=[n],    .outputs=[esi],   .subx-name="be/copy-to-esi",                                                                        .imm32=inouts[0]}
+var/edi <- copy n           {.name="copy",            .inouts=[n],    .outputs=[edi],   .subx-name="bf/copy-to-edi",                                                                        .imm32=inouts[0]}
+var1/reg1 <- copy var2/reg2 {.name="copy",            .inouts=[reg2], .outputs=[reg1],  .subx-name="89/copy-to",            .rm32=outputs[0],                           .r32=inouts[0]}
+copy-to var1, var2/reg      {.name="copy-to",         .inouts=[var1, var2],             .subx-name="01/add<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/reg <- copy var2        {.name="copy",            .inouts=[var2], .outputs=[reg],   .subx-name="8b/copy-from",          .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+var/reg <- copy n           {.name="copy",            .inouts=[n],    .outputs=[reg],   .subx-name="c7 0/subop/copy",       .rm32=outputs[0],                                               .imm32=inouts[0]}
+copy-to var, n              {.name="copy-to",         .inouts=[var, n],                 .subx-name="c7 0/subop/copy",       .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+
+compare var1, var2/reg      {.name="compare",         .inouts=[var1, reg],              .subx-name="39/compare->",          .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+compare var1/reg, var2      {.name="compare",         .inouts=[reg, var2],              .subx-name="3b/compare<-",          .rm32="*(ebp+" inouts[1].stack-offset ")",  .r32=inouts[0]}
+compare var/eax, n          {.name="compare",         .inouts=[eax, n],                 .subx-name="3d/compare-eax-with",                                                                   .imm32=inouts[1]}
+compare var, n              {.name="compare",         .inouts=[var, n],                 .subx-name="81 7/subop/compare",    .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+
+var/reg <- multiply var2    {.name="multiply",        .inouts=[var2], .outputs=[reg],   .subx-name="0f af/multiply",        .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+
+Jumps have a slightly simpler format. Most of the time they take no inouts or
+outputs. Occasionally you give them a label for a block to jump to the start
+or end of.
+
+break-if-=                  {.name="break-if-=",                                        .subx-name="0f 84/jump-if-= break/disp32"}
+break-if-= label            {.name="break-if-=",      .inouts=[label],                  .subx-name="0f 84/jump-if-=",                     .disp32=inouts[0] ":break"}
+break-if-!=                 {.name="break-if-!=",                                       .subx-name="0f 85/jump-if-!= break/disp32"}
+break-if-!= label           {.name="break-if-!=",     .inouts=[label],                  .subx-name="0f 85/jump-if-!=",                    .disp32=inouts[0] ":break"}
+
+Inequalities are similar, but have unsigned and signed variants. We assume
+unsigned variants are only ever used to compare addresses.
+
+break-if-addr<              {.name="break-if-addr<",                                    .subx-name="0f 82/jump-if-addr< break/disp32"}
+break-if-addr< label        {.name="break-if-addr<",  .inouts=[label],                  .subx-name="0f 82/jump-if-addr<",                 .disp32=inouts[0] ":break"}
+break-if-addr>              {.name="break-if-addr>",                                    .subx-name="0f 87/jump-if-addr> break/disp32"}
+break-if-addr> label        {.name="break-if-addr>",  .inouts=[label],                  .subx-name="0f 87/jump-if-addr>",                 .disp32=inouts[0] ":break"}
+break-if-addr<=             {.name="break-if-addr<=",                                   .subx-name="0f 86/jump-if-addr<= break/disp32"}
+break-if-addr<= label       {.name="break-if-addr<=", .inouts=[label],                  .subx-name="0f 86/jump-if-addr<=",                .disp32=inouts[0] ":break"}
+break-if-addr>=             {.name="break-if-addr>=",                                   .subx-name="0f 83/jump-if-addr>= break/disp32"}
+break-if-addr>= label       {.name="break-if-addr>=", .inouts=[label],                  .subx-name="0f 83/jump-if-addr>=",                .disp32=inouts[0] ":break"}
+
+break-if-<                  {.name="break-if-<",                                        .subx-name="0f 8c/jump-if-< break/disp32"}
+break-if-< label            {.name="break-if-<",      .inouts=[label],                  .subx-name="0f 8c/jump-if-<",                     .disp32=inouts[0] ":break"}
+break-if->                  {.name="break-if->",                                        .subx-name="0f 8f/jump-if-> break/disp32"}
+break-if-> label            {.name="break-if->",      .inouts=[label],                  .subx-name="0f 8f/jump-if->",                     .disp32=inouts[0] ":break"}
+break-if-<=                 {.name="break-if-<=",                                       .subx-name="0f 8e/jump-if-<= break/disp32"}
+break-if-<= label           {.name="break-if-<=",     .inouts=[label],                  .subx-name="0f 8e/jump-if-<=",                    .disp32=inouts[0] ":break"}
+break-if->=                 {.name="break-if->=",                                       .subx-name="0f 8d/jump-if->= break/disp32"}
+break-if->= label           {.name="break-if->=",     .inouts=[label],                  .subx-name="0f 8d/jump-if->=",                    .disp32=inouts[0] ":break"}
+
+Finally, we repeat all the 'break' variants almost identically for 'loop'
+instructions. This works because the compiler inserts ':loop' labels at the
+start of such named blocks, and ':break' labels at the end.
+
+loop-if-=                   {.name="loop-if-=",                                         .subx-name="0f 84/jump-if-= loop/disp32"}
+loop-if-= label             {.name="loop-if-=",       .inouts=[label],                  .subx-name="0f 84/jump-if-=",                     .disp32=inouts[0] ":loop"}
+loop-if-!=                  {.name="loop-if-!=",                                        .subx-name="0f 85/jump-if-!= loop/disp32"}
+loop-if-!= label            {.name="loop-if-!=",      .inouts=[label],                  .subx-name="0f 85/jump-if-!=",                    .disp32=inouts[0] ":loop"}
+
+loop-if-addr<               {.name="loop-if-addr<",                                     .subx-name="0f 82/jump-if-addr< loop/disp32"}
+loop-if-addr< label         {.name="loop-if-addr<",   .inouts=[label],                  .subx-name="0f 82/jump-if-addr<",                 .disp32=inouts[0] ":loop"}
+loop-if-addr>               {.name="loop-if-addr>",                                     .subx-name="0f 87/jump-if-addr> loop/disp32"}
+loop-if-addr> label         {.name="loop-if-addr>",   .inouts=[label],                  .subx-name="0f 87/jump-if-addr>",                 .disp32=inouts[0] ":loop"}
+loop-if-addr<=              {.name="loop-if-addr<=",                                    .subx-name="0f 86/jump-if-addr<= loop/disp32"}
+loop-if-addr<= label        {.name="loop-if-addr<=",  .inouts=[label],                  .subx-name="0f 86/jump-if-addr<=",                .disp32=inouts[0] ":loop"}
+loop-if-addr>=              {.name="loop-if-addr>=",                                    .subx-name="0f 83/jump-if-addr>= loop/disp32"}
+loop-if-addr>= label        {.name="loop-if-addr>=",  .inouts=[label],                  .subx-name="0f 83/jump-if-addr>=",                .disp32=inouts[0] ":loop"}
+
+loop-if-<                   {.name="loop-if-<",                                         .subx-name="0f 8c/jump-if-< loop/disp32"}
+loop-if-< label             {.name="loop-if-<",       .inouts=[label],                  .subx-name="0f 8c/jump-if-<",                     .disp32=inouts[0] ":loop"}
+loop-if->                   {.name="loop-if->",                                         .subx-name="0f 8f/jump-if-> loop/disp32"}
+loop-if-> label             {.name="loop-if->",       .inouts=[label],                  .subx-name="0f 8f/jump-if->",                     .disp32=inouts[0] ":loop"}
+loop-if-<=                  {.name="loop-if-<=",                                        .subx-name="0f 8e/jump-if-<= loop/disp32"}
+loop-if-<= label            {.name="loop-if-<=",      .inouts=[label],                  .subx-name="0f 8e/jump-if-<=",                    .disp32=inouts[0] ":loop"}
+loop-if->=                  {.name="loop-if->=",                                        .subx-name="0f 8d/jump-if->= loop/disp32"}
+loop-if->= label            {.name="loop-if->=",      .inouts=[label],                  .subx-name="0f 8d/jump-if->=",                    .disp32=inouts[0] ":loop"}
+
+vim:ft=c:nowrap

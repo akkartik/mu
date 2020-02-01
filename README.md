@@ -66,7 +66,8 @@ statements in Mu translate to a single machine code instruction. Variables
 reside in memory by default. Programs must specify registers when they want to
 use them. Functions must return results in registers. Execution begins at the
 function `main`, which always returns its result in register `ebx`. [This post](http://akkartik.name/post/mu-2019-2)
-has more details.
+has more details. You can see a complete list of supported instructions and
+their translations in [this summary](mu_instructions).
 
 ## SubX
 
@@ -717,7 +718,7 @@ a) Try running the tests: `./test_apps`
 b) Check out the online help. Starting point: `./bootstrap`
 
 c) Familiarize yourself with `./bootstrap help opcodes`. If you program in Mu
-you'll spend a lot of time with it. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/opcodes).)
+you'll spend a lot of time with it. (It's also [in this repo](https://github.com/akkartik/mu/blob/master/subx_opcodes).)
 [Here](https://lobste.rs/s/qglfdp/subx_minimalist_assembly_language_for#c_o9ddqk)
 are some tips on my setup for quickly finding the right opcode for any
 situation from within Vim.

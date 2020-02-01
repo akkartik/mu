@@ -56,9 +56,9 @@ endfunction
 command! -nargs=1 G call GrepSubX(<q-args>)
 
 if exists("&splitvertical")
-  command! -nargs=0 P hor split opcodes
+  command! -nargs=0 P hor split subx_opcodes
 else
-  command! -nargs=0 P split opcodes
+  command! -nargs=0 P split subx_opcodes
 endif
 
 " useful for inspecting just the control flow in a trace
