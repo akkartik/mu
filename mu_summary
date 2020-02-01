@@ -4,6 +4,9 @@ Mu programs are lists of functions. Each function has the following form:
     _instructions_
   }
 
+Each function has a header line, and some number of instructions, each on a
+separate line.
+
 Instructions may be primitives or function calls. Either way, all instructions
 have one of the following forms:
 
@@ -42,67 +45,59 @@ be in registers.
 Functions can contain nested blocks inside { and }. Variables defined in a
 block don't exist outside it.
 
+  {
+    _instructions_
+    {
+      _more instructions_
+    }
+  }
+
+Blocks can be named like so:
+
+  $name: {
+    _instructions_
+  }
+
 ## Primitive instructions
 
-Primitive instructions currently supported in Mu:
+Primitive instructions currently supported in Mu ('n' indicates a literal
+integer rather than a variable, and 'var/reg' indicates a variable in a
+register):
 
-  var/eax <- increment
-  var/ecx <- increment
-  var/edx <- increment
-  var/ebx <- increment
-  var/esi <- increment
-  var/edi <- increment
+  var/reg <- increment
   increment var
-
-  var/eax <- decrement
-  var/ecx <- decrement
-  var/edx <- decrement
-  var/ebx <- decrement
-  var/esi <- decrement
-  var/edi <- decrement
+  var/reg <- decrement
   decrement var
-
   var1/reg1 <- add var2/reg2
   var/reg <- add var2
   add-to var1, var2/reg
-  var/eax <- add n
   var/reg <- add n
   add-to var, n
 
   var1/reg1 <- sub var2/reg2
   var/reg <- sub var2
   sub-from var1, var2/reg
-  var/eax <- sub n
   var/reg <- sub n
   sub-from var, n
 
   var1/reg1 <- and var2/reg2
   var/reg <- and var2
   and-with var1, var2/reg
-  var/eax <- and n
   var/reg <- and n
   and-with var, n
 
   var1/reg1 <- or var2/reg2
   var/reg <- or var2
   or-with var1, var2/reg
-  var/eax <- or n
   var/reg <- or n
   or-with var, n
 
   var1/reg1 <- xor var2/reg2
   var/reg <- xor var2
   xor-with var1, var2/reg
-  var/eax <- xor n
   var/reg <- xor n
   xor-with var, n
 
-  var/eax <- copy n
-  var/ecx <- copy n
-  var/edx <- copy n
-  var/ebx <- copy n
-  var/esi <- copy n
-  var/edi <- copy n
   var1/reg1 <- copy var2/reg2
   copy-to var1, var2/reg
   var/reg <- copy var2
@@ -116,6 +111,9 @@ Primitive instructions currently supported in Mu:
 
   var/reg <- multiply var2
 
+Notice that there are no primitive instructions operating on two variables in
+memory. That's a restriction of the underlying x86 processor.
+
 ## Primitive jump instructions
 
 There are two kinds of jumps, both with many variations: `break` and `loop`.
@@ -127,7 +125,8 @@ Jumps can take an optional label starting with '$':
   loop $foo
 
 This instruction jumps to the beginning of the block called $foo. It must lie
-somewhere inside such a box. Jumps are only legal to containing blocks.
+somewhere inside such a box. Jumps are only legal to containing blocks. Use
+named blocks with restraint; jumps to places far away can get confusing.
 
 There are two unconditional jumps:
 
