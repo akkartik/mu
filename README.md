@@ -59,16 +59,7 @@ When completed, it will be type- and memory-safe. At the moment it performs no
 checks and only supports variables of type `int`. Here's the program we
 translated above:
 
-  ```
-  fn main -> result/ebx: int {
-    result <- do-add 3 4
-  }
-
-  fn do-add a: int, b: int -> result/ebx: int {
-    result <- copy a
-    result <- add b
-  }
-  ```
+<img alt='ex2.mu' src='html/ex2.mu.png'>
 
 There are no expressions, only statements that operate on variables. Most
 statements in Mu translate to a single machine code instruction. Variables
