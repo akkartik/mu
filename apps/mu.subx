@@ -3300,7 +3300,7 @@ $parse-mu-stmt:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byte)
+add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byte), vars: (addr stack (handle var))
     # pseudocode:
     #   stmt->name = slice-to-string(next-mu-token(line))
     #   while true
@@ -3337,7 +3337,7 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       (slice-equal? %ecx "<-")
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= $add-operation-and-inputs-to-stmt:abort/disp32
-      # if (name starts with "$") treat it as a literal
+      # if (name starts with "$") it's a label
       {
         # var eax: byte = name[0]
         8b/-> *ecx 0/r32/eax
@@ -3347,6 +3347,7 @@ $add-operation-and-inputs-to-stmt:read-inouts:
         3d/compare-eax-and 0x24/imm32/dollar
         75/jump-if-!= break/disp8
         # var eax: (handle var)
+        # labels aren't in vars; just create a new record on each use
         (new-label Heap %ecx)  # => eax
         # stmt->inouts = append(eax, stmt->inouts)
         (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
