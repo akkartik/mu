@@ -2823,7 +2823,8 @@ $populate-mu-function-body:end:
 
 == data
 
-# Global state when parsing a function
+# Global state added to each var record when parsing a function
+
 Curr-block-depth:  # (addr int)
     0/imm32
 Next-local-stack-offset:  # (addr int)
@@ -4150,6 +4151,8 @@ emit-subx-function:  # out: (addr buffered-file), f: (handle function)
     #
     (write-buffered %edi *ecx)
     (write-buffered %edi ":\n")
+    # Important: each block's depth during code-generation should be identical
+    # to what it was during parsing.
     c7 0/subop/copy *Curr-block-depth 1/imm32
     (emit-subx-prologue %edi)
     (emit-subx-block %edi *(ecx+0x10) %edx)  # Function-body
