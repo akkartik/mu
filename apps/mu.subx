@@ -3666,7 +3666,7 @@ test-parse-mu-stmt:
     # var v/edx: var
     81 5/subop/subtract %esp 0x14/imm32  # Var-size
     89/<- %edx 4/r32/esp
-    (zero-out %edx 0x14)
+    (zero-out %edx 0x14)  # Var-size
     # v->name = "n"
     c7 0/subop/copy *edx "n"/imm32  # Var-name
     #
@@ -3702,7 +3702,7 @@ test-parse-mu-stmt-with-comma:
     # var v/edx: var
     81 5/subop/subtract %esp 0x14/imm32  # Var-size
     89/<- %edx 4/r32/esp
-    (zero-out %edx 0x14)
+    (zero-out %edx 0x14)  # Var-size
     # v->name = "n"
     c7 0/subop/copy *edx "n"/imm32  # Var-name
     #
@@ -3830,12 +3830,12 @@ new-literal-string:  # ad: (addr allocation-descriptor), name: (addr slice) -> r
     89/<- %ecx 0/r32/eax
     # result/ecx = new var(s)
     (allocate *(ebp+8) *Var-size)  # => eax
-    (zero-out %eax)
+    (zero-out %eax *Var-size)
     89/<- *eax 1/r32/ecx  # Var-name
     89/<- %ecx 0/r32/eax
     # result->type = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
-    (zero-out %eax)  # default type is 'literal'
+    (zero-out %eax *Tree-size)  # default type is 'literal'
     89/<- *(ecx+4) 0/r32/eax  # Var-type
     # move result to eax
     89/<- %eax 1/r32/ecx
@@ -3861,6 +3861,7 @@ new-label:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax
     89/<- *eax 1/r32/ecx  # Var-name
     89/<- %ecx 0/r32/eax
     (allocate *(ebp+8) *Tree-size)  # => eax
+    (zero-out %eax *Tree-size)  # labels are literals
     89/<- *(ecx+4) 0/r32/eax  # Var-type
     89/<- %eax 1/r32/ecx
     c7 0/subop/copy *(eax+8) 0/imm32  # Var-block-depth
