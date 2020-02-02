@@ -425,18 +425,6 @@ test-convert-empty-input:
     c3/return
 
 test-convert-function-skeleton:
-    # empty function decl => function prologue and epilogue
-    #   fn foo {
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -472,28 +460,6 @@ test-convert-function-skeleton:
     c3/return
 
 test-convert-multiple-function-skeletons:
-    # multiple functions correctly organized into a linked list
-    #   fn foo {
-    #   }
-    #   fn bar {
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
-    #   bar:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -540,18 +506,6 @@ test-convert-multiple-function-skeletons:
     c3/return
 
 test-convert-function-with-arg:
-    # function with one arg
-    #   fn foo n : int {
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -587,22 +541,6 @@ test-convert-function-with-arg:
     c3/return
 
 test-convert-function-with-arg-and-body:
-    # function with one arg and one instruction in the body
-    #   fn foo n : int {
-    #     increment n
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       ff 0/subop/increment *(ebp+8)
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -642,22 +580,6 @@ test-convert-function-with-arg-and-body:
     c3/return
 
 test-convert-function-distinguishes-args:
-    # function with two args refers to second one in body
-    #   fn foo a: int, b: int {
-    #     increment b
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       ff 0/subop/increment *(ebp+0xc)
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -697,24 +619,6 @@ test-convert-function-distinguishes-args:
     c3/return
 
 test-convert-function-returns-result:
-    # function writes to output
-    #   fn foo a: int, b: int -> result/eax: int {
-    #     result <- copy a
-    #     result <- increment
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       89/-> *(ebp+8) 0/r32/eax
-    #       40/increment-eax
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -756,24 +660,6 @@ test-convert-function-returns-result:
     c3/return
 
 test-convert-function-literal-arg:
-    # function writes to output
-    #   fn foo a: int, b: int -> result/eax: int {
-    #     result <- copy a
-    #     result <- add 1
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       89/-> *(ebp+8) 0/r32/eax
-    #       05/add-to-eax 1/imm32
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -815,24 +701,6 @@ test-convert-function-literal-arg:
     c3/return
 
 test-convert-function-literal-arg-2:
-    # function writes to output
-    #   fn foo a: int, b: int -> result/ebx: int {
-    #     result <- copy a
-    #     result <- add 1
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       89/-> *(ebp+8) 3/r32/ebx
-    #       81 0/subop/add %ebx 1/imm32
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -874,39 +742,6 @@ test-convert-function-literal-arg-2:
     c3/return
 
 test-convert-function-call-with-literal-arg:
-    # function writes to output
-    #   fn main -> result/ebx: int {
-    #     result <- do-add 3 4
-    #   }
-    #
-    #   fn do-add a: int, b: int -> result/ebx: int {
-    #     result <- copy a
-    #     result <- add b
-    #   }
-    # =>
-    #   main:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       (do-add 3 4)
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
-    #   do-add:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       8b/-> *(ebp+8) 3/r32/ebx
-    #       03/add-to 3/r32/ebx *(ebp+0xc)
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -962,25 +797,6 @@ test-convert-function-call-with-literal-arg:
     c3/return
 
 test-convert-function-with-local-var-in-mem:
-    # empty function decl => function prologue and epilogue
-    #   fn foo {
-    #     var x: int
-    #     increment x
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       68/push 0/imm32
-    #       ff 0/subop/increment *(ebp-4)
-    #       81 0/subop/add %esp 4/imm32
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1023,26 +839,6 @@ test-convert-function-with-local-var-in-mem:
     c3/return
 
 test-convert-function-with-local-var-in-reg:
-    # empty function decl => function prologue and epilogue
-    #   fn foo {
-    #     var x/ecx: int <- copy 3
-    #     x <- increment
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       ff 6/subop/push %ecx
-    #       b9/copy-to-ecx 3/imm32
-    #       41/increment-ecx
-    #       8f 0/subop/pop %ecx
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1086,29 +882,6 @@ test-convert-function-with-local-var-in-reg:
     c3/return
 
 test-convert-function-with-local-var-in-block:
-    # empty function decl => function prologue and epilogue
-    #   fn foo {
-    #     {
-    #       var x: int
-    #       increment x
-    #     }
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       {
-    #         68/push 0/imm32
-    #         ff 0/subop/increment *(ebp-4)
-    #         81 0/subop/add %esp 4/imm32
-    #       }
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1155,31 +928,6 @@ test-convert-function-with-local-var-in-block:
     c3/return
 
 test-convert-function-with-local-var-in-named-block:
-    # empty function decl => function prologue and epilogue
-    #   fn foo {
-    #     $bar: {
-    #       var x: int
-    #       increment x
-    #     }
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       {
-    #     $bar:loop:
-    #         68/push 0/imm32
-    #         ff 0/subop/increment *(ebp-4)
-    #         81 0/subop/add %esp 4/imm32
-    #       }
-    #     $bar:break:
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1228,32 +976,6 @@ test-convert-function-with-local-var-in-named-block:
     c3/return
 
 test-convert-function-with-branches-in-block:
-    # empty function decl => function prologue and epilogue
-    #   fn foo x: int {
-    #     {
-    #       break-if->=
-    #       loop-if-addr<
-    #       increment x
-    #       loop
-    #     }
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       {
-    #         0f 8d/jump-if->= break/disp32
-    #         0f 82/jump-if-addr< loop/disp32
-    #         ff 0/subop/increment *(ebp+8)
-    #         e9/jump loop/disp32
-    #       }
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1303,34 +1025,6 @@ test-convert-function-with-branches-in-block:
     c3/return
 
 test-convert-function-with-branches-in-named-block:
-    # empty function decl => function prologue and epilogue
-    #   fn foo x: int {
-    #     $bar: {
-    #       break-if->= $bar
-    #       loop-if-addr< $bar
-    #       increment x
-    #       loop
-    #     }
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       {
-    #   $bar:loop:
-    #         0f 8d/jump-if->= $bar:break/disp32
-    #         0f 82/jump-if-addr< $bar:loop/disp32
-    #         ff 0/subop/increment *(ebp+8)
-    #         e9/jump loop/disp32
-    #       }
-    #   $bar:break:
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1382,33 +1076,6 @@ test-convert-function-with-branches-in-named-block:
     c3/return
 
 test-convert-function-with-var-in-nested-block:
-    # empty function decl => function prologue and epilogue
-    #   fn foo {
-    #     {
-    #       {
-    #         var x: int
-    #         increment x
-    #       }
-    #     }
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       {
-    #         {
-    #           68/push 0/imm32
-    #           ff 0/subop/increment *(ebp-4)
-    #           81 0/subop/add %esp 4/imm32
-    #         }
-    #       }
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1459,36 +1126,6 @@ test-convert-function-with-var-in-nested-block:
     c3/return
 
 test-convert-function-with-multiple-vars-in-nested-blocks:
-    # empty function decl => function prologue and epilogue
-    #   fn foo {
-    #     {
-    #       var x/eax: int <- copy 0
-    #       {
-    #         var y: int
-    #         x <- add y
-    #       }
-    #     }
-    #   }
-    # =>
-    #   foo:
-    #     # . prologue
-    #     55/push-ebp
-    #     89/<- %ebp 4/r32/esp
-    #     {
-    #       {
-    #         ff 6/subop/push %eax
-    #         {
-    #           68/push 0/imm32
-    #           ff 0/subop/increment *(ebp-8)  # eax has been spilled above
-    #           81 0/subop/add %esp 4/imm32
-    #         }
-    #         8f 0/subop/pop %eax
-    #       }
-    #     }
-    #     # . epilogue
-    #     89/<- %esp 5/r32/ebp
-    #     5d/pop-to-ebp
-    #     c3/return
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1882,7 +1519,6 @@ $populate-mu-function-header:error3:
     # never gets here
 
 test-function-header-with-arg:
-    # 'foo n : int {'
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1916,7 +1552,6 @@ test-function-header-with-arg:
     c3/return
 
 test-function-header-with-multiple-args:
-    # 'fn foo a: int, b: int, c: int {'
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1969,7 +1604,6 @@ $test-function-header-with-multiple-args:inout2:
     c3/return
 
 test-function-with-multiple-args-and-outputs:
-    # fn foo a: int, b: int, c: int -> x: int, y: int {
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3967,7 +3601,6 @@ $find-in-function-outputs:end:
     c3/return
 
 test-parse-mu-stmt:
-    # 'increment n'
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4004,7 +3637,6 @@ test-parse-mu-stmt:
     c3/return
 
 test-parse-mu-stmt-with-comma:
-    # 'increment n'
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7106,7 +6738,7 @@ test-emit-subx-statement-select-primitive-2:
     c3/return
 
 test-increment-register:
-    # Select the right primitive between overloads.
+    # Select the right register between overloads.
     #   foo <- increment
     # =>
     #   50/increment-eax
