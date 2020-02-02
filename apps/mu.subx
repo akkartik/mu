@@ -1179,6 +1179,56 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-branches-and-local-vars:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    var x: int\n")
+    (write _test-input-stream "    break-if->=\n")
+    (write _test-input-stream "    increment x\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-branches-and-local-vars/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-branches-and-local-vars/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-branches-and-local-vars/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-branches-and-local-vars/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-branches-and-local-vars/4")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-branches-and-local-vars/5")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-branches-and-local-vars/6")
+    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-branches-and-local-vars/7")
+    (check-next-stream-line-equal _test-output-stream "        0f 8d/jump-if->= break/disp32"  "F - test-convert-function-with-branches-and-local-vars/8")
+    (check-next-stream-line-equal _test-output-stream "        ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-branches-and-local-vars/9")
+    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-branches-and-local-vars/10")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-branches-and-local-vars/11")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-branches-and-local-vars/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-branches-and-local-vars/13")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-branches-and-local-vars/14")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-and-local-vars/15")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-and-local-vars/16")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-and-local-vars/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -4153,9 +4203,12 @@ emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (handle list stmt), va
     # . save registers
     50/push-eax
     51/push-ecx
+    52/push-edx
     56/push-esi
     # esi = stmts
     8b/-> *(ebp+0xc) 6/r32/esi
+    # var var-seen?/edx: boolean <- copy false
+    ba/copy-to-edx 0/imm32/false
     #
     {
 $emit-subx-stmt-list:loop:
@@ -4173,7 +4226,32 @@ $emit-subx-stmt-list:block:
       {
 $emit-subx-stmt-list:check-for-stmt:
         81 7/subop/compare *ecx 1/imm32/stmt1  # Stmt-tag
-        75/jump-if-!= break/disp8
+        0f 85/jump-if-!= break/disp32
+        {
+          # if !var-seen? break
+          81 7/subop/compare %edx 0/imm32/false
+          0f 84/jump-if-= break/disp32
+$emit-subx-stmt-list:check-for-break:
+          # if (!string-starts-with?(var->operation, "break")) break
+          (string-starts-with? *(ecx+4) "break")  # Stmt1-operation => eax
+          3d/compare-eax-and 0/imm32
+          0f 84/jump-if-= break/disp32
+$emit-subx-stmt-list:break:
+          # create a new block for the remaining statements
+          (emit-indent *(ebp+8) *Curr-block-depth)
+          (write-buffered *(ebp+8) "{\n")
+          ff 0/subop/increment *Curr-block-depth
+          (emit-subx-stmt-list *(ebp+8) %esi *(ebp+0x10))
+          ff 1/subop/decrement *Curr-block-depth
+          (emit-indent *(ebp+8) *Curr-block-depth)
+          (write-buffered *(ebp+8) "}\n")
+          # return $emit-subx-stmt-list
+          e9/jump $emit-subx-stmt-list:reclaim-loop/disp32
+        }
+        {
+$emit-subx-stmt-list:check-for-loop:
+          # TODO
+        }
 $emit-subx-stmt-list:stmt:
         (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
       }
@@ -4184,6 +4262,8 @@ $emit-subx-stmt-list:check-for-vardef:
 $emit-subx-stmt-list:vardef:
         (emit-subx-var-def *(ebp+8) %ecx)
         (push *(ebp+0x10) *(ecx+4))  # Vardef-var
+        # var-seen? = true
+        ba/copy-to-edx 1/imm32/true
       }
       {
 $emit-subx-stmt-list:check-for-regvardef:
@@ -4206,6 +4286,8 @@ $emit-subx-stmt-list:regvardef:
         (push *(ebp+0x10) %eax)
         # emit the instruction as usual
         (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
+        # var-seen? = true
+        ba/copy-to-edx 1/imm32/true
       }
       {
 $emit-subx-stmt-list:check-for-named-block:
@@ -4258,6 +4340,7 @@ $emit-subx-stmt-list:reclaim-var-on-stack:
 $emit-subx-stmt-list:end:
     # . restore registers
     5e/pop-to-esi
+    5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
