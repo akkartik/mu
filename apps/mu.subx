@@ -323,7 +323,7 @@ Var-name:
   0/imm32
 Var-type:
   4/imm32
-Var-block:
+Var-block-depth:
   8/imm32
 Var-stack-offset:
   0xc/imm32
@@ -1381,6 +1381,167 @@ test-convert-function-with-branches-in-named-block:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-var-in-nested-block:
+    # empty function decl => function prologue and epilogue
+    #   fn foo {
+    #     {
+    #       {
+    #         var x: int
+    #         increment x
+    #       }
+    #     }
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       {
+    #         {
+    #           68/push 0/imm32
+    #           ff 0/subop/increment *(ebp-4)
+    #           81 0/subop/add %esp 4/imm32
+    #         }
+    #       }
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo x: int {\n")
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    {\n")
+    (write _test-input-stream "      var x: int\n")
+    (write _test-input-stream "      increment x\n")
+    (write _test-input-stream "    }\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-with-var-in-nested-block/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-with-var-in-nested-block/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-with-var-in-nested-block/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-var-in-nested-block/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-var-in-nested-block/4")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-var-in-nested-block/5")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-var-in-nested-block/6")
+    (check-next-stream-line-equal _test-output-stream "68/push 0/imm32"       "F - test-convert-function-with-var-in-nested-block/7")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-var-in-nested-block/8")
+    (check-next-stream-line-equal _test-output-stream "81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-var-in-nested-block/9")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-var-in-nested-block/10")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-var-in-nested-block/11")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-var-in-nested-block/13")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-var-in-nested-block/14")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-var-in-nested-block/15")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-var-in-nested-block/16")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-var-in-nested-block/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-multiple-vars-in-nested-blocks:
+    # empty function decl => function prologue and epilogue
+    #   fn foo {
+    #     {
+    #       var x/eax: int <- copy 0
+    #       {
+    #         var y: int
+    #         x <- add y
+    #       }
+    #     }
+    #   }
+    # =>
+    #   foo:
+    #     # . prologue
+    #     55/push-ebp
+    #     89/<- %ebp 4/r32/esp
+    #     {
+    #       {
+    #         ff 6/subop/push %eax
+    #         {
+    #           68/push 0/imm32
+    #           ff 0/subop/increment *(ebp-8)  # eax has been spilled above
+    #           81 0/subop/add %esp 4/imm32
+    #         }
+    #         8f 0/subop/pop %eax
+    #       }
+    #     }
+    #     # . epilogue
+    #     89/<- %esp 5/r32/ebp
+    #     5d/pop-to-ebp
+    #     c3/return
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo x: int {\n")
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    var x/eax: int <- copy 0\n")
+    (write _test-input-stream "    {\n")
+    (write _test-input-stream "      var y: int\n")
+    (write _test-input-stream "      x <- add y\n")
+    (write _test-input-stream "    }\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                  "F - test-convert-function-with-var-in-nested-block/0")
+    (check-next-stream-line-equal _test-output-stream "# . prologue"          "F - test-convert-function-with-var-in-nested-block/1")
+    (check-next-stream-line-equal _test-output-stream "55/push-ebp"           "F - test-convert-function-with-var-in-nested-block/2")
+    (check-next-stream-line-equal _test-output-stream "89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-var-in-nested-block/3")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-var-in-nested-block/4")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-var-in-nested-block/5")
+    (check-next-stream-line-equal _test-output-stream "ff 6/subop/push %eax"  "F - test-convert-function-with-var-in-nested-block/6")
+    (check-next-stream-line-equal _test-output-stream "b8/copy-to-eax 0/imm32"  "F - test-convert-function-with-var-in-nested-block/7")
+    (check-next-stream-line-equal _test-output-stream "{"                     "F - test-convert-function-with-var-in-nested-block/8")
+    (check-next-stream-line-equal _test-output-stream "68/push 0/imm32"       "F - test-convert-function-with-var-in-nested-block/9")
+    (check-next-stream-line-equal _test-output-stream "03/add *(ebp+0xfffffff8) 0x00000000/r32"  "F - test-convert-function-with-var-in-nested-block/10")
+    (check-next-stream-line-equal _test-output-stream "81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-var-in-nested-block/11")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-var-in-nested-block/12")
+    (check-next-stream-line-equal _test-output-stream "8f 0/subop/pop %eax"   "F - test-convert-function-with-var-in-nested-block/13")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-var-in-nested-block/14")
+    (check-next-stream-line-equal _test-output-stream "}"                     "F - test-convert-function-with-var-in-nested-block/15")
+    (check-next-stream-line-equal _test-output-stream "# . epilogue"          "F - test-convert-function-with-var-in-nested-block/16")
+    (check-next-stream-line-equal _test-output-stream "89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-var-in-nested-block/17")
+    (check-next-stream-line-equal _test-output-stream "5d/pop-to-ebp"         "F - test-convert-function-with-var-in-nested-block/18")
+    (check-next-stream-line-equal _test-output-stream "c3/return"             "F - test-convert-function-with-var-in-nested-block/19")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -1551,6 +1712,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (handle fun
     #     assert(v->register == null)
     #     v->stack-offset = next-offset
     #     next-offset += size-of(v)
+    #     # v->block-depth is implicitly 0
     #     out->inouts = append(out->inouts, v)
     #     push(vars, v)
     #   ## outputs
@@ -1627,6 +1789,7 @@ $populate-mu-function-header:check-for-inout:
       # next-offset += size-of(v)
       (size-of %ebx)  # => eax
       01/add %edx 0/r32/eax
+      # v->block-depth is implicitly 0
       #
       (append-list Heap %ebx *(edi+8))  # Function-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Function-inouts
@@ -1978,7 +2141,7 @@ $parse-var-with-type:write-register:
       # HACK: s->end can be less than s->start with all the decrements above
       # That's probably a sign we have the wrong algorithm for this function.
       8b/-> *ecx 0/r32/eax
-      39/compare 0/r32/eax *(ecx+4)
+      39/compare *(ecx+4) 0/r32/eax  # Slice-end
       76/jump-if-<= break/disp8
       (slice-to-string Heap %ecx)
       89/<- *(edi+0x10) 0/r32/eax  # Var-register
@@ -2989,6 +3152,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     # pseudocode:
     #   var line: (stream byte 512)
     #   var word-slice: slice
+    #   increment *Curr-block-depth
     #   result/eax = allocate(Heap, Stmt-size)
     #   result->tag = 0/Block
     #   while true                                  # line loop
@@ -3016,6 +3180,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #     else
     #       stmt = parse-mu-stmt(line, vars, fn)
     #       append-to-block(result, stmt)
+    #   decrement *Curr-block-depth
     #   return result
     #
     # . prologue
@@ -3036,6 +3201,8 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
+    # increment *Curr-block-depth
+    ff 0/subop/increment *Curr-block-depth
     # edi = result
     (allocate Heap *Stmt-size)  # => eax
     (zero-out %eax *Stmt-size)
@@ -3122,6 +3289,8 @@ $parse-mu-block:regular-stmt:
       (append-to-block Heap %edi %eax)
       e9/jump loop/disp32
     } # end line loop
+    # decrement *Curr-block-depth
+    ff 1/subop/decrement *Curr-block-depth
     # return result
     89/<- %eax 7/r32/edi
 $parse-mu-block:end:
@@ -3245,8 +3414,11 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -
     8b/-> *Next-local-stack-offset 0/r32/eax
     89/<- *(edx+0xc) 0/r32/eax  # Var-stack-offset
     # *Next-local-stack-offset -= size-of(v)
-    (size-of %edx)
+    (size-of %edx)  # => eax
     29/subtract-from *Next-local-stack-offset 0/r32/eax
+    # v->block-depth = *Curr-block-depth
+    8b/-> *Curr-block-depth 0/r32/eax
+    89/<- *(edx+8) 0/r32/eax
     #
     (push *(ebp+0xc) %edx)
     # either v has no register and there's no more to this line
@@ -3909,7 +4081,7 @@ new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), type: int
     8b/-> *(ebp+0x10) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Var-type
     8b/-> *(ebp+0x14) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Var-block
+    89/<- *(eax+8) 1/r32/ecx  # Var-block-depth
     8b/-> *(ebp+0x18) 1/r32/ecx
     89/<- *(eax+0xc) 1/r32/ecx  # Var-stack-offset
     8b/-> *(ebp+0x1c) 1/r32/ecx
@@ -4009,7 +4181,7 @@ new-label:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax
     (allocate *(ebp+8) *Tree-size)  # => eax
     89/<- *(ecx+4) 0/r32/eax  # Var-type
     89/<- %eax 1/r32/ecx
-    c7 0/subop/copy *(eax+8) 0/imm32  # Var-block
+    c7 0/subop/copy *(eax+8) 0/imm32  # Var-block-depth
     c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-stack-offset
     c7 0/subop/copy *(eax+0x10) 0/imm32  # Var-register
 $new-label:end:
@@ -4296,6 +4468,7 @@ emit-subx-function:  # out: (addr buffered-file), f: (handle function)
     (write-buffered %edi *ecx)
     (write-buffered %edi ":\n")
     (emit-subx-prologue %edi)
+    c7 0/subop/copy *Curr-block-depth 0/imm32
     (emit-subx-block %edi *(ecx+0x10) %edx)  # Function-body
     (emit-subx-epilogue %edi)
 $emit-subx-function:end:
@@ -4325,9 +4498,11 @@ emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (add
 $emit-subx-block:check-empty:
       81 7/subop/compare %esi 0/imm32
       0f 84/jump-if-= break/disp32
+      ff 0/subop/increment *Curr-block-depth
       (write-buffered *(ebp+8) "{\n")
       (emit-subx-stmt-list *(ebp+8) %esi *(ebp+0x10))
       (write-buffered *(ebp+8) "}\n")
+      ff 1/subop/decrement *Curr-block-depth
     }
 $emit-subx-block:end:
     # . restore registers
@@ -4408,7 +4583,6 @@ $emit-subx-stmt-list:named-block:
       e9/jump loop/disp32
     }
     # reclaim locals
-    # TODO: support nested blocks; take block-ids into account
     {
 $emit-subx-stmt-list:reclaim-loop:
       8b/-> *(ebp+0x10) 0/r32/eax
@@ -4417,6 +4591,10 @@ $emit-subx-stmt-list:reclaim-loop:
       # var v/ecx : (handle var) = top(vars)
       (top %eax)  # => eax
       89/<- %ecx 0/r32/eax
+      # if v->block-depth == *Curr-block-depth
+      8b/-> *Curr-block-depth 0/r32/eax
+      39/compare *(ecx+8) 0/r32/eax  # Var-block-depth
+      0f 85/jump-if-!= break/disp32
       # if v is in a register
       81 7/subop/compare *(ecx+0x10) 0/imm32  # Var-register
       {
@@ -4560,6 +4738,7 @@ emit-subx-named-block:  # out: (addr buffered-file), named-block: (handle named-
 $emit-subx-named-block:check-empty:
       81 7/subop/compare %eax 0/imm32
       0f 84/jump-if-= break/disp32
+      ff 0/subop/increment *Curr-block-depth
       (write-buffered *(ebp+8) "{\n")
       (write-buffered *(ebp+8) *(esi+8))  # Named-block-name
       (write-buffered *(ebp+8) "loop:\n")
@@ -4567,6 +4746,7 @@ $emit-subx-named-block:check-empty:
       (write-buffered *(ebp+8) "}\n")
       (write-buffered *(ebp+8) *(esi+8))  # Named-block-name
       (write-buffered *(ebp+8) "break:\n")
+      ff 1/subop/decrement *Curr-block-depth
     }
 $emit-subx-named-block:end:
     # . restore registers
