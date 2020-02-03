@@ -2807,7 +2807,7 @@ populate-mu-function-body:  # in: (addr buffered-file), out: (handle function), 
     # initialize some global state
     c7 0/subop/copy *Curr-block-depth 1/imm32
     c7 0/subop/copy *Next-local-stack-offset -4/imm32
-    # var eax: (handle block) = parse-mu-block(in, vars)
+    # var eax: (handle block) = parse-mu-block(in, vars, fn)
     (parse-mu-block %esi *(ebp+0x10) %edi)  # => eax
     # out->body = eax
     89/<- *(edi+0x10) 0/r32/eax  # Function-body
@@ -2856,7 +2856,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #     else if slice-equal?(word-slice, "}")
     #       break
     #     else if slice-ends-with?(word-slice, ":")
-    #       # TODO: check the rest of line
+    #       # TODO: error-check the rest of 'line'
     #       named-block = parse-mu-named-block(word-slice, in, vars, fn)
     #       append-to-block(result, named-block)
     #     else if slice-equal?(word-slice, "var")
@@ -3752,7 +3752,7 @@ $new-function:end:
     5d/pop-to-ebp
     c3/return
 
-new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), type: int, block: int, stack-offset: int, register: (addr array byte) -> result/eax: (handle var)
+new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), type: (addr tree type-id), block: int, stack-offset: int, register: (addr array byte) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
