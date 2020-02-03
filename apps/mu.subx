@@ -4251,7 +4251,7 @@ $emit-subx-stmt-list:break:
           (emit-indent *(ebp+8) *Curr-block-depth)
           (write-buffered *(ebp+8) "}\n")
           # return $emit-subx-stmt-list
-          e9/jump $emit-subx-stmt-list:reclaim-loop/disp32
+          e9/jump $emit-subx-stmt-list:cleanup/disp32
         }
         {
 $emit-subx-stmt-list:check-for-loop:
@@ -4304,44 +4304,9 @@ $emit-subx-stmt-list:named-block:
       8b/-> *(esi+4) 6/r32/esi  # List-next
       e9/jump loop/disp32
     }
-    # reclaim locals
-    {
-$emit-subx-stmt-list:reclaim-loop:
-      8b/-> *(ebp+0x10) 0/r32/eax
-      81 7/subop/compare *eax 0/imm32  # Stack-top
-      0f 84/jump-if-= break/disp32
-      # var v/ecx : (handle var) = top(vars)
-      (top %eax)  # => eax
-      89/<- %ecx 0/r32/eax
-      # if v->block-depth == *Curr-block-depth
-      8b/-> *Curr-block-depth 0/r32/eax
-      39/compare *(ecx+8) 0/r32/eax  # Var-block-depth
-      0f 85/jump-if-!= break/disp32
-      # if v is in a register
-      81 7/subop/compare *(ecx+0x10) 0/imm32  # Var-register
-      {
-        74/jump-if-= break/disp8
-$emit-subx-stmt-list:reclaim-var-in-register:
-        (emit-indent *(ebp+8) *Curr-block-depth)
-        (write-buffered *(ebp+8) "8f 0/subop/pop %")
-        (write-buffered *(ebp+8) *(ecx+0x10))
-        (write-buffered *(ebp+8) Newline)
-      }
-      # if v is on the stack
-      {
-        75/jump-if-!= break/disp8
-$emit-subx-stmt-list:reclaim-var-on-stack:
-        (size-of %ecx)  # => eax
-        01/add *Next-local-stack-offset 0/r32/eax
-        (emit-indent *(ebp+8) *Curr-block-depth)
-        (write-buffered *(ebp+8) "81 0/subop/add %esp ")
-        (print-int32-buffered *(ebp+8) %eax)
-        (write-buffered *(ebp+8) "/imm32\n")
-      }
-      #
-      (pop *(ebp+0x10))
-      e9/jump loop/disp32
-    }
+$emit-subx-stmt-list:cleanup:
+    (emit-cleanup-code *(ebp+8) *(ebp+0x10) *Curr-block-depth)
+    (clean-up-blocks *(ebp+0x10) *Curr-block-depth)
 $emit-subx-stmt-list:end:
     # . restore registers
     5e/pop-to-esi
@@ -4364,6 +4329,119 @@ $emit-subx-stmt-list:abort-regvardef-without-register:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+# emit clean-up code for 'vars' until some block depth
+# doesn't actually modify 'vars' so we need traverse manually inside the stack
+emit-cleanup-code:  # out: (addr buffered-file), vars: (addr stack (handle var)), until-block-depth: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # ecx = vars
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # var eax: int = vars->top
+    8b/-> *ecx 0/r32/eax
+    # var min/ecx: (address (handle var)) = vars->data
+    81 0/subop/add %ecx 8/imm32
+    # var curr/eax: (address (handle var)) = &vars->data[vars->top - 4]
+    81 5/subop/subtract %eax 4/imm32
+    8d/copy-address *(ecx+eax) 0/r32/eax
+    # edx = until-block-depth
+    8b/-> *(ebp+0x10) 2/r32/edx
+    {
+$emit-cleanup-code:loop:
+      # if (curr < min) break
+      39/compare %eax 1/r32/ecx
+      0f 82/jump-if-addr< break/disp32
+      # var v/ebx: (handle var) = *curr
+      8b/-> *eax 3/r32/ebx
+      # if (v->block-depth < until-block-depth) break
+      39/compare *(ebx+8) 2/r32/edx  # Var-block-depth
+      0f 8c/jump-if-< break/disp32
+      # if v is in a register
+      81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
+      {
+        74/jump-if-= break/disp8
+$emit-cleanup-code:reclaim-var-in-register:
+        (emit-indent *(ebp+8) *Curr-block-depth)
+        (write-buffered *(ebp+8) "8f 0/subop/pop %")
+        (write-buffered *(ebp+8) *(ebx+0x10))
+        (write-buffered *(ebp+8) Newline)
+      }
+      # otherwise v is on the stack
+      {
+        75/jump-if-!= break/disp8
+$emit-cleanup-code:reclaim-var-on-stack:
+        50/push-eax
+        (size-of %ebx)  # => eax
+        (emit-indent *(ebp+8) *Curr-block-depth)
+        (write-buffered *(ebp+8) "81 0/subop/add %esp ")
+        (print-int32-buffered *(ebp+8) %eax)
+        (write-buffered *(ebp+8) "/imm32\n")
+        58/pop-to-eax
+      }
+      # curr -= 4
+      2d/subtract-from-eax 4/imm32
+      e9/jump loop/disp32
+    }
+$emit-cleanup-code:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# clean up global state for 'vars' until (but excluding) some block depth
+clean-up-blocks:  # vars: (addr stack (handle var)), until-block-depth: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    # esi = vars
+    8b/-> *(ebp+8) 6/r32/esi
+    # ecx = until-block-depth
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    {
+$clean-up-blocks:reclaim-loop:
+      # if (vars->top <= 0) break
+      81 7/subop/compare *esi 0/imm32  # Stack-top
+      7e/jump-if-<= break/disp8
+      # var v/eax : (handle var) = top(vars)
+      (top %esi)  # => eax
+      # if (v->block-depth < until-block-depth) break
+      39/compare *(eax+8) 1/r32/ecx  # Var-block-depth
+      7c/jump-if-< break/disp8
+      # if v is on the stack, update Next-local-stack-offset
+      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+      {
+        75/jump-if-!= break/disp8
+$clean-up-blocks:reclaim-var-on-stack:
+        (size-of %eax)  # => eax
+        01/add *Next-local-stack-offset 0/r32/eax
+      }
+      (pop %esi)
+      e9/jump loop/disp32
+    }
+$clean-up-blocks:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle statement)
     # . prologue
