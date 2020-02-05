@@ -986,7 +986,7 @@ case 0x89: {  // copy r32 to r/m32
   const uint8_t rsrc = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "copy " << rname(rsrc) << " to r/m32" << end();
   int32_t* dest = effective_address(modrm);
-  *dest = Reg[rsrc].i;
+  *dest = Reg[rsrc].i;  // Write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << *dest << end();
   break;
 }

@@ -108,7 +108,7 @@ struct vma {
   uint8_t& data(uint32_t a) {
     assert(match(a));
     uint32_t result_index = a-start;
-    if (_data.size() <= result_index) {
+    if (_data.size() <= result_index+/*largest word size that can be accessed in one instruction*/sizeof(int)) {
       const int align = 0x1000;
       uint32_t result_size = result_index + 1;  // size needed for result_index to be valid
       uint32_t new_size = align_upwards(result_size, align);

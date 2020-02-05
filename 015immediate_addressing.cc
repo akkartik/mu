@@ -1235,7 +1235,7 @@ case 0xc7: {  // copy imm32 to r32
   int32_t* dest = effective_address(modrm);
   const int32_t src = next32();
   trace(Callstack_depth+1, "run") << "imm32 is 0x" << HEXWORD << src << end();
-  *dest = src;
+  *dest = src;  // Write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
   break;
 }
 

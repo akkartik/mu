@@ -818,7 +818,7 @@ case 0x8f: {  // pop stack into r/m32
     case 0: {
       trace(Callstack_depth+1, "run") << "pop into r/m32" << end();
       int32_t* dest = effective_address(modrm);
-      *dest = pop();
+      *dest = pop();  // Write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
       break;
     }
   }

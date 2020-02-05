@@ -68,7 +68,7 @@ case 0x88: {  // copy r8 to r/m8
   // use unsigned to zero-extend 8-bit value to 32 bits
   uint8_t* dest = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
   const uint8_t* src = reg_8bit(rsrc);
-  *dest = *src;
+  *dest = *src;  // Read/write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
   break;
 }
@@ -108,7 +108,7 @@ case 0x8a: {  // copy r/m8 to r8
   const uint8_t* src = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
   uint8_t* dest = reg_8bit(rdest);
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*src) << end();
-  *dest = *src;
+  *dest = *src;  // Read/write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
   const uint8_t rdest_32bit = rdest & 0x3;
   trace(Callstack_depth+1, "run") << rname(rdest_32bit) << " now contains 0x" << HEXWORD << Reg[rdest_32bit].u << end();
   break;
@@ -170,7 +170,7 @@ case 0xc6: {  // copy imm8 to r/m8
   }
   // use unsigned to zero-extend 8-bit value to 32 bits
   uint8_t* dest = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
-  *dest = src;
+  *dest = src;  // Write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
   break;
 }
