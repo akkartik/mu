@@ -3053,7 +3053,11 @@ $check-no-tokens-left:end:
 
 parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (addr stack (handle var)), fn: (handle function) -> result/eax: (handle stmt)
     # pseudocode:
+    #   var v: (handle var) = new-var(name except trailing ':', 0)
+    #   v->block-depth = *Curr-block-depth  # containing block depth
+    #   push(vars, v)
     #   result = parse-mu-block(in, vars, fn)
+    #   pop(vars)
     #   result->tag = named-block
     #   result->name = slice-to-string(name)
     #   return result
@@ -3063,17 +3067,43 @@ parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (ad
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var s/ecx: (addr array byte) = slice-to-string(name)
-    (slice-to-string Heap *(ebp+8))  # => eax
-    89/<- %ecx 0/r32/eax
-    #
+    57/push-edi
+    # push a var for the label on to 'vars'
+    {
+      # ecx = name
+      8b/-> *(ebp+8) 1/r32/ecx
+      # var s/ecx: slice = {name->start, name->end}
+      ff 6/subop/push *(ecx+4)  # Slice-end
+      ff 6/subop/push *ecx  # Slice-start
+      89/<- %ecx 4/r32/esp
+      # strip the trailing ':' from s
+      ff 1/subop/decrement *(ecx+4)
+      # var s/ecx: (address array byte)
+      (slice-to-string Heap %ecx)  # => eax
+      89/<- %ecx 0/r32/eax
+      # var type/eax: (handle tree type-id) = literal
+      (allocate Heap *Tree-size)  # => eax
+      (zero-out %eax *Tree-size)  # default type is 'literal'
+      # var v: (handle var) = new-var(s)
+      (new-var Heap %ecx %eax *Curr-block-depth 0 0)  # => eax
+      # push(vars, v)
+      (push *(ebp+0x10) %eax)
+      # reclaim s
+      81 0/subop/add %esp 8/imm32
+    }
+    # edi = result
     (parse-mu-block *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))  # => eax
+    89/<- %edi 0/r32/eax
+    (pop *(ebp+0x10))  # => eax
     # result->tag = named-block
-    c7 0/subop/copy *eax 4/imm32/named-block  # Stmt-tag
+    c7 0/subop/copy *edi 4/imm32/named-block  # Stmt-tag
     # result->name = slice-to-string(name)
-    89/<- *(eax+8) 1/r32/ecx  # Named-block-name
+    (slice-to-string Heap *(ebp+8))  # => eax
+    89/<- *(edi+8) 0/r32/eax  # Named-block-name
 $parse-mu-named-block:end:
+    89/<- %eax 7/r32/edi
     # . restore registers
+    5f/pop-to-edi
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -3337,26 +3367,7 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       (slice-equal? %ecx "<-")
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= $add-operation-and-inputs-to-stmt:abort/disp32
-      # if (name starts with "$") it's a label
-      {
-        # var eax: byte = name[0]
-        8b/-> *ecx 0/r32/eax
-        8a/copy-byte *eax 0/r32/AL
-        81 4/subop/and %eax 0xff/imm32
-        # if (eax != '$') goto next condition
-        3d/compare-eax-and 0x24/imm32/dollar
-        75/jump-if-!= break/disp8
-        # var eax: (handle var)
-        # labels aren't in vars; just create a new record on each use
-        (new-label Heap %ecx)  # => eax
-        # stmt->inouts = append(eax, stmt->inouts)
-        (append-list Heap %eax *(edi+8))  # Stmt1-inouts => eax
-        89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts
-        # continue
-        e9/jump $add-operation-and-inputs-to-stmt:read-inouts/disp32
-      }
-$add-operation-and-inputs-to-stmt:regular-inout:
-      # otherwise
+      #
       (lookup-var-or-literal %ecx *(ebp+0x10))  # => eax
       (append-list Heap %eax *(edi+8))  # Stmt1-inouts or Regvardef-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
@@ -4378,6 +4389,10 @@ $emit-cleanup-code:reclaim-var-in-register:
 $emit-cleanup-code:reclaim-var-on-stack:
         50/push-eax
         (size-of %ebx)  # => eax
+        # don't emit code for labels
+        3d/compare-eax-and 0/imm32
+        74/jump-if-= break/disp8
+        #
         (emit-indent *(ebp+8) *Curr-block-depth)
         (write-buffered *(ebp+8) "81 0/subop/add %esp ")
         (print-int32-buffered *(ebp+8) %eax)
