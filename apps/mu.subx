@@ -132,8 +132,8 @@
 #
 #   A named block contains:
 #     tag: 4
-#     name: (handle array byte) -- starting with '$'
 #     statements: (handle list statement)
+#     name: (handle array byte) -- starting with '$'
 
 # == Translation: managing the stack
 # Now that we know what the language looks like in the large, let's think
@@ -549,6 +549,7 @@ test-convert-function-with-arg-and-body:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo n : int {\n")
     (write _test-input-stream "  increment n\n")
@@ -568,12 +569,14 @@ test-convert-function-with-arg-and-body:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-arg-and-body/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-arg-and-body/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-arg-and-body/4")
-    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-arg-and-body/5")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-arg-and-body/6")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-arg-and-body/7")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-arg-and-body/8")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-arg-and-body/9")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-arg-and-body/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-arg-and-body/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-arg-and-body/6")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-arg-and-body/7")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-arg-and-body/8")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-arg-and-body/9")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-arg-and-body/10")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-arg-and-body/11")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-arg-and-body/12")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -588,6 +591,7 @@ test-convert-function-distinguishes-args:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int {\n")
     (write _test-input-stream "  increment b\n")
@@ -607,12 +611,14 @@ test-convert-function-distinguishes-args:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-distinguishes-args/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-distinguishes-args/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-distinguishes-args/4")
-    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *(ebp+0x0000000c)"  "F - test-convert-function-distinguishes-args/5")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-distinguishes-args/6")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-distinguishes-args/7")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-distinguishes-args/8")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-distinguishes-args/9")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-distinguishes-args/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-distinguishes-args/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *(ebp+0x0000000c)"  "F - test-convert-function-distinguishes-args/6")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-distinguishes-args/7")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-distinguishes-args/8")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-distinguishes-args/9")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-distinguishes-args/10")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-distinguishes-args/11")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-distinguishes-args/12")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -627,6 +633,7 @@ test-convert-function-returns-result:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int -> result/eax: int {\n")
     (write _test-input-stream "  result <- copy a\n")
@@ -647,13 +654,15 @@ test-convert-function-returns-result:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-returns-result/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-returns-result/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-returns-result/4")
-    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-function-returns-result/5")
-    (check-next-stream-line-equal _test-output-stream "    40/increment-eax"    "F - test-convert-function-returns-result/6")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-returns-result/7")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-returns-result/8")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-returns-result/9")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-returns-result/10")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-returns-result/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-returns-result/5")
+    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-function-returns-result/6")
+    (check-next-stream-line-equal _test-output-stream "    40/increment-eax"    "F - test-convert-function-returns-result/7")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-returns-result/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-returns-result/9")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-returns-result/10")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-returns-result/11")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-returns-result/12")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-returns-result/13")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -668,6 +677,7 @@ test-convert-function-literal-arg:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int -> result/eax: int {\n")
     (write _test-input-stream "  result <- copy a\n")
@@ -688,13 +698,15 @@ test-convert-function-literal-arg:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-literal-arg/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-literal-arg/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-literal-arg/4")
-    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-function-literal-arg/5")
-    (check-next-stream-line-equal _test-output-stream "    05/add-to-eax 1/imm32"  "F - test-convert-function-literal-arg/6")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-literal-arg/7")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-literal-arg/8")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-literal-arg/9")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-literal-arg/10")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-literal-arg/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-literal-arg/5")
+    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-function-literal-arg/6")
+    (check-next-stream-line-equal _test-output-stream "    05/add-to-eax 1/imm32"  "F - test-convert-function-literal-arg/7")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-literal-arg/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-literal-arg/9")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-literal-arg/10")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-literal-arg/11")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-literal-arg/12")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-literal-arg/13")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -709,6 +721,7 @@ test-convert-function-literal-arg-2:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int -> result/ebx: int {\n")
     (write _test-input-stream "  result <- copy a\n")
@@ -729,13 +742,15 @@ test-convert-function-literal-arg-2:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-literal-arg-2/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-literal-arg-2/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-literal-arg-2/4")
-    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000003/r32"  "F - test-convert-function-literal-arg-2/5")
-    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %ebx 1/imm32"  "F - test-convert-function-literal-arg-2/6")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-literal-arg-2/7")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-literal-arg-2/8")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-literal-arg-2/9")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-literal-arg-2/10")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-literal-arg-2/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-literal-arg-2/5")
+    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000003/r32"  "F - test-convert-function-literal-arg-2/6")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %ebx 1/imm32"  "F - test-convert-function-literal-arg-2/7")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-literal-arg-2/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-literal-arg-2/9")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-literal-arg-2/10")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-literal-arg-2/11")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-literal-arg-2/12")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-literal-arg-2/13")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -750,6 +765,7 @@ test-convert-function-call-with-literal-arg:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn main -> result/ebx: int {\n")
     (write _test-input-stream "  result <- do-add 3 4\n")
@@ -773,24 +789,28 @@ test-convert-function-call-with-literal-arg:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-literal-arg/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-literal-arg/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-literal-arg/4")
-    (check-next-stream-line-equal _test-output-stream "    (do-add 3 4)"        "F - test-convert-function-call-with-literal-arg/5")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-literal-arg/6")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-literal-arg/7")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-literal-arg/8")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-literal-arg/9")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-literal-arg/10")
-    (check-next-stream-line-equal _test-output-stream "do-add:"                 "F - test-convert-function-call-with-literal-arg/11")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-literal-arg/12")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-literal-arg/13")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-literal-arg/14")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-literal-arg/15")
-    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000003/r32"  "F - test-convert-function-call-with-literal-arg/16")
-    (check-next-stream-line-equal _test-output-stream "    03/add *(ebp+0x0000000c) 0x00000003/r32"  "F - test-convert-function-call-with-literal-arg/17")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-literal-arg/18")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-literal-arg/19")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-literal-arg/20")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-literal-arg/21")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-literal-arg/22")
+    (check-next-stream-line-equal _test-output-stream "$main:0x00000001:loop:"  "F - test-convert-function-call-with-literal-arg/5")
+    (check-next-stream-line-equal _test-output-stream "    (do-add 3 4)"        "F - test-convert-function-call-with-literal-arg/6")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-literal-arg/7")
+    (check-next-stream-line-equal _test-output-stream "$main:0x00000001:break:" "F - test-convert-function-call-with-literal-arg/8")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-literal-arg/9")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-literal-arg/10")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-literal-arg/11")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-literal-arg/12")
+    (check-next-stream-line-equal _test-output-stream "do-add:"                 "F - test-convert-function-call-with-literal-arg/13")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-literal-arg/14")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-literal-arg/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-literal-arg/16")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-literal-arg/17")
+    (check-next-stream-line-equal _test-output-stream "$do-add:0x00000002:loop:"  "F - test-convert-function-call-with-literal-arg/18")
+    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000003/r32"  "F - test-convert-function-call-with-literal-arg/19")
+    (check-next-stream-line-equal _test-output-stream "    03/add *(ebp+0x0000000c) 0x00000003/r32"  "F - test-convert-function-call-with-literal-arg/20")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-literal-arg/21")
+    (check-next-stream-line-equal _test-output-stream "$do-add:0x00000002:break:"  "F - test-convert-function-call-with-literal-arg/22")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-literal-arg/23")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-literal-arg/24")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-literal-arg/25")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-literal-arg/26")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -805,6 +825,7 @@ test-convert-function-with-local-var-in-mem:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x: int\n")
@@ -825,14 +846,16 @@ test-convert-function-with-local-var-in-mem:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-in-mem/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-mem/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-in-mem/4")
-    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-with-local-var-in-mem/5")
-    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-mem/6")
-    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-mem/7")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-mem/8")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-mem/9")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-mem/10")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-mem/11")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-mem/12")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-in-mem/5")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-with-local-var-in-mem/6")
+    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-mem/7")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-mem/8")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-mem/9")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-in-mem/10")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-mem/11")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-mem/12")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-mem/13")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-mem/14")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -847,6 +870,7 @@ test-convert-function-with-local-var-in-reg:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: int <- copy 3\n")
@@ -867,15 +891,17 @@ test-convert-function-with-local-var-in-reg:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-in-reg/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-reg/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-in-reg/4")
-    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-with-local-var-in-reg/5")
-    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-convert-function-with-local-var-in-reg/6")
-    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-convert-function-with-local-var-in-reg/7")
-    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-with-local-var-in-reg/8")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-reg/9")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-reg/10")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-reg/11")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-reg/12")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-reg/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-in-reg/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-with-local-var-in-reg/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-convert-function-with-local-var-in-reg/7")
+    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-convert-function-with-local-var-in-reg/8")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-with-local-var-in-reg/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-reg/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-in-reg/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-reg/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-reg/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-reg/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-reg/15")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -890,6 +916,7 @@ test-convert-function-with-local-var-in-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -912,16 +939,20 @@ test-convert-function-with-local-var-in-block:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-in-block/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-block/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-in-block/4")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-local-var-in-block/5")
-    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-local-var-in-block/6")
-    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-block/7")
-    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-block/8")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-local-var-in-block/9")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-block/10")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-block/11")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-block/12")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-block/13")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-block/14")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-in-block/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-local-var-in-block/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-local-var-in-block/7")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-local-var-in-block/8")
+    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-block/9")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-block/10")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-local-var-in-block/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-local-var-in-block/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-block/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-in-block/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-block/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-block/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-block/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-block/18")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -936,6 +967,7 @@ test-convert-function-with-local-var-in-named-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  $bar: {\n")
@@ -958,18 +990,20 @@ test-convert-function-with-local-var-in-named-block:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-in-named-block/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-in-named-block/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-in-named-block/4")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-local-var-in-named-block/5")
-    (check-next-stream-line-equal _test-output-stream "$bar:loop:"              "F - test-convert-function-with-local-var-in-named-block/6")
-    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-local-var-in-named-block/7")
-    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-named-block/8")
-    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-named-block/9")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-local-var-in-named-block/10")
-    (check-next-stream-line-equal _test-output-stream "$bar:break:"             "F - test-convert-function-with-local-var-in-named-block/11")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-named-block/12")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-named-block/13")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-named-block/14")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-named-block/15")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-named-block/16")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-in-named-block/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-local-var-in-named-block/6")
+    (check-next-stream-line-equal _test-output-stream "$bar:loop:"              "F - test-convert-function-with-local-var-in-named-block/7")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-local-var-in-named-block/8")
+    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-local-var-in-named-block/9")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-local-var-in-named-block/10")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-local-var-in-named-block/11")
+    (check-next-stream-line-equal _test-output-stream "$bar:break:"             "F - test-convert-function-with-local-var-in-named-block/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-in-named-block/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-in-named-block/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-in-named-block/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-in-named-block/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-in-named-block/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-in-named-block/18")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -984,6 +1018,7 @@ test-convert-function-with-branches-in-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  {\n")
@@ -1008,17 +1043,21 @@ test-convert-function-with-branches-in-block:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-branches-in-block/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-branches-in-block/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-branches-in-block/4")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-branches-in-block/5")
-    (check-next-stream-line-equal _test-output-stream "      0f 8d/jump-if->= break/disp32"  "F - test-convert-function-with-branches-in-block/6")
-    (check-next-stream-line-equal _test-output-stream "      0f 82/jump-if-addr< loop/disp32"  "F - test-convert-function-with-branches-in-block/7")
-    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-branches-in-block/8")
-    (check-next-stream-line-equal _test-output-stream "      e9/jump loop/disp32"  "F - test-convert-function-with-branches-in-block/9")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-branches-in-block/10")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-branches-in-block/12")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-branches-in-block/13")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-in-block/14")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-in-block/15")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-in-block/16")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-branches-in-block/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-branches-in-block/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-branches-in-block/7")
+    (check-next-stream-line-equal _test-output-stream "      0f 8d/jump-if->= break/disp32"  "F - test-convert-function-with-branches-in-block/8")
+    (check-next-stream-line-equal _test-output-stream "      0f 82/jump-if-addr< loop/disp32"  "F - test-convert-function-with-branches-in-block/9")
+    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-branches-in-block/10")
+    (check-next-stream-line-equal _test-output-stream "      e9/jump loop/disp32"  "F - test-convert-function-with-branches-in-block/11")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-branches-in-block/12")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-branches-in-block/13")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-branches-in-block/14")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-branches-in-block/15")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-branches-in-block/16")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-in-block/17")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-in-block/18")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-in-block/19")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1033,6 +1072,7 @@ test-convert-function-with-branches-in-named-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  $bar: {\n")
@@ -1057,19 +1097,21 @@ test-convert-function-with-branches-in-named-block:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-branches-in-named-block/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-branches-in-named-block/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-branches-in-named-block/4")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-branches-in-named-block/5")
-    (check-next-stream-line-equal _test-output-stream "$bar:loop:"              "F - test-convert-function-with-branches-in-named-block/6")
-    (check-next-stream-line-equal _test-output-stream "      0f 8d/jump-if->= $bar:break/disp32"  "F - test-convert-function-with-branches-in-named-block/7")
-    (check-next-stream-line-equal _test-output-stream "      0f 82/jump-if-addr< $bar:loop/disp32"  "F - test-convert-function-with-branches-in-named-block/8")
-    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-branches-in-named-block/9")
-    (check-next-stream-line-equal _test-output-stream "      e9/jump loop/disp32"   "F - test-convert-function-with-branches-in-named-block/10")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-branches-in-named-block/11")
-    (check-next-stream-line-equal _test-output-stream "$bar:break:"             "F - test-convert-function-with-branches-in-named-block/12")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-branches-in-named-block/13")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-branches-in-named-block/14")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-in-named-block/15")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-in-named-block/16")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-in-named-block/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-branches-in-named-block/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-branches-in-named-block/6")
+    (check-next-stream-line-equal _test-output-stream "$bar:loop:"              "F - test-convert-function-with-branches-in-named-block/7")
+    (check-next-stream-line-equal _test-output-stream "      0f 8d/jump-if->= $bar:break/disp32"  "F - test-convert-function-with-branches-in-named-block/8")
+    (check-next-stream-line-equal _test-output-stream "      0f 82/jump-if-addr< $bar:loop/disp32"  "F - test-convert-function-with-branches-in-named-block/9")
+    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0x00000008)"  "F - test-convert-function-with-branches-in-named-block/10")
+    (check-next-stream-line-equal _test-output-stream "      e9/jump loop/disp32"   "F - test-convert-function-with-branches-in-named-block/11")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-branches-in-named-block/12")
+    (check-next-stream-line-equal _test-output-stream "$bar:break:"             "F - test-convert-function-with-branches-in-named-block/13")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-branches-in-named-block/14")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-branches-in-named-block/15")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-branches-in-named-block/16")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-in-named-block/17")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-in-named-block/18")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-in-named-block/19")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1084,6 +1126,7 @@ test-convert-function-with-var-in-nested-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  {\n")
@@ -1108,18 +1151,24 @@ test-convert-function-with-var-in-nested-block:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-var-in-nested-block/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-var-in-nested-block/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-var-in-nested-block/4")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-var-in-nested-block/5")
-    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-var-in-nested-block/6")
-    (check-next-stream-line-equal _test-output-stream "        68/push 0/imm32" "F - test-convert-function-with-var-in-nested-block/7")
-    (check-next-stream-line-equal _test-output-stream "        ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-var-in-nested-block/8")
-    (check-next-stream-line-equal _test-output-stream "        81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-var-in-nested-block/9")
-    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-var-in-nested-block/10")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-var-in-nested-block/11")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-var-in-nested-block/13")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-var-in-nested-block/14")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-var-in-nested-block/15")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-var-in-nested-block/16")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-var-in-nested-block/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-var-in-nested-block/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-var-in-nested-block/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-var-in-nested-block/7")
+    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-var-in-nested-block/8")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000003:loop:"   "F - test-convert-function-with-var-in-nested-block/9")
+    (check-next-stream-line-equal _test-output-stream "        68/push 0/imm32" "F - test-convert-function-with-var-in-nested-block/10")
+    (check-next-stream-line-equal _test-output-stream "        ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-var-in-nested-block/11")
+    (check-next-stream-line-equal _test-output-stream "        81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-var-in-nested-block/12")
+    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-var-in-nested-block/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000003:break:"  "F - test-convert-function-with-var-in-nested-block/14")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-var-in-nested-block/15")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-var-in-nested-block/16")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-var-in-nested-block/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-var-in-nested-block/18")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-var-in-nested-block/19")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-var-in-nested-block/20")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-var-in-nested-block/21")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-var-in-nested-block/22")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1134,6 +1183,7 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  {\n")
@@ -1154,26 +1204,32 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-var-in-nested-block/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-var-in-nested-block/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-var-in-nested-block/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-var-in-nested-block/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-var-in-nested-block/4")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-var-in-nested-block/5")
-    (check-next-stream-line-equal _test-output-stream "      ff 6/subop/push %eax"  "F - test-convert-function-with-var-in-nested-block/6")
-    (check-next-stream-line-equal _test-output-stream "      b8/copy-to-eax 0/imm32"  "F - test-convert-function-with-var-in-nested-block/7")
-    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-var-in-nested-block/8")
-    (check-next-stream-line-equal _test-output-stream "        68/push 0/imm32" "F - test-convert-function-with-var-in-nested-block/9")
-    (check-next-stream-line-equal _test-output-stream "        03/add *(ebp+0xfffffff8) 0x00000000/r32"  "F - test-convert-function-with-var-in-nested-block/10")
-    (check-next-stream-line-equal _test-output-stream "        81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-var-in-nested-block/11")
-    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-var-in-nested-block/12")
-    (check-next-stream-line-equal _test-output-stream "      8f 0/subop/pop %eax"   "F - test-convert-function-with-var-in-nested-block/13")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-var-in-nested-block/14")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-var-in-nested-block/15")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-var-in-nested-block/16")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-var-in-nested-block/17")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-var-in-nested-block/18")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-var-in-nested-block/19")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-multiple-vars-in-nested-blocks/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-multiple-vars-in-nested-blocks/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-multiple-vars-in-nested-blocks/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-multiple-vars-in-nested-blocks/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-multiple-vars-in-nested-blocks/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-multiple-vars-in-nested-blocks/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-multiple-vars-in-nested-blocks/7")
+    (check-next-stream-line-equal _test-output-stream "      ff 6/subop/push %eax"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/8")
+    (check-next-stream-line-equal _test-output-stream "      b8/copy-to-eax 0/imm32"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/9")
+    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-multiple-vars-in-nested-blocks/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000003:loop:"   "F - test-convert-function-with-multiple-vars-in-nested-blocks/11")
+    (check-next-stream-line-equal _test-output-stream "        68/push 0/imm32" "F - test-convert-function-with-multiple-vars-in-nested-blocks/12")
+    (check-next-stream-line-equal _test-output-stream "        03/add *(ebp+0xfffffff8) 0x00000000/r32"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/13")
+    (check-next-stream-line-equal _test-output-stream "        81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/14")
+    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-multiple-vars-in-nested-blocks/15")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000003:break:"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/16")
+    (check-next-stream-line-equal _test-output-stream "      8f 0/subop/pop %eax"   "F - test-convert-function-with-multiple-vars-in-nested-blocks/17")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-multiple-vars-in-nested-blocks/18")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/19")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-multiple-vars-in-nested-blocks/20")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/21")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-multiple-vars-in-nested-blocks/22")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-multiple-vars-in-nested-blocks/23")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-multiple-vars-in-nested-blocks/24")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-multiple-vars-in-nested-blocks/25")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -1188,6 +1244,7 @@ test-convert-function-with-branches-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -1211,19 +1268,23 @@ test-convert-function-with-branches-and-local-vars:
     (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-branches-and-local-vars/2")
     (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-branches-and-local-vars/3")
     (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-branches-and-local-vars/4")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-branches-and-local-vars/5")
-    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-branches-and-local-vars/6")
-    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-branches-and-local-vars/7")
-    (check-next-stream-line-equal _test-output-stream "        0f 8d/jump-if->= break/disp32"  "F - test-convert-function-with-branches-and-local-vars/8")
-    (check-next-stream-line-equal _test-output-stream "        ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-branches-and-local-vars/9")
-    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-branches-and-local-vars/10")
-    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-branches-and-local-vars/11")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-branches-and-local-vars/12")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-branches-and-local-vars/13")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-branches-and-local-vars/14")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-and-local-vars/15")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-and-local-vars/16")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-and-local-vars/17")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-branches-and-local-vars/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-branches-and-local-vars/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-branches-and-local-vars/7")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-branches-and-local-vars/8")
+    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-branches-and-local-vars/9")
+    (check-next-stream-line-equal _test-output-stream "        0f 8d/jump-if->= break/disp32"  "F - test-convert-function-with-branches-and-local-vars/10")
+    (check-next-stream-line-equal _test-output-stream "        ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-branches-and-local-vars/11")
+    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-branches-and-local-vars/12")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-branches-and-local-vars/13")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-branches-and-local-vars/14")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-branches-and-local-vars/15")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-branches-and-local-vars/16")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-branches-and-local-vars/17")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-branches-and-local-vars/18")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-and-local-vars/19")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-and-local-vars/20")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-and-local-vars/21")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -2830,6 +2891,9 @@ Curr-block-depth:  # (addr int)
 Next-local-stack-offset:  # (addr int)
     -4/imm32
 
+Next-block-index:  # (addr int)
+    1/imm32
+
 == code
 
 # parses a block, assuming that the leading '{' has already been read by the caller
@@ -2839,7 +2903,8 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #   var word-slice: slice
     #   increment *Curr-block-depth
     #   result/eax = allocate(Heap, Stmt-size)
-    #   result->tag = 0/Block
+    #   result->tag = 4/named-block
+    #   result->name = some unique name
     #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -2892,8 +2957,12 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     (allocate Heap *Stmt-size)  # => eax
     (zero-out %eax *Stmt-size)
     89/<- %edi 0/r32/eax
-    # result->tag is implicitly block (0)
-    { # line loop
+    # set result->tag
+    c7 0/subop/copy *edi 4/imm32/named-block  # Stmt-tag
+    # set result->name
+    (new-block-name *(ebp+0x10))  # => eax
+    89/<- *(edi+8) 0/r32/eax
+    {
 $parse-mu-block:line-loop:
       # line = read-line-buffered(in)
       (clear-stream %ecx)
@@ -3004,6 +3073,62 @@ $parse-mu-block:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+new-block-name:  # fn: (handle function) -> result/eax: (handle array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # var n/ecx: int = len(fn->name) + 10 for an int + 3 for '$::'
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *eax 0/r32/eax  # Function-name
+    8b/-> *eax 0/r32/eax  # String-length
+    05/add-to-eax 0xd/imm32  # 10 + 3 for '$::'
+    89/<- %ecx 0/r32/eax
+    # var name/edx: (stream byte n)
+    29/subtract %esp 1/r32/ecx
+    ff 6/subop/push %ecx
+    68/push 0/imm32/read
+    68/push 0/imm32/write
+    89/<- %edx 4/r32/esp
+    (clear-stream %edx)
+    # eax = fn->name
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *eax 0/r32/eax  # Function-name
+    # construct result using Next-block-index (and increment it)
+    (write %edx "$")
+    (write %edx %eax)
+    (write %edx ":")
+    (print-int32 %edx *Next-block-index)
+    (write %edx ":")
+    ff 0/subop/increment *Next-block-index
+    # var s/eax: slice = {name->data, name->data + name->write}  (clobbering edx)
+    # . eax = name->write
+    8b/-> *edx 0/r32/eax
+    # . edx = name->data
+    8d/copy-address *(edx+0xc) 2/r32/edx
+    # . eax = name->write + name->data
+    01/add %eax 2/r32/edx
+    # . push {edx, eax}
+    ff 6/subop/push %eax
+    ff 6/subop/push %edx
+    89/<- %eax 4/r32/esp
+    # result/eax = slice-to-string(s)
+    (slice-to-string Heap %eax)  # => eax
+$new-block-name:end:
+    # . reclaim locals
+    81 0/subop/add %ecx 0xc/imm32  # name.{read/write/len}
+    81 0/subop/add %ecx 8/imm32  # slice
+    01/add %esp 1/r32/ecx
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 check-no-tokens-left:  # line: (addr stream byte)
     # . prologue
     55/push-ebp
@@ -3058,7 +3183,6 @@ parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (ad
     #   push(vars, v)
     #   result = parse-mu-block(in, vars, fn)
     #   pop(vars)
-    #   result->tag = named-block
     #   result->name = slice-to-string(name)
     #   return result
     #
@@ -4167,7 +4291,7 @@ emit-subx-function:  # out: (addr buffered-file), f: (handle function)
     # to what it was during parsing.
     c7 0/subop/copy *Curr-block-depth 1/imm32
     (emit-subx-prologue %edi)
-    (emit-subx-block %edi *(ecx+0x10) %edx)  # Function-body
+    (emit-subx-named-block %edi *(ecx+0x10) %edx)  # Function-body
     (emit-subx-epilogue %edi)
 $emit-subx-function:end:
     # . reclaim locals
