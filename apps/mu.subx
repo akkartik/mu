@@ -4312,6 +4312,13 @@ $emit-subx-stmt-list:loop:
       # var curr-stmt/ecx = stmts->value
       8b/-> *esi 1/r32/ecx  # List-value
       {
+$emit-subx-stmt-list:check-for-named-block:
+        81 7/subop/compare *ecx 4/imm32/named-block  # Stmt-tag
+        75/jump-if-!= break/disp8
+$emit-subx-stmt-list:named-block:
+        (emit-subx-named-block *(ebp+8) %ecx *(ebp+0x10))
+      }
+      {
 $emit-subx-stmt-list:check-for-stmt:
         81 7/subop/compare *ecx 1/imm32/stmt1  # Stmt-tag
         0f 85/jump-if-!= break/disp32
@@ -4376,13 +4383,6 @@ $emit-subx-stmt-list:regvardef:
         (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
-      }
-      {
-$emit-subx-stmt-list:check-for-named-block:
-        81 7/subop/compare *ecx 4/imm32/named-block  # Stmt-tag
-        75/jump-if-!= break/disp8
-$emit-subx-stmt-list:named-block:
-        (emit-subx-named-block *(ebp+8) %ecx *(ebp+0x10))
       }
       8b/-> *(esi+4) 6/r32/esi  # List-next
       e9/jump loop/disp32
