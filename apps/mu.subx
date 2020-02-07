@@ -1485,6 +1485,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (handle fun
     # read function name
     (next-word *(ebp+8) %ecx)
     # error checking
+    # TODO: error if name starts with 'break' or 'loop'
     # if (word-slice == '{') abort
     (slice-equal? %ecx "{")   # => eax
     3d/compare-eax-and 0/imm32
@@ -4315,7 +4316,9 @@ $emit-subx-stmt-list:check-for-break:
           (string-starts-with? *(ecx+4) "break")  # Stmt1-operation => eax
           3d/compare-eax-and 0/imm32
           0f 84/jump-if-= break/disp32
-$emit-subx-stmt-list:break:
+          81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+          0f 85/jump-if-!= break/disp32
+$emit-subx-stmt-list:zero-arg-break:
           # create a new block for the remaining statements
           (emit-indent *(ebp+8) *Curr-block-depth)
           (write-buffered *(ebp+8) "{\n")
