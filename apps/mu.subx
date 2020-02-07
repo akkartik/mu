@@ -4317,22 +4317,52 @@ $emit-subx-stmt-list:check-for-break:
           3d/compare-eax-and 0/imm32
           0f 84/jump-if-= break/disp32
           81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
-          0f 85/jump-if-!= break/disp32
+          {
+            0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-break:
-          # create a new block for the remaining statements
-          (emit-indent *(ebp+8) *Curr-block-depth)
-          (write-buffered *(ebp+8) "{\n")
-          ff 0/subop/increment *Curr-block-depth
-          (emit-subx-stmt-list *(ebp+8) %esi *(ebp+0x10))
-          ff 1/subop/decrement *Curr-block-depth
-          (emit-indent *(ebp+8) *Curr-block-depth)
-          (write-buffered *(ebp+8) "}\n")
-          # return $emit-subx-stmt-list
-          e9/jump $emit-subx-stmt-list:cleanup/disp32
+            # create a new block for the remaining statements
+            (emit-indent *(ebp+8) *Curr-block-depth)
+            (write-buffered *(ebp+8) "{\n")
+            ff 0/subop/increment *Curr-block-depth
+            (emit-subx-stmt-list *(ebp+8) %esi *(ebp+0x10))
+            ff 1/subop/decrement *Curr-block-depth
+            (emit-indent *(ebp+8) *Curr-block-depth)
+            (write-buffered *(ebp+8) "}\n")
+            # return $emit-subx-stmt-list
+            e9/jump $emit-subx-stmt-list:cleanup/disp32
+          }
+          {
+            0f 84/jump-if-= break/disp32
+$emit-subx-stmt-list:one-arg-break:
+            # TODO
+            # continue
+            e9/jump $emit-subx-stmt-list:continue/disp32
+          }
         }
         {
+          # if !var-seen? break
+          81 7/subop/compare %edx 0/imm32/false
+          0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:check-for-loop:
-          # TODO
+          # if (!string-starts-with?(var->operation, "loop")) break
+          (string-starts-with? *(ecx+4) "loop")  # Stmt1-operation => eax
+          3d/compare-eax-and 0/imm32
+          0f 84/jump-if-= break/disp32
+          81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+          {
+            0f 85/jump-if-!= break/disp32
+$emit-subx-stmt-list:zero-arg-loop:
+            # TODO
+            # continue
+            e9/jump $emit-subx-stmt-list:continue/disp32
+          }
+          {
+            0f 84/jump-if-= break/disp32
+$emit-subx-stmt-list:one-arg-loop:
+            # TODO
+            # continue
+            e9/jump $emit-subx-stmt-list:continue/disp32
+          }
         }
 $emit-subx-stmt-list:stmt:
         (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
@@ -4371,6 +4401,7 @@ $emit-subx-stmt-list:regvardef:
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
       }
+$emit-subx-stmt-list:continue:
       # TODO: raise an error on unrecognized Stmt-tag
       8b/-> *(esi+4) 6/r32/esi  # List-next
       e9/jump loop/disp32
