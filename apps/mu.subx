@@ -288,6 +288,8 @@ Stmt-tag:
 
 Block-statements:  # (handle list statement)
   4/imm32
+Block-name:  # (handle array byte)
+  8/imm32
 
 Stmt1-operation:  # (handle array byte)
   4/imm32
@@ -305,11 +307,6 @@ Regvardef-inouts:  # (handle list var)
   8/imm32
 Regvardef-outputs:  # (handle list var)  # will have exactly one element
   0xc/imm32
-
-Named-block-statements:  # (handle list statement)
-  4/imm32
-Named-block-name:  # (handle array byte)
-  8/imm32
 
 Stmt-size:  # (addr int)
   0x10/imm32
@@ -2898,7 +2895,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #   var word-slice: slice
     #   increment *Curr-block-depth
     #   result/eax = allocate(Heap, Stmt-size)
-    #   result->tag = 4/named-block
+    #   result->tag = 0/block
     #   result->name = some unique name
     #   while true                                  # line loop
     #     clear-stream(line)
@@ -2954,7 +2951,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     (zero-out %eax *Stmt-size)
     89/<- %edi 0/r32/eax
     # set result->tag
-    c7 0/subop/copy *edi 4/imm32/named-block  # Stmt-tag
+    c7 0/subop/copy *edi 0/imm32/block  # Stmt-tag
     # set result->name
     (new-block-name *(ebp+0x10))  # => eax
     89/<- *(edi+8) 0/r32/eax
@@ -3208,9 +3205,9 @@ parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (ad
     (pop *(ebp+0x10))  # => eax
     58/pop-to-eax
     # result->tag = named-block
-    c7 0/subop/copy *eax 4/imm32/named-block  # Stmt-tag
+    c7 0/subop/copy *eax 0/imm32/block  # Stmt-tag
     # result->name = s
-    89/<- *(eax+8) 1/r32/ecx  # Named-block-name
+    89/<- *(eax+8) 1/r32/ecx  # Block-name
 $parse-mu-named-block:end:
     # . restore registers
     59/pop-to-ecx
@@ -4066,28 +4063,6 @@ $new-regvardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-named-block:  # ad: (addr allocation-descriptor), name: (addr array byte), data: (handle list statement) -> result/eax: (handle statement)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    51/push-ecx
-    #
-    (allocate *(ebp+8) *Stmt-size)  # => eax
-    (zero-out %eax *Stmt-size)
-    c7 0/subop/copy *eax 4/imm32/tag/named-block
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Named-block-name
-    8b/-> *(ebp+0x10) 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # Named-block-statements
-$new-named-block:end:
-    # . restore registers
-    59/pop-to-ecx
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
 new-list:  # ad: (addr allocation-descriptor), value: _type, next: (handle list _type) -> result/eax: (handle list _type)
     # . prologue
     55/push-ebp
@@ -4276,7 +4251,7 @@ emit-subx-function:  # out: (addr buffered-file), f: (handle function)
     # to what it was during parsing.
     c7 0/subop/copy *Curr-block-depth 1/imm32
     (emit-subx-prologue %edi)
-    (emit-subx-named-block %edi *(ecx+0x10) %edx)  # Function-body
+    (emit-subx-block %edi *(ecx+0x10) %edx)  # Function-body
     (emit-subx-epilogue %edi)
 $emit-subx-function:end:
     # . reclaim locals
@@ -4312,11 +4287,11 @@ $emit-subx-stmt-list:loop:
       # var curr-stmt/ecx = stmts->value
       8b/-> *esi 1/r32/ecx  # List-value
       {
-$emit-subx-stmt-list:check-for-named-block:
-        81 7/subop/compare *ecx 4/imm32/named-block  # Stmt-tag
+$emit-subx-stmt-list:check-for-block:
+        81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
         75/jump-if-!= break/disp8
-$emit-subx-stmt-list:named-block:
-        (emit-subx-named-block *(ebp+8) %ecx *(ebp+0x10))
+$emit-subx-stmt-list:block:
+        (emit-subx-block *(ebp+8) %ecx *(ebp+0x10))
       }
       {
 $emit-subx-stmt-list:check-for-stmt:
@@ -4384,6 +4359,7 @@ $emit-subx-stmt-list:regvardef:
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
       }
+      # TODO: raise an error on unrecognized Stmt-tag
       8b/-> *(esi+4) 6/r32/esi  # List-next
       e9/jump loop/disp32
     }
@@ -4612,7 +4588,7 @@ $emit-subx-statement:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-emit-subx-named-block:  # out: (addr buffered-file), named-block: (handle named-block), vars: (addr stack (handle var))
+emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (addr stack (handle var))
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4626,22 +4602,22 @@ emit-subx-named-block:  # out: (addr buffered-file), named-block: (handle named-
     8b/-> *(esi+4) 0/r32/eax  # Block-statements
     #
     {
-$emit-subx-named-block:check-empty:
+$emit-subx-block:check-empty:
       81 7/subop/compare %eax 0/imm32
       0f 84/jump-if-= break/disp32
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "{\n")
-      (write-buffered *(ebp+8) *(esi+8))  # Named-block-name
+      (write-buffered *(ebp+8) *(esi+8))  # Block-name
       (write-buffered *(ebp+8) ":loop:\n")
       ff 0/subop/increment *Curr-block-depth
       (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10))
       ff 1/subop/decrement *Curr-block-depth
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "}\n")
-      (write-buffered *(ebp+8) *(esi+8))  # Named-block-name
+      (write-buffered *(ebp+8) *(esi+8))  # Block-name
       (write-buffered *(ebp+8) ":break:\n")
     }
-$emit-subx-named-block:end:
+$emit-subx-block:end:
     # . restore registers
     5e/pop-to-esi
     59/pop-to-ecx
