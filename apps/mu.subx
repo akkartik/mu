@@ -107,11 +107,11 @@
 #     tag 1: a simple statement
 #     tag 2: a variable defined on the stack
 #     tag 3: a variable defined in a register
-#     tag 4: a named block
 #
 #   A block contains:
 #     tag: 0
 #     statements: (handle list statement)
+#     name: (handle array byte) -- starting with '$'
 #
 #   A regular statement contains:
 #     tag: 1
@@ -129,11 +129,6 @@
 #     name: (handle array byte)
 #     type: (handle tree type-id)
 #     reg: (handle array byte)
-#
-#   A named block contains:
-#     tag: 4
-#     statements: (handle list statement)
-#     name: (handle array byte) -- starting with '$'
 
 # == Translation: managing the stack
 # Now that we know what the language looks like in the large, let's think
@@ -4296,36 +4291,6 @@ $emit-subx-function:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (addr stack (handle var))
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    56/push-esi
-    # var stmts/esi: (handle list statement) = block->statements
-    8b/-> *(ebp+0xc) 6/r32/esi
-    8b/-> *(esi+4) 6/r32/esi  # Block-statements
-    #
-    {
-$emit-subx-block:check-empty:
-      81 7/subop/compare %esi 0/imm32
-      0f 84/jump-if-= break/disp32
-      (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "{\n")
-      ff 0/subop/increment *Curr-block-depth
-      (emit-subx-stmt-list *(ebp+8) %esi *(ebp+0x10))
-      ff 1/subop/decrement *Curr-block-depth
-      (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "}\n")
-    }
-$emit-subx-block:end:
-    # . restore registers
-    5e/pop-to-esi
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
 emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (handle list stmt), vars: (addr stack (handle var))
     # . prologue
     55/push-ebp
@@ -4346,13 +4311,6 @@ $emit-subx-stmt-list:loop:
       0f 84/jump-if-= break/disp32
       # var curr-stmt/ecx = stmts->value
       8b/-> *esi 1/r32/ecx  # List-value
-      {
-$emit-subx-stmt-list:check-for-block:
-        81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
-        75/jump-if-!= break/disp8
-$emit-subx-stmt-list:block:
-        (emit-subx-block *(ebp+8) %ecx *(ebp+0x10))
-      }
       {
 $emit-subx-stmt-list:check-for-stmt:
         81 7/subop/compare *ecx 1/imm32/stmt1  # Stmt-tag
