@@ -288,7 +288,7 @@ Stmt-tag:
 
 Block-statements:  # (handle list statement)
   4/imm32
-Block-name:  # (handle array byte)
+Block-var:  # (handle var)
   8/imm32
 
 Stmt1-operation:  # (handle array byte)
@@ -2944,17 +2944,19 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # increment *Curr-block-depth
-    ff 0/subop/increment *Curr-block-depth
     # edi = result
     (allocate Heap *Stmt-size)  # => eax
     (zero-out %eax *Stmt-size)
     89/<- %edi 0/r32/eax
     # set result->tag
     c7 0/subop/copy *edi 0/imm32/block  # Stmt-tag
-    # set result->name
+    # set result->var
     (new-block-name *(ebp+0x10))  # => eax
-    89/<- *(edi+8) 0/r32/eax
+    89/<- *(edi+8) 0/r32/eax  # Block-var
+    # push result->var to vars
+    (push *(ebp+0xc) %eax)
+    # increment *Curr-block-depth
+    ff 0/subop/increment *Curr-block-depth
     {
 $parse-mu-block:line-loop:
       # line = read-line-buffered(in)
@@ -3069,7 +3071,7 @@ $parse-mu-block:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-new-block-name:  # fn: (handle function) -> result/eax: (handle array byte)
+new-block-name:  # fn: (handle function) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -3109,8 +3111,15 @@ new-block-name:  # fn: (handle function) -> result/eax: (handle array byte)
     ff 6/subop/push %eax
     ff 6/subop/push %edx
     89/<- %eax 4/r32/esp
-    # result/eax = slice-to-string(s)
+    # var final-name/edx : (addr array byte) = slice-to-string(s)
     (slice-to-string Heap %eax)  # => eax
+    89/<- %edx 0/r32/eax
+    # set result->var
+    # . var type/eax: (handle tree type-id) = literal
+    (allocate Heap *Tree-size)  # => eax
+    (zero-out %eax *Tree-size)  # default type is 'literal'
+    # . var result/eax: (handle var) = new-var(final-name, type)
+    (new-var Heap %edx %eax *Curr-block-depth 0 0)  # => eax
 $new-block-name:end:
     # . reclaim locals
     81 0/subop/add %ecx 0xc/imm32  # name.{read/write/len}
@@ -3190,14 +3199,14 @@ parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (ad
     # var s/ecx: (addr array byte) = slice-to-string(name)
     (slice-to-string Heap *(ebp+8))  # => eax
     89/<- %ecx 0/r32/eax
-    # push a var for s on to 'vars'
-    # . var type/eax: (handle tree type-id) = literal
+    # var type/eax: (handle tree type-id) = literal
     (allocate Heap *Tree-size)  # => eax
     (zero-out %eax *Tree-size)  # default type is 'literal'
-    # . var v: (handle var) = new-var(s)
+    # var v/ecx: (handle var) = new-var(s, type)
     (new-var Heap %ecx %eax *Curr-block-depth 0 0)  # => eax
-    # . push(vars, v)
-    (push *(ebp+0x10) %eax)
+    89/<- %ecx 0/r32/eax
+    # push(vars, v)
+    (push *(ebp+0x10) %ecx)
     # eax = result
     (parse-mu-block *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))  # => eax
     # pop the var
@@ -3206,8 +3215,8 @@ parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (ad
     58/pop-to-eax
     # result->tag = named-block
     c7 0/subop/copy *eax 0/imm32/block  # Stmt-tag
-    # result->name = s
-    89/<- *(eax+8) 1/r32/ecx  # Block-name
+    # result->var = v
+    89/<- *(eax+8) 1/r32/ecx  # Block-var
 $parse-mu-named-block:end:
     # . restore registers
     59/pop-to-ecx
@@ -4598,7 +4607,7 @@ emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (add
     56/push-esi
     # esi = block
     8b/-> *(ebp+0xc) 6/r32/esi
-    # var stmts/ecx: (handle list statement) = block->statements
+    # var stmts/eax: (handle list statement) = block->statements
     8b/-> *(esi+4) 0/r32/eax  # Block-statements
     #
     {
@@ -4607,14 +4616,16 @@ $emit-subx-block:check-empty:
       0f 84/jump-if-= break/disp32
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "{\n")
-      (write-buffered *(ebp+8) *(esi+8))  # Block-name
+      # var v/ecx: (addr array byte) = block->var->name
+      8b/-> *(esi+8) 1/r32/ecx  # Block-var
+      (write-buffered *(ebp+8) *ecx)  # Var-name
       (write-buffered *(ebp+8) ":loop:\n")
       ff 0/subop/increment *Curr-block-depth
       (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10))
       ff 1/subop/decrement *Curr-block-depth
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "}\n")
-      (write-buffered *(ebp+8) *(esi+8))  # Block-name
+      (write-buffered *(ebp+8) *ecx)  # Var-name
       (write-buffered *(ebp+8) ":break:\n")
     }
 $emit-subx-block:end:
