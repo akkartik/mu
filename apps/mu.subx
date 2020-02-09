@@ -104,7 +104,7 @@
 #
 #   A statement can be:
 #     tag 0: a block
-#     tag 1: a simple statement
+#     tag 1: a simple statement (stmt1)
 #     tag 2: a variable defined on the stack
 #     tag 3: a variable defined in a register
 #
@@ -1228,6 +1228,8 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
     c3/return
 
 test-convert-function-with-branches-and-local-vars:
+    # A 'break' after a 'var' in a block creates a nested block for the remaining statements.
+    # That way we always clean up all the 'var's.
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1277,6 +1279,66 @@ test-convert-function-with-branches-and-local-vars:
     (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-branches-and-local-vars/19")
     (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-branches-and-local-vars/20")
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-branches-and-local-vars/21")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-loops-and-local-vars:
+    # A 'loop' after a 'var' in a block is converted into a block that
+    # performs all necessary cleanup before jumping. This results in some ugly
+    # code duplication.
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    var x: int\n")
+    (write _test-input-stream "    loop-if->=\n")
+    (write _test-input-stream "    increment x\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-loops-and-local-vars/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-loops-and-local-vars/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-loops-and-local-vars/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-loops-and-local-vars/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-loops-and-local-vars/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-loops-and-local-vars/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-loops-and-local-vars/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-loops-and-local-vars/7")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-loops-and-local-vars/8")
+    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-loops-and-local-vars/9")
+    (check-next-stream-line-equal _test-output-stream "        0f 8c/jump-if-< break/disp32"  "F - test-convert-function-with-loops-and-local-vars/10")
+    (check-next-stream-line-equal _test-output-stream "        81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-loops-and-local-vars/11")
+    (check-next-stream-line-equal _test-output-stream "        e9/jump $foo:0x00000002:loop/disp32"  "F - test-convert-function-with-loops-and-local-vars/12")
+    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-loops-and-local-vars/13")
+    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-loops-and-local-vars/14")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-loops-and-local-vars/15")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-loops-and-local-vars/16")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-loops-and-local-vars/17")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-loops-and-local-vars/18")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-loops-and-local-vars/19")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-loops-and-local-vars/20")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-loops-and-local-vars/21")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-loops-and-local-vars/22")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-loops-and-local-vars/23")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3044,6 +3106,8 @@ $parse-mu-block:regular-stmt:
     } # end line loop
     # decrement *Curr-block-depth
     ff 1/subop/decrement *Curr-block-depth
+    #
+    (pop *(ebp+0xc))  # => eax
     # return result
     89/<- %eax 7/r32/edi
 $parse-mu-block:end:
@@ -4162,10 +4226,16 @@ $check-mu-types:end:
     5d/pop-to-ebp
     c3/return
 
-size-of:  # n: (addr var) -> result/eax: int
+size-of:  # v: (addr var) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    # if v is a literal, return 0
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *(eax+4) 0/r32/eax  # Var-type
+    81 7/subop/compare *eax 0/imm32  # Tree-left
+    b8/copy-to-eax 0/imm32
+    74/jump-if-= $size-of:end/disp8
     # hard-coded since we only support 'int' types for now
     b8/copy-to-eax 4/imm32
 $size-of:end:
@@ -4352,7 +4422,24 @@ $emit-subx-stmt-list:check-for-loop:
           {
             0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-loop:
-            # TODO
+            # var old-block-depth/eax: int = Curr-block-depth - 1
+            8b/-> *Curr-block-depth 0/r32/eax
+            # cleanup prologue
+            (emit-indent *(ebp+8) *Curr-block-depth)
+            (write-buffered *(ebp+8) "{\n")
+            ff 0/subop/increment *Curr-block-depth
+            #
+            (emit-reverse-break *(ebp+8) %ecx)
+            # clean up until old block depth
+            (emit-cleanup-code *(ebp+8) *(ebp+0x10) %eax)
+            # var target-block-depth/eax: int = Curr-block-depth - 1
+            48/decrement-eax
+            # emit jump to target block
+            (emit-unconditional-jump-to-depth *(ebp+8) *(ebp+0x10) %eax)
+            # cleanup epilogue
+            ff 1/subop/decrement *Curr-block-depth
+            (emit-indent *(ebp+8) *Curr-block-depth)
+            (write-buffered *(ebp+8) "}\n")
             # continue
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
@@ -4431,6 +4518,127 @@ $emit-subx-stmt-list:abort-regvardef-without-register:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+emit-reverse-break:  # out: (addr buffered-file), stmt: (addr stmt1)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    # eax = stmt
+    8b/-> *(ebp+0xc) 0/r32/eax
+    #
+    (get Reverse-branch *(eax+4) 8 "reverse-branch: ")  # Stmt1-operation => eax: (addr addr array byte)
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) *eax)
+    (write-buffered *(ebp+8) " break/disp32\n")
+$emit-reverse-break:end:
+    # . restore registers
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+
+Reverse-branch:  # (table string string)
+  # a table is a stream
+  0xa0/imm32/write
+  0/imm32/read
+  0xa0/imm32/length
+  # data
+  "break-if-="/imm32      "0f 85/jump-if-!="/imm32
+  "loop-if-="/imm32       "0f 85/jump-if-!="/imm32
+  "break-if-!="/imm32     "0f 84/jump-if-="/imm32
+  "loop-if-!="/imm32      "0f 84/jump-if-="/imm32
+  "break-if-<"/imm32      "0f 8d/jump-if->="/imm32
+  "loop-if-<"/imm32       "0f 8d/jump-if->="/imm32
+  "break-if->"/imm32      "0f 8e/jump-if-<="/imm32
+  "loop-if->"/imm32       "0f 8e/jump-if-<="/imm32
+  "break-if-<="/imm32     "0f 87/jump-if->"/imm32
+  "loop-if-<="/imm32      "0f 87/jump-if->"/imm32
+  "break-if->="/imm32     "0f 8c/jump-if-<"/imm32
+  "loop-if->="/imm32      "0f 8c/jump-if-<"/imm32
+  "break-if-addr<"/imm32  "0f 83/jump-if-addr>="/imm32
+  "loop-if-addr<"/imm32   "0f 83/jump-if-addr>="/imm32
+  "break-if-addr>"/imm32  "0f 86/jump-if-addr<="/imm32
+  "loop-if-addr>"/imm32   "0f 86/jump-if-addr<="/imm32
+  "break-if-addr<="/imm32 "0f 87/jump-if-addr>"/imm32
+  "loop-if-addr<="/imm32  "0f 87/jump-if-addr>"/imm32
+  "break-if-addr>="/imm32 "0f 82/jump-if-addr<"/imm32
+  "loop-if-addr>="/imm32  "0f 82/jump-if-addr<"/imm32
+
+== code
+
+emit-unconditional-jump-to-depth:  # out: (addr buffered-file), vars: (addr stack (handle var)), depth: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    # ecx = vars
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # var eax: int = vars->top
+    8b/-> *ecx 0/r32/eax
+    # var min/ecx: (address (handle var)) = vars->data
+    81 0/subop/add %ecx 8/imm32
+    # var curr/eax: (address (handle var)) = &vars->data[vars->top - 4]
+    81 5/subop/subtract %eax 4/imm32
+    8d/copy-address *(ecx+eax) 0/r32/eax
+    # edx = depth
+    8b/-> *(ebp+0x10) 2/r32/edx
+    {
+$emit-unconditional-jump-to-depth:loop:
+      # if (curr < min) break
+      39/compare %eax 1/r32/ecx
+      0f 82/jump-if-addr< break/disp32
+      # var v/ebx: (handle var) = *curr
+      8b/-> *eax 3/r32/ebx
+      # if (v->block-depth < until-block-depth) break
+      39/compare *(ebx+8) 2/r32/edx  # Var-block-depth
+      0f 8c/jump-if-< break/disp32
+      {
+$emit-unconditional-jump-to-depth:check:
+        # if v->block-depth != until-block-depth, continue
+        39/compare *(ebx+8) 2/r32/edx  # Var-block-depth
+        75/jump-if-!= break/disp8
+$emit-unconditional-jump-to-depth:depth-found:
+        # if v is not a literal, continue
+        # . var eax: int = size-of(v)
+        50/push-eax
+        (size-of %ebx)  # => eax
+        # . if (eax != 0) continue
+        3d/compare-eax-and 0/imm32
+        58/pop-to-eax
+        #
+        75/jump-if-!= break/disp8
+$emit-unconditional-jump-to-depth:label-found:
+        # emit unconditional jump, then return
+        (emit-indent *(ebp+8) *Curr-block-depth)
+        (write-buffered *(ebp+8) "e9/jump ")
+        (write-buffered *(ebp+8) *ebx)  # Var-name
+        (write-buffered *(ebp+8) ":loop/disp32\n")  # Var-name
+        eb/jump $emit-unconditional-jump-to-depth:end/disp8
+      }
+      # curr -= 4
+      2d/subtract-from-eax 4/imm32
+      e9/jump loop/disp32
+    }
+    # TODO: error if no label at 'depth' was found
+$emit-unconditional-jump-to-depth:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 # emit clean-up code for 'vars' until some block depth
 # doesn't actually modify 'vars' so we need traverse manually inside the stack
@@ -4655,7 +4863,9 @@ $emit-subx-block:check-empty:
       (write-buffered *(ebp+8) *ecx)  # Var-name
       (write-buffered *(ebp+8) ":loop:\n")
       ff 0/subop/increment *Curr-block-depth
+      (push *(ebp+0x10) %ecx)
       (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10))
+      (pop *(ebp+0x10))  # => eax
       ff 1/subop/decrement *Curr-block-depth
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "}\n")
