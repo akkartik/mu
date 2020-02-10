@@ -5139,8 +5139,8 @@ $emit-subx-statement:call:
       (emit-subx-call *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-statement:end/disp32
     }
-    # else abort
-    e9/jump $emit-subx-statement:abort/disp32
+    # else assume it's a SubX function (TODO: how to type-check?!)
+    (emit-hailmary-call *(ebp+8) *(ebp+0xc))
 $emit-subx-statement:end:
     # . restore registers
     59/pop-to-ecx
@@ -6757,7 +6757,6 @@ emit-subx-call:  # out: (addr buffered-file), stmt: (handle statement), callee: 
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    50/push-eax
     51/push-ecx
     #
     (emit-indent *(ebp+8) *Curr-block-depth)
@@ -6784,7 +6783,44 @@ emit-subx-call:  # out: (addr buffered-file), stmt: (handle statement), callee: 
 $emit-subx-call:end:
     # . restore registers
     59/pop-to-ecx
-    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# like a function call, except we have no idea what function it is
+# we hope it's defined in SubX and that the types are ok
+emit-hailmary-call:  # out: (addr buffered-file), stmt: (handle statement)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "(")
+    # ecx = stmt
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # - emit function name
+    (write-buffered *(ebp+8) *(ecx+4))  # Stmt1-operation
+    # - emit arguments
+    # var curr/ecx: (handle list var) = stmt->inouts
+    8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
+    {
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      #
+      (emit-subx-call-operand *(ebp+8) *ecx)
+      # curr = curr->next
+      8b/-> *(ecx+4) 1/r32/ecx
+      eb/jump loop/disp8
+    }
+    #
+    (write-buffered *(ebp+8) ")\n")
+$emit-hailmary-call:end:
+    # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
