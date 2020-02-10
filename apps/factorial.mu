@@ -1,8 +1,8 @@
-fn main -> result/ebx: int {
+fn main -> exit-status/ebx: int {
 #?   run-tests
 #?   result <- copy 0
   var tmp/eax: int <- factorial 5
-  result <- copy tmp
+  exit-status <- copy tmp
 }
 
 fn factorial n: int -> result/eax: int {
