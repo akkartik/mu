@@ -1686,14 +1686,14 @@ $parse-mu:error2:
 populate-mu-function-header:  # first-line: (addr stream byte), out: (handle function), vars: (addr stack (handle var))
     # pseudocode:
     #   var name: slice
-    #   next-word(first-line, name)
+    #   next-mu-token(first-line, name)
     #   assert(name not in '{' '}' '->')
     #   out->name = slice-to-string(name)
     #   var next-offset: int = 8
     #   ## inouts
     #   while true
     #     ## name
-    #     name = next-word(first-line)
+    #     name = next-mu-token(first-line)
     #     if (name == '{') goto done
     #     if (name == '->') break
     #     assert(name != '}')
@@ -1707,7 +1707,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (handle fun
     #   ## outputs
     #   while true
     #     ## name
-    #     name = next-word(first-line)
+    #     name = next-mu-token(first-line)
     #     assert(name not in '{' '}' '->')
     #     var v: (handle var) = parse-var-with-type(name, first-line)
     #     assert(v->register != null)
@@ -1732,7 +1732,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (handle fun
     # var next-offset/edx = 8
     ba/copy-to-edx 8/imm32
     # read function name
-    (next-word *(ebp+8) %ecx)
+    (next-mu-token *(ebp+8) %ecx)
     # error checking
     # TODO: error if name starts with 'break' or 'loop'
     # if (word-slice == '{') abort
@@ -1755,7 +1755,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (handle fun
     # save function inouts
     {
 $populate-mu-function-header:check-for-inout:
-      (next-word *(ebp+8) %ecx)
+      (next-mu-token *(ebp+8) %ecx)
       # if (word-slice == '{') goto done
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
@@ -1789,8 +1789,8 @@ $populate-mu-function-header:check-for-inout:
     }
     # save function outputs
     {
-$parse-var-with-type:check-for-out:
-      (next-word *(ebp+8) %ecx)
+$populate-mu-function-header:check-for-out:
+      (next-mu-token *(ebp+8) %ecx)
       # if (word-slice == '{') break
       (slice-equal? %ecx "{")   # => eax
       3d/compare-eax-and 0/imm32
@@ -2335,8 +2335,7 @@ next-mu-token:  # in: (addr stream byte), out: (addr slice)
     #     ++in->read
     #     goto start
     #   if curr-byte == '#'                   # comment
-    #     in->read = in->write                # skip to end of in
-    #     goto done
+    #     goto done                             # treat as eof
     #   if curr-byte == '"'                   # string literal
     #     skip-string(in)
     #     goto done                           # no metadata
@@ -2435,10 +2434,7 @@ $next-mu-token:check-for-comment:
       # if (curr-byte != '#') break
       3d/compare-eax-and 0x23/imm32/pound
       75/jump-if-!= break/disp8
-      # in->read = in->write  # skip rest of in
-      8b/-> *esi 0/r32/eax
-      89/<- *(esi+4) 0/r32/eax
-      # return
+      # return eof
       e9/jump $next-mu-token:done/disp32
     }
     {
@@ -3220,7 +3216,11 @@ $parse-mu-block:line-loop:
       81 7/subop/compare *ecx 0/imm32
       0f 84/jump-if-= break/disp32
       # word-slice = next-word(line)
-      (next-word %ecx %edx)
+      (next-word %ecx %edx)   # We can't use next-mu-token here because of an ambiguity that has crept into our grammar.
+                              # Colons are used to separate variable names from types. For example, `n: int`. Here the colon needs to be a separate word.
+                              # Colons are also used to designate a label. Here the colon needs to be the final letter of a word.
+                              # Maybe I should just disallow spaces before colons in all situations.
+                              # Or be consistent and allow allow space before label name and colon.
 #?       (write-buffered Stderr "word: ")
 #?       (write-slice-buffered Stderr %edx)
 #?       (write-buffered Stderr Newline)
@@ -3397,7 +3397,7 @@ check-no-tokens-left:  # line: (addr stream byte)
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
     #
-    (next-word *(ebp+8) %ecx)
+    (next-mu-token *(ebp+8) %ecx)
     # if slice-empty?(s) return
     (slice-empty? %ecx)
     3d/compare-eax-and 0/imm32
@@ -3489,7 +3489,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
     # var v/edx: (handle var) = parse-var-with-type(line)
-    (next-word *(ebp+8) %ecx)
+    (next-mu-token *(ebp+8) %ecx)
     (parse-var-with-type %ecx *(ebp+8))  # => eax
     89/<- %edx 0/r32/eax
     # v->stack-offset = *Next-local-stack-offset
@@ -3516,7 +3516,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -
     {
       74/jump-if-= break/disp8
       # ensure that the next word is '<-'
-      (next-word *(ebp+8) %ecx)
+      (next-mu-token *(ebp+8) %ecx)
       (slice-equal? %ecx "<-")  # => eax
       3d/compare-eax-and 0/imm32
       74/jump-if-= $parse-mu-var-def:abort/disp8
