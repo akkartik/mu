@@ -4377,6 +4377,7 @@ $emit-subx-stmt-list:block:
 $emit-subx-stmt-list:check-for-stmt:
         81 7/subop/compare *ecx 1/imm32/stmt1  # Stmt-tag
         0f 85/jump-if-!= break/disp32
+        # handle breaks after 'var' in a block {{{
         {
           # if !var-seen? break
           81 7/subop/compare %edx 0/imm32/false
@@ -4387,6 +4388,7 @@ $emit-subx-stmt-list:check-for-break:
           3d/compare-eax-and 0/imm32
           0f 84/jump-if-= break/disp32
           81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+          # simple breaks without a target {{{
           {
             0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-break:
@@ -4401,6 +4403,8 @@ $emit-subx-stmt-list:zero-arg-break:
             # return $emit-subx-stmt-list
             e9/jump $emit-subx-stmt-list:cleanup/disp32
           }
+          # }}}
+          # breaks with an explicit target {{{
           {
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:one-arg-break:
@@ -4408,7 +4412,10 @@ $emit-subx-stmt-list:one-arg-break:
             # continue
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
+          # }}}
         }
+        # }}}
+        # handle loops after 'var' in a block {{{
         {
           # if !var-seen? break
           81 7/subop/compare %edx 0/imm32/false
@@ -4419,6 +4426,7 @@ $emit-subx-stmt-list:check-for-loop:
           3d/compare-eax-and 0/imm32
           0f 84/jump-if-= break/disp32
           81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+          # simple loops without a target {{{
           {
             0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-loop:
@@ -4443,6 +4451,8 @@ $emit-subx-stmt-list:zero-arg-loop:
             # continue
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
+          # }}}
+          # loops with an explicit target {{{
           {
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:one-arg-loop:
@@ -4450,7 +4460,9 @@ $emit-subx-stmt-list:one-arg-loop:
             # continue
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
+          # }}}
         }
+        # }}}
 $emit-subx-stmt-list:stmt:
         (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
       }
