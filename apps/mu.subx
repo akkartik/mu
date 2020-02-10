@@ -1228,8 +1228,9 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
     c3/return
 
 test-convert-function-with-branches-and-local-vars:
-    # A 'break' after a 'var' in a block creates a nested block for the remaining statements.
-    # That way we always clean up all the 'var's.
+    # A conditional 'break' after a 'var' in a block creates a nested block
+    # for the remaining statements. That way we always clean up all the
+    # 'var's.
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1284,10 +1285,10 @@ test-convert-function-with-branches-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
-test-convert-function-with-loops-and-local-vars:
-    # A 'loop' after a 'var' in a block is converted into a block that
-    # performs all necessary cleanup before jumping. This results in some ugly
-    # code duplication.
+test-convert-function-with-conditional-loops-and-local-vars:
+    # A conditional 'loop' after a 'var' in a block is converted into a nested
+    # block that performs all necessary cleanup before jumping. This results
+    # in some ugly code duplication.
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1315,30 +1316,86 @@ test-convert-function-with-loops-and-local-vars:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-loops-and-local-vars/0")
-    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-loops-and-local-vars/1")
-    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-loops-and-local-vars/2")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-loops-and-local-vars/3")
-    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-loops-and-local-vars/4")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-loops-and-local-vars/5")
-    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-loops-and-local-vars/6")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-loops-and-local-vars/7")
-    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-loops-and-local-vars/8")
-    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-loops-and-local-vars/9")
-    (check-next-stream-line-equal _test-output-stream "        0f 8c/jump-if-< break/disp32"  "F - test-convert-function-with-loops-and-local-vars/10")
-    (check-next-stream-line-equal _test-output-stream "        81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-loops-and-local-vars/11")
-    (check-next-stream-line-equal _test-output-stream "        e9/jump $foo:0x00000002:loop/disp32"  "F - test-convert-function-with-loops-and-local-vars/12")
-    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-loops-and-local-vars/13")
-    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-loops-and-local-vars/14")
-    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-loops-and-local-vars/15")
-    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-loops-and-local-vars/16")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-loops-and-local-vars/17")
-    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-loops-and-local-vars/18")
-    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-loops-and-local-vars/19")
-    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-loops-and-local-vars/20")
-    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-loops-and-local-vars/21")
-    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-loops-and-local-vars/22")
-    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-loops-and-local-vars/23")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-conditional-loops-and-local-vars/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-conditional-loops-and-local-vars/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-conditional-loops-and-local-vars/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-conditional-loops-and-local-vars/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-conditional-loops-and-local-vars/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-conditional-loops-and-local-vars/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-conditional-loops-and-local-vars/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-conditional-loops-and-local-vars/7")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-conditional-loops-and-local-vars/8")
+    (check-next-stream-line-equal _test-output-stream "      {"                 "F - test-convert-function-with-conditional-loops-and-local-vars/9")
+    (check-next-stream-line-equal _test-output-stream "        0f 8c/jump-if-< break/disp32"  "F - test-convert-function-with-conditional-loops-and-local-vars/10")
+    (check-next-stream-line-equal _test-output-stream "        81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-conditional-loops-and-local-vars/11")
+    (check-next-stream-line-equal _test-output-stream "        e9/jump $foo:0x00000002:loop/disp32"  "F - test-convert-function-with-conditional-loops-and-local-vars/12")
+    (check-next-stream-line-equal _test-output-stream "      }"                 "F - test-convert-function-with-conditional-loops-and-local-vars/13")
+    (check-next-stream-line-equal _test-output-stream "      ff 0/subop/increment *(ebp+0xfffffffc)"  "F - test-convert-function-with-conditional-loops-and-local-vars/14")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-conditional-loops-and-local-vars/15")
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-conditional-loops-and-local-vars/16")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-conditional-loops-and-local-vars/17")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-conditional-loops-and-local-vars/18")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-conditional-loops-and-local-vars/19")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-conditional-loops-and-local-vars/20")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-conditional-loops-and-local-vars/21")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-conditional-loops-and-local-vars/22")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-conditional-loops-and-local-vars/23")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-function-with-unconditional-loops-and-local-vars:
+    # An unconditional 'loop' after a 'var' in a block is emitted _after_ the
+    # regular block cleanup. Any instructions after 'loop' are dead and
+    # therefore skipped.
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  {\n")
+    (write _test-input-stream "    var x: int\n")
+    (write _test-input-stream "    loop\n")
+    (write _test-input-stream "    increment x\n")
+    (write _test-input-stream "  }\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-unconditional-loops-and-local-vars/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-unconditional-loops-and-local-vars/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-unconditional-loops-and-local-vars/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-unconditional-loops-and-local-vars/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-unconditional-loops-and-local-vars/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-unconditional-loops-and-local-vars/5")
+    (check-next-stream-line-equal _test-output-stream "    {"                   "F - test-convert-function-with-unconditional-loops-and-local-vars/6")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-with-unconditional-loops-and-local-vars/7")
+    (check-next-stream-line-equal _test-output-stream "      68/push 0/imm32"   "F - test-convert-function-with-unconditional-loops-and-local-vars/8")
+    (check-next-stream-line-equal _test-output-stream "      81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-function-with-unconditional-loops-and-local-vars/9")
+    (check-next-stream-line-equal _test-output-stream "      e9/jump loop/disp32"  "F - test-convert-function-with-unconditional-loops-and-local-vars/10")
+    # not emitted:                                           ff 0/subop/increment *(ebp+0xfffffffc)
+    (check-next-stream-line-equal _test-output-stream "    }"                   "F - test-convert-function-with-unconditional-loops-and-local-vars/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-with-unconditional-loops-and-local-vars/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-unconditional-loops-and-local-vars/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-unconditional-loops-and-local-vars/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-unconditional-loops-and-local-vars/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-unconditional-loops-and-local-vars/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-unconditional-loops-and-local-vars/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-unconditional-loops-and-local-vars/18")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4382,13 +4439,15 @@ $emit-subx-stmt-list:check-for-stmt:
           # if !var-seen? break
           81 7/subop/compare %edx 0/imm32/false
           0f 84/jump-if-= break/disp32
+          # Mu currently has no unconditional 'break' statement
+          # conditional breaks {{{
 $emit-subx-stmt-list:check-for-break:
           # if (!string-starts-with?(var->operation, "break")) break
           (string-starts-with? *(ecx+4) "break")  # Stmt1-operation => eax
           3d/compare-eax-and 0/imm32
           0f 84/jump-if-= break/disp32
           81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
-          # simple breaks without a target {{{
+          # simple conditional breaks without a target {{{
           {
             0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-break:
@@ -4404,7 +4463,7 @@ $emit-subx-stmt-list:zero-arg-break:
             e9/jump $emit-subx-stmt-list:cleanup/disp32
           }
           # }}}
-          # breaks with an explicit target {{{
+          # conditional breaks with an explicit target {{{
           {
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:one-arg-break:
@@ -4413,6 +4472,7 @@ $emit-subx-stmt-list:one-arg-break:
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
           # }}}
+          # }}}
         }
         # }}}
         # handle loops after 'var' in a block {{{
@@ -4420,13 +4480,40 @@ $emit-subx-stmt-list:one-arg-break:
           # if !var-seen? break
           81 7/subop/compare %edx 0/imm32/false
           0f 84/jump-if-= break/disp32
+          # unconditional loops {{{
+          {
+            # if (!string-equal?(var->operation, "loop")) break
+            (string-equal? *(ecx+4) "loop")  # Stmt1-operation => eax
+            3d/compare-eax-and 0/imm32
+            0f 84/jump-if-= break/disp32
+            81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+            # simple unconditional loops without a target {{{
+            {
+              0f 85/jump-if-!= break/disp32
+              (emit-cleanup-code *(ebp+8) *(ebp+0x10) *Curr-block-depth)
+              (emit-indent *(ebp+8) *Curr-block-depth)
+              (write-buffered *(ebp+8) "e9/jump loop/disp32")
+              (write-buffered *(ebp+8) Newline)
+              (clean-up-blocks *(ebp+0x10) *Curr-block-depth)
+              e9/jump $emit-subx-stmt-list:end/disp32
+            }
+            # }}}
+            # unconditional loops with a target {{{
+            {
+              0f 84/jump-if-= break/disp32
+              # TODO
+            }
+            # }}}
+          }
+          # }}}
+          # conditional loops {{{
 $emit-subx-stmt-list:check-for-loop:
           # if (!string-starts-with?(var->operation, "loop")) break
           (string-starts-with? *(ecx+4) "loop")  # Stmt1-operation => eax
           3d/compare-eax-and 0/imm32
           0f 84/jump-if-= break/disp32
           81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
-          # simple loops without a target {{{
+          # simple conditional loops without a target {{{
           {
             0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-loop:
@@ -4452,7 +4539,7 @@ $emit-subx-stmt-list:zero-arg-loop:
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
           # }}}
-          # loops with an explicit target {{{
+          # conditional loops with an explicit target {{{
           {
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:one-arg-loop:
@@ -4460,6 +4547,7 @@ $emit-subx-stmt-list:one-arg-loop:
             # continue
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
+          # }}}
           # }}}
         }
         # }}}
