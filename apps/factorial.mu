@@ -1,14 +1,13 @@
 fn main -> exit-status/ebx: int {
 #?   run-tests
 #?   result <- copy 0
-  test-factorial # abc
   var tmp/eax: int <- factorial 5
   exit-status <- copy tmp
 }
 
 fn factorial n: int -> result/eax: int {
   compare n 1
-  { # foo
+  {
     break-if->
     result <- copy 1
   }
@@ -16,7 +15,7 @@ fn factorial n: int -> result/eax: int {
     break-if-<=
     var tmp/ecx: int <- copy n
     tmp <- decrement
-    result <- factorial tmp  # test comment
+    result <- factorial tmp
     result <- multiply n
   }
 }
