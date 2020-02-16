@@ -1,4 +1,4 @@
-fn main -> exit-status/ebx: int {
+fn main args: (addr array kernel-string) -> exit-status/ebx: int {
 #?   run-tests
 #?   result <- copy 0
   var tmp/eax: int <- factorial 5
