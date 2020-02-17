@@ -14,10 +14,11 @@ pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-
 body { font-size:12pt; font-family: monospace; color: #000000; background-color: #c6c6c6; }
 a { color:inherit; }
 * { font-size:12pt; font-size: 1em; }
+.CommentedCode { color: #8a8a8a; }
 .LineNr { }
-.Delimiter { color: #c000c0; }
-.Special { color: #ff6060; }
 .Constant { color: #008787; }
+.Special { color: #ff6060; }
+.Delimiter { color: #c000c0; }
 .PreProc { color: #c000c0; }
 -->
 </style>
@@ -54,25 +55,32 @@ if ('onhashchange' in window) {
 <body onload='JumpToLine();'>
 <a href='https://github.com/akkartik/mu/blob/master/apps/factorial.mu'>https://github.com/akkartik/mu/blob/master/apps/factorial.mu</a>
 <pre id='vimCodeElement'>
-<span id="L1" class="LineNr"> 1 </span><span class="PreProc">fn</span> <a href='../mu-init-test.subx.html#L7'>main</a><span class="PreProc"> -&gt; </span>result/ebx: int <span class="Delimiter">{</span>
-<span id="L2" class="LineNr"> 2 </span>  var tmp/eax: int <span class="Special">&lt;-</span> factorial<span class="Constant"> 5</span>
-<span id="L3" class="LineNr"> 3 </span>  result <span class="Special">&lt;-</span> copy tmp
-<span id="L4" class="LineNr"> 4 </span><span class="Delimiter">}</span>
-<span id="L5" class="LineNr"> 5 </span>
-<span id="L6" class="LineNr"> 6 </span><span class="PreProc">fn</span> factorial n: int<span class="PreProc"> -&gt; </span>result/eax: int <span class="Delimiter">{</span>
-<span id="L7" class="LineNr"> 7 </span>  compare n<span class="Constant"> 1</span>
-<span id="L8" class="LineNr"> 8 </span>  <span class="Delimiter">{</span>
-<span id="L9" class="LineNr"> 9 </span>    break-if<span class="PreProc">-&gt;</span>
-<span id="L10" class="LineNr">10 </span>    result <span class="Special">&lt;-</span> copy<span class="Constant"> 1</span>
-<span id="L11" class="LineNr">11 </span>  <span class="Delimiter">}</span>
-<span id="L12" class="LineNr">12 </span>  <span class="Delimiter">{</span>
-<span id="L13" class="LineNr">13 </span>    break-if-&lt;=
-<span id="L14" class="LineNr">14 </span>    var tmp/ecx: int <span class="Special">&lt;-</span> copy n
-<span id="L15" class="LineNr">15 </span>    tmp <span class="Special">&lt;-</span> decrement
-<span id="L16" class="LineNr">16 </span>    result <span class="Special">&lt;-</span> factorial tmp
-<span id="L17" class="LineNr">17 </span>    result <span class="Special">&lt;-</span> multiply n
-<span id="L18" class="LineNr">18 </span>  <span class="Delimiter">}</span>
-<span id="L19" class="LineNr">19 </span><span class="Delimiter">}</span>
+<span id="L1" class="LineNr"> 1 </span><span class="PreProc">fn</span> <a href='../mu-init-test.subx.html#L7'>main</a> args: (addr array kernel-string)<span class="PreProc"> -&gt; </span>exit-status/<span class="Constant">ebx</span>: int <span class="Delimiter">{</span>
+<span id="L2" class="LineNr"> 2 </span><span class="CommentedCode">#?   run-tests</span>
+<span id="L3" class="LineNr"> 3 </span><span class="CommentedCode">#?   result &lt;- copy 0</span>
+<span id="L4" class="LineNr"> 4 </span>  var tmp/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> factorial<span class="Constant"> 5</span>
+<span id="L5" class="LineNr"> 5 </span>  exit-status <span class="Special">&lt;-</span> copy tmp
+<span id="L6" class="LineNr"> 6 </span><span class="Delimiter">}</span>
+<span id="L7" class="LineNr"> 7 </span>
+<span id="L8" class="LineNr"> 8 </span><span class="PreProc">fn</span> factorial n: int<span class="PreProc"> -&gt; </span>result/<span class="Constant">eax</span>: int <span class="Delimiter">{</span>
+<span id="L9" class="LineNr"> 9 </span>  compare n<span class="Constant"> 1</span>
+<span id="L10" class="LineNr">10 </span>  <span class="Delimiter">{</span>
+<span id="L11" class="LineNr">11 </span>    break-if-&gt;
+<span id="L12" class="LineNr">12 </span>    result <span class="Special">&lt;-</span> copy<span class="Constant"> 1</span>
+<span id="L13" class="LineNr">13 </span>  <span class="Delimiter">}</span>
+<span id="L14" class="LineNr">14 </span>  <span class="Delimiter">{</span>
+<span id="L15" class="LineNr">15 </span>    break-if-&lt;=
+<span id="L16" class="LineNr">16 </span>    var tmp/<span class="Constant">ecx</span>: int <span class="Special">&lt;-</span> copy n
+<span id="L17" class="LineNr">17 </span>    tmp <span class="Special">&lt;-</span> decrement
+<span id="L18" class="LineNr">18 </span>    result <span class="Special">&lt;-</span> factorial tmp
+<span id="L19" class="LineNr">19 </span>    result <span class="Special">&lt;-</span> multiply n
+<span id="L20" class="LineNr">20 </span>  <span class="Delimiter">}</span>
+<span id="L21" class="LineNr">21 </span><span class="Delimiter">}</span>
+<span id="L22" class="LineNr">22 </span>
+<span id="L23" class="LineNr">23 </span><span class="PreProc">fn</span> test-factorial <span class="Delimiter">{</span>
+<span id="L24" class="LineNr">24 </span>  var result/<span class="Constant">eax</span>: int <span class="Special">&lt;-</span> factorial<span class="Constant"> 5</span>
+<span id="L25" class="LineNr">25 </span>  <a href='../051test.subx.html#L24'>check-ints-equal</a> result 0x78 <span class="Constant">&quot;F</span> - test-factorial&quot;
+<span id="L26" class="LineNr">26 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
