@@ -2090,11 +2090,9 @@ $parse-var-with-type:save-register:
     # if (!slice-empty?(s)) v->register = slice-to-string(s)
     {
 $parse-var-with-type:write-register:
-      # HACK: s->end can be less than s->start with all the decrements above
-      # That's probably a sign we have the wrong algorithm for this function.
-      8b/-> *ecx 0/r32/eax
-      39/compare *(ecx+4) 0/r32/eax  # Slice-end
-      76/jump-if-<= break/disp8
+      (slice-empty? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      75/jump-if-!= break/disp8
       (slice-to-string Heap %ecx)
       89/<- *(edi+0x10) 0/r32/eax  # Var-register
     }
