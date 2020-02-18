@@ -4329,6 +4329,45 @@ $size-of:end:
     5d/pop-to-ebp
     c3/return
 
+type-equal?:  # a: (handle tree type-id), b: (handle tree type-id) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # ecx = a
+    8b/-> *(ebp+8) 1/r32/ecx
+    # edx = b
+    8b/-> *(ebp+0xc) 2/r32/edx
+    # if (a == b) return true
+    8b/-> %ecx 0/r32/eax  # Var-type
+    39/compare %edx 0/r32/eax  # Var-type
+    b8/copy-to-eax 1/imm32/true
+    74/jump-if-= $type-equal?:end/disp8
+    # if (a < MAX_TYPE_ID) return false
+    81 7/subop/compare %ecx 0x10000/imm32
+    b8/copy-to-eax 0/imm32/false
+    72/jump-if-addr< $type-equal?:end/disp8
+    # if (b < MAX_TYPE_ID) return false
+    81 7/subop/compare %edx 0x10000/imm32
+    b8/copy-to-eax 0/imm32/false
+    72/jump-if-addr< $type-equal?:end/disp8
+    # if (!type-equal?(a->left, b->left)) return false
+    (type-equal? *ecx *edx)  # Tree-left, Tree-left => eax
+    3d/compare-eax-and 0/imm32/false
+    74/jump-if-= $type-equal?:end/disp8
+    # return type-equal?(a->right, b->right)
+    (type-equal? *(ecx+4) *(edx+4))  # Tree-right, Tree-right => eax
+$type-equal?:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 == data
 
 # not yet used, but it will be
@@ -7077,40 +7116,41 @@ $operand-matches-primitive?:end:
     5d/pop-to-ebp
     c3/return
 
-type-equal?:  # a: (handle tree type-id), b: (handle tree type-id) -> result/eax: boolean
+subx-type-equal?:  # a: (handle tree type-id), b: (handle tree type-id) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    52/push-edx
-    # ecx = a
-    8b/-> *(ebp+8) 1/r32/ecx
-    # edx = b
-    8b/-> *(ebp+0xc) 2/r32/edx
-    # if (a == b) return true
-    8b/-> %ecx 0/r32/eax  # Var-type
-    39/compare %edx 0/r32/eax  # Var-type
+    # var alit/ecx: boolean = is-literal-type?(a)
+    (is-literal-type? *(ebp+8))  # => eax
+    89/<- %ecx 0/r32/eax
+    # var blit/eax: boolean = is-literal-type?(b)
+    (is-literal-type? *(ebp+0xc))  # => eax
+    # return alit == blit
+    39/compare %eax 1/r32/ecx
+    74/jump-if-= $subx-type-equal?:true/disp8
+$subx-type-equal?:false:
+    b8/copy-to-eax 0/imm32/false
+    eb/jump $subx-type-equal?:end/disp8
+$subx-type-equal?:true:
     b8/copy-to-eax 1/imm32/true
-    74/jump-if-= $type-equal?:end/disp8
-    # if (a < MAX_TYPE_ID) return false
-    81 7/subop/compare %ecx 0x10000/imm32
-    b8/copy-to-eax 0/imm32/false
-    72/jump-if-addr< $type-equal?:end/disp8
-    # if (b < MAX_TYPE_ID) return false
-    81 7/subop/compare %edx 0x10000/imm32
-    b8/copy-to-eax 0/imm32/false
-    72/jump-if-addr< $type-equal?:end/disp8
-    # if (!type-equal?(a->left, b->left)) return false
-    (type-equal? *ecx *edx)  # Tree-left, Tree-left => eax
-    3d/compare-eax-and 0/imm32/false
-    74/jump-if-= $type-equal?:end/disp8
-    # return type-equal?(a->right, b->right)
-    (type-equal? *(ecx+4) *(edx+4))  # Tree-right, Tree-right => eax
-$type-equal?:end:
+$subx-type-equal?:end:
     # . restore registers
-    5a/pop-to-edx
     59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-literal-type?:  # a: (handle tree type-id) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *eax 0/r32/eax  # Atom-value
+$is-literal-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
