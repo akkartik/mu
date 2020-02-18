@@ -7320,7 +7320,7 @@ operand-matches-primitive?:  # var: (handle var), prim-var: (handle var) -> resu
     # edi = prim-var
     8b/-> *(ebp+0xc) 7/r32/edi
     # if (var->type != prim-var->type) return false
-    (type-equal? *(esi+4) *(edi+4))  # Var-type, Var-type => eax
+    (subx-type-equal? *(esi+4) *(edi+4))  # Var-type, Var-type => eax
     3d/compare-eax-and 0/imm32/false
     b8/copy-to-eax 0/imm32/false
     74/jump-if-= $operand-matches-primitive?:end/disp8
@@ -7391,6 +7391,9 @@ is-literal-type?:  # a: (handle tree type-id) -> result/eax: boolean
     #
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *eax 0/r32/eax  # Atom-value
+    3d/compare-eax-and 0/imm32/false
+    74/jump-if-equal $is-literal-type?:end/disp8
+    b8/copy-to-eax 1/imm32/true
 $is-literal-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
