@@ -1715,6 +1715,54 @@ test-convert-function-with-nonlocal-unconditional-loop-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
+test-convert-length-of-array:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
+    #
+    (write _test-input-stream "fn foo a: (addr array int) {\n")
+    (write _test-input-stream "  var b/eax: (addr array int) <- copy a\n")
+    (write _test-input-stream "  var c/eax: int <- length b\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-length-of-array/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-length-of-array/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-length-of-array/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-length-of-array/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-length-of-array/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-length-of-array/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array/6")
+    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0x00000008) 0x00000000/r32"  "F - test-convert-length-of-array/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array/8")
+    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *eax 0x00000000/r32"  "F - test-convert-length-of-array/9")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array/10")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array/11")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array/12")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-length-of-array/13")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-length-of-array/14")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-length-of-array/15")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-length-of-array/16")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-length-of-array/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 #######################################################
 # Parsing
 #######################################################
@@ -5275,6 +5323,33 @@ emit-subx-statement:  # out: (addr buffered-file), stmt: (handle statement), pri
     # . save registers
     50/push-eax
     51/push-ecx
+    # handle some special cases
+    # ecx = stmt
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # array length {{{
+    {
+      # if (!string-equal?(stmt->operation, "length")) break
+      (string-equal? *(ecx+4) "length")  # Stmt1-operation => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+$emit-subx-stmt-list:array-length:
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "8b/copy-from *")
+      # inouts[0]->register
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+      8b/-> *eax 0/r32/eax  # List-value
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
+      #
+      (write-buffered *(ebp+8) " ")
+      # outputs[0] "/r32"
+      8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
+      8b/-> *eax 0/r32/eax  # List-value
+      (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
+      (print-int32-buffered *(ebp+8) *eax)
+      (write-buffered *(ebp+8) "/r32\n")
+      e9/jump $emit-subx-statement:end/disp32
+    }
+    # }}}
     # if stmt matches a primitive, emit it
     {
 $emit-subx-statement:check-for-primitive:
