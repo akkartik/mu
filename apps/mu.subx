@@ -4704,7 +4704,7 @@ $emit-subx-stmt-list:branch-stmt-and-var-seen:
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:unconditional-loop:
             81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
-            # simple unconditional loops without a target {{{
+            # simple unconditional loops without a target
             {
               0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-unconditional-loop:
@@ -4714,26 +4714,12 @@ $emit-subx-stmt-list:zero-arg-unconditional-loop:
               (write-buffered *(ebp+8) Newline)
               e9/jump $emit-subx-stmt-list:cleanup/disp32  # skip remaining statements; they're dead code
             }
-            # }}}
-            # unconditional loops with a target {{{
+            # unconditional loops with a target
             {
               0f 84/jump-if-= break/disp32
-$emit-subx-stmt-list:unconditional-loop-with-target:
-              # var target/ebx: (addr array byte) = curr-stmt->inouts->value->name
-              8b/-> *(ecx+8) 3/r32/ebx  # Stmt1-inouts
-              8b/-> *ebx 3/r32/ebx  # List-value
-              8b/-> *ebx 3/r32/ebx  # Var-name
-              # clean up until target block
-              (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %ebx)
-              # emit jump to target block
-              (emit-indent *(ebp+8) *Curr-block-depth)
-              (write-buffered *(ebp+8) "e9/jump ")
-              (write-buffered *(ebp+8) %ebx)
-              (write-buffered *(ebp+8) ":loop/disp32\n")
-              # done
+              (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
               e9/jump $emit-subx-stmt-list:cleanup/disp32
             }
-            # }}}
           }
           # }}}
           # unconditional breaks {{{
@@ -4746,25 +4732,11 @@ $emit-subx-stmt-list:unconditional-break:
             81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
             # simple unconditional breaks without a target
             0f 84/jump-if-= $emit-subx-stmt-list:emit-cleanup/disp32  # easy: just skip remaining statements
-            # unconditional breaks with a target {{{
-$emit-subx-stmt-list:unconditional-break-with-target:
-            # var target/ebx: (addr array byte) = curr-stmt->inouts->value->name
-            8b/-> *(ecx+8) 3/r32/ebx  # Stmt1-inouts
-            8b/-> *ebx 3/r32/ebx  # List-value
-            8b/-> *ebx 3/r32/ebx  # Var-name
-            # clean up until target block
-            (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %ebx)
-            # emit jump to target block
-            (emit-indent *(ebp+8) *Curr-block-depth)
-            (write-buffered *(ebp+8) "e9/jump ")
-            (write-buffered *(ebp+8) %ebx)
-            (write-buffered *(ebp+8) ":break/disp32\n")
-            # done
+            # unconditional breaks with a target
+            (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
             e9/jump $emit-subx-stmt-list:cleanup/disp32
-            # }}}
           }
           # }}}
-          # conditional branches {{{
           # simple conditional branches without a target {{{
           81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
           {
@@ -4806,33 +4778,13 @@ $emit-subx-stmt-list:zero-arg-conditional-branch:
           {
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:conditional-branch-with-target:
-            # var target/ebx: (addr array byte) = curr-stmt->inouts->value->name
-            8b/-> *(ecx+8) 3/r32/ebx  # Stmt1-inouts
-            8b/-> *ebx 3/r32/ebx  # List-value
-            8b/-> *ebx 3/r32/ebx  # Var-name
             # cleanup prologue
             (emit-indent *(ebp+8) *Curr-block-depth)
             (write-buffered *(ebp+8) "{\n")
             ff 0/subop/increment *Curr-block-depth
             #
             (emit-reverse-break *(ebp+8) %ecx)
-            # clean up until target block
-            (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %ebx)
-            # emit jump to target block
-            (emit-indent *(ebp+8) *Curr-block-depth)
-            (write-buffered *(ebp+8) "e9/jump ")
-            (write-buffered *(ebp+8) %ebx)
-            (string-starts-with? *(ecx+4) "break")
-            3d/compare-eax-and 0/imm32/false
-            {
-              74/jump-if-= break/disp8
-              (write-buffered *(ebp+8) ":break/disp32\n")
-            }
-            3d/compare-eax-and 0/imm32/false  # just in case the function call modified flags
-            {
-              75/jump-if-!= break/disp8
-              (write-buffered *(ebp+8) ":loop/disp32\n")
-            }
+            (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
             # cleanup epilogue
             ff 1/subop/decrement *Curr-block-depth
             (emit-indent *(ebp+8) *Curr-block-depth)
@@ -4840,7 +4792,6 @@ $emit-subx-stmt-list:conditional-branch-with-target:
             # continue
             e9/jump $emit-subx-stmt-list:continue/disp32
           }
-          # }}}
           # }}}
         }
 $emit-subx-stmt-list:1-to-1:
@@ -4912,6 +4863,47 @@ $emit-subx-stmt-list:abort-regvardef-without-register:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file), stmt: (addr stmt1), vars: (addr stack (handle var))
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    # ecx = stmt
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # var target/edx: (addr array byte) = curr-stmt->inouts->value->name
+    8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
+    8b/-> *edx 2/r32/edx  # List-value
+    8b/-> *edx 2/r32/edx  # Var-name
+    # clean up until target block
+    (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %edx)
+    # emit jump to target block
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "e9/jump ")
+    (write-buffered *(ebp+8) %edx)
+    (string-starts-with? *(ecx+4) "break")
+    3d/compare-eax-and 0/imm32/false
+    {
+      74/jump-if-= break/disp8
+      (write-buffered *(ebp+8) ":break/disp32\n")
+    }
+    3d/compare-eax-and 0/imm32/false  # just in case the function call modified flags
+    {
+      75/jump-if-!= break/disp8
+      (write-buffered *(ebp+8) ":loop/disp32\n")
+    }
+$emit-subx-cleanup-and-unconditional-nonlocal-branch:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 is-mu-branch?:  # stmt: (addr stmt1) -> result/eax: boolean
     # . prologue
