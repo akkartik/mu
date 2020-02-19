@@ -7,18 +7,18 @@ fn main args: (addr array kernel-string) -> exit-status/ebx: int {
   var tmp/ecx: int <- length a
   $main-body: {
     compare tmp, 1
-    # if (len(args) != 1) run-tests()
-    {
-      break-if-=
-      run-tests
-      exit-status <- copy 0
-      break $main-body
-    }
     # if (len(args) == 1) factorial(5)
     {
       break-if-!=
       var tmp/eax: int <- factorial 5
       exit-status <- copy tmp
+      break $main-body
+    }
+    # if (len(args) != 1) run-tests()
+    {
+      break-if-=
+      run-tests
+      exit-status <- copy 0
     }
   }
 }
