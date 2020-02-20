@@ -5346,7 +5346,7 @@ $emit-subx-stmt-list:array-length:
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "8b/copy-from *")
       # inouts[0]->register
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
       8b/-> *eax 0/r32/eax  # List-value
       (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
       #
@@ -6880,7 +6880,7 @@ get-stmt-operand-from-arg-location:  # stmt: (handle statement), l: arg-location
       3d/compare-eax-and 1/imm32
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:1:
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
       8b/-> *eax 0/r32/eax  # Operand-var
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
@@ -6889,7 +6889,7 @@ $get-stmt-operand-from-arg-location:1:
       3d/compare-eax-and 2/imm32
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:2:
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
       8b/-> *(eax+4) 0/r32/eax  # Operand-next
       8b/-> *eax 0/r32/eax  # Operand-var
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
@@ -7297,7 +7297,7 @@ $mu-stmt-matches-primitive?:check-name:
     }
 $mu-stmt-matches-primitive?:check-inouts:
     # for (curr/esi in stmt->inouts, curr2/edi in primitive->inouts)
-    8b/-> *(ecx+8) 6/r32/esi  # Stmt1-inouts
+    8b/-> *(ecx+8) 6/r32/esi  # Stmt1-inouts or Regvardef-inouts
     8b/-> *(edx+4) 7/r32/edi  # Primitive-inouts
     {
       # if (curr == 0 && curr2 == 0) move on to check outputs
