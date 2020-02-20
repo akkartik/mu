@@ -324,7 +324,7 @@ Var-register:
 Var-size:  # (addr int)
   0x14/imm32
 
-Any-register:  # "*"
+Any-register:  # wildcard
   # size
   1/imm32
   # data
@@ -6727,7 +6727,7 @@ Int-var-in-some-register:
     Type-int/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
-    "*"/imm32/register
+    Any-register/imm32
 
 Single-int-var-in-eax:
     Int-var-in-eax/imm32
@@ -7420,8 +7420,8 @@ operand-matches-primitive?:  # var: (handle var), prim-var: (handle var) -> resu
       74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
       81 7/subop/compare *(edi+0x10) 0/imm32
       74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
-      # if prim-var->register is "*", return true
-      (string-equal? *(edi+0x10) "*")  # Var-register
+      # if prim-var->register is wildcard, return true
+      (string-equal? *(edi+0x10) Any-register)  # Var-register
       3d/compare-eax-and 0/imm32/false
       b8/copy-to-eax 1/imm32/true
       75/jump-if-!= $operand-matches-primitive?:end/disp8
