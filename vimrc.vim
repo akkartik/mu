@@ -93,7 +93,6 @@ else
   endfunction
 endif
 
-set switchbuf=useopen
 if exists("&splitvertical")
   command! -nargs=0 T badd last_run | sbuffer last_run
 else
