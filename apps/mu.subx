@@ -293,9 +293,9 @@ Block-var:  # (handle var)
 
 Stmt1-operation:  # (handle array byte)
   4/imm32
-Stmt1-inouts:  # (handle list var)
+Stmt1-inouts:  # (handle stmt-var)
   8/imm32
-Stmt1-outputs:  # (handle list var)
+Stmt1-outputs:  # (handle stmt-var)
   0xc/imm32
 
 Vardef-var:  # (handle var)
@@ -303,9 +303,9 @@ Vardef-var:  # (handle var)
 
 Regvardef-operation:  # (handle array byte)
   4/imm32
-Regvardef-inouts:  # (handle list var)
+Regvardef-inouts:  # (handle stmt-var)
   8/imm32
-Regvardef-outputs:  # (handle list var)  # will have exactly one element
+Regvardef-outputs:  # (handle stmt-var)  # will have exactly one element
   0xc/imm32
 
 Stmt-size:  # (addr int)
@@ -336,6 +336,16 @@ List-next:
   4/imm32
 List-size:  # (addr int)
   8/imm32
+
+# A stmt-var is like a list of vars with call-site specific metadata
+Stmt-var-value:  # (handle var)
+  0/imm32
+Stmt-var-next:  # (handle stmt-var)
+  4/imm32
+Stmt-var-is-deref:  # boolean
+  8/imm32
+Stmt-var-size:  # (addr int)
+  0xc/imm32
 
 # Types are expressed as trees (s-expressions) of type-ids (ints).
 # However, there's no need for singletons, so we can assume (int) == int
@@ -3739,7 +3749,7 @@ test-parse-mu-reg-var-def:
     (check-ints-equal *eax 3 "F - test-parse-mu-reg-var-def/tag")  # Stmt-tag is regvardef
     8b/-> *(eax+0xc) 0/r32/eax  # Regvardef-outputs
     (check-ints-equal *(eax+4) 0 "F - test-parse-mu-reg-var-def/single-output")  # List-next
-    8b/-> *eax 0/r32/eax  # List-value
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
     (check-strings-equal *eax "n" "F - test-parse-mu-reg-var-def/output-name")  # Var-name
     (check-strings-equal *(eax+0x10) "eax" "F - test-parse-mu-reg-var-def/output-register")  # Var-register
     (check-ints-equal *(eax+8) 1 "F - test-parse-mu-reg-var-def/output-block-depth")  # Var-block-depth
@@ -3773,11 +3783,14 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn:
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
+    52/push-edx
     57/push-edi
     # var name/ecx: slice
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
+    # var is-deref?: boolean = false
+    ba/copy-to-edx 0/imm32/false
     # result/edi: (handle stmt)
     (allocate Heap *Stmt-size)  # => eax
     (zero-out %eax *Stmt-size)
@@ -3793,20 +3806,32 @@ $parse-mu-stmt:read-outputs:
         # name = next-mu-token(line)
         (next-mu-token *(ebp+8) %ecx)
         # if slice-empty?(word-slice) break
-        (slice-empty? %ecx)
+        (slice-empty? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 85/jump-if-!= break/disp32
         # if (name == "<-") break
-        (slice-equal? %ecx "<-")
+        (slice-equal? %ecx "<-")  # => eax
         3d/compare-eax-and 0/imm32/false
-        75/jump-if-!= break/disp8
+        0f 85/jump-if-!= break/disp32
+        # is-deref? = false
+        ba/copy-to-edx 0/imm32/false
+        # if (slice-starts-with?(name, '*')) ++name->start and set is-deref?
+        8b/-> *ecx 0/r32/eax  # Slice-start
+        8a/copy-byte *eax 0/r32/AL
+        81 4/subop/and %eax 0xff/imm32
+        3d/compare-eax-and 0x2a/imm32/asterisk
+        {
+          75/jump-if-!= break/disp8
+          ff 0/subop/increment *ecx
+          ba/copy-to-edx 1/imm32/true
+        }
         # assert(is-identifier?(name))
-        (is-identifier? %ecx)
+        (is-identifier? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= $parse-mu-stmt:abort/disp32
-        #
+        # result->outputs = new stmt-var(lookup(name, vars, fn), result->outputs, is-deref?)
         (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10))  # => eax
-        (append-list Heap %eax *(edi+0xc))  # Stmt1-outputs => eax
+        (append-stmt-var Heap %eax *(edi+0xc) %edx)  # Stmt1-outputs => eax
         89/<- *(edi+0xc) 0/r32/eax  # Stmt1-outputs
         e9/jump loop/disp32
       }
@@ -3819,6 +3844,7 @@ $parse-mu-stmt:end:
     81 0/subop/add %esp 8/imm32
     # . restore registers
     5f/pop-to-edi
+    5a/pop-to-edx
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -4199,7 +4225,7 @@ test-parse-mu-stmt:
     # edx: (handle list var) = result->inouts
     8b/-> *(eax+8) 2/r32/edx  # Stmt1-inouts
     # ebx: (handle var) = result->inouts->value
-    8b/-> *edx 3/r32/ebx  # List-value
+    8b/-> *edx 3/r32/ebx  # Stmt-var-value
     (check-strings-equal *ebx "n" "F - test-parse-mu-stmt/inout:0")  # Var-name
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -4235,7 +4261,7 @@ test-parse-mu-stmt-with-comma:
     # edx: (handle list var) = result->inouts
     8b/-> *(eax+8) 2/r32/edx  # Stmt1-inouts
     # ebx: (handle var) = result->inouts->value
-    8b/-> *edx 3/r32/ebx  # List-value
+    8b/-> *edx 3/r32/ebx  # Stmt-var-value
     (check-strings-equal *ebx "n" "F - test-parse-mu-stmt-with-comma/inout:0")  # Var-name
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -4464,26 +4490,6 @@ $new-regvardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-list:  # ad: (addr allocation-descriptor), value: _type, next: (handle list _type) -> result/eax: (handle list _type)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    51/push-ecx
-    #
-    (allocate *(ebp+8) *List-size)  # => eax
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *eax 1/r32/ecx  # List-value
-    8b/-> *(ebp+0x10) 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # List-next
-$new-list:end:
-    # . restore registers
-    59/pop-to-ecx
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
 append-list:  # ad: (addr allocation-descriptor), value: _type, list: (handle list _type) -> result/eax: (handle list _type)
     # . prologue
     55/push-ebp
@@ -4492,11 +4498,12 @@ append-list:  # ad: (addr allocation-descriptor), value: _type, list: (handle li
     51/push-ecx
     #
     (allocate *(ebp+8) *List-size)  # => eax
+    (zero-out %eax *List-size)
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *eax 1/r32/ecx  # List-value
     # if (list == null) return result
     81 7/subop/compare *(ebp+0x10) 0/imm32
-    74/jump-if-= $new-list:end/disp8
+    74/jump-if-= $append-list:end/disp8
     # otherwise append
     # var curr/ecx = list
     8b/-> *(ebp+0x10) 1/r32/ecx
@@ -4513,6 +4520,45 @@ append-list:  # ad: (addr allocation-descriptor), value: _type, list: (handle li
     # return list
     8b/-> *(ebp+0x10) 0/r32/eax
 $append-list:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+append-stmt-var:  # ad: (addr allocation-descriptor), v: (handle var), vars: (handle stmt-var), is-deref?: boolean -> result/eax: (handle stmt-var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    #
+    (allocate *(ebp+8) *Stmt-var-size)  # => eax
+    (zero-out %eax *Stmt-var-size)
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    89/<- *eax 1/r32/ecx  # Stmt-var-value
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Stmt-var-is-deref
+    # if (list == null) return result
+    81 7/subop/compare *(ebp+0x10) 0/imm32
+    74/jump-if-= $append-stmt-var:end/disp8
+    # otherwise append
+    # var curr/ecx: (handle stmt-var) = vars
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    # while (curr->next != null) curr = curr->next
+    {
+      81 7/subop/compare *(ecx+4) 0/imm32  # List-next
+      74/jump-if-= break/disp8
+      # curr = curr->next
+      8b/-> *(ecx+4) 1/r32/ecx
+      eb/jump loop/disp8
+    }
+    # curr->next = result
+    89/<- *(ecx+4) 0/r32/eax
+    # return vars
+    8b/-> *(ebp+0x10) 0/r32/eax
+$append-stmt-var:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -4934,7 +4980,7 @@ emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var target/edx: (addr array byte) = curr-stmt->inouts->value->name
     8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
-    8b/-> *edx 2/r32/edx  # List-value
+    8b/-> *edx 2/r32/edx  # Stmt-var-value
     8b/-> *edx 2/r32/edx  # Var-name
     # clean up until target block
     (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %edx)
@@ -5347,13 +5393,13 @@ $emit-subx-stmt-list:array-length:
       (write-buffered *(ebp+8) "8b/copy-from *")
       # inouts[0]->register
       8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
-      8b/-> *eax 0/r32/eax  # List-value
+      8b/-> *eax 0/r32/eax  # Stmt-var-value
       (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
       #
       (write-buffered *(ebp+8) " ")
       # outputs[0] "/r32"
       8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-      8b/-> *eax 0/r32/eax  # List-value
+      8b/-> *eax 0/r32/eax  # Stmt-var-value
       (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
       (print-int32-buffered *(ebp+8) *eax)
       (write-buffered *(ebp+8) "/r32\n")
@@ -7341,7 +7387,7 @@ $mu-stmt-matches-primitive?:prim-inout-is-null:
       }
       # if (curr != curr2) return false
       {
-        (operand-matches-primitive? *esi *edi)  # => eax
+        (operand-matches-primitive? %esi *edi)  # List-value => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32/false
@@ -7383,7 +7429,7 @@ $mu-stmt-matches-primitive?:check-output:
       }
       # if (curr != curr2) return false
       {
-        (operand-matches-primitive? *esi *edi)  # List-value List-value => eax
+        (operand-matches-primitive? %esi *edi)  # List-value => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32
@@ -7409,15 +7455,18 @@ $mu-stmt-matches-primitive?:end:
     5d/pop-to-ebp
     c3/return
 
-operand-matches-primitive?:  # var: (handle var), prim-var: (handle var) -> result/eax: boolean
+operand-matches-primitive?:  # s: (handle stmt-var), prim-var: (handle var) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
     56/push-esi
     57/push-edi
-    # esi = var
-    8b/-> *(ebp+8) 6/r32/esi
+    # ecx = s
+    8b/-> *(ebp+8) 1/r32/ecx
+    # var var/esi : (handle var) = s->value
+    8b/-> *ecx 6/r32/esi  # Stmt-var-value
     # edi = prim-var
     8b/-> *(ebp+0xc) 7/r32/edi
     # if (var->type != prim-var->type) return false
@@ -7425,6 +7474,14 @@ operand-matches-primitive?:  # var: (handle var), prim-var: (handle var) -> resu
     3d/compare-eax-and 0/imm32/false
     b8/copy-to-eax 0/imm32/false
     74/jump-if-= $operand-matches-primitive?:end/disp8
+    # if prim-var is in memory and var is in register but dereference, match
+    {
+      81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
+      75/jump-if-!= break/disp8
+      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      74/jump-if-= break/disp8
+      # TODO
+    }
     # return false if var->register doesn't match prim-var->register
     {
       # if register addresses are equal, it's a match
@@ -7452,6 +7509,7 @@ $operand-matches-primitive?:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
