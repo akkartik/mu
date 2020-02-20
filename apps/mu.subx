@@ -6178,8 +6178,20 @@ _Primitive-compare-eax-with-literal:
     2/imm32/imm32-is-second-inout
     0/imm32/no-disp32
     0/imm32/output-is-write-only
-    _Primitive-compare-regmem-with-literal/imm32/next
-_Primitive-compare-regmem-with-literal:
+    _Primitive-compare-reg-with-literal/imm32/next
+_Primitive-compare-reg-with-literal:
+    # compare var1/reg n => 81 7/subop/compare %reg n/imm32
+    "compare"/imm32/name
+    Int-var-in-register-and-literal/imm32/inouts
+    0/imm32/outputs
+    "81 7/subop/compare"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    0/imm32/no-r32
+    2/imm32/imm32-is-second-inout
+    0/imm32/no-disp32
+    0/imm32/output-is-write-only
+    _Primitive-compare-mem-with-literal/imm32/next
+_Primitive-compare-mem-with-literal:
     # compare var1 n => 81 7/subop/compare *(ebp+___) n/imm32
     "compare"/imm32/name
     Int-var-and-literal/imm32/inouts
@@ -6716,6 +6728,10 @@ Two-args-int-eax-int-literal:
 
 Int-var-and-literal:
     Int-var-on-stack/imm32
+    Single-lit-var/imm32/next
+
+Int-var-in-register-and-literal:
+    Int-var-in-some-register/imm32
     Single-lit-var/imm32/next
 
 Single-int-var-in-some-register:
@@ -7419,7 +7435,8 @@ operand-matches-primitive?:  # var: (handle var), prim-var: (handle var) -> resu
       3d/compare-eax-and 0/imm32
       74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
       81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
-      74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
+      b8/copy-to-eax 0/imm32/false
+      74/jump-if-=  $operand-matches-primitive?:end/disp8
       # if prim-var->register is wildcard, it's a match
       (string-equal? *(edi+0x10) Any-register)  # Var-register => eax
       3d/compare-eax-and 0/imm32/false
@@ -7944,8 +7961,8 @@ test-increment-var:
     89/<- %edi 4/r32/esp
     # var stmt/esi: statement
     68/push 0/imm32/next
-    68/push 0/imm32/outputs
-    57/push-edi/inouts
+    57/push-edi/outputs
+    68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
     68/push 1/imm32
     89/<- %esi 4/r32/esp
@@ -7960,7 +7977,7 @@ test-increment-var:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-increment-var")
+    (check-next-stream-line-equal _test-output-stream "40/increment-eax" "F - test-increment-var")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
