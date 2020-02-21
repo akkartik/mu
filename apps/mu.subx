@@ -3788,7 +3788,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -
       8b/-> *Next-local-stack-offset 0/r32/eax
       89/<- *(edx+0xc) 0/r32/eax  # Var-stack-offset
       # TODO: ensure that there's nothing else on this line
-      (new-vardef Heap %edx)  # => eax
+      (new-var-def Heap %edx)  # => eax
       eb/jump $parse-mu-var-def:end/disp8
     }
     # or v has a register and there's more to this line
@@ -3800,7 +3800,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= $parse-mu-var-def:abort/disp8
       #
-      (new-regvardef Heap %edx)  # => eax
+      (new-reg-var-def Heap %edx)  # => eax
       (add-operation-and-inputs-to-stmt %eax *(ebp+8) *(ebp+0xc))
     }
 $parse-mu-var-def:end:
@@ -3852,7 +3852,7 @@ test-parse-mu-var-def:
     # convert
     (parse-mu-var-def _test-input-stream %ecx)  # => eax
     # check result
-    (check-ints-equal *eax 2 "F - test-parse-mu-var-def/tag")  # Stmt-tag is vardef
+    (check-ints-equal *eax 2 "F - test-parse-mu-var-def/tag")  # Stmt-tag is var-def
     8b/-> *(eax+4) 0/r32/eax  # Vardef-var
     (check-strings-equal *eax "n" "F - test-parse-mu-var-def/var-name")  # Var-name
     (check-ints-equal *(eax+0x10) 0 "F - test-parse-mu-var-def/var-register")  # Var-register
@@ -3888,7 +3888,7 @@ test-parse-mu-reg-var-def:
     # convert
     (parse-mu-var-def _test-input-stream %ecx)  # => eax
     # check result
-    (check-ints-equal *eax 3 "F - test-parse-mu-reg-var-def/tag")  # Stmt-tag is regvardef
+    (check-ints-equal *eax 3 "F - test-parse-mu-reg-var-def/tag")  # Stmt-tag is reg-var-def
     8b/-> *(eax+0xc) 0/r32/eax  # Regvardef-outputs
     (check-ints-equal *(eax+4) 0 "F - test-parse-mu-reg-var-def/single-output")  # List-next
     8b/-> *eax 0/r32/eax  # Stmt-var-value
@@ -4599,7 +4599,7 @@ $new-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-vardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
+new-var-def:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4612,7 +4612,7 @@ new-vardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax
     # result->var = var
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Vardef-var
-$new-vardef:end:
+$new-var-def:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -4620,7 +4620,7 @@ $new-vardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-regvardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
+new-reg-var-def:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4638,7 +4638,7 @@ new-regvardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/
     # set output
     (append-stmt-var Heap %ecx *(edi+0xc) 0)  # Regvardef-outputs => eax
     89/<- *(edi+0xc) 0/r32/eax  # Regvardef-outputs
-$new-regvardef:end:
+$new-reg-var-def:end:
     89/<- %eax 7/r32/edi
     # . restore registers
     5f/pop-to-edi
@@ -5060,27 +5060,27 @@ $emit-subx-stmt-list:1-to-1:
         (emit-subx-stmt *(ebp+8) %ecx Primitives *Program)
       }
       {
-$emit-subx-stmt-list:check-for-vardef:
-        81 7/subop/compare *ecx 2/imm32/vardef  # Stmt-tag
+$emit-subx-stmt-list:check-for-var-def:
+        81 7/subop/compare *ecx 2/imm32/var-def  # Stmt-tag
         75/jump-if-!= break/disp8
-$emit-subx-stmt-list:vardef:
+$emit-subx-stmt-list:var-def:
         (emit-subx-var-def *(ebp+8) %ecx)
         (push *(ebp+0x10) *(ecx+4))  # Vardef-var
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
       }
       {
-$emit-subx-stmt-list:check-for-regvardef:
-        81 7/subop/compare *ecx 3/imm32/regvardef  # Stmt-tag
+$emit-subx-stmt-list:check-for-reg-var-def:
+        81 7/subop/compare *ecx 3/imm32/reg-var-def  # Stmt-tag
         0f 85/jump-if-!= break/disp32
-$emit-subx-stmt-list:regvardef:
+$emit-subx-stmt-list:reg-var-def:
         # TODO: ensure that there's exactly one output
         # var output/eax: (handle var) = curr-stmt->outputs->value
         8b/-> *(ecx+0xc) 0/r32/eax
         8b/-> *eax 0/r32/eax
         # ensure that output is in a register
         81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
-        0f 84/jump-if-= $emit-subx-stmt-list:abort-regvardef-without-register/disp32
+        0f 84/jump-if-= $emit-subx-stmt-list:abort-reg-var-def-without-register/disp32
         # emit spill
         (emit-indent *(ebp+8) *Curr-block-depth)
         (write-buffered *(ebp+8) "ff 6/subop/push %")
@@ -5114,7 +5114,7 @@ $emit-subx-stmt-list:end:
     5d/pop-to-ebp
     c3/return
 
-$emit-subx-stmt-list:abort-regvardef-without-register:
+$emit-subx-stmt-list:abort-reg-var-def-without-register:
     # error("var '" var->name "' initialized from an instruction must live in a register\n")
     (write-buffered Stderr "var '")
     (write-buffered Stderr *eax)  # Var-name
