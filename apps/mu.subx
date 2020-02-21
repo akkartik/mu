@@ -7483,7 +7483,7 @@ $operand-matches-primitive?:check-register:
         75/jump-if-!= break/disp8
         81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
         74/jump-if-= break/disp8
-        81 7/subop/compare *(ecx+8) 0/imm32  # Stmt-var-is-deref
+        81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
         74/jump-if-= break/disp8
         e9/jump $operand-matches-primitive?:return-true/disp32
       }
@@ -7497,8 +7497,7 @@ $operand-matches-primitive?:check-register:
         3d/compare-eax-and 0/imm32
         74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
         81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
-        b8/copy-to-eax 0/imm32/false
-        74/jump-if-=  $operand-matches-primitive?:end/disp8
+        74/jump-if-=  $operand-matches-primitive?:return-false/disp8
         # if prim-var->register is wildcard, it's a match
         (string-equal? *(edi+0x10) Any-register)  # Var-register => eax
         3d/compare-eax-and 0/imm32/false
@@ -7506,12 +7505,14 @@ $operand-matches-primitive?:check-register:
         # if string contents aren't equal, return false
         (string-equal? *(esi+0x10) *(edi+0x10))  # Var-register Var-register => eax
         3d/compare-eax-and 0/imm32/false
-        74/jump-if-= $operand-matches-primitive?:end/disp8
+        74/jump-if-= $operand-matches-primitive?:return-false/disp8
       }
     }
 $operand-matches-primitive?:return-true:
-    # return true
     b8/copy-to-eax 1/imm32/true
+    eb/jump $operand-matches-primitive?:end/disp8
+$operand-matches-primitive?:return-false:
+    b8/copy-to-eax 0/imm32/false
 $operand-matches-primitive?:end:
     # . restore registers
     5f/pop-to-edi
