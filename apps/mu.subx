@@ -108,7 +108,7 @@
 #
 #   A block contains:
 #     tag: 0
-#     statements: (handle list statement)
+#     statements: (handle list stmt)
 #     name: (handle array byte) -- starting with '$'
 #
 #   A regular statement contains:
@@ -284,7 +284,7 @@ Primitive-size:  # (addr int)
 Stmt-tag:
   0/imm32
 
-Block-statements:  # (handle list statement)
+Block-stmts:  # (handle list stmt)
   4/imm32
 Block-var:  # (handle var)
   8/imm32
@@ -4579,7 +4579,7 @@ $new-label:end:
     5d/pop-to-ebp
     c3/return
 
-new-block:  # ad: (addr allocation-descriptor), data: (handle list statement) -> result/eax: (handle statement)
+new-block:  # ad: (addr allocation-descriptor), data: (handle list stmt) -> result/eax: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4590,7 +4590,7 @@ new-block:  # ad: (addr allocation-descriptor), data: (handle list statement) ->
     (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 0/imm32/tag/block  # Stmt-tag
     8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # Block-statements
+    89/<- *(eax+4) 1/r32/ecx  # Block-stmts
 $new-block:end:
     # . restore registers
     59/pop-to-ecx
@@ -4599,7 +4599,7 @@ $new-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-vardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle statement)
+new-vardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4620,7 +4620,7 @@ $new-vardef:end:
     5d/pop-to-ebp
     c3/return
 
-new-regvardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle statement)
+new-regvardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4732,8 +4732,8 @@ append-to-block:  # ad: (addr allocation-descriptor), block: (handle block), x: 
     56/push-esi
     # esi = block
     8b/-> *(ebp+0xc) 6/r32/esi
-    (append-list *(ebp+8) *(ebp+0x10) *(esi+4))  # ad, x, Block-statements
-    89/<- *(esi+4) 0/r32/eax  # Block-statements
+    (append-list *(ebp+8) *(ebp+0x10) *(esi+4))  # ad, x, Block-stmts
+    89/<- *(esi+4) 0/r32/eax  # Block-stmts
 $append-to-block:end:
     # . restore registers
     5e/pop-to-esi
@@ -5057,7 +5057,7 @@ $emit-subx-stmt-list:conditional-branch-with-target:
           # }}}
         }
 $emit-subx-stmt-list:1-to-1:
-        (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *Program)
       }
       {
 $emit-subx-stmt-list:check-for-vardef:
@@ -5089,7 +5089,7 @@ $emit-subx-stmt-list:regvardef:
         # register variable definition
         (push *(ebp+0x10) %eax)
         # emit the instruction as usual
-        (emit-subx-statement *(ebp+8) %ecx Primitives *Program)
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *Program)
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
       }
@@ -5499,7 +5499,7 @@ $clean-up-blocks:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle statement)
+emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5530,7 +5530,7 @@ $emit-subx-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-statement:  # out: (addr buffered-file), stmt: (handle statement), primitives: (handle primitive), functions: (handle function)
+emit-subx-stmt:  # out: (addr buffered-file), stmt: (handle stmt), primitives: (handle primitive), functions: (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5561,7 +5561,7 @@ $emit-subx-stmt-list:array-length:
       (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
       (print-int32-buffered *(ebp+8) *eax)
       (write-buffered *(ebp+8) "/r32\n")
-      e9/jump $emit-subx-statement:end/disp32
+      e9/jump $emit-subx-stmt:end/disp32
     }
     # }}}
     # array index {{{
@@ -5593,32 +5593,32 @@ $emit-subx-stmt-list:index:
       (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
       (print-int32-buffered *(ebp+8) *eax)
       (write-buffered *(ebp+8) "/r32\n")
-      e9/jump $emit-subx-statement:end/disp32
+      e9/jump $emit-subx-stmt:end/disp32
     }
     # }}}
     # if stmt matches a primitive, emit it
     {
-$emit-subx-statement:check-for-primitive:
+$emit-subx-stmt:check-for-primitive:
       (find-matching-primitive *(ebp+0x10) *(ebp+0xc))  # primitives, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
-$emit-subx-statement:primitive:
+$emit-subx-stmt:primitive:
       (emit-subx-primitive *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
-      e9/jump $emit-subx-statement:end/disp32
+      e9/jump $emit-subx-stmt:end/disp32
     }
     # else if stmt matches a function, emit a call to it
     {
-$emit-subx-statement:check-for-call:
+$emit-subx-stmt:check-for-call:
       (find-matching-function *(ebp+0x14) *(ebp+0xc))  # functions, stmt => curr/eax
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
-$emit-subx-statement:call:
+$emit-subx-stmt:call:
       (emit-subx-call *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
-      e9/jump $emit-subx-statement:end/disp32
+      e9/jump $emit-subx-stmt:end/disp32
     }
     # else assume it's a SubX function (TODO: how to type-check?!)
     (emit-hailmary-call *(ebp+8) *(ebp+0xc))
-$emit-subx-statement:end:
+$emit-subx-stmt:end:
     # . restore registers
     59/pop-to-ecx
     58/pop-to-eax
@@ -5627,7 +5627,7 @@ $emit-subx-statement:end:
     5d/pop-to-ebp
     c3/return
 
-$emit-subx-statement:abort:
+$emit-subx-stmt:abort:
     # error("couldn't translate '" stmt "'\n")
     (write-buffered Stderr "couldn't translate an instruction with operation '")
     8b/-> *(ebp+0xc) 0/r32/eax
@@ -5650,8 +5650,8 @@ emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (add
     56/push-esi
     # esi = block
     8b/-> *(ebp+0xc) 6/r32/esi
-    # var stmts/eax: (handle list statement) = block->statements
-    8b/-> *(esi+4) 0/r32/eax  # Block-statements
+    # var stmts/eax: (handle list stmt) = block->statements
+    8b/-> *(esi+4) 0/r32/eax  # Block-stmts
     #
     {
 $emit-subx-block:check-empty:
@@ -7067,7 +7067,7 @@ Type-literal:
     0/imm32/right/null
 
 == code
-emit-subx-primitive:  # out: (addr buffered-file), stmt: (handle statement), primitive: (handle function)
+emit-subx-primitive:  # out: (addr buffered-file), stmt: (handle stmt), primitive: (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7097,7 +7097,7 @@ $emit-subx-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle statement)
+emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7117,7 +7117,7 @@ $emit-subx-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-get-stmt-operand-from-arg-location:  # stmt: (handle statement), l: arg-location -> var/eax: (handle stmt-var)
+get-stmt-operand-from-arg-location:  # stmt: (handle stmt), l: arg-location -> var/eax: (handle stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7174,7 +7174,7 @@ $get-stmt-operand-from-arg-location:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (handle statement)
+emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7200,7 +7200,7 @@ $emit-subx-r32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle statement)
+emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7225,7 +7225,7 @@ $emit-subx-imm32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (handle statement)
+emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7267,7 +7267,7 @@ $emit-subx-disp32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call:  # out: (addr buffered-file), stmt: (handle statement), callee: (handle function)
+emit-subx-call:  # out: (addr buffered-file), stmt: (handle stmt), callee: (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7305,7 +7305,7 @@ $emit-subx-call:end:
 
 # like a function call, except we have no idea what function it is
 # we hope it's defined in SubX and that the types are ok
-emit-hailmary-call:  # out: (addr buffered-file), stmt: (handle statement)
+emit-hailmary-call:  # out: (addr buffered-file), stmt: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7462,7 +7462,7 @@ $emit-subx-var-as-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-find-matching-function:  # functions: (addr function), stmt: (handle statement) -> result/eax: (handle function)
+find-matching-function:  # functions: (addr function), stmt: (handle stmt) -> result/eax: (handle function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7496,7 +7496,7 @@ $find-matching-function:end:
     5d/pop-to-ebp
     c3/return
 
-find-matching-primitive:  # primitives: (handle primitive), stmt: (handle statement) -> result/eax: (handle primitive)
+find-matching-primitive:  # primitives: (handle primitive), stmt: (handle stmt) -> result/eax: (handle primitive)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7538,7 +7538,7 @@ $find-matching-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-mu-stmt-matches-function?:  # stmt: (handle statement), function: (handle function) -> result/eax: boolean
+mu-stmt-matches-function?:  # stmt: (handle stmt), function: (handle function) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7556,7 +7556,7 @@ $mu-stmt-matches-function?:end:
     5d/pop-to-ebp
     c3/return
 
-mu-stmt-matches-primitive?:  # stmt: (handle statement), primitive: (handle primitive) -> result/eax: boolean
+mu-stmt-matches-primitive?:  # stmt: (handle stmt), primitive: (handle primitive) -> result/eax: boolean
     # A mu stmt matches a primitive if the name matches, all the inout vars
     # match, and all the output vars match.
     # Vars match if types match and registers match.
@@ -7803,7 +7803,7 @@ $is-literal-type?:end:
     5d/pop-to-ebp
     c3/return
 
-test-emit-subx-statement-primitive:
+test-emit-subx-stmt-primitive:
     # Primitive operation on a variable on the stack.
     #   increment foo
     # =>
@@ -7864,7 +7864,7 @@ test-emit-subx-statement-primitive:
     89/<- %ebx 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -7873,13 +7873,13 @@ test-emit-subx-statement-primitive:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0xfffffff8)" "F - test-emit-subx-statement-primitive")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment *(ebp+0xfffffff8)" "F - test-emit-subx-stmt-primitive")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-test-emit-subx-statement-primitive-register:
+test-emit-subx-stmt-primitive-register:
     # Primitive operation on a variable in a register.
     #   foo <- increment
     # =>
@@ -7952,7 +7952,7 @@ test-emit-subx-statement-primitive-register:
     89/<- %ebx 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -7961,13 +7961,13 @@ test-emit-subx-statement-primitive-register:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-statement-primitive-register")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-stmt-primitive-register")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-test-emit-subx-statement-select-primitive:
+test-emit-subx-stmt-select-primitive:
     # Select the right primitive between overloads.
     #   foo <- increment
     # =>
@@ -8055,7 +8055,7 @@ test-emit-subx-statement-select-primitive:
     89/<- %ebx 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8064,13 +8064,13 @@ test-emit-subx-statement-select-primitive:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-statement-select-primitive")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-stmt-select-primitive")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-test-emit-subx-statement-select-primitive-2:
+test-emit-subx-stmt-select-primitive-2:
     # Select the right primitive between overloads.
     #   foo <- increment
     # =>
@@ -8158,7 +8158,7 @@ test-emit-subx-statement-select-primitive-2:
     89/<- %ebx 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi %ebx 0)
+    (emit-subx-stmt _test-output-buffered-file %esi %ebx 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8167,7 +8167,7 @@ test-emit-subx-statement-select-primitive-2:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-statement-select-primitive-2")
+    (check-next-stream-line-equal _test-output-stream "ff 0/subop/increment %eax" "F - test-emit-subx-stmt-select-primitive-2")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -8215,11 +8215,11 @@ test-increment-register:
     57/push-edi/outputs
     68/push 0/imm32/inouts
     68/push "increment"/imm32/operation
-    68/push 1/imm32/regular-statement
+    68/push 1/imm32/regular-stmt
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8280,7 +8280,7 @@ test-increment-var:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8343,7 +8343,7 @@ test-add-reg-to-reg:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8405,7 +8405,7 @@ test-add-reg-to-mem:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8468,7 +8468,7 @@ test-add-mem-to-reg:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8535,7 +8535,7 @@ test-add-literal-to-eax:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8602,7 +8602,7 @@ test-add-literal-to-reg:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8669,7 +8669,7 @@ test-add-literal-to-mem:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8732,7 +8732,7 @@ test-compare-mem-with-reg:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8795,7 +8795,7 @@ test-compare-reg-with-mem:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8862,7 +8862,7 @@ test-compare-mem-with-literal:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8929,7 +8929,7 @@ test-compare-eax-with-literal:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -8996,7 +8996,7 @@ test-compare-reg-with-literal:
     89/<- %esi 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi Primitives 0)
+    (emit-subx-stmt _test-output-buffered-file %esi Primitives 0)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -9011,7 +9011,7 @@ test-compare-reg-with-literal:
     5d/pop-to-ebp
     c3/return
 
-test-emit-subx-statement-function-call:
+test-emit-subx-stmt-function-call:
     # Call a function on a variable on the stack.
     #   f foo
     # =>
@@ -9070,7 +9070,7 @@ test-emit-subx-statement-function-call:
     89/<- %ebx 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi 0 %ebx)
+    (emit-subx-stmt _test-output-buffered-file %esi 0 %ebx)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -9079,13 +9079,13 @@ test-emit-subx-statement-function-call:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "(f2 *(ebp+0xfffffff8))" "F - test-emit-subx-statement-function-call")
+    (check-next-stream-line-equal _test-output-stream "(f2 *(ebp+0xfffffff8))" "F - test-emit-subx-stmt-function-call")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-test-emit-subx-statement-function-call-with-literal-arg:
+test-emit-subx-stmt-function-call-with-literal-arg:
     # Call a function on a literal.
     #   f 34
     # =>
@@ -9130,7 +9130,7 @@ test-emit-subx-statement-function-call-with-literal-arg:
     89/<- %ebx 4/r32/esp
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-statement _test-output-buffered-file %esi 0 %ebx)
+    (emit-subx-stmt _test-output-buffered-file %esi 0 %ebx)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
@@ -9139,7 +9139,7 @@ test-emit-subx-statement-function-call-with-literal-arg:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "(f2 34)" "F - test-emit-subx-statement-function-call-with-literal-arg")
+    (check-next-stream-line-equal _test-output-stream "(f2 34)" "F - test-emit-subx-stmt-function-call-with-literal-arg")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
