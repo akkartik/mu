@@ -6916,8 +6916,8 @@ emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle sta
     # if (l == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     74/jump-if-= $emit-subx-rm32:end/disp8
-    #
-    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
+    # var v/eax: (handle var)
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
     (emit-subx-var-as-rm32 *(ebp+8) %eax)  # out, var
 $emit-subx-rm32:end:
     # . restore registers
@@ -7469,40 +7469,47 @@ operand-matches-primitive?:  # s: (handle stmt-var), prim-var: (handle var) -> r
     8b/-> *ecx 6/r32/esi  # Stmt-var-value
     # edi = prim-var
     8b/-> *(ebp+0xc) 7/r32/edi
+$operand-matches-primitive?:check-type:
     # if (var->type != prim-var->type) return false
     (subx-type-equal? *(esi+4) *(edi+4))  # Var-type, Var-type => eax
     3d/compare-eax-and 0/imm32/false
     b8/copy-to-eax 0/imm32/false
-    74/jump-if-= $operand-matches-primitive?:end/disp8
-    # if prim-var is in memory and var is in register but dereference, match
+    0f 84/jump-if-= $operand-matches-primitive?:end/disp32
     {
-      81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
-      75/jump-if-!= break/disp8
-      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
-      74/jump-if-= break/disp8
-      # TODO
+$operand-matches-primitive?:check-register:
+      # if prim-var is in memory and var is in register but dereference, match
+      {
+        81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
+        75/jump-if-!= break/disp8
+        81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+        74/jump-if-= break/disp8
+        81 7/subop/compare *(ecx+8) 0/imm32  # Stmt-var-is-deref
+        74/jump-if-= break/disp8
+        e9/jump $operand-matches-primitive?:return-true/disp32
+      }
+      # return false if var->register doesn't match prim-var->register
+      {
+        # if register addresses are equal, it's a match
+        8b/-> *(esi+0x10) 0/r32/eax  # Var-register
+        39/compare *(edi+0x10) 0/r32/eax  # Var-register
+        74/jump-if-= break/disp8
+        # if either address is 0, return false
+        3d/compare-eax-and 0/imm32
+        74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
+        81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
+        b8/copy-to-eax 0/imm32/false
+        74/jump-if-=  $operand-matches-primitive?:end/disp8
+        # if prim-var->register is wildcard, it's a match
+        (string-equal? *(edi+0x10) Any-register)  # Var-register => eax
+        3d/compare-eax-and 0/imm32/false
+        75/jump-if-!= break/disp8
+        # if string contents aren't equal, return false
+        (string-equal? *(esi+0x10) *(edi+0x10))  # Var-register Var-register => eax
+        3d/compare-eax-and 0/imm32/false
+        74/jump-if-= $operand-matches-primitive?:end/disp8
+      }
     }
-    # return false if var->register doesn't match prim-var->register
-    {
-      # if register addresses are equal, it's a match
-      8b/-> *(esi+0x10) 0/r32/eax  # Var-register
-      39/compare *(edi+0x10) 0/r32/eax  # Var-register
-      74/jump-if-= break/disp8
-      # if either address is 0, return false
-      3d/compare-eax-and 0/imm32
-      74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
-      81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
-      b8/copy-to-eax 0/imm32/false
-      74/jump-if-=  $operand-matches-primitive?:end/disp8
-      # if prim-var->register is wildcard, it's a match
-      (string-equal? *(edi+0x10) Any-register)  # Var-register => eax
-      3d/compare-eax-and 0/imm32/false
-      75/jump-if-!= break/disp8
-      # if string contents aren't equal, return false
-      (string-equal? *(esi+0x10) *(edi+0x10))  # Var-register Var-register => eax
-      3d/compare-eax-and 0/imm32/false
-      74/jump-if-= $operand-matches-primitive?:end/disp8
-    }
+$operand-matches-primitive?:return-true:
     # return true
     b8/copy-to-eax 1/imm32/true
 $operand-matches-primitive?:end:
