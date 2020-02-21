@@ -1,7 +1,7 @@
-# usage is finicky for now:
+# usage:
 #   ./translate_mu apps/factorial.mu
-#   ./a.elf test  # any args? run tests
-#   ./a.elf       # no args? run factorial(5)
+#   ./a.elf test  # to run tests
+#   ./a.elf       # to run factorial(5)
 fn main args: (addr array kernel-string) -> exit-status/ebx: int {
   var a/eax: (addr array kernel-string) <- copy args
   var tmp/ecx: int <- length a
@@ -14,11 +14,15 @@ fn main args: (addr array kernel-string) -> exit-status/ebx: int {
       exit-status <- copy tmp
       break $main-body
     }
-    # if (len(args) != 1) run-tests()
+    # if (args[1] == "test") run-tests()
+    var tmp2/ecx: int <- copy 1  # we need this just because we don't yet support `index` on literals; requires some translation-time computation
+    var tmp3/ecx: (addr kernel-string) <- index a, tmp2
+    var tmp4/eax: boolean <- kernel-string-equal? *tmp3, "test"
+    compare tmp4, 0
     {
       break-if-=
       run-tests
-      exit-status <- copy 0
+      exit-status <- copy 0  # TODO: get at Num-test-failures somehow
     }
   }
 }

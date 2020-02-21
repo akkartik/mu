@@ -205,4 +205,14 @@ loop label                  {.name="loop",            .inouts=[label],          
 break                       {.name="break",                                             .subx-name="e9/jump break/disp32"}
 break label                 {.name="break",           .inouts=[label],                  .subx-name="e9/jump",                             .disp32=inouts[0] ":break"}
 
+Array operations
+
+var/reg <- length var2/reg2: (addr array T)
+                            {.name="length",          .inouts=[reg2], .outputs=[reg1],  .subx-name="8b/copy-from",          .rm32="*" inouts[0],                        .r32=outputs[0]}
+var/reg <- index arr/rega: (addr array T), idx/regi: int
+                            {.name="index",           .inouts=[rega, regi], .outputs=[reg], .subx-name="8d/copy-address",   .rm32="*(" inouts[0] "+" inouts[1] "<<2)",  .r32=outputs[0]}
+var/reg <- index arr/rega: (addr array T), n
+compare var, n              {.name="compare",         .inouts=[var, n],                 .subx-name="81 7/subop/compare",    .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
+                            {.name="index",           .inouts=[rega, n], .outputs=[reg], .subx-name="8d/copy-address",      .rm32="*(" inouts[0] "+" inouts[1] "<<2)",  .r32=outputs[0]}
+
 vim:ft=c:nowrap

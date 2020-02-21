@@ -32,8 +32,6 @@
 #   eax ecx edx ebx esi edi
 # Variables in registers must be primitive 32-bit types.
 # Variables not explicitly placed in a register are on the stack.
-# Variables in registers need not have a name; in that case you refer to them
-# directly by the register name.
 #
 # Function inputs are always passed in memory (on the stack), while outputs
 # are always returned in registers.
@@ -950,6 +948,52 @@ test-convert-function-with-local-var-dereferenced:
     (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-dereferenced/13")
     (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-dereferenced/14")
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-dereferenced/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-compare-register-with-literal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: int <- copy 0\n")
+    (write _test-input-stream "  compare x, 0\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-compare-register-with-literal/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-compare-register-with-literal/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-compare-register-with-literal/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-compare-register-with-literal/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-compare-register-with-literal/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-compare-register-with-literal/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-compare-register-with-literal/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"  "F - test-convert-compare-register-with-literal/7")
+    (check-next-stream-line-equal _test-output-stream "    81 7/subop/compare %ecx 0/imm32"  "F - test-convert-compare-register-with-literal/8")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-compare-register-with-literal/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-compare-register-with-literal/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-compare-register-with-literal/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-compare-register-with-literal/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-compare-register-with-literal/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-compare-register-with-literal/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-compare-register-with-literal/15")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3958,11 +4002,12 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       3d/compare-eax-and 0x2a/imm32/asterisk
       {
         75/jump-if-!= break/disp8
+$add-operation-and-inputs-to-stmt:inout-is-deref:
         ff 0/subop/increment *ecx
         ba/copy-to-edx 1/imm32/true
       }
       (lookup-var-or-literal %ecx *(ebp+0x10))  # => eax
-      (append-list Heap %eax *(edi+8))  # Stmt1-inouts or Regvardef-inouts => eax
+      (append-stmt-var Heap %eax *(edi+8) %edx)  # Stmt1-inouts or Regvardef-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
       e9/jump loop/disp32
     }
@@ -5461,6 +5506,38 @@ $emit-subx-stmt-list:array-length:
       # outputs[0] "/r32"
       8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
       8b/-> *eax 0/r32/eax  # Stmt-var-value
+      (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
+      (print-int32-buffered *(ebp+8) *eax)
+      (write-buffered *(ebp+8) "/r32\n")
+      e9/jump $emit-subx-statement:end/disp32
+    }
+    # }}}
+    # array index {{{
+    # TODO: support literal index
+    {
+      # if (!string-equal?(var->operation, "index")) break
+      (string-equal? *(ecx+4) "index")  # Stmt1-operation => eax
+      3d/compare-eax-and 0/imm32
+      0f 84/jump-if-= break/disp32
+$emit-subx-stmt-list:index:
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "8d/copy-address *(")
+      # inouts[0]->register " + "
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+      8b/-> *eax 0/r32/eax  # List-value
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
+      #
+      (write-buffered *(ebp+8) " + ")
+      # inouts[1]->register
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+      8b/-> *(eax+4) 0/r32/eax  # List-next
+      8b/-> *eax 0/r32/eax  # List-value
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
+      #
+      (write-buffered *(ebp+8) "<<2 + 4) ")
+      # outputs[0] "/r32"
+      8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
+      8b/-> *eax 0/r32/eax  # List-value
       (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
       (print-int32-buffered *(ebp+8) *eax)
       (write-buffered *(ebp+8) "/r32\n")
@@ -7225,11 +7302,26 @@ emit-subx-call-operand:  # out: (addr buffered-file), s: (handle stmt-var)
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var operand/esi: (handle var) = s->value
     8b/-> *ecx 6/r32/esi  # Stmt-var-value
-    # if (operand->register) emit "%__"
+    # if (operand->register && s->is-deref?) emit "*__"
     {
+$emit-subx-call-operand:check-for-register-indirect:
       81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
       74/jump-if-= break/disp8
-$emit-subx-call-operand:register:
+      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      74/jump-if-= break/disp8
+$emit-subx-call-operand:register-indirect:
+      (write-buffered *(ebp+8) " *")
+      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
+      e9/jump $emit-subx-call-operand:end/disp32
+    }
+    # if (operand->register && !s->is-deref?) emit "%__"
+    {
+$emit-subx-call-operand:check-for-register-direct:
+      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      74/jump-if-= break/disp8
+      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      75/jump-if-!= break/disp8
+$emit-subx-call-operand:register-direct:
       (write-buffered *(ebp+8) " %")
       (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
       e9/jump $emit-subx-call-operand:end/disp32
@@ -7278,6 +7370,7 @@ emit-subx-var-as-rm32:  # out: (addr buffered-file), s: (handle stmt-var)
     8b/-> *ecx 6/r32/esi  # Stmt-var-value
     # if (operand->register && s->is-deref?) emit "*__"
     {
+$emit-subx-var-as-rm32:check-for-register-indirect:
       81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
       74/jump-if-= break/disp8
       81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
@@ -7288,6 +7381,7 @@ $emit-subx-var-as-rm32:register-indirect:
     }
     # if (operand->register && !s->is-deref?) emit "%__"
     {
+$emit-subx-var-as-rm32:check-for-register-direct:
       81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
       74/jump-if-= break/disp8
       81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
