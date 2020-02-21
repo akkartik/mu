@@ -909,6 +909,52 @@ test-convert-function-with-local-var-in-reg:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-local-var-dereferenced:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: (addr int) <- copy 0\n")
+    (write _test-input-stream "  increment *x\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-local-var-dereferenced/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-local-var-dereferenced/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-var-dereferenced/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-var-dereferenced/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-var-dereferenced/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-var-dereferenced/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-with-local-var-dereferenced/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 0/imm32"  "F - test-convert-function-with-local-var-dereferenced/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *ecx"  "F - test-convert-function-with-local-var-dereferenced/8")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-with-local-var-dereferenced/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-var-dereferenced/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-var-dereferenced/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-var-dereferenced/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-dereferenced/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-dereferenced/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-dereferenced/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-with-local-var-in-block:
     # . prologue
     55/push-ebp
@@ -3789,7 +3835,7 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn:
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
-    # var is-deref?: boolean = false
+    # var is-deref?/edx: boolean = false
     ba/copy-to-edx 0/imm32/false
     # result/edi: (handle stmt)
     (allocate Heap *Stmt-size)  # => eax
@@ -3877,6 +3923,7 @@ add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byt
     # . save registers
     50/push-eax
     51/push-ecx
+    52/push-edx
     57/push-edi
     # edi = stmt
     8b/-> *(ebp+8) 7/r32/edi
@@ -3884,6 +3931,8 @@ add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byt
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
+    # var is-deref?/edx: boolean = false
+    ba/copy-to-edx 0/imm32/false
 $add-operation-and-inputs-to-stmt:read-operation:
     (next-mu-token *(ebp+0xc) %ecx)
     (slice-to-string Heap %ecx)  # => eax
@@ -3900,7 +3949,18 @@ $add-operation-and-inputs-to-stmt:read-inouts:
       (slice-equal? %ecx "<-")
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $add-operation-and-inputs-to-stmt:abort/disp32
-      #
+      # is-deref? = false
+      ba/copy-to-edx 0/imm32/false
+      # if (slice-starts-with?(name, '*')) ++name->start and set is-deref?
+      8b/-> *ecx 0/r32/eax  # Slice-start
+      8a/copy-byte *eax 0/r32/AL
+      81 4/subop/and %eax 0xff/imm32
+      3d/compare-eax-and 0x2a/imm32/asterisk
+      {
+        75/jump-if-!= break/disp8
+        ff 0/subop/increment *ecx
+        ba/copy-to-edx 1/imm32/true
+      }
       (lookup-var-or-literal %ecx *(ebp+0x10))  # => eax
       (append-list Heap %eax *(edi+8))  # Stmt1-inouts or Regvardef-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
@@ -3911,6 +3971,7 @@ $add-operation-and-inputs-to-stmt:end:
     81 0/subop/add %esp 8/imm32
     # . restore registers
     5f/pop-to-edi
+    5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
@@ -4478,7 +4539,7 @@ new-regvardef:  # ad: (addr allocation-descriptor), var: (handle var) -> result/
     # set tag
     c7 0/subop/copy *edi 3/imm32/tag/var-in-register  # Stmt-tag
     # set output
-    (append-list Heap %ecx *(edi+0xc))  # Regvardef-outputs => eax
+    (append-stmt-var Heap %ecx *(edi+0xc) 0)  # Regvardef-outputs => eax
     89/<- *(edi+0xc) 0/r32/eax  # Regvardef-outputs
 $new-regvardef:end:
     89/<- %eax 7/r32/edi
@@ -4828,7 +4889,7 @@ $emit-subx-stmt-list:zero-arg-unconditional-loop:
           # }}}
           # unconditional breaks {{{
           {
-            # if (!string-equal?(var->operation, "break")) break
+            # if (!string-equal?(curr-stmt->operation, "break")) break
             (string-equal? *(ecx+4) "break")  # Stmt1-operation => eax
             3d/compare-eax-and 0/imm32/false
             0f 84/jump-if-= break/disp32
@@ -5645,7 +5706,7 @@ _Primitive-dec-edi:
 _Primitive-inc-mem:
     # increment var => ff 0/subop/increment *(ebp+__)
     "increment"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     0/imm32/no-outputs
     "ff 0/subop/increment"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -5669,7 +5730,7 @@ _Primitive-inc-reg:
 _Primitive-dec-mem:
     # decrement var => ff 1/subop/decrement *(ebp+__)
     "decrement"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     0/imm32/no-outputs
     "ff 1/subop/decrement"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -5730,7 +5791,7 @@ _Primitive-add-reg-to-mem:
 _Primitive-add-mem-to-reg:
     # var1/reg <- add var2 => 03/add var2/rm32 var1/r32
     "add"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
     "03/add"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -5803,7 +5864,7 @@ _Primitive-subtract-reg-from-mem:
 _Primitive-subtract-mem-from-reg:
     # var1/reg <- subtract var2 => 2b/subtract var2/rm32 var1/r32
     "subtract"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
     "2b/subtract"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -5876,7 +5937,7 @@ _Primitive-and-reg-with-mem:
 _Primitive-and-mem-with-reg:
     # var1/reg <- and var2 => 23/and var2/rm32 var1/r32
     "and"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
     "23/and"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -5949,7 +6010,7 @@ _Primitive-or-reg-with-mem:
 _Primitive-or-mem-with-reg:
     # var1/reg <- or var2 => 0b/or var2/rm32 var1/r32
     "or"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
     "0b/or"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -6022,7 +6083,7 @@ _Primitive-xor-reg-with-mem:
 _Primitive-xor-mem-with-reg:
     # var1/reg <- xor var2 => 33/xor var2/rm32 var1/r32
     "xor"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
     "33/xor"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -6155,7 +6216,7 @@ _Primitive-copy-reg-to-mem:
 _Primitive-copy-mem-to-reg:
     # var1/reg <- copy var2 => 8b/copy-from var2/rm32 var1/r32
     "copy"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
     "8b/copy-from"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -6253,7 +6314,7 @@ _Primitive-compare-mem-with-literal:
 _Primitive-multiply-reg-by-mem:
     # var1/reg <- multiply var2 => 0f af/multiply var2/rm32 var1/r32
     "multiply"/imm32/name
-    Single-int-var-on-stack/imm32/inouts
+    Single-int-var-in-mem/imm32/inouts
     Single-int-var-in-some-register/imm32/outputs
     "0f af/multiply"/imm32/subx-name
     1/imm32/rm32-is-first-inout
@@ -6749,11 +6810,11 @@ _Primitive-loop-named:
     0/imm32/no-output
     0/imm32/next
 
-Single-int-var-on-stack:
-    Int-var-on-stack/imm32
+Single-int-var-in-mem:
+    Int-var-in-mem/imm32
     0/imm32/next
 
-Int-var-on-stack:
+Int-var-in-mem:
     "arg1"/imm32/name
     Type-int/imm32
     1/imm32/some-block-depth
@@ -6761,19 +6822,19 @@ Int-var-on-stack:
     0/imm32/no-register
 
 Two-args-int-stack-int-reg:
-    Int-var-on-stack/imm32
+    Int-var-in-mem/imm32
     Single-int-var-in-some-register/imm32/next
 
 Two-args-int-reg-int-stack:
     Int-var-in-some-register/imm32
-    Single-int-var-on-stack/imm32/next
+    Single-int-var-in-mem/imm32/next
 
 Two-args-int-eax-int-literal:
     Int-var-in-eax/imm32
     Single-lit-var/imm32/next
 
 Int-var-and-literal:
-    Int-var-on-stack/imm32
+    Int-var-in-mem/imm32
     Single-lit-var/imm32/next
 
 Int-var-in-register-and-literal:
@@ -6918,7 +6979,7 @@ emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle sta
     74/jump-if-= $emit-subx-rm32:end/disp8
     # var v/eax: (handle var)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
-    (emit-subx-var-as-rm32 *(ebp+8) *eax)  # Stmt-var-value
+    (emit-subx-var-as-rm32 *(ebp+8) %eax)
 $emit-subx-rm32:end:
     # . restore registers
     58/pop-to-eax
@@ -7090,7 +7151,7 @@ emit-subx-call:  # out: (addr buffered-file), stmt: (handle statement), callee: 
     8b/-> *(ebp+0x10) 1/r32/ecx
     (write-buffered *(ebp+8) *(ecx+4))  # Function-subx-name
     # - emit arguments
-    # var curr/ecx: (handle list var) = stmt->inouts
+    # var curr/ecx: (handle stmt-var) = stmt->inouts
     8b/-> *(ebp+0xc) 1/r32/ecx
     8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
     {
@@ -7098,9 +7159,9 @@ emit-subx-call:  # out: (addr buffered-file), stmt: (handle statement), callee: 
       81 7/subop/compare %ecx 0/imm32
       74/jump-if-= break/disp8
       #
-      (emit-subx-call-operand *(ebp+8) *ecx)
+      (emit-subx-call-operand *(ebp+8) %ecx)
       # curr = curr->next
-      8b/-> *(ecx+4) 1/r32/ecx
+      8b/-> *(ecx+4) 1/r32/ecx  # Stmt-var-next
       eb/jump loop/disp8
     }
     #
@@ -7129,16 +7190,16 @@ emit-hailmary-call:  # out: (addr buffered-file), stmt: (handle statement)
     # - emit function name
     (write-buffered *(ebp+8) *(ecx+4))  # Stmt1-operation
     # - emit arguments
-    # var curr/ecx: (handle list var) = stmt->inouts
+    # var curr/ecx: (handle stmt-var) = stmt->inouts
     8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
       74/jump-if-= break/disp8
       #
-      (emit-subx-call-operand *(ebp+8) *ecx)
+      (emit-subx-call-operand *(ebp+8) %ecx)
       # curr = curr->next
-      8b/-> *(ecx+4) 1/r32/ecx
+      8b/-> *(ecx+4) 1/r32/ecx  # Stmt-var-next
       eb/jump loop/disp8
     }
     #
@@ -7151,16 +7212,19 @@ $emit-hailmary-call:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call-operand:  # out: (addr buffered-file), operand: (handle var)
+emit-subx-call-operand:  # out: (addr buffered-file), s: (handle stmt-var)
     # shares code with emit-subx-var-as-rm32
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
+    51/push-ecx
     56/push-esi
-    # esi = operand
-    8b/-> *(ebp+0xc) 6/r32/esi
+    # ecx = s
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # var operand/esi: (handle var) = s->value
+    8b/-> *ecx 6/r32/esi  # Stmt-var-value
     # if (operand->register) emit "%__"
     {
       81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
@@ -7188,31 +7252,47 @@ $emit-subx-call-operand:stack:
       75/jump-if-!= break/disp8
 $emit-subx-call-operand:literal:
       (write-buffered *(ebp+8) Space)
-      (write-buffered *(ebp+8) *esi)  # Var-name
+      (write-buffered *(ebp+8) *esi)
     }
 $emit-subx-call-operand:end:
     # . restore registers
     5e/pop-to-esi
+    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-as-rm32:  # out: (addr buffered-file), operand: (handle var)
+emit-subx-var-as-rm32:  # out: (addr buffered-file), s: (handle stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
+    51/push-ecx
     56/push-esi
-    # esi = operand
-    8b/-> *(ebp+0xc) 6/r32/esi
-    # if (operand->register) emit "%__"
+    # ecx = s
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # var operand/esi: (handle var) = s->value
+    8b/-> *ecx 6/r32/esi  # Stmt-var-value
+    # if (operand->register && s->is-deref?) emit "*__"
     {
       81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
       74/jump-if-= break/disp8
-$emit-subx-var-as-rm32:register:
+      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      74/jump-if-= break/disp8
+$emit-subx-var-as-rm32:register-indirect:
+      (write-buffered *(ebp+8) " *")
+      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
+    }
+    # if (operand->register && !s->is-deref?) emit "%__"
+    {
+      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      74/jump-if-= break/disp8
+      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      75/jump-if-!= break/disp8
+$emit-subx-var-as-rm32:register-direct:
       (write-buffered *(ebp+8) " %")
       (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
     }
@@ -7229,6 +7309,7 @@ $emit-subx-var-as-rm32:stack:
 $emit-subx-var-as-rm32:end:
     # . restore registers
     5e/pop-to-esi
+    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -7480,12 +7561,22 @@ $operand-matches-primitive?:check-register:
       # if prim-var is in memory and var is in register but dereference, match
       {
         81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
-        75/jump-if-!= break/disp8
+        0f 85/jump-if-!= break/disp32
         81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
         74/jump-if-= break/disp8
         81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
         74/jump-if-= break/disp8
         e9/jump $operand-matches-primitive?:return-true/disp32
+      }
+      # if prim-var is in register and var is in register but dereference, no match
+      {
+        81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
+        0f 84/jump-if-= break/disp32
+        81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+        0f 84/jump-if-= break/disp32
+        81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+        74/jump-if-= break/disp8
+        e9/jump $operand-matches-primitive?:return-false/disp32
       }
       # return false if var->register doesn't match prim-var->register
       {
@@ -7601,7 +7692,8 @@ test-emit-subx-statement-primitive:
     51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var operand/ebx: (list var)
+    # var operand/ebx: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %ebx 4/r32/esp
@@ -7676,7 +7768,8 @@ test-emit-subx-statement-primitive-register:
     51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var operand/ebx: (list var)
+    # var operand/ebx: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %ebx 4/r32/esp
@@ -7694,7 +7787,8 @@ test-emit-subx-statement-primitive-register:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
-    # var operand/ebx: (list var)
+    # var operand/ebx: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     53/push-ebx/formal-var
     89/<- %ebx 4/r32/esp
@@ -7765,7 +7859,8 @@ test-emit-subx-statement-select-primitive:
     51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var real-outputs/edi: (list var)
+    # var real-outputs/edi: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
@@ -7783,7 +7878,8 @@ test-emit-subx-statement-select-primitive:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
-    # var formal-outputs/ebx: (list var) = {formal-var, 0}
+    # var formal-outputs/ebx: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     53/push-ebx/formal-var
     89/<- %ebx 4/r32/esp
@@ -7866,7 +7962,8 @@ test-emit-subx-statement-select-primitive-2:
     51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var inouts/edi: (list var)
+    # var inouts/edi: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
@@ -7884,7 +7981,8 @@ test-emit-subx-statement-select-primitive-2:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "dummy"/imm32
     89/<- %ebx 4/r32/esp
-    # var operand/ebx: (list var)
+    # var operand/ebx: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     53/push-ebx/formal-var
     89/<- %ebx 4/r32/esp
@@ -7961,7 +8059,8 @@ test-increment-register:
     51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var real-outputs/edi: (list var)
+    # var real-outputs/edi: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
@@ -8021,7 +8120,8 @@ test-increment-var:
     51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var inouts/edi: (list var)
+    # var inouts/edi: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %edi 4/r32/esp
@@ -8078,11 +8178,13 @@ test-add-reg-to-reg:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var outputs/edi: (list var1)
+    # var outputs/edi: (handle stmt-var) = [var1, var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-var1
     89/<- %edi 4/r32/esp
@@ -8139,11 +8241,12 @@ test-add-reg-to-mem:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var inouts = (list var1 var2)
+    # var inouts = (handle stmt-var) = [var1, var2]
     56/push-esi/next
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
@@ -8200,11 +8303,13 @@ test-add-mem-to-reg:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var outputs/edi: (list var1)
+    # var outputs/edi = (handle stmt-var) = [var1]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-var1
     89/<- %edi 4/r32/esp
@@ -8265,11 +8370,13 @@ test-add-literal-to-eax:
     52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var outputs/edi: (list var1)
+    # var outputs/edi: (handle stmt-var) = [var1]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-var1
     89/<- %edi 4/r32/esp
@@ -8330,11 +8437,13 @@ test-add-literal-to-reg:
     52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var outputs/edi: (list var1)
+    # var outputs/edi: (handle stmt-var) = [var1]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-var1
     89/<- %edi 4/r32/esp
@@ -8395,11 +8504,13 @@ test-add-literal-to-mem:
     52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var inouts = (list var1 inouts)
+    # var inouts = (handle stmt-var) = [var1, var2]
+    68/push 0/imm32/is-deref:false
     56/push-esi/next
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
@@ -8456,10 +8567,13 @@ test-compare-mem-with-reg:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var1"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var1 var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-var2
     89/<- %esi 4/r32/esp
+    # inouts = [var1, var2]
+    68/push 0/imm32/is-deref:false
     56/push-esi
     52/push-edx/var-var1
     89/<- %esi 4/r32/esp
@@ -8516,10 +8630,13 @@ test-compare-reg-with-mem:
     ff 6/subop/push *(ecx+4)  # Var-type
     68/push "var2"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var1 var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
+    # inouts = [var1, var2]
+    68/push 0/imm32/is-deref:false
     56/push-esi
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
@@ -8580,11 +8697,13 @@ test-compare-mem-with-literal:
     52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var inouts = (list var1 inouts)
+    # inouts = [var1, var2]
+    68/push 0/imm32/is-deref:false
     56/push-esi/next
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
@@ -8645,11 +8764,13 @@ test-compare-eax-with-literal:
     52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var inouts = (list var1 inouts)
+    # inouts = [var1, var2]
+    68/push 0/imm32/is-deref:false
     56/push-esi/next
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
@@ -8710,11 +8831,13 @@ test-compare-reg-with-literal:
     52/push-edx
     68/push "0x34"/imm32
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (list var2)
+    # var inouts/esi: (handle stmt-var) = [var2]
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     52/push-edx/var-var2
     89/<- %esi 4/r32/esp
-    # var inouts = (list var1 inouts)
+    # inouts = [var1, var2]
+    68/push 0/imm32/is-deref:false
     56/push-esi/next
     51/push-ecx/var-var1
     89/<- %esi 4/r32/esp
@@ -8779,7 +8902,8 @@ test-emit-subx-statement-function-call:
     51/push-ecx
     68/push "foo"/imm32
     89/<- %ecx 4/r32/esp
-    # var operands/esi: (list var)
+    # var inouts/esi: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %esi 4/r32/esp
@@ -8838,7 +8962,8 @@ test-emit-subx-statement-function-call-with-literal-arg:
     51/push-ecx
     68/push "34"/imm32
     89/<- %ecx 4/r32/esp
-    # var operands/esi: (list var)
+    # var inouts/esi: (handle stmt-var)
+    68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     51/push-ecx/var-foo
     89/<- %esi 4/r32/esp
