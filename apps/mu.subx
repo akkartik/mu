@@ -6918,7 +6918,7 @@ emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle sta
     74/jump-if-= $emit-subx-rm32:end/disp8
     # var v/eax: (handle var)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
-    (emit-subx-var-as-rm32 *(ebp+8) %eax)  # out, var
+    (emit-subx-var-as-rm32 *(ebp+8) *eax)  # Stmt-var-value
 $emit-subx-rm32:end:
     # . restore registers
     58/pop-to-eax
@@ -6927,7 +6927,7 @@ $emit-subx-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-get-stmt-operand-from-arg-location:  # stmt: (handle statement), l: arg-location -> var/eax: (handle variable)
+get-stmt-operand-from-arg-location:  # stmt: (handle statement), l: arg-location -> var/eax: (handle stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6937,23 +6937,21 @@ get-stmt-operand-from-arg-location:  # stmt: (handle statement), l: arg-location
     8b/-> *(ebp+0xc) 0/r32/eax
     # ecx = stmt
     8b/-> *(ebp+8) 1/r32/ecx
-    # if (l == 1) return stmt->inouts->var
+    # if (l == 1) return stmt->inouts
     {
       3d/compare-eax-and 1/imm32
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:1:
       8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
-      8b/-> *eax 0/r32/eax  # Operand-var
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
-    # if (l == 2) return stmt->inouts->next->var
+    # if (l == 2) return stmt->inouts->next
     {
       3d/compare-eax-and 2/imm32
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:2:
       8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
-      8b/-> *(eax+4) 0/r32/eax  # Operand-next
-      8b/-> *eax 0/r32/eax  # Operand-var
+      8b/-> *(eax+4) 0/r32/eax  # Stmt-var-next
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
     # if (l == 3) return stmt->outputs
@@ -6962,7 +6960,6 @@ $get-stmt-operand-from-arg-location:2:
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:3:
       8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-      8b/-> *eax 0/r32/eax  # Operand-var
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
     # abort
@@ -6997,8 +6994,9 @@ emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stat
     # if (location == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     0f 84/jump-if-= $emit-subx-r32:end/disp32
-    #
-    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
+    # var v/eax: (handle var)
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
     (maybe-get Registers *(eax+0x10) 8)  # Var-register => eax: (addr register-index)
     (write-buffered *(ebp+8) Space)
     (print-int32-buffered *(ebp+8) *eax)
@@ -7022,8 +7020,9 @@ emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle st
     # if (location == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     74/jump-if-= $emit-subx-imm32:end/disp8
-    #
-    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
+    # var v/eax: (handle var)
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
     (write-buffered *(ebp+8) Space)
     (write-buffered *(ebp+8) *eax)  # Var-name
     (write-buffered *(ebp+8) "/imm32")
@@ -7046,8 +7045,9 @@ emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (handle s
     # if (location == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     0f 84/jump-if-= $emit-subx-disp32:end/disp32
-    #
-    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # stmt, l => var/eax
+    # var v/eax: (handle var)
+    (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
     (write-buffered *(ebp+8) Space)
     (write-buffered *(ebp+8) *eax)  # Var-name
     # hack: if instruction operation starts with "break", emit ":break"
@@ -7151,7 +7151,7 @@ $emit-hailmary-call:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call-operand:  # out: (addr buffered-file), operand: (handle variable)
+emit-subx-call-operand:  # out: (addr buffered-file), operand: (handle var)
     # shares code with emit-subx-var-as-rm32
     # . prologue
     55/push-ebp
@@ -7200,7 +7200,7 @@ $emit-subx-call-operand:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-as-rm32:  # out: (addr buffered-file), operand: (handle variable)
+emit-subx-var-as-rm32:  # out: (addr buffered-file), operand: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7394,9 +7394,9 @@ $mu-stmt-matches-primitive?:prim-inout-is-null:
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # curr=curr->next
-      8b/-> *(esi+4) 6/r32/esi  # Operand-next
+      8b/-> *(esi+4) 6/r32/esi  # Stmt-var-next
       # curr2=curr2->next
-      8b/-> *(edi+4) 7/r32/edi  # Operand-next
+      8b/-> *(edi+4) 7/r32/edi  # Stmt-var-next
       eb/jump loop/disp8
     }
 $mu-stmt-matches-primitive?:check-outputs:
@@ -7436,9 +7436,9 @@ $mu-stmt-matches-primitive?:check-output:
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # curr=curr->next
-      8b/-> *(esi+4) 6/r32/esi  # Operand-next
+      8b/-> *(esi+4) 6/r32/esi  # Stmt-var-next
       # curr2=curr2->next
-      8b/-> *(edi+4) 7/r32/edi  # Operand-next
+      8b/-> *(edi+4) 7/r32/edi  # Stmt-var-next
       eb/jump loop/disp8
     }
 $mu-stmt-matches-primitive?:return-true:
