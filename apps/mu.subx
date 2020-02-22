@@ -4158,7 +4158,7 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)) ->
     # if is-decimal-digit?(c) return new var(name)
     {
       (is-decimal-digit? %ecx)  # => eax
-      81 7/subop/compare %eax 0/imm32/false
+      3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
       (new-literal-integer Heap %esi)  # => eax
       eb/jump $lookup-var-or-literal:end/disp8
@@ -5655,7 +5655,7 @@ emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (add
     #
     {
 $emit-subx-block:check-empty:
-      81 7/subop/compare %eax 0/imm32
+      3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "{\n")
