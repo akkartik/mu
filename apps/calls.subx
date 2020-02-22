@@ -820,12 +820,12 @@ next-word-string-or-expression-without-metadata:  # line: (addr stream byte), ou
     # . . discard args
     81 0/subop/add %esp 8/imm32
 $next-word-string-or-expression-without-metadata:check0:
-    # if (line->read >= line->write) return out = {0, 0}
+    # if (line->read >= line->write) abort because we didn't encounter a final ')'
     # . ecx = line->read
     8b/-> *(esi+4) 1/r32/ecx
-    # . if (ecx >= line->write) return out = {0, 0}
+    # . if (ecx >= line->write) abort
     3b/compare 1/r32/ecx *esi
-    0f 8d/jump-if->= $next-word-string-or-expression-without-metadata:return-eol/disp32
+    0f 8d/jump-if->= $next-word-string-or-expression-without-metadata:error0/disp32
 $next-word-string-or-expression-without-metadata:check-for-comment:
     # out->start = &line->data[line->read]
     8d/copy-address *(esi+ecx+0xc) 0/r32/eax
@@ -984,6 +984,45 @@ $next-word-string-or-expression-without-metadata:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$next-word-string-or-expression-without-metadata:error0:
+    # print(stderr, "error: missing final ')' in '" line "'")
+    # . write-buffered(Stderr, "error: missing final ')' in '")
+    # . . push args
+    68/push "error: missing final ')' in '"/imm32
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . write-stream-data(Stderr, line)
+    # . . push args
+    56/push-esi
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-stream-data/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . write-buffered(Stderr, "'")
+    # . . push args
+    68/push "'"/imm32
+    68/push Stderr/imm32
+    # . . call
+    e8/call write-buffered/disp32
+    # . . discard args
+    81 0/subop/add %esp 8/imm32
+    # . flush(Stderr)
+    # . . push args
+    68/push Stderr/imm32
+    # . . call
+    e8/call flush/disp32
+    # . . discard args
+    81 0/subop/add %esp 4/imm32
+    # . syscall(exit, 1)
+    bb/copy-to-ebx 1/imm32
+    b8/copy-to-eax 1/imm32/exit
+    cd/syscall 0x80/imm8
+    # never gets here
 
 $next-word-string-or-expression-without-metadata:error1:
     # print(stderr, "error: no space allowed after '*' in '" line "'")
@@ -1316,48 +1355,6 @@ test-next-word-string-or-expression-without-metadata-returns-whole-comment:
     # . . push slice->end - _test-input-stream
     8b/-> *(ecx+4) 0/r32/eax
     81 5/subop/subtract %eax _test-input-stream/imm32
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-test-next-word-string-or-expression-without-metadata-returns-empty-slice-on-eof:
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    # . clear-stream(_test-input-stream)
-    # . . push args
-    68/push _test-input-stream/imm32
-    # . . call
-    e8/call clear-stream/disp32
-    # . . discard args
-    81 0/subop/add %esp 4/imm32
-    # var slice/ecx: slice
-    68/push 0/imm32/end
-    68/push 0/imm32/start
-    89/<- %ecx 4/r32/esp
-    # write nothing to _test-input-stream
-    # next-word-string-or-expression-without-metadata(_test-input-stream, slice)
-    # . . push args
-    51/push-ecx
-    68/push _test-input-stream/imm32
-    # . . call
-    e8/call next-word-string-or-expression-without-metadata/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(slice->end - slice->start, 0, msg)
-    # . . push args
-    68/push "F - test-next-word-string-or-expression-without-metadata-returns-empty-expression-on-eof"/imm32
-    68/push 0/imm32
-    # . . push slice->end - slice->start
-    8b/-> *(ecx+4) 0/r32/eax
-    2b/subtract-> *ecx 0/r32/eax  # subtract *ecx from eax
     50/push-eax
     # . . call
     e8/call check-ints-equal/disp32
