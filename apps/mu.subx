@@ -3645,15 +3645,8 @@ new-block-name:  # fn: (handle function) -> result/eax: (handle var)
     ff 6/subop/push %eax
     ff 6/subop/push %edx
     89/<- %eax 4/r32/esp
-    # var final-name/edx: (addr array byte) = slice-to-string(s)
-    (slice-to-string Heap %eax)  # => eax
-    89/<- %edx 0/r32/eax
-    # set result->var
-    # . var type/eax: (handle tree type-id) = literal
-    (allocate Heap *Tree-size)  # => eax
-    (zero-out %eax *Tree-size)  # default type is 'literal'
-    # . var result/eax: (handle var) = new-var(final-name, type)
-    (new-var Heap %edx %eax *Curr-block-depth 0 0)  # => eax
+    # result->var = new literal(s)
+    (new-literal Heap %eax)  # => eax
 $new-block-name:end:
     # . reclaim locals
     81 0/subop/add %ecx 0xc/imm32  # name.{read/write/len}
@@ -3730,14 +3723,8 @@ parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (ad
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var s/ecx: (addr array byte) = slice-to-string(name)
-    (slice-to-string Heap *(ebp+8))  # => eax
-    89/<- %ecx 0/r32/eax
-    # var type/eax: (handle tree type-id) = literal
-    (allocate Heap *Tree-size)  # => eax
-    (zero-out %eax *Tree-size)  # default type is 'literal'
-    # var v/ecx: (handle var) = new-var(s, type)
-    (new-var Heap %ecx %eax *Curr-block-depth 0 0)  # => eax
+    # var v/ecx: (handle var)
+    (new-literal Heap *(ebp+8))  # => eax
     89/<- %ecx 0/r32/eax
     # push(vars, v)
     (push *(ebp+0x10) %ecx)
@@ -4167,7 +4154,7 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)) ->
     {
       81 7/subop/compare %ecx 0x22/imm32/dquote
       75/jump-if-!= break/disp8
-      (new-literal-string Heap %esi)  # => eax
+      (new-literal Heap %esi)  # => eax
       eb/jump $lookup-var-or-literal:end/disp8
     }
     # otherwise return lookup-var(name, vars)
@@ -4523,7 +4510,7 @@ $new-literal-integer:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-new-literal-string:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
+new-literal:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4532,18 +4519,12 @@ new-literal-string:  # ad: (addr allocation-descriptor), name: (addr slice) -> r
     # var s/ecx: (addr array byte)
     (slice-to-string Heap *(ebp+0xc))  # => eax
     89/<- %ecx 0/r32/eax
-    # result/ecx = new var(s)
-    (allocate *(ebp+8) *Var-size)  # => eax
-    (zero-out %eax *Var-size)
-    89/<- *eax 1/r32/ecx  # Var-name
-    89/<- %ecx 0/r32/eax
     # result->type = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)  # default type is 'literal'
-    89/<- *(ecx+4) 0/r32/eax  # Var-type
-    # move result to eax
-    89/<- %eax 1/r32/ecx
-$new-literal-string:end:
+    #
+    (new-var *(ebp+8) %ecx %eax *Curr-block-depth 0 0)  # => eax
+$new-literal:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
