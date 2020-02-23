@@ -246,9 +246,20 @@ _Program-functions:  # (handle function)
 _Program-types:  # (handle typeinfo)
   0/imm32
 
-Function-name:
+# Some constants for simulating the data structures described above.
+# Many constants here come with a type in a comment.
+#
+# Sometimes the type is of the value at that offset for the given type. For
+# example, if you start at a function record and move forward Function-inouts
+# bytes, you'll find a (handle list var).
+#
+# At other times, the type is of the constant itself. For example, the type of
+# the constant Function-size is (addr int). To get the size of a function,
+# look in *Function-size.
+
+Function-name:  # (handle array byte)
   0/imm32
-Function-subx-name:
+Function-subx-name:  # (handle array byte)
   4/imm32
 Function-inouts:  # (handle list var)
   8/imm32
@@ -261,7 +272,7 @@ Function-next:  # (handle function)
 Function-size:  # (addr int)
   0x18/imm32/24
 
-Primitive-name:
+Primitive-name:  # (handle array byte)
   0/imm32
 Primitive-inouts:  # (handle list var)
   4/imm32
@@ -284,7 +295,7 @@ Primitive-next:  # (handle function)
 Primitive-size:  # (addr int)
   0x28/imm32/36
 
-Stmt-tag:
+Stmt-tag:  # int
   0/imm32
 
 Block-stmts:  # (handle list stmt)
@@ -312,15 +323,15 @@ Regvardef-outputs:  # (handle stmt-var)  # will have exactly one element
 Stmt-size:  # (addr int)
   0x10/imm32
 
-Var-name:
+Var-name:  # (handle array byte)
   0/imm32
-Var-type:
+Var-type:  # (handle tree type-id)
   4/imm32
-Var-block-depth:
+Var-block-depth:  # int
   8/imm32
-Var-offset:
+Var-offset:  # int
   0xc/imm32
-Var-register:
+Var-register:  # (handle array byte) -- name of a register
   0x10/imm32
 Var-size:  # (addr int)
   0x14/imm32
@@ -333,7 +344,7 @@ Any-register:  # wildcard
 
 List-value:
   0/imm32
-List-next:
+List-next:  # (handle list _)
   4/imm32
 List-size:  # (addr int)
   8/imm32
