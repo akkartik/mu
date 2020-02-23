@@ -240,7 +240,10 @@
 
 == data
 
-Program:  # (handle function)
+Program:
+_Program-functions:  # (handle function)
+  0/imm32
+_Program-types:  # (handle typeinfo)
   0/imm32
 
 Function-name:
@@ -1955,7 +1958,8 @@ test-convert-index-into-array:
 
 parse-mu:  # in: (addr buffered-file)
     # pseudocode
-    #   var curr-function: (addr (handle function)) = Program
+    #   var curr-function: (addr (handle function)) = Program->functions
+    #   var curr-type: (addr (handle typeinfo)) = Program->types
     #   var line: (stream byte 512)
     #   var word-slice: slice
     #   while true                                  # line loop
@@ -1967,7 +1971,7 @@ parse-mu:  # in: (addr buffered-file)
     #       continue
     #     else if slice-starts-with?(word-slice, "#")  # comment
     #       continue                                # end of line
-    #     else if slice-equal(word-slice, "fn")
+    #     else if slice-equal?(word-slice, "fn")
     #       var new-function: (handle function) = allocate(function)
     #       var vars: (stack (addr var) 256)
     #       populate-mu-function-header(in, new-function, vars)
@@ -1986,6 +1990,7 @@ parse-mu:  # in: (addr buffered-file)
     51/push-ecx
     52/push-edx
     53/push-ebx
+    56/push-esi
     57/push-edi
     # var line/ecx: (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
@@ -1997,8 +2002,10 @@ parse-mu:  # in: (addr buffered-file)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # var curr-function/edi: (addr (handle function)) = Program
-    bf/copy-to-edi Program/imm32
+    # var curr-function/edi: (addr (handle function))
+    bf/copy-to-edi _Program-functions/imm32
+    # var curr-type/esi: (addr (handle typeinfo))
+    be/copy-to-esi _Program-types/imm32
     # var vars/ebx: (stack (addr var) 256)
     81 5/subop/subtract %esp 0x400/imm32
     68/push 0x400/imm32/length
@@ -2036,7 +2043,7 @@ $parse-mu:fn:
         (slice-equal? %edx "fn")
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= break/disp32
-        # var new-function/eax: (handle function) = populate-mu-function(in, new-function, vars)
+        # var new-function/eax: (handle function) = populate-mu-function(line, in, vars)
         (allocate Heap *Function-size)  # => eax
         (zero-out %eax *Function-size)
         (clear-stack %ebx)
@@ -2056,6 +2063,7 @@ $parse-mu:end:
     81 0/subop/add %esp 0x630/imm32
     # . restore registers
     5f/pop-to-edi
+    5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
@@ -2199,8 +2207,10 @@ $populate-mu-function-header:check-for-inout:
       01/add %edx 0/r32/eax
       # v->block-depth is implicitly 0
       #
+      # out->inouts = append(out->inouts, v)
       (append-list Heap %ebx *(edi+8))  # Function-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Function-inouts
+      # push(vars, v)
       (push *(ebp+0x10) %ebx)
       #
       e9/jump loop/disp32
@@ -4054,6 +4064,7 @@ $add-operation-and-inputs-to-stmt:inout-is-deref:
         ba/copy-to-edx 1/imm32/true
       }
       (lookup-var-or-literal %ecx *(ebp+0x10))  # => eax
+$add-operation-and-inputs-to-stmt:save-var:
       (append-stmt-var Heap %eax *(edi+8) %edx)  # Stmt1-inouts or Regvardef-inouts => eax
       89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
       e9/jump loop/disp32
@@ -4844,8 +4855,8 @@ emit-subx:  # out: (addr buffered-file)
     57/push-edi
     # edi = out
     8b/-> *(ebp+8) 7/r32/edi
-    # var curr/ecx: (handle function) = *Program
-    8b/-> *Program 1/r32/ecx
+    # var curr/ecx: (handle function) = *Program->functions
+    8b/-> *_Program-functions 1/r32/ecx
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
@@ -5046,7 +5057,7 @@ $emit-subx-stmt-list:conditional-branch-with-target:
           # }}}
         }
 $emit-subx-stmt-list:1-to-1:
-        (emit-subx-stmt *(ebp+8) %ecx Primitives *Program)
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *_Program-functions)
       }
       {
 $emit-subx-stmt-list:check-for-var-def:
@@ -5078,7 +5089,7 @@ $emit-subx-stmt-list:reg-var-def:
         # register variable definition
         (push *(ebp+0x10) %eax)
         # emit the instruction as usual
-        (emit-subx-stmt *(ebp+8) %ecx Primitives *Program)
+        (emit-subx-stmt *(ebp+8) %ecx Primitives *_Program-functions)
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
       }
@@ -5553,7 +5564,7 @@ $emit-subx-stmt-list:array-length:
       e9/jump $emit-subx-stmt:end/disp32
     }
     # }}}
-    # array index {{{
+    # index into array {{{
     # TODO: support literal index
     {
       # if (!string-equal?(var->operation, "index")) break
@@ -5571,8 +5582,9 @@ $emit-subx-stmt-list:index:
       (write-buffered *(ebp+8) " + ")
       # inouts[1]->register
       8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
-      8b/-> *(eax+4) 0/r32/eax  # List-next
-      8b/-> *eax 0/r32/eax  # List-value
+      8b/-> *(eax+4) 0/r32/eax  # Stmt-var-next
+      8b/-> *eax 0/r32/eax  # Stmt-var-value
+      # TODO: handle Stmt-var-is-deref
       (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
       #
       (write-buffered *(ebp+8) "<<2 + 4) ")
