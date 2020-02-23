@@ -358,8 +358,42 @@ Tree-right:  # (addr tree type-id)
 Tree-size:  # (addr int)
   8/imm32
 
+# Types
+
 Max-type-id:
   0x10000/imm32
+
+Type-id:  # (stream (address array byte))
+  0x18/imm32/write
+  0/imm32/read
+  0x100/imm32/length
+  # data
+  "literal"/imm32  # 0
+  "int"/imm32  # 1
+  "addr"/imm32  # 2
+  "array"/imm32  # 3
+  "handle"/imm32  # 4
+  "bool"/imm32  # 5
+  0/imm32
+  0/imm32
+  # 0x20
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
+
+# Types contain vars with types, but can't specify registers.
+Typeinfo-id:  # type-id
+  0/imm32
+Typeinfo-fields:  # (handle list var)
+  4/imm32
+Typeinfo-next:  # (handle typeinfo)
+  8/imm32
+Typeinfo-size:  # (addr int)
+  0xc/imm32
 
 == code
 
@@ -2895,32 +2929,6 @@ $pos-slice:end:
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
-
-== data
-
-Type-id:  # (stream (address array byte))
-  0x18/imm32/write
-  0/imm32/read
-  0x100/imm32/length
-  # data
-  "literal"/imm32  # 0
-  "int"/imm32  # 1
-  "addr"/imm32  # 2
-  "array"/imm32  # 3
-  "handle"/imm32  # 4
-  "bool"/imm32  # 5
-  0/imm32
-  0/imm32
-  # 0x20
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
-  0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32 0/imm32
-
-== code
 
 test-parse-var-with-type:
     # . prologue
