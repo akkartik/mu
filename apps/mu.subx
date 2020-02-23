@@ -315,7 +315,7 @@ Var-type:
   4/imm32
 Var-block-depth:
   8/imm32
-Var-stack-offset:
+Var-offset:
   0xc/imm32
 Var-register:
   0x10/imm32
@@ -2159,7 +2159,7 @@ $populate-mu-function-header:check-for-inout:
       81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
       0f 85/jump-if-!= $populate-mu-function-header:error2/disp32
       # v->stack-offset = next-offset
-      89/<- *(ebx+0xc) 2/r32/edx  # Var-stack-offset
+      89/<- *(ebx+0xc) 2/r32/edx  # Var-offset
       # next-offset += size-of(v)
       (size-of %ebx)  # => eax
       01/add %edx 0/r32/eax
@@ -3773,7 +3773,7 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -
       75/jump-if-!= break/disp8
       # v->stack-offset = *Next-local-stack-offset
       8b/-> *Next-local-stack-offset 0/r32/eax
-      89/<- *(edx+0xc) 0/r32/eax  # Var-stack-offset
+      89/<- *(edx+0xc) 0/r32/eax  # Var-offset
       # TODO: ensure that there's nothing else on this line
       (new-var-def Heap %edx)  # => eax
       eb/jump $parse-mu-var-def:end/disp8
@@ -3844,7 +3844,7 @@ test-parse-mu-var-def:
     (check-strings-equal *eax "n" "F - test-parse-mu-var-def/var-name")  # Var-name
     (check-ints-equal *(eax+0x10) 0 "F - test-parse-mu-var-def/var-register")  # Var-register
     (check-ints-equal *(eax+8) 1 "F - test-parse-mu-reg-var-def/output-block-depth")  # Var-block-depth
-    (check-ints-equal *(eax+0xc) -4 "F - test-parse-mu-reg-var-def/output-stack-offset")  # Var-stack-offset
+    (check-ints-equal *(eax+0xc) -4 "F - test-parse-mu-reg-var-def/output-stack-offset")  # Var-offset
     # ensure type is int
     8b/-> *(eax+4) 0/r32/eax  # Var-type
     (check-ints-equal *eax 1 "F - test-parse-mu-var-def/var-type:0")  # Tree-left
@@ -3882,7 +3882,7 @@ test-parse-mu-reg-var-def:
     (check-strings-equal *eax "n" "F - test-parse-mu-reg-var-def/output-name")  # Var-name
     (check-strings-equal *(eax+0x10) "eax" "F - test-parse-mu-reg-var-def/output-register")  # Var-register
     (check-ints-equal *(eax+8) 1 "F - test-parse-mu-reg-var-def/output-block-depth")  # Var-block-depth
-    (check-ints-equal *(eax+0xc) 0 "F - test-parse-mu-reg-var-def/output-stack-offset")  # Var-stack-offset
+    (check-ints-equal *(eax+0xc) 0 "F - test-parse-mu-reg-var-def/output-stack-offset")  # Var-offset
     # ensure type is int
     8b/-> *(eax+4) 0/r32/eax  # Var-type
     (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-left
@@ -4456,7 +4456,7 @@ new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), type: (ad
     8b/-> *(ebp+0x14) 1/r32/ecx
     89/<- *(eax+8) 1/r32/ecx  # Var-block-depth
     8b/-> *(ebp+0x18) 1/r32/ecx
-    89/<- *(eax+0xc) 1/r32/ecx  # Var-stack-offset
+    89/<- *(eax+0xc) 1/r32/ecx  # Var-offset
     8b/-> *(ebp+0x1c) 1/r32/ecx
     89/<- *(eax+0x10) 1/r32/ecx  # Var-register
 $new-var:end:
@@ -4550,7 +4550,7 @@ new-label:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax
     89/<- *(ecx+4) 0/r32/eax  # Var-type
     89/<- %eax 1/r32/ecx
     c7 0/subop/copy *(eax+8) 0/imm32  # Var-block-depth
-    c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-stack-offset
+    c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-offset
     c7 0/subop/copy *(eax+0x10) 0/imm32  # Var-register
 $new-label:end:
     # . restore registers
@@ -7361,12 +7361,12 @@ $emit-subx-call-operand:register-direct:
     }
     # else if (operand->stack-offset) emit "*(ebp+__)"
     {
-      81 7/subop/compare *(esi+0xc) 0/imm32  # Var-stack-offset
+      81 7/subop/compare *(esi+0xc) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
 $emit-subx-call-operand:stack:
       (write-buffered *(ebp+8) Space)
       (write-buffered *(ebp+8) "*(ebp+")
-      (print-int32-buffered *(ebp+8) *(esi+0xc))  # Var-stack-offset
+      (print-int32-buffered *(ebp+8) *(esi+0xc))  # Var-offset
       (write-buffered *(ebp+8) ")")
       e9/jump $emit-subx-call-operand:end/disp32
     }
@@ -7425,12 +7425,12 @@ $emit-subx-var-as-rm32:register-direct:
     }
     # else if (operand->stack-offset) emit "*(ebp+__)"
     {
-      81 7/subop/compare *(esi+0xc) 0/imm32  # Var-stack-offset
+      81 7/subop/compare *(esi+0xc) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
 $emit-subx-var-as-rm32:stack:
       (write-buffered *(ebp+8) Space)
       (write-buffered *(ebp+8) "*(ebp+")
-      (print-int32-buffered *(ebp+8) *(esi+0xc))  # Var-stack-offset
+      (print-int32-buffered *(ebp+8) *(esi+0xc))  # Var-offset
       (write-buffered *(ebp+8) ")")
     }
 $emit-subx-var-as-rm32:end:
