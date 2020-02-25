@@ -2580,7 +2580,7 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     #   result = allocate(Tree)
     #   zero-out(result, *Tree-size)
     #   if s != "("
-    #     result->left = pos-slice(Type-id, s)
+    #     result->left = pos-or-insert-slice(Type-id, s)
     #     return
     #   result->left = parse-type(ad, in)
     #   result->right = parse-type-tree(ad, in)
@@ -2631,8 +2631,8 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
       (slice-equal? %ecx "(")
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
-      # result->left = pos-slice(Type-id, s)
-      (pos-slice Type-id %ecx)
+      # result->left = pos-or-insert-slice(Type-id, s)
+      (pos-or-insert-slice Type-id %ecx)
 #?       (write-buffered Stderr "=> {")
 #?       (print-int32-buffered Stderr %eax)
 #?       (write-buffered Stderr ", 0}\n")
@@ -2886,6 +2886,24 @@ $next-mu-token:end:
     5e/pop-to-esi
     59/pop-to-ecx
     58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+pos-or-insert-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # if (pos-slice(arr, s) != -1) return it
+    (pos-slice *(ebp+8) *(ebp+0xc))  # => eax
+    3d/compare-eax-and -1/imm32
+    75/jump-if-not-equal $pos-or-insert-slice:end/disp8
+    #
+    (slice-to-string Heap *(ebp+0xc))  # => eax
+    (write-int *(ebp+8) %eax)
+    (pos-slice *(ebp+8) *(ebp+0xc))  # => eax
+$pos-or-insert-slice:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
