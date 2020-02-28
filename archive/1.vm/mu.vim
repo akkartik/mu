@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    mu
 " Maintainer:  Kartik Agaram <mu@akkartik.com>
-" URL:         http://github.com/akkartik/mu
+" URL:         http://github.com/akkartik/mu1
 " License:     public domain
 "
 " Copy this into your ftplugin directory, and add the following to your vimrc
