@@ -48,7 +48,7 @@ syntax match muControl "\<loop\>\|\<loop-if[^ ]*"
 highlight link muControl Identifier
 
 syntax match muRecipe " -> "
-syntax keyword muRecipe fn type
+syntax keyword muRecipe fn type var
 highlight link muRecipe PreProc
 
 syntax match muData "^type\>"
