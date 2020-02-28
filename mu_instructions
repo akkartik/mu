@@ -146,7 +146,11 @@ var/reg <- multiply *var2/reg2 { .name="multiply",    .inouts=[reg2], .outputs=[
 
 Jumps have a slightly simpler format. Most of the time they take no inouts or
 outputs. Occasionally you give them a label for a containing block to jump to
-the start or end of.
+the start or end of. (Conditional branches read different combinations of CPU
+flags.)
+
+break                       {.name="break",                                             .subx-name="e9/jump break/disp32"}
+break label                 {.name="break",           .inouts=[label],                  .subx-name="e9/jump",                             .disp32=inouts[0] ":break"}
 
 break-if-=                  {.name="break-if-=",                                        .subx-name="0f 84/jump-if-= break/disp32"}
 break-if-= label            {.name="break-if-=",      .inouts=[label],                  .subx-name="0f 84/jump-if-=",                     .disp32=inouts[0] ":break"}
@@ -171,9 +175,12 @@ break-if-addr<= label       {.name="break-if-addr<=", .inouts=[label],          
 break-if-addr>=             {.name="break-if-addr>=",                                   .subx-name="0f 83/jump-if-addr>= break/disp32"}
 break-if-addr>= label       {.name="break-if-addr>=", .inouts=[label],                  .subx-name="0f 83/jump-if-addr>=",                .disp32=inouts[0] ":break"}
 
-Finally, we repeat all the 'break' variants almost identically for 'loop'
-instructions. This works because the compiler inserts ':loop' labels at the
-start of such named blocks, and ':break' labels at the end.
+We repeat all the 'break' variants almost identically for 'loop' instructions.
+This works because the compiler inserts ':loop' labels at the start of such
+named blocks, and ':break' labels at the end.
+
+loop                        {.name="loop",                                              .subx-name="e9/jump loop/disp32"}
+loop label                  {.name="loop",            .inouts=[label],                  .subx-name="e9/jump",                             .disp32=inouts[0] ":loop"}
 
 loop-if-=                   {.name="loop-if-=",                                         .subx-name="0f 84/jump-if-= loop/disp32"}
 loop-if-= label             {.name="loop-if-=",       .inouts=[label],                  .subx-name="0f 84/jump-if-=",                     .disp32=inouts[0] ":loop"}
@@ -197,13 +204,6 @@ loop-if-addr<=              {.name="loop-if-addr<=",                            
 loop-if-addr<= label        {.name="loop-if-addr<=",  .inouts=[label],                  .subx-name="0f 86/jump-if-addr<=",                .disp32=inouts[0] ":loop"}
 loop-if-addr>=              {.name="loop-if-addr>=",                                    .subx-name="0f 83/jump-if-addr>= loop/disp32"}
 loop-if-addr>= label        {.name="loop-if-addr>=",  .inouts=[label],                  .subx-name="0f 83/jump-if-addr>=",                .disp32=inouts[0] ":loop"}
-
-Finally, unconditional jumps:
-
-loop                        {.name="loop",                                              .subx-name="e9/jump loop/disp32"}
-loop label                  {.name="loop",            .inouts=[label],                  .subx-name="e9/jump",                             .disp32=inouts[0] ":loop"}
-break                       {.name="break",                                             .subx-name="e9/jump break/disp32"}
-break label                 {.name="break",           .inouts=[label],                  .subx-name="e9/jump",                             .disp32=inouts[0] ":break"}
 
 Array operations
 
