@@ -1954,7 +1954,7 @@ test-convert-index-into-array:
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-convert-index-into-array/8")
     (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"                  "F - test-convert-index-into-array/9")
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array/10")
-    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx<<2 + 4) 0x00000000/r32"  "F - test-convert-index-into-array/11")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx<<0x00000002 + 4) 0x00000000/r32"  "F - test-convert-index-into-array/11")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array/12")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-index-into-array/13")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array/14")
@@ -2068,6 +2068,62 @@ test-convert-function-with-local-var-with-user-defined-type:
     (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-var-with-user-defined-type/12")
     (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-var-with-user-defined-type/13")
     (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-var-with-user-defined-type/14")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-array-of-user-defined-types:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
+    #
+    (write _test-input-stream "type t {\n")  # each t is 8 bytes, which is a power of 2
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array t) <- copy 0\n")
+    (write _test-input-stream "  var idx/ecx: int <- copy 3\n")
+    (write _test-input-stream "  var x/eax: (addr int) <- index arr, idx\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-array-of-user-defined-types/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-array-of-user-defined-types/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-array-of-user-defined-types/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-array-of-user-defined-types/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-array-of-user-defined-types/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-array-of-user-defined-types/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-array-of-user-defined-types/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-array-of-user-defined-types/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-convert-array-of-user-defined-types/8")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"                  "F - test-convert-array-of-user-defined-types/9")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-array-of-user-defined-types/10")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx<<0x00000003 + 4) 0x00000000/r32"  "F - test-convert-array-of-user-defined-types/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-array-of-user-defined-types/12")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-array-of-user-defined-types/13")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-array-of-user-defined-types/14")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-array-of-user-defined-types/15")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-array-of-user-defined-types/16")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-array-of-user-defined-types/17")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-array-of-user-defined-types/18")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-array-of-user-defined-types/19")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-array-of-user-defined-types/20")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5292,24 +5348,38 @@ size-of:  # v: (handle var) -> result/eax: int
     # ecx = v->type
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ecx+4) 1/r32/ecx  # Var-type
+    # TODO: support non-atom type
+    # TODO: support arrays
+    (size-of-type-id *ecx)  # Atom-left => eax
+$size-of:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+size-of-type-id:  # t: type-id -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    8b/-> *(ebp+8) 0/r32/eax
     # if v is a literal, return 0
-    81 7/subop/compare *ecx 0/imm32  # Tree-left
-    b8/copy-to-eax 0/imm32
-    74/jump-if-= $size-of:end/disp8
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $size-of-type:end/disp8  # eax changes type from type-id to int
     # if v has a user-defined type, return its size
     # TODO: support non-atom type
-    (find-typeinfo *ecx)  # => eax
+    (find-typeinfo %eax)  # => eax
     {
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
       8b/-> *(eax+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
-      eb/jump $size-of:end/disp8
+      eb/jump $size-of-type:end/disp8
     }
     # otherwise return the word size
     b8/copy-to-eax 4/imm32
-$size-of:end:
-    # . restore registers
-    59/pop-to-ecx
+$size-of-type:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6120,14 +6190,23 @@ $emit-subx-stmt-list:index:
       (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
       #
       (write-buffered *(ebp+8) " + ")
-      # inouts[1]->register
+      # inouts[1]->register "<<"
       8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
       8b/-> *(eax+4) 0/r32/eax  # Stmt-var-next
       8b/-> *eax 0/r32/eax  # Stmt-var-value
       # TODO: handle Stmt-var-is-deref
       (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
       #
-      (write-buffered *(ebp+8) "<<2 + 4) ")
+      (write-buffered *(ebp+8) "<<")
+      # log2(sizeof(element(inouts[0]->type))) " + 4"
+      # TODO: ensure size is a power of 2
+      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+      8b/-> *eax 0/r32/eax  # Stmt-var-value
+      (array-element-type-id %eax)  # => eax
+      (size-of-type-id %eax)  # => eax
+      (num-shift-rights %eax)  # => eax
+      (print-int32-buffered *(ebp+8) %eax)
+      (write-buffered *(ebp+8) " + 4) ")
       # outputs[0] "/r32"
       8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
       8b/-> *eax 0/r32/eax  # Stmt-var-value
@@ -6206,6 +6285,79 @@ $emit-subx-stmt:abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+array-element-type-id:  # v: (handle var) -> result/eax: type-id
+    # precondition: n is positive
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    8b/-> *(ebp+8) 0/r32/eax
+    8b/-> *(eax+4) 0/r32/eax  # Var-type
+    # TODO: ensure type->left is 'addr'
+    8b/-> *(eax+4) 0/r32/eax  # Tree-right
+    # TODO: ensure that type->right is non-null
+    # TODO: ensure that type->right->left is 'array'
+    8b/-> *(eax+4) 0/r32/eax  # Tree-right
+    # TODO: ensure that type->right->right is non-null
+    8b/-> *eax 0/r32/eax  # Tree-left
+    8b/-> *eax 0/r32/eax  # Atom-value
+$array-element-type-id:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+power-of-2?:  # n: int -> result/eax: boolean
+    # precondition: n is positive
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # var tmp/eax: int = n-1
+    8b/-> *(ebp+8) 0/r32/eax
+    48/decrement-eax
+    # var tmp2/eax: int = n & tmp
+    0b/and-> *(ebp+8) 0/r32/eax
+    # return (tmp2 == 0)  # TODO: replace with setcc
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $power-of-2?:true/disp8
+$power-of-2?:false:
+    b8/copy-to-eax 0/imm32/false
+    eb/jump $power-of-2?:end/disp8
+$power-of-2?:true:
+    b8/copy-to-eax 1/imm32/true
+$power-of-2?:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+num-shift-rights:  # n: int -> result/eax: int
+    # precondition: n is a positive power of 2
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # var curr/ecx: int = n
+    8b/-> *(ebp+8) 1/r32/ecx
+    # result = 0
+    b8/copy-to-eax 0/imm32
+    {
+      # if (curr <= 1) break
+      81 7/subop/compare %ecx 1/imm32
+      7e/jump-if-<= break/disp8
+      40/increment-eax
+      c1/shift 5/subop/arithmetic-right %ecx 1/imm8
+      eb/jump loop/disp8
+    }
+$num-shift-rights:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 print-mu-get-offset:  # out: (addr buffered-file), stmt: (handle stmt)
     # . prologue
