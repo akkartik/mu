@@ -312,16 +312,14 @@ is-decimal-digit?:  # c: byte -> eax: boolean
     51/push-ecx
     # ecx = c
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # result = false
+    b8/copy-to-eax  0/imm32/false
     # return false if c < '0'
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x30/imm32        # compare ecx
-    7c/jump-if-<  $is-decimal-digit?:false/disp8
-    # return true if c <= '9'
+    7c/jump-if-<  $is-decimal-digit?:end/disp8
+    # return (c <= '9')
     81          7/subop/compare     3/mod/direct    1/rm32/ecx    .           .             .           .           .               0x39/imm32        # compare ecx
-    7e/jump-if-<=  $is-decimal-digit?:true/disp8
-    # otherwise return false
-$is-decimal-digit?:false:
-    b8/copy-to-eax  0/imm32/false
-    eb/jump $is-decimal-digit?:end/disp8
+    7f/jump-if->  $is-decimal-digit?:end/disp8
 $is-decimal-digit?:true:
     b8/copy-to-eax  1/imm32/true
 $is-decimal-digit?:end:
