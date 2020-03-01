@@ -31,6 +31,8 @@ clear-stream:  # f: (addr stream byte)
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax
     # f->read = 0
     c7          0/subop/copy        1/mod/*+disp8   0/rm32/eax    .           .             .           .           4/disp8         0/imm32           # copy to *(eax+4)
+    # - clear all stream data
+    # - this isn't strictly necessary, and it can slow things down *a lot*, but better safe than sorry.
     # var curr/eax: (addr byte) = f->data
     81          0/subop/add         3/mod/direct    0/rm32/eax    .           .             .           .           .               0xc/imm32         # add to eax
 $clear-stream:loop:
