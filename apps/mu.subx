@@ -5685,7 +5685,7 @@ $emit-subx-stmt-list:check-for-reg-var-def:
         0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:reg-var-def:
         # TODO: ensure that there's exactly one output
-        (emit-subx-reg-var-spill *(ebp+8) %ecx)
+        (compute-reg-and-maybe-emit-spill *(ebp+8) %ecx)
         # register variable definition
         (push *(ebp+0x10) %eax)
         # emit the instruction as usual
@@ -5714,7 +5714,38 @@ $emit-subx-stmt-list:end:
     5d/pop-to-ebp
     c3/return
 
-$emit-subx-stmt-list:abort-reg-var-def-without-register:
+compute-reg-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (handle reg-var-def) -> result/eax: (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # ecx = stmt
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # var output/ecx: (handle var) = curr-stmt->outputs->value
+    8b/-> *(ecx+0xc) 1/r32/ecx  # Regvardef-inouts
+    8b/-> *ecx 1/r32/ecx  # List-value
+    # var reg/eax: (handle array byte) = output->register
+    8b/-> *(ecx+0x10) 0/r32/eax  # Var-register
+    # ensure that output is in a register
+    3d/compare-eax-and 0/imm32
+    0f 84/jump-if-= $compute-reg-and-maybe-emit-spill:abort-reg-var-def-without-register/disp32
+    # emit spill
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "ff 6/subop/push %")
+    (write-buffered *(ebp+8) %eax)
+    (write-buffered *(ebp+8) Newline)
+$compute-reg-and-maybe-emit-spill:end:
+    # return ecx
+    89/<- %eax 1/r32/ecx
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$compute-reg-and-maybe-emit-spill:abort-reg-var-def-without-register:
     # error("var '" var->name "' initialized from an instruction must live in a register\n")
     (write-buffered Stderr "var '")
     (write-buffered Stderr *eax)  # Var-name
@@ -5725,33 +5756,6 @@ $emit-subx-stmt-list:abort-reg-var-def-without-register:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
-
-emit-subx-reg-var-spill:  # out: (addr buffered-file), stmt: (handle stmt)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    51/push-ecx
-    # ecx = stmt
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    # var output/eax: (handle var) = curr-stmt->outputs->value
-    8b/-> *(ecx+0xc) 0/r32/eax
-    8b/-> *eax 0/r32/eax
-    # ensure that output is in a register
-    81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
-    0f 84/jump-if-= $emit-subx-stmt-list:abort-reg-var-def-without-register/disp32
-    # emit spill
-    (emit-indent *(ebp+8) *Curr-block-depth)
-    (write-buffered *(ebp+8) "ff 6/subop/push %")
-    (write-buffered *(ebp+8) *(eax+0x10))
-    (write-buffered *(ebp+8) Newline)
-$emit-subx-reg-var-spill:end:
-    # . restore registers
-    59/pop-to-ecx
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
 
 emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file), stmt: (addr stmt1), vars: (addr stack (handle var))
     # . prologue
