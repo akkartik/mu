@@ -32,7 +32,7 @@ let b:cmt_head = "#? "
 syntax match muDelimiter "[{}]"  | highlight link muDelimiter Delimiter
 
 " Mu literals
-syntax match muLiteral %\<[0-9-]\?[0-9]\+%
+syntax match muLiteral %\<\(0x\)\?[0-9-]\?[0-9]\+%
 syntax match muLiteral %"[^"]*"%
 highlight link muLiteral Constant
 
