@@ -2,6 +2,27 @@
 #   ./translate_mu apps/factorial.mu
 #   ./a.elf test  # to run tests
 #   ./a.elf       # to run factorial(5)
+
+fn factorial n: int -> result/eax: int {
+  compare n 1
+  {
+    break-if->
+    result <- copy 1
+  }
+  {
+    break-if-<=
+    var tmp/ecx: int <- copy n
+    tmp <- decrement
+    result <- factorial tmp
+    result <- multiply n
+  }
+}
+
+fn test-factorial {
+  var result/eax: int <- factorial 5
+  check-ints-equal result 0x78 "F - test-factorial"
+}
+
 fn main args: (addr array kernel-string) -> exit-status/ebx: int {
   var a/eax: (addr array kernel-string) <- copy args
   var tmp/ecx: int <- length a
@@ -25,24 +46,4 @@ fn main args: (addr array kernel-string) -> exit-status/ebx: int {
       exit-status <- copy 0  # TODO: get at Num-test-failures somehow
     }
   }
-}
-
-fn factorial n: int -> result/eax: int {
-  compare n 1
-  {
-    break-if->
-    result <- copy 1
-  }
-  {
-    break-if-<=
-    var tmp/ecx: int <- copy n
-    tmp <- decrement
-    result <- factorial tmp
-    result <- multiply n
-  }
-}
-
-fn test-factorial {
-  var result/eax: int <- factorial 5
-  check-ints-equal result 0x78 "F - test-factorial"
 }
