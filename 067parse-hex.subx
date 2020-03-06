@@ -351,7 +351,70 @@ test-is-hex-int-handles-negative-0x-prefix:
     5d/pop-to-ebp
     c3/return
 
+parse-hex-int:  # in: (addr array byte) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # eax = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
+    # var curr/ecx: (addr byte) = &in->data
+    8d/copy-address                 1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy eax+4 to ecx
+    # var max/edx: (addr byte) = &in->data[in->length]
+    # . edx = in->length
+    8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy *eax to edx
+    # . edx = in->data + in->length
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  2/index/edx   .           2/r32/edx   4/disp8         .                 # copy eax+edx+4 to edx
+    # return parse-hex-int-helper(curr, max)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    # . . call
+    e8/call  parse-hex-int-helper/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$parse-hex-int:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 parse-hex-int-from-slice:  # in: (addr slice) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # ecx = in
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # edx = in->end
+    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # copy *(ecx+4) to edx
+    # var curr/ecx: (addr byte) = in->start
+    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # copy *ecx to ecx
+    # return parse-hex-int-helper(curr, max)
+    # . . push args
+    52/push-edx
+    51/push-ecx
+    # . . call
+    e8/call  parse-hex-int-helper/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+$parse-hex-int-from-slice:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+parse-hex-int-helper:  # start: (addr byte), end: (addr byte) -> result/eax: int
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -360,49 +423,47 @@ parse-hex-int-from-slice:  # in: (addr slice) -> result/eax: int
     52/push-edx
     53/push-ebx
     56/push-esi
+    # var curr/ecx: (addr byte) = start
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
+    # edx = max
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+0xc) to edx
     # var result/ebx: int = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
-    # ecx = in
-    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
-    # edx = in->end
-    8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # copy *(ecx+4) to edx
-    # var curr/ecx: (addr byte) = in->start
-    8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # copy *ecx to ecx
     # var negate?/esi: boolean = false
     31/xor                          3/mod/direct    6/rm32/esi    .           .             .           6/r32/esi   .               .                 # clear esi
-$parse-hex-int-from-slice:negative:
+$parse-hex-int-helper:negative:
     # if (*curr == '-') ++curr, negate = true
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x2d/imm32/-
-    75/jump-if-!=  $parse-hex-int-from-slice:initial-0/disp8
+    75/jump-if-!=  $parse-hex-int-helper:initial-0/disp8
     # . ++curr
     41/increment-ecx
     # . negate = true
     be/copy-to-esi  1/imm32/true
-$parse-hex-int-from-slice:initial-0:
+$parse-hex-int-helper:initial-0:
     # skip past leading '0x'
     # . if (*curr != '0') jump to loop
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x30/imm32/0
-    75/jump-if-!=  $parse-hex-int-from-slice:loop/disp8
+    75/jump-if-!=  $parse-hex-int-helper:loop/disp8
     # . ++curr
     41/increment-ecx
-$parse-hex-int-from-slice:initial-0x:
+$parse-hex-int-helper:initial-0x:
     # . if (curr >= in->end) return result
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-addr>=  $parse-hex-int-from-slice:end/disp8
+    73/jump-if-addr>=  $parse-hex-int-helper:end/disp8
     # . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
     3d/compare-eax-and  0x78/imm32/x
-    75/jump-if-!=  $parse-hex-int-from-slice:loop/disp8
+    75/jump-if-!=  $parse-hex-int-helper:loop/disp8
     # . ++curr
     41/increment-ecx
-$parse-hex-int-from-slice:loop:
+$parse-hex-int-helper:loop:
     # if (curr >= in->end) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
-    73/jump-if-addr>=  $parse-hex-int-from-slice:negate/disp8
+    73/jump-if-addr>=  $parse-hex-int-helper:negate/disp8
     # var eax: int = from-hex-char(*curr)
     # . . copy arg to eax
     8a/copy-byte                    0/mod/indirect  1/rm32/ecx    .           .             .           0/r32/AL    .               .                 # copy byte at *ecx to AL
@@ -414,13 +475,13 @@ $parse-hex-int-from-slice:loop:
     # ++curr
     41/increment-ecx
     # loop
-    eb/jump  $parse-hex-int-from-slice:loop/disp8
-$parse-hex-int-from-slice:negate:
+    eb/jump  $parse-hex-int-helper:loop/disp8
+$parse-hex-int-helper:negate:
     # if (negate?) result = -result
     81          7/subop/compare     3/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm32/false     # compare esi
-    74/jump-if-=  $parse-hex-int-from-slice:end/disp8
+    74/jump-if-=  $parse-hex-int-helper:end/disp8
     f7          3/subop/negate      3/mod/direct    3/rm32/ebx    .           .             .           .           .               .                 # negate ebx
-$parse-hex-int-from-slice:end:
+$parse-hex-int-helper:end:
     # return result
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy ebx to eax
     # . restore registers
