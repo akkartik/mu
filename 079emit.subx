@@ -61,18 +61,18 @@ $emit:name:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . return
     eb/jump  $emit:end/disp8
-    # otherwise emit-hex(out, parse-hex-int(datum), width)
+    # otherwise emit-hex(out, parse-hex-int-from-slice(datum), width)
     #   (Weird shit can happen here if the datum of 'word' isn't either a valid
     #   name or a hex number. `emit` is mostly used by translate_subx, which
     #   is currently designed to only receive legal SubX programs. We just
     #   want to make sure that valid names aren't treated as (valid) hex
     #   numbers.)
 $emit:hex-int:
-    # . var value/eax: int = parse-hex-int(datum)
+    # . var value/eax: int = parse-hex-int-from-slice(datum)
     # . . push args
     57/push-edi
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-hex-int-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . emit-hex(out, value, width)

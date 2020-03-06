@@ -654,7 +654,7 @@ compute-offsets:  # in: (addr stream byte), segments: (addr stream {string, segm
     #         if slice-empty?(segment-tmp)
     #           abort
     #         seg = get-or-insert(segments, curr-segment-name)
-    #         seg->starting-address = parse-hex-int(segment-tmp)
+    #         seg->starting-address = parse-hex-int-from-slice(segment-tmp)
     #         seg->file-offset = *file-offset
     #         trace("segment '", curr-segment-name, "' is at file offset ", seg->file-offset)
     #         segment-offset = 0
@@ -987,10 +987,10 @@ $compute-offsets:update-curr-segment-name:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . ebx = eax
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
-    # seg->address = parse-hex-int(segment-tmp)
-    # . eax = parse-hex-int(segment-tmp)
+    # seg->address = parse-hex-int-from-slice(segment-tmp)
+    # . eax = parse-hex-int-from-slice(segment-tmp)
     68/push  compute-offsets:segment-tmp/imm32
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-hex-int-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . seg->address = eax

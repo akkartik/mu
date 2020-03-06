@@ -247,7 +247,7 @@ parse-array-of-ints:  # ad: (addr allocation-descriptor), s: (addr string) -> re
     #     slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
     #     if (slice->start >= end) break
     #     slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
-    #     *out = parse-hex-int(slice)
+    #     *out = parse-hex-int-from-slice(slice)
     #     out += 4
     #     slice->start = slice->end
     #   return result
@@ -361,12 +361,12 @@ $parse-array-of-ints:loop2:
     81 0/subop/add %esp 0xc/imm32
     # . slice->end = eax
     89/<- *(ecx+4) 0/r32/eax
-    # *out = parse-hex-int(slice)
-    # . eax = parse-hex-int(slice)
+    # *out = parse-hex-int-from-slice(slice)
+    # . eax = parse-hex-int-from-slice(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call parse-hex-int/disp32
+    e8/call parse-hex-int-from-slice/disp32
     # . . discard args
     81 0/subop/add %esp 4/imm32
     # . *out = eax

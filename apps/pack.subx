@@ -2259,13 +2259,13 @@ emit-modrm:  # line: (addr stream byte), out: (addr buffered-file)
     #     if (slice-empty?(word-slice)) break
     #     if (slice-starts-with?(word-slice, "#")) break
     #     if (has-metadata?(word-slice, "mod"))
-    #       mod = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       mod = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
     #     else if (has-metadata?(word-slice, "rm32"))
-    #       rm32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       rm32 = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
     #     else if (has-metadata?(word-slice, "r32") or has-metadata?(word-slice, "subop"))
-    #       r32 = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       r32 = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-modrm? = true
     #   if has-modrm?
     #     var modrm = mod & 0b11
@@ -2426,7 +2426,7 @@ $emit-modrm:check-for-mod:
     3d/compare-eax-and  0/imm32/false
     74/jump-if-=  $emit-modrm:check-for-rm32/disp8
 $emit-modrm:mod:
-    # mod = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # mod = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
     51/push-ecx
@@ -2454,7 +2454,7 @@ $emit-modrm:check-for-rm32:
     3d/compare-eax-and  0/imm32/false
     74/jump-if-=  $emit-modrm:check-for-r32/disp8
 $emit-modrm:rm32:
-    # rm32 = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # rm32 = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
     51/push-ecx
@@ -2482,7 +2482,7 @@ $emit-modrm:check-for-r32:
     3d/compare-eax-and  0/imm32/false
     74/jump-if-=  $emit-modrm:check-for-subop/disp8
 $emit-modrm:r32:
-    # r32 = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # r32 = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
     51/push-ecx
@@ -2510,7 +2510,7 @@ $emit-modrm:check-for-subop:
     3d/compare-eax-and  0/imm32/false
     0f 84/jump-if-=  $emit-modrm:loop/disp32
 $emit-modrm:subop:
-    # r32 = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # r32 = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
     51/push-ecx
@@ -2575,13 +2575,13 @@ emit-sib:  # line: (addr stream byte), out: (addr buffered-file)
     #     if (slice-empty?(word-slice)) break
     #     if (slice-starts-with?(word-slice, "#")) break
     #     if (has-metadata?(word-slice, "base")
-    #       base = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       base = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
     #     else if (has-metadata?(word-slice, "index")
-    #       index = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       index = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
     #     else if (has-metadata?(word-slice, "scale")
-    #       scale = parse-hex-int(next-token-from-slice(word-slice, "/"))
+    #       scale = parse-hex-int-from-slice(next-token-from-slice(word-slice, "/"))
     #       has-sib? = true
     #   if has-sib?
     #     var sib = scale & 0b11
@@ -2735,7 +2735,7 @@ $emit-sib:check-for-scale:
     3d/compare-eax-and  0/imm32/false
     74/jump-if-=  $emit-sib:check-for-base/disp8
 $emit-sib:scale:
-    # scale = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # scale = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
     51/push-ecx
@@ -2763,7 +2763,7 @@ $emit-sib:check-for-base:
     3d/compare-eax-and  0/imm32/false
     74/jump-if-=  $emit-sib:check-for-index/disp8
 $emit-sib:base:
-    # base = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # base = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
     51/push-ecx
@@ -2791,7 +2791,7 @@ $emit-sib:check-for-index:
     3d/compare-eax-and  0/imm32/false
     0f 84/jump-if-=  $emit-sib:loop/disp32
 $emit-sib:index:
-    # index = parse-hex-int(next-token-from-slice(word-slice->start, word-slice->end, '/'))
+    # index = parse-hex-int-from-slice(next-token-from-slice(word-slice->start, word-slice->end, '/'))
     # . eax = parse-datum-of-word(word-slice)
     # . . push args
     51/push-ecx
@@ -5836,7 +5836,7 @@ test-convert-instruction-handles-imm8-operand:
     5d/pop-to-ebp
     c3/return
 
-# shortcut for parse-hex-int(next-token-from-slice(word->start, word->end, '/'))
+# shortcut for parse-hex-int-from-slice(next-token-from-slice(word->start, word->end, '/'))
 parse-datum-of-word:  # word: (addr slice) -> value/eax: int
     # . prologue
     55/push-ebp
@@ -5860,11 +5860,11 @@ parse-datum-of-word:  # word: (addr slice) -> value/eax: int
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
-    # return parse-hex-int(slice)
+    # return parse-hex-int-from-slice(slice)
     # . . push args
     51/push-ecx
     # . . call
-    e8/call  parse-hex-int/disp32
+    e8/call  parse-hex-int-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 $parse-datum-of-word:end:
