@@ -411,7 +411,7 @@ if ('onhashchange' in window) {
 <span id="L351" class="LineNr">351 </span>    5d/pop-to-ebp
 <span id="L352" class="LineNr">352 </span>    c3/return
 <span id="L353" class="LineNr">353 </span>
-<span id="L354" class="LineNr">354 </span><span class="subxFunction">parse-hex-int</span>:  <span class="subxComment"># in: (addr slice) -&gt; result/eax: int</span>
+<span id="L354" class="LineNr">354 </span><span class="subxFunction">parse-hex-int-from-slice</span>:  <span class="subxComment"># in: (addr slice) -&gt; result/eax: int</span>
 <span id="L355" class="LineNr">355 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L356" class="LineNr">356 </span>    55/push-ebp
 <span id="L357" class="LineNr">357 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -430,39 +430,39 @@ if ('onhashchange' in window) {
 <span id="L370" class="LineNr">370 </span>    8b/copy                         0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy *ecx to ecx</span>
 <span id="L371" class="LineNr">371 </span>    <span class="subxComment"># var negate?/esi: boolean = false</span>
 <span id="L372" class="LineNr">372 </span>    31/xor                          3/mod/direct    6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          6/r32/esi  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear esi</span>
-<span id="L373" class="LineNr">373 </span><span class="Constant">$parse-hex-int:negative</span>:
+<span id="L373" class="LineNr">373 </span><span class="Constant">$parse-hex-int-from-slice:negative</span>:
 <span id="L374" class="LineNr">374 </span>    <span class="subxComment"># if (*curr == '-') ++curr, negate = true</span>
 <span id="L375" class="LineNr">375 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L376" class="LineNr">376 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L377" class="LineNr">377 </span>    3d/compare-eax-and  0x2d/imm32/-
-<span id="L378" class="LineNr">378 </span>    75/jump-if-!=  $parse-hex-int:initial-0/disp8
+<span id="L378" class="LineNr">378 </span>    75/jump-if-!=  $parse-hex-int-from-slice:initial-0/disp8
 <span id="L379" class="LineNr">379 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L380" class="LineNr">380 </span>    41/increment-ecx
 <span id="L381" class="LineNr">381 </span>    <span class="subxS1Comment"># . negate = true</span>
 <span id="L382" class="LineNr">382 </span>    be/copy-to-esi  1/imm32/true
-<span id="L383" class="LineNr">383 </span><span class="Constant">$parse-hex-int:initial-0</span>:
+<span id="L383" class="LineNr">383 </span><span class="Constant">$parse-hex-int-from-slice:initial-0</span>:
 <span id="L384" class="LineNr">384 </span>    <span class="subxComment"># skip past leading '0x'</span>
 <span id="L385" class="LineNr">385 </span>    <span class="subxS1Comment"># . if (*curr != '0') jump to loop</span>
 <span id="L386" class="LineNr">386 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L387" class="LineNr">387 </span>    3d/compare-eax-and  0x30/imm32/0
-<span id="L388" class="LineNr">388 </span>    75/jump-if-!=  $parse-hex-int:<span class="Constant">loop</span>/disp8
+<span id="L388" class="LineNr">388 </span>    75/jump-if-!=  $parse-hex-int-from-slice:<span class="Constant">loop</span>/disp8
 <span id="L389" class="LineNr">389 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L390" class="LineNr">390 </span>    41/increment-ecx
-<span id="L391" class="LineNr">391 </span><span class="Constant">$parse-hex-int:initial-0x</span>:
+<span id="L391" class="LineNr">391 </span><span class="Constant">$parse-hex-int-from-slice:initial-0x</span>:
 <span id="L392" class="LineNr">392 </span>    <span class="subxS1Comment"># . if (curr &gt;= in-&gt;end) return result</span>
 <span id="L393" class="LineNr">393 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with edx</span>
-<span id="L394" class="LineNr">394 </span>    73/jump-if-addr&gt;=  $parse-hex-int:end/disp8
+<span id="L394" class="LineNr">394 </span>    73/jump-if-addr&gt;=  $parse-hex-int-from-slice:end/disp8
 <span id="L395" class="LineNr">395 </span>    <span class="subxS1Comment"># . if (*curr != 'x') jump to loop  # the previous '0' is still valid so doesn't need to be checked again</span>
 <span id="L396" class="LineNr">396 </span>    31/xor                          3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/eax  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># clear eax</span>
 <span id="L397" class="LineNr">397 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
 <span id="L398" class="LineNr">398 </span>    3d/compare-eax-and  0x78/imm32/x
-<span id="L399" class="LineNr">399 </span>    75/jump-if-!=  $parse-hex-int:<span class="Constant">loop</span>/disp8
+<span id="L399" class="LineNr">399 </span>    75/jump-if-!=  $parse-hex-int-from-slice:<span class="Constant">loop</span>/disp8
 <span id="L400" class="LineNr">400 </span>    <span class="subxS1Comment"># . ++curr</span>
 <span id="L401" class="LineNr">401 </span>    41/increment-ecx
-<span id="L402" class="LineNr">402 </span><span class="Constant">$parse-hex-int:loop</span>:
+<span id="L402" class="LineNr">402 </span><span class="Constant">$parse-hex-int-from-slice:loop</span>:
 <span id="L403" class="LineNr">403 </span>    <span class="subxComment"># if (curr &gt;= in-&gt;end) break</span>
 <span id="L404" class="LineNr">404 </span>    39/compare                      3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># compare ecx with edx</span>
-<span id="L405" class="LineNr">405 </span>    73/jump-if-addr&gt;=  $parse-hex-int:negate/disp8
+<span id="L405" class="LineNr">405 </span>    73/jump-if-addr&gt;=  $parse-hex-int-from-slice:negate/disp8
 <span id="L406" class="LineNr">406 </span>    <span class="subxComment"># var eax: int = from-hex-char(*curr)</span>
 <span id="L407" class="LineNr">407 </span>    <span class="subxS2Comment"># . . copy arg to eax</span>
 <span id="L408" class="LineNr">408 </span>    8a/copy-byte                    0/mod/indirect  1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          0/r32/AL   <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy byte at *ecx to AL</span>
@@ -474,13 +474,13 @@ if ('onhashchange' in window) {
 <span id="L414" class="LineNr">414 </span>    <span class="subxComment"># ++curr</span>
 <span id="L415" class="LineNr">415 </span>    41/increment-ecx
 <span id="L416" class="LineNr">416 </span>    <span class="subxComment"># loop</span>
-<span id="L417" class="LineNr">417 </span>    eb/jump  $parse-hex-int:<span class="Constant">loop</span>/disp8
-<span id="L418" class="LineNr">418 </span><span class="Constant">$parse-hex-int:negate</span>:
+<span id="L417" class="LineNr">417 </span>    eb/jump  $parse-hex-int-from-slice:<span class="Constant">loop</span>/disp8
+<span id="L418" class="LineNr">418 </span><span class="Constant">$parse-hex-int-from-slice:negate</span>:
 <span id="L419" class="LineNr">419 </span>    <span class="subxComment"># if (negate?) result = -result</span>
 <span id="L420" class="LineNr">420 </span>    81          7/subop/compare     3/mod/direct    6/rm32/esi   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              0/imm32/false     <span class="subxComment"># compare esi</span>
-<span id="L421" class="LineNr">421 </span>    74/jump-if-=  $parse-hex-int:end/disp8
+<span id="L421" class="LineNr">421 </span>    74/jump-if-=  $parse-hex-int-from-slice:end/disp8
 <span id="L422" class="LineNr">422 </span>    f7          3/subop/negate      3/mod/direct    3/rm32/ebx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># negate ebx</span>
-<span id="L423" class="LineNr">423 </span><span class="Constant">$parse-hex-int:end</span>:
+<span id="L423" class="LineNr">423 </span><span class="Constant">$parse-hex-int-from-slice:end</span>:
 <span id="L424" class="LineNr">424 </span>    <span class="subxComment"># return result</span>
 <span id="L425" class="LineNr">425 </span>    89/copy                         3/mod/direct    0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          3/r32/ebx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebx to eax</span>
 <span id="L426" class="LineNr">426 </span>    <span class="subxS1Comment"># . restore registers</span>
@@ -493,7 +493,7 @@ if ('onhashchange' in window) {
 <span id="L433" class="LineNr">433 </span>    5d/pop-to-ebp
 <span id="L434" class="LineNr">434 </span>    c3/return
 <span id="L435" class="LineNr">435 </span>
-<span id="L436" class="LineNr">436 </span><span class="subxTest">test-parse-hex-int-single-digit</span>:
+<span id="L436" class="LineNr">436 </span><span class="subxTest">test-parse-hex-int-from-slice-single-digit</span>:
 <span id="L437" class="LineNr">437 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L438" class="LineNr">438 </span>    55/push-ebp
 <span id="L439" class="LineNr">439 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -506,16 +506,16 @@ if ('onhashchange' in window) {
 <span id="L446" class="LineNr">446 </span>    51/push-ecx
 <span id="L447" class="LineNr">447 </span>    50/push-eax
 <span id="L448" class="LineNr">448 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L449" class="LineNr">449 </span>    <span class="subxComment"># eax = parse-hex-int(slice)</span>
+<span id="L449" class="LineNr">449 </span>    <span class="subxComment"># eax = parse-hex-int-from-slice(slice)</span>
 <span id="L450" class="LineNr">450 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L451" class="LineNr">451 </span>    51/push-ecx
 <span id="L452" class="LineNr">452 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L453" class="LineNr">453 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int</a>/disp32
+<span id="L453" class="LineNr">453 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int-from-slice</a>/disp32
 <span id="L454" class="LineNr">454 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L455" class="LineNr">455 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L456" class="LineNr">456 </span>    <span class="subxComment"># check-ints-equal(eax, 0xa, msg)</span>
 <span id="L457" class="LineNr">457 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L458" class="LineNr">458 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-single-digit&quot;</span>/imm32
+<span id="L458" class="LineNr">458 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-from-slice-single-digit&quot;</span>/imm32
 <span id="L459" class="LineNr">459 </span>    68/push  0xa/imm32
 <span id="L460" class="LineNr">460 </span>    50/push-eax
 <span id="L461" class="LineNr">461 </span>    <span class="subxS2Comment"># . . call</span>
@@ -527,7 +527,7 @@ if ('onhashchange' in window) {
 <span id="L467" class="LineNr">467 </span>    5d/pop-to-ebp
 <span id="L468" class="LineNr">468 </span>    c3/return
 <span id="L469" class="LineNr">469 </span>
-<span id="L470" class="LineNr">470 </span><span class="subxTest">test-parse-hex-int-multi-digit</span>:
+<span id="L470" class="LineNr">470 </span><span class="subxTest">test-parse-hex-int-from-slice-multi-digit</span>:
 <span id="L471" class="LineNr">471 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L472" class="LineNr">472 </span>    55/push-ebp
 <span id="L473" class="LineNr">473 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -540,16 +540,16 @@ if ('onhashchange' in window) {
 <span id="L480" class="LineNr">480 </span>    51/push-ecx
 <span id="L481" class="LineNr">481 </span>    50/push-eax
 <span id="L482" class="LineNr">482 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L483" class="LineNr">483 </span>    <span class="subxComment"># eax = parse-hex-int(slice)</span>
+<span id="L483" class="LineNr">483 </span>    <span class="subxComment"># eax = parse-hex-int-from-slice(slice)</span>
 <span id="L484" class="LineNr">484 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L485" class="LineNr">485 </span>    51/push-ecx
 <span id="L486" class="LineNr">486 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L487" class="LineNr">487 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int</a>/disp32
+<span id="L487" class="LineNr">487 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int-from-slice</a>/disp32
 <span id="L488" class="LineNr">488 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L489" class="LineNr">489 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L490" class="LineNr">490 </span>    <span class="subxComment"># check-ints-equal(eax, 0x34a, msg)</span>
 <span id="L491" class="LineNr">491 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L492" class="LineNr">492 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-multi-digit&quot;</span>/imm32
+<span id="L492" class="LineNr">492 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-from-slice-multi-digit&quot;</span>/imm32
 <span id="L493" class="LineNr">493 </span>    68/push  0x34a/imm32
 <span id="L494" class="LineNr">494 </span>    50/push-eax
 <span id="L495" class="LineNr">495 </span>    <span class="subxS2Comment"># . . call</span>
@@ -561,7 +561,7 @@ if ('onhashchange' in window) {
 <span id="L501" class="LineNr">501 </span>    5d/pop-to-ebp
 <span id="L502" class="LineNr">502 </span>    c3/return
 <span id="L503" class="LineNr">503 </span>
-<span id="L504" class="LineNr">504 </span><span class="subxTest">test-parse-hex-int-0x-prefix</span>:
+<span id="L504" class="LineNr">504 </span><span class="subxTest">test-parse-hex-int-from-slice-0x-prefix</span>:
 <span id="L505" class="LineNr">505 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L506" class="LineNr">506 </span>    55/push-ebp
 <span id="L507" class="LineNr">507 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -574,16 +574,16 @@ if ('onhashchange' in window) {
 <span id="L514" class="LineNr">514 </span>    51/push-ecx
 <span id="L515" class="LineNr">515 </span>    50/push-eax
 <span id="L516" class="LineNr">516 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L517" class="LineNr">517 </span>    <span class="subxComment"># eax = parse-hex-int(slice)</span>
+<span id="L517" class="LineNr">517 </span>    <span class="subxComment"># eax = parse-hex-int-from-slice(slice)</span>
 <span id="L518" class="LineNr">518 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L519" class="LineNr">519 </span>    51/push-ecx
 <span id="L520" class="LineNr">520 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L521" class="LineNr">521 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int</a>/disp32
+<span id="L521" class="LineNr">521 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int-from-slice</a>/disp32
 <span id="L522" class="LineNr">522 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L523" class="LineNr">523 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L524" class="LineNr">524 </span>    <span class="subxComment"># check-ints-equal(eax, 0x34a, msg)</span>
 <span id="L525" class="LineNr">525 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L526" class="LineNr">526 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-0x-prefix&quot;</span>/imm32
+<span id="L526" class="LineNr">526 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-from-slice-0x-prefix&quot;</span>/imm32
 <span id="L527" class="LineNr">527 </span>    68/push  0x34/imm32
 <span id="L528" class="LineNr">528 </span>    50/push-eax
 <span id="L529" class="LineNr">529 </span>    <span class="subxS2Comment"># . . call</span>
@@ -595,7 +595,7 @@ if ('onhashchange' in window) {
 <span id="L535" class="LineNr">535 </span>    5d/pop-to-ebp
 <span id="L536" class="LineNr">536 </span>    c3/return
 <span id="L537" class="LineNr">537 </span>
-<span id="L538" class="LineNr">538 </span><span class="subxTest">test-parse-hex-int-zero</span>:
+<span id="L538" class="LineNr">538 </span><span class="subxTest">test-parse-hex-int-from-slice-zero</span>:
 <span id="L539" class="LineNr">539 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L540" class="LineNr">540 </span>    55/push-ebp
 <span id="L541" class="LineNr">541 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -608,16 +608,16 @@ if ('onhashchange' in window) {
 <span id="L548" class="LineNr">548 </span>    51/push-ecx
 <span id="L549" class="LineNr">549 </span>    50/push-eax
 <span id="L550" class="LineNr">550 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L551" class="LineNr">551 </span>    <span class="subxComment"># eax = parse-hex-int(slice)</span>
+<span id="L551" class="LineNr">551 </span>    <span class="subxComment"># eax = parse-hex-int-from-slice(slice)</span>
 <span id="L552" class="LineNr">552 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L553" class="LineNr">553 </span>    51/push-ecx
 <span id="L554" class="LineNr">554 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L555" class="LineNr">555 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int</a>/disp32
+<span id="L555" class="LineNr">555 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int-from-slice</a>/disp32
 <span id="L556" class="LineNr">556 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L557" class="LineNr">557 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L558" class="LineNr">558 </span>    <span class="subxComment"># check-ints-equal(eax, 0x34a, msg)</span>
 <span id="L559" class="LineNr">559 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L560" class="LineNr">560 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-zero&quot;</span>/imm32
+<span id="L560" class="LineNr">560 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-from-slice-zero&quot;</span>/imm32
 <span id="L561" class="LineNr">561 </span>    68/push  0/imm32
 <span id="L562" class="LineNr">562 </span>    50/push-eax
 <span id="L563" class="LineNr">563 </span>    <span class="subxS2Comment"># . . call</span>
@@ -629,7 +629,7 @@ if ('onhashchange' in window) {
 <span id="L569" class="LineNr">569 </span>    5d/pop-to-ebp
 <span id="L570" class="LineNr">570 </span>    c3/return
 <span id="L571" class="LineNr">571 </span>
-<span id="L572" class="LineNr">572 </span><span class="subxTest">test-parse-hex-int-0-prefix</span>:
+<span id="L572" class="LineNr">572 </span><span class="subxTest">test-parse-hex-int-from-slice-0-prefix</span>:
 <span id="L573" class="LineNr">573 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L574" class="LineNr">574 </span>    55/push-ebp
 <span id="L575" class="LineNr">575 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -642,16 +642,16 @@ if ('onhashchange' in window) {
 <span id="L582" class="LineNr">582 </span>    51/push-ecx
 <span id="L583" class="LineNr">583 </span>    50/push-eax
 <span id="L584" class="LineNr">584 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L585" class="LineNr">585 </span>    <span class="subxComment"># eax = parse-hex-int(slice)</span>
+<span id="L585" class="LineNr">585 </span>    <span class="subxComment"># eax = parse-hex-int-from-slice(slice)</span>
 <span id="L586" class="LineNr">586 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L587" class="LineNr">587 </span>    51/push-ecx
 <span id="L588" class="LineNr">588 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L589" class="LineNr">589 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int</a>/disp32
+<span id="L589" class="LineNr">589 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int-from-slice</a>/disp32
 <span id="L590" class="LineNr">590 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L591" class="LineNr">591 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L592" class="LineNr">592 </span>    <span class="subxComment"># check-ints-equal(eax, 0x3, msg)</span>
 <span id="L593" class="LineNr">593 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L594" class="LineNr">594 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-0-prefix&quot;</span>/imm32
+<span id="L594" class="LineNr">594 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-from-slice-0-prefix&quot;</span>/imm32
 <span id="L595" class="LineNr">595 </span>    68/push  0x3/imm32
 <span id="L596" class="LineNr">596 </span>    50/push-eax
 <span id="L597" class="LineNr">597 </span>    <span class="subxS2Comment"># . . call</span>
@@ -663,7 +663,7 @@ if ('onhashchange' in window) {
 <span id="L603" class="LineNr">603 </span>    5d/pop-to-ebp
 <span id="L604" class="LineNr">604 </span>    c3/return
 <span id="L605" class="LineNr">605 </span>
-<span id="L606" class="LineNr">606 </span><span class="subxTest">test-parse-hex-int-negative</span>:
+<span id="L606" class="LineNr">606 </span><span class="subxTest">test-parse-hex-int-from-slice-negative</span>:
 <span id="L607" class="LineNr">607 </span>    <span class="subxS1Comment"># . prologue</span>
 <span id="L608" class="LineNr">608 </span>    55/push-ebp
 <span id="L609" class="LineNr">609 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
@@ -676,16 +676,16 @@ if ('onhashchange' in window) {
 <span id="L616" class="LineNr">616 </span>    51/push-ecx
 <span id="L617" class="LineNr">617 </span>    50/push-eax
 <span id="L618" class="LineNr">618 </span>    89/copy                         3/mod/direct    1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ecx</span>
-<span id="L619" class="LineNr">619 </span>    <span class="subxComment"># eax = parse-hex-int(slice)</span>
+<span id="L619" class="LineNr">619 </span>    <span class="subxComment"># eax = parse-hex-int-from-slice(slice)</span>
 <span id="L620" class="LineNr">620 </span>    <span class="subxS2Comment"># . . push args</span>
 <span id="L621" class="LineNr">621 </span>    51/push-ecx
 <span id="L622" class="LineNr">622 </span>    <span class="subxS2Comment"># . . call</span>
-<span id="L623" class="LineNr">623 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int</a>/disp32
+<span id="L623" class="LineNr">623 </span>    e8/call  <a href='067parse-hex.subx.html#L354'>parse-hex-int-from-slice</a>/disp32
 <span id="L624" class="LineNr">624 </span>    <span class="subxS2Comment"># . . discard args</span>
 <span id="L625" class="LineNr">625 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              4/imm32           <span class="subxComment"># add to esp</span>
 <span id="L626" class="LineNr">626 </span>    <span class="subxComment"># check-ints-equal(eax, -3, msg)</span>
 <span id="L627" class="LineNr">627 </span>    <span class="subxS2Comment"># . . push args</span>
-<span id="L628" class="LineNr">628 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-negative&quot;</span>/imm32
+<span id="L628" class="LineNr">628 </span>    68/push  <span class="Constant">&quot;F - test-parse-hex-int-from-slice-negative&quot;</span>/imm32
 <span id="L629" class="LineNr">629 </span>    68/push  -3/imm32
 <span id="L630" class="LineNr">630 </span>    50/push-eax
 <span id="L631" class="LineNr">631 </span>    <span class="subxS2Comment"># . . call</span>
