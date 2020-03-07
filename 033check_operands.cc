@@ -246,6 +246,11 @@ void init_permitted_operands() {
   put(Permitted_operands, "81", 0x43);  // combine
   put(Permitted_operands, "c7", 0x43);  // copy
 
+  //// Class Q: op, ModR/M and imm32
+  //  imm32 imm8  disp32 |disp16  disp8 subop modrm
+  //  1     0     0      |0       0     0     1
+  put(Permitted_operands, "69", 0x41);  // multiply
+
   // End Init Permitted Operands
 }
 

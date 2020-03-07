@@ -1270,3 +1270,42 @@ case 0x68: {
   trace(Callstack_depth+1, "run") << "contents at ESP: 0x" << HEXWORD << read_mem_u32(Reg[ESP].u) << end();
   break;
 }
+
+//:: multiply
+
+:(before "End Initialize Op Names")
+put_new(Name, "69", "multiply rm32 by imm32 and store result in r32");
+
+:(code)
+void test_multiply_imm32() {
+  Reg[EAX].i = 2;
+  Reg[EBX].i = 3;
+  run(
+      "== code 0x1\n"
+      // op     ModR/M  SIB   displacement  immediate
+      "  69     c3                          04 00 00 00 \n"  // EAX = EBX * 4
+      // ModR/M in binary: 11 (direct) 000 (dest EAX) 011 (src EBX)
+  );
+  CHECK_TRACE_CONTENTS(
+      "run: multiply r/m32 by 0x00000004 and store result in EAX\n"
+      "run: r/m32 is EBX\n"
+      "run: storing 0x0000000c\n"
+  );
+}
+
+:(before "End Single-Byte Opcodes")
+case 0x69: {
+  const uint8_t modrm = next();
+  const uint8_t rdest = (modrm>>3)&0x7;
+  const int32_t val = next32();
+  trace(Callstack_depth+1, "run") << "multiply r/m32 by 0x" << HEXWORD << val << " and store result in " << rname(rdest) << end();
+  const int32_t* signed_arg1 = effective_address(modrm);
+  int32_t result = *signed_arg1 * val;
+  int64_t full_result = static_cast<int64_t>(*signed_arg1) * val;
+  OF = (result != full_result);
+  CF = OF;
+  trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
+  Reg[rdest].i = result;
+  trace(Callstack_depth+1, "run") << "storing 0x" << HEXWORD << Reg[rdest].i << end();
+  break;
+}

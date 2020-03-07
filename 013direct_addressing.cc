@@ -321,10 +321,8 @@ case 0xaf: {  // multiply r32 by r/m32
   trace(Callstack_depth+1, "run") << "multiply " << rname(arg1) << " by r/m32" << end();
   const int32_t* arg2 = effective_address(modrm);
   int32_t result = Reg[arg1].i * (*arg2);
-  SF = (Reg[arg1].i < 0);
-  ZF = (Reg[arg1].i == 0);
   int64_t full_result = static_cast<int64_t>(Reg[arg1].i) * (*arg2);
-  OF = (Reg[arg1].i != full_result);
+  OF = (result != full_result);
   CF = OF;
   trace(Callstack_depth+1, "run") << "SF=" << SF << "; ZF=" << ZF << "; CF=" << CF << "; OF=" << OF << end();
   Reg[arg1].i = result;
