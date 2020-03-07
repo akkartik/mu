@@ -6867,14 +6867,10 @@ power-of-2?:  # n: int -> result/eax: boolean
     48/decrement-eax
     # var tmp2/eax: int = n & tmp
     0b/and-> *(ebp+8) 0/r32/eax
-    # return (tmp2 == 0)  # TODO: replace with setcc
+    # return (tmp2 == 0)
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $power-of-2?:true/disp8
-$power-of-2?:false:
-    b8/copy-to-eax 0/imm32/false
-    eb/jump $power-of-2?:end/disp8
-$power-of-2?:true:
-    b8/copy-to-eax 1/imm32/true
+    0f 94/set-if-= %eax
+    81 4/subop/and %eax 0xff/imm32
 $power-of-2?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -9067,12 +9063,8 @@ subx-type-equal?:  # a: (handle tree type-id), b: (handle tree type-id) -> resul
     (is-literal-type? *(ebp+0xc))  # => eax
     # return alit == blit
     39/compare %eax 1/r32/ecx
-    74/jump-if-= $subx-type-equal?:true/disp8
-$subx-type-equal?:false:  # TODO: replace with setcc
-    b8/copy-to-eax 0/imm32/false
-    eb/jump $subx-type-equal?:end/disp8
-$subx-type-equal?:true:
-    b8/copy-to-eax 1/imm32/true
+    0f 94/set-if-= %eax
+    81 4/subop/and %eax 0xff/imm32
 $subx-type-equal?:end:
     # . restore registers
     59/pop-to-ecx
@@ -9087,14 +9079,10 @@ is-literal-type?:  # a: (handle tree type-id) -> result/eax: boolean
     89/<- %ebp 4/r32/esp
     #
     8b/-> *(ebp+8) 0/r32/eax
-    # return (*eax == 0)  # TODO: replace with setcc
+    # return (*eax == 0)
     81 7/subop/compare *eax 0/imm32/literal-type-id  # Atom-type
-    75/jump-if-!= $is-literal-type?:false/disp8
-$is-literal-type?:true:
-    b8/copy-to-eax 1/imm32/true
-    eb/jump $is-literal-type?:end/disp8
-$is-literal-type?:false:
-    b8/copy-to-eax 0/imm32/false
+    0f 94/set-if-= %eax
+    81 4/subop/and %eax 0xff/imm32
 $is-literal-type?:end:
     # . epilogue
     89/<- %esp 5/r32/ebp

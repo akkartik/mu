@@ -66,7 +66,7 @@ case 0x88: {  // copy r8 to r/m8
   const uint8_t rsrc = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "copy " << rname_8bit(rsrc) << " to r8/m8-at-r32" << end();
   // use unsigned to zero-extend 8-bit value to 32 bits
-  uint8_t* dest = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
+  uint8_t* dest = effective_byte_address(modrm);
   const uint8_t* src = reg_8bit(rsrc);
   *dest = *src;  // Read/write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
@@ -105,7 +105,7 @@ case 0x8a: {  // copy r/m8 to r8
   const uint8_t rdest = (modrm>>3)&0x7;
   trace(Callstack_depth+1, "run") << "copy r8/m8-at-r32 to " << rname_8bit(rdest) << end();
   // use unsigned to zero-extend 8-bit value to 32 bits
-  const uint8_t* src = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
+  const uint8_t* src = effective_byte_address(modrm);
   uint8_t* dest = reg_8bit(rdest);
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*src) << end();
   *dest = *src;  // Read/write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
@@ -169,8 +169,104 @@ case 0xc6: {  // copy imm8 to r/m8
     exit(1);
   }
   // use unsigned to zero-extend 8-bit value to 32 bits
-  uint8_t* dest = reinterpret_cast<uint8_t*>(effective_byte_address(modrm));
+  uint8_t* dest = effective_byte_address(modrm);
   *dest = src;  // Write multiple elements of vector<uint8_t> at once. Assumes sizeof(int) == 4 on the host as well.
   trace(Callstack_depth+1, "run") << "storing 0x" << HEXBYTE << NUM(*dest) << end();
+  break;
+}
+
+//:: set flags (setcc)
+
+:(before "End Initialize Op Names")
+put_new(Name_0f, "94", "set r8/m8-at-rm32 to 1 if equal, if ZF is set, 0 otherwise (setcc/setz/sete)");
+put_new(Name_0f, "95", "set r8/m8-at-rm32 to 1 if not equal, if ZF is not set, 0 otherwise (setcc/setnz/setne)");
+put_new(Name_0f, "9f", "set r8/m8-at-rm32 to 1 if greater (signed), if ZF is unset and SF == OF, 0 otherwise (setcc/setg/setnle)");
+put_new(Name_0f, "97", "set r8/m8-at-rm32 to 1 if greater (unsigned), if ZF is unset and CF is unset, 0 otherwise (setcc/seta/setnbe)");
+put_new(Name_0f, "9d", "set r8/m8-at-rm32 to 1 if greater or equal (signed), if SF == OF, 0 otherwise (setcc/setge/setnl)");
+put_new(Name_0f, "93", "set r8/m8-at-rm32 to 1 if greater or equal (unsigned), if CF is unset, 0 otherwise (setcc/setae/setnb)");
+put_new(Name_0f, "9c", "set r8/m8-at-rm32 to 1 if lesser (signed), if SF != OF, 0 otherwise (setcc/setl/setnge)");
+put_new(Name_0f, "92", "set r8/m8-at-rm32 to 1 if lesser (unsigned), if CF is set, 0 otherwise (setcc/setb/setnae)");
+put_new(Name_0f, "9e", "set r8/m8-at-rm32 to 1 if lesser or equal (signed), if ZF is set or SF != OF, 0 otherwise (setcc/setle/setng)");
+put_new(Name_0f, "96", "set r8/m8-at-rm32 to 1 if lesser or equal (unsigned), if ZF is set or CF is set, 0 otherwise (setcc/setbe/setna)");
+
+:(before "End Two-Byte Opcodes Starting With 0f")
+case 0x94: {  // set r8/m8-at-rm32 if ZF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = ZF;
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x95: {  // set r8/m8-at-rm32 if !ZF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = !ZF;
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x9f: {  // set r8/m8-at-rm32 if !SF and !ZF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = !ZF && SF == OF;
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x97: {  // set r8/m8-at-rm32 if !CF and !ZF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = (!CF && !ZF);
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x9d: {  // set r8/m8-at-rm32 if !SF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = (SF == OF);
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x93: {  // set r8/m8-at-rm32 if !CF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = !CF;
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x9c: {  // set r8/m8-at-rm32 if SF and !ZF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = (SF != OF);
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x92: {  // set r8/m8-at-rm32 if CF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = CF;
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x9e: {  // set r8/m8-at-rm32 if SF or ZF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = (ZF || SF != OF);
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  break;
+}
+case 0x96: {  // set r8/m8-at-rm32 if ZF or CF
+  const uint8_t modrm = next();
+  trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
+  uint8_t* dest = effective_byte_address(modrm);
+  *dest = (ZF || CF);
+  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
   break;
 }

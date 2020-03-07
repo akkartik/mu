@@ -105,7 +105,7 @@ void test_jne_disp8_success() {
 }
 
 :(before "End Single-Byte Opcodes")
-case 0x75: {  // jump disp8 unless ZF
+case 0x75: {  // jump disp8 if !ZF
   const int8_t offset = static_cast<int>(next());
   if (!ZF) {
     trace(Callstack_depth+1, "run") << "jump " << NUM(offset) << end();

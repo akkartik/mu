@@ -105,7 +105,7 @@ void test_jne_disp32_success() {
 }
 
 :(before "End Two-Byte Opcodes Starting With 0f")
-case 0x85: {  // jump disp32 unless ZF
+case 0x85: {  // jump disp32 if !ZF
   const int32_t offset = next32();
   if (!ZF) {
     trace(Callstack_depth+1, "run") << "jump " << offset << end();

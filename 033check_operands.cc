@@ -649,6 +649,17 @@ put_new(Permitted_operands_0f, "8f", 0x10);
 //  imm32 imm8  disp32 |disp16  disp8 subop modrm
 //  0     0     0      |0       0     0     1
 put_new(Permitted_operands_0f, "af", 0x01);
+// setcc
+put_new(Permitted_operands_0f, "92", 0x01);
+put_new(Permitted_operands_0f, "93", 0x01);
+put_new(Permitted_operands_0f, "94", 0x01);
+put_new(Permitted_operands_0f, "95", 0x01);
+put_new(Permitted_operands_0f, "96", 0x01);
+put_new(Permitted_operands_0f, "97", 0x01);
+put_new(Permitted_operands_0f, "9c", 0x01);
+put_new(Permitted_operands_0f, "9d", 0x01);
+put_new(Permitted_operands_0f, "9e", 0x01);
+put_new(Permitted_operands_0f, "9f", 0x01);
 
 :(code)
 void check_operands_0f(const line& inst, const word& op) {
