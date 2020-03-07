@@ -6663,136 +6663,37 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (handle stmt), primitives: (
     # . save registers
     50/push-eax
     51/push-ecx
-    52/push-edx
-    53/push-ebx
-    # handle some special cases
+    # - some special-case primitives that don't actually use the 'primitives' data structure
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # array length {{{
+    # array length
     {
       # if (!string-equal?(stmt->operation, "length")) break
       (string-equal? *(ecx+4) "length")  # Stmt1-operation => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-$emit-subx-stmt:array-length:
-      (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "8b/copy-from *")
-      # inouts[0]->register
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
-      8b/-> *eax 0/r32/eax  # Stmt-var-value
-      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
-      #
-      (write-buffered *(ebp+8) " ")
-      # outputs[0] "/r32"
-      8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-      8b/-> *eax 0/r32/eax  # Stmt-var-value
-      (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
-      (print-int32-buffered *(ebp+8) *eax)
-      (write-buffered *(ebp+8) "/r32\n")
+      (translate-mu-length-stmt *(ebp+8) *(ebp+0xc))
       e9/jump $emit-subx-stmt:end/disp32
     }
-    # }}}
-    # index into array {{{
-    # TODO: support literal index
+    # index into array
     {
       # if (!string-equal?(var->operation, "index")) break
       (string-equal? *(ecx+4) "index")  # Stmt1-operation => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-$emit-subx-stmt:index:
-      (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "8d/copy-address *(")
-      # TODO: ensure inouts[0] is in a register and not dereferenced
-$emit-subx-stmt:index-base:
-      # var base/ebx: (handle var) = inouts[0]
-      8b/-> *(ecx+8) 3/r32/ebx  # Stmt1-inouts
-      8b/-> *ebx 3/r32/ebx  # Stmt-var-value
-      # print base->register " + "
-      (write-buffered *(ebp+8) *(ebx+0x10))  # Var-register => eax
-      #
-      (write-buffered *(ebp+8) " + ")
-      # var idx/edx: (handle var) = inouts[1]
-      8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
-      8b/-> *(edx+4) 2/r32/edx  # Stmt-var-next
-      8b/-> *edx 2/r32/edx  # Stmt-var-value
-      # if inouts[1]->register
-      81 7/subop/compare *(edx+0x10) 0/imm32  # Var-register
-      {
-        0f 84/jump-if-= break/disp32
-        # print inouts[1]->register "<<" log2(sizeof(element(inouts[0]->type))) " + 4) "
-$emit-subx-stmt:emit-register-index:
-        # . inouts[1]->register "<<"
-        (write-buffered *(ebp+8) *(edx+0x10))  # Var-register => eax
-        (write-buffered *(ebp+8) "<<")
-        # . log2(sizeof(element(inouts[0]->type)))
-        # TODO: ensure size is a power of 2
-        (array-element-type-id %ebx)  # => eax
-        (size-of-type-id %eax)  # => eax
-        (num-shift-rights %eax)  # => eax
-        (print-int32-buffered *(ebp+8) %eax)
-        # .
-        (write-buffered *(ebp+8) " + 4) ")
-        e9/jump $emit-subx-stmt:emit-index-output/disp32
-      }
-      # otherwise if inouts[1] is a literal
-      (is-literal-type? *(edx+4))  # Var-type => eax
-      3d/compare-eax-and 0/imm32/false
-      {
-        0f 84/jump-if-= break/disp32
-        # var idx-value/edx: int = parse-hex-int(inouts[1]->name)
-        (parse-hex-int *edx)  # Var-name => eax
-        89/<- %edx 0/r32/eax
-        # offset = n * sizeof(element(inouts[0]->type))
-        (array-element-type-id %ebx)  # => eax
-        (size-of-type-id %eax)  # => eax
-        f7 4/subop/multiply-into-eax %edx  # clobbers edx
-        # offset += 4 for array size
-        05/add-to-eax 4/imm32
-        # TODO: check edx for overflow
-        # print offset
-        (print-int32-buffered *(ebp+8) %eax)
-        (write-buffered *(ebp+8) ") ")
-        e9/jump $emit-subx-stmt:emit-index-output/disp32
-      }
-      # otherwise abort
-      e9/jump $emit-subx-stmt:index-abort/disp32
-$emit-subx-stmt:emit-index-output:
-      # outputs[0] "/r32"
-      8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-      8b/-> *eax 0/r32/eax  # Stmt-var-value
-      (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
-      (print-int32-buffered *(ebp+8) *eax)
-      (write-buffered *(ebp+8) "/r32\n")
+      (translate-mu-index-stmt *(ebp+8) *(ebp+0xc))
       e9/jump $emit-subx-stmt:end/disp32
     }
-    # }}}
-    # get field from record {{{
+    # get field from record
     {
       # if (!string-equal?(var->operation, "get")) break
       (string-equal? *(ecx+4) "get")  # Stmt1-operation => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-$emit-subx-stmt:get:
-      (emit-indent *(ebp+8) *Curr-block-depth)
-      (write-buffered *(ebp+8) "8d/copy-address *(")
-      # inouts[0]->register " + "
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
-      8b/-> *eax 0/r32/eax  # Stmt-var-value
-      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
-      #
-      (write-buffered *(ebp+8) " + ")
-      (print-mu-get-offset *(ebp+8) %ecx)
-      (write-buffered *(ebp+8) ") ")
-      # outputs[0] "/r32"
-      8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-      8b/-> *eax 0/r32/eax  # Stmt-var-value
-      (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
-      (print-int32-buffered *(ebp+8) *eax)
-      (write-buffered *(ebp+8) "/r32\n")
+      (translate-mu-get-stmt *(ebp+8) *(ebp+0xc))
       e9/jump $emit-subx-stmt:end/disp32
     }
-    # }}}
-    # if stmt matches a primitive, emit it
+    # - if stmt matches a primitive, emit it
     {
 $emit-subx-stmt:check-for-primitive:
       (find-matching-primitive *(ebp+0x10) *(ebp+0xc))  # primitives, stmt => curr/eax
@@ -6802,7 +6703,7 @@ $emit-subx-stmt:primitive:
       (emit-subx-primitive *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-stmt:end/disp32
     }
-    # else if stmt matches a function, emit a call to it
+    # - if stmt matches a function, emit a call to it
     {
 $emit-subx-stmt:check-for-call:
       (find-matching-function *(ebp+0x14) *(ebp+0xc))  # functions, stmt => curr/eax
@@ -6812,9 +6713,127 @@ $emit-subx-stmt:call:
       (emit-subx-call *(ebp+8) *(ebp+0xc) %eax)  # out, stmt, curr
       e9/jump $emit-subx-stmt:end/disp32
     }
-    # else assume it's a SubX function (TODO: how to type-check?!)
+    # otherwise, assume it's a SubX function (TODO: how to type-check?!)
     (emit-hailmary-call *(ebp+8) *(ebp+0xc))
 $emit-subx-stmt:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-length-stmt:  # out: (address buffered-file), stmt: (handle stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    # ecx = stmt
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "8b/copy-from *")
+    # inouts[0]->register
+    8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
+    #
+    (write-buffered *(ebp+8) " ")
+    # outputs[0] "/r32"
+    8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
+    (print-int32-buffered *(ebp+8) *eax)
+    (write-buffered *(ebp+8) "/r32\n")
+$translate-mu-length-stmt:end:
+    # . restore registers
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+translate-mu-index-stmt:  # out: (address buffered-file), stmt: (handle stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "8d/copy-address *(")
+    # TODO: ensure inouts[0] is in a register and not dereferenced
+$translate-mu-index-stmt:emit-base:
+    # ecx = stmt
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # var base/ebx: (handle var) = inouts[0]
+    8b/-> *(ecx+8) 3/r32/ebx  # Stmt1-inouts
+    8b/-> *ebx 3/r32/ebx  # Stmt-var-value
+    # print base->register " + "
+    (write-buffered *(ebp+8) *(ebx+0x10))  # Var-register
+    #
+    (write-buffered *(ebp+8) " + ")
+    # var idx/edx: (handle var) = inouts[1]
+    8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
+    8b/-> *(edx+4) 2/r32/edx  # Stmt-var-next
+    8b/-> *edx 2/r32/edx  # Stmt-var-value
+    # if inouts[1]->register
+    81 7/subop/compare *(edx+0x10) 0/imm32  # Var-register
+    {
+      0f 84/jump-if-= break/disp32
+      # print inouts[1]->register "<<" log2(sizeof(element(inouts[0]->type))) " + 4) "
+$translate-mu-index-stmt:emit-register-index:
+      # . inouts[1]->register "<<"
+      (write-buffered *(ebp+8) *(edx+0x10))  # Var-register
+      (write-buffered *(ebp+8) "<<")
+      # . log2(sizeof(element(inouts[0]->type)))
+      # TODO: ensure size is a power of 2
+      (array-element-type-id %ebx)  # => eax
+      (size-of-type-id %eax)  # => eax
+      (num-shift-rights %eax)  # => eax
+      (print-int32-buffered *(ebp+8) %eax)
+      # .
+      (write-buffered *(ebp+8) " + 4) ")
+      e9/jump $translate-mu-index-stmt:emit-output/disp32
+    }
+    # otherwise if inouts[1] is a literal
+    (is-literal-type? *(edx+4))  # Var-type => eax
+    3d/compare-eax-and 0/imm32/false
+    {
+      0f 84/jump-if-= break/disp32
+$translate-mu-index-stmt:emit-literal-index:
+      # var idx-value/edx: int = parse-hex-int(inouts[1]->name)
+      (parse-hex-int *edx)  # Var-name => eax
+      89/<- %edx 0/r32/eax
+      # offset = n * sizeof(element(inouts[0]->type))
+      (array-element-type-id %ebx)  # => eax
+      (size-of-type-id %eax)  # => eax
+      f7 4/subop/multiply-into-eax %edx  # clobbers edx
+      # offset += 4 for array size
+      05/add-to-eax 4/imm32
+      # TODO: check edx for overflow
+      # print offset
+      (print-int32-buffered *(ebp+8) %eax)
+      (write-buffered *(ebp+8) ") ")
+      e9/jump $translate-mu-index-stmt:emit-output/disp32
+    }
+    # otherwise abort
+    e9/jump $translate-mu-index-stmt:abort/disp32
+$translate-mu-index-stmt:emit-output:
+    # outputs[0] "/r32"
+    8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
+    (print-int32-buffered *(ebp+8) *eax)
+    (write-buffered *(ebp+8) "/r32\n")
+$translate-mu-index-stmt:end:
     # . restore registers
     5b/pop-to-ebx
     5a/pop-to-edx
@@ -6825,8 +6844,7 @@ $emit-subx-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-$emit-subx-stmt:index-abort:
-    # error("couldn't translate '" stmt "'\n")
+$translate-mu-index-stmt:abort:
     (write-buffered Stderr "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
     (flush Stderr)
     # . syscall(exit, 1)
@@ -6834,6 +6852,45 @@ $emit-subx-stmt:index-abort:
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
     # never gets here
+
+translate-mu-get-stmt:  # out: (address buffered-file), stmt: (handle stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "8d/copy-address *(")
+    # ecx = stmt
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    # inouts[0]->register " + "
+    8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
+    #
+    (write-buffered *(ebp+8) " + ")
+    (print-mu-get-offset *(ebp+8) %ecx)
+    (write-buffered *(ebp+8) ") ")
+    # outputs[0] "/r32"
+    8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
+    (print-int32-buffered *(ebp+8) *eax)
+    (write-buffered *(ebp+8) "/r32\n")
+$translate-mu-get-stmt:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 array-element-type-id:  # v: (handle var) -> result/eax: type-id
     # precondition: n is positive
