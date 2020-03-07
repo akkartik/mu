@@ -6674,7 +6674,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (handle stmt), primitives: (
       (string-equal? *(ecx+4) "length")  # Stmt1-operation => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-$emit-subx-stmt-list:array-length:
+$emit-subx-stmt:array-length:
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "8b/copy-from *")
       # inouts[0]->register
@@ -6699,11 +6699,11 @@ $emit-subx-stmt-list:array-length:
       (string-equal? *(ecx+4) "index")  # Stmt1-operation => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-$emit-subx-stmt-list:index:
+$emit-subx-stmt:index:
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "8d/copy-address *(")
       # TODO: ensure inouts[0] is in a register and not dereferenced
-$emit-subx-stmt-list:index-base:
+$emit-subx-stmt:index-base:
       # var base/ebx: (handle var) = inouts[0]
       8b/-> *(ecx+8) 3/r32/ebx  # Stmt1-inouts
       8b/-> *ebx 3/r32/ebx  # Stmt-var-value
@@ -6720,7 +6720,7 @@ $emit-subx-stmt-list:index-base:
       {
         0f 84/jump-if-= break/disp32
         # print inouts[1]->register "<<" log2(sizeof(element(inouts[0]->type))) " + 4) "
-$emit-subx-stmt-list:emit-register-index:
+$emit-subx-stmt:emit-register-index:
         # . inouts[1]->register "<<"
         (write-buffered *(ebp+8) *(edx+0x10))  # Var-register => eax
         (write-buffered *(ebp+8) "<<")
@@ -6732,7 +6732,7 @@ $emit-subx-stmt-list:emit-register-index:
         (print-int32-buffered *(ebp+8) %eax)
         # .
         (write-buffered *(ebp+8) " + 4) ")
-        e9/jump $emit-subx-stmt-list:emit-index-output/disp32
+        e9/jump $emit-subx-stmt:emit-index-output/disp32
       }
       # otherwise if inouts[1] is a literal
       (is-literal-type? *(edx+4))  # Var-type => eax
@@ -6752,11 +6752,11 @@ $emit-subx-stmt-list:emit-register-index:
         # print offset
         (print-int32-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) ") ")
-        e9/jump $emit-subx-stmt-list:emit-index-output/disp32
+        e9/jump $emit-subx-stmt:emit-index-output/disp32
       }
       # otherwise abort
-      e9/jump $emit-subx-stmt-list:index-abort/disp32
-$emit-subx-stmt-list:emit-index-output:
+      e9/jump $emit-subx-stmt:index-abort/disp32
+$emit-subx-stmt:emit-index-output:
       # outputs[0] "/r32"
       8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
       8b/-> *eax 0/r32/eax  # Stmt-var-value
@@ -6772,7 +6772,7 @@ $emit-subx-stmt-list:emit-index-output:
       (string-equal? *(ecx+4) "get")  # Stmt1-operation => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-$emit-subx-stmt-list:get:
+$emit-subx-stmt:get:
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "8d/copy-address *(")
       # inouts[0]->register " + "
@@ -6825,7 +6825,7 @@ $emit-subx-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-$emit-subx-stmt-list:index-abort:
+$emit-subx-stmt:index-abort:
     # error("couldn't translate '" stmt "'\n")
     (write-buffered Stderr "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
     (flush Stderr)
