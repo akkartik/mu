@@ -5599,6 +5599,7 @@ $find-or-create-typeinfo-fields:end:
 populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     # pseudocode:
     #   var line: (stream byte 512)
+    #   curr-index = 0
     #   curr-offset = 0
     #   while true
     #     clear-stream(line)
@@ -5623,7 +5624,9 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var curr-offset: int at *(ebp-4) for memorability
+    # var curr-index: int at *(ebp-4)
+    68/push 0/imm32
+    # var curr-offset: int at *(ebp-8) for memorability
     68/push 0/imm32
     # . save registers
     50/push-eax
@@ -5692,16 +5695,16 @@ $populate-mu-type:set-output-offset:
       # var ov/ebx: (handle var) = r->output-var
       8b/-> *(eax+8) 3/r32/ebx  # Typeinfo-entry-output-var
       # ov->offset = curr-offset
-      8b/-> *(ebp-4) 0/r32/eax
+      8b/-> *(ebp-8) 0/r32/eax
       89/<- *(ebx+0xc) 0/r32/eax
       # curr-offset += size-of(v)
       (size-of %esi)  # => eax
-      01/add-to *(ebp-4) 0/r32/eax
+      01/add-to *(ebp-8) 0/r32/eax
       #
       e9/jump loop/disp32
     }
     # persist the total size of the type
-    8b/-> *(ebp-4) 0/r32/eax
+    8b/-> *(ebp-8) 0/r32/eax
     89/<- *(edi+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
 $populate-mu-type:end:
     # . reclaim locals
@@ -5713,8 +5716,8 @@ $populate-mu-type:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # reclaim curr-offset
-    81 0/subop/add %esp 4/imm32
+    # reclaim curr-offset and curr-index
+    81 0/subop/add %esp 8/imm32
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
