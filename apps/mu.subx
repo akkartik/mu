@@ -404,10 +404,7 @@ Type-id:  # (stream (address array byte))
 # Types contain vars with types, but can't specify registers.
 Typeinfo-id:  # type-id
   0/imm32
-# each field of a type is represented using two var's:
-#   1. the input var: expected type of the field; convenient for creating using parse-var-with-type
-#   2. the output var: a constant containing the byte offset; convenient for code-generation
-Typeinfo-fields:  # (handle table string {(handle var), (handle var)})
+Typeinfo-fields:  # (handle table string (handle typeinfo-entry))
   4/imm32
 Typeinfo-total-size-in-bytes:  # int
   8/imm32
@@ -415,6 +412,27 @@ Typeinfo-next:  # (handle typeinfo)
   0xc/imm32
 Typeinfo-size:  # (addr int)
   0x10/imm32
+
+# Each entry in the typeinfo->fields table has a pointer to a string and a
+# pointer to a typeinfo-entry.
+Typeinfo-fields-row-size:  # (addr int)
+  8/imm32
+
+# typeinfo-entry objects have information about a field in a single record type
+#
+# each field of a type is represented using two var's:
+#   1. the input var: expected type of the field; convenient for creating using parse-var-with-type
+#   2. the output var: a constant containing the byte offset; convenient for code-generation
+# computing the output happens after parsing; in the meantime we preserve the
+# order of fields in the 'index' field.
+Typeinfo-entry-input-var:  # (handle var)
+  0/imm32
+Typeinfo-entry-index:  # int
+  4/imm32
+Typeinfo-entry-output-var:  # (handle var)
+  8/imm32
+Typeinfo-entry-size:  # (addr int)
+  0xc/imm32
 
 == code
 
@@ -5418,8 +5436,8 @@ lookup-or-create-constant:  # container: (handle stmt-var), field-name: (addr sl
 #?     (print-int32-buffered Stderr %eax)
 #?     (write-buffered Stderr Newline)
 #?     (flush Stderr)
-    # result = find-or-create-typeinfo-constant(typeinfo, field-name)
-    (find-or-create-typeinfo-constant %eax *(ebp+0xc))  # => eax
+    # result = find-or-create-typeinfo-output-var(typeinfo, field-name)
+    (find-or-create-typeinfo-output-var %eax *(ebp+0xc))  # => eax
 $lookup-or-create-constant:end:
     # . restore registers
     5e/pop-to-esi
@@ -5465,11 +5483,13 @@ $find-or-create-typeinfo:create:
       8b/-> *(ebp+8) 1/r32/ecx
       89/<- *eax 1/r32/ecx  # Typeinfo-id
       # result->fields = new table
+      # . ecx = new table
       50/push-eax
-      (new-stream Heap 0x40 0xc)  # => eax
+      (new-stream Heap 0x40 *Typeinfo-fields-row-size)  # => eax
       89/<- %ecx 0/r32/eax
       58/pop-to-eax
-      89/<- *(eax+4) 1/r32/ecx
+      # . result->fields = ecx
+      89/<- *(eax+4) 1/r32/ecx  # Typeinfo-fields
       # result->next = Program->types
       8b/-> *_Program-types 1/r32/ecx
       89/<- *(eax+0xc) 1/r32/ecx  # Typeinfo-next
@@ -5514,35 +5534,63 @@ $find-typeinfo:end:
     5d/pop-to-ebp
     c3/return
 
-find-or-create-typeinfo-constant:  # T: (handle typeinfo), f: (addr slice) -> result/eax: (handle var)
+find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    51/push-ecx
+    56/push-esi
+    # esi = find-or-create-typeinfo-fields(T, f)
+    (find-or-create-typeinfo-fields *(ebp+8) *(ebp+0xc))  # => eax
+    89/<- %esi 0/r32/eax
+    # if output var doesn't exist, create it
+    {
+      81 7/subop/compare *(esi+8) 0/imm32  # Typeinfo-entry-output-var
+      75/jump-if-!= break/disp8
+      # var type/eax: (handle tree type-id) = new var("dummy name", constant type, -1 offset)
+      (allocate Heap *Tree-size)  # => eax
+      c7 0/subop/copy *eax 6/imm32/constant  # Atom-value
+      c7 0/subop/copy *(eax+4) 0/imm32  # Tree-right
+      (new-var Heap "field" %eax 0 -1 0)  # => eax
+      # offset (constant value) isn't filled out yet
+      # save output var in row
+      89/<- *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
+    }
+    # return the output var
+    8b/-> *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
+$find-or-create-typeinfo-output-var:end:
+    # . restore registers
+    5e/pop-to-esi
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+find-or-create-typeinfo-fields:  # T: (handle typeinfo), f: (addr slice) -> result/eax: (handle typeinfo-fields)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
     56/push-esi
     # esi = T->fields
     8b/-> *(ebp+8) 6/r32/esi
     8b/-> *(esi+4) 6/r32/esi  # Typeinfo-fields
     # esi = get-or-insert(T->fields, f)
-    (leaky-get-or-insert-slice %esi *(ebp+0xc) 0xc)  # => eax
+    (leaky-get-or-insert-slice %esi *(ebp+0xc) *Typeinfo-fields-row-size)  # => eax
     89/<- %esi 0/r32/eax
-    # if output var exists, return it
-    81 7/subop/compare *(esi+4) 0/imm32  # output var
-    8b/-> *(esi+4) 0/r32/eax  # output var
-    75/jump-if-!= $find-or-create-typeinfo-constant:end/disp8
-    # var type/ecx: (handle tree type-id) = new var("dummy name", constant type, -1 offset)
-    (allocate Heap *Tree-size)  # => eax
-    c7 0/subop/copy *eax 6/imm32/constant  # Atom-value
-    c7 0/subop/copy *(eax+4) 0/imm32  # Tree-right
-    (new-var Heap "field" %eax 0 -1 0)  # => eax
-    # offset (constant value) isn't filled out yet
-    # save output var in row
-    89/<- *(esi+4) 0/r32/eax
-$find-or-create-typeinfo-constant:end:
+    # if typeinfo-entry doesn't exist, allocate it
+    {
+      81 7/subop/compare *esi 0/imm32  # output var
+      75/jump-if-!= break/disp8
+      (allocate Heap *Typeinfo-entry-size)  # => eax
+      (zero-out %eax *Typeinfo-entry-size)
+      89/<- *esi 0/r32/eax
+    }
+    # eax = T->fields[f]->entry
+    8b/-> *esi 0/r32/eax
+$find-or-create-typeinfo-fields:end:
     # . restore registers
     5e/pop-to-esi
-    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5563,13 +5611,13 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     #     if slice-equal?(word-slice, "}")
     #       break
     #     var v: (handle var) = parse-var-with-type(word-slice, line)
-    #     var r: (addr {(handle var) (handle var)}) = get-or-insert(t, v->name, row-size=12)
+    #     var r: (handle typeinfo-fields) = find-or-create-typeinfo-fields(t, word-slice/v->name)
     #     TODO: ensure that r->first is null
-    #     r->first = v
-    #     if r->second == 0
-    #       r->second = new var("dummy name", constant type, -1 offset)
-    #     r->second->offset = curr-offset
-    #     curr-offset += size-of(existing)
+    #     r->input-var = v
+    #     if r->output-var == 0
+    #       r->output-var = new literal
+    #     r->output-var->offset = curr-offset
+    #     curr-offset += size-of(v)
     #     TODO: ensure nothing else in line
     #
     # . prologue
@@ -5629,35 +5677,34 @@ $populate-mu-type:parse-element:
 #?       (flush Stderr)
       89/<- %esi 0/r32/eax
 $populate-mu-type:create-typeinfo-fields:
-      # var r/eax: (addr {(handle var) (handle var)})
+      # var r/eax: (handle typeinfo-fields)
 #?       (write-buffered Stderr "populate-mu-type: typeinfo: ")
 #?       (print-int32-buffered Stderr %edi)
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
-      (get-or-insert *(edi+4) *esi 0xc)  # Typeinfo-fields Var-name => eax
+      (find-or-create-typeinfo-fields %edi %edx)  # => eax
 $populate-mu-type:set-input-type:
-      # r->first = v
-      89/<- *eax 6/r32/esi
+      # r->input-var = v
+      89/<- *eax 6/r32/esi  # Typeinfo-entry-input-var
       {
 $populate-mu-type:create-output-type:
-        # if (r->second == 0) create a new var with some placeholder data
-        81 7/subop/compare *(eax+4) 0/imm32
+        # if (r->output-var == 0) create a new var with some placeholder data
+        81 7/subop/compare *(eax+8) 0/imm32  # Typeinfo-entry-output-var
         75/jump-if-!= break/disp8
-        # temporarily spill r to esi
-        56/push-esi
-        89/<- %esi 0/r32/eax
+        # temporarily spill r to edi
+        89/<- %edi 0/r32/eax
         (new-literal Heap %edx)  # => eax
-        89/<- *(esi+4) 0/r32/eax
-        89/<- %eax 6/r32/esi
-        5e/pop-to-esi
+        89/<- *(edi+8) 0/r32/eax  # Typeinfo-entry-output-var
+        89/<- %eax 7/r32/edi
+        8b/-> *(ebp+0xc) 7/r32/edi  # restore
 #?         (write-buffered Stderr "creating new output var ")
 #?         (print-int32-buffered Stderr %eax)
 #?         (write-buffered Stderr Newline)
 #?         (flush Stderr)
       }
 $populate-mu-type:set-output-offset:
-      # r->second->offset = curr-offset
-      8b/-> *(eax+4) 0/r32/eax
+      # r->output-var->offset = curr-offset
+      8b/-> *(eax+8) 0/r32/eax  # Typeinfo-entry-output-var
 #?       (write-buffered Stderr "writing offset ")
 #?       (print-int32-buffered Stderr %ebx)
 #?       (write-buffered Stderr " to output var ")
