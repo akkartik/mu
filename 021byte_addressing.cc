@@ -195,7 +195,7 @@ case 0x94: {  // set r8/m8-at-rm32 if ZF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = ZF;
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x95: {  // set r8/m8-at-rm32 if !ZF
@@ -203,7 +203,7 @@ case 0x95: {  // set r8/m8-at-rm32 if !ZF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = !ZF;
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x9f: {  // set r8/m8-at-rm32 if !SF and !ZF
@@ -211,7 +211,7 @@ case 0x9f: {  // set r8/m8-at-rm32 if !SF and !ZF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = !ZF && SF == OF;
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x97: {  // set r8/m8-at-rm32 if !CF and !ZF
@@ -219,7 +219,7 @@ case 0x97: {  // set r8/m8-at-rm32 if !CF and !ZF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = (!CF && !ZF);
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x9d: {  // set r8/m8-at-rm32 if !SF
@@ -227,7 +227,7 @@ case 0x9d: {  // set r8/m8-at-rm32 if !SF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = (SF == OF);
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x93: {  // set r8/m8-at-rm32 if !CF
@@ -235,7 +235,7 @@ case 0x93: {  // set r8/m8-at-rm32 if !CF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = !CF;
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x9c: {  // set r8/m8-at-rm32 if SF and !ZF
@@ -243,7 +243,7 @@ case 0x9c: {  // set r8/m8-at-rm32 if SF and !ZF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = (SF != OF);
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x92: {  // set r8/m8-at-rm32 if CF
@@ -251,7 +251,7 @@ case 0x92: {  // set r8/m8-at-rm32 if CF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = CF;
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x9e: {  // set r8/m8-at-rm32 if SF or ZF
@@ -259,7 +259,7 @@ case 0x9e: {  // set r8/m8-at-rm32 if SF or ZF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = (ZF || SF != OF);
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
 case 0x96: {  // set r8/m8-at-rm32 if ZF or CF
@@ -267,6 +267,6 @@ case 0x96: {  // set r8/m8-at-rm32 if ZF or CF
   trace(Callstack_depth+1, "run") << "set r8/m8-at-rm32" << end();
   uint8_t* dest = effective_byte_address(modrm);
   *dest = (ZF || CF);
-  trace(Callstack_depth+1, "run") << "storing " << *dest << end();
+  trace(Callstack_depth+1, "run") << "storing " << NUM(*dest) << end();
   break;
 }
