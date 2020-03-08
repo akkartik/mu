@@ -450,6 +450,11 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
+    # initialize global data structures
+    c7 0/subop/copy *Next-block-index 1/imm32
+    c7 0/subop/copy *Type-id 0x1c/imm32  # stream-write
+    c7 0/subop/copy *_Program-functions 0/imm32
+    c7 0/subop/copy *_Program-types 0/imm32
     #
     (parse-mu *(ebp+8))
     (check-mu-types)
@@ -604,7 +609,6 @@ test-convert-function-with-arg-and-body:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo n: int {\n")
     (write _test-input-stream "  increment n\n")
@@ -646,7 +650,6 @@ test-convert-function-distinguishes-args:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int {\n")
     (write _test-input-stream "  increment b\n")
@@ -688,7 +691,6 @@ test-convert-function-returns-result:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int -> result/eax: int {\n")
     (write _test-input-stream "  result <- copy a\n")
@@ -732,7 +734,6 @@ test-convert-function-literal-arg:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int -> result/eax: int {\n")
     (write _test-input-stream "  result <- copy a\n")
@@ -776,7 +777,6 @@ test-convert-function-literal-arg-2:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: int, b: int -> result/ebx: int {\n")
     (write _test-input-stream "  result <- copy a\n")
@@ -820,7 +820,6 @@ test-convert-function-call-with-literal-arg:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn main -> result/ebx: int {\n")
     (write _test-input-stream "  result <- do-add 3 4\n")
@@ -880,7 +879,6 @@ test-convert-function-with-local-var-in-mem:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x: int\n")
@@ -925,7 +923,6 @@ test-convert-function-with-local-var-in-reg:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: int <- copy 3\n")
@@ -971,7 +968,6 @@ test-convert-function-with-second-local-var-in-same-reg:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: int <- copy 3\n")
@@ -1019,7 +1015,6 @@ test-convert-function-with-local-var-dereferenced:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: (addr int) <- copy 0\n")
@@ -1065,7 +1060,6 @@ test-convert-compare-register-with-literal:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: int <- copy 0\n")
@@ -1111,7 +1105,6 @@ test-convert-function-with-local-var-in-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -1162,7 +1155,6 @@ test-convert-function-with-local-var-in-named-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  $bar: {\n")
@@ -1213,7 +1205,6 @@ test-always-shadow-outermost-reg-vars-in-function:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: int <- copy 3\n")
@@ -1257,7 +1248,6 @@ _pending-test-clobber-dead-local:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: int <- copy 3\n")
@@ -1309,7 +1299,6 @@ test-shadow-live-local:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var x/ecx: int <- copy 3\n")
@@ -1365,7 +1354,6 @@ test-shadow-live-output:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo -> x/ecx: int {\n")
     (write _test-input-stream "  x <- copy 3\n")
@@ -1420,7 +1408,6 @@ _pending-test-local-clobbered-by-output:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo -> x/ecx: int {\n")
     (write _test-input-stream "  var y/ecx: int <- copy 4\n")
@@ -1464,7 +1451,6 @@ test-convert-function-with-branches-in-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  {\n")
@@ -1518,7 +1504,6 @@ test-convert-function-with-branches-in-named-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  $bar: {\n")
@@ -1572,7 +1557,6 @@ test-convert-function-with-var-in-nested-block:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  {\n")
@@ -1629,7 +1613,6 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo x: int {\n")
     (write _test-input-stream "  {\n")
@@ -1693,7 +1676,6 @@ test-convert-function-with-branches-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -1753,7 +1735,6 @@ test-convert-function-with-conditional-loops-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -1813,7 +1794,6 @@ test-convert-function-with-unconditional-loops-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -1866,7 +1846,6 @@ test-convert-function-with-branches-and-loops-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -1925,7 +1904,6 @@ test-convert-function-with-nonlocal-branches-and-loops-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  a: {\n")
@@ -1994,7 +1972,6 @@ test-convert-function-with-nonlocal-unconditional-break-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  a: {\n")
@@ -2056,7 +2033,6 @@ test-convert-function-with-unconditional-break-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  {\n")
@@ -2116,7 +2092,6 @@ test-convert-function-with-nonlocal-unconditional-loop-and-local-vars:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  a: {\n")
@@ -2178,7 +2153,6 @@ test-convert-length-of-array:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: (addr array int) {\n")
     (write _test-input-stream "  var b/eax: (addr array int) <- copy a\n")
@@ -2224,7 +2198,6 @@ test-convert-index-into-array:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var arr/eax: (addr array int) <- copy 0\n")
@@ -2274,7 +2247,6 @@ test-convert-index-into-array-with-literal:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var arr/eax: (addr array int) <- copy 0\n")
@@ -2321,7 +2293,6 @@ test-convert-index-into-array-using-offset:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var arr/eax: (addr array int) <- copy 0\n")
@@ -2373,7 +2344,6 @@ test-convert-index-into-array-using-offset-on-stack:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var arr/eax: (addr array int) <- copy 0\n")
@@ -2426,7 +2396,6 @@ test-convert-function-and-type-definition:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo a: (addr t) {\n")
     (write _test-input-stream "  var _a/eax: (addr t) <- copy a\n")
@@ -2480,7 +2449,6 @@ test-convert-function-with-local-var-with-user-defined-type:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "fn foo {\n")
     (write _test-input-stream "  var a: t\n")
@@ -2528,7 +2496,6 @@ test-convert-array-of-user-defined-types:
     (clear-stream $_test-input-buffered-file->buffer)
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    c7 0/subop/copy *Next-block-index 1/imm32
     #
     (write _test-input-stream "type t {\n")  # each t is 8 bytes, which is a power of 2
     (write _test-input-stream "  x: int\n")
