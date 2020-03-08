@@ -2364,6 +2364,59 @@ test-convert-index-into-array-using-offset:
     5d/pop-to-ebp
     c3/return
 
+test-convert-index-into-array-using-offset-on-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    c7 0/subop/copy *Next-block-index 1/imm32
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr/eax: (addr array int) <- copy 0\n")
+    (write _test-input-stream "  var idx: int\n")
+    (write _test-input-stream "  var off/ecx: (offset int) <- compute-offset arr, idx\n")
+    (write _test-input-stream "  var x/eax: (addr int) <- index arr, off\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-index-into-array-using-offset-on-stack/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-index-into-array-using-offset-on-stack/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-index-into-array-using-offset-on-stack/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-index-into-array-using-offset-on-stack/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-index-into-array-using-offset-on-stack/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-index-into-array-using-offset-on-stack/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array-using-offset-on-stack/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-index-into-array-using-offset-on-stack/7")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"                         "F - test-convert-index-into-array-using-offset-on-stack/8")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"                    "F - test-convert-index-into-array-using-offset-on-stack/9")
+    (check-next-stream-line-equal _test-output-stream "    69/multiply 0x00000004/imm32 *(ebp+0xfffffff8) 0x00000001/r32"  "F - test-convert-index-into-array-using-offset-on-stack/10")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + ecx + 4) 0x00000000/r32"  "F - test-convert-index-into-array-using-offset-on-stack/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx"                     "F - test-convert-index-into-array-using-offset-on-stack/12")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"    "F - test-convert-index-into-array-using-offset-on-stack/13")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array-using-offset-on-stack/14")
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array-using-offset-on-stack/15")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array-using-offset-on-stack/16")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array-using-offset-on-stack/17")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array-using-offset-on-stack/18")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array-using-offset-on-stack/19")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array-using-offset-on-stack/20")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-function-and-type-definition:
     # . prologue
     55/push-ebp
@@ -6377,7 +6430,7 @@ $emit-cleanup-code-until-depth:loop:
         50/push-eax
         {
 $emit-cleanup-code-until-depth:check-for-previous-spill:
-          (same-register-spilled-before? %ebx *(ebp+0xc))  # => eax
+          (same-register-spilled-before? %ebx *(ebp+0xc) %eax)  # => eax
           3d/compare-eax-and 0/imm32/false
           0f 85/jump-if-!= break/disp32
 $emit-cleanup-code-until-depth:reclaim-var-in-register:
@@ -6605,17 +6658,19 @@ $same-register-spilled-before?:loop:
       # if (curr < min) break
       39/compare %esi 1/r32/ecx
       0f 82/jump-if-addr< break/disp32
-$same-register-spilled-before?:aa:
       # var x/eax: (handle var) = *curr
       8b/-> *esi 0/r32/eax
       # if (x->block-depth < depth) break
       39/compare *(eax+8) 3/r32/ebx  # Var-block-depth
       0f 8c/jump-if-< break/disp32
-$same-register-spilled-before?:bb:
+      # if (x->register == 0) continue
+      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+      74/jump-if-= $same-register-spilled-before?:continue/disp8
       # if (x->register == reg) return true
       (string-equal? *(eax+0x10) %edx)  # Var-register => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= $same-register-spilled-before?:end/disp8
+$same-register-spilled-before?:continue:
       # curr -= 4
       81 5/subop/subtract %esi 4/imm32
       e9/jump loop/disp32
