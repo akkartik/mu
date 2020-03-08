@@ -5618,6 +5618,7 @@ $populate-mu-type:line-loop:
       (slice-equal? %edx "}")
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= break/disp32
+$populate-mu-type:parse-element:
       # var v/esi: (handle var) = parse-var-with-type(word-slice, first-line)
       (parse-var-with-type %edx %ecx)  # => eax
 #?       (write-buffered Stderr "populate-mu-type: ")
@@ -5627,28 +5628,34 @@ $populate-mu-type:line-loop:
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       89/<- %esi 0/r32/eax
+$populate-mu-type:create-typeinfo-fields:
       # var r/eax: (addr {(handle var) (handle var)})
 #?       (write-buffered Stderr "populate-mu-type: typeinfo: ")
 #?       (print-int32-buffered Stderr %edi)
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
       (get-or-insert *(edi+4) *esi 0xc)  # Typeinfo-fields Var-name => eax
+$populate-mu-type:set-input-type:
       # r->first = v
       89/<- *eax 6/r32/esi
-      # if (r->second == 0) create a new var with some placeholder data
       {
+$populate-mu-type:create-output-type:
+        # if (r->second == 0) create a new var with some placeholder data
         81 7/subop/compare *(eax+4) 0/imm32
         75/jump-if-!= break/disp8
         # temporarily spill r to esi
+        56/push-esi
         89/<- %esi 0/r32/eax
         (new-literal Heap %edx)  # => eax
         89/<- *(esi+4) 0/r32/eax
         89/<- %eax 6/r32/esi
+        5e/pop-to-esi
 #?         (write-buffered Stderr "creating new output var ")
 #?         (print-int32-buffered Stderr %eax)
 #?         (write-buffered Stderr Newline)
 #?         (flush Stderr)
       }
+$populate-mu-type:set-output-offset:
       # r->second->offset = curr-offset
       8b/-> *(eax+4) 0/r32/eax
 #?       (write-buffered Stderr "writing offset ")
@@ -5657,7 +5664,7 @@ $populate-mu-type:line-loop:
 #?       (print-int32-buffered Stderr %eax)
 #?       (write-buffered Stderr Newline)
 #?       (flush Stderr)
-      89/<- *(eax+0xc) 3/r32/ebx
+      89/<- *(eax+0xc) 3/r32/ebx  # Var-offset
       # curr-offset += size-of(v)
 #?       (write-buffered Stderr "elem ")
 #?       (write-buffered Stderr *eax)  # Var-name
