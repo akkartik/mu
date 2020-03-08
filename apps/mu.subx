@@ -5659,7 +5659,7 @@ $populate-mu-type:line-loop:
 #?       # }}}
       (next-mu-token %ecx %edx)
       # if slice-empty?(word-slice) continue
-      (slice-empty? %edx)
+      (slice-empty? %edx)  # => eax
       3d/compare-eax-and 0/imm32
       0f 85/jump-if-!= loop/disp32
       # if slice-equal?(word-slice, "}") break
@@ -5693,10 +5693,8 @@ $populate-mu-type:set-output-offset:
       8b/-> *(eax+8) 0/r32/eax  # Typeinfo-entry-output-var
       89/<- *(eax+0xc) 3/r32/ebx  # Var-offset
       # curr-offset += size-of(v)
-      50/push-eax
       (size-of %esi)  # => eax
       01/add-to %ebx 0/r32/eax
-      58/pop-to-eax
       #
       e9/jump loop/disp32
     }
