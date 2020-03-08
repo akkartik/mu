@@ -207,13 +207,21 @@ loop-if-addr>= label        {.name="loop-if-addr>=",  .inouts=[label],          
 
 Array operations
 
-var/reg <- length var2/reg2: (addr array T)
+var/reg <- length arr/reg2: (addr array T)
                             {.name="length",          .inouts=[reg2], .outputs=[reg1],  .subx-name="8b/copy-from",          .rm32="*" inouts[0],                        .r32=outputs[0]}
 var/reg <- index arr/rega: (addr array T), idx/regi: int
                             {.name="index",           .inouts=[rega, regi], .outputs=[reg], .subx-name="8d/copy-address",   .rm32="*(" inouts[0] "+" inouts[1] "<<2)",  .r32=outputs[0]}
 var/reg <- index arr/rega: (addr array T), n
-compare var, n              {.name="compare",         .inouts=[var, n],                 .subx-name="81 7/subop/compare",    .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
-                            {.name="index",           .inouts=[rega, n], .outputs=[reg], .subx-name="8d/copy-address",      .rm32="*(" inouts[0] "+" inouts[1] "<<2)",  .r32=outputs[0]}
+                            {.name="index",           .inouts=[rega, n], .outputs=[reg], .subx-name="8d/copy-address",      .rm32="*(" inouts[0] "+" inouts[1]*size(T) ")",  .r32=outputs[0]}
+
+var/reg: (offset T) <- compute-offset arr: (addr array T), idx/regi: int  # arr can be in reg or mem
+                            {.name="compute-offset",  .inouts=[arr, regi],  .outputs=[reg], .subx-name="69/multiply",       .rm32=inouts[1],                            .r32=outputs[0],    .imm32=sizeof(T)}
+var/reg: (offset T) <- compute-offset arr: (addr array T), idx: int       # arr can be in reg or mem
+                            {.name="compute-offset",  .inouts=[arr, regi],  .outputs=[reg], .subx-name="69/multiply",       .rm32="*(ebp+" inouts[1].stack-offset ")",  .r32=outputs[0],    .imm32=sizeof(T)}
+var: (offset T) <- compute-offset arr: (addr array T), n                  # arr can be in reg or mem
+                            {.name="compute-offset",  .inouts=[var, n],     .outputs=[reg], .subx-name="c7 0/subop/copy",   .rm32=outputs[0],                                               .imm32=sizeof(T)*n}
+var/reg <- index arr/rega: (addr array T), o/rego: offset
+                            {.name="index",           .inouts=[rega, rego], .outputs=[reg], .subx-name="8d/copy-address",   .rm32="*(" inouts[0] "+" inouts[1] "+" "4)", .r32=outputs[0]}
 
 User-defined types
 
