@@ -5669,19 +5669,9 @@ $populate-mu-type:line-loop:
 $populate-mu-type:parse-element:
       # var v/esi: (handle var) = parse-var-with-type(word-slice, first-line)
       (parse-var-with-type %edx %ecx)  # => eax
-#?       (write-buffered Stderr "populate-mu-type: ")
-#?       (write-buffered Stderr *eax)  # Var-name
-#?       (write-buffered Stderr " at ")
-#?       (print-int32-buffered Stderr %eax)
-#?       (write-buffered Stderr Newline)
-#?       (flush Stderr)
       89/<- %esi 0/r32/eax
 $populate-mu-type:create-typeinfo-fields:
       # var r/eax: (handle typeinfo-fields)
-#?       (write-buffered Stderr "populate-mu-type: typeinfo: ")
-#?       (print-int32-buffered Stderr %edi)
-#?       (write-buffered Stderr Newline)
-#?       (flush Stderr)
       (find-or-create-typeinfo-fields %edi %edx)  # => eax
 $populate-mu-type:set-input-type:
       # r->input-var = v
@@ -5697,30 +5687,14 @@ $populate-mu-type:create-output-type:
         89/<- *(edi+8) 0/r32/eax  # Typeinfo-entry-output-var
         89/<- %eax 7/r32/edi
         8b/-> *(ebp+0xc) 7/r32/edi  # restore
-#?         (write-buffered Stderr "creating new output var ")
-#?         (print-int32-buffered Stderr %eax)
-#?         (write-buffered Stderr Newline)
-#?         (flush Stderr)
       }
 $populate-mu-type:set-output-offset:
       # r->output-var->offset = curr-offset
       8b/-> *(eax+8) 0/r32/eax  # Typeinfo-entry-output-var
-#?       (write-buffered Stderr "writing offset ")
-#?       (print-int32-buffered Stderr %ebx)
-#?       (write-buffered Stderr " to output var ")
-#?       (print-int32-buffered Stderr %eax)
-#?       (write-buffered Stderr Newline)
-#?       (flush Stderr)
       89/<- *(eax+0xc) 3/r32/ebx  # Var-offset
       # curr-offset += size-of(v)
-#?       (write-buffered Stderr "elem ")
-#?       (write-buffered Stderr *eax)  # Var-name
       50/push-eax
       (size-of %esi)  # => eax
-#?       (write-buffered Stderr ": ")
-#?       (print-int32-buffered Stderr %eax)  # Var-name
-#?       (write-buffered Stderr Newline)
-#?       (flush Stderr)
       01/add-to %ebx 0/r32/eax
       58/pop-to-eax
       #
