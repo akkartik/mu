@@ -5566,7 +5566,7 @@ $find-or-create-typeinfo-output-var:end:
     5d/pop-to-ebp
     c3/return
 
-find-or-create-typeinfo-fields:  # T: (handle typeinfo), f: (addr slice) -> result/eax: (handle typeinfo-fields)
+find-or-create-typeinfo-fields:  # T: (handle typeinfo), f: (addr slice) -> result/eax: (handle typeinfo-entry)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5614,6 +5614,8 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     #     var v: (handle var) = parse-var-with-type(word-slice, line)
     #     var r: (handle typeinfo-fields) = find-or-create-typeinfo-fields(t, word-slice/v->name)
     #     TODO: ensure that r->first is null
+    #     r->index = curr-index
+    #     curr-index++
     #     r->input-var = v
     #     if r->output-var == 0
     #       r->output-var = new literal
@@ -5674,9 +5676,20 @@ $populate-mu-type:parse-element:
       (parse-var-with-type %edx %ecx)  # => eax
       89/<- %esi 0/r32/eax
 $populate-mu-type:create-typeinfo-fields:
-      # var r/ebx: (handle typeinfo-fields)
+      # var r/ebx: (handle typeinfo-entry)
       (find-or-create-typeinfo-fields %edi %edx)  # => eax
       89/<- %ebx 0/r32/eax
+#?       (write-buffered Stderr "var ")
+#?       (write-buffered Stderr *esi)  # Var-name
+#?       (write-buffered Stderr " is at index ")
+#?       (print-int32-buffered Stderr *(ebp-4))
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
+      # r->index = curr-index
+      8b/-> *(ebp-4) 0/r32/eax
+      89/<- *(ebx+4) 0/r32/eax  # Typeinfo-entry-index
+      # ++curr-index
+      ff 0/subop/increment *(ebp-4)
 $populate-mu-type:set-input-type:
       # r->input-var = v
       89/<- *ebx 6/r32/esi  # Typeinfo-entry-input-var
