@@ -5674,26 +5674,23 @@ $populate-mu-type:parse-element:
       (parse-var-with-type %edx %ecx)  # => eax
       89/<- %esi 0/r32/eax
 $populate-mu-type:create-typeinfo-fields:
-      # var r/eax: (handle typeinfo-fields)
+      # var r/ebx: (handle typeinfo-fields)
       (find-or-create-typeinfo-fields %edi %edx)  # => eax
+      89/<- %ebx 0/r32/eax
 $populate-mu-type:set-input-type:
       # r->input-var = v
-      89/<- *eax 6/r32/esi  # Typeinfo-entry-input-var
+      89/<- *ebx 6/r32/esi  # Typeinfo-entry-input-var
       {
 $populate-mu-type:create-output-type:
         # if (r->output-var == 0) create a new var with some placeholder data
-        81 7/subop/compare *(eax+8) 0/imm32  # Typeinfo-entry-output-var
+        81 7/subop/compare *(ebx+8) 0/imm32  # Typeinfo-entry-output-var
         75/jump-if-!= break/disp8
-        # temporarily spill r to edi
-        89/<- %edi 0/r32/eax
         (new-literal Heap %edx)  # => eax
-        89/<- *(edi+8) 0/r32/eax  # Typeinfo-entry-output-var
-        89/<- %eax 7/r32/edi
-        8b/-> *(ebp+0xc) 7/r32/edi  # restore
+        89/<- *(ebx+8) 0/r32/eax  # Typeinfo-entry-output-var
       }
 $populate-mu-type:set-output-offset:
       # var ov/ebx: (handle var) = r->output-var
-      8b/-> *(eax+8) 3/r32/ebx  # Typeinfo-entry-output-var
+      8b/-> *(ebx+8) 3/r32/ebx  # Typeinfo-entry-output-var
       # ov->offset = curr-offset
       8b/-> *(ebp-8) 0/r32/eax
       89/<- *(ebx+0xc) 0/r32/eax
