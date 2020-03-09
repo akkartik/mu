@@ -406,6 +406,11 @@ Typeinfo-id:  # type-id
   0/imm32
 Typeinfo-fields:  # (handle table string (handle typeinfo-entry))
   4/imm32
+# Total size must be >= 0
+# During parsing it may take on two additional values:
+#   -2: not yet initialized
+#   -1: in process of being computed
+# See populate-mu-type-sizes for details.
 Typeinfo-total-size-in-bytes:  # int
   8/imm32
 Typeinfo-next:  # (handle typeinfo)
@@ -475,6 +480,7 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
     c7 0/subop/copy *_Program-types 0/imm32
     #
     (parse-mu *(ebp+8))
+    (populate-mu-type-sizes)
     (check-mu-types)
     (emit-subx *(ebp+0xc))
 $convert-mu:end:
@@ -5622,6 +5628,7 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     #     r->output-var->offset = curr-offset
     #     curr-offset += size-of(v)
     #     TODO: ensure nothing else in line
+    # t->total-size-in-bytes = -2 (not yet initialized)
     #
     # . prologue
     55/push-ebp
@@ -5713,9 +5720,11 @@ $populate-mu-type:set-output-offset:
       #
       e9/jump loop/disp32
     }
-    # persist the total size of the type
-    8b/-> *(ebp-8) 0/r32/eax
-    89/<- *(edi+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
+$populate-mu-type:invalidate-total-size-in-bytes:
+    # Offsets and total size may not be accurate here since we may not yet
+    # have encountered the element types.
+    # We'll recompute them separately after parsing the entire program.
+    c7 0/subop/copy *(edi+8) -2/imm32/uninitialized  # Typeinfo-total-size-in-bytes
 $populate-mu-type:end:
     # . reclaim locals
     81 0/subop/add %esp 0x214/imm32
@@ -5780,6 +5789,177 @@ $index:end:
     c3/return
 
 #######################################################
+# Compute type sizes
+#######################################################
+
+# Compute the sizes of all user-defined types.
+# We'll need the sizes of their elements, which may be other user-defined
+# types, which we will compute as needed.
+
+# Initially, all user-defined types have their sizes set to -2 (invalid)
+populate-mu-type-sizes:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+$populate-mu-type-sizes:total-sizes:
+    # var curr/ecx: (handle typeinfo) = *Program->types
+    8b/-> *_Program-types 1/r32/ecx
+    {
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      0f 84/jump-if-= break/disp32
+      (populate-mu-type-sizes-in-type %ecx)
+      # curr = curr->next
+      8b/-> *(ecx+0xc) 1/r32/ecx  # Typeinfo-next
+      e9/jump loop/disp32
+    }
+$populate-mu-type-sizes:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+# compute sizes of all fields, recursing as necessary
+# sum up all their sizes to arrive at total size
+# fields may be out of order, but that doesn't affect the answer
+populate-mu-type-sizes-in-type:  # T: (handle typeinfo)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    57/push-edi
+    # esi = T
+    8b/-> *(ebp+8) 6/r32/esi
+    # if T is already computed, return
+    81 7/subop/compare *(esi+8) 0/imm32  # Typeinfo-total-size-in-bytes
+    7d/jump-if->= $populate-mu-type-sizes-in-type:end/disp8
+    # if T is being computed, abort
+    81 7/subop/compare *(esi+8) -1/imm32/being-computed  # Typeinfo-total-size-in-bytes
+    74/jump-if-= $populate-mu-type-sizes-in-type:abort/disp8
+    # tag T (-2 to -1) to avoid infinite recursion
+    c7 0/subop/copy *(esi+8) -1/imm32/being-computed  # Typeinfo-total-size-in-bytes
+    # var total-size/edi: int = 0
+    bf/copy-to-edi 0/imm32
+    # - for every field, if it's a user-defined type, compute its size
+    # var table/ecx: (handle table string_key (handle typeinfo-entry)) = T->fields
+    8b/-> *(esi+4) 1/r32/ecx  # Typeinfo-fields
+    # var table-size/edx: int = table->write
+    8b/-> *ecx 2/r32/edx  # stream-write
+    # var curr/ecx: (addr table_row) = table->data
+    8d/copy-address *(ecx+0xc) 1/r32/ecx
+    # var max/edx: (addr table_row) = table->data + table->write
+    8d/copy-address *(ecx+edx) 2/r32/edx
+    {
+$populate-mu-type-sizes-in-type:loop:
+      # if (curr >= max) break
+      39/compare %ecx 2/r32/edx
+      73/jump-if-addr>= break/disp8
+      # var t/eax: (handle typeinfo-entry) = curr->value
+      8b/-> *(ecx+4) 0/r32/eax
+      # compute size of t
+      (compute-size-of-var *eax)  # Typeinfo-entry-input-var => eax
+      # result += eax
+      01/add-to %edi 0/r32/eax
+      # curr += row-size
+      81 0/subop/add %ecx 8/imm32
+      #
+      eb/jump loop/disp8
+    }
+    # - save result
+    89/<- *(esi+8) 7/r32/edi  # Typeinfo-total-size-in-bytes
+$populate-mu-type-sizes-in-type:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$populate-mu-type-sizes-in-type:abort:
+    (write-buffered Stderr "cycle in type definitions\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+# Analogous to size-of, except we need to compute what size-of can just read
+# off the right data structures.
+compute-size-of-var:  # in: (handle var) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # eax: (handle var) = in
+    8b/-> *(ebp+8) 0/r32/eax
+    # eax: type-id = in->type
+    8b/-> *(eax+4) 0/r32/eax  # Var-type
+    # TODO: support non-atom type
+    # TODO: support arrays
+    (compute-size-of-type-id *eax)  # Atom-left => eax
+$compute-size-of-var:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+compute-size-of-type-id:  # t: type-id -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    #
+    8b/-> *(ebp+8) 0/r32/eax
+    # if v is a literal, return 0
+    3d/compare-eax-and 0/imm32
+    74/jump-if-= $compute-size-of-type-id:end/disp8  # eax changes type from type-id to int
+    # if v has a user-defined type, compute its size
+    # TODO: support non-atom type
+    (find-typeinfo %eax)  # => eax
+    {
+      3d/compare-eax-and 0/imm32
+      74/jump-if-= break/disp8
+$compute-size-of-type-id:user-defined:
+      (populate-mu-type-sizes %eax)
+      8b/-> *(eax+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
+      eb/jump $compute-size-of-type-id:end/disp8
+    }
+    # otherwise return the word size
+    b8/copy-to-eax 4/imm32
+$compute-size-of-type-id:end:
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+populate-mu-type-offsets:  # in: (handle typeinfo)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # ecx = in
+    8b/-> *(ebp+8) 1/r32/ecx
+$populate-mu-type-sizes-in-function:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+#######################################################
 # Type-checking
 #######################################################
 
@@ -5822,7 +6002,7 @@ size-of-type-id:  # t: type-id -> result/eax: int
     8b/-> *(ebp+8) 0/r32/eax
     # if v is a literal, return 0
     3d/compare-eax-and 0/imm32
-    74/jump-if-= $size-of-type:end/disp8  # eax changes type from type-id to int
+    74/jump-if-= $size-of-type-id:end/disp8  # eax changes type from type-id to int
     # if v has a user-defined type, return its size
     # TODO: support non-atom type
     (find-typeinfo %eax)  # => eax
@@ -5831,7 +6011,7 @@ size-of-type-id:  # t: type-id -> result/eax: int
       74/jump-if-= break/disp8
 $size-of-type-id:user-defined:
       8b/-> *(eax+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
-      eb/jump $size-of-type:end/disp8
+      eb/jump $size-of-type-id:end/disp8
     }
     # otherwise return the word size
     b8/copy-to-eax 4/imm32
