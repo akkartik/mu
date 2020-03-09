@@ -7078,7 +7078,8 @@ translate-mu-get-stmt:  # out: (address buffered-file), stmt: (handle stmt)
     (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
     #
     (write-buffered *(ebp+8) " + ")
-    (print-mu-get-offset *(ebp+8) %ecx)
+    (mu-get-offset %ecx)  # => eax
+    (print-int32-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) ") ")
     # outputs[0] "/r32"
     8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
@@ -7166,27 +7167,19 @@ $num-shift-rights:end:
     5d/pop-to-ebp
     c3/return
 
-print-mu-get-offset:  # out: (addr buffered-file), stmt: (handle stmt)
+mu-get-offset:  # stmt: (handle stmt) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # . save registers
-    50/push-eax
     # var second-inout/eax: (handle stmt-var) = stmt->inouts->next
-    8b/-> *(ebp+0xc) 0/r32/eax
+    8b/-> *(ebp+8) 0/r32/eax
     8b/-> *(eax+8) 0/r32/eax  # Stmt1-inouts
     8b/-> *(eax+4) 0/r32/eax  # Stmt-var-next
     # var output-var/eax: (handle var) = second-inout->value
     8b/-> *eax 0/r32/eax  # Stmt-var-value
-    # print offset
-#?     (write-buffered Stderr "emitting offset from output var ")
-#?     (print-int32-buffered Stderr %eax)
-#?     (write-buffered Stderr Newline)
-#?     (flush Stderr)
-    (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-offset
+    # return output-var->offset
+    8b/-> *(eax+0xc) 0/r32/eax  # Var-offset
 $emit-get-offset:end:
-    # . restore registers
-    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
