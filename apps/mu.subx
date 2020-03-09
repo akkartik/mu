@@ -5606,7 +5606,6 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     # pseudocode:
     #   var line: (stream byte 512)
     #   curr-index = 0
-    #   curr-offset = 0
     #   while true
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -5625,8 +5624,6 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     #     r->input-var = v
     #     if r->output-var == 0
     #       r->output-var = new literal
-    #     r->output-var->offset = curr-offset
-    #     curr-offset += size-of(v)
     #     TODO: ensure nothing else in line
     # t->total-size-in-bytes = -2 (not yet initialized)
     #
@@ -5634,8 +5631,6 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # var curr-index: int at *(ebp-4)
-    68/push 0/imm32
-    # var curr-offset: int at *(ebp-8) for memorability
     68/push 0/imm32
     # . save registers
     50/push-eax
@@ -5708,16 +5703,6 @@ $populate-mu-type:create-output-type:
         (new-literal Heap %edx)  # => eax
         89/<- *(ebx+8) 0/r32/eax  # Typeinfo-entry-output-var
       }
-$populate-mu-type:set-output-offset:
-      # var ov/ebx: (handle var) = r->output-var
-      8b/-> *(ebx+8) 3/r32/ebx  # Typeinfo-entry-output-var
-      # ov->offset = curr-offset
-      8b/-> *(ebp-8) 0/r32/eax
-      89/<- *(ebx+0xc) 0/r32/eax
-      # curr-offset += size-of(v)
-      (size-of %esi)  # => eax
-      01/add-to *(ebp-8) 0/r32/eax
-      #
       e9/jump loop/disp32
     }
 $populate-mu-type:invalidate-total-size-in-bytes:
@@ -5735,8 +5720,8 @@ $populate-mu-type:end:
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
-    # reclaim curr-offset and curr-index
-    81 0/subop/add %esp 8/imm32
+    # reclaim curr-index
+    81 0/subop/add %esp 4/imm32
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5809,11 +5794,23 @@ $populate-mu-type-sizes:total-sizes:
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
-      0f 84/jump-if-= break/disp32
+      74/jump-if-= break/disp8
       (populate-mu-type-sizes-in-type %ecx)
       # curr = curr->next
       8b/-> *(ecx+0xc) 1/r32/ecx  # Typeinfo-next
-      e9/jump loop/disp32
+      eb/jump loop/disp8
+    }
+$populate-mu-type-sizes:offsets:
+    # var curr/ecx: (handle typeinfo) = *Program->types
+    8b/-> *_Program-types 1/r32/ecx
+    {
+      # if (curr == null) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      (populate-mu-type-offsets %ecx)
+      # curr = curr->next
+      8b/-> *(ecx+0xc) 1/r32/ecx  # Typeinfo-next
+      eb/jump loop/disp8
     }
 $populate-mu-type-sizes:end:
     # . restore registers
@@ -5943,21 +5940,115 @@ $compute-size-of-type-id:end:
     5d/pop-to-ebp
     c3/return
 
+# at this point we have total sizes for all user-defined types
+# compute offsets for each element
+# complication: fields may be out of order
 populate-mu-type-offsets:  # in: (handle typeinfo)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
-    # ecx = in
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # var curr-offset/edi: int = 0
+    bf/copy-to-edi 0/imm32
+    # var table/ecx: (handle table string_key (handle typeinfo-entry)) = T->fields
     8b/-> *(ebp+8) 1/r32/ecx
-$populate-mu-type-sizes-in-function:end:
+    8b/-> *(ecx+4) 1/r32/ecx  # Typeinfo-fields
+    # var num-elems/edx: int = table->write / 8
+    8b/-> *ecx 2/r32/edx  # stream-write
+    c1 5/subop/shift-right-logical  %edx 3/imm8
+    # var i/ebx: int = 0
+    bb/copy-to-ebx 0/imm32
+    {
+$populate-mu-type-offsets:loop:
+      39/compare %ebx 2/r32/edx
+      7d/jump-if->= break/disp8
+      # var v/esi: (handle typeinfo-entry)
+      (locate-typeinfo-entry-with-index %ecx %ebx)  # => eax
+      89/<- %esi 0/r32/eax
+      # v->output-var->offset = curr-offset
+      8b/-> *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
+      89/<- *(eax+0xc) 7/r32/edi
+      # curr-offset += size-of(v->input-var)
+      8b/-> *esi 0/r32/eax  # Typeinfo-entry-input-var
+      (size-of %eax)  # => eax
+      01/add-to %edi 0/r32/eax
+      # ++i
+      43/increment-ebx
+      eb/jump loop/disp8
+    }
+$populate-mu-type-offsets:end:
     # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+locate-typeinfo-entry-with-index:  # table: (handle table string_key (handle typeinfo-entry)), idx: int -> result/eax: (handle typeinfo-entry)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # esi = table
+    8b/-> *(ebp+8) 6/r32/esi
+    # var curr/ecx: (addr string_key) = table->data
+    8d/copy-address *(esi+0xc) 1/r32/ecx
+    # var max/edx: (addr byte) = &table->data[table->write]
+    8b/-> *esi 2/r32/edx
+    8d/copy-address *(ecx+edx) 2/r32/edx
+    {
+$locate-typeinfo-entry-with-index:loop:
+      39/compare %ecx 2/r32/edx
+      73/jump-if-addr>= $locate-typeinfo-entry-with-index:abort/disp8
+      # var v/ebx: (handle typeinfo-entry)
+      8b/-> *(ecx+4) 3/r32/ebx
+      # if (v->index == idx) return v
+      8b/-> *(ebx+4) 0/r32/eax  # Typeinfo-entry-index
+      39/compare *(ebp+0xc) 0/r32/eax
+      89/<- %eax 3/r32/ebx
+      74/jump-if-= break/disp8
+      # curr += 8
+      81 0/subop/add %ecx 8/imm32
+      eb/jump loop/disp8
+    }
+$locate-typeinfo-entry-with-index:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
+
+$locate-typeinfo-entry-with-index:abort:
+    (write-buffered Stderr "overflowing typeinfo-entry->index ")
+    (print-int32-buffered Stderr %ecx)
+    (write-buffered Stderr "\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
 
 #######################################################
 # Type-checking
