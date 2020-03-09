@@ -3519,7 +3519,7 @@ pos-or-insert-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) 
     (pos-slice *(ebp+8) *(ebp+0xc))  # => eax
     3d/compare-eax-and -1/imm32
     75/jump-if-!= $pos-or-insert-slice:end/disp8
-    #
+$pos-or-insert-slice:insert:
     (slice-to-string Heap *(ebp+0xc))  # => eax
     (write-int *(ebp+8) %eax)
     (pos-slice *(ebp+8) *(ebp+0xc))  # => eax
@@ -5829,12 +5829,13 @@ size-of-type-id:  # t: type-id -> result/eax: int
     {
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
+$size-of-type-id:user-defined:
       8b/-> *(eax+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
       eb/jump $size-of-type:end/disp8
     }
     # otherwise return the word size
     b8/copy-to-eax 4/imm32
-$size-of-type:end:
+$size-of-type-id:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
