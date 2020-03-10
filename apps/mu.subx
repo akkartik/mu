@@ -3098,7 +3098,7 @@ parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte) -> re
     #     abort
     #   --name->end to skip ':'
     #   next-token-from-slice(name->start, name->end, '/', s)
-    #   result = new-var(slice-to-string(s))
+    #   result = new-var-from-slice(s)
     #   ## register
     #   next-token-from-slice(s->end, name->end, '/', s)
     #   if (!slice-empty?(s))
@@ -3135,7 +3135,7 @@ parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte) -> re
 $parse-var-with-type:parse-name:
     (next-token-from-slice *esi *(esi+4) 0x2f %ecx)  # Slice-start, Slice-end, '/'
 $parse-var-with-type:create-var:
-    # edi = new-var(slice-to-string(s))
+    # edi = new-var-from-slice(s)
     (new-var-from-slice Heap %ecx)  # => eax
     89/<- %edi 0/r32/eax
     # save v->register
