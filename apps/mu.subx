@@ -2511,6 +2511,62 @@ test-convert-function-with-local-var-with-user-defined-type:
     5d/pop-to-ebp
     c3/return
 
+test-convert-get-of-type-on-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: t\n")
+    (write _test-input-stream "  var c/ecx: (addr int) <- get a, y\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-get-of-type-on-stack/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-get-of-type-on-stack/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-get-of-type-on-stack/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-get-of-type-on-stack/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-get-of-type-on-stack/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-get-of-type-on-stack/5")
+    # var a
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-get-of-type-on-stack/6")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-get-of-type-on-stack/7")
+    # var c
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-get-of-type-on-stack/8")
+    # get
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp+0xfffffffc) 0x00000001/r32"  "F - test-convert-get-of-type-on-stack/9")
+    # reclaim c
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-get-of-type-on-stack/10")
+    # reclaim a
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000008/imm32"  "F - test-convert-get-of-type-on-stack/11")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-get-of-type-on-stack/12")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-get-of-type-on-stack/13")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-get-of-type-on-stack/14")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-get-of-type-on-stack/15")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-get-of-type-on-stack/16")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-get-of-type-on-stack/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-array-of-user-defined-types:
     # . prologue
     55/push-ebp
@@ -5376,7 +5432,10 @@ $lookup-or-create-constant:end:
     5d/pop-to-ebp
     c3/return
 
-# container->var->type->right->left->value
+# if addr var:
+#   container->var->type->right->left->value
+# otherwise
+#   container->var->type->value
 container-type:  # container: (handle stmt-var) -> result/eax: type-id
     # . prologue
     55/push-ebp
@@ -5385,8 +5444,12 @@ container-type:  # container: (handle stmt-var) -> result/eax: type-id
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *eax 0/r32/eax  # Stmt-var-value
     8b/-> *(eax+4) 0/r32/eax  # Var-type
-    8b/-> *(eax+4) 0/r32/eax  # Tree-right
-    8b/-> *eax 0/r32/eax  # Tree-left
+    {
+      81 7/subop/compare *(eax+4) 0/imm32
+      74/jump-if-= break/disp8
+      8b/-> *(eax+4) 0/r32/eax  # Tree-right
+      8b/-> *eax 0/r32/eax  # Tree-left
+    }
     8b/-> *eax 0/r32/eax  # Atom-value
 $container-type:end:
     # . epilogue
@@ -5904,7 +5967,7 @@ $populate-mu-type-offsets:loop:
       89/<- %esi 0/r32/eax
       # v->output-var->offset = curr-offset
       8b/-> *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
-      89/<- *(eax+0xc) 7/r32/edi
+      89/<- *(eax+0xc) 7/r32/edi  # Var-offset
       # curr-offset += size-of(v->input-var)
       8b/-> *esi 0/r32/eax  # Typeinfo-entry-input-var
       (size-of %eax)  # => eax
@@ -7318,18 +7381,39 @@ translate-mu-get-stmt:  # out: (address buffered-file), stmt: (handle stmt)
     52/push-edx
     #
     (emit-indent *(ebp+8) *Curr-block-depth)
-    (write-buffered *(ebp+8) "8d/copy-address *(")
+    (write-buffered *(ebp+8) "8d/copy-address ")
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # inouts[0]->register " + "
+    # var offset/edx: int = get offset of stmt
+    (mu-get-offset %ecx)  # => eax
+    89/<- %edx 0/r32/eax
+    # var base/eax: (handle var) = stmt->inouts[0]
     8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts
     8b/-> *eax 0/r32/eax  # Stmt-var-value
-    (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
-    #
-    (write-buffered *(ebp+8) " + ")
-    (mu-get-offset %ecx)  # => eax
-    (print-int32-buffered *(ebp+8) %eax)
-    (write-buffered *(ebp+8) ") ")
+    # if base is in a register
+    81 7/subop/compare *(eax+0x10) 0/imm32
+    {
+      0f 84/jump-if-= break/disp32
+$translate-mu-get-stmt:emit-register-input:
+      # "*(" inouts[0]->register " + " offset ")"
+      (write-buffered *(ebp+8) "*(")
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
+      (write-buffered *(ebp+8) " + ")
+      (print-int32-buffered *(ebp+8) %edx)
+      (write-buffered *(ebp+8) ") ")
+      e9/jump $translate-mu-get-stmt:emit-output/disp32
+    }
+    # otherwise base is on the stack
+    {
+$translate-mu-get-stmt:emit-stack-input:
+      # "*(ebp + " inouts[0]->offset + offset ")"
+      (write-buffered *(ebp+8) "*(ebp+")
+      03/add-from *(eax+0xc) 2/r32/edx  # Var-offset
+      (print-int32-buffered *(ebp+8) %edx)
+      (write-buffered *(ebp+8) ") ")
+      eb/jump $translate-mu-get-stmt:emit-output/disp8
+    }
+$translate-mu-get-stmt:emit-output:
     # outputs[0] "/r32"
     8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
     8b/-> *eax 0/r32/eax  # Stmt-var-value
