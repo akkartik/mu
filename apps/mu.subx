@@ -3093,13 +3093,12 @@ test-function-with-multiple-args-and-outputs:
 # WARNING: modifies name
 parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte) -> result/eax: (handle var)
     # pseudocode:
-    #   var v: (handle var) = allocate(Heap, Var-size)
     #   var s: slice
     #   if (!slice-ends-with(name, ":"))
     #     abort
     #   --name->end to skip ':'
     #   next-token-from-slice(name->start, name->end, '/', s)
-    #   v->name = slice-to-string(s)
+    #   result = new-var(slice-to-string(s))
     #   ## register
     #   next-token-from-slice(s->end, name->end, '/', s)
     #   if (!slice-empty?(s))
@@ -3129,25 +3128,20 @@ parse-var-with-type:  # name: (addr slice), first-line: (addr stream byte) -> re
     0f 85/jump-if-!= $parse-var-with-type:abort/disp32
     # --name->end to skip ':'
     ff 1/subop/decrement *(esi+4)
-    # var result/edi: (handle var) = allocate(Heap, Var-size)
-    (allocate Heap *Var-size)  # => eax
-    (zero-out %eax *Var-size)
-    89/<- %edi 0/r32/eax
     # var s/ecx: slice
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
-$parse-var-with-type:save-name:
-    # save v->name
+$parse-var-with-type:parse-name:
     (next-token-from-slice *esi *(esi+4) 0x2f %ecx)  # Slice-start, Slice-end, '/'
-    # . end/edx = s->end
-    8b/-> *(ecx+4) 2/r32/edx
-$parse-var-with-type:write-name:
-    (slice-to-string Heap %ecx)  # => eax
-    89/<- *edi 0/r32/eax  # Var-name
+$parse-var-with-type:create-var:
+    # edi = new-var(slice-to-string(s))
+    (new-var-from-slice Heap %ecx)  # => eax
+    89/<- %edi 0/r32/eax
     # save v->register
 $parse-var-with-type:save-register:
-    (next-token-from-slice %edx *(esi+4) 0x2f %ecx)  # end, name->end, '/'
+    # s = next-token(...)
+    (next-token-from-slice *(ecx+4) *(esi+4) 0x2f %ecx)  # s->end, name->end, '/'
     # if (!slice-empty?(s)) v->register = slice-to-string(s)
     {
 $parse-var-with-type:write-register:
@@ -4382,8 +4376,7 @@ $check-no-tokens-left:end:
 
 parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (addr stack (handle var)), fn: (handle function) -> result/eax: (handle stmt)
     # pseudocode:
-    #   var s: (addr array byte) = slice-to-string(name)
-    #   var v: (handle var) = new-var(s, 0)
+    #   var v: (handle var) = new-literal(name)
     #   v->block-depth = *Curr-block-depth  # containing block depth
     #   push(vars, v)
     #   result = parse-mu-block(in, vars, fn)
@@ -5135,7 +5128,7 @@ $new-function:end:
     5d/pop-to-ebp
     c3/return
 
-new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), type: (addr tree type-id), block: int, offset: int, register: (addr array byte) -> result/eax: (handle var)
+new-var:  # ad: (addr allocation-descriptor), name: (addr array byte) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5143,16 +5136,9 @@ new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), type: (ad
     51/push-ecx
     #
     (allocate *(ebp+8) *Var-size)  # => eax
+    (zero-out %eax *Var-size)
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *eax 1/r32/ecx  # Var-name
-    8b/-> *(ebp+0x10) 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # Var-type
-    8b/-> *(ebp+0x14) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Var-block-depth
-    8b/-> *(ebp+0x18) 1/r32/ecx
-    89/<- *(eax+0xc) 1/r32/ecx  # Var-offset
-    8b/-> *(ebp+0x1c) 1/r32/ecx
-    89/<- *(eax+0x10) 1/r32/ecx  # Var-register
 $new-var:end:
     # . restore registers
     59/pop-to-ecx
@@ -5171,20 +5157,13 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> 
     (is-hex-int? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $new-literal-integer:abort/disp32
-    # var s/ecx: (addr array byte)
-    (slice-to-string Heap *(ebp+0xc))  # => eax
-    89/<- %ecx 0/r32/eax
-    # result/ecx = new var(s)
-    (allocate *(ebp+8) *Var-size)  # => eax
-    (zero-out %eax *Var-size)
-    89/<- *eax 1/r32/ecx  # Var-name
-    89/<- %ecx 0/r32/eax
-    # result->type = new type()
+    # var type/ecx: (handle tree type-id) = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)  # default type is 'literal'
-    89/<- *(ecx+4) 0/r32/eax  # Var-type
-    # move result to eax
-    89/<- %eax 1/r32/ecx
+    89/<- %ecx 0/r32/eax
+    # result = new var(s)
+    (new-var-from-slice *(ebp+8) *(ebp+0xc))  # => eax
+    89/<- *(eax+4) 1/r32/ecx
 $new-literal-integer:end:
     # . restore registers
     59/pop-to-ecx
@@ -5210,43 +5189,40 @@ new-literal:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/e
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
+    52/push-edx
     # var s/ecx: (addr array byte)
     (slice-to-string Heap *(ebp+0xc))  # => eax
     89/<- %ecx 0/r32/eax
-    # result->type = new type()
+    # type = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)  # default type is 'literal'
-    #
-    (new-var *(ebp+8) %ecx %eax *Curr-block-depth 0 0)  # => eax
+    89/<- %edx 0/r32/eax
+    # eax = result
+    (new-var *(ebp+8) %ecx)  # => eax
+    # result->type = type
+    89/<- *(eax+4) 2/r32/edx  # Var-type
+    # result->block-depth = *Curr-block-depth
+    8b/-> *Curr-block-depth 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Var-block-depth
 $new-literal:end:
     # . restore registers
+    5a/pop-to-edx
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-new-label:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
+new-var-from-slice:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var s/ecx: (addr array byte)
+    # result = new-var(slice-to-string(name))
     (slice-to-string Heap *(ebp+0xc))  # => eax
-    89/<- %ecx 0/r32/eax
-    #
-    (allocate *(ebp+8) *Var-size)  # => eax
-    89/<- *eax 1/r32/ecx  # Var-name
-    89/<- %ecx 0/r32/eax
-    (allocate *(ebp+8) *Tree-size)  # => eax
-    (zero-out %eax *Tree-size)  # labels are literals
-    89/<- *(ecx+4) 0/r32/eax  # Var-type
-    89/<- %eax 1/r32/ecx
-    c7 0/subop/copy *(eax+8) 0/imm32  # Var-block-depth
-    c7 0/subop/copy *(eax+0xc) 0/imm32  # Var-offset
-    c7 0/subop/copy *(eax+0x10) 0/imm32  # Var-register
-$new-label:end:
+    (new-var *(ebp+8) %eax)
+$new-var-from-slice:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -5545,6 +5521,7 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice) -> 
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
     56/push-esi
     # esi = find-or-create-typeinfo-fields(T, f)
     (find-or-create-typeinfo-fields *(ebp+8) *(ebp+0xc))  # => eax
@@ -5557,9 +5534,14 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice) -> 
       (allocate Heap *Tree-size)  # => eax
       c7 0/subop/copy *eax 6/imm32/constant  # Atom-value
       c7 0/subop/copy *(eax+4) 0/imm32  # Tree-right
-      (new-var Heap "field" %eax 0 -1 0)  # => eax
-      # offset (constant value) isn't filled out yet
-      # save output var in row
+      89/<- %ecx 0/r32/eax
+      # eax = result
+      (new-var Heap "field")  # => eax
+      # result->type = type
+      89/<- *(eax+4) 1/r32/ecx  # Var-type
+      # result->offset isn't filled out yet
+      c7 0/subop/copy *(eax+0xc) -1/imm32/uninitialized  # Var-offset
+      # save result as output var
       89/<- *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
     }
     # return the output var
@@ -5567,6 +5549,7 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice) -> 
 $find-or-create-typeinfo-output-var:end:
     # . restore registers
     5e/pop-to-esi
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
