@@ -6090,8 +6090,8 @@ $type-equal?:end:
 
 Curr-block-depth:  # (addr int)
     0/imm32
-Next-local-stack-offset:  # (addr int)
-    -4/imm32
+Curr-local-stack-offset:  # (addr int)
+    0/imm32
 
 == code
 
@@ -6151,12 +6151,12 @@ emit-subx-function:  # out: (addr buffered-file), f: (handle function)
     (write-buffered %edi ":\n")
     # initialize some global state
     c7 0/subop/copy *Curr-block-depth 1/imm32
-    c7 0/subop/copy *Next-local-stack-offset -4/imm32
+    c7 0/subop/copy *Curr-local-stack-offset 0/imm32
     #
     (emit-subx-prologue %edi)
     (emit-subx-block %edi *(ecx+0x10) %edx)  # Function-body
     (emit-subx-epilogue %edi)
-    # TODO: validate that *Curr-block-depth and *Next-local-stack-offset have
+    # TODO: validate that *Curr-block-depth and *Curr-local-stack-offset have
     # been cleaned up
 $emit-subx-function:end:
     # . reclaim locals
@@ -6425,8 +6425,8 @@ compute-reg-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (handle re
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $compute-reg-and-maybe-emit-spill:end/disp8
     # TODO: assert(sizeof(output) == 4)
-    # *Next-local-stack-offset -= 4
-    81 5/subop/subtract *Next-local-stack-offset 4/imm32
+    # *Curr-local-stack-offset -= 4
+    81 5/subop/subtract *Curr-local-stack-offset 4/imm32
     # emit spill
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "ff 6/subop/push %")
@@ -6961,13 +6961,13 @@ $clean-up-blocks:reclaim-loop:
       # if (v->block-depth < until-block-depth) break
       39/compare *(eax+8) 1/r32/ecx  # Var-block-depth
       7c/jump-if-< break/disp8
-      # if v is on the stack, update Next-local-stack-offset
+      # if v is on the stack, update Curr-local-stack-offset
       81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
       {
         75/jump-if-!= break/disp8
 $clean-up-blocks:reclaim-var-on-stack:
         (size-of %eax)  # => eax
-        01/add *Next-local-stack-offset 0/r32/eax
+        01/add *Curr-local-stack-offset 0/r32/eax
       }
       (pop %esi)
       e9/jump loop/disp32
@@ -6989,20 +6989,21 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle stmt)
     # . save registers
     50/push-eax
     51/push-ecx
+    52/push-edx
     # eax = stmt
     8b/-> *(ebp+0xc) 0/r32/eax
     # var v/ecx: (handle var)
     8b/-> *(eax+4) 1/r32/ecx
-    # v->offset = *Next-local-stack-offset
-    8b/-> *Next-local-stack-offset 0/r32/eax
-    89/<- *(ecx+0xc) 0/r32/eax  # Var-offset
     # v->block-depth = *Curr-block-depth
     8b/-> *Curr-block-depth 0/r32/eax
     89/<- *(ecx+8) 0/r32/eax  # Var-block-depth
     # var n/eax: int = size-of(stmt->var)
     (size-of %ecx)  # Vardef-var => eax
-    # *Next-local-stack-offset -= n
-    29/subtract-from *Next-local-stack-offset 0/r32/eax
+    # *Curr-local-stack-offset -= n
+    29/subtract-from *Curr-local-stack-offset 0/r32/eax
+    # v->offset = *Curr-local-stack-offset
+    8b/-> *Curr-local-stack-offset 2/r32/edx
+    89/<- *(ecx+0xc) 2/r32/edx  # Var-offset
     # while n > 0
     {
       3d/compare-eax-with 0/imm32
@@ -7016,6 +7017,7 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle stmt)
     }
 $emit-subx-var-def:end:
     # . restore registers
+    5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
