@@ -1,0 +1,636 @@
+== code
+
+# Problem: create a function which pushes n zeros on the stack.
+# This is not a regular function, so it won't be idiomatic.
+# Registers must be properly restored.
+# Registers can be spilled, but that modifies the stack and needs to be
+# cleaned up.
+
+# This file is kinda like a research notebook, to interactively arrive at the
+# solution. Nobody should have to do this without a computer. To run it:
+#   $ ./translate_subx_debug init.linux tools/stack_array.subx  &&  bootstrap --debug --trace --dump run a.elf
+# There are multiple versions. You'll need to uncomment exactly one.
+
+# The final version has its own Entry, but the others share this one.
+#? Entry:
+#?     # . prologue
+#?     89/<- %ebp 4/r32/esp
+#?     #
+#?     68/push 0xfcfdfeff/imm32
+#?     b8/copy-to-eax 0x34353637/imm32
+#? $dump-stack:
+#?     (push-n-zero-bytes 0x20)
+#? $dump-stack2:
+#?     68/push 0x20202020/imm32
+#? $dump-stack3:
+#?     b8/copy-to-eax 1/imm32/exit
+#?     cd/syscall 0x80/imm8
+
+## 0
+
+#? push-n-zero-bytes:  # n: int
+#?     # . prologue
+#?     55/push-ebp
+#?     89/<- %ebp 4/r32/esp
+#? $push-n-zero-bytes:end:
+#?     # . epilogue
+#?     89/<- %esp 5/r32/ebp
+#?     5d/pop-to-ebp
+#?     c3/return
+
+# stack at dump-stack:
+# 0 a: bdffffd0: 00000000     00000000     00000000      00000000
+# 0 a: bdffffe0: 00000000     00000000     00000000      00000000
+# 0 a: bdfffff0: 00000000     fcfdfeff     00000001      bf000000
+#
+# =>
+#
+# stack at dump-stack3:
+# 0 a: stack:
+# 0 a: bdffffd0: 00000000     00000000     00000000      00000000
+# 0 a: bdffffe0: 00000000     00000000     bdfffff8/ebp  090000cc/ra
+# 0 a: bdfffff0: 00000004/arg fcfdfeff     00000001      bf000000
+
+## 1
+
+#? push-n-zero-bytes:  # n: int
+#?     # . prologue
+#?     55/push-ebp
+#?     89/<- %ebp 4/r32/esp
+#?     # . save registers
+#?     50/push-eax
+#? $push-n-zero-bytes:end:
+#?     # . restore registers
+#?     58/pop-to-eax
+#?     # . epilogue
+#?     5d/pop-to-ebp
+#?     c3/return
+
+# stack at dump-stack3:
+# 0 a: bdffffd0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffe0: 00000000 34353637 bdfffff8 090000d1
+# 0 a: bdfffff0: 00000004 fcfdfeff 00000001 bf000000
+
+## 2
+
+#? push-n-zero-bytes:  # n: int
+#?     # . prologue
+#?     55/push-ebp
+#?     89/<- %ebp 4/r32/esp
+#?     # . save registers
+#?     50/push-eax
+#?     #
+#?     8b/-> *(esp+8) 0/r32/eax
+#?     2b/subtract *(ebp+8) 4/r32/esp
+#?     89/<- *(esp+8) 0/r32/eax
+#? $push-n-zero-bytes:end:
+#?     # . restore registers
+#?     58/pop-to-eax
+#?     # . epilogue
+#?     5d/pop-to-ebp
+#?     c3/return
+
+# stack at dump-stack3:
+# 0 a: bdffff90: 00000000 00000000 00000000 00000000
+# 0 a: bdffffa0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffb0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffc0: 00000000 00000000 00000000 090000d1
+# 0 a: bdffffd0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffe0: 00000000 34353637 bdfffff8 090000d1
+# 0 a: bdfffff0: 00000020 fcfdfeff 00000001 bf000000
+
+## 3
+
+#? push-n-zero-bytes:  # n: int
+#?     # . prologue
+#?     55/push-ebp
+#?     89/<- %ebp 4/r32/esp
+#?     # . save registers
+#?     # -- esp = ebp
+#?     50/push-eax
+#?     # -- esp+8 = ebp+4
+#?     8b/-> *(esp+8) 0/r32/eax
+#?     2b/subtract *(ebp+8) 4/r32/esp
+#?     89/<- *(esp+8) 0/r32/eax
+#?     c7 0/subop/copy *(ebp+4) 0/imm32
+#? $push-n-zero-bytes:end:
+#?     # . restore registers
+#?     58/pop-to-eax
+#?     # . epilogue
+#?     5d/pop-to-ebp
+#?     c3/return
+
+# stack at dump-stack3:
+# 0 a: bdffff90: 00000000 00000000 00000000 00000000
+# 0 a: bdffffa0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffb0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffc0: 00000000 00000000 00000000 090000d1
+# 0 a: bdffffd0: 20202020 00000000 00000000 00000000
+# 0 a: bdffffe0: 00000000 34353637 bdfffff8 00000000
+# 0 a: bdfffff0: 00000020 fcfdfeff 00000001 bf000000
+
+## 4
+
+#? push-n-zero-bytes:  # n: int
+#?     # . prologue
+#?     55/push-ebp
+#?     89/<- %ebp 4/r32/esp
+#?     # . save registers
+#?     # -- esp = ebp
+#?     50/push-eax
+#?     # copy return address over
+#?     # -- esp+8 = ebp+4
+#?     8b/-> *(esp+8) 0/r32/eax
+#?     2b/subtract *(ebp+8) 4/r32/esp
+#?     89/<- *(esp+8) 0/r32/eax
+#?     58/pop-to-eax
+#?     c7 0/subop/copy *(ebp+8) 0/imm32
+#?     c7 0/subop/copy *(ebp+4) 0/imm32
+#?     c7 0/subop/copy *(ebp+0) 0/imm32
+#?     c7 0/subop/copy *(ebp-4) 0/imm32
+#?     # . epilogue
+#?     5d/pop-to-ebp
+#?     c3/return
+
+# stack at dump-stack3:
+# 0 a: bdffff90: 00000000 00000000 00000000 00000000
+# 0 a: bdffffa0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffb0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffc0: 00000000 00000000 00000000 090000d1
+# 0 a: bdffffd0: 20202020 00000000 00000000 00000000
+# 0 a: bdffffe0: 00000000 00000000 00000000 00000000
+# 0 a: bdfffff0: 00000000 fcfdfeff 00000001 bf000000
+
+# Stack looks good now (the 20202020 marks where the array length 0x20 will
+# go, and the next 0x20 bytes show the space for the array has been zeroed
+# out).
+# Final issue: ebp has been clobbered on return.
+
+## 5
+
+# I'd like to translate ebp to esp so we can stop pushing ebp. But we need to
+# hold 'n' somewhere, which would require a register, which we then need to
+# push.
+
+#? push-n-zero-bytes:  # n: int
+#?     55/push-ebp
+#?     89/<- %ebp 4/r32/esp
+#?     # -- esp = ebp
+#?     50/push-eax
+#? $push-n-zero-bytes:bulk-cleaning:
+#? $push-n-zero-bytes:copy-ra:
+#?     # -- esp+8 = ebp+4
+#?     8b/-> *(esp+8) 0/r32/eax
+#?     2b/subtract *(esp+0xc) 4/r32/esp
+#?     # -- esp+8+n = ebp+4
+#?     89/<- *(esp+8) 0/r32/eax
+#?     58/pop-to-eax
+#?     # -- esp+n = ebp
+#? $push-n-zero-bytes:spot-cleaning:
+#?     c7 0/subop/copy *(ebp+8) 0/imm32
+#?     c7 0/subop/copy *(ebp+4) 0/imm32
+#?     c7 0/subop/copy *(ebp+0) 0/imm32
+#?     c7 0/subop/copy *(ebp-4) 0/imm32
+#?     5d/pop-to-ebp
+#?     c3/return
+
+# stack at dump-stack3:
+# 0 a: bdffff90: 00000000 00000000 00000000 00000000
+# 0 a: bdffffa0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffb0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffc0: 00000000 00000000 00000000 090000d1
+# 0 a: bdffffd0: 20202020 00000000 00000000 00000000
+# 0 a: bdffffe0: 00000000 00000000 00000000 00000000
+# 0 a: bdfffff0: 00000000 fcfdfeff 00000001 bf000000
+
+# Bah. May be simpler to just create a new segment of global space for this
+# function.
+
+## 6
+
+#? push-n-zero-bytes:  # n: int
+#?     89/<- *Push-n-zero-bytes-ebp 5/r32/ebp  # spill ebp without affecting stack
+#?     89/<- %ebp 4/r32/esp
+#?     # -- esp = ebp
+#?     50/push-eax
+#? $push-n-zero-bytes:bulk-cleaning:
+#? $push-n-zero-bytes:copy-ra:
+#?     # -- esp+8 = ebp+4
+#?     # -- esp+4 = ebp
+#?     8b/-> *(esp+4) 0/r32/eax
+#?     2b/subtract *(ebp+4) 4/r32/esp
+#?     # -- esp+4+n = ebp
+#?     89/<- *(esp+4) 0/r32/eax
+#?     58/pop-to-eax
+#?     # -- esp+n = ebp
+#? $push-n-zero-bytes:spot-cleaning:
+#?     c7 0/subop/copy *(ebp+4) 0/imm32
+#?     c7 0/subop/copy *(ebp+0) 0/imm32
+#?     c7 0/subop/copy *(ebp-4) 0/imm32
+#?     c7 0/subop/copy *(ebp-8) 0/imm32
+#?     8b/-> *Push-n-zero-bytes-ebp 5/r32/ebp  # restore spill
+#?     c3/return
+#? 
+#? == data
+#? Push-n-zero-bytes-ebp:  # (addr int)
+#?   0/imm32
+#? == code
+
+# stack at dump-stack3:
+# 0 a: bdffff90: 00000000 00000000 00000000 00000000
+# 0 a: bdffffa0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffb0: 00000000 00000000 00000000 00000000
+# 0 a: bdffffc0: 00000000 00000000 00000000 090000d1
+# 0 a: bdffffd0: 20202020 00000000 00000000 00000000
+# 0 a: bdffffe0: 00000000 00000000 00000000 00000000
+# 0 a: bdfffff0: 00000000 fcfdfeff 00000001 bf000000
+
+# Ok, we're there. Now start using zero-out rather than spot-cleaning.
+
+## 7: we need to zero out the return address, but we can't do it inside the function.
+## So we'll change the signature slightly.
+## Before: clear N bytes and then push N as the array length.
+## After: clear N bytes, set *esp to N.
+## The helper adds and clears N bytes *before* esp. esp can't be cleared since
+## it contains the return address.
+
+#? Entry:
+#?     # . prologue
+#?     89/<- %ebp 4/r32/esp
+#?     #
+#?     68/push 0xfcfdfeff/imm32
+#?     b8/copy-to-eax 0x34353637/imm32
+#? $dump-stack0:
+#?     (push-n-zero-bytes 0x20)
+#? $dump-stack9:
+#?     c7 0/subop/copy *esp 0x20/imm32
+#? $dump-stacka:
+#?     b8/copy-to-eax 1/imm32/exit
+#?     cd/syscall 0x80/imm8
+#? 
+#? push-n-zero-bytes:  # n: int
+#? $push-n-zero-bytes:prologue:
+#?     89/<- *Push-n-zero-bytes-ebp 5/r32/ebp  # spill ebp without affecting stack
+#?     89/<- %ebp 4/r32/esp
+#? $push-n-zero-bytes:copy-ra:
+#? $dump-stack1:
+#?     # -- esp = ebp
+#?     50/push-eax
+#? $dump-stack2:
+#?     # -- esp+8 = ebp+4
+#?     # -- esp+4 = ebp
+#?     8b/-> *(esp+4) 0/r32/eax
+#? $dump-stack3:
+#?     2b/subtract *(ebp+4) 4/r32/esp
+#? $dump-stack4:
+#?     # -- esp+4+n = ebp
+#?     89/<- *(esp+4) 0/r32/eax
+#? $dump-stack5:
+#?     58/pop-to-eax
+#?     # -- esp+n = ebp
+#? $push-n-zero-bytes:bulk-cleaning:
+#? $dump-stack6:
+#?     89/<- *Push-n-zero-bytes-esp 4/r32/esp
+#?     81 0/subop/add *Push-n-zero-bytes-esp 4/imm32
+#? $dump-stack7:
+#?     (zero-out *Push-n-zero-bytes-esp *(ebp+4))  # n
+#? $push-n-zero-bytes:epilogue:
+#? $dump-stack8:
+#?     8b/-> *Push-n-zero-bytes-ebp 5/r32/ebp  # restore spill
+#?     c3/return
+#? 
+#? zero-out:  # start: (addr byte), len: int
+#?     # pseudocode:
+#?     #   curr/esi = start
+#?     #   i/ecx = 0
+#?     #   while true
+#?     #     if (i >= len) break
+#?     #     *curr = 0
+#?     #     ++curr
+#?     #     ++i
+#?     #
+#?     # . prologue
+#?     55/push-ebp
+#?     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+#?     # . save registers
+#?     50/push-eax
+#?     51/push-ecx
+#?     52/push-edx
+#?     56/push-esi
+#?     # curr/esi = start
+#?     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+#?     # var i/ecx: int = 0
+#?     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+#?     # edx = len
+#?     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+#? $zero-out:loop:
+#?     # if (i >= len) break
+#?     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+#?     7d/jump-if->=  $zero-out:end/disp8
+#?     # *curr = 0
+#?     c6          0/subop/copy        0/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm8            # copy byte to *esi
+#?     # ++curr
+#?     46/increment-esi
+#?     # ++i
+#?     41/increment-ecx
+#?     eb/jump  $zero-out:loop/disp8
+#? $zero-out:end:
+#?     # . restore registers
+#?     5e/pop-to-esi
+#?     5a/pop-to-edx
+#?     59/pop-to-ecx
+#?     58/pop-to-eax
+#?     # . epilogue
+#?     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+#?     5d/pop-to-ebp
+#?     c3/return
+#? 
+#? == data
+#? Push-n-zero-bytes-ebp:  # (addr int)
+#?   0/imm32
+#? Push-n-zero-bytes-esp:  # (addr int)
+#?   0/imm32
+#? == code
+
+# stack at dump-stack0:
+# 0 a: bdffffb0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffc0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffd0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000 
+# 0 a: bdfffff0:  00000000  [fcfdfeff]  00000001   bf000000 
+
+# desired state after push-n-zero-bytes:
+# 0 a: bdffff90:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffa0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffb0:  00000000   00000000   00000000   bdffffec 
+# 0 a: bdffffc0:  0900012a   bdffffd0   00000020   090000d1 
+# 0 a: bdffffd0: [rrrrrrrr]  00000000   00000000   00000000 
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000 
+# 0 a: bdfffff0:  00000000   fcfdfeff   00000001   bf000000 
+
+# Stack pointer contains ra is caller's responsibility to over-write with array length.
+
+# actual state:
+# 0 a: bdffff90:  00000000   00000000   00000000   00000000
+# 0 a: bdffffa0:  00000000   00000000   00000000   00000000
+# 0 a: bdffffb0:  00000000   00000000   00000000   bdffffec
+# 0 a: bdffffc0:  0900012a   bdffffd0   00000020   090000d1
+# 0 a: bdffffd0:  00000000  [00000000]  00000000   00000000
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000
+# 0 a: bdfffff0:  00000020   fcfdfeff   00000001   bf000000
+
+# Couple of issues. But where does the return address disappear to?
+
+## 8:
+
+#? Entry:
+#?     # . prologue
+#?     89/<- %ebp 4/r32/esp
+#?     #
+#?     68/push 0xfcfdfeff/imm32
+#?     b8/copy-to-eax 0x34353637/imm32
+#? $dump-stack0:
+#?     (push-n-zero-bytes 0x20)
+#? $dump-stack9:
+#?     68/push 0x20/imm32
+#? #?     c7 0/subop/copy *esp 0x20/imm32
+#? $dump-stacka:
+#?     b8/copy-to-eax 1/imm32/exit
+#?     cd/syscall 0x80/imm8
+#? 
+#? push-n-zero-bytes:  # n: int
+#? $push-n-zero-bytes:prologue:
+#?     89/<- *Push-n-zero-bytes-ebp 5/r32/ebp  # spill ebp without affecting stack
+#?     89/<- %ebp 4/r32/esp
+#? $push-n-zero-bytes:copy-ra:
+#? $dump-stack1:
+#?     # -- esp = ebp
+#?     50/push-eax
+#? $dump-stack2:
+#?     # -- esp+8 = ebp+4
+#?     # -- esp+4 = ebp
+#?     8b/-> *(esp+4) 0/r32/eax
+#? $dump-stack3:
+#?     2b/subtract *(ebp+4) 4/r32/esp
+#? $dump-stack4:
+#?     # -- esp+4+n = ebp
+#?     89/<- *(esp+4) 0/r32/eax
+#? $dump-stack5:
+#?     58/pop-to-eax
+#?     # -- esp+n = ebp
+#? $push-n-zero-bytes:bulk-cleaning:
+#? $dump-stack6:
+#?     89/<- *Push-n-zero-bytes-esp 4/r32/esp
+#?     81 0/subop/add *Push-n-zero-bytes-esp 4/imm32
+#? $dump-stack7:
+#?     (zero-out *Push-n-zero-bytes-esp *(ebp+4))  # n
+#? $push-n-zero-bytes:epilogue:
+#? $dump-stack8:
+#?     8b/-> *Push-n-zero-bytes-ebp 5/r32/ebp  # restore spill
+#?     c3/return
+#? 
+#? zero-out:  # start: (addr byte), len: int
+#?     # pseudocode:
+#?     #   curr/esi = start
+#?     #   i/ecx = 0
+#?     #   while true
+#?     #     if (i >= len) break
+#?     #     *curr = 0
+#?     #     ++curr
+#?     #     ++i
+#?     #
+#?     # . prologue
+#?     55/push-ebp
+#?     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+#?     # . save registers
+#?     50/push-eax
+#?     51/push-ecx
+#?     52/push-edx
+#?     56/push-esi
+#?     # curr/esi = start
+#?     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+#?     # var i/ecx: int = 0
+#?     31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+#?     # edx = len
+#?     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+#? $zero-out:loop:
+#?     # if (i >= len) break
+#?     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+#?     7d/jump-if->=  $zero-out:end/disp8
+#?     # *curr = 0
+#?     c6          0/subop/copy        0/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm8            # copy byte to *esi
+#?     # ++curr
+#?     46/increment-esi
+#?     # ++i
+#?     41/increment-ecx
+#?     eb/jump  $zero-out:loop/disp8
+#? $zero-out:end:
+#?     # . restore registers
+#?     5e/pop-to-esi
+#?     5a/pop-to-edx
+#?     59/pop-to-ecx
+#?     58/pop-to-eax
+#?     # . epilogue
+#?     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+#?     5d/pop-to-ebp
+#?     c3/return
+#? 
+#? == data
+#? Push-n-zero-bytes-ebp:  # (addr int)
+#?   0/imm32
+#? Push-n-zero-bytes-esp:  # (addr int)
+#?   0/imm32
+#? == code
+
+# stack at dump-stack0:
+# 0 a: bdffffb0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffc0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffd0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000 
+# 0 a: bdfffff0:  00000000  [fcfdfeff]  00000001   bf000000 
+
+# desired state after push-n-zero-bytes:
+# 0 a: bdffff90:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffa0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffb0:  00000000   00000000   00000000   bdffffec 
+# 0 a: bdffffc0:  0900012a   bdffffd0   00000020   090000d1 
+# 0 a: bdffffd0: [rrrrrrrr]  00000000   00000000   00000000 
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000 
+# 0 a: bdfffff0:  00000000   fcfdfeff   00000001   bf000000 
+
+# actual state:
+# 0 a: bdffff90:  00000000   00000000   00000000   00000000
+# 0 a: bdffffa0:  00000000   00000000   00000000   00000000
+# 0 a: bdffffb0:  00000000   00000000   00000000   bdffffec
+# 0 a: bdffffc0:  09000124   bdffffd0   00000020   090000d1
+# 0 a: bdffffd0: [00000000]  00000000   00000000   00000000
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000
+# 0 a: bdfffff0:  00000020   fcfdfeff   00000001   bf000000
+
+# Ok, just one diff, at bdfffff0
+
+## 9:
+
+Entry:
+    # . prologue
+    89/<- %ebp 4/r32/esp
+    #
+    68/push 0xfcfdfeff/imm32
+    b8/copy-to-eax 0x34353637/imm32
+$dump-stack0:
+    (push-n-zero-bytes 0x20)
+$dump-stack9:
+    68/push 0x20/imm32
+$dump-stacka:
+    b8/copy-to-eax 1/imm32/exit
+    cd/syscall 0x80/imm8
+
+push-n-zero-bytes:  # n: int
+$push-n-zero-bytes:prologue:
+    89/<- *Push-n-zero-bytes-ebp 5/r32/ebp  # spill ebp without affecting stack
+    89/<- %ebp 4/r32/esp
+$push-n-zero-bytes:copy-ra:
+$dump-stack1:
+    # -- esp = ebp
+    50/push-eax
+$dump-stack2:
+    # -- esp+8 = ebp+4
+    # -- esp+4 = ebp
+    8b/-> *(esp+4) 0/r32/eax
+$dump-stack3:
+    2b/subtract *(ebp+4) 4/r32/esp
+$dump-stack4:
+    # -- esp+4+n = ebp
+    89/<- *(esp+4) 0/r32/eax
+$dump-stack5:
+    58/pop-to-eax
+    # -- esp+n = ebp
+$push-n-zero-bytes:bulk-cleaning:
+$dump-stack6:
+    89/<- *Push-n-zero-bytes-esp 4/r32/esp
+    81 0/subop/add *Push-n-zero-bytes-esp 4/imm32
+$dump-stack7:
+    81 0/subop/add *(ebp+4) 4/imm32
+    (zero-out *Push-n-zero-bytes-esp *(ebp+4))  # n
+$push-n-zero-bytes:epilogue:
+$dump-stack8:
+    8b/-> *Push-n-zero-bytes-ebp 5/r32/ebp  # restore spill
+    c3/return
+
+zero-out:  # start: (addr byte), len: int
+    # pseudocode:
+    #   curr/esi = start
+    #   i/ecx = 0
+    #   while true
+    #     if (i >= len) break
+    #     *curr = 0
+    #     ++curr
+    #     ++i
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    56/push-esi
+    # curr/esi = start
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # var i/ecx: int = 0
+    31/xor                          3/mod/direct    1/rm32/ecx    .           .             .           1/r32/ecx   .               .                 # clear ecx
+    # edx = len
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
+$zero-out:loop:
+    # if (i >= len) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    7d/jump-if->=  $zero-out:end/disp8
+    # *curr = 0
+    c6          0/subop/copy        0/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm8            # copy byte to *esi
+    # ++curr
+    46/increment-esi
+    # ++i
+    41/increment-ecx
+    eb/jump  $zero-out:loop/disp8
+$zero-out:end:
+    # . restore registers
+    5e/pop-to-esi
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+== data
+Push-n-zero-bytes-ebp:  # (addr int)
+  0/imm32
+Push-n-zero-bytes-esp:  # (addr int)
+  0/imm32
+== code
+
+# stack at dump-stack0:
+# 0 a: bdffffb0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffc0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffd0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000 
+# 0 a: bdfffff0:  00000000  [fcfdfeff]  00000001   bf000000 
+
+# desired state after push-n-zero-bytes:
+# 0 a: bdffff90:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffa0:  00000000   00000000   00000000   00000000 
+# 0 a: bdffffb0:  00000000   00000000   00000000   bdffffec 
+# 0 a: bdffffc0:  0900012a   bdffffd0   00000020   090000d1 
+# 0 a: bdffffd0: [xxxxxxxx]  00000000   00000000   00000000 
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000 
+# 0 a: bdfffff0:  00000000   fcfdfeff   00000001   bf000000 
+
+# actual state:
+# 0 a: bdffff90:  00000000   00000000   00000000   00000000
+# 0 a: bdffffa0:  00000000   00000000   00000000   00000000
+# 0 a: bdffffb0:  00000000   00000000   00000000   bdffffec
+# 0 a: bdffffc0:  0900012f   bdffffd0   00000024   090000d1
+# 0 a: bdffffd0: [00000000]  00000000   00000000   00000000
+# 0 a: bdffffe0:  00000000   00000000   00000000   00000000
+# 0 a: bdfffff0:  00000000   fcfdfeff   00000001   bf000000

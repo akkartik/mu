@@ -93,6 +93,32 @@ if (!Watch_this_effective_address.empty()) {
   put(Watch_points, Watch_this_effective_address, addr);
 }
 
+//: If a label starts with '$dump-stack', dump out to the trace n bytes on
+//: either side of ESP.
+
+:(after "Run One Instruction")
+if (contains_key(Symbol_name, EIP) && starts_with(get(Symbol_name, EIP), "$dump-stack")) {
+  dump_stack(64);
+}
+:(code)
+void dump_stack(int n) {
+  uint32_t stack_pointer = Reg[ESP].u;
+  uint32_t start = ((stack_pointer-n)&0xfffffff0);
+  dbg << "stack:" << end();
+  for (uint32_t addr = start;  addr < start+n*2;  addr+=16) {
+    if (addr >= AFTER_STACK) break;
+    ostringstream out;
+    out << HEXWORD << addr << ":";
+    for (int i = 0;  i < 16;  i+=4) {
+      out << ' ';
+      out << ((addr+i == stack_pointer) ? '[' : ' ');
+      out << HEXWORD << read_mem_u32(addr+i);
+      out << ((addr+i == stack_pointer) ? ']' : ' ');
+    }
+    dbg << out.str() << end();
+  }
+}
+
 //: Special label that dumps regions of memory.
 //: Not a general mechanism; by the time you get here you're willing to hack
 //: on the emulator.
