@@ -5937,14 +5937,23 @@ compute-size-of-var:  # in: (handle var) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # eax: (handle var) = in
-    8b/-> *(ebp+8) 0/r32/eax
-    # eax: type-id = in->type
-    8b/-> *(eax+4) 0/r32/eax  # Var-type
-    # TODO: support non-atom type
+    # . push registers
+    51/push-ecx
+    # var t/ecx: (handle tree type-id) = v->type
+    8b/-> *(ebp+8) 1/r32/ecx
+    8b/-> *(ecx+4) 1/r32/ecx  # Var-type
+    # if (t->left >= *Max-type-id) t = t->left
+    {
+      8b/-> *Max-type-id 0/r32/eax
+      39/compare *ecx 0/r32/eax  # Tree-left
+      72/jump-if-addr< break/disp8
+      8b/-> *ecx 1/r32/ecx  # Tree-left
+    }
     # TODO: support arrays
-    (compute-size-of-type-id *eax)  # Atom-left => eax
+    (compute-size-of-type-id *ecx)  # Atom-left => eax
 $compute-size-of-var:end:
+    # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
