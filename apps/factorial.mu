@@ -36,10 +36,9 @@ fn main args: (addr array kernel-string) -> exit-status/ebx: int {
       break $main-body
     }
     # if (args[1] == "test") run-tests()
-    var tmp2/ecx: int <- copy 1  # we need this just because we don't yet support `index` on literals; requires some translation-time computation
-    var tmp3/ecx: (addr kernel-string) <- index a, tmp2
-    var tmp4/eax: boolean <- kernel-string-equal? *tmp3, "test"
-    compare tmp4, 0
+    var tmp2/ecx: (addr kernel-string) <- index a, 1
+    var tmp3/eax: boolean <- kernel-string-equal? *tmp2, "test"
+    compare tmp3, 0
     {
       break-if-=
       run-tests
