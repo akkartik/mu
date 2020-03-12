@@ -210,9 +210,13 @@ Array operations
 var/reg <- length arr/reg2: (addr array T)
                             {.name="length",          .inouts=[reg2], .outputs=[reg1],  .subx-name="8b/copy-from",          .rm32="*" inouts[0],                        .r32=outputs[0]}
 var/reg <- index arr/rega: (addr array T), idx/regi: int
-                            {.name="index",           .inouts=[rega, regi], .outputs=[reg], .subx-name="8d/copy-address",   .rm32="*(" inouts[0] "+" inouts[1] "<<2)",  .r32=outputs[0]}
+                            {.name="index",           .inouts=[rega, regi], .outputs=[reg], .subx-name="8d/copy-address",   .rm32="*(" inouts[0] "+" inouts[1] "<<" log2(sizeof(T)) "+4)", .r32=outputs[0]}
+var/reg <- index arr: (array T sz), idx/regi: int
+                            {.name="index",           .inouts=[arr, regi], .outputs=[reg], .subx-name="8d/copy-address",    .rm32="*(ebp+" inouts[1] "<<" log2(sizeof(T)) " + " inouts[0].stack-offset+4 ")",  .r32=outputs[0]}
 var/reg <- index arr/rega: (addr array T), n
                             {.name="index",           .inouts=[rega, n], .outputs=[reg], .subx-name="8d/copy-address",      .rm32="*(" inouts[0] "+" inouts[1]*size(T) ")",  .r32=outputs[0]}
+var/reg <- index arr: (array T sz), n
+                            {.name="index",           .inouts=[arr, n], .outputs=[reg], .subx-name="8d/copy-address",       .rm32="*(ebp+" inouts[0].stack-offset+4 + inouts[1]*size(T) ")",  .r32=outputs[0]}
 
 var/reg: (offset T) <- compute-offset arr: (addr array T), idx/regi: int  # arr can be in reg or mem
                             {.name="compute-offset",  .inouts=[arr, regi],  .outputs=[reg], .subx-name="69/multiply",       .rm32=inouts[1],                            .r32=outputs[0],    .imm32=sizeof(T)}

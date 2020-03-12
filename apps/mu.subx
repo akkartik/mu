@@ -2398,6 +2398,114 @@ test-convert-index-into-array-with-literal:
     5d/pop-to-ebp
     c3/return
 
+test-convert-index-into-array-on-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr: (array int 3)\n")
+    (write _test-input-stream "  var idx/eax: int <- copy 2\n")
+    (write _test-input-stream "  var x/eax: (addr int) <- index arr, idx\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-index-into-array-on-stack/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-index-into-array-on-stack/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-index-into-array-on-stack/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-index-into-array-on-stack/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-index-into-array-on-stack/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-index-into-array-on-stack/5")
+    # var arr
+    (check-next-stream-line-equal _test-output-stream "    (push-n-zero-bytes 0x0000000c)"          "F - test-convert-index-into-array-on-stack/6")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0x0000000c/imm32"                "F - test-convert-index-into-array-on-stack/7")
+    # var idx
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array-on-stack/8")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 2/imm32"                  "F - test-convert-index-into-array-on-stack/9")
+    # var x is at (ebp-0x10) + idx<<2 + 4 = ebp + idx<<2 - 0xc
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp + eax<<0x00000002 + 0xfffffff4) 0x00000000/r32"  "F - test-convert-index-into-array-on-stack/10")
+    # reclaim idx
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array-on-stack/11")
+    # reclaim arr
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000010/imm32"    "F - test-convert-index-into-array-on-stack/12")
+    #
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array-on-stack/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array-on-stack/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array-on-stack/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array-on-stack/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array-on-stack/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array-on-stack/18")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-convert-index-into-array-on-stack-with-literal:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var arr: (array int 3)\n")
+    (write _test-input-stream "  var x/eax: (addr int) <- index arr, 2\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                                        "F - test-convert-index-into-array-on-stack-with-literal/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"                              "F - test-convert-index-into-array-on-stack-with-literal/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"                               "F - test-convert-index-into-array-on-stack-with-literal/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"                      "F - test-convert-index-into-array-on-stack-with-literal/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                                         "F - test-convert-index-into-array-on-stack-with-literal/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-index-into-array-on-stack-with-literal/5")
+    # var arr
+    (check-next-stream-line-equal _test-output-stream "    (push-n-zero-bytes 0x0000000c)"          "F - test-convert-index-into-array-on-stack-with-literal/6")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0x0000000c/imm32"                "F - test-convert-index-into-array-on-stack-with-literal/7")
+    # var x
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array-on-stack-with-literal/8")
+    # x is at (ebp-0x10) + 4 + 2*4 = ebp-4
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp + 0xfffffffc) 0x00000000/r32"  "F - test-convert-index-into-array-on-stack-with-literal/9")
+    # reclaim x
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array-on-stack-with-literal/10")
+    # reclaim arr
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000010/imm32"    "F - test-convert-index-into-array-on-stack-with-literal/11")
+    #
+    (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array-on-stack-with-literal/12")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"                      "F - test-convert-index-into-array-on-stack-with-literal/13")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"                              "F - test-convert-index-into-array-on-stack-with-literal/14")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"                      "F - test-convert-index-into-array-on-stack-with-literal/15")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"                             "F - test-convert-index-into-array-on-stack-with-literal/16")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"                                 "F - test-convert-index-into-array-on-stack-with-literal/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-index-into-array-using-offset:
     # . prologue
     55/push-ebp
@@ -6663,7 +6771,7 @@ compute-reg-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (handle re
     (already-spilled-this-block? %ecx *(ebp+0x10))  # => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-!= $compute-reg-and-maybe-emit-spill:end/disp8
-    # TODO: assert(sizeof(output) == 4)
+    # TODO: assert(size-of(output) == 4)
     # *Curr-local-stack-offset -= 4
     81 5/subop/subtract *Curr-local-stack-offset 4/imm32
     # emit spill
@@ -7397,6 +7505,58 @@ translate-mu-index-stmt:  # out: (address buffered-file), stmt: (handle stmt)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    51/push-ecx
+    # var base/ecx: (handle var) = stmt->inouts[0]
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
+    8b/-> *ecx 1/r32/ecx  # Stmt-var-value
+    # if (var->register) do one thing
+    {
+      81 7/subop/compare *(ecx+0x10) 0/imm32  # Var-register
+      74/jump-if-= break/disp8
+      # TODO: ensure there's no dereference
+      (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc))
+      eb/jump $translate-mu-index-stmt:end/disp8
+    }
+    # if (var->offset) do a different thing
+    {
+      81 7/subop/compare *(ecx+0xc) 0/imm32  # Var-offset
+      74/jump-if-= break/disp8
+      # TODO: ensure there's no dereference
+      (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc))
+      eb/jump $translate-mu-index-stmt:end/disp8
+    }
+$translate-mu-index-stmt:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+$translate-mu-index-stmt-with-array:error1:
+    (write-buffered Stderr "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+$translate-mu-index-stmt-with-array:error2:
+    (write-buffered Stderr "couldn't translate an index instruction. second (index) input when in a register must be an int or offset\n")
+    (flush Stderr)
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+translate-mu-index-stmt-with-array-in-register:  # out: (address buffered-file), stmt: (handle stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
     50/push-eax
     51/push-ecx
     52/push-edx
@@ -7405,7 +7565,7 @@ translate-mu-index-stmt:  # out: (address buffered-file), stmt: (handle stmt)
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "8d/copy-address *(")
     # TODO: ensure inouts[0] is in a register and not dereferenced
-$translate-mu-index-stmt:emit-base:
+$translate-mu-index-stmt-with-array-in-register:emit-base:
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var base/ebx: (handle var) = inouts[0]
@@ -7415,62 +7575,61 @@ $translate-mu-index-stmt:emit-base:
     (write-buffered *(ebp+8) *(ebx+0x10))  # Var-register
     #
     (write-buffered *(ebp+8) " + ")
-    # var idx/edx: (handle var) = inouts[1]
+    # var index/edx: (handle var) = inouts[1]
     8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
     8b/-> *(edx+4) 2/r32/edx  # Stmt-var-next
     8b/-> *edx 2/r32/edx  # Stmt-var-value
-    # if inouts[1]->register
+    # if index->register
     81 7/subop/compare *(edx+0x10) 0/imm32  # Var-register
     {
       0f 84/jump-if-= break/disp32
-$translate-mu-index-stmt:emit-register-index:
-      # if inouts[1] is an int
+$translate-mu-index-stmt-with-array-in-register:emit-register-index:
+      # if index is an int
       (is-simple-mu-type? *(edx+4) 1)  # Var-type, int => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
-$translate-mu-index-stmt:emit-int-register-index:
-        # print inouts[1]->register "<<" log2(sizeof(element(inouts[0]->type))) " + 4) "
-        # . inouts[1]->register "<<"
+$translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
+        # print index->register "<<" log2(size-of(element(base->type))) " + 4) "
+        # . index->register "<<"
         (write-buffered *(ebp+8) *(edx+0x10))  # Var-register
         (write-buffered *(ebp+8) "<<")
-        # . log2(sizeof(element(inouts[0]->type)))
+        # . log2(size-of(element(base->type)))
         # TODO: ensure size is a power of 2
         (array-element-type-id %ebx)  # => eax
         (size-of-type-id %eax)  # => eax
         (num-shift-rights %eax)  # => eax
         (print-int32-buffered *(ebp+8) %eax)
-        e9/jump $translate-mu-index-stmt:emit-register-index-done/disp32
+        e9/jump $translate-mu-index-stmt-with-array-in-register:emit-register-index-done/disp32
       }
-      # if inouts[1]->type is any other atom, abort
+      # if index->type is any other atom, abort
       8b/-> *(edx+4) 0/r32/eax  # Var-type
       8b/-> *eax 0/r32/eax  # Tree-left or Atom-value
       3b/compare 0/r32/eax *Max-type-id
-      0f 82/jump-if-addr< $translate-mu-index-stmt:error2/disp32
-      # if inouts[1] is (offset ...)
+      0f 82/jump-if-addr< $translate-mu-index-stmt-with-array:error2/disp32
+      # if index has type (offset ...)
       (is-simple-mu-type? %eax 7)  # offset => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
-        # print inouts[1]->register "<<" log2(sizeof(element(inouts[0]->type))) " + 4) "
-$translate-mu-index-stmt:emit-offset-register-index:
-        # . inouts[1]->register
+        # print index->register " + 4) "
+$translate-mu-index-stmt-with-array-in-register:emit-offset-register-index:
         (write-buffered *(ebp+8) *(edx+0x10))  # Var-register
       }
-$translate-mu-index-stmt:emit-register-index-done:
+$translate-mu-index-stmt-with-array-in-register:emit-register-index-done:
       (write-buffered *(ebp+8) " + 4) ")
-      e9/jump $translate-mu-index-stmt:emit-output/disp32
+      e9/jump $translate-mu-index-stmt-with-array-in-register:emit-output/disp32
     }
-    # otherwise if inouts[1] is a literal
+    # otherwise if index is a literal
     (is-simple-mu-type? *(edx+4) 0)  # Var-type => eax
     3d/compare-eax-and 0/imm32/false
     {
       0f 84/jump-if-= break/disp32
-$translate-mu-index-stmt:emit-literal-index:
-      # var idx-value/edx: int = parse-hex-int(inouts[1]->name)
+$translate-mu-index-stmt-with-array-in-register:emit-literal-index:
+      # var index-value/edx: int = parse-hex-int(index->name)
       (parse-hex-int *edx)  # Var-name => eax
       89/<- %edx 0/r32/eax
-      # offset = n * sizeof(element(inouts[0]->type))
+      # offset = idx-value * size-of(element(base->type))
       (array-element-type-id %ebx)  # => eax
       (size-of-type-id %eax)  # => eax
       f7 4/subop/multiply-into-eax %edx  # clobbers edx
@@ -7480,18 +7639,19 @@ $translate-mu-index-stmt:emit-literal-index:
       # print offset
       (print-int32-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) ") ")
-      e9/jump $translate-mu-index-stmt:emit-output/disp32
+      e9/jump $translate-mu-index-stmt-with-array-in-register:emit-output/disp32
     }
     # otherwise abort
-    e9/jump $translate-mu-index-stmt:error1/disp32
-$translate-mu-index-stmt:emit-output:
+    e9/jump $translate-mu-index-stmt-with-array:error1/disp32
+$translate-mu-index-stmt-with-array-in-register:emit-output:
     # outputs[0] "/r32"
+    8b/-> *(ebp+0xc) 1/r32/ecx
     8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
     8b/-> *eax 0/r32/eax  # Stmt-var-value
     (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
-$translate-mu-index-stmt:end:
+$translate-mu-index-stmt-with-array-in-register:end:
     # . restore registers
     5b/pop-to-ebx
     5a/pop-to-edx
@@ -7502,23 +7662,117 @@ $translate-mu-index-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-$translate-mu-index-stmt:error1:
-    (write-buffered Stderr "couldn't translate an index instruction. second (index) input must either lie in a register or be a literal\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
-    # never gets here
-
-$translate-mu-index-stmt:error2:
-    (write-buffered Stderr "couldn't translate an index instruction. second (index) input when in a register must be an int or offset\n")
-    (flush Stderr)
-    # . syscall(exit, 1)
-    bb/copy-to-ebx  1/imm32
-    b8/copy-to-eax  1/imm32/exit
-    cd/syscall  0x80/imm8
-    # never gets here
+translate-mu-index-stmt-with-array-on-stack:  # out: (address buffered-file), stmt: (handle stmt)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    #
+    (emit-indent *(ebp+8) *Curr-block-depth)
+    (write-buffered *(ebp+8) "8d/copy-address *(ebp + ")
+    # var curr/eax = stmt->inouts
+    8b/-> *(ebp+0xc) 0/r32/eax
+    # var base/ecx: (handle var) = stmt->inouts[0]
+    8b/-> *(eax+8) 0/r32/eax  # Stmt1-inouts
+    8b/-> *eax 1/r32/ecx  # Stmt-var-value
+    # curr = curr->next
+    8b/-> *(eax+4) 0/r32/eax  # Stmt-var-next
+    # var index/edx: (handle var) = stmt->inouts[1]
+    8b/-> *eax 2/r32/edx  # Stmt-var-value
+    # if index->register
+    81 7/subop/compare *(edx+0x10) 0/imm32  # Var-register
+    {
+      0f 84/jump-if-= break/disp32
+$translate-mu-index-stmt-with-array-on-stack:emit-register-index:
+      # if index is an int
+      (is-simple-mu-type? *(edx+4) 1)  # Var-type, int => eax
+      3d/compare-eax-and 0/imm32/false
+      {
+        0f 84/jump-if-= break/disp32
+$translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
+        # print index->register "<<" log2(size-of(element-type(base))) " + " base->offset+4
+        # . inouts[1]->register "<<"
+        (write-buffered *(ebp+8) *(edx+0x10))  # Var-register
+        (write-buffered *(ebp+8) "<<")
+        # . log2(size-of(element(base)))
+        # TODO: ensure size is a power of 2
+        (array-element-type-id %ecx)  # => eax
+        (size-of-type-id %eax)  # => eax
+        (num-shift-rights %eax)  # => eax
+        (print-int32-buffered *(ebp+8) %eax)
+        #
+        (write-buffered *(ebp+8) " + ")
+        #
+        8b/-> *(ecx+0xc) 0/r32/eax  # Var-offset
+        05/add-to-eax 4/imm32
+        (print-int32-buffered *(ebp+8) %eax)
+        e9/jump $translate-mu-index-stmt-with-array-on-stack:emit-register-index-done/disp32
+      }
+      # if index->type is any other atom, abort
+      8b/-> *(edx+4) 0/r32/eax  # Var-type
+      8b/-> *eax 0/r32/eax  # Tree-left or Atom-value
+      3b/compare 0/r32/eax *Max-type-id
+      0f 82/jump-if-addr< $translate-mu-index-stmt-with-array:error2/disp32
+      # if index has type (offset ...)
+      (is-simple-mu-type? %eax 7)  # offset => eax
+      3d/compare-eax-and 0/imm32/false
+      {
+        0f 84/jump-if-= break/disp32
+        # print index->register
+$translate-mu-index-stmt-with-array-on-stack:emit-offset-register-index:
+        (write-buffered *(ebp+8) *(edx+0x10))  # Var-register
+      }
+$translate-mu-index-stmt-with-array-on-stack:emit-register-index-done:
+      (write-buffered *(ebp+8) ") ")
+      e9/jump $translate-mu-index-stmt-with-array-on-stack:emit-output/disp32
+    }
+    # otherwise if index is a literal
+    (is-simple-mu-type? *(edx+4) 0)  # Var-type => eax
+    3d/compare-eax-and 0/imm32/false
+    {
+      0f 84/jump-if-= break/disp32
+$translate-mu-index-stmt-with-array-on-stack:emit-literal-index:
+      # var idx-value/edx: int = parse-hex-int(index->name)
+      (parse-hex-int *edx)  # Var-name => eax
+      89/<- %ebx 0/r32/eax
+      # offset = idx-value * size-of(element-type(base->type))
+      (array-element-type-id %ecx)  # => eax
+      (size-of-type-id %eax)  # => eax
+      f7 4/subop/multiply-into-eax %ebx  # clobbers edx
+      # offset += base->offset
+      03/add-to 0/r32/eax *(ecx+0xc)  # Var-offset
+      # offset += 4 for array size
+      05/add-to-eax 4/imm32
+      # TODO: check edx for overflow
+      # print offset
+      (print-int32-buffered *(ebp+8) %eax)
+      (write-buffered *(ebp+8) ") ")
+      e9/jump $translate-mu-index-stmt-with-array-on-stack:emit-output/disp32
+    }
+    # otherwise abort
+    e9/jump $translate-mu-index-stmt-with-array:error1/disp32
+$translate-mu-index-stmt-with-array-on-stack:emit-output:
+    # outputs[0] "/r32"
+    8b/-> *(ebp+0xc) 0/r32/eax
+    8b/-> *(eax+0xc) 0/r32/eax  # Stmt1-outputs
+    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (get Registers *(eax+0x10) 8 "Registers")  # Var-register => eax
+    (print-int32-buffered *(ebp+8) *eax)
+    (write-buffered *(ebp+8) "/r32\n")
+$translate-mu-index-stmt-with-array-on-stack:end:
+    # . restore registers
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
 
 translate-mu-compute-index-stmt:  # out: (address buffered-file), stmt: (handle stmt)
     # . prologue
@@ -7539,7 +7793,7 @@ $translate-mu-compute-index-stmt:emit-elem-size:
     8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
     # var base/ebx: (handle var)
     8b/-> *edx 3/r32/ebx  # Stmt-var-value
-    # print sizeof(element(base->type))
+    # print size-of(element(base->type))
     (array-element-type-id %ebx)  # => eax
     (size-of-type-id %eax)  # => eax
     (print-int32-buffered *(ebp+8) %eax)
