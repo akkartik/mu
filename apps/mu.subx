@@ -2212,6 +2212,52 @@ test-convert-function-with-nonlocal-unconditional-loop-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-with-local-array-var-in-mem:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x: (array int 3)\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-with-local-array-var-in-mem/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-with-local-array-var-in-mem/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-with-local-array-var-in-mem/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-with-local-array-var-in-mem/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-with-local-array-var-in-mem/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-function-with-local-array-var-in-mem/5")
+    # define x
+    (check-next-stream-line-equal _test-output-stream "    (push-n-zero-bytes 0x0000000c)"  "F - test-convert-function-with-local-array-var-in-mem/7")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0x0000000c/imm32"  "F - test-convert-function-with-local-array-var-in-mem/8")
+    # reclaim x
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000010/imm32"  "F - test-convert-function-with-local-array-var-in-mem/9")
+    #
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-with-local-array-var-in-mem/10")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-function-with-local-array-var-in-mem/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-with-local-array-var-in-mem/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-with-local-array-var-in-mem/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-with-local-array-var-in-mem/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-with-local-array-var-in-mem/15")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-length-of-array:
     # . prologue
     55/push-ebp
@@ -3341,6 +3387,15 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
       (slice-equal? %ecx "(")
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
+      # EGREGIOUS HACK for static array sizes: if s is a number, parse it
+      {
+        (is-hex-int? %ecx)  # => eax
+        3d/compare-eax-and 0/imm32/false
+        74/jump-if-= break/disp8
+        (parse-hex-int-from-slice %ecx)  # => eax
+        89/<- *edx 0/r32/eax  # Tree-left
+        e9/jump $parse-type:return-edx/disp32
+      }
       # result->left = pos-or-insert-slice(Type-id, s)
       (pos-or-insert-slice Type-id %ecx)  # => eax
 #?       (write-buffered Stderr "=> {")
@@ -5949,7 +6004,6 @@ compute-size-of-var:  # in: (handle var) -> result/eax: int
       72/jump-if-addr< break/disp8
       8b/-> *ecx 1/r32/ecx  # Tree-left
     }
-    # TODO: support arrays
     (compute-size-of-type-id *ecx)  # Atom-left => eax
 $compute-size-of-var:end:
     # . restore registers
@@ -6121,6 +6175,14 @@ size-of:  # v: (handle var) -> result/eax: int
     # var t/ecx: (handle tree type-id) = v->type
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ecx+4) 1/r32/ecx  # Var-type
+    # if is-mu-array?(t) return size-of-array(t)
+    {
+      (is-mu-array? %ecx)  # => eax
+      3d/compare-eax-and 0/imm32/false
+      74/jump-if-= break/disp8
+      (size-of-array %ecx)  # => eax
+      eb/jump $size-of:end/disp8
+    }
     # if (t->left >= *Max-type-id) t = t->left
     {
       8b/-> *Max-type-id 0/r32/eax
@@ -6128,10 +6190,65 @@ size-of:  # v: (handle var) -> result/eax: int
       72/jump-if-addr< break/disp8
       8b/-> *ecx 1/r32/ecx  # Tree-left
     }
-    # TODO: support arrays
     (size-of-type-id *ecx)  # Atom-left => eax
 $size-of:end:
     # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+is-mu-array?:  # t: (handle tree type-id) -> result/eax: boolean
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    # ecx = t->left
+    8b/-> *(ebp+8) 1/r32/ecx
+    8b/-> *ecx 1/r32/ecx  # Tree-left
+    # if t is an atomic type, return false
+    3b/compare 1/r32/ecx *Max-type-id
+    b8/copy-to-eax 0/imm32/false
+    72/jump-if-addr< $is-mu-array?:end/disp8
+    # return ecx->value == array
+    81 7/subop/compare *ecx 3/imm32/array-type-id  # Atom-value
+    0f 94/set-if-= %al
+    81 4/subop/and %eax 0xff/imm32
+$is-mu-array?:end:
+    # . restore registers
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+size-of-array:  # a: (handle tree type-id) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    #
+    8b/-> *(ebp+8) 1/r32/ecx
+    # TODO: assert that a->left is 'array'
+    8b/-> *(ecx+4) 1/r32/ecx  # Tree-right
+    # var elem-type/edx: type-id = a->right->value
+    8b/-> *ecx 2/r32/edx  # Atom-value
+    8b/-> *edx 2/r32/edx  # Atom-value
+    # var array-size/ecx: int = a->right->right->left->value
+    8b/-> *(ecx+4) 1/r32/ecx  # Tree-right
+    8b/-> *ecx 1/r32/ecx  # Tree-left
+    8b/-> *ecx 1/r32/ecx  # Atom-value
+    # return array-size * size-of(elem-type)
+    (size-of-type-id %edx)  # => eax
+    f7 4/subop/multiply-into-eax %ecx
+    05/add-to-eax 4/imm32  # for array length
+$size-of-array:end:
+    # . restore registers
+    5a/pop-to-edx
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -7115,25 +7232,43 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle stmt)
     # eax = stmt
     8b/-> *(ebp+0xc) 0/r32/eax
     # var v/ecx: (handle var)
-    8b/-> *(eax+4) 1/r32/ecx
+    8b/-> *(eax+4) 1/r32/ecx  # Vardef-var
     # v->block-depth = *Curr-block-depth
     8b/-> *Curr-block-depth 0/r32/eax
     89/<- *(ecx+8) 0/r32/eax  # Var-block-depth
-    # var n/eax: int = size-of(stmt->var)
-    (size-of %ecx)  # Vardef-var => eax
+    # var n/edx: int = size-of(stmt->var)
+    (size-of %ecx)  # => eax
+    89/<- %edx 0/r32/eax
     # *Curr-local-stack-offset -= n
-    29/subtract-from *Curr-local-stack-offset 0/r32/eax
+    29/subtract-from *Curr-local-stack-offset 2/r32/edx
     # v->offset = *Curr-local-stack-offset
-    8b/-> *Curr-local-stack-offset 2/r32/edx
-    89/<- *(ecx+0xc) 2/r32/edx  # Var-offset
+    8b/-> *Curr-local-stack-offset 0/r32/eax
+    89/<- *(ecx+0xc) 0/r32/eax  # Var-offset
+    # if v is an array, do something special
+    {
+      (is-mu-array? *(ecx+4))  # Var-type => eax
+      3d/compare-eax-and 0/imm32/false
+      0f 84/jump-if-= break/disp32
+      # var array-size-without-length/edx: int = n-4
+      81 5/subop/subtract %edx 4/imm32
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "(push-n-zero-bytes ")
+      (print-int32-buffered *(ebp+8) %edx)
+      (write-buffered *(ebp+8) ")\n")
+      (emit-indent *(ebp+8) *Curr-block-depth)
+      (write-buffered *(ebp+8) "68/push ")
+      (print-int32-buffered *(ebp+8) %edx)
+      (write-buffered *(ebp+8) "/imm32\n")
+      eb/jump $emit-subx-var-def:end/disp8
+    }
     # while n > 0
     {
-      3d/compare-eax-with 0/imm32
+      81 7/subop/compare %edx 0/imm32
       7e/jump-if-<= break/disp8
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "68/push 0/imm32\n")
       # n -= 4
-      2d/subtract-from-eax 4/imm32
+      81 5/subop/subtract %edx 4/imm32
       #
       eb/jump loop/disp8
     }
