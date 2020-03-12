@@ -1,4 +1,4 @@
-# Unnecessarily use an array to sum 1..9
+# Unnecessarily use an array to sum 1..10
 #
 # To run:
 #   $ ./translate_mu apps/ex3.2.mu
