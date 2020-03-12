@@ -6109,10 +6109,16 @@ size-of:  # v: (handle var) -> result/eax: int
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # ecx = v->type
+    # var t/ecx: (handle tree type-id) = v->type
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ecx+4) 1/r32/ecx  # Var-type
-    # TODO: support non-atom type
+    # if (t->left >= *Max-type-id) t = t->left
+    {
+      8b/-> *Max-type-id 0/r32/eax
+      39/compare *ecx 0/r32/eax  # Tree-left
+      72/jump-if-addr< break/disp8
+      8b/-> *ecx 1/r32/ecx  # Tree-left
+    }
     # TODO: support arrays
     (size-of-type-id *ecx)  # Atom-left => eax
 $size-of:end:
