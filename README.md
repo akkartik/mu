@@ -446,6 +446,17 @@ rudimentary but hopefully still workable toolkit:
 * If the trace seems overwhelming, try [browsing it](https://github.com/akkartik/mu/blob/master/tools/browse_trace.readme.md)
   in the 'time-travel debugger'.
 
+* Don't be afraid to slice and dice the trace using Unix tools. For example,
+  say you have a SubX binary that dies while running tests. You can see what
+  test it's segfaulting at by compiling it with debug information using
+  `./translate_subx_debug`, and then running:
+
+  ```
+  ./bootstrap --debug --trace --dump run a.elf test 2>&1 |grep 'label test'
+  ```
+
+  Just read out the last test printed out before the segfault.
+
 Hopefully these hints are enough to get you started. The main thing to
 remember is to not be afraid of modifying the sources. A good debugging
 session gets into a nice rhythm of generating a trace, staring at it for a
