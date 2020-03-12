@@ -2303,6 +2303,54 @@ test-convert-length-of-array:
     5d/pop-to-ebp
     c3/return
 
+test-convert-length-of-array-on-stack:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: (array int 3)\n")
+    (write _test-input-stream "  var b/eax: int <- length a\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-length-of-array-on-stack/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-length-of-array-on-stack/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-length-of-array-on-stack/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-length-of-array-on-stack/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-length-of-array-on-stack/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-length-of-array-on-stack/5")
+    # define x
+    (check-next-stream-line-equal _test-output-stream "    (push-n-zero-bytes 0x0000000c)"  "F - test-convert-length-of-array-on-stack/6")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0x0000000c/imm32"  "F - test-convert-length-of-array-on-stack/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-length-of-array-on-stack/8")
+    (check-next-stream-line-equal _test-output-stream "    8b/copy-from *(ebp+0xfffffff0) 0x00000000/r32"  "F - test-convert-length-of-array-on-stack/9")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-length-of-array-on-stack/10")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000010/imm32"  "F - test-convert-length-of-array-on-stack/11")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-length-of-array-on-stack/12")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-length-of-array-on-stack/13")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-length-of-array-on-stack/14")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-length-of-array-on-stack/15")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-length-of-array-on-stack/16")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-length-of-array-on-stack/17")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-index-into-array:
     # . prologue
     55/push-ebp
@@ -7479,11 +7527,25 @@ translate-mu-length-stmt:  # out: (address buffered-file), stmt: (handle stmt)
     #
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "8b/copy-from *")
-    # inouts[0]->register
+    # var base/eax: (handle var) = inouts[0]
     8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
     8b/-> *eax 0/r32/eax  # Stmt-var-value
-    (write-buffered *(ebp+8) *(eax+0x10))  # Var-register => eax
-    #
+    # if base is an (address array ...) in a register
+    {
+      81 7/subop/compare *(eax+0x10)) 0/imm32  # Var-register
+      74/jump-if-= break/disp8
+      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
+      eb/jump $translate-mu-length-stmt:emit-output/disp8
+    }
+    # otherwise if base is an (array ...) on the stack
+    {
+      81 7/subop/compare *(eax+0xc)) 0/imm32  # Var-offset
+      74/jump-if-= break/disp8
+      (write-buffered *(ebp+8) "(ebp+")
+      (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-offset
+      (write-buffered *(ebp+8) ")")
+    }
+$translate-mu-length-stmt:emit-output:
     (write-buffered *(ebp+8) " ")
     # outputs[0] "/r32"
     8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
