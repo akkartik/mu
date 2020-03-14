@@ -2803,6 +2803,68 @@ test-convert-function-with-local-var-with-user-defined-type:
     5d/pop-to-ebp
     c3/return
 
+test-convert-function-call-with-arg-of-user-defined-type:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var a: t\n")
+    (write _test-input-stream "  foo a\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo x: t {\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "f:"                      "F - test-convert-function-call-with-arg-of-user-defined-type/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-arg-of-user-defined-type/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-arg-of-user-defined-type/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-arg-of-user-defined-type/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-arg-of-user-defined-type/4")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:loop:"     "F - test-convert-function-call-with-arg-of-user-defined-type/5")
+    # var a: t
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-call-with-arg-of-user-defined-type/6")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-call-with-arg-of-user-defined-type/7")
+    # foo a
+    (check-next-stream-line-equal _test-output-stream "    (foo *(ebp+0xfffffff8) *(ebp+0xfffffffc))"  "F - test-convert-function-call-with-arg-of-user-defined-type/8")
+    #
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000008/imm32"  "F - test-convert-function-call-with-arg-of-user-defined-type/9")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-arg-of-user-defined-type/10")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:break:"    "F - test-convert-function-call-with-arg-of-user-defined-type/11")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-arg-of-user-defined-type/12")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-arg-of-user-defined-type/13")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-arg-of-user-defined-type/14")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-arg-of-user-defined-type/15")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-call-with-arg-of-user-defined-type/16")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-arg-of-user-defined-type/17")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-arg-of-user-defined-type/18")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-arg-of-user-defined-type/19")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-arg-of-user-defined-type/20")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-arg-of-user-defined-type/21")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-arg-of-user-defined-type/22")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-arg-of-user-defined-type/23")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-get-of-type-on-stack:
     # . prologue
     55/push-ebp
@@ -9848,10 +9910,7 @@ $emit-subx-call-operand:register-indirect:
       81 7/subop/compare *(esi+0xc) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
 $emit-subx-call-operand:stack:
-      (write-buffered *(ebp+8) Space)
-      (write-buffered *(ebp+8) "*(ebp+")
-      (print-int32-buffered *(ebp+8) *(esi+0xc))  # Var-offset
-      (write-buffered *(ebp+8) ")")
+      (emit-subx-call-operand-stack *(ebp+8) %esi)
       e9/jump $emit-subx-call-operand:end/disp32
     }
     # else if (operand->type == literal) emit "__"
@@ -9905,6 +9964,46 @@ $emit-subx-call-operand-register-indirect:loop:
       eb/jump loop/disp8
     }
 $emit-subx-call-operand-register-indirect:end:
+    # . restore registers
+    5e/pop-to-esi
+    59/pop-to-ecx
+    58/pop-to-eax
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+emit-subx-call-operand-stack:  # out: (addr buffered-file), v: (handle var)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    50/push-eax
+    51/push-ecx
+    56/push-esi
+    # esi = v
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var curr/ecx: int = v->offset
+    8b/-> *(esi+0xc) 1/r32/ecx  # Var-offset
+    # var max/eax: int = v->offset + size-of(v)
+    (size-of %esi)  # => eax
+    # TODO: assert size is a multiple of 4
+    01/add %eax 1/r32/ecx
+    {
+$emit-subx-call-operand-stack:loop:
+      # if (curr >= max) break
+      39/compare %ecx 0/r32/eax
+      7d/jump-if->= break/disp8
+      # emit " *(ebp+" curr ")"
+      (write-buffered *(ebp+8) " *(ebp+")
+      (print-int32-buffered *(ebp+8) %ecx)
+      (write-buffered *(ebp+8) ")")
+      # i += 4
+      81 0/subop/add %ecx 4/imm32
+      #
+      eb/jump loop/disp8
+    }
+$emit-subx-call-operand-stack:end:
     # . restore registers
     5e/pop-to-esi
     59/pop-to-ecx
