@@ -2258,6 +2258,52 @@ test-convert-function-with-local-array-var-in-mem:
     5d/pop-to-ebp
     c3/return
 
+test-convert-address:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var a: int\n")
+    (write _test-input-stream "  var b/eax: (addr int) <- address a\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-address/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-address/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-address/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-address/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-address/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-convert-address/5")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-address/6")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-address/7")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp+0xfffffffc) 0x00000000/r32"  "F - test-convert-address/8")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"  "F - test-convert-address/9")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000004/imm32"  "F - test-convert-address/10")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-address/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-convert-address/12")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-address/13")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-address/14")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-address/15")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-address/16")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-length-of-array:
     # . prologue
     55/push-ebp
@@ -8769,6 +8815,19 @@ _Primitive-copy-lit-to-mem:
     2/imm32/imm32-is-first-inout
     0/imm32/no-disp32
     1/imm32/output-is-write-only
+    _Primitive-address/imm32/next
+# - address
+_Primitive-address:
+    # var1/reg <- address var2 => 8d/copy-address var2/rm32 var1/r32
+    "address"/imm32/name
+    Single-int-var-in-mem/imm32/inouts
+    Single-addr-var-in-some-register/imm32/outputs
+    "8d/copy-address"/imm32/subx-name
+    1/imm32/rm32-is-first-inout
+    3/imm32/r32-is-first-output
+    0/imm32/no-imm32
+    0/imm32/no-disp32
+    1/imm32/output-is-write-only
     _Primitive-compare-mem-with-reg/imm32/next
 # - compare
 _Primitive-compare-mem-with-reg:
@@ -9366,9 +9425,20 @@ Single-int-var-in-some-register:
     Int-var-in-some-register/imm32
     0/imm32/next
 
+Single-addr-var-in-some-register:
+    Addr-var-in-some-register/imm32
+    0/imm32/next
+
 Int-var-in-some-register:
     "arg1"/imm32/name
     Type-int/imm32
+    1/imm32/some-block-depth
+    0/imm32/no-stack-offset
+    Any-register/imm32
+
+Addr-var-in-some-register:
+    "arg1"/imm32/name
+    Type-addr/imm32
     1/imm32/some-block-depth
     0/imm32/no-stack-offset
     Any-register/imm32
@@ -9456,6 +9526,10 @@ Type-int:
 
 Type-literal:
     0/imm32/left/literal
+    0/imm32/right/null
+
+Type-addr:
+    2/imm32/left/addr
     0/imm32/right/null
 
 == code
