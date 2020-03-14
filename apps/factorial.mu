@@ -2,6 +2,8 @@
 #   ./translate_mu apps/factorial.mu
 #   ./a.elf test  # to run tests
 #   ./a.elf       # to run factorial(5)
+#
+# Compare apps/factorial4.subx
 
 fn factorial n: int -> result/eax: int {
   compare n 1

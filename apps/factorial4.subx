@@ -60,7 +60,7 @@ factorial:  # n: int -> int/eax
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # save registers
-    53/push-ebx
+    51/push-ecx
     # if (n <= 1) return 1
     81 7/subop/compare *(ebp+8) 1/imm32
     {
@@ -70,14 +70,14 @@ factorial:  # n: int -> int/eax
     # if (n > 1) return n * factorial(n-1)
     {
       7e/jump-if-<= break/disp8
-      # var ebx: int = n-1
-      8b/-> *(ebp+8) 3/r32/ebx
-      4b/decrement-ebx
-      (factorial %ebx)  # => eax
+      # var tmp/ecx: int = n-1
+      8b/-> *(ebp+8) 1/r32/ecx
+      49/decrement-ecx
+      (factorial %ecx)  # => eax
       f7 4/subop/multiply-into-eax *(ebp+8)
     }
     # restore registers
-    5b/pop-to-ebx
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
