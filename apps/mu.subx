@@ -9820,18 +9820,6 @@ emit-subx-call-operand:  # out: (addr buffered-file), s: (handle stmt-var)
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var operand/esi: (handle var) = s->value
     8b/-> *ecx 6/r32/esi  # Stmt-var-value
-    # if (operand->register && s->is-deref?) emit "*__"
-    {
-$emit-subx-call-operand:check-for-register-indirect:
-      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
-      74/jump-if-= break/disp8
-      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
-      74/jump-if-= break/disp8
-$emit-subx-call-operand:register-indirect:
-      (write-buffered *(ebp+8) " *")
-      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
-      e9/jump $emit-subx-call-operand:end/disp32
-    }
     # if (operand->register && !s->is-deref?) emit "%__"
     {
 $emit-subx-call-operand:check-for-register-direct:
@@ -9841,6 +9829,18 @@ $emit-subx-call-operand:check-for-register-direct:
       75/jump-if-!= break/disp8
 $emit-subx-call-operand:register-direct:
       (write-buffered *(ebp+8) " %")
+      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
+      e9/jump $emit-subx-call-operand:end/disp32
+    }
+    # else if (operand->register && s->is-deref?) emit "*__"
+    {
+$emit-subx-call-operand:check-for-register-indirect:
+      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      74/jump-if-= break/disp8
+      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      74/jump-if-= break/disp8
+$emit-subx-call-operand:register-indirect:
+      (write-buffered *(ebp+8) " *")
       (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
       e9/jump $emit-subx-call-operand:end/disp32
     }
