@@ -1,7 +1,13 @@
-# usage:
-#   ./translate_mu apps/factorial.mu
-#   ./a.elf test  # to run tests
-#   ./a.elf       # to run factorial(5)
+# compute the factorial of 5, and return the result in the exit code
+#
+# To run:
+#   $ ./translate_mu apps/factorial.mu
+#   $ ./a.elf
+#   $ echo $?
+#   120
+#
+# You can also run the automated test suite:
+#   $ ./a.elf test
 #
 # Compare apps/factorial4.subx
 
