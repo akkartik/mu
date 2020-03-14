@@ -291,12 +291,24 @@ Functions are defined using labels. By convention, labels internal to functions
 (that must only be jumped to) start with a `$`. Any other labels must only be
 called, never jumped to. All labels must be unique.
 
+Functions are called using the following syntax:
+```
+(func arg1 arg2 ...)
+```
+
+Function arguments must be either literals (integers or strings) or a reg/mem
+operand using the syntax in the previous section.
+
 A special label is `Entry`, which can be used to specify/override the entry
 point of the program. It doesn't have to be unique, and the latest definition
 will override earlier ones.
 
 (The `Entry` label, along with duplicate segment headers, allows programs to
 be built up incrementally out of multiple [_layers_](http://akkartik.name/post/wart-layers).)
+
+Another special pair of labels are the block delimiters `{` and `}`. They can
+be nested, and the instructions `loop` and `break` jump to the enclosing `{`
+and `}` respectively.
 
 The data segment consists of labels as before and byte values. Referring to
 data labels in either `code` segment instructions or `data` segment values
