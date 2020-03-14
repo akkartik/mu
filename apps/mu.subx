@@ -2865,6 +2865,85 @@ test-convert-function-call-with-arg-of-user-defined-type:
     5d/pop-to-ebp
     c3/return
 
+# we don't have special support for call-by-reference; just explicitly create
+# a new variable with the address of the arg
+test-convert-function-call-with-arg-of-user-defined-type-by-reference:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn f {\n")
+    (write _test-input-stream "  var a: t\n")
+    (write _test-input-stream "  var b/eax: (addr t) <- address a\n")
+    (write _test-input-stream "  foo b\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "fn foo x: (addr t) {\n")
+    (write _test-input-stream "  var x/ecx: (addr int) <- copy x\n")
+    (write _test-input-stream "  increment *x\n")
+    (write _test-input-stream "}\n")
+    (write _test-input-stream "type t {\n")
+    (write _test-input-stream "  x: int\n")
+    (write _test-input-stream "  y: int\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "f:"                      "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/4")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:loop:"     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/5")
+    # var a: t
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/6")
+    (check-next-stream-line-equal _test-output-stream "    68/push 0/imm32"     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/7")
+    # var b/eax: (addr t)
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/8")
+    (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(ebp+0xfffffff8) 0x00000000/r32"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/9")
+    # foo a
+    (check-next-stream-line-equal _test-output-stream "    (foo %eax)"          "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/10")
+    #
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax" "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/11")
+    (check-next-stream-line-equal _test-output-stream "    81 0/subop/add %esp 0x00000008/imm32"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/13")
+    (check-next-stream-line-equal _test-output-stream "$f:0x00000001:break:"    "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/18")
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/19")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/20")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/21")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/22")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/23")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:loop:"   "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/24")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/25")
+    (check-next-stream-line-equal _test-output-stream "    89/copy-to %ecx 0x00000001/r32"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/26")
+    (check-next-stream-line-equal _test-output-stream "    ff 0/subop/increment *ecx"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/27")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/28")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/29")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000002:break:"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/30")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/31")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/32")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/33")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-convert-function-call-with-arg-of-user-defined-type-by-reference/34")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-convert-get-of-type-on-stack:
     # . prologue
     55/push-ebp
