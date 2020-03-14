@@ -56,8 +56,7 @@ In priority order:
 
 Mu's main source language is [still being built](http://akkartik.name/post/mu-2019-2).
 When completed, it will be type- and memory-safe. At the moment it performs no
-checks and only supports variables of type `int`. Here's the program we
-translated above:
+checks. Here's the program we translated above:
 
 <img alt='ex2.mu' src='html/ex2.mu.png'>
 
