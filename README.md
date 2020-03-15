@@ -44,8 +44,12 @@ In priority order:
 
 ## Non-goals
 
-* Efficiency. Clear programs over fast programs.
-* Portability. Runs on any computer as long as it's x86.
+* Speed. Staying close to machine code should naturally keep Mu fast enough.
+* Efficiency. Controlling the number of abstractions should naturally keep Mu
+  using far less than the gigabytes of memory modern computers have.
+* Portability. Mu will run on any computer as long as it's x86. I will
+  enthusiastically contribute to support for other processors -- in separate
+  forks. Readers shouldn't have to think about processors they don't have.
 * Compatibility. The goal is to get off mainstream stacks, not to perpetuate
   them. Sometimes the right long-term solution is to [bump the major version number](http://akkartik.name/post/versioning).
 * Syntax. Mu code is meant to be comprehended by [running, not just reading](http://akkartik.name/post/comprehension).
