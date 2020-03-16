@@ -234,4 +234,36 @@ $allocate-region:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+# Claim the next 'n+4' bytes of memory and initialize the first 4 to n.
+# Abort if there isn't enough memory in 'ad'.
+allocate-array:  # ad: (addr allocation-descriptor), n: int -> result/eax: (addr _)
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # ecx = n
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy *(ebp+0xc) to ecx
+    # var size/edx: int = n+4
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           2/r32/edx   4/disp8         .                 # copy ecx+4 to edx
+    # result = allocate(ad, size)
+    # . . push args
+    52/push-edx
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
+    # . . call
+    e8/call  allocate/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # *result = n
+    89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
+$allocate-array:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 # . . vim:nowrap:textwidth=0

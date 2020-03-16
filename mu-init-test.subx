@@ -1,10 +1,10 @@
 # Just a test stub for mu-init.subx
 #
 # Try it out like this:
-#   $ ./translate_subx init.linux 0*.subx mu-init.subx mu-init-test.subx
+#   $ ./translate_subx init.linux [0-9]*.subx mu-init.subx mu-init-test.subx
 #   $ ./a.elf  # should run all tests
 
-main:  # args: (address array kernel-string) -> result/ebx: int
+main:  # args: (addr array (addr array byte)) -> result/ebx: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -15,10 +15,10 @@ main:  # args: (address array kernel-string) -> result/ebx: int
     8b/-> *(ebp+8) 6/r32/esi
     {
       # if (argc <= 1) break
-      81 7/subop/compare *esi 1/imm32
+      81 7/subop/compare *esi 4/imm32
       7e/jump-if-<= break/disp8
       # if (argv[1] != "test") break
-      (kernel-string-equal? *(esi+8) "test")  # => eax
+      (string-equal? *(esi+8) "test")  # => eax
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
       #

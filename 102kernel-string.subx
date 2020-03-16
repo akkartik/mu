@@ -1,0 +1,89 @@
+# We can't really do much with null-terminated kernel strings, and we don't
+# want to. Let's turn them into regular length-prefixed strings at the first
+# opportunity.
+
+== code
+
+kernel-string-to-string:  # ad: (addr allocation-descriptor), in: (addr kernel-string) -> result/eax: (addr array byte)
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    57/push-edi
+    # var len/ecx: int = length(in)
+    (kernel-string-length *(ebp+0xc))
+    89/<- %ecx 0/r32/eax
+    # result = allocate-array(ad, len)
+    (allocate-array *(ebp+8) %ecx)  # => eax
+    # var c/edx: byte = 0
+    ba/copy-to-edx 0/imm32
+    # var src/esi: (addr byte) = in
+    8b/-> *(ebp+0xc) 6/r32/esi
+    # var dest/edi: (addr byte) = result->data
+    8d/copy-address *(eax+4) 7/r32/edi
+    {
+$kernel-string-to-string:loop:
+      # c = *src
+      8a/byte-> *esi 2/r32/edx
+      # if (c == 0) break
+      81 7/subop/compare %edx 0/imm32
+      74/jump-if-= break/disp8
+      # *dest = c
+      88/byte<- *edi 2/r32/edx
+      # ++src
+      46/increment-esi
+      # ++dest
+      47/increment-edi
+      eb/jump loop/disp8
+    }
+$kernel-string-to-string:end:
+    # . restore registers
+    5f/pop-to-edi
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+kernel-string-length:  # in: (addr kernel-string) -> result/eax: int
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    # result = 0
+    b8/copy-to-eax 0/imm32
+    # var c/ecx: byte = 0
+    b9/copy-to-ecx 0/imm32
+    # var curr/edx: (addr byte) = in
+    8b/-> *(ebp+8) 2/r32/edx
+    {
+$kernel-string-length:loop:
+      # c = *curr
+      8a/byte-> *edx 1/r32/ecx
+      # if (c == 0) break
+      81 7/subop/compare %ecx 0/imm32
+      74/jump-if-= break/disp8
+      # ++curr
+      42/increment-edx
+      # ++result
+      40/increment-eax
+      #
+      eb/jump loop/disp8
+    }
+$kernel-string-length:end:
+    # . restore registers
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
