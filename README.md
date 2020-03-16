@@ -68,7 +68,7 @@ There are no expressions, only statements that operate on variables. Most
 statements in Mu translate to a single machine code instruction. Variables
 reside in memory by default. Programs must specify registers when they want to
 use them. Functions must return results in registers. Execution begins at the
-function `main`, which always returns its result in register `ebx`. [This post](http://akkartik.name/post/mu-2019-2)
+function `main`, which always returns its result in register `ebx`. [This paper](http://akkartik.name/akkartik-convivial-20200315.pdf)
 has more details, and there's a [summary](mu_summary) of all supported
 instructions.
 
