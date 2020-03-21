@@ -26,14 +26,14 @@ There are no checks for types yet, because Mu programs only have `int` types so 
 Example 1 (use the widest screen you can for this page):
    -- instruction form --   |         -------------------------- data structure ----------------------------
                             |<------------- pattern matching ---------->|<--- code generation ------------------->
-  var/reg <- add var2/reg   {.name="add", .inouts=[reg], .outputs=[reg], .subx-name="01/add<-", .rm32=outputs[0], .r32=inouts[0]}
+  var/reg <- add var2/reg   {.name="add", .inouts=[reg], .outputs=[reg], .subx-name="01/add-to", .rm32=outputs[0], .r32=inouts[0]}
 
 Read this as:
   if an instruction's name is "add"
     and it has one inout that's in a register
     and it has one output that's in a register,
   then emit the following on a single line
-    "01/add<-" (the opcode or subx-name)
+    "01/add-to" (the opcode or subx-name)
     "%{reg}", interpolating the output's register
     "{reg}/r32", interpolating the inout's register code.
 
@@ -74,46 +74,46 @@ var/edi <- decrement        {.name="decrement",                       .outputs=[
 decrement var               {.name="decrement",       .inouts=[var],                    .subx-name="ff 1/subop/decrement",  .rm32="*(ebp+" inouts[0].stack-offset ")"}
 decrement *var/reg          {.name="decrement",       .inouts=[reg],                    .subx-name="ff 1/subop/decrement",  .rm32="*" inouts[0]}
 
-var1/reg1 <- add var2/reg2  {.name="add",             .inouts=[reg2], .outputs=[reg1],  .subx-name="01/add<-",              .rm32=outputs[0],                           .r32=inouts[0]}
-var/reg <- add var2         {.name="add",             .inouts=[var2], .outputs=[reg],   .subx-name="03/add->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
-var/reg <- add *var2/reg2   {.name="add",             .inouts=[reg2], .outputs=[reg],   .subx-name="03/add->",              .rm32="*" inouts[0],                        .r32=outputs[0]}
-add-to var1, var2/reg       {.name="add-to",          .inouts=[var1, var2],             .subx-name="01/add<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var1/reg1 <- add var2/reg2  {.name="add",             .inouts=[reg2], .outputs=[reg1],  .subx-name="01/add-to",             .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- add var2         {.name="add",             .inouts=[var2], .outputs=[reg],   .subx-name="03/add",                .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+var/reg <- add *var2/reg2   {.name="add",             .inouts=[reg2], .outputs=[reg],   .subx-name="03/add",                .rm32="*" inouts[0],                        .r32=outputs[0]}
+add-to var1, var2/reg       {.name="add-to",          .inouts=[var1, var2],             .subx-name="01/add-to",             .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
 var/eax <- add n            {.name="add",             .inouts=[n],    .outputs=[eax],   .subx-name="05/add-to-eax",                                                                         .imm32=inouts[0]}
 var/reg <- add n            {.name="add",             .inouts=[n],    .outputs=[reg],   .subx-name="81 0/subop/add",        .rm32=outputs[0],                                               .imm32=inouts[0]}
 add-to var, n               {.name="add-to",          .inouts=[var, n],                 .subx-name="81 0/subop/add",        .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
 add-to *var/reg, n          {.name="add-to",          .inouts=[reg, n],                 .subx-name="81 0/subop/add",        .rm32="*" inouts[0],                                            .imm32=inouts[1]}
 
-var1/reg1 <- sub var2/reg2  {.name="sub",             .inouts=[reg2], .outputs=[reg1],  .subx-name="29/sub<-",              .rm32=outputs[0],                           .r32=inouts[0]}
-var/reg <- sub var2         {.name="sub",             .inouts=[var2], .outputs=[reg],   .subx-name="2b/sub->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
-var/reg <- sub *var2/reg2   {.name="sub",             .inouts=[reg2], .outputs=[reg],   .subx-name="2b/sub->",              .rm32="*" inouts[0],                        .r32=outputs[0]}
-sub-from var1, var2/reg     {.name="sub-from",        .inouts=[var1, var2],             .subx-name="29/sub<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
-var/eax <- sub n            {.name="sub",             .inouts=[n],    .outputs=[eax],   .subx-name="2d/sub-from-eax",                                                                       .imm32=inouts[0]}
+var1/reg1 <- sub var2/reg2  {.name="sub",             .inouts=[reg2], .outputs=[reg1],  .subx-name="29/subtract-from",      .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- sub var2         {.name="sub",             .inouts=[var2], .outputs=[reg],   .subx-name="2b/subtract",           .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+var/reg <- sub *var2/reg2   {.name="sub",             .inouts=[reg2], .outputs=[reg],   .subx-name="2b/subtract",           .rm32="*" inouts[0],                        .r32=outputs[0]}
+sub-from var1, var2/reg     {.name="sub-from",        .inouts=[var1, var2],             .subx-name="29/subtract-from",      .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/eax <- sub n            {.name="sub",             .inouts=[n],    .outputs=[eax],   .subx-name="2d/subtract-from-eax",                                                                  .imm32=inouts[0]}
 var/reg <- sub n            {.name="sub",             .inouts=[n],    .outputs=[reg],   .subx-name="81 5/subop/subtract",   .rm32=outputs[0],                                               .imm32=inouts[0]}
 sub-from var, n             {.name="sub-from",        .inouts=[var, n],                 .subx-name="81 5/subop/subtract",   .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
 sub-from *var/reg, n        {.name="sub-from",        .inouts=[reg, n],                 .subx-name="81 5/subop/subtract",   .rm32="*" inouts[0],                                            .imm32=inouts[1]}
 
-var1/reg1 <- and var2/reg2  {.name="and",             .inouts=[reg2], .outputs=[reg1],  .subx-name="21/and<-",              .rm32=outputs[0],                           .r32=inouts[0]}
-var/reg <- and var2         {.name="and",             .inouts=[var2], .outputs=[reg],   .subx-name="23/and->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
-var/reg <- and *var2/reg2   {.name="and",             .inouts=[reg2], .outputs=[reg],   .subx-name="23/and->",              .rm32="*" inouts[0],                        .r32=outputs[0]}
-and-with var1, var2/reg     {.name="and-with",        .inouts=[var1, reg],              .subx-name="21/and<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var1/reg1 <- and var2/reg2  {.name="and",             .inouts=[reg2], .outputs=[reg1],  .subx-name="21/and-with",           .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- and var2         {.name="and",             .inouts=[var2], .outputs=[reg],   .subx-name="23/and",                .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+var/reg <- and *var2/reg2   {.name="and",             .inouts=[reg2], .outputs=[reg],   .subx-name="23/and",                .rm32="*" inouts[0],                        .r32=outputs[0]}
+and-with var1, var2/reg     {.name="and-with",        .inouts=[var1, reg],              .subx-name="21/and-with",           .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
 var/eax <- and n            {.name="and",             .inouts=[n],    .outputs=[eax],   .subx-name="25/and-with-eax",                                                                       .imm32=inouts[0]}
 var/reg <- and n            {.name="and",             .inouts=[n],    .outputs=[reg],   .subx-name="81 4/subop/and",        .rm32=outputs[0],                                               .imm32=inouts[0]}
 and-with var, n             {.name="and-with",        .inouts=[var, n],                 .subx-name="81 4/subop/and",        .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
 and-with *var/reg, n        {.name="and-with",        .inouts=[reg, n],                 .subx-name="81 4/subop/and",        .rm32="*" inouts[0],                                            .imm32=inouts[1]}
 
-var1/reg1 <- or var2/reg2   {.name="or",              .inouts=[reg2], .outputs=[reg1],  .subx-name="09/or<-",               .rm32=outputs[0],                           .r32=inouts[0]}
-var/reg <- or var2          {.name="or",              .inouts=[var2], .outputs=[reg],   .subx-name="0b/or->",               .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
-var/reg <- or *var2/reg2    {.name="or",              .inouts=[reg2], .outputs=[reg],   .subx-name="0b/or->",               .rm32="*" inouts[0],                        .r32=outputs[0]}
-or-with var1, var2/reg      {.name="or-with",         .inouts=[var1, reg],              .subx-name="09/or<-",               .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var1/reg1 <- or var2/reg2   {.name="or",              .inouts=[reg2], .outputs=[reg1],  .subx-name="09/or-with",            .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- or var2          {.name="or",              .inouts=[var2], .outputs=[reg],   .subx-name="0b/or",                 .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+var/reg <- or *var2/reg2    {.name="or",              .inouts=[reg2], .outputs=[reg],   .subx-name="0b/or",                 .rm32="*" inouts[0],                        .r32=outputs[0]}
+or-with var1, var2/reg      {.name="or-with",         .inouts=[var1, reg],              .subx-name="09/or-with",            .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
 var/eax <- or n             {.name="or",              .inouts=[n],    .outputs=[eax],   .subx-name="0d/or-with-eax",                                                                        .imm32=inouts[0]}
 var/reg <- or n             {.name="or",              .inouts=[n],    .outputs=[reg],   .subx-name="81 1/subop/or",         .rm32=outputs[0],                                               .imm32=inouts[0]}
 or-with var, n              {.name="or-with",         .inouts=[var, n],                 .subx-name="81 1/subop/or",         .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
 or-with *var/reg, n         {.name="or-with",         .inouts=[reg, n],                 .subx-name="81 1/subop/or",         .rm32="*" inouts[0],                                            .imm32=inouts[1]}
 
-var1/reg1 <- xor var2/reg2  {.name="xor",             .inouts=[reg2], .outputs=[reg1],  .subx-name="31/xor<-",              .rm32=outputs[0],                           .r32=inouts[0]}
-var/reg <- xor var2         {.name="xor",             .inouts=[var2], .outputs=[reg],   .subx-name="33/xor->",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
-var/reg <- xor *var2/reg2   {.name="xor",             .inouts=[reg2], .outputs=[reg],   .subx-name="33/xor->",              .rm32="*" inouts[0],                        .r32=outputs[0]}
-xor-with var1, var2/reg     {.name="xor-with",        .inouts=[var1, reg],              .subx-name="31/xor<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var1/reg1 <- xor var2/reg2  {.name="xor",             .inouts=[reg2], .outputs=[reg1],  .subx-name="31/xor-with",           .rm32=outputs[0],                           .r32=inouts[0]}
+var/reg <- xor var2         {.name="xor",             .inouts=[var2], .outputs=[reg],   .subx-name="33/xor",                .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+var/reg <- xor *var2/reg2   {.name="xor",             .inouts=[reg2], .outputs=[reg],   .subx-name="33/xor",                .rm32="*" inouts[0],                        .r32=outputs[0]}
+xor-with var1, var2/reg     {.name="xor-with",        .inouts=[var1, reg],              .subx-name="31/xor-with",           .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
 var/eax <- xor n            {.name="xor",             .inouts=[n],    .outputs=[eax],   .subx-name="35/xor-with-eax",                                                                       .imm32=inouts[0]}
 var/reg <- xor n            {.name="xor",             .inouts=[n],    .outputs=[reg],   .subx-name="81 6/subop/xor",        .rm32=outputs[0],                                               .imm32=inouts[0]}
 xor-with var, n             {.name="xor-with",        .inouts=[var, n],                 .subx-name="81 6/subop/xor",        .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
@@ -125,16 +125,16 @@ var/edx <- copy n           {.name="copy",            .inouts=[n],    .outputs=[
 var/ebx <- copy n           {.name="copy",            .inouts=[n],    .outputs=[ebx],   .subx-name="bb/copy-to-ebx",                                                                        .imm32=inouts[0]}
 var/esi <- copy n           {.name="copy",            .inouts=[n],    .outputs=[esi],   .subx-name="be/copy-to-esi",                                                                        .imm32=inouts[0]}
 var/edi <- copy n           {.name="copy",            .inouts=[n],    .outputs=[edi],   .subx-name="bf/copy-to-edi",                                                                        .imm32=inouts[0]}
-var1/reg1 <- copy var2/reg2 {.name="copy",            .inouts=[reg2], .outputs=[reg1],  .subx-name="89/copy-to",            .rm32=outputs[0],                           .r32=inouts[0]}
-copy-to var1, var2/reg      {.name="copy-to",         .inouts=[var1, var2],             .subx-name="01/add<-",              .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
-var/reg <- copy var2        {.name="copy",            .inouts=[var2], .outputs=[reg],   .subx-name="8b/copy-from",          .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
-var1/reg <- copy *var2/reg2 {.name="copy",            .inouts=[reg2], .outputs=[reg],   .subx-name="8b/copy-from",          .rm32="*" inouts[0],                        .r32=outputs[0]}
+var1/reg1 <- copy var2/reg2 {.name="copy",            .inouts=[reg2], .outputs=[reg1],  .subx-name="89/<-",                 .rm32=outputs[0],                           .r32=inouts[0]}
+copy-to var1, var2/reg      {.name="copy-to",         .inouts=[var1, var2],             .subx-name="89/<-",                 .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+var/reg <- copy var2        {.name="copy",            .inouts=[var2], .outputs=[reg],   .subx-name="8b/->",                 .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=outputs[0]}
+var1/reg <- copy *var2/reg2 {.name="copy",            .inouts=[reg2], .outputs=[reg],   .subx-name="8b/->",                 .rm32="*" inouts[0],                        .r32=outputs[0]}
 var/reg <- copy n           {.name="copy",            .inouts=[n],    .outputs=[reg],   .subx-name="c7 0/subop/copy",       .rm32=outputs[0],                                               .imm32=inouts[0]}
 copy-to var, n              {.name="copy-to",         .inouts=[var, n],                 .subx-name="c7 0/subop/copy",       .rm32="*(ebp+" inouts[0].stack-offset ")",                      .imm32=inouts[1]}
 copy-to *var/reg, n         {.name="copy-to",         .inouts=[reg, n],                 .subx-name="c7 0/subop/copy",       .rm32="*" inouts[0],                                            .imm32=inouts[1]}
 
-compare var1, var2/reg      {.name="compare",         .inouts=[var1, reg],              .subx-name="39/compare->",          .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
-compare *var1/reg1, var/reg {.name="compare",         .inouts=[reg1, reg],              .subx-name="39/compare->",          .rm32="*" inouts[0],                        .r32=inouts[1]}
+compare var1, var2/reg      {.name="compare",         .inouts=[var1, reg],              .subx-name="39/compare",            .rm32="*(ebp+" inouts[0].stack-offset ")",  .r32=inouts[1]}
+compare *var1/reg1, var/reg {.name="compare",         .inouts=[reg1, reg],              .subx-name="39/compare",            .rm32="*" inouts[0],                        .r32=inouts[1]}
 compare var1/reg, var2      {.name="compare",         .inouts=[reg, var2],              .subx-name="3b/compare<-",          .rm32="*(ebp+" inouts[1].stack-offset ")",  .r32=inouts[0]}
 compare var/reg, *var2/reg2 {.name="compare",         .inouts=[reg, reg2],              .subx-name="3b/compare<-",          .rm32="*" inouts[1],                        .r32=inouts[0]}
 compare var/eax, n          {.name="compare",         .inouts=[eax, n],                 .subx-name="3d/compare-eax-with",                                                                   .imm32=inouts[1]}

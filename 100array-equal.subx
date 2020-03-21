@@ -48,7 +48,7 @@ $array-equal?:lengths:
     # var currb/edi: (addr byte) = b->data
     81 0/subop/add %edi 4/imm32
     # var i/ecx: int = 0
-    31/xor %ecx 1/r32/ecx
+    31/xor-with %ecx 1/r32/ecx
     # var vala/eax: int
     # var valb/ebx: int
 $array-equal?:loop:
@@ -213,9 +213,9 @@ parse-array-of-ints:  # ad: (addr allocation-descriptor), s: (addr string) -> re
     # . edx = s->length
     8b/-> *esi 2/r32/edx
     # . edx += curr
-    01/add %edx 1/r32/ecx
+    01/add-to %edx 1/r32/ecx
     # var size/ebx: int = 0
-    31/xor %ebx 3/r32/ebx
+    31/xor-with %ebx 3/r32/ebx
 $parse-array-of-ints:loop1:
     # if (curr >= end) break
     39/compare %ecx 2/r32/edx
@@ -235,7 +235,7 @@ $parse-array-of-ints:loop1:
 $parse-array-of-ints:break1:
     # var result/edi: (handle array int)
     89/<- %eax 3/r32/ebx
-    05/add-eax 4/imm32
+    05/add-to-eax 4/imm32
     (allocate *(ebp+8) %eax)
     89/<- %edi 0/r32/eax
     # result->size = size
