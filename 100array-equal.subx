@@ -96,23 +96,9 @@ test-compare-empty-with-empty-array:
     # var edx: (array _) = []
     68/push 0/imm32/size
     89/<- %edx 4/r32/esp
-    # eax = array-equal?(ecx, edx)
-    # . . push args
-    52/push-edx
-    51/push-ecx
-    # . . call
-    e8/call array-equal?/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(eax, 1, msg)
-    # . . push args
-    68/push "F - test-compare-empty-with-empty-array"/imm32
-    68/push 1/imm32/true
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 1 "F - test-compare-empty-with-empty-array")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -129,23 +115,9 @@ test-compare-empty-with-non-empty-array:  # also checks length-mismatch code pat
     # var edx: (array int) = []
     68/push 0/imm32/size
     89/<- %edx 4/r32/esp
-    # eax = array-equal?(ecx, edx)
-    # . . push args
-    52/push-edx
-    51/push-ecx
-    # . . call
-    e8/call array-equal?/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(eax, 0, msg)
-    # . . push args
-    68/push "F - test-compare-empty-with-non-empty-array"/imm32
-    68/push 0/imm32/false
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 0 "F - test-compare-empty-with-non-empty-array")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -167,23 +139,9 @@ test-compare-equal-arrays:
     68/push 1/imm32
     68/push 0xc/imm32/size
     89/<- %edx 4/r32/esp
-    # eax = array-equal?(ecx, edx)
-    # . . push args
-    52/push-edx
-    51/push-ecx
-    # . . call
-    e8/call array-equal?/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(eax, 1, msg)
-    # . . push args
-    68/push "F - test-compare-equal-arrays"/imm32
-    68/push 1/imm32/true
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 1 "F - test-compare-equal-arrays")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -205,23 +163,9 @@ test-compare-inequal-arrays-equal-lengths:
     68/push 1/imm32
     68/push 0xc/imm32/size
     89/<- %edx 4/r32/esp
-    # eax = array-equal?(ecx, edx)
-    # . . push args
-    52/push-edx
-    51/push-ecx
-    # . . call
-    e8/call array-equal?/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(eax, 0, msg)
-    # . . push args
-    68/push "F - test-compare-inequal-arrays-equal-lengths"/imm32
-    68/push 0/imm32/false
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (array-equal? %ecx %edx)  # => eax
+    (check-ints-equal %eax 0 "F - test-compare-inequal-arrays-equal-lengths")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -277,51 +221,25 @@ $parse-array-of-ints:loop1:
     39/compare %ecx 2/r32/edx
     73/jump-if-addr>= $parse-array-of-ints:break1/disp8
     # curr = skip-chars-matching-in-slice(curr, end, ' ')
-    # . eax = skip-chars-matching-in-slice(curr, end, ' ')
-    # . . push args
-    68/push 0x20/imm32/space
-    52/push-edx
-    51/push-ecx
-    # . . call
-    e8/call skip-chars-matching-in-slice/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
-    # . ecx = eax
+    (skip-chars-matching-in-slice %ecx %edx 0x20)  # => eax
     89/<- %ecx 0/r32/eax
     # if (curr >= end) break
     39/compare %ecx 2/r32/edx
     73/jump-if-addr>= $parse-array-of-ints:break1/disp8
     # curr = skip-chars-not-matching-in-slice(curr, end, ' ')
-    # . eax = skip-chars-not-matching-in-slice(curr, end, ' ')
-    # . . push args
-    68/push 0x20/imm32/space
-    52/push-edx
-    51/push-ecx
-    # . . call
-    e8/call skip-chars-not-matching-in-slice/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
-    # . ecx = eax
+    (skip-chars-not-matching-in-slice %ecx %edx 0x20)  # => eax
     89/<- %ecx 0/r32/eax
     # size += 4
     81 0/subop/add %ebx 4/imm32
     eb/jump $parse-array-of-ints:loop1/disp8
 $parse-array-of-ints:break1:
-    # var result/edi: (handle array int) = allocate(ad, size+4)
-    # . eax = allocate(ad, size+4)
-    # . . push args
+    # var result/edi: (handle array int)
     89/<- %eax 3/r32/ebx
-    05/add-to-eax 4/imm32
-    50/push-eax
-    ff 6/subop/push *(ebp+8)
-    # . . call
-    e8/call allocate/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # . edi = eax
+    05/add-eax 4/imm32
+    (allocate *(ebp+8) %eax)
     89/<- %edi 0/r32/eax
     # result->size = size
-    89/<- *eax 3/r32/ebx
+    89/<- *edi 3/r32/ebx
 $parse-array-of-ints:pass2:
     # var slice/ecx: slice = {s->data, 0}
     68/push 0/imm32/end
@@ -335,41 +253,16 @@ $parse-array-of-ints:loop2:
     39/compare *ecx 2/r32/edx
     73/jump-if-addr>= $parse-array-of-ints:end/disp8
     # slice->start = skip-chars-matching-in-slice(slice->start, end, ' ')
-    # . eax = skip-chars-matching-in-slice(slice->start, end, ' ')
-    # . . push args
-    68/push 0x20/imm32/space
-    52/push-edx
-    ff 6/subop/push *ecx
-    # . . call
-    e8/call skip-chars-matching-in-slice/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
-    # . slice->start = eax
+    (skip-chars-matching-in-slice *ecx %edx 0x20)  # => eax
     89/<- *ecx 0/r32/eax
     # if (slice->start >= end) break
     39/compare *ecx 2/r32/edx
     73/jump-if-addr>= $parse-array-of-ints:end/disp8
     # slice->end = skip-chars-not-matching-in-slice(slice->start, end, ' ')
-    # . eax = skip-chars-not-matching-in-slice(curr, end, ' ')
-    # . . push args
-    68/push 0x20/imm32/space
-    52/push-edx
-    50/push-eax
-    # . . call
-    e8/call skip-chars-not-matching-in-slice/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
-    # . slice->end = eax
+    (skip-chars-not-matching-in-slice *ecx %edx 0x20)  # => eax
     89/<- *(ecx+4) 0/r32/eax
     # *out = parse-hex-int-from-slice(slice)
-    # . eax = parse-hex-int-from-slice(slice)
-    # . . push args
-    51/push-ecx
-    # . . call
-    e8/call parse-hex-int-from-slice/disp32
-    # . . discard args
-    81 0/subop/add %esp 4/imm32
-    # . *out = eax
+    (parse-hex-int-from-slice %ecx)
     89/<- *ebx 0/r32/eax
     # out += 4
     81 0/subop/add %ebx 4/imm32
@@ -404,31 +297,10 @@ test-parse-array-of-ints:
     68/push 1/imm32
     68/push 0xc/imm32/size
     89/<- %ecx 4/r32/esp
-    # eax = parse-array-of-ints(Heap, "1 2 3")
-    # . . push args
-    68/push "1 2 3"/imm32
-    68/push Heap/imm32
-    # . . call
-    e8/call parse-array-of-ints/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # eax = array-equal?(ecx, eax)
-    # . . push args
-    50/push-eax
-    51/push-ecx
-    # . . call
-    e8/call array-equal?/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(eax, 1, msg)
-    # . . push args
-    68/push "F - test-parse-array-of-ints"/imm32
-    68/push 1/imm32/true
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (parse-array-of-ints Heap "1 2 3")  # => eax
+    (array-equal? %ecx %eax)  # => eax
+    (check-ints-equal %eax 1 "F - test-parse-array-of-ints")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -439,23 +311,9 @@ test-parse-array-of-ints-empty:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # eax = parse-array-of-ints(Heap, "")
-    # . . push args
-    68/push ""/imm32
-    68/push Heap/imm32
-    # . . call
-    e8/call parse-array-of-ints/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(*eax, 0, msg)
-    # . . push args
-    68/push "F - test-parse-array-of-ints-empty"/imm32
-    68/push 0/imm32/size
-    ff 6/subop/push *eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (parse-array-of-ints Heap "")  # => eax
+    (check-ints-equal *eax 0 "F - test-parse-array-of-ints-empty")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -466,23 +324,9 @@ test-parse-array-of-ints-just-whitespace:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # eax = parse-array-of-ints(Heap, " ")
-    # . . push args
-    68/push Space/imm32
-    68/push Heap/imm32
-    # . . call
-    e8/call parse-array-of-ints/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(*eax, 0, msg)
-    # . . push args
-    68/push "F - test-parse-array-of-ints-empty"/imm32
-    68/push 0/imm32/size
-    ff 6/subop/push *eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (parse-array-of-ints Heap Space)  # => eax
+    (check-ints-equal *eax 0 "F - test-parse-array-of-ints-empty")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -498,31 +342,10 @@ test-parse-array-of-ints-extra-whitespace:
     68/push 1/imm32
     68/push 0xc/imm32/size
     89/<- %ecx 4/r32/esp
-    # eax = parse-array-of-ints(Heap, " 1 2  3  ")
-    # . . push args
-    68/push " 1 2  3  "/imm32
-    68/push Heap/imm32
-    # . . call
-    e8/call parse-array-of-ints/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # eax = array-equal?(ecx, eax)
-    # . . push args
-    50/push-eax
-    51/push-ecx
-    # . . call
-    e8/call array-equal?/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(eax, 1, msg)
-    # . . push args
-    68/push "F - test-parse-array-of-ints-extra-whitespace"/imm32
-    68/push 1/imm32/true
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (parse-array-of-ints Heap " 1 2  3  ")  # => eax
+    (array-equal? %ecx %eax)  # => eax
+    (check-ints-equal %eax 1 "F - test-parse-array-of-ints-extra-whitespace")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -537,33 +360,11 @@ check-array-equal:  # a: (addr array int), expected: (addr string), msg: (addr s
     # . save registers
     50/push-eax
     # var b/ecx: (handle array int) = parse-array-of-ints(Heap, expected)
-    # . eax = parse-array-of-ints(Heap, expected)
-    # . . push args
-    ff 6/subop/push *(ebp+0xc)
-    68/push Heap/imm32
-    # . . call
-    e8/call parse-array-of-ints/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # . b = eax
+    (parse-array-of-ints Heap *(ebp+0xc))  # => eax
     89/<- %ecx 0/r32/eax
-    # eax = array-equal?(a, b)
-    # . . push args
-    51/push-ecx
-    ff 6/subop/push *(ebp+8)
-    # . . call
-    e8/call array-equal?/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
-    # check-ints-equal(eax, 1, msg)
-    # . . push args
-    ff 6/subop/push *(ebp+0x10)
-    68/push 1/imm32
-    50/push-eax
-    # . . call
-    e8/call check-ints-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 0xc/imm32
+    #
+    (array-equal? *(ebp+8) %ecx)
+    (check-ints-equal %eax 1 *(ebp+0x10))
 $check-array-equal:end:
     # . restore registers
     58/pop-to-eax
@@ -582,15 +383,8 @@ test-check-array-equal:
     68/push 1/imm32
     68/push 0xc/imm32/size
     89/<- %ecx 4/r32/esp
-    # check-array-equal(ecx, "1 2 3", "msg")
-    # . . push args
-    68/push "F - test-check-array-equal"/imm32
-    68/push "1 2 3"/imm32
-    51/push-ecx
-    # . . call
-    e8/call check-array-equal/disp32
-    # . . discard args
-    81 0/subop/add %esp 8/imm32
+    #
+    (check-array-equal %ecx "1 2 3" "F - test-check-array-equal")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
