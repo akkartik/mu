@@ -216,3 +216,27 @@ Similarly, conditional loops:
   var/reg: (addr T_f) <- get var/reg: (addr T), f
     where record (product) type T has elements a, b, c, ... of types T_a, T_b, T_c, ...
   var/reg: (addr T_f) <- get var: (addr T), f
+
+## Handles for safe access to the heap
+
+Say we created a handle like this on the stack (it can't be in a register)
+  var x: (handle T)
+  allocate Heap, T, x
+
+You can copy handles to another variable on the stack like this:
+  var y: (handle T)
+  copy-handle-to y, x
+
+You can also save handles inside other user-defined types like this:
+  var y/reg: (addr handle T_f) <- get var: (addr T), f
+  copy-handle-to *y, x
+
+Or this:
+  var y/reg: (addr handle T) <- index arr: (addr array handle T), n
+  copy-handle-to *y, x
+
+Handles can be converted into addresses like this:
+  var y/reg: (addr T) <- lookup x
+
+It's illegal to continue to use this addr after a function that reclaims heap
+memory. You have to repeat the lookup.

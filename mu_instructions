@@ -157,7 +157,7 @@ Address operations
 var/reg: (addr T) <- address var: T
   => "8d/copy-address *(ebp+" var.stack-offset ") " reg "/r32"
 
-Array operations
+Array operations (TODO: bounds-checking)
 
 var/reg <- length arr/reg2: (addr array T)
   => "8b/-> *" reg2 " " reg "/r32"
@@ -187,4 +187,33 @@ var/reg: (addr T_f) <- get var2/reg2: (addr F), f
 var/reg: (addr T_f) <- get var2: (addr F), f
   => "8d/copy-address *(ebp+" var2.stack-offset "+" offset(f) ") " reg "/r32"
 
-vim:ft=mu:nowrap:tw&
+Handles for safe access to the heap
+
+copy-handle-to dest: (handle T), src: (handle T)
+  => "50/push-eax"
+     "8b/-> *(ebp+" src.stack-offset ") 0/r32/eax"
+     "89/<- *(ebp+" dest.stack-offset ") 0/r32/eax"
+     "8b/-> *(ebp+" src.stack-offset+4 ") 0/r32/eax"
+     "89/<- *(ebp+" dest.stack-offset+4 ") 0/r32/eax"
+     "58/pop-to-eax"
+
+copy-handle-to *dest/reg: (addr handle T), src: (handle T)
+  => "50/push-eax"
+     "8b/-> *(ebp+" src.stack-offset ") 0/r32/eax"
+     "89/<- *" reg " 0/r32/eax"
+     "8b/-> *(ebp+" src.stack-offset+4 ") 0/r32/eax"
+     "89/<- *(" reg "+4) 0/r32/eax"
+     "58/pop-to-eax"
+
+out/reg: (addr T) <- lookup in: (handle T)
+  => # payload_allocid = in->address->allocid
+     "8b/-> *(epb+" (in.stack-offset+4) ") " reg "/r32"
+     "8b/-> *" reg " " reg "/r32"
+     # if (payload_allocid != handle->allocid) abort
+     "39/compare *(ebp+" in.stack-offset ") " reg "/r32"
+     "0f 85/jump-if-!= $lookup:abort/disp32"
+     # return payload
+     "8b/-> *(epb+" (in.stack-offset+4) ") " reg "/r32"
+     "81 0/subop/add %" reg " 4/imm32"  # skip payload->allocid
+
+vim:ft=mu:nowrap:textwidth=0
