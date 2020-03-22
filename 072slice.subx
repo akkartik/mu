@@ -1041,11 +1041,12 @@ test-write-slice-buffered:
     c3/return
 
 # copy a slice into a new (dynamically allocated) string
-slice-to-string:  # ad: (addr allocation-descriptor), in: (addr slice) -> out/eax: (addr array byte)
+slice-to-string:  # ad: (addr allocation-descriptor), in: (addr slice), out: (handle array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
     53/push-ebx
@@ -1060,14 +1061,20 @@ slice-to-string:  # ad: (addr allocation-descriptor), in: (addr slice) -> out/ea
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy ebx to ecx
     29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # subtract edx from ecx
     81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # add to ecx
-    # var out/eax: (handle array byte) = allocate(ad, size)
+    # allocate(ad, size, out)
     # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
     51/push-ecx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           8/disp8         .                 # push *(ebp+8)
     # . . call
     e8/call  allocate/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = out->payload
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           0/r32/eax   4/disp8         .                 # copy *(eax+4) to eax
+    # skip payload->allocid
+    05/add-to-eax  4/imm32
     # if (eax == 0) abort
     3d/compare-eax-and  0/imm32
     74/jump-if-=  $slice-to-string:abort/disp8
@@ -1099,6 +1106,7 @@ $slice-to-string:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
@@ -1144,15 +1152,24 @@ test-slice-to-string:
     51/push-ecx
     50/push-eax
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # eax = slice-to-string(heap, slice)
+    # var h/ebx: (handle array byte)
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
+    # slice-to-string(heap, slice, h)
     # . . push args
+    53/push-ebx
     51/push-ecx
     52/push-edx
     # . . call
     e8/call  slice-to-string/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-#?     # dump word-slice {{{
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = h->payload
+    8b/copy                         1/mod/*+disp8   3/rm32/ebx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(ebx+4) to eax
+    # skip payload->allocid
+    05/add-to-eax  4/imm32
+#?     # dump eax {{{
 #?     # . write(2/stderr, "AA: ")
 #?     # . . push args
 #?     68/push  "AA: "/imm32
@@ -1195,6 +1212,8 @@ test-slice-to-string:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . reclaim locals
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x18/imm32        # add to esp
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp

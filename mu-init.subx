@@ -27,9 +27,13 @@ $Entry:initialize-args:
     8b/-> *esi 2/r32/edx
     # argc is in words; convert it to bytes
     c1/shift 4/subop/left %edx 2/imm8
+    # var tmp/eax: handle
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %eax 4/r32/esp
     # var args/edi: (addr array (addr array byte))
-    (allocate-array Heap %edx)  # => eax
-    89/<- %edi 0/r32/eax
+    (allocate-array Heap %edx %eax)
+    8b/-> *(eax+4) 7/r32/edi
     # var curr/ecx: (addr kernel-string) = argv
     8d/copy-address *(esi+4) 1/r32/ecx
     # var max/edx: (addr kernel-string) = argv+4+argc
