@@ -42,16 +42,21 @@ syntax match muAssign "<-"
 highlight link muAssign SpecialChar
 
 " common keywords
-" use regular expressions for common words that may come after '/'
 syntax match muControl "^return\>\| return\>"
 syntax match muControl "\<jump\>\|\<jump-if[^ ]*"
 syntax match muControl "\<break\>\|\<break-if[^ ]*"
 syntax match muControl "\<loop\>\|\<loop-if[^ ]*"
-highlight link muControl Identifier
+highlight link muControl PreProc
 
-syntax match muRecipe " -> "
-syntax keyword muRecipe fn type var
-highlight link muRecipe PreProc
+syntax match muKeyword " -> "
+syntax keyword muKeyword fn type var
+highlight link muKeyword PreProc
+
+syntax match muFunction "\(fn\s*\)\@<=\(\S\+\)"
+highlight muFunction cterm=underline ctermfg=130
+
+syntax match muTest "\(fn\s*\)\@<=\(test-\S\+\)"
+highlight muTest ctermfg=64
 
 syntax match muData "^type\>"
 syntax match muData "\<eax\>\|\<ecx\>\|\<edx\>\|\<ebx\>\|\<esi\>\|\<edi\>"
