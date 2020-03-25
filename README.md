@@ -21,7 +21,7 @@ Running the code you want to run, and nothing else.
 Mu requires just a Unix-like OS and nothing else. The Mu translator is built
 up from machine code. You can also bootstrap it from C++. Both C++ and
 self-hosted versions emit identical binaries. The generated binaries require
-just a Unix-like kernel and nothing else. (There are more details in [this paper.](http://akkartik.name/akkartik-convivial-20200315.pdf))
+just a Unix-like kernel and nothing else. (There are more details in [this paper](http://akkartik.name/akkartik-convivial-20200315.pdf).)
 
 ## Goals
 
