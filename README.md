@@ -75,7 +75,7 @@ more details, and there's a [summary](mu_summary) of all supported instructions.
 ## SubX
 
 Mu is written in [a notation for a subset of x86 machine code called SubX](http://akkartik.name/post/mu-2019-1).
-Here's a program (`apps/ex1.subx`) that returns 42:
+Here's a SubX program (`apps/ex1.subx`) that returns 42:
 
   ```sh
   bb/copy-to-ebx  0x2a/imm32  # 42 in hex
