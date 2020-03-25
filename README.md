@@ -311,8 +311,8 @@ will override earlier ones.
 be built up incrementally out of multiple [_layers_](http://akkartik.name/post/wart-layers).)
 
 Another special pair of labels are the block delimiters `{` and `}`. They can
-be nested, and the instructions `loop` and `break` jump to the enclosing `{`
-and `}` respectively.
+be nested, and jump instructions can take arguments `loop` or `break` that
+jump to the enclosing `{` and `}` respectively.
 
 The data segment consists of labels as before and byte values. Referring to
 data labels in either `code` segment instructions or `data` segment values
