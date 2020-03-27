@@ -65,7 +65,7 @@ checks. Here's the program we translated above:
 <img alt='ex2.mu' src='html/ex2.mu.png'>
 
 There are no expressions; functions consist of only statements that operate on
-variables. Most statements in Mu translate to [a single machine code instruction](http://akkartik.github.io/mu/html/mu_instructions.html).
+variables. Most statements in Mu translate to [a single machine-code instruction](http://akkartik.github.io/mu/html/mu_instructions.html).
 Variables reside in memory by default. Programs must specify registers when
 they want to use them. Functions must return results in registers. Execution
 begins at the function `main`, which always returns its result in register
