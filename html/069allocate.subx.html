@@ -295,7 +295,39 @@ if ('onhashchange' in window) {
 <span id="L234" class="LineNr">234 </span>    cd/syscall  0x80/imm8
 <span id="L235" class="LineNr">235 </span>    <span class="subxComment"># never gets here</span>
 <span id="L236" class="LineNr">236 </span>
-<span id="L237" class="LineNr">237 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
+<span id="L237" class="LineNr">237 </span><span class="subxComment"># Claim the next 'n+4' bytes of memory and initialize the first 4 to n.</span>
+<span id="L238" class="LineNr">238 </span><span class="subxComment"># Abort if there isn't enough memory in 'ad'.</span>
+<span id="L239" class="LineNr">239 </span><span class="subxFunction">allocate-array</span>:  <span class="subxComment"># ad: (addr allocation-descriptor), n: int -&gt; result/eax: (addr _)</span>
+<span id="L240" class="LineNr">240 </span>    <span class="subxS1Comment"># . prologue</span>
+<span id="L241" class="LineNr">241 </span>    55/push-ebp
+<span id="L242" class="LineNr">242 </span>    89/copy                         3/mod/direct    5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          4/r32/esp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy esp to ebp</span>
+<span id="L243" class="LineNr">243 </span>    <span class="subxS1Comment"># . save registers</span>
+<span id="L244" class="LineNr">244 </span>    51/push-ecx
+<span id="L245" class="LineNr">245 </span>    52/push-edx
+<span id="L246" class="LineNr">246 </span>    <span class="subxComment"># ecx = n</span>
+<span id="L247" class="LineNr">247 </span>    8b/copy                         1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx   0xc/disp8      <span class="Normal"> . </span>                <span class="subxComment"># copy *(ebp+12) to ecx</span>
+<span id="L248" class="LineNr">248 </span>    <span class="subxComment"># var size/edx: int = n+4</span>
+<span id="L249" class="LineNr">249 </span>    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          2/r32/edx   4/disp8        <span class="Normal"> . </span>                <span class="subxComment"># copy ecx+4 to edx</span>
+<span id="L250" class="LineNr">250 </span>    <span class="subxComment"># result = allocate(ad, size)</span>
+<span id="L251" class="LineNr">251 </span>    <span class="subxS2Comment"># . . push args</span>
+<span id="L252" class="LineNr">252 </span>    52/push-edx
+<span id="L253" class="LineNr">253 </span>    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>          8/disp8        <span class="Normal"> . </span>                <span class="subxComment"># push *(ebp+8)</span>
+<span id="L254" class="LineNr">254 </span>    <span class="subxS2Comment"># . . call</span>
+<span id="L255" class="LineNr">255 </span>    e8/call  <a href='069allocate.subx.html#L59'>allocate</a>/disp32
+<span id="L256" class="LineNr">256 </span>    <span class="subxS2Comment"># . . discard args</span>
+<span id="L257" class="LineNr">257 </span>    81          0/subop/add         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>         <span class="Normal"> . </span>         <span class="Normal"> . </span>              8/imm32           <span class="subxComment"># add to esp</span>
+<span id="L258" class="LineNr">258 </span>    <span class="subxComment"># *result = n</span>
+<span id="L259" class="LineNr">259 </span>    89/copy                         0/mod/indirect  0/rm32/eax   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          1/r32/ecx  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ecx to *eax</span>
+<span id="L260" class="LineNr">260 </span><span class="Constant">$allocate-array:end</span>:
+<span id="L261" class="LineNr">261 </span>    <span class="subxS1Comment"># . restore registers</span>
+<span id="L262" class="LineNr">262 </span>    5a/pop-to-edx
+<span id="L263" class="LineNr">263 </span>    59/pop-to-ecx
+<span id="L264" class="LineNr">264 </span>    <span class="subxS1Comment"># . epilogue</span>
+<span id="L265" class="LineNr">265 </span>    89/copy                         3/mod/direct    4/rm32/esp   <span class="Normal"> . </span>         <span class="Normal"> . </span>           <span class="Normal"> . </span>          5/r32/ebp  <span class="Normal"> . </span>             <span class="Normal"> . </span>                <span class="subxComment"># copy ebp to esp</span>
+<span id="L266" class="LineNr">266 </span>    5d/pop-to-ebp
+<span id="L267" class="LineNr">267 </span>    c3/return
+<span id="L268" class="LineNr">268 </span>
+<span id="L269" class="LineNr">269 </span><span class="subxS2Comment"># . . vim&#0058;nowrap:textwidth=0</span>
 </pre>
 </body>
 </html>
