@@ -221,20 +221,6 @@ test $NATIVE  &&  {
   echo
 }
 
-echo handle
-./bootstrap translate init.$OS 0[0-8]*.subx apps/handle.subx  -o apps/handle
-test "$1" = 'record'  ||  git diff --exit-code apps/handle
-test $EMULATED  &&  {
-  ./bootstrap run apps/handle > handle.out 2>&1  ||  true
-  grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
-  grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
-}
-test $NATIVE  &&  {
-  apps/handle > handle.out 2>&1  ||  true
-  grep -q 'lookup succeeded' handle.out  ||  { echo "missing success test"; exit 1; }
-  grep -q 'lookup failed' handle.out  ||  { echo "missing failure test"; exit 1; }
-}
-
 # Phases of the self-hosted SubX translator.
 
 for phase in hex survey pack assort dquotes tests
@@ -324,7 +310,7 @@ done
 
 # Larger apps that use the standard library.
 
-for app in factorial crenshaw2-1 crenshaw2-1b handle
+for app in factorial crenshaw2-1 crenshaw2-1b
 do
   echo $app
   ./translate_subx init.$OS 0[0-8]*.subx apps/$app.subx
