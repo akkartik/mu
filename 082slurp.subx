@@ -8,7 +8,7 @@
 slurp:  # f: (addr buffered-file), s: (addr stream byte)
     # pseudocode:
     #   while true
-    #     if (s->write >= s->length) abort
+    #     if (s->write >= s->size) abort
     #     if (f->read >= f->write) populate stream from file
     #     if (f->write == 0) break
     #     AL = f->data[f->read]
@@ -33,7 +33,7 @@ slurp:  # f: (addr buffered-file), s: (addr stream byte)
     # edx = s->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
 $slurp:loop:
-    # if (s->write >= s->length) abort
+    # if (s->write >= s->size) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # compare edx with *(edi+8)
     7d/jump-if->=  $slurp:abort/disp8
     # if (f->read >= f->write) populate stream from file

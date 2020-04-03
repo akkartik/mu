@@ -8,9 +8,9 @@
 write-buffered:  # f: (addr buffered-file), msg: (addr array byte)
     # pseudocode:
     #   in = msg->data
-    #   inend = &msg->data[msg->length]
+    #   inend = &msg->data[msg->size]
     #   while (in < inend)
-    #     if f->write >= f->length
+    #     if f->write >= f->size
     #       flush(f)
     #       clear-stream(f)
     #     c = *in
@@ -22,7 +22,7 @@ write-buffered:  # f: (addr buffered-file), msg: (addr array byte)
     #   in: esi
     #   inend: ecx
     #   f: edi
-    #   f->length: edx
+    #   f->size: edx
     #   f->write: ebx (cached; need to keep in sync)
     #   c: eax
     #
@@ -40,12 +40,12 @@ write-buffered:  # f: (addr buffered-file), msg: (addr array byte)
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
     # var in/esi: (addr byte) = msg->data
     8d/copy-address                 1/mod/*+disp8   0/rm32/eax    .           .             .           6/r32/esi   4/disp8         .                 # copy eax+4 to esi
-    # var inend/ecx: (addr byte) = &msg->data[msg->length]
+    # var inend/ecx: (addr byte) = &msg->data[msg->size]
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 0/mod/indirect  4/rm32/sib    6/base/esi  1/index/ecx   .           1/r32/ecx   .               .                 # copy esi+ecx to ecx
     # edi = f
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # edx = f->length
+    # edx = f->size
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(edi+12) to edx
     # ebx = f->write
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy *(edi+4) to ebx
@@ -53,7 +53,7 @@ $write-buffered:loop:
     # if (in >= inend) break
     39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
     73/jump-if-addr>=  $write-buffered:loop-end/disp8
-    # if (f->write >= f->length) flush and clear f's stream
+    # if (f->write >= f->size) flush and clear f's stream
     39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx with edx
     7c/jump-if-<  $write-buffered:to-stream/disp8
     # . persist f->write
@@ -215,7 +215,7 @@ $Stderr->buffer:
     0/imm32
     #   current read index
     0/imm32
-    #   length
+    #   size
     8/imm32
     #   data
     00 00 00 00 00 00 00 00  # 8 bytes

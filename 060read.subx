@@ -38,7 +38,7 @@
 # As a reminder, a stream looks like this:
 #   write: int  # index at which to write to next
 #   read: int  # index at which to read next
-#   data: (array byte)  # prefixed by length as usual
+#   data: (array byte)  # prefixed by size as usual
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -70,7 +70,7 @@ $read:fake:
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # edi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # eax = _buffer-4(out = &s->data[s->write], outend = &s->data[s->length],
+    # eax = _buffer-4(out = &s->data[s->write], outend = &s->data[s->size],
     #                 in  = &f->data[f->read],  inend  = &f->data[f->write])
     # . . push &f->data[f->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
@@ -80,7 +80,7 @@ $read:fake:
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
     50/push-eax
-    # . . push &s->data[s->length]
+    # . . push &s->data[s->size]
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   8/disp8         .                 # copy *(edi+8) to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy edi+eax+12 to eax
     50/push-eax
@@ -116,8 +116,8 @@ _buffer-3:  # out: address, outend: address, s: (array byte) -> num_bytes_buffer
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     51/push-ecx
-    # eax = _buffer-4(out, outend, &s->data[0], &s->data[s->length])
-    # . . push &s->data[s->length]
+    # eax = _buffer-4(out, outend, &s->data[0], &s->data[s->size])
+    # . . push &s->data[s->size]
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy *eax to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   4/disp8         .                 # copy eax+ecx+4 to ecx
@@ -208,14 +208,14 @@ _read:  # fd: int, s: (addr stream byte) -> num-bytes-read/eax: int
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
     # eax = s->write
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
-    # edx = s->length
+    # edx = s->size
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(esi+8) to edx
-    # syscall(read, fd, &s->data[s->write], s->length - s->write)
+    # syscall(read, fd, &s->data[s->write], s->size - s->write)
     # . . fd: ebx
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ebp+8) to ebx
     # . . data: ecx = &s->data[s->write]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           1/r32/ecx   0xc/disp8       .                 # copy esi+eax+12 to ecx
-    # . . size: edx = s->length - s->write
+    # . . size: edx = s->size - s->write
     29/subtract                     3/mod/direct    2/rm32/edx    .           .             .           0/r32/eax   .               .                 # subtract eax from edx
     # . . syscall
     b8/copy-to-eax  3/imm32/read
@@ -237,14 +237,14 @@ $_read:end:
     #   1 (what we have above):
     #     ecx = s
     #     eax = s->write
-    #     edx = s->length
+    #     edx = s->size
     #     # syscall
     #     ecx = lea ecx+eax+12
     #     edx = sub edx eax
     #
     #   2:
     #     ecx = s
-    #     edx = s->length
+    #     edx = s->size
     #     ecx = &s->data
     #     # syscall
     #     ecx = add ecx, s->write
@@ -431,7 +431,7 @@ _test-tmp-stream:  # (stream byte)
     0/imm32
     # current read index
     0/imm32
-    # length
+    # size
     8/imm32
     # data
     00 00 00 00 00 00 00 00  # 8 bytes

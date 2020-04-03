@@ -108,12 +108,12 @@ compile:  # in: (addr buffered-file), out: fd or (addr stream byte), err: fd or 
     # var num/ecx: (stream byte 7)
     # Numbers can be 32 bits or 8 hex bytes long. One of them will be in 'Look', so we need space for 7 bytes.
     # Sizing the stream just right buys us overflow-handling for free inside 'get-num'.
-    # Add 12 bytes for 'read', 'write' and 'length' fields, for a total of 19 bytes, or 0x13 in hex.
+    # Add 12 bytes for 'read', 'write' and 'size' fields, for a total of 19 bytes, or 0x13 in hex.
     # The stack pointer is no longer aligned, so dump_stack() can be misleading past this point.
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x13/imm32        # subtract from esp
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # initialize the stream
-    # . num->length = 7
+    # . num->size = 7
     c7          0/subop/copy        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           8/disp8         7/imm32           # copy to *(ecx+8)
     # . clear-stream(num)
     # . . push args
@@ -194,7 +194,7 @@ $compile:end:
 get-num:  # in: (addr buffered-file), out: (addr stream byte), err: fd or (addr stream byte), ed: (addr exit-descriptor)
     # pseudocode:
     #   if (!is-digit?(Look)) expected(ed, err, "integer")
-    #   if out->write >= out->length
+    #   if out->write >= out->size
     #     write(err, "Error: too many digits in number\n")
     #     stop(ed, 1)
     #   out->data[out->write] = LSB(Look)
@@ -205,7 +205,7 @@ get-num:  # in: (addr buffered-file), out: (addr stream byte), err: fd or (addr 
     #   in: esi
     #   out: edi
     #   out->write: ecx (cached copy; need to keep in sync)
-    #   out->length: edx
+    #   out->size: edx
     #   temporaries: eax, ebx
     # We can't allocate Look to a register because it gets written implicitly in
     # get-char in each iteration of the loop. (Thereby demonstrating that it's
@@ -250,10 +250,10 @@ $get-num:main:
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
     # ecx = out->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
-    # edx = out->length
+    # edx = out->size
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(edi+8) to edx
 $get-num:loop:
-    # if (out->write >= out->length) error
+    # if (out->write >= out->size) error
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # compare edx with ecx
     7d/jump-if-<  $get-num:stage2/disp8
     # . error(ed, err, msg)  # TODO: show full number

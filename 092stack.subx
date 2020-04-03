@@ -1,6 +1,6 @@
 # A stack looks like this:
 #   top: int
-#   data: (array byte)  # prefixed by length as usual
+#   data: (array byte)  # prefixed by size as usual
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -16,7 +16,7 @@ clear-stack:  # s: (addr stack)
     51/push-ecx
     # eax = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
-    # var max/ecx: (addr byte) = &s->data[s->length]
+    # var max/ecx: (addr byte) = &s->data[s->size]
     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(eax+4) to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   8/disp8         .                 # copy eax+ecx+8 to ecx
     # s->top = 0
@@ -48,7 +48,7 @@ test-clear-stack:
     # var stack/ecx = stack of size 8 with random data in it
     68/push 34/imm32
     68/push 35/imm32
-    68/push 8/imm32/length
+    68/push 8/imm32/size
     68/push 14/imm32/top
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # clear(stack)
@@ -69,11 +69,11 @@ test-clear-stack:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # length should remain 8
+    # size should remain 8
     58/pop-to-eax
     # . check-ints-equal(eax, 8, msg)
     # . . push args
-    68/push  "F - test-clear-stack: length"/imm32
+    68/push  "F - test-clear-stack: size"/imm32
     68/push  8/imm32
     50/push-eax
     # . . call
@@ -119,7 +119,7 @@ push:  # s: (addr stack), n: int
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # ecx = s->top
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-    # if (s->top >= s->length) abort
+    # if (s->top >= s->size) abort
     39/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   4/disp8         .                 # compare *(esi+4) and ecx
     7e/jump-if-<=  $push:abort/disp8
     # s->data[s->top] = n
@@ -167,7 +167,7 @@ test-push:
     # var stack/ecx = empty stack of size 8
     68/push 0/imm32
     68/push 0/imm32
-    68/push 8/imm32/length
+    68/push 8/imm32/size
     68/push 0/imm32/top
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # push(stack, 0x42)
@@ -189,11 +189,11 @@ test-push:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # check length
+    # check size
     58/pop-to-eax
     # . check-ints-equal(eax, 8, msg)
     # . . push args
-    68/push  "F - test-push: length"/imm32
+    68/push  "F - test-push: size"/imm32
     68/push  8/imm32
     50/push-eax
     # . . call
@@ -285,7 +285,7 @@ test-pop:
     # var stack/ecx = stack of size 8 containing just 0x42
     68/push 0/imm32
     68/push 0x42/imm32
-    68/push 8/imm32/length
+    68/push 8/imm32/size
     68/push 4/imm32/top
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # eax = pop(stack)
@@ -315,11 +315,11 @@ test-pop:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # check length
+    # check size
     58/pop-to-eax
     # . check-ints-equal(eax, 8, msg)
     # . . push args
-    68/push  "F - test-pop: length"/imm32
+    68/push  "F - test-pop: size"/imm32
     68/push  8/imm32
     50/push-eax
     # . . call
@@ -386,7 +386,7 @@ test-top:
     # var stack/ecx = stack of size 8 containing just 0x42
     68/push  0/imm32
     68/push  0x42/imm32
-    68/push  8/imm32/length
+    68/push  8/imm32/size
     68/push  4/imm32/top
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # eax = top(stack)

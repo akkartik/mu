@@ -380,7 +380,7 @@ Max-type-id:
 Type-id:  # (stream (address array byte))
   0x1c/imm32/write
   0/imm32/read
-  0x100/imm32/length
+  0x100/imm32/size
   # data
   "literal"/imm32  # 0
   "int"/imm32  # 1
@@ -2478,7 +2478,7 @@ test-convert-index-into-array-with-literal:
     (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"                       "F - test-convert-index-into-array-with-literal/5")
     (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"                    "F - test-convert-index-into-array-with-literal/6")
     (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 0/imm32"                  "F - test-convert-index-into-array-with-literal/7")
-                                                                                 # 2 * 4 bytes/elem + 4 bytes for length = offset 12
+                                                                                 # 2 * 4 bytes/elem + 4 bytes for size = offset 12
     (check-next-stream-line-equal _test-output-stream "    8d/copy-address *(eax + 0x0000000c) 0x00000000/r32"  "F - test-convert-index-into-array-with-literal/8")
     (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax"                     "F - test-convert-index-into-array-with-literal/9")
     (check-next-stream-line-equal _test-output-stream "  }"                                         "F - test-convert-index-into-array-with-literal/10")
@@ -3163,7 +3163,7 @@ parse-mu:  # in: (addr buffered-file)
     57/push-edi
     # var line/ecx: (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
-    68/push 0x200/imm32/length
+    68/push 0x200/imm32/size
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
@@ -3177,7 +3177,7 @@ parse-mu:  # in: (addr buffered-file)
     be/copy-to-esi _Program-types/imm32
     # var vars/ebx: (stack (addr var) 256)
     81 5/subop/subtract %esp 0x400/imm32
-    68/push 0x400/imm32/length
+    68/push 0x400/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     {
@@ -3486,7 +3486,7 @@ test-function-header-with-arg:
     (zero-out %ecx *Function-size)
     # var vars/ebx: (stack (addr var) 16)
     81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/length
+    68/push 0x10/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
@@ -3519,7 +3519,7 @@ test-function-header-with-multiple-args:
     (zero-out %ecx *Function-size)
     # var vars/ebx: (stack (addr var) 16)
     81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/length
+    68/push 0x10/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
@@ -3571,7 +3571,7 @@ test-function-with-multiple-args-and-outputs:
     (zero-out %ecx *Function-size)
     # var vars/ebx: (stack (addr var) 16)
     81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/length
+    68/push 0x10/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
@@ -4666,7 +4666,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     57/push-edi
     # var line/ecx: (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
-    68/push 0x200/imm32/length
+    68/push 0x200/imm32/size
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
@@ -4809,7 +4809,7 @@ new-block-name:  # fn: (handle function) -> result/eax: (handle var)
     # var n/ecx: int = len(fn->name) + 10 for an int + 2 for '$:'
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *eax 0/r32/eax  # Function-name
-    8b/-> *eax 0/r32/eax  # String-length
+    8b/-> *eax 0/r32/eax  # String-size
     05/add-to-eax 0xd/imm32  # 10 + 2 for '$:'
     89/<- %ecx 0/r32/eax
     # var name/edx: (stream byte n)
@@ -5019,7 +5019,7 @@ test-parse-mu-var-def:
     (write _test-input-stream "n: int\n")  # caller has consumed the 'var'
     # var vars/ecx: (stack (addr var) 4)
     81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/length
+    68/push 0x10/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -5049,7 +5049,7 @@ test-parse-mu-reg-var-def:
     (write _test-input-stream "n/eax: int <- copy 0\n")  # caller has consumed the 'var'
     # var vars/ecx: (stack (addr var) 4)
     81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/length
+    68/push 0x10/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -5428,7 +5428,7 @@ lookup-var-helper:  # name: (addr array byte), vars: (addr stack (handle var)) -
     8b/-> *(ebp+0xc) 6/r32/esi
     # ebx = vars->top
     8b/-> *esi 3/r32/ebx
-    # if (vars->top > vars->length) abort
+    # if (vars->top > vars->size) abort
     3b/compare<- *(esi+4) 0/r32/eax
     0f 8f/jump-if-> $lookup-var-helper:error1/disp32
     # var min/edx: (addr handle var) = vars->data
@@ -5548,7 +5548,7 @@ test-parse-mu-stmt:
     (write _test-input-stream "increment n\n")
     # var vars/ecx: (stack (addr var) 4)
     81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/length
+    68/push 0x10/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -5584,7 +5584,7 @@ test-parse-mu-stmt-with-comma:
     (write _test-input-stream "copy-to n, 3\n")
     # var vars/ecx: (stack (addr var) 4)
     81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/length
+    68/push 0x10/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -6141,7 +6141,7 @@ populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
     8b/-> *(ebp+0xc) 7/r32/edi
     # var line/ecx: (stream byte 512)
     81 5/subop/subtract %esp 0x200/imm32
-    68/push 0x200/imm32/length
+    68/push 0x200/imm32/size
     68/push 0/imm32/read
     68/push 0/imm32/write
     89/<- %ecx 4/r32/esp
@@ -6685,7 +6685,7 @@ size-of-array:  # a: (handle tree type-id) -> result/eax: int
     # return array-size * size-of(elem-type)
     (size-of-type-id %edx)  # => eax
     f7 4/subop/multiply-into-eax %ecx
-    05/add-to-eax 4/imm32  # for array length
+    05/add-to-eax 4/imm32  # for array size
 $size-of-array:end:
     # . restore registers
     5a/pop-to-edx
@@ -6822,7 +6822,7 @@ emit-subx-function:  # out: (addr buffered-file), f: (handle function)
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var vars/edx: (stack (addr var) 256)
     81 5/subop/subtract %esp 0x400/imm32
-    68/push 0x400/imm32/length
+    68/push 0x400/imm32/size
     68/push 0/imm32/top
     89/<- %edx 4/r32/esp
     #
@@ -7223,7 +7223,7 @@ Reverse-branch:  # (table string string)
   # a table is a stream
   0xa0/imm32/write
   0/imm32/read
-  0xa0/imm32/length
+  0xa0/imm32/size
   # data
   "break-if-="/imm32      "0f 85/jump-if-!="/imm32
   "loop-if-="/imm32       "0f 85/jump-if-!="/imm32
@@ -7689,7 +7689,7 @@ emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle stmt)
       (is-mu-array? *(ecx+4))  # Var-type => eax
       3d/compare-eax-and 0/imm32/false
       0f 84/jump-if-= break/disp32
-      # var array-size-without-length/edx: int = n-4
+      # var array-size-without-size/edx: int = n-4
       81 5/subop/subtract %edx 4/imm32
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "(push-n-zero-bytes ")
@@ -7732,7 +7732,7 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (handle stmt), primitives: (
     # - some special-case primitives that don't actually use the 'primitives' data structure
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # array length
+    # array size
     {
       # if (!string-equal?(stmt->operation, "length")) break
       (string-equal? *(ecx+4) "length")  # Stmt1-operation => eax

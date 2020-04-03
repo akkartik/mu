@@ -1,4 +1,4 @@
-# Comparing 'regular' length-prefixed strings.
+# Comparing 'regular' size-prefixed strings.
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -15,7 +15,7 @@ Entry:  # run all tests
 
 string-equal?:  # s: (addr array byte), benchmark: (addr array byte) -> eax: boolean
     # pseudocode:
-    #   if (s->length != benchmark->length) return false
+    #   if (s->size != benchmark->size) return false
     #   return string-starts-with?(s, benchmark)
     #
     # . prologue
@@ -29,10 +29,10 @@ string-equal?:  # s: (addr array byte), benchmark: (addr array byte) -> eax: boo
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # edi = benchmark
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
-    # ecx = s->length
+    # ecx = s->size
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-$string-equal?:lengths:
-    # if (ecx != benchmark->length) return false
+$string-equal?:sizes:
+    # if (ecx != benchmark->size) return false
     39/compare                      0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # compare *edi and ecx
     b8/copy-to-eax  0/imm32/false
     75/jump-if-!=  $string-equal?:end/disp8
@@ -57,10 +57,10 @@ $string-equal?:end:
 
 string-starts-with?:  # s: (addr array byte), benchmark: (addr array byte) -> eax: boolean
     # pseudocode:
-    #   if (s->length < benchmark->length) return false
+    #   if (s->size < benchmark->size) return false
     #   currs = s->data
     #   currb = benchmark->data
-    #   maxb = &benchmark->data[benchmark->length]
+    #   maxb = &benchmark->data[benchmark->size]
     #   while currb < maxb
     #     c1 = *currs
     #     c2 = *currb
@@ -87,17 +87,17 @@ string-starts-with?:  # s: (addr array byte), benchmark: (addr array byte) -> ea
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
     # edi = benchmark
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
-    # var blen/ecx: int = benchmark->length
+    # var bsize/ecx: int = benchmark->size
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           1/r32/ecx   .               .                 # copy *edi to ecx
-$string-starts-with?:lengths:
-    # if (s->length < blen) return false
+$string-starts-with?:sizes:
+    # if (s->size < bsize) return false
     39/compare                      0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare *esi with ecx
     7c/jump-if-<  $string-starts-with?:false/disp8
     # var currs/esi: (addr byte) = s->data
     81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               4/imm32           # add to esi
     # var currb/edi: (addr byte) = benchmark->data
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm32           # add to edi
-    # var maxb/ecx: (addr byte) = &benchmark->data[benchmark->length]
+    # var maxb/ecx: (addr byte) = &benchmark->data[benchmark->size]
     01/add                          3/mod/direct    1/rm32/ecx    .           .             .           7/r32/edi   .               .                 # add edi to ecx
     # var c1/eax: byte = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
@@ -157,7 +157,7 @@ test-compare-empty-with-empty-string:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     c3/return
 
-test-compare-empty-with-non-empty-string:  # also checks length-mismatch code path
+test-compare-empty-with-non-empty-string:  # also checks size-mismatch code path
     # eax = string-equal?("", "Abc")
     # . . push args
     68/push  "Abc"/imm32
@@ -197,7 +197,7 @@ test-compare-equal-strings:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     c3/return
 
-test-compare-inequal-strings-equal-lengths:
+test-compare-inequal-strings-equal-sizes:
     # eax = string-equal?("Abc", "Adc")
     # . . push args
     68/push  "Adc"/imm32
@@ -208,7 +208,7 @@ test-compare-inequal-strings-equal-lengths:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # check-ints-equal(eax, 0, msg)
     # . . push args
-    68/push  "F - test-compare-inequal-strings-equal-lengths"/imm32
+    68/push  "F - test-compare-inequal-strings-equal-sizes"/imm32
     68/push  0/imm32/false
     50/push-eax
     # . . call

@@ -11,7 +11,7 @@ new-stream:  # ad: (addr allocation-descriptor), length: int, elemsize: int -> a
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # . save registers
     52/push-edx
-    # var n/eax: int = elemsize * length + 12 (for read, write and length)
+    # var n/eax: int = elemsize * length + 12 (for read, write and size)
     # . eax = elemsize
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
     # . eax *= length
@@ -32,7 +32,7 @@ new-stream:  # ad: (addr allocation-descriptor), length: int, elemsize: int -> a
     e8/call  allocate/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
-    # eax->length = elemsize*length
+    # eax->size = elemsize*length
     89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           2/r32/edx   8/disp8         .                 # copy edx to *(eax+8)
     # clear-stream(eax)
     # . . push args
@@ -100,9 +100,9 @@ test-new-stream:
     e8/call  check-ints-equal/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # check-ints-equal(eax->length, 6, msg)
+    # check-ints-equal(eax->size, 6, msg)
     # . . push args
-    68/push  "F - test-new-stream: sets length correctly"/imm32
+    68/push  "F - test-new-stream: sets size correctly"/imm32
     68/push  6/imm32
     ff          6/subop/push        1/mod/*+disp8   0/rm32/eax    .           .             .           .           .               8/disp8           # push *(eax+8)
     # . . call

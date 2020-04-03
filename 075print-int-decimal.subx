@@ -22,7 +22,7 @@ print-int32-decimal:  # out: (addr stream byte), n: int32
     #     push '-'
     #   w = out->write
     #   curr = &out->data[out->write]
-    #   max = &out->data[out->length]
+    #   max = &out->data[out->size]
     #   while true
     #     pop into eax
     #     if (eax == sentinel) break
@@ -78,7 +78,7 @@ $print-int32-decimal:write:
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
     # var curr/ecx: (addr byte) = &out->data[out->write]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  2/index/edx   .           1/r32/ecx   0xc/disp8       .                 # copy ebx+edx+12 to ecx
-    # var max/ebx: (addr byte) = &out->data[out->length]
+    # var max/ebx: (addr byte) = &out->data[out->size]
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(edi+8) to ebx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  3/index/ebx   .           3/r32/ebx   0xc/disp8       .                 # copy edi+ebx+12 to ebx
 $print-int32-decimal:write-loop:

@@ -122,7 +122,7 @@ slice-equal?:  # s: (addr slice), p: (addr array byte) -> eax: boolean
     #   if (p == 0) return (s == 0)
     #   currs = s->start
     #   maxs = s->end
-    #   if (maxs - currs != p->length) return false
+    #   if (maxs - currs != p->size) return false
     #   currp = p->data
     #   while currs < maxs
     #     if (*currs != *currp) return false
@@ -151,7 +151,7 @@ slice-equal?:  # s: (addr slice), p: (addr array byte) -> eax: boolean
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     # var maxs/esi: (addr byte) = s->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
-    # var slen/eax: int = maxs - currs
+    # var ssize/eax: int = maxs - currs
     89/copy                         3/mod/direct    0/rm32/eax    .           .             .           6/r32/esi   .               .                 # copy esi to eax
     29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # subtract edx from eax
     # ebx = p
@@ -165,7 +165,7 @@ $slice-equal?:null-string:
     74/jump-if-=  $slice-equal?:true/disp8
     eb/jump  $slice-equal?:false/disp8
 $slice-equal?:nonnull-string:
-    # if (slen != p->length) return false
+    # if (ssize != p->size) return false
     39/compare                      0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # compare *ebx and eax
     75/jump-if-!=  $slice-equal?:false/disp8
     # var currp/ebx: (addr byte) = p->data
@@ -486,12 +486,12 @@ test-slice-equal-with-null:
 
 slice-starts-with?:  # s: (addr slice), head: (addr array byte) -> eax: boolean
     # pseudocode
-    #   lenh = head->length
-    #   if (lenh > s->end - s->start) return false
+    #   hsize = head->size
+    #   if (hsize > s->end - s->start) return false
     #   i = 0
     #   currs = s->start
     #   currp = head->data
-    #   while i < lenh
+    #   while i < hsize
     #     if (*currs != *currh) return false
     #     ++i
     #     ++currs
@@ -504,7 +504,7 @@ slice-starts-with?:  # s: (addr slice), head: (addr array byte) -> eax: boolean
     #   *currs: eax
     #   *currh: ebx
     #   i: ecx
-    #   lenh: edx
+    #   hsize: edx
     #
     # . prologue
     55/push-ebp
@@ -522,9 +522,9 @@ slice-starts-with?:  # s: (addr slice), head: (addr array byte) -> eax: boolean
     2b/subtract                     0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # subtract *esi from ecx
     # edi = head
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   0xc/disp8       .                 # copy *(ebp+12) to edi
-    # var lenh/edx: int = head->length
+    # var hsize/edx: int = head->size
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
-    # if (lenh > lens) return false
+    # if (hsize > lens) return false
     39/compare                      3/mod/direct    2/rm32/edx    .           .             .           1/r32/ecx   .               .                 # compare edx with ecx
     7f/jump-if->  $slice-starts-with?:false/disp8
     # var currs/esi: (addr byte) = s->start
@@ -538,7 +538,7 @@ slice-starts-with?:  # s: (addr slice), head: (addr array byte) -> eax: boolean
     # var c2/ebx: byte = 0
     31/xor                          3/mod/direct    3/rm32/ebx    .           .             .           3/r32/ebx   .               .                 # clear ebx
 $slice-starts-with?:loop:
-    # if (i >= lenh) return true
+    # if (i >= hsize) return true
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
     7d/jump-if->=  $slice-starts-with?:true/disp8
     # c1 = *currs
@@ -809,7 +809,7 @@ write-slice:  # out: (addr stream byte), s: (addr slice)
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
     # edi = out
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # edx = out->length
+    # edx = out->size
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(edi+8) to edx
     # ebx = out->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           3/r32/ebx   .               .                 # copy *edi to ebx
@@ -817,7 +817,7 @@ $write-slice:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # compare ecx with esi
     73/jump-if-addr>=  $write-slice:loop-end/disp8
-    # if (out->write >= out->length) abort
+    # if (out->write >= out->size) abort
     39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx with edx
     7d/jump-if->=  $write-slice:abort/disp8
     # out->data[out->write] = *in
@@ -925,7 +925,7 @@ write-slice-buffered:  # out: (addr buffered-file), s: (addr slice)
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   4/disp8         .                 # copy *(esi+4) to esi
     # edi = out
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # edx = out->length
+    # edx = out->size
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(edi+12) to edx
     # ebx = out->write
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy *(edi+4) to ebx
@@ -933,7 +933,7 @@ $write-slice-buffered:loop:
     # if (curr >= max) break
     39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # compare ecx with esi
     73/jump-if-addr>=  $write-slice-buffered:loop-end/disp8
-    # if (out->write >= out->length) flush and clear out's stream
+    # if (out->write >= out->size) flush and clear out's stream
     39/compare                      3/mod/direct    3/rm32/ebx    .           .             .           2/r32/edx   .               .                 # compare ebx with edx
     7c/jump-if-<  $write-slice-buffered:to-stream/disp8
     # . persist out->write
@@ -1056,7 +1056,7 @@ slice-to-string:  # ad: (addr allocation-descriptor), in: (addr slice) -> out/ea
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
     # var max/ebx: (addr byte) = in->end
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           3/r32/ebx   4/disp8         .                 # copy *(esi+4) to ebx
-    # var size/ecx: int = max - curr + 4  # total size of output string (including the initial length)
+    # var size/ecx: int = max - curr + 4  # total size of output string (including the initial 'size' field)
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           3/r32/ebx   .               .                 # copy ebx to ecx
     29/subtract                     3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # subtract edx from ecx
     81          0/subop/add         3/mod/direct    1/rm32/ecx    .           .             .           .           .               4/imm32           # add to ecx
@@ -1071,7 +1071,7 @@ slice-to-string:  # ad: (addr allocation-descriptor), in: (addr slice) -> out/ea
     # if (eax == 0) abort
     3d/compare-eax-and  0/imm32
     74/jump-if-=  $slice-to-string:abort/disp8
-    # out->length = size-4
+    # out->size = size-4
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # copy ecx to *eax
     81          5/subop/subtract    0/mod/indirect  0/rm32/eax    .           .             .           .           .               4/imm32           # subtract 4 from *eax
     # save out

@@ -4,12 +4,12 @@
 
 array-equal?:  # a: (addr array int), b: (addr array int) -> eax: boolean
     # pseudocode:
-    #   lena = a->length
-    #   if (lena != b->length) return false
+    #   asize = a->size
+    #   if (asize != b->size) return false
     #   i = 0
     #   curra = a->data
     #   currb = b->data
-    #   while i < lena
+    #   while i < asize
     #     i1 = *curra
     #     i2 = *currb
     #     if (c1 != c2) return false
@@ -18,7 +18,7 @@ array-equal?:  # a: (addr array int), b: (addr array int) -> eax: boolean
     #
     # registers:
     #   i: ecx
-    #   lena: edx
+    #   asize: edx
     #   curra: esi
     #   currb: edi
     #   i1: eax
@@ -37,10 +37,10 @@ array-equal?:  # a: (addr array int), b: (addr array int) -> eax: boolean
     8b/-> *(ebp+8) 6/r32/esi
     # edi = b
     8b/-> *(ebp+0xc) 7/r32/edi
-    # var lena/edx: int = a->length
+    # var asize/edx: int = a->size
     8b/-> *esi 2/r32/edx
-$array-equal?:lengths:
-    # if (lena != b->length) return false
+$array-equal?:sizes:
+    # if (asize != b->size) return false
     39/compare *edi 2/r32/edx
     75/jump-if-!= $array-equal?:false/disp8
     # var curra/esi: (addr byte) = a->data
@@ -52,7 +52,7 @@ $array-equal?:lengths:
     # var vala/eax: int
     # var valb/ebx: int
 $array-equal?:loop:
-    # if (i >= lena) return true
+    # if (i >= asize) return true
     39/compare %ecx 2/r32/edx
     7d/jump-if->= $array-equal?:true/disp8
     # var vala/eax: int = *curra
@@ -104,7 +104,7 @@ test-compare-empty-with-empty-array:
     5d/pop-to-ebp
     c3/return
 
-test-compare-empty-with-non-empty-array:  # also checks length-mismatch code path
+test-compare-empty-with-non-empty-array:  # also checks size-mismatch code path
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -147,7 +147,7 @@ test-compare-equal-arrays:
     5d/pop-to-ebp
     c3/return
 
-test-compare-inequal-arrays-equal-lengths:
+test-compare-inequal-arrays-equal-sizes:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -165,7 +165,7 @@ test-compare-inequal-arrays-equal-lengths:
     89/<- %edx 4/r32/esp
     #
     (array-equal? %ecx %edx)  # => eax
-    (check-ints-equal %eax 0 "F - test-compare-inequal-arrays-equal-lengths")
+    (check-ints-equal %eax 0 "F - test-compare-inequal-arrays-equal-sizes")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -173,7 +173,7 @@ test-compare-inequal-arrays-equal-lengths:
 
 parse-array-of-ints:  # ad: (addr allocation-descriptor), s: (addr string) -> result/eax: (handle array int)
     # pseudocode
-    #   end = &s->data[s->length]
+    #   end = &s->data[s->size]
     #   curr = s->data
     #   size = 0
     #   while true
@@ -209,8 +209,8 @@ parse-array-of-ints:  # ad: (addr allocation-descriptor), s: (addr string) -> re
     8b/-> *(ebp+0xc) 6/r32/esi
     # var curr/ecx: (addr byte) = s->data
     8d/copy-address *(esi+4) 1/r32/ecx
-    # var end/edx: (addr byte) = &s->data[s->length]
-    # . edx = s->length
+    # var end/edx: (addr byte) = &s->data[s->size]
+    # . edx = s->size
     8b/-> *esi 2/r32/edx
     # . edx += curr
     01/add-to %edx 1/r32/ecx

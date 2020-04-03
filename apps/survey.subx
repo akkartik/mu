@@ -133,14 +133,14 @@ subx-survey:  # infile: (addr buffered-file), out: (addr buffered-file)
     56/push-esi
     # var segments/ecx: (stream {string, segment-info} 160)   # 10 rows * 16 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
-    68/push  0xa0/imm32/length
+    68/push  0xa0/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # var labels/edx: (stream label-info Max-labels*16)
     # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/esp   Max-labels/disp32                 # subtract *Max-labels from esp
-    # . length
+    # . size
     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Max-labels/disp32                 # push *Max-labels
     # . read
     68/push  0/imm32/read
@@ -150,7 +150,7 @@ subx-survey:  # infile: (addr buffered-file), out: (addr buffered-file)
     # var in/esi: (stream byte Input-size)
     # . data
     2b/subtract                     0/mod/indirect  5/rm32/.disp32            .             .           4/r32/esp   Input-size/disp32                 # subtract *Input-size from esp
-    # . length
+    # . size
     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Input-size/disp32                 # push *Input-size
     # . read
     68/push  0/imm32/read
@@ -690,7 +690,7 @@ compute-offsets:  # in: (addr stream byte), segments: (addr stream {string, segm
     c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32            # copy to *compute-offsets:word-slice
     # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
-    68/push  0x200/imm32/length
+    68/push  0x200/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1222,13 +1222,13 @@ test-compute-offsets:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # var segments/ecx: (stream byte 2*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # subtract from esp
-    68/push  0x20/imm32/length
+    68/push  0x20/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # var labels/edx: (stream byte 2*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20/imm32        # subtract from esp
-    68/push  0x20/imm32/length
+    68/push  0x20/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -1624,13 +1624,13 @@ test-compute-addresses:
     # setup
     # . var segments/ecx: (stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
-    68/push  0xa0/imm32/length
+    68/push  0xa0/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
-    68/push  0x2000/imm32/length
+    68/push  0x2000/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -1793,13 +1793,13 @@ test-compute-addresses-large-segments:
     # setup
     # . var segments/ecx: (stream byte 10*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
-    68/push  0xa0/imm32/length
+    68/push  0xa0/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
-    68/push  0x2000/imm32/length
+    68/push  0x2000/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -1989,7 +1989,7 @@ emit-segments:  # in: (addr stream byte), out: (addr buffered-file), labels: (ad
     57/push-edi
     # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
-    68/push  0x200/imm32/length
+    68/push  0x200/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -2156,8 +2156,8 @@ $emit-segments:check-for-segment-header:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $emit-segments:line-loop/disp32
 $emit-segments:2-character:
-    # if (length(word-slice) != 2) goto next check
-    # . eax = length(word-slice)
+    # if (size(word-slice) != 2) goto next check
+    # . eax = size(word-slice)
     8b/copy                         1/mod/*+disp8   2/rm32/edx    .           .             .           0/r32/eax   4/disp8         .                 # copy *(edx+4) to eax
     2b/subtract                     0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # subtract *edx from eax
     # . if (eax != 2) goto next check
@@ -2579,7 +2579,7 @@ test-emit-segments-global-variable:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
-    68/push  0x2000/imm32/length
+    68/push  0x2000/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -2789,7 +2789,7 @@ test-emit-segments-code-label:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
-    68/push  0x2000/imm32/length
+    68/push  0x2000/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -2974,7 +2974,7 @@ test-emit-segments-code-label-absolute:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . var labels/edx: (stream byte 512*16)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
-    68/push  0x2000/imm32/length
+    68/push  0x2000/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
@@ -3423,8 +3423,8 @@ stream-add4:  # in: (addr stream byte), key: addr, val1: addr, val2: addr, val3:
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     # . eax = esi+eax+12
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
-    # max/edx = &in->data[in->length]
-    # . edx = in->length
+    # max/edx = &in->data[in->size]
+    # . edx = in->size
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   8/disp8         .                 # copy *(esi+8) to edx
     # . edx = esi+edx+12
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  2/index/edx   .           2/r32/edx   0xc/disp8       .                 # copy esi+edx+12 to edx
@@ -4609,7 +4609,7 @@ test-num-bytes-handles-imm32:
 # some fields (the ones with labels capitalized) filled in.
 # http://www.sco.com/developers/gabi/latest/ch4.eheader.html
 Elf_header:
-  # - length
+  # - size
   0x34/imm32
   # - data
 $e_ident:
@@ -4647,7 +4647,7 @@ $e_shstrndx:
 # Some fields need filling in each time.
 # https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
 Elf_program_header_entry:
-  # - length
+  # - size
   0x20/imm32
   # - data
 $p_type:

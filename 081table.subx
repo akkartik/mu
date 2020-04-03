@@ -127,7 +127,7 @@ test-get:
     # - setup: create a table with a couple of keys
     # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -308,7 +308,7 @@ test-get-slice:
     # - setup: create a table with a couple of keys
     # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -409,7 +409,7 @@ get-or-insert:  # table: (addr stream {string_key, T}), key: string_key, row-siz
     #     if string-equal?(key, *curr)
     #       return curr+4
     #     curr += row-size
-    #   if table->write >= table->length
+    #   if table->write >= table->size
     #     abort
     #   zero-out(max, row-size)
     #   *max = key
@@ -456,7 +456,7 @@ $get-or-insert:mismatch:
 $get-or-insert:not-found:
     # result/eax = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # if (table->write >= table->length) abort
+    # if (table->write >= table->size) abort
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
     73/jump-if-addr>=  $get-or-insert:abort/disp8
@@ -514,7 +514,7 @@ test-get-or-insert:
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -658,7 +658,7 @@ get-or-insert-slice:  # table: (addr stream {string_key, T}), key: (addr slice),
     #     if slice-equal?(key, *curr)
     #       return curr+4
     #     curr += row-size
-    #   if table->write >= table->length
+    #   if table->write >= table->size
     #     abort
     #   zero-out(max, row-size)
     #   *max = slice-to-string(ad, key)
@@ -705,7 +705,7 @@ $get-or-insert-slice:mismatch:
 $get-or-insert-slice:not-found:
     # result/eax = 0
     31/xor                          3/mod/direct    0/rm32/eax    .           .             .           0/r32/eax   .               .                 # clear eax
-    # if (table->write >= table->length) abort
+    # if (table->write >= table->size) abort
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
     7d/jump-if->=  $get-or-insert-slice:abort/disp8
@@ -769,7 +769,7 @@ test-get-or-insert-slice:
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1054,7 +1054,7 @@ test-get-or-stop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1270,7 +1270,7 @@ test-get-slice-or-stop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # var table/ecx: (stream {string, number} 16)  # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1446,7 +1446,7 @@ test-maybe-get:
     # - setup: create a table with one row
     # var table/ecx: (stream {string, number} 16)   # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
@@ -1593,7 +1593,7 @@ test-maybe-get-slice:
     # - setup: create a table with one row
     # var table/ecx: (stream {string, number} 16)   # 2 rows * 8 bytes/row
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # subtract from esp
-    68/push  0x10/imm32/length
+    68/push  0x10/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx

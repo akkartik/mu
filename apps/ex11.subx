@@ -1,9 +1,9 @@
-# Null-terminated vs length-prefixed ascii strings.
+# Null-terminated vs size-prefixed ascii strings.
 #
-# By default we create strings with a 4-byte length prefix rather than a null suffix.
+# By default we create strings with a 4-byte size prefix rather than a null suffix.
 # However we still need null-prefixed strings when interacting with the Linux
 # kernel in a few places. This layer implements a function for comparing
-# a null-terminated 'kernel string' with a length-prefixed 'SubX string'.
+# a null-terminated 'kernel string' with a size-prefixed 'SubX string'.
 #
 # To run:
 #   $ ./bootstrap translate init.linux apps/ex11.subx -o apps/ex11
@@ -25,11 +25,11 @@ Entry:  # run all tests
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
     e8/call  syscall_exit/disp32
 
-# compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
+# compare a null-terminated ascii string with a more idiomatic size-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
-kernel-string-equal?:  # s: null-terminated ascii string, benchmark: length-prefixed ascii string -> eax: boolean
+kernel-string-equal?:  # s: null-terminated ascii string, benchmark: size-prefixed ascii string -> eax: boolean
     # pseudocode:
-    #   n = benchmark->length
+    #   n = benchmark->size
     #   s1 = s
     #   s2 = benchmark->data
     #   i = 0
@@ -60,7 +60,7 @@ kernel-string-equal?:  # s: null-terminated ascii string, benchmark: length-pref
     57/push-edi
     # s1/edi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # n/edx = benchmark->length
+    # n/edx = benchmark->size
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
     # s2/esi = benchmark->data

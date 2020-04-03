@@ -9,7 +9,7 @@
 read-line-buffered:  # f: (addr buffered-file), s: (addr stream byte)
     # pseudocode:
     #   while true
-    #     if (s->write >= s->length) abort
+    #     if (s->write >= s->size) abort
     #     if (f->read >= f->write) populate stream from file
     #     if (f->write == 0) break
     #     AL = f->data[f->read]
@@ -35,7 +35,7 @@ read-line-buffered:  # f: (addr buffered-file), s: (addr stream byte)
     # edx = s->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
 $read-line-buffered:loop:
-    # if (s->write >= s->length) abort
+    # if (s->write >= s->size) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # compare edx with *(edi+8)
     7d/jump-if->=  $read-line-buffered:abort/disp8
     # if (f->read >= f->write) populate stream from file
@@ -219,7 +219,7 @@ test-read-line-buffered-reads-final-line-until-Eof:
 read-line:  # f: (addr stream byte), s: (addr stream byte)
     # pseudocode:
     #   while true
-    #     if (s->write >= s->length) abort
+    #     if (s->write >= s->size) abort
     #     if (f->read >= f->write) break
     #     AL = f->data[f->read]
     #     s->data[s->write] = AL
@@ -244,7 +244,7 @@ read-line:  # f: (addr stream byte), s: (addr stream byte)
     # edx = s->write
     8b/copy                         0/mod/indirect  7/rm32/edi    .           .             .           2/r32/edx   .               .                 # copy *edi to edx
 $read-line:loop:
-    # if (s->write >= s->length) abort
+    # if (s->write >= s->size) abort
     3b/compare                      1/mod/*+disp8   7/rm32/edi    .           .             .           2/r32/edx   8/disp8         .                 # compare edx with *(edi+8)
     0f 8d/jump-if->=  $read-line:abort/disp32
     # if (f->read >= f->write) break

@@ -1,11 +1,11 @@
 # Checking null-terminated ascii strings.
 #
 # By default we create strings as arrays of bytes, and all arrays have a 4-byte
-# length prefix.
+# size prefix.
 #
 # However, we sometimes need to deal with null-prefixed strings when interacting
 # with the Linux kernel. This layer implements a function for comparing a
-# null-terminated 'kernel string' with a length-prefixed 'SubX string'.
+# null-terminated 'kernel string' with a size-prefixed 'SubX string'.
 #
 # To run (from the subx directory):
 #   $ ./bootstrap translate 05[0-2]*.subx -o /tmp/tmp52
@@ -28,11 +28,11 @@ Entry:  # run all tests
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
-# compare a null-terminated ascii string with a more idiomatic length-prefixed byte array
+# compare a null-terminated ascii string with a more idiomatic size-prefixed byte array
 # reason for the name: the only place we should have null-terminated ascii strings is from commandline args
 kernel-string-equal?:  # s: (addr kernel-string), benchmark: (addr array byte) -> eax: boolean
     # pseudocode:
-    #   n = benchmark->length
+    #   n = benchmark->size
     #   s1 = s
     #   s2 = benchmark->data
     #   i = 0
@@ -63,7 +63,7 @@ kernel-string-equal?:  # s: (addr kernel-string), benchmark: (addr array byte) -
     57/push-edi
     # var s1/edi: (addr byte) = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
-    # var n/edx: int = benchmark->length
+    # var n/edx: int = benchmark->size
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           2/r32/edx   0xc/disp8       .                 # copy *(ebp+12) to edx
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           2/r32/edx   .               .                 # copy *edx to edx
     # var s2/esi: (addr byte) = benchmark->data

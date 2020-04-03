@@ -3,10 +3,10 @@
 # A stream looks like this:
 #   write: int  # index at which writes go
 #   read: int  # index that we've read until
-#   data: (array byte)  # prefixed by length as usual
+#   data: (array byte)  # prefixed by size as usual
 #
 # some primitives for operating on streams:
-#   - clear-stream (clears everything but the data length)
+#   - clear-stream (clears everything but the data size)
 #   - rewind-stream (resets read pointer)
 
 == code
@@ -23,9 +23,9 @@ clear-stream:  # f: (addr stream byte)
     51/push-ecx
     # eax = f
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         0/r32/eax   8/disp8         .                 # copy *(ebp+8) to eax
-    # var count/ecx: int = f->length
+    # var count/ecx: int = f->size
     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   8/disp8         .                 # copy *(eax+8) to ecx
-    # var max/ecx: (addr byte) = &f->data[f->length]
+    # var max/ecx: (addr byte) = &f->data[f->size]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    0/base/eax  1/index/ecx   .           1/r32/ecx   0xc/disp8       .                 # copy eax+ecx+12 to ecx
     # f->write = 0
     c7          0/subop/copy        0/mod/direct    0/rm32/eax    .           .             .           .           .               0/imm32           # copy to *eax

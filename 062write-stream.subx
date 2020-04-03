@@ -40,7 +40,7 @@ $write-stream:fake:
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         7/r32/edi   8/disp8         .                 # copy *(ebp+8) to edi
     # esi = s
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # eax = _append-4(&f->data[f->write], &f->data[f->length], &s->data[s->read], &s->data[s->write])
+    # eax = _append-4(&f->data[f->write], &f->data[f->size], &s->data[s->read], &s->data[s->write])
     # . . push &s->data[s->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy *esi to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
@@ -49,7 +49,7 @@ $write-stream:fake:
     8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   4/disp8         .                 # copy *(esi+4) to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy esi+eax+12 to eax
     50/push-eax
-    # . . push &f->data[f->length]
+    # . . push &f->data[f->size]
     8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   8/disp8         .                 # copy *(edi+8) to eax
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    7/base/edi  0/index/eax   .           0/r32/eax   0xc/disp8       .                 # copy edi+eax+12 to eax
     50/push-eax
@@ -247,7 +247,7 @@ _test-stream2:  # (stream byte)
     4/imm32
     # current read index
     1/imm32
-    # length
+    # size
     8/imm32
     # data
     41/A 42/B 43/C 44/D 00 00 00 00  # 8 bytes

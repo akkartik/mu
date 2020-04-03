@@ -13,7 +13,7 @@
 # A stream looks like this:
 #   read: int  # index at which to read next
 #   write: int  # index at which writes go
-#   data: (array byte)  # prefixed by length as usual
+#   data: (array byte)  # prefixed by size as usual
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -47,12 +47,12 @@ $write:fake:
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .                         1/r32/ecx   8/disp8         .                 # copy *(ebp+8) to ecx
     # edx = f->write
     8b/copy                         0/mod/indirect  1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # copy *ecx to edx
-    # ebx = f->length
+    # ebx = f->size
     8b/copy                         1/mod/*+disp8   1/rm32/ecx    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(ecx+8) to ebx
-    # eax = _append-3(&f->data[f->write], &f->data[f->length], s)
+    # eax = _append-3(&f->data[f->write], &f->data[f->size], s)
     # . . push s
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
-    # . . push &f->data[f->length]
+    # . . push &f->data[f->size]
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    1/base/ecx  3/index/ebx   .           3/r32/ebx   0xc/disp8       .                 # copy ecx+ebx+12 to ebx
     53/push-ebx
     # . . push &f->data[f->write]
@@ -150,7 +150,7 @@ _test-stream:  # (stream byte)
     0/imm32
     # current read index
     0/imm32
-    # length
+    # size
     0x10/imm32
     # data (2 lines x 8 bytes/line)
     00 00 00 00 00 00 00 00
