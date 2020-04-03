@@ -468,7 +468,7 @@ read-segments:  # in: (addr buffered-file), table: (addr stream {string_key, (ha
     #       continue
     #     if slice-equal?(word-slice, "==")
     #       var segment-name = next-word-or-string(line)
-    #       segment-slot = leaky-get-or-insert-slice(table, segment-name, row-size=8)
+    #       segment-slot = get-or-insert-slice(table, segment-name, row-size=8)
     #       curr-segment = *segment-slot
     #       if curr-segment != 0
     #         continue
@@ -717,15 +717,16 @@ $read-segments:check-for-segment-header:
 #?     # . . discard args
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
-    # var segment-slot/eax: (addr handle stream byte) = leaky-get-or-insert-slice(table, segment-name, row-size=8)
+    # var segment-slot/eax: (addr handle stream byte) = get-or-insert-slice(table, segment-name, row-size=8)
     # . . push args
+    68/push  Heap/imm32
     68/push  8/imm32/row-size
     52/push-edx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
     # . . call
-    e8/call  leaky-get-or-insert-slice/disp32
+    e8/call  get-or-insert-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # var curr-segment/ebx: (handle stream byte) = *segment-slot
     8b/copy                         0/mod/indirect  0/rm32/eax    .           .             .           3/r32/ebx   .               .                 # copy *eax to ebx
     # if (curr-segment != 0) continue

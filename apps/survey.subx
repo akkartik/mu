@@ -1027,15 +1027,16 @@ $compute-offsets:case-label:
     74/jump-if-=  $compute-offsets:case-default/disp8
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
-    # x/eax = leaky-get-or-insert-slice(labels, word-slice, row-size=16)
+    # x/eax = get-or-insert-slice(labels, word-slice, row-size=16)
     # . . push args
+    68/push  Heap/imm32
     68/push  0x10/imm32/row-size
     52/push-edx
     ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
     # . . call
-    e8/call  leaky-get-or-insert-slice/disp32
+    e8/call  get-or-insert-slice/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
 $compute-offsets:save-label-offset:
     # x->segment-name = curr-segment-name
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           6/r32/esi   .               .                 # copy esi to *eax
