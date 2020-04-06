@@ -840,6 +840,17 @@ $compute-offsets:construct-next-segment:
     e8/call  next-word/disp32
     # . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # if slice-empty?(segment-tmp) abort
+    # . eax = slice-empty?(segment-tmp)
+    # . . push args
+    68/push  compute-offsets:segment-tmp/imm32
+    # . . call
+    e8/call  slice-empty?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # . if (eax != false) abort
+    3d/compare-eax-and  0/imm32/false
+    0f 85/jump-if-!=  $compute-offsets:abort/disp32
 $compute-offsets:update-curr-segment-name:
     # curr-segment-name = slice-to-string(segment-tmp)
     # . eax = slice-to-string(Heap, segment-tmp)
@@ -852,10 +863,6 @@ $compute-offsets:update-curr-segment-name:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # . curr-segment-name = eax
     89/copy                         3/mod/direct    6/rm32/esi    .           .             .           0/r32/eax   .               .                 # copy eax to esi
-    # if empty?(curr-segment-name) abort
-    # . if (eax == 0) abort
-    3d/compare-eax-and  0/imm32
-    0f 84/jump-if-=  $compute-offsets:abort/disp32
     # next-word(line, segment-tmp)
     68/push  compute-offsets:segment-tmp/imm32
     51/push-ecx
@@ -864,7 +871,9 @@ $compute-offsets:update-curr-segment-name:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # if slice-empty?(segment-tmp) abort
     # . eax = slice-empty?(segment-tmp)
+    # . . push args
     68/push  compute-offsets:segment-tmp/imm32
+    # . . call
     e8/call  slice-empty?/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
