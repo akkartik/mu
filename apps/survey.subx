@@ -987,7 +987,8 @@ $compute-offsets:update-curr-segment-name:
     # . if (eax != false) abort
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $compute-offsets:abort/disp32
-    # sinfo/ebx = get-or-insert(segments, curr-segment-name, row-size=16)
+    # sinfo/edi = get-or-insert(segments, curr-segment-name, row-size=16)
+    # . eax = get-or-insert(segments, curr-segment-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     56/push-esi
@@ -996,8 +997,8 @@ $compute-offsets:update-curr-segment-name:
     e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
-    # . ebx = eax
-    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+    # . edi = eax
+    89/copy                         3/mod/direct    7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to edi
     # sinfo->address = parse-hex-int-from-slice(segment-tmp)
     # . eax = parse-hex-int-from-slice(segment-tmp)
     68/push  compute-offsets:segment-tmp/imm32
@@ -1005,10 +1006,10 @@ $compute-offsets:update-curr-segment-name:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # . sinfo->address = eax
-    89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
+    89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to *edi
     # sinfo->file-offset = *file-offset
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   compute-offsets:file-offset/disp32  # copy *file-offset to eax
-    89/copy                         1/mod/*+disp8   3/rm32/ebx    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(ebx+4)
+    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(edi+4)
     # trace-sssns("segment '", curr-segment-name, "' is at file offset ", sinfo->file-offset, "")
     # . . push args
     68/push  "."/imm32
