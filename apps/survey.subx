@@ -111,14 +111,14 @@ $subx-survey-main:end:
 #   segments: (addr stream {string, segment-info})     (16 bytes per row)
 #   label-info: {segment-name, segment-offset, addr}   (12 bytes)
 #   labels: (addr stream {string, label-info})         (16 bytes per row)
-# these are all inefficient; use sequential scans for lookups
+# these are all inefficient, using sequential scans for lookups
 
 subx-survey:  # infile: (addr buffered-file), out: (addr buffered-file)
     # pseudocode
     #   var in: (stream byte Input-size)
     #   slurp(infile, in)
-    #   var segments: (stream segment-info)
-    #   var labels: (stream label-info Max-labels)
+    #   var segments: (stream {segment-name, segment-info})
+    #   var labels: (stream {label-name, label-info} Max-labels)
     #   compute-offsets(in, segments, labels)
     #   compute-addresses(segments, labels)
     #   rewind-stream(in)
@@ -621,7 +621,7 @@ compute-offsets:segment-tmp:  # slice
 #       segments->size,
 #       labels->segment-name, and
 #       labels->segment-offset
-compute-offsets:  # in: (addr stream byte), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
+compute-offsets:  # in: (addr stream byte), segments: (addr stream {(handle array byte), segment-info}), labels: (addr stream {(handle array byte), label-info})
     # skeleton:
     #   for lines in 'in'
     #     for words in line
@@ -885,7 +885,9 @@ $compute-offsets:update-curr-segment-name:
     89/copy                         3/mod/direct    7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to edi
     # sinfo->address = parse-hex-int-from-slice(segment-tmp)
     # . eax = parse-hex-int-from-slice(segment-tmp)
+    # . . push args
     68/push  compute-offsets:segment-tmp/imm32
+    # . . call
     e8/call  parse-hex-int-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
@@ -1280,7 +1282,7 @@ test-compute-offsets:
 # write segments->file-offset,
 #       segments->address, and
 #       labels->address
-compute-addresses:  # segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
+compute-addresses:  # segments: (addr stream {(handle array byte), segment-info}), labels: (addr stream {(handle array byte), label-info})
     # pseudocode:
     #   var srow: (addr segment-row) = segments->data
     #   var max: (addr byte) = &segments->data[segments->write]
@@ -1288,16 +1290,16 @@ compute-addresses:  # segments: (addr stream {string, segment-info}), labels: (a
     #   var starting-offset: int = 0x34 + (num-segments * 0x20)
     #   while true
     #     if (srow >= max) break
-    #     s->file-offset += starting-offset
-    #     s->address &= 0xfffff000  # clear last 12 bits for p_align
-    #     s->address += (s->file-offset & 0x00000fff)
-    #     trace-sssns("segment " s->key " starts at address " s->address)
+    #     srow->file-offset += starting-offset
+    #     srow->address &= 0xfffff000  # clear last 12 bits for p_align
+    #     srow->address += (srow->file-offset & 0x00000fff)
+    #     trace-sssns("segment " srow->key " starts at address " srow->address)
     #     srow += 16  # row-size
     #   var lrow: (addr label-row) = labels->data
     #   max = &labels->data[labels->write]
     #   while true
     #     if (lrow >= max) break
-    #     var seg-name: (addr string) = lrow->segment-name
+    #     var seg-name: (addr array byte) = lrow->segment-name
     #     var label-seg: (addr segment-info) = get(segments, seg-name)
     #     lrow->address = label-seg->address + lrow->segment-offset
     #     trace-sssns("label " lrow->key " is at address " lrow->address)
@@ -1769,7 +1771,7 @@ test-compute-addresses-large-segments:
     5d/pop-to-ebp
     c3/return
 
-emit-output:  # in: (addr stream byte), out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
+emit-output:  # in: (addr stream byte), out: (addr buffered-file), segments: (addr stream {(handle array byte), segment-info}), labels: (addr stream {(handle array byte), label-info})
     # pseudocode:
     #   emit-headers(out, segments, labels)
     #   emit-segments(in, out, labels)
@@ -1819,7 +1821,7 @@ $emit-output:end:
     5d/pop-to-ebp
     c3/return
 
-emit-segments:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr stream {string, label-info})
+emit-segments:  # in: (addr stream byte), out: (addr buffered-file), labels: (addr stream {(handle array byte), label-info})
     # pseudocode:
     #   var offset-of-next-instruction = 0
     #   var line: (stream byte 512)
@@ -3009,7 +3011,7 @@ test-emit-segments-code-label-absolute:
     5d/pop-to-ebp
     c3/return
 
-emit-headers:  # out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
+emit-headers:  # out: (addr buffered-file), segments: (addr stream {(handle array byte), segment-info}), labels: (addr stream {(handle array byte), label-info})
     # pseudocode:
     #   emit-elf-header(out, segments, labels)
     #   curr-segment = segments->data
@@ -3147,7 +3149,7 @@ $emit-headers:end:
     5d/pop-to-ebp
     c3/return
 
-emit-elf-header:  # out: (addr buffered-file), segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
+emit-elf-header:  # out: (addr buffered-file), segments: (addr stream {(handle array byte), segment-info}), labels: (addr stream {(handle array byte), label-info})
     # pseudocode
     #   *$Elf_e_entry = get(labels, "Entry")->address
     #   *$Elf_e_phnum = segments->write / 16         # size of a row
@@ -3215,7 +3217,7 @@ $emit-elf-header:end:
     5d/pop-to-ebp
     c3/return
 
-emit-elf-program-header-entry:  # out: (addr buffered-file), curr-segment: (addr {string, segment-info})
+emit-elf-program-header-entry:  # out: (addr buffered-file), curr-segment: (addr {(handle array byte), segment-info})
     # pseudocode:
     #   *$Elf_p_offset = curr-segment->file-offset
     #   *$Elf_p_vaddr = curr-segment->address
@@ -3386,11 +3388,11 @@ $stream-add4:abort:
 # some variants of 'trace' that take multiple arguments in different combinations of types:
 #   n: int
 #   c: character [4-bytes, will eventually be UTF-8]
-#   s: (addr string)
+#   s: (addr array byte)
 #   l: (addr slice)
 # one gotcha: 's5' must not be empty
 
-trace-sssns:  # s1: (addr string), s2: (addr string), s3: (addr string), n4: int, s5: (addr string)
+trace-sssns:  # s1: (addr array byte), s2: (addr array byte), s3: (addr array byte), n4: int, s5: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3497,7 +3499,7 @@ test-trace-sssns:
     5d/pop-to-ebp
     c3/return
 
-trace-snsns:  # s1: (addr string), n2: int, s3: (addr string), n4: int, s5: (addr string)
+trace-snsns:  # s1: (addr array byte), n2: int, s3: (addr array byte), n4: int, s5: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3604,7 +3606,7 @@ test-trace-snsns:
     5d/pop-to-ebp
     c3/return
 
-trace-slsls:  # s1: (addr string), l2: (addr slice), s3: (addr string), l4: (addr slice), s5: (addr string)
+trace-slsls:  # s1: (addr array byte), l2: (addr slice), s3: (addr array byte), l4: (addr slice), s5: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3729,7 +3731,7 @@ test-trace-slsls:
     5d/pop-to-ebp
     c3/return
 
-trace-slsns:  # s1: (addr string), l2: (addr slice), s3: (addr string), n4: int, s5: (addr string)
+trace-slsns:  # s1: (addr array byte), l2: (addr slice), s3: (addr array byte), n4: int, s5: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
@@ -3845,7 +3847,7 @@ test-trace-slsns:
     5d/pop-to-ebp
     c3/return
 
-trace-slsss:  # s1: (addr string), l2: (addr slice), s3: (addr string), s4: (addr string), s5: (addr string)
+trace-slsss:  # s1: (addr array byte), l2: (addr slice), s3: (addr array byte), s4: (addr array byte), s5: (addr array byte)
     # . prologue
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
