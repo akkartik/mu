@@ -871,7 +871,8 @@ $compute-offsets:case-segment-header:
     # if (curr-segment-name == 0) goto construct-next-segment
     81          7/subop/compare     3/mod/direct    6/rm32/esi    .           .             .           .           .               0/imm32           # compare esi
     74/jump-if-=  $compute-offsets:construct-next-segment/disp8
-    # sinfo/eax = get-or-insert(segments, curr-segment-name, row-size=16)
+    # sinfo/edi = get-or-insert(segments, curr-segment-name, row-size=16)
+    # . eax = get-or-insert(segments, curr-segment-name, row-size=16)
     # . . push args
     68/push  0x10/imm32/row-size
     56/push-esi
@@ -880,17 +881,19 @@ $compute-offsets:case-segment-header:
     e8/call  get-or-insert/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # . edi = eax
+    89/copy                         3/mod/direct    7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to edi
     # sinfo->size = file-offset - sinfo->file-offset
     # . save ecx
     51/push-ecx
     # . ebx = *file-offset
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   compute-offsets:file-offset/disp32  # copy *file-offset to ebx
     # . ecx = sinfo->file-offset
-    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(eax+4) to ecx
+    8b/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(edi+4) to ecx
     # . ebx -= ecx
     29/subtract                     3/mod/direct    3/rm32/ebx    .           .             .           1/r32/ecx   .               .                 # subtract ecx from ebx
     # . sinfo->size = ebx
-    89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           3/r32/ebx   8/disp8         .                 # copy ebx to *(eax+8)
+    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   8/disp8         .                 # copy ebx to *(edi+8)
     # . restore ecx
     59/pop-to-ecx
     # trace-sssns("segment '", curr-segment-name, "' has size ", sinfo->size, ".")
