@@ -611,9 +611,6 @@ compute-offsets:file-offset:  # int
   0/imm32
 compute-offsets:segment-offset:  # int
   0/imm32
-compute-offsets:word-slice:
-  0/imm32/start
-  0/imm32/end
 compute-offsets:segment-tmp:  # slice
   0/imm32/start
   0/imm32/end
@@ -704,6 +701,10 @@ compute-offsets:  # in: (addr stream byte), segments: (addr stream {string, segm
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var word-slice/edx: (addr slice)
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
 $compute-offsets:line-loop:
     # clear-stream(line)
     51/push-ecx
@@ -754,9 +755,7 @@ $compute-offsets:line-loop:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
 #?     # }}}
 $compute-offsets:word-loop:
-    # edx = word-slice
-    ba/copy-to-edx  compute-offsets:word-slice/imm32
-    # next-word(line, word-slice/edx)
+    # next-word(line, word-slice)
     52/push-edx
     51/push-ecx
     e8/call  next-word/disp32
@@ -837,8 +836,8 @@ $compute-offsets:word-loop:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
 $compute-offsets:case-empty:
-    # if slice-empty?(word/edx) break
-    # . eax = slice-empty?(word/edx)
+    # if slice-empty?(word-slice) break
+    # . eax = slice-empty?(word-slice)
     52/push-edx
     e8/call  slice-empty?/disp32
     # . . discard args
@@ -857,8 +856,8 @@ $compute-offsets:case-comment:
     3d/compare-eax-and  0/imm32/false
     0f 85/jump-if-!=  $compute-offsets:line-loop/disp32
 $compute-offsets:case-segment-header:
-    # if (!slice-equal?(word-slice/edx, "==")) goto next case
-    # . eax = slice-equal?(word-slice/edx, "==")
+    # if (!slice-equal?(word-slice, "==")) goto next case
+    # . eax = slice-equal?(word-slice, "==")
     68/push  "=="/imm32
     52/push-edx
     e8/call  slice-equal?/disp32
@@ -1024,8 +1023,8 @@ $compute-offsets:update-curr-segment-name:
     # break
     e9/jump $compute-offsets:line-loop/disp32
 $compute-offsets:case-label:
-    # if (!is-label?(word-slice/edx)) goto next case
-    # . eax = is-label?(word-slice/edx)
+    # if (!is-label?(word-slice)) goto next case
+    # . eax = is-label?(word-slice)
     # . . push args
     52/push-edx
     # . . call
@@ -1050,7 +1049,7 @@ $compute-offsets:case-label:
 $compute-offsets:save-label-offset:
     # x->segment-name = curr-segment-name
     89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           6/r32/esi   .               .                 # copy esi to *eax
-    # trace-slsss("label '" word-slice/edx "' is in segment '" current-segment-name "'.")
+    # trace-slsss("label '" word-slice "' is in segment '" current-segment-name "'.")
     # . . push args
     68/push  "'."/imm32
     56/push-esi
@@ -1066,7 +1065,7 @@ $compute-offsets:save-label-offset:
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   compute-offsets:segment-offset/disp32  # copy *segment-offset to ebx
     # . x->segment-offset = ebx
     89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(eax+4)
-    # trace-slsns("label '" word-slice/edx "' is at segment offset " *segment-offset/eax ".")
+    # trace-slsns("label '" word-slice "' is at segment offset " *segment-offset/eax ".")
     # . . push args
     68/push  "."/imm32
     53/push-ebx
@@ -1170,7 +1169,7 @@ $compute-offsets:break-line-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
 $compute-offsets:end:
     # . reclaim locals
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x20c/imm32       # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x214/imm32       # add to esp
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
