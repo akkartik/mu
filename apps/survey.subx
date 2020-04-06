@@ -685,9 +685,9 @@ compute-offsets:  # in: (addr stream byte), segments: (addr stream {string, segm
     # curr-segment-name/esi = 0
     31/xor                          3/mod/direct    6/rm32/esi    .           .             .           6/r32/esi   .               .                 # clear esi
     # file-offset = 0
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:file-offset/disp32  0/imm32               # copy to *compute-offsets:word-slice
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:file-offset/disp32  0/imm32  # copy to *compute-offsets:word-slice
     # segment-offset = 0
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32            # copy to *compute-offsets:word-slice
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           compute-offsets:segment-offset/disp32  0/imm32  # copy to *compute-offsets:word-slice
     # var line/ecx: (stream byte 512)
     81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x200/imm32       # subtract from esp
     68/push  0x200/imm32/size
@@ -873,7 +873,7 @@ $compute-offsets:case-segment-header:
     # . save ecx
     51/push-ecx
     # . ebx = *file-offset
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   compute-offsets:file-offset/disp32 # copy *file-offset to ebx
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   compute-offsets:file-offset/disp32  # copy *file-offset to ebx
     # . ecx = seg->file-offset
     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(eax+4) to ecx
     # . ebx -= ecx
@@ -996,7 +996,7 @@ $compute-offsets:update-curr-segment-name:
     # . seg->address = eax
     89/copy                         0/mod/indirect  3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to *ebx
     # seg->file-offset = *file-offset
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   compute-offsets:file-offset/disp32 # copy *file-offset to eax
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   compute-offsets:file-offset/disp32  # copy *file-offset to eax
     89/copy                         1/mod/*+disp8   3/rm32/ebx    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(ebx+4)
     # trace-sssns("segment '", curr-segment-name, "' is at file offset ", seg->file-offset, "")
     # . . push args
@@ -1010,7 +1010,7 @@ $compute-offsets:update-curr-segment-name:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
     # segment-offset = 0
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     compute-offsets:segment-offset/disp32  0/imm32           # copy to *segment-offset
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     compute-offsets:segment-offset/disp32  0/imm32  # copy to *segment-offset
     # break
     e9/jump $compute-offsets:line-loop/disp32
 $compute-offsets:case-label:
@@ -1082,9 +1082,9 @@ $compute-offsets:case-default:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
     # segment-offset += width
-    01/add                          0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   compute-offsets:segment-offset/disp32 # add eax to *segment-offset
+    01/add                          0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   compute-offsets:segment-offset/disp32  # add eax to *segment-offset
     # file-offset += width
-    01/add                          0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   compute-offsets:file-offset/disp32 # add eax to *file-offset
+    01/add                          0/mod/indirect  5/rm32/.disp32            .             .           0/r32/eax   compute-offsets:file-offset/disp32  # add eax to *file-offset
 #?     # dump segment-offset {{{
 #?     # . write(2/stderr, "segment-offset: ")
 #?     # . . push args
@@ -1141,7 +1141,7 @@ $compute-offsets:break-line-loop:
     # . save ecx
     51/push-ecx
     # . ebx = *file-offset
-    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   compute-offsets:file-offset/disp32 # copy *file-offset to ebx
+    8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   compute-offsets:file-offset/disp32  # copy *file-offset to ebx
     # . ecx = seg->file-offset
     8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           1/r32/ecx   4/disp8         .                 # copy *(eax+4) to ecx
     # . ebx -= ecx
