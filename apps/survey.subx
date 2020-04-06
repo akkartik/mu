@@ -1441,11 +1441,11 @@ compute-addresses:  # segments: (addr stream {string, segment-info}), labels: (a
     # . edi = (edi * 0x20) + 0x34
     c1/shift    4/subop/left        3/mod/direct    7/rm32/edi    .           .             .           .           .               5/imm8            # shift edi left by 5 bits
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               0x34/imm32        # add to edi
-    # srow/eax = segments->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy esi+12 to eax
     # max/ecx = &segments->data[segments->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           1/r32/ecx   0xc/disp8       .                 # copy esi+ecx+12 to ecx
+    # srow/eax = segments->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy esi+12 to eax
 $compute-addresses:segment-loop:
     # if (srow >= max) break
     39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
