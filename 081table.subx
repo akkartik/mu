@@ -703,6 +703,324 @@ $test-get-or-insert:end:
     5d/pop-to-ebp
     c3/return
 
+# if no row is found, save 'key' to the next available row
+# if there are no rows free, abort
+# return the address of the value
+get-or-insert-handle:  # table: (addr stream {(handle array byte), T}), key: (handle array byte), row-size: int -> eax: (addr T)
+    # pseudocode:
+    #   var curr: (addr handle stream) = table->data
+    #   var max: (addr byte) = &table->data[table->write]
+    #   var k: (addr array byte) = lookup(key)
+    #   while curr < max
+    #     var c: (addr array byte) = lookup(*curr)
+    #     if string-equal?(k, c)
+    #       return curr+8
+    #     curr += row-size
+    #   if table->write >= table->size
+    #     abort
+    #   *max = key
+    #   table->write += row-size
+    #   return max+8
+    #
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # . save registers
+    51/push-ecx
+    52/push-edx
+    53/push-ebx
+    56/push-esi
+    # esi = table
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
+    # var k/ebx: (addr array byte) = lookup(key)
+    # . eax = lookup(key)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0x10/disp8      .                 # push *(ebp+16)
+    ff          6/subop/push        1/mod/*+disp8   5/rm32/ebp    .           .             .           .           0xc/disp8       .                 # push *(ebp+12)
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . ebx = eax
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
+    # var curr/ecx: (addr handle array byte) = table->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   0xc/disp8       .                 # copy esi+12 to ecx
+    # var max/edx: (addr byte) = &table->data[table->write]
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           2/r32/edx   .               .                 # copy *esi to edx
+    8d/copy-address                 0/mod/indirect  4/rm32/sib    1/base/ecx  2/index/edx   .           2/r32/edx   .               .                 # copy ecx+edx to edx
+$get-or-insert-handle:search-loop:
+    # if (curr >= max) break
+    39/compare                      3/mod/direct    1/rm32/ecx    .           .             .           2/r32/edx   .               .                 # compare ecx with edx
+    73/jump-if-addr>=  $get-or-insert-handle:not-found/disp8
+    # var c/eax: (addr array byte) = lookup(*curr)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           4/disp8         .                 # push *(ecx+4)
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # if (string-equal?(k, c)) return curr+8
+    # . eax = string-equal?(k, c)
+    # . . push args
+    50/push-eax
+    53/push-ebx
+    # . . call
+    e8/call  string-equal?/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . if (eax != false) return eax = curr+8
+    3d/compare-eax-and  0/imm32/false
+    74/jump-if-=  $get-or-insert-handle:mismatch/disp8
+    8d/copy-address                 1/mod/*+disp8   1/rm32/ecx    .           .             .           0/r32/eax   8/disp8         .                 # copy ecx+8 to eax
+    eb/jump  $get-or-insert-handle:end/disp8
+$get-or-insert-handle:mismatch:
+    # curr += row-size
+    03/add                          1/mod/*+disp8   5/rm32/ebp    .           .             .           1/r32/ecx   0x14/disp8      .                 # add *(ebp+20) to ecx
+    # loop
+    eb/jump  $get-or-insert-handle:search-loop/disp8
+$get-or-insert-handle:not-found:
+    # if (table->write >= table->size) abort
+    8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
+    3b/compare                      1/mod/*+disp8   6/rm32/esi    .           .             .           1/r32/ecx   8/disp8         .                 # compare ecx with *(esi+8)
+    73/jump-if-addr>=  $get-or-insert-handle:abort/disp8
+    # table->write += row-size
+    # . eax = row-size
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x14/disp8      .                 # copy *(ebp+20) to eax
+    # . table->write += eax
+    01/add                          0/mod/indirect  6/rm32/esi    .           .             .           0/r32/eax   .               .                 # add eax to *esi
+    # *max = key
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0xc/disp8       .                 # copy *(ebp+12) to eax
+    89/copy                         0/mod/indirect  2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to *edx
+    8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           0/r32/eax   0x10/disp8      .                 # copy *(ebp+16) to eax
+    89/copy                         1/mod/*+disp8   2/rm32/edx    .           .             .           0/r32/eax   4/disp8         .                 # copy eax to *(edx+4)
+    # return max+8
+    # . eax = max
+    89/copy                         3/mod/direct    0/rm32/eax    .           .             .           2/r32/edx   .               .                 # copy edx to eax
+    # . eax += 8
+    05/add-to-eax  8/imm32
+$get-or-insert-handle:end:
+    # . restore registers
+    5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
+    59/pop-to-ecx
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
+$get-or-insert-handle:abort:
+    # . _write(2/stderr, error)
+    # . . push args
+    68/push  "get-or-insert-handle: table is full\n"/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  _write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # . syscall(exit, 1)
+    bb/copy-to-ebx  1/imm32
+    b8/copy-to-eax  1/imm32/exit
+    cd/syscall  0x80/imm8
+    # never gets here
+
+test-get-or-insert-handle:
+    # . prologue
+    55/push-ebp
+    89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
+    # var table/ecx: (stream {(handle array byte), number} 24)  # 2 rows * 12 bytes/row
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x18/imm32        # subtract from esp
+    68/push  0x18/imm32/size
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # var h/edx: (handle array byte)
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+$test-get-or-insert-handle:first-call:
+    # - start with an empty table, insert one key, verify that it was inserted
+    # copy-array(Heap, "code", h)
+    # . . push args
+    52/push-edx
+    68/push  "code"/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  copy-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = get-or-insert-handle(table, h, 12 bytes/row)
+    # . . push args
+    68/push  0xc/imm32/row-size
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    51/push-ecx
+    # . . call
+    e8/call  get-or-insert-handle/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # check-ints-equal(eax - table->data, 8, msg)  # first row's value slot returned
+    # . check-ints-equal(eax - table, 20, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/0"/imm32
+    68/push  0x14/imm32
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(table->write, row-size = 12, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/1"/imm32
+    68/push  0xc/imm32/row-size
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # var curr-addr/eax: (addr array byte) = lookup(table->data)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0x10/disp8      .                 # push *(ecx+16)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-strings-equal(curr-addr, "code", msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/2"/imm32
+    68/push  "code"/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-strings-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+$test-get-or-insert-handle:second-call:
+    # - insert the same key again, verify that it was reused
+    # copy-array(Heap, "code", h)
+    # . . push args
+    52/push-edx
+    68/push  "code"/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  copy-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = get-or-insert-handle(table, h, 12 bytes/row)
+    # . . push args
+    68/push  0xc/imm32/row-size
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    51/push-ecx
+    # . . call
+    e8/call  get-or-insert-handle/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # check-ints-equal(eax - table->data, 8, msg)
+    # . check-ints-equal(eax - table, 20, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/3"/imm32
+    68/push  0x14/imm32
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # no new row inserted
+    # . check-ints-equal(table->write, row-size = 12, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/4"/imm32
+    68/push  0xc/imm32/row-size
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # curr-addr = lookup(table->data)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0x10/disp8      .                 # push *(ecx+16)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0xc/disp8       .                 # push *(ecx+12)
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-strings-equal(curr-addr, "code", msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/5"/imm32
+    68/push  "code"/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-strings-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+$test-get-or-insert-handle:third-call:
+    # - insert a new key, verify that it was inserted
+    # copy-array(Heap, "data", h)
+    # . . push args
+    52/push-edx
+    68/push  "data"/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  copy-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # eax = get-or-insert-handle(table, h, 12 bytes/row)
+    # . . push args
+    68/push  0xc/imm32/row-size
+    ff          6/subop/push        1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # push *(edx+4)
+    ff          6/subop/push        0/mod/indirect  2/rm32/edx    .           .             .           .           .               .                 # push *edx
+    51/push-ecx
+    # . . call
+    e8/call  get-or-insert-handle/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # table gets a new row
+    # check-ints-equal(eax - table->data, 20, msg)  # second row's value slot returned
+    # . check-ints-equal(eax - table, 32, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/6"/imm32
+    68/push  0x20/imm32
+    29/subtract                     3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # subtract ecx from eax
+    50/push-eax
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # check-ints-equal(table->write, 2 rows = 24, msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/7"/imm32
+    68/push  0x18/imm32/two-rows
+    ff          6/subop/push        0/mod/indirect  1/rm32/ecx    .           .             .           .           .               .                 # push *ecx
+    # . . call
+    e8/call  check-ints-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    # curr-addr = lookup(table->data+12)
+    # . . push args
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0x1c/disp8      .                 # push *(ecx+28)
+    ff          6/subop/push        1/mod/*+disp8   1/rm32/ecx    .           .             .           .           0x18/disp8      .                 # push *(ecx+24)
+    # . . call
+    e8/call  lookup/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # check-strings-equal(curr-addr, "data", msg)
+    # . . push args
+    68/push  "F - test-get-or-insert-handle/8"/imm32
+    68/push  "data"/imm32
+    50/push-eax
+    # . . call
+    e8/call  check-strings-equal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+$test-get-or-insert-handle:end:
+    # . epilogue
+    89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
+    5d/pop-to-ebp
+    c3/return
+
 # if no row is found, save 'key' in the next available row
 # if there are no rows free, abort
 get-or-insert-slice:  # table: (addr stream {(handle array byte), T}), key: (addr slice), row-size: int, ad: (addr allocation-descriptor) -> eax: (addr T)
