@@ -1039,7 +1039,8 @@ $compute-offsets:case-label:
     74/jump-if-=  $compute-offsets:case-default/disp8
     # strip trailing ':' from word-slice
     ff          1/subop/decrement   1/mod/*+disp8   2/rm32/edx    .           .             .           .           4/disp8         .                 # decrement *(edx+4)
-    # linfo/eax = get-or-insert-slice(labels, word-slice, row-size=16)
+    # linfo/edi = get-or-insert-slice(labels, word-slice, row-size=16)
+    # . eax = get-or-insert-slice(labels, word-slice, row-size=16)
     # . . push args
     68/push  Heap/imm32
     68/push  0x10/imm32/row-size
@@ -1049,9 +1050,11 @@ $compute-offsets:case-label:
     e8/call  get-or-insert-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
+    # . edi = eax
+    89/copy                         3/mod/direct    7/rm32/edi    .           .             .           0/r32/eax   .               .                 # copy eax to edi
 $compute-offsets:save-label-offset:
     # linfo->segment-name = curr-segment-name
-    89/copy                         0/mod/indirect  0/rm32/eax    .           .             .           6/r32/esi   .               .                 # copy esi to *eax
+    89/copy                         0/mod/indirect  7/rm32/edi    .           .             .           6/r32/esi   .               .                 # copy esi to *edi
     # trace-slsss("label '" word-slice "' is in segment '" current-segment-name "'.")
     # . . push args
     68/push  "'."/imm32
@@ -1067,7 +1070,7 @@ $compute-offsets:save-label-offset:
     # . ebx = segment-offset
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   compute-offsets:segment-offset/disp32  # copy *segment-offset to ebx
     # . linfo->segment-offset = ebx
-    89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(eax+4)
+    89/copy                         1/mod/*+disp8   7/rm32/edi    .           .             .           3/r32/ebx   4/disp8         .                 # copy ebx to *(edi+4)
     # trace-slsns("label '" word-slice "' is at segment offset " *segment-offset/eax ".")
     # . . push args
     68/push  "."/imm32
