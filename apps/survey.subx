@@ -1508,14 +1508,14 @@ $compute-addresses:segment-break:
 #?     # }}}
     # esi = labels
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # var lrow/eax: (addr label-row) = labels->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy esi+12 to eax
     # var max/ecx: (addr byte) = &labels->data[labels->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
-    01/add                          3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # add esi to ecx
+    8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           1/r32/ecx   0xc/disp8       .                 # copy esi+ecx+12 to ecx
+    # var lrow/esi: (addr label-row) = labels->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   0xc/disp8       .                 # copy esi+12 to esi
 $compute-addresses:label-loop:
     # if (lrow >= max) break
-    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
+    39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
     0f 83/jump-if-addr>=  $compute-addresses:end/disp32
 #?     # dump lrow->key {{{
 #?     # . write(2/stderr, "label: ")
@@ -1528,7 +1528,7 @@ $compute-addresses:label-loop:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # . write(2/stderr, lrow->key)
 #?     # . . push args
-#?     ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
+#?     ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
 #?     68/push  2/imm32/stderr
 #?     # . . call
 #?     e8/call  write/disp32
@@ -1544,7 +1544,7 @@ $compute-addresses:label-loop:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # var seg-name/edx: (addr array byte) = lrow->segment-name
-    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           2/r32/edx   4/disp8         .                 # copy *eax to edx
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   4/disp8         .                 # copy *esi to edx
 #?     # dump seg-name {{{
 #?     # . write(2/stderr, "compute-addresses: seg-name: ")
 #?     # . . push args
@@ -1572,8 +1572,6 @@ $compute-addresses:label-loop:
 #?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
 #?     # }}}
     # var label-seg/edx: (addr segment-info) = get(segments, seg-name, row-size=16, "segment table")
-    # . save eax
-    50/push-eax
     # . eax = get(segments, seg-name, row-size=16)
     # . . push args
     68/push  "segment table"/imm32
@@ -1586,27 +1584,25 @@ $compute-addresses:label-loop:
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
     # . edx = eax
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           0/r32/eax   .               .                 # copy eax to edx
-    # . restore eax
-    58/pop-to-eax
     # ebx = label-seg->address
     8b/copy                         0/mod/indirect  2/rm32/edx    .           .             .           3/r32/ebx   .               .                 # copy *edx to ebx
     # ebx += lrow->segment-offset
-    03/add                          1/mod/*+disp8   0/rm32/eax    .           .             .           3/r32/ebx   8/disp8         .                 # add *(eax+8) to ebx
+    03/add                          1/mod/*+disp8   6/rm32/esi    .           .             .           3/r32/ebx   8/disp8         .                 # add *(esi+8) to ebx
     # lrow->address = ebx
-    89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy ebx to *(eax+12)
+    89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           3/r32/ebx   0xc/disp8       .                 # copy ebx to *(esi+12)
     # trace-sssns("label " lrow->key " is at address " lrow->address ".")
     # . . push args
     68/push  "."/imm32
     53/push-ebx
     68/push  "' is at address "/imm32
-    ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
     68/push  "label '"/imm32
     # . . call
     e8/call  trace-sssns/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
     # lrow += 16  # size of row
-    05/add-to-eax  0x10/imm32
+    81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               0x10/imm32        # add to esi
     e9/jump  $compute-addresses:label-loop/disp32
 $compute-addresses:end:
     # . restore registers
