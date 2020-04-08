@@ -1401,10 +1401,10 @@ test-compute-offsets:
 #       labels->address
 compute-addresses:  # segments: (addr stream {string, segment-info}), labels: (addr stream {string, label-info})
     # pseudocode:
-    #   srow: (addr segment-info) = segments->data
-    #   max = &segments->data[segments->write]
-    #   num-segments = segments->write / 16
-    #   starting-offset = 0x34 + (num-segments * 0x20)
+    #   var srow: (addr segment-row) = segments->data
+    #   var max: (addr byte) = &segments->data[segments->write]
+    #   var num-segments: int = segments->write / 16
+    #   var starting-offset: int = 0x34 + (num-segments * 0x20)
     #   while true
     #     if (srow >= max) break
     #     s->file-offset += starting-offset
@@ -1412,7 +1412,7 @@ compute-addresses:  # segments: (addr stream {string, segment-info}), labels: (a
     #     s->address += (s->file-offset & 0x00000fff)
     #     trace-sssns("segment " s->key " starts at address " s->address)
     #     srow += 16  # row-size
-    #   lrow: (addr label-info) = labels->data
+    #   var lrow: (addr label-row) = labels->data
     #   max = &labels->data[labels->write]
     #   while true
     #     if (lrow >= max) break
@@ -1434,50 +1434,50 @@ compute-addresses:  # segments: (addr stream {string, segment-info}), labels: (a
     57/push-edi
     # esi = segments
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   8/disp8         .                 # copy *(ebp+8) to esi
-    # starting-offset/edi = 0x34 + (num-segments * 0x20)  # make room for ELF headers
+    # var starting-offset/edi: int = 0x34 + (num-segments * 0x20)  # make room for ELF headers
     # . edi = segments->write / 16 (row-size)
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           7/r32/edi   .               .                 # copy *esi to edi
     c1/shift    5/subop/logic-right 3/mod/direct    7/rm32/edi    .           .             .           .           .               4/imm8            # shift edi right by 4 bits, while padding zeroes
     # . edi = (edi * 0x20) + 0x34
     c1/shift    4/subop/left        3/mod/direct    7/rm32/edi    .           .             .           .           .               5/imm8            # shift edi left by 5 bits
     81          0/subop/add         3/mod/direct    7/rm32/edi    .           .             .           .           .               0x34/imm32        # add to edi
-    # max/ecx = &segments->data[segments->write]
+    # var max/ecx: (addr byte) = &segments->data[segments->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     8d/copy-address                 1/mod/*+disp8   4/rm32/sib    6/base/esi  1/index/ecx   .           1/r32/ecx   0xc/disp8       .                 # copy esi+ecx+12 to ecx
-    # srow/eax = segments->data
-    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy esi+12 to eax
+    # var srow/esi: (addr segment-row) = segments->data
+    8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           6/r32/esi   0xc/disp8       .                 # copy esi+12 to esi
 $compute-addresses:segment-loop:
     # if (srow >= max) break
-    39/compare                      3/mod/direct    0/rm32/eax    .           .             .           1/r32/ecx   .               .                 # compare eax with ecx
+    39/compare                      3/mod/direct    6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # compare esi with ecx
     73/jump-if-addr>=  $compute-addresses:segment-break/disp8
     # srow->file-offset += starting-offset
-    01/add                          1/mod/*+disp8   0/rm32/eax    .           .             .           7/r32/edi   8/disp8         .                 # add edi to *(eax+8)
+    01/add                          1/mod/*+disp8   6/rm32/esi    .           .             .           7/r32/edi   8/disp8         .                 # add edi to *(esi+8)
     # clear last 12 bits of srow->address for p_align=0x1000
     # . edx = srow->address
-    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           2/r32/edx   4/disp8         .                 # copy *(eax+4) to edx
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   4/disp8         .                 # copy *(esi+4) to edx
     # . edx &= 0xfffff000
     81          4/subop/and         3/mod/direct    2/rm32/edx    .           .             .           .           .               0xfffff000/imm32  # bitwise and of edx
     # update last 12 bits from srow->file-offset
     # . ebx = srow->file-offset
-    8b/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(eax+8) to ebx
+    8b/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           3/r32/ebx   8/disp8         .                 # copy *(esi+8) to ebx
     # . ebx &= 0xfff
     81          4/subop/and         3/mod/direct    3/rm32/ebx    .           .             .           .           .               0x00000fff/imm32  # bitwise and of ebx
     # . srow->address = edx | ebx
     09/or                           3/mod/direct    2/rm32/edx    .           .             .           3/r32/ebx   .               .                 # edx = bitwise OR with ebx
-    89/copy                         1/mod/*+disp8   0/rm32/eax    .           .             .           2/r32/edx   4/disp8         .                 # copy edx to *(eax+4)
+    89/copy                         1/mod/*+disp8   6/rm32/esi    .           .             .           2/r32/edx   4/disp8         .                 # copy edx to *(esi+4)
     # trace-sssns("segment " srow " starts at address " srow->address ".")
     # . . push args
     68/push  "."/imm32
     52/push-edx
     68/push  "' starts at address "/imm32
-    ff          6/subop/push        0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # push *eax
+    ff          6/subop/push        0/mod/indirect  6/rm32/esi    .           .             .           .           .               .                 # push *esi
     68/push  "segment '"/imm32
     # . . call
     e8/call  trace-sssns/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
     # srow += 16  # size of row
-    05/add-to-eax  0x10/imm32
+    81          0/subop/add         3/mod/direct    6/rm32/esi    .           .             .           .           .               0x10/imm32        # add to esi
     eb/jump  $compute-addresses:segment-loop/disp8
 $compute-addresses:segment-break:
 #?     # dump *Trace-stream {{{
@@ -1508,9 +1508,9 @@ $compute-addresses:segment-break:
 #?     # }}}
     # esi = labels
     8b/copy                         1/mod/*+disp8   5/rm32/ebp    .           .             .           6/r32/esi   0xc/disp8       .                 # copy *(ebp+12) to esi
-    # lrow/eax = labels->data
+    # var lrow/eax: (addr label-row) = labels->data
     8d/copy-address                 1/mod/*+disp8   6/rm32/esi    .           .             .           0/r32/eax   0xc/disp8       .                 # copy esi+12 to eax
-    # max/ecx = &labels->data[labels->write]
+    # var max/ecx: (addr byte) = &labels->data[labels->write]
     8b/copy                         0/mod/indirect  6/rm32/esi    .           .             .           1/r32/ecx   .               .                 # copy *esi to ecx
     01/add                          3/mod/direct    1/rm32/ecx    .           .             .           6/r32/esi   .               .                 # add esi to ecx
 $compute-addresses:label-loop:
