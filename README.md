@@ -470,7 +470,7 @@ rudimentary but hopefully still workable toolkit:
   `./translate_subx_debug`, and then running:
 
   ```
-  ./bootstrap --debug --trace --dump run a.elf test 2>&1 |grep 'label test'
+  ./bootstrap --trace --dump run a.elf test 2>&1 |grep 'label test'
   ```
 
   Just read out the last test printed out before the segfault.

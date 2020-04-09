@@ -190,8 +190,6 @@ void trace_stream::newline() {
     if (should_incrementally_print_trace()) {
       dump_trace_line(cerr, t);
     }
-    // Hack: on 'bootstrap --trace --dump', emit only to stderr, not 'last_run'.
-    if (Dump_trace) past_lines.pop_back();  // economize on memory
     // End trace Commit
   }
 
@@ -458,6 +456,7 @@ else if (is_equal(*arg, "--trace")) {
 :(before "End trace Commit")
 if (Trace_file) {
   dump_trace_line(Trace_file, t);
+  past_lines.pop_back();  // economize on memory
 }
 :(before "End One-time Setup")
 atexit(cleanup_main);
