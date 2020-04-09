@@ -185,7 +185,7 @@ void trace_stream::newline() {
   string curr_contents = curr_stream->str();
   if (!curr_contents.empty()) {
     past_lines.push_back(trace_line(curr_contents, trim(curr_label), curr_depth));  // preserve indent in contents
-    // maybe incrementally dump trace
+    // maybe print this line to stderr
     trace_line& t = past_lines.back();
     if (should_incrementally_print_trace()) {
       dump_trace_line(cerr, t);
@@ -454,7 +454,7 @@ else if (is_equal(*arg, "--trace")) {
   // End --trace Settings
 }
 :(before "End trace Commit")
-if (Trace_file) {
+if (Trace_file.is_open()) {
   dump_trace_line(Trace_file, t);
   past_lines.pop_back();  // economize on memory
 }
@@ -462,7 +462,7 @@ if (Trace_file) {
 atexit(cleanup_main);
 :(code)
 void cleanup_main() {
-  if (Trace_file) Trace_file.close();
+  if (Trace_file.is_open()) Trace_file.close();
   // End cleanup_main
 }
 

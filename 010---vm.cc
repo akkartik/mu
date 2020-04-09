@@ -187,7 +187,7 @@ inline uint8_t* mem_addr_u8(uint32_t addr) {
     }
   }
   if (result == NULL) {
-    if (Trace_file) Trace_file.flush();
+    if (Trace_file.is_open()) Trace_file.flush();
     raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
     exit(1);
   }
@@ -206,7 +206,7 @@ inline uint32_t* mem_addr_u32(uint32_t addr) {
     }
   }
   if (result == NULL) {
-    if (Trace_file) Trace_file.flush();
+    if (Trace_file.is_open()) Trace_file.flush();
     raise << "Tried to access uninitialized memory at address 0x" << HEXWORD << addr << '\n' << end();
     raise << "The entire 4-byte word should be initialized and lie in a single segment.\n" << end();
     exit(1);
@@ -264,7 +264,7 @@ inline bool already_allocated(uint32_t addr) {
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   // Run One Instruction
-  if (Trace_file) {
+  if (Trace_file.is_open()) {
     dump_registers();
     // End Dump Info for Instruction
   }
