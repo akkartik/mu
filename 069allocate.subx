@@ -33,7 +33,7 @@ Heap-size:  # int
   0x400000/imm32/4MB
 
 Next-alloc-id:  # int
-  0x80000000/imm32
+  0x100/imm32  # save a few alloc ids for fake handles
 
 == code
 #   instruction                     effective address                                                   register    displacement    immediate
@@ -245,7 +245,7 @@ test-allocate-raw-success:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # clean up
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  1/imm32     # copy to *Next-alloc-id
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x100/imm32 # copy to *Next-alloc-id
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
@@ -340,8 +340,7 @@ test-lookup-success:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # clean up
-    # . *Next-alloc-id = 1
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     Next-alloc-id/disp32  1/imm32           # copy to *Next-alloc-id
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x100/imm32 # copy to *Next-alloc-id
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
@@ -417,8 +416,7 @@ _pending-test-lookup-failure:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # clean up
-    # . *Next-alloc-id = 1
-    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .     Next-alloc-id/disp32  1/imm32           # copy to *Next-alloc-id
+    c7          0/subop/copy        0/mod/indirect  5/rm32/.disp32            .             .           .           Next-alloc-id/disp32  0x100/imm32 # copy to *Next-alloc-id
     # . epilogue
     89/copy                         3/mod/direct    4/rm32/esp    .           .             .           5/r32/ebp   .               .                 # copy ebp to esp
     5d/pop-to-ebp
