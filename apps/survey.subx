@@ -1839,48 +1839,87 @@ test-compute-addresses-large-segments:
     55/push-ebp
     89/copy                         3/mod/direct    5/rm32/ebp    .           .             .           4/r32/esp   .               .                 # copy esp to ebp
     # setup
-    # . var segments/ecx: (stream byte 10*16)
-    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa0/imm32        # subtract from esp
-    68/push  0xa0/imm32/size
+    # . var segments/ecx: (stream byte 10*20)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc8/imm32        # subtract from esp
+    68/push  0xc8/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . var labels/edx: (stream byte 512*16)
-    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0x2000/imm32      # subtract from esp
-    68/push  0x2000/imm32/size
+    # . var labels/edx: (stream byte 8*24)
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc0/imm32        # subtract from esp
+    68/push  0xc0/imm32/size
     68/push  0/imm32/read
     68/push  0/imm32/write
     89/copy                         3/mod/direct    2/rm32/edx    .           .             .           4/r32/esp   .               .                 # copy esp to edx
+    # . var h/ebx: (handle array byte)
+    68/push  0/imm32
+    68/push  0/imm32
+    89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           4/r32/esp   .               .                 # copy esp to ebx
+    # . h = copy-array(Heap, "a")
+    # . . push args
+    53/push-ebx
+    68/push  "a"/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  copy-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . stream-add5(segments, "a", 0x1000, 0, 0x5604)
     68/push  0x5604/imm32/segment-size
     68/push  0/imm32/file-offset
     68/push  0x1000/imm32/start-address
-    68/push  "a"/imm32/segment-name
+    ff          6/subop/push        1/mod/*+disp8   3/rm32/ebx    .           .             .           .           4/disp8         .                 # push *(ebx+4)
+    ff          6/subop/push        0/mod/indirect  3/rm32/ebx    .           .             .           .           .               .                 # push *ebx
     51/push-ecx
     # . . call
     e8/call  stream-add5/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x18/imm32        # add to esp
+    # . h = copy-array(Heap, "b")
+    # . . push args
+    53/push-ebx
+    68/push  "b"/imm32
+    68/push  Heap/imm32
+    # . . call
+    e8/call  copy-array/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
     # . stream-add5(segments, "b", 0x2018, 0x5604, 1)
     68/push  1/imm32/segment-size
     68/push  0x5604/imm32/file-offset
     68/push  0x2018/imm32/start-address
-    68/push  "b"/imm32/segment-name
+    ff          6/subop/push        1/mod/*+disp8   3/rm32/ebx    .           .             .           .           4/disp8         .                 # push *(ebx+4)
+    ff          6/subop/push        0/mod/indirect  3/rm32/ebx    .           .             .           .           .               .                 # push *ebx
     51/push-ecx
     # . . call
     e8/call  stream-add5/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
-    # . stream-add5(labels, "l1", "a", 3, 0)
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x18/imm32        # add to esp
+    # . stream-add6(labels, "l1", "a", 3, 0)
     68/push  0/imm32/label-address
     68/push  3/imm32/segment-offset
-    68/push  "a"/imm32/segment-name
-    68/push  "l1"/imm32/label-name
+    # . . push "a"
+    53/push-ebx
+    68/push  "a"/imm32
+    68/push  Heap/imm32
+    e8/call  copy-array/disp32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    ff          6/subop/push        1/mod/*+disp8   3/rm32/ebx    .           .             .           .           4/disp8         .                 # push *(ebx+4)
+    ff          6/subop/push        0/mod/indirect  3/rm32/ebx    .           .             .           .           .               .                 # push *ebx
+    # . . push "l1"
+    53/push-ebx
+    68/push  "l1"/imm32
+    68/push  Heap/imm32
+    e8/call  copy-array/disp32
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0xc/imm32         # add to esp
+    ff          6/subop/push        1/mod/*+disp8   3/rm32/ebx    .           .             .           .           4/disp8         .                 # push *(ebx+4)
+    ff          6/subop/push        0/mod/indirect  3/rm32/ebx    .           .             .           .           .               .                 # push *ebx
+    # . . push labels
     52/push-edx
     # . . call
     e8/call  stream-add5/disp32
     # . . discard args
-    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x14/imm32        # add to esp
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x1c/imm32        # add to esp
     # component under test
     # . compute-addresses(segments, labels)
     # . . push args
@@ -1891,6 +1930,32 @@ test-compute-addresses-large-segments:
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # checks
+#?     # dump *Trace-stream {{{
+#?     # . write(2/stderr, "^")
+#?     # . . push args
+#?     68/push  "^"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write-stream(2/stderr, *Trace-stream)
+#?     # . . push args
+#?     ff          6/subop/push        0/mod/indirect  5/rm32/.disp32            .             .           .           Trace-stream/disp32               # push *Trace-stream
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write-stream/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # }}}
     # . check-trace-contains("segment 'a' starts at address 0x00001074.", msg)
     # . . push args
     68/push  "F - test-compute-addresses-large-segments/0"/imm32
