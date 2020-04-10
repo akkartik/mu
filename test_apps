@@ -223,7 +223,7 @@ test $NATIVE  &&  {
 
 # Phases of the self-hosted SubX translator.
 
-for phase in hex pack assort dquotes tests  # survey
+for phase in hex survey pack assort dquotes tests
 do
   echo $phase
   ./bootstrap translate init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$phase.subx -o apps/$phase
@@ -295,28 +295,28 @@ done
 #?   apps/mu test
 #?   echo
 #? }
-#? 
-#? test $NATIVE  ||  exit 0
-#? echo "== translating using SubX (native only)"
-#? 
-#? # example programs
-#? 
-#? for n in `seq 1 12`
-#? do
-#?   echo ex$n
-#?   ./translate_subx init.$OS apps/ex$n.subx
-#?   diff apps/ex$n a.elf
-#? done
-#? 
-#? # Larger apps that use the standard library.
-#? 
-#? for app in factorial crenshaw2-1 crenshaw2-1b
-#? do
-#?   echo $app
-#?   ./translate_subx init.$OS 0[0-8]*.subx apps/$app.subx
-#?   diff apps/$app a.elf
-#? done
-#? 
+
+test $NATIVE  ||  exit 0
+echo "== translating using SubX (native only)"
+
+# example programs
+
+for n in `seq 1 12`
+do
+  echo ex$n
+  ./translate_subx_debug init.$OS apps/ex$n.subx
+  diff apps/ex$n a.elf
+done
+
+# Larger apps that use the standard library.
+
+for app in factorial crenshaw2-1 crenshaw2-1b
+do
+  echo $app
+  ./translate_subx_debug init.$OS 0[0-8]*.subx apps/$app.subx
+  diff apps/$app a.elf
+done
+
 #? # Phases of the self-hosted SubX translator.
 #? 
 #? for app in hex survey pack assort dquotes tests
