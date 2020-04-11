@@ -1373,6 +1373,30 @@ emit-direct-mode:  # out: (addr buffered-file), word-slice: (addr slice)
     # ++local-slice->start to skip '%'
     # . ++(*eax)
     ff          0/subop/increment   0/mod/indirect  0/rm32/eax    .           .             .           .           .               .                 # increment *eax
+#?     # write-slice-buffered(Stderr, word-slice) {{{
+#?     # . . push args
+#?     50/push-eax
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  write-slice-buffered/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # . flush(Stderr)
+#?     # . . push args
+#?     68/push  Stderr/imm32
+#?     # . . call
+#?     e8/call  flush/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+#?     # . write(2/stderr, "$\n")
+#?     # . . push args
+#?     68/push  "$\n"/imm32
+#?     68/push  2/imm32/stderr
+#?     # . . call
+#?     e8/call  write/disp32
+#?     # . . discard args
+#?     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+#?     # }}}
     # local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
     # . . push args
     50/push-eax
@@ -1383,10 +1407,10 @@ emit-direct-mode:  # out: (addr buffered-file), word-slice: (addr slice)
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
-    # reg-num/eax = get-slice(Registers, local-slice, row-size=8)
+    # reg-num/eax = get-slice(Registers, local-slice, row-size=12)
     # . . push args
     68/push  "Registers"/imm32
-    68/push  8/imm32/row-size
+    68/push  0xc/imm32/row-size
     50/push-eax
     68/push  Registers/imm32
     # . . call
@@ -2214,7 +2238,7 @@ parse-effective-address:  # word-slice: (addr slice) -> base/eax, index/ecx, sca
     #   initialize defaults: base=0, index=4, scale=0, disp=0
     #   if (*local-slice->start != '(') {
     #     local-slice = next-token-from-slice(local-slice->start, local-slice->end, "/")
-    #     base = get-slice(Registers, local-slice, row-size=8)
+    #     base = get-slice(Registers, local-slice, row-size=12)
     #     return
     #   }
     #   # compound expressions
@@ -2281,11 +2305,11 @@ $parse-effective-address:simple-register:
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
-    # base = get-slice(Registers, local-slice, row-size=8)
-    # . eax = get-slice(Registers, local-slice, row-size=8)
+    # base = get-slice(Registers, local-slice, row-size=12)
+    # . eax = get-slice(Registers, local-slice, row-size=12)
     # . . push args
     68/push  "Registers"/imm32
-    68/push  8/imm32/row-size
+    68/push  0xc/imm32/row-size
     56/push-esi
     68/push  Registers/imm32
     # . . call
@@ -2370,9 +2394,9 @@ $parse-effective-address:resolve-ambiguity:
     51/push-ecx
     # . . copy esp to ecx
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
-    # . eax = maybe-get-slice(Register, tmp, row-size=8)
+    # . eax = maybe-get-slice(Register, tmp, row-size=12)
     # . . push args
-    68/push  8/imm32/row-size
+    68/push  0xc/imm32/row-size
     51/push-ecx
     68/push  Registers/imm32
     # . . call
@@ -2687,10 +2711,10 @@ next-register:  # in: (addr slice) -> reg/eax: int
     89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
     # in->start += 3
     81          0/subop/add         0/mod/indirect  6/rm32/esi    .           .             .           .           .               3/imm32           # add to *esi
-    # eax = get-slice(Registers, reg-slice, row-size=8)
+    # eax = get-slice(Registers, reg-slice, row-size=12)
     # . . push args
     68/push  "next-register"/imm32
-    68/push  8/imm32/row-size
+    68/push  0xc/imm32/row-size
     51/push-ecx
     68/push  Registers/imm32
     # . . call
@@ -3889,9 +3913,9 @@ $disp32-mode?:check-for-register:
     e8/call  next-token-from-slice/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               0x10/imm32        # add to esp
-    # reg-num/eax = maybe-get-slice(Registers, local-slice, row-size=8)
+    # reg-num/eax = maybe-get-slice(Registers, local-slice, row-size=12)
     # . . push args
-    68/push  8/imm32/row-size
+    68/push  0xc/imm32/row-size
     56/push-esi
     68/push  Registers/imm32
     # . . cal

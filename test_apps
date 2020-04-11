@@ -238,50 +238,50 @@ do
   }
 done
 
-#? # Higher-level syntax.
-#? 
-#? # Certain phases of translation run native beyond this point. We're starting
-#? # to go beyond functionality of the C++ bootstrap.
-#? 
-#? echo sigils
-#? ./bootstrap translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
-#? [ "$1" != record ]  &&  git diff --exit-code apps/sigils
-#? test $EMULATED  &&  {
-#?   ./bootstrap run apps/sigils test
-#?   echo
-#? }
-#? test `uname` = 'Linux'  &&  {
-#?   apps/sigils test
-#?   echo
-#? }
-#? 
-#? test $NATIVE  ||  { echo 'there are more tests, but you need Linux to run them'; exit 0; }
-#? 
-#? echo calls
-#? cat init.$OS 0*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
-#? ./bootstrap translate a.sigils -o apps/calls
-#? [ "$1" != record ]  &&  git diff --exit-code apps/calls
-#? test $EMULATED  &&  {
-#?   ./bootstrap run apps/calls test
-#?   echo
-#? }
-#? test `uname` = 'Linux'  &&  {
-#?   apps/calls test
-#?   echo
-#? }
-#? 
-#? echo braces
-#? cat init.$OS 0*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
-#? ./bootstrap translate a.sigils -o apps/braces
-#? [ "$1" != record ]  &&  git diff --exit-code apps/braces
-#? test $EMULATED  &&  {
-#?   ./bootstrap run apps/braces test
-#?   echo
-#? }
-#? test `uname` = 'Linux'  &&  {
-#?   apps/braces test
-#?   echo
-#? }
+# Higher-level syntax.
+
+# Certain phases of translation run native beyond this point. We're starting
+# to go beyond functionality of the C++ bootstrap.
+
+echo sigils
+./bootstrap translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
+[ "$1" != record ]  &&  git diff --exit-code apps/sigils
+test $EMULATED  &&  {
+  ./bootstrap run apps/sigils test
+  echo
+}
+test `uname` = 'Linux'  &&  {
+  apps/sigils test
+  echo
+}
+
+test $NATIVE  ||  { echo 'there are more tests, but you need Linux to run them'; exit 0; }
+
+echo calls
+cat init.$OS 0*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
+./bootstrap translate a.sigils -o apps/calls
+[ "$1" != record ]  &&  git diff --exit-code apps/calls
+test $EMULATED  &&  {
+  ./bootstrap run apps/calls test
+  echo
+}
+test `uname` = 'Linux'  &&  {
+  apps/calls test
+  echo
+}
+
+echo braces
+cat init.$OS 0*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
+./bootstrap translate a.sigils -o apps/braces
+[ "$1" != record ]  &&  git diff --exit-code apps/braces
+test $EMULATED  &&  {
+  ./bootstrap run apps/braces test
+  echo
+}
+test `uname` = 'Linux'  &&  {
+  apps/braces test
+  echo
+}
 
 #? echo mu
 #? cat init.$OS [0-9]*.subx apps/mu.subx  |  apps/braces  |  apps/calls  |  apps/sigils  > a.sigils
@@ -317,22 +317,22 @@ do
   diff apps/$app a.elf
 done
 
-#? # Phases of the self-hosted SubX translator.
-#? 
-#? for app in hex survey pack assort dquotes tests
-#? do
-#?   echo $app
-#?   ./translate_subx init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$app.subx
-#?   diff apps/$app a.elf
-#? done
-#? 
-#? for app in sigils calls braces
-#? do
-#?   echo $app
-#?   ./translate_subx init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
-#?   diff apps/$app a.elf
-#? done
-#? 
+# Phases of the self-hosted SubX translator.
+
+for app in hex survey pack assort dquotes tests
+do
+  echo $app
+  ./translate_subx init.$OS 0[0-8]*.subx apps/subx-params.subx apps/$app.subx
+  diff apps/$app a.elf
+done
+
+for app in sigils calls braces
+do
+  echo $app
+  ./translate_subx init.$OS 0*.subx apps/subx-params.subx apps/$app.subx
+  diff apps/$app a.elf
+done
+
 #? # Mu translator
 #? echo mu
 #? ./translate_subx init.$OS [0-9]*.subx apps/mu.subx
