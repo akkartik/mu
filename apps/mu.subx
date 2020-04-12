@@ -363,19 +363,22 @@ Stmt-var-size:  # (addr int)
 # However, there's no need for singletons, so we can assume (int) == int
 #   - if x->right == nil, x is an atom
 #   - x->left contains either a pointer to a pair, or an atomic type-id directly.
-#     type ids will be less than 0x10000 (MAX_TYPE_ID).
 
-Tree-left:  # either type-id or (addr tree type-id)
+Tree-is-atom:  # boolean
   0/imm32
-Tree-right:  # (addr tree type-id)
+# if left-is-atom?
+Tree-value:  # type-id
   4/imm32
-Tree-size:  # (addr int)
+# unless left-is-atom?
+Tree-left:  # (addr tree type-id)
+  4/imm32
+Tree-right:  # (addr tree type-id)
   8/imm32
+#
+Tree-size:  # (addr int)
+  0xc/imm32
 
 # Types
-
-Max-type-id:
-  0x10000/imm32
 
 Type-id:  # (stream (address array byte))
   0x1c/imm32/write
@@ -3499,8 +3502,9 @@ test-function-header-with-arg:
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "n" "F - test-function-header-with-arg/inout:0")  # Var-name
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-arg/inout:0/type:0")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-arg/inout:0/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-arg/inout:0/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-arg/inout:0/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3533,8 +3537,9 @@ $test-function-header-with-multiple-args:inout0:
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:0/type:0")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args/inout:0/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:0/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:0/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args/inout:0/type:2")  # Tree-right
     # edx = result->inouts->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
 $test-function-header-with-multiple-args:inout1:
@@ -3542,8 +3547,9 @@ $test-function-header-with-multiple-args:inout1:
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "b" "F - test-function-header-with-multiple-args/inout:1")  # Var-name
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:1/type:0")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args/inout:1/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:1/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:1/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args/inout:1/type:2")  # Tree-right
     # edx = result->inouts->next->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
 $test-function-header-with-multiple-args:inout2:
@@ -3551,8 +3557,9 @@ $test-function-header-with-multiple-args:inout2:
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args/inout:2")  # Var-name
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:2/type:0")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args/inout:2/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:2/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:2/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args/inout:2/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3584,24 +3591,27 @@ test-function-with-multiple-args-and-outputs:
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args-and-outputs/inout:0")  # Var-name
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:0/type:0")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:0/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:0/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args-and-outputs/inout:0/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:0/type:2")  # Tree-right
     # edx = result->inouts->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
     # ebx = result->inouts->next->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "b" "F - test-function-header-with-multiple-args-and-outputs/inout:1")  # Var-name
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:1/type:0")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:1/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:1/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args-and-outputs/inout:1/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:1/type:2")  # Tree-right
     # edx = result->inouts->next->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
     # ebx = result->inouts->next->next->value
     8b/-> *edx 3/r32/ebx  # List-value
     (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args-and-outputs/inout:2")  # Var-name
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:2/type:0")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:2/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/inout:2/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args-and-outputs/inout:2/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args-and-outputs/inout:2/type:2")  # Tree-right
     # edx: (handle list var) = result->outputs
     8b/-> *(ecx+0xc) 2/r32/edx  # Function-outputs
     # ebx: (handle var) = result->outputs->value
@@ -3609,8 +3619,9 @@ test-function-with-multiple-args-and-outputs:
     (check-strings-equal *ebx "x" "F - test-function-header-with-multiple-args-and-outputs/output:0")  # Var-name
     (check-strings-equal *(ebx+0x10) "ecx" "F - test-function-header-with-multiple-args-and-outputs/output:0/register")  # Var-register
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/output:0/type:1")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/output:0/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/output:0/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args-and-outputs/output:0/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args-and-outputs/output:0/type:2")  # Tree-right
     # edx = result->outputs->next
     8b/-> *(edx+4) 2/r32/edx  # List-next
     # ebx = result->outputs->next->value
@@ -3618,8 +3629,9 @@ test-function-with-multiple-args-and-outputs:
     (check-strings-equal *ebx "y" "F - test-function-header-with-multiple-args-and-outputs/output:1")  # Var-name
     (check-strings-equal *(ebx+0x10) "edx" "F - test-function-header-with-multiple-args-and-outputs/output:0/register")  # Var-register
     8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/output:1/type:1")  # Tree-left
-    (check-ints-equal *(ebx+4) 0 "F - test-function-header-with-multiple-args-and-outputs/output:1/type:1")  # Tree-right
+    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args-and-outputs/output:1/type:0")  # Tree-is-atom
+    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args-and-outputs/output:1/type:1")  # Tree-value
+    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args-and-outputs/output:1/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -3741,7 +3753,8 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     #   result = allocate(Tree)
     #   zero-out(result, *Tree-size)
     #   if s != "("
-    #     result->left = pos-or-insert-slice(Type-id, s)
+    #     result->left-is-atom? = true
+    #     result->value = pos-or-insert-slice(Type-id, s)
     #     return
     #   result->left = parse-type(ad, in)
     #   result->right = parse-type-tree(ad, in)
@@ -3786,6 +3799,7 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     # var result/edx: (handle tree type-id)
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)
+$aa-alloc:
     89/<- %edx 0/r32/eax
     {
       # if (s != "(") break
@@ -3794,35 +3808,40 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
       75/jump-if-!= break/disp8
       # EGREGIOUS HACK for static array sizes: if s is a number, parse it
       {
+$parse-type:int:
         (is-hex-int? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
         (parse-hex-int-from-slice %ecx)  # => eax
-        89/<- *edx 0/r32/eax  # Tree-left
+        89/<- *(edx+4) 0/r32/eax  # Tree-left
         e9/jump $parse-type:return-edx/disp32
       }
-      # result->left = pos-or-insert-slice(Type-id, s)
+$parse-type:atom:
+      # result->left-is-atom? = true
+      c7 0/subop/copy *edx 1/imm32/true  # Tree-is-atom
+      # result->value = pos-or-insert-slice(Type-id, s)
       (pos-or-insert-slice Type-id %ecx)  # => eax
 #?       (write-buffered Stderr "=> {")
 #?       (print-int32-buffered Stderr %eax)
 #?       (write-buffered Stderr ", 0}\n")
 #?       (flush Stderr)
-      89/<- *edx 0/r32/eax  # Tree-left
+      89/<- *(edx+4) 0/r32/eax  # Tree-value
       e9/jump $parse-type:return-edx/disp32
     }
+$parse-type:non-atom:
     # otherwise s == "("
     # result->left = parse-type(ad, in)
     (parse-type *(ebp+8) *(ebp+0xc))
 #?     (write-buffered Stderr "=> {")
 #?     (print-int32-buffered Stderr %eax)
-    89/<- *edx 0/r32/eax  # Tree-left
+    89/<- *(edx+4) 0/r32/eax  # Tree-left
     # result->right = parse-type-tree(ad, in)
     (parse-type-tree *(ebp+8) *(ebp+0xc))
 #?     (write-buffered Stderr Space)
 #?     (print-int32-buffered Stderr %eax)
 #?     (write-buffered Stderr "}\n")
 #?     (flush Stderr)
-    89/<- *(edx+4) 0/r32/eax  # Tree-right
+    89/<- *(edx+8) 0/r32/eax  # Tree-right
 $parse-type:return-edx:
     89/<- %eax 2/r32/edx
 $parse-type:end:
@@ -3876,10 +3895,10 @@ parse-type-tree:  # ad: (address allocation-descriptor), in: (addr stream byte) 
     (zero-out %eax *Tree-size)
     89/<- %edx 0/r32/eax
     # result->left = tmp2
-    89/<- *edx 1/r32/ecx  # Tree-left
+    89/<- *(edx+4) 1/r32/ecx  # Tree-left
     # result->right = parse-type-tree(ad, in)
     (parse-type-tree *(ebp+8) *(ebp+0xc))
-    89/<- *(edx+4) 0/r32/eax  # Tree-right
+    89/<- *(edx+8) 0/r32/eax  # Tree-right
 $parse-type-tree:return-edx:
     89/<- %eax 2/r32/edx
 $parse-type-tree:end:
@@ -4158,10 +4177,11 @@ test-parse-var-with-type:
     #
     (parse-var-with-type %ecx _test-input-stream)
     8b/-> *eax 2/r32/edx  # Var-name
-    (check-strings-equal %edx "x" "F - test-var-with-type/name")
+    (check-strings-equal %edx "x" "F - test-parse-var-with-type/name")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal *edx 1 "F - test-var-with-type/type")
-    (check-ints-equal *(edx+4) 0 "F - test-var-with-type/type")
+    (check-ints-equal *edx 1 "F - test-parse-var-with-type/type:0")  # Tree-is-atom
+    (check-ints-equal *(edx+4) 1 "F - test-parse-var-with-type/type:1")  # Tree-value
+    (check-ints-equal *(edx+8) 0 "F - test-parse-var-with-type/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4186,12 +4206,13 @@ test-parse-var-with-type-and-register:
     #
     (parse-var-with-type %ecx _test-input-stream)
     8b/-> *eax 2/r32/edx  # Var-name
-    (check-strings-equal %edx "x" "F - test-var-with-type-and-register/name")
+    (check-strings-equal %edx "x" "F - test-parse-var-with-type-and-register/name")
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
-    (check-strings-equal %edx "eax" "F - test-var-with-type-and-register/register")
+    (check-strings-equal %edx "eax" "F - test-parse-var-with-type-and-register/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal *edx 1 "F - test-var-with-type-and-register/type")
-    (check-ints-equal *(edx+4) 0 "F - test-var-with-type-and-register/type")
+    (check-ints-equal *edx 1 "F - test-parse-var-with-type-and-register/type:0")  # Tree-is-atom
+    (check-ints-equal *(edx+4) 1 "F - test-parse-var-with-type-and-register/type:1")  # Tree-left
+    (check-ints-equal *(edx+8) 0 "F - test-parse-var-with-type-and-register/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4216,12 +4237,13 @@ test-parse-var-with-trailing-characters:
     #
     (parse-var-with-type %ecx _test-input-stream)
     8b/-> *eax 2/r32/edx  # Var-name
-    (check-strings-equal %edx "x" "F - test-var-with-trailing-characters/name")
+    (check-strings-equal %edx "x" "F - test-parse-var-with-trailing-characters/name")
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
-    (check-ints-equal %edx 0 "F - test-var-with-trailing-characters/register")
+    (check-ints-equal %edx 0 "F - test-parse-var-with-trailing-characters/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal *edx 1 "F - test-var-with-trailing-characters/type")
-    (check-ints-equal *(edx+4) 0 "F - test-var-with-trailing-characters/type")
+    (check-ints-equal *edx 1 "F - test-parse-var-with-trailing-characters/type:0")  # Tree-is-atom
+    (check-ints-equal *(edx+4) 1 "F - test-parse-var-with-trailing-characters/type:1")  # Tree-left
+    (check-ints-equal *(edx+8) 0 "F - test-parse-var-with-trailing-characters/type:1")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4246,12 +4268,13 @@ test-parse-var-with-register-and-trailing-characters:
     #
     (parse-var-with-type %ecx _test-input-stream)
     8b/-> *eax 2/r32/edx  # Var-name
-    (check-strings-equal %edx "x" "F - test-var-with-register-and-trailing-characters/name")
+    (check-strings-equal %edx "x" "F - test-parse-var-with-register-and-trailing-characters/name")
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
-    (check-strings-equal %edx "eax" "F - test-var-with-register-and-trailing-characters/register")
+    (check-strings-equal %edx "eax" "F - test-parse-var-with-register-and-trailing-characters/register")
     8b/-> *(eax+4) 2/r32/edx  # Var-type
-    (check-ints-equal *edx 1 "F - test-var-with-register-and-trailing-characters/type")
-    (check-ints-equal *(edx+4) 0 "F - test-var-with-register-and-trailing-characters/type")
+    (check-ints-equal *edx 1 "F - test-parse-var-with-register-and-trailing-characters/type:0")  # Tree-is-atom
+    (check-ints-equal *(edx+4) 1 "F - test-parse-var-with-register-and-trailing-characters/type:1")  # Tree-left
+    (check-ints-equal *(edx+8) 0 "F - test-parse-var-with-register-and-trailing-characters/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4276,20 +4299,24 @@ test-parse-var-with-compound-type:
     #
     (parse-var-with-type %ecx _test-input-stream)
     8b/-> *eax 2/r32/edx  # Var-name
-    (check-strings-equal %edx "x" "F - test-var-with-compound-type/name")
+    (check-strings-equal %edx "x" "F - test-parse-var-with-compound-type/name")
     8b/-> *(eax+0x10) 2/r32/edx  # Var-register
-    (check-ints-equal %edx 0 "F - test-var-with-compound-type/register")
+    (check-ints-equal %edx 0 "F - test-parse-var-with-compound-type/register")
     # var type/edx: (handle tree type-id) = var->type
     8b/-> *(eax+4) 2/r32/edx  # Var-type
+    # type is a non-atom
+    (check-ints-equal *edx 0 "F - test-parse-var-with-compound-type/type:0")  # Tree-is-atom
     # type->left == atom(addr)
-    8b/-> *edx 0/r32/eax  # Atom-value
-    (check-ints-equal *eax 2 "F - test-var-with-compound-type/type:0")  # Tree-left
+    8b/-> *(edx+4) 0/r32/eax  # Tree-left
+    (check-ints-equal *eax 1 "F - test-parse-var-with-compound-type/type:1")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 2 "F - test-parse-var-with-compound-type/type:2")  # Tree-value
     # type->right->left == atom(int)
-    8b/-> *(edx+4) 2/r32/edx  # Tree-right
-    8b/-> *edx 0/r32/eax  # Tree-left
-    (check-ints-equal *eax 1 "F - test-var-with-compound-type/type:1")  # Atom-value
+    8b/-> *(edx+8) 2/r32/edx  # Tree-right
+    8b/-> *(edx+4) 0/r32/eax  # Tree-left
+    (check-ints-equal *eax 1 "F - test-parse-var-with-compound-type/type:3")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-parse-var-with-compound-type/type:4")  # Tree-value
     # type->right->right == null
-    (check-ints-equal *(edx+4) 0 "F - test-var-with-compound-type/type:2")  # Tree-right
+    (check-ints-equal *(edx+8) 0 "F - test-parse-var-with-compound-type/type:5")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5032,8 +5059,9 @@ test-parse-mu-var-def:
     (check-ints-equal *(eax+0x10) 0 "F - test-parse-mu-var-def/var-register")  # Var-register
     # ensure type is int
     8b/-> *(eax+4) 0/r32/eax  # Var-type
-    (check-ints-equal *eax 1 "F - test-parse-mu-var-def/var-type:0")  # Tree-left
-    (check-ints-equal *(eax+4) 0 "F - test-parse-mu-var-def/var-type:0")  # Tree-right
+    (check-ints-equal *eax 1 "F - test-parse-mu-var-def/var-type:0")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-parse-mu-var-def/var-type:1")  # Tree-value
+    (check-ints-equal *(eax+8) 0 "F - test-parse-mu-var-def/var-type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5064,8 +5092,9 @@ test-parse-mu-reg-var-def:
     (check-strings-equal *(eax+0x10) "eax" "F - test-parse-mu-reg-var-def/output-register")  # Var-register
     # ensure type is int
     8b/-> *(eax+4) 0/r32/eax  # Var-type
-    (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-left
-    (check-ints-equal *(eax+4) 0 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-right
+    (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/var-type:0")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-value
+    (check-ints-equal *(eax+8) 0 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5671,6 +5700,7 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> 
     # var type/ecx: (handle tree type-id) = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)  # default type is 'literal'
+    c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
     89/<- %ecx 0/r32/eax
     # result = new var(s)
     (new-var-from-slice *(ebp+8) *(ebp+0xc))  # => eax
@@ -5707,6 +5737,7 @@ new-literal:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/e
     # type = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
     (zero-out %eax *Tree-size)  # default type is 'literal'
+    c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
     89/<- %edx 0/r32/eax
     # eax = result
     (new-var *(ebp+8) %ecx)  # => eax
@@ -5949,12 +5980,12 @@ container-type:  # container: (handle stmt-var) -> result/eax: type-id
     8b/-> *eax 0/r32/eax  # Stmt-var-value
     8b/-> *(eax+4) 0/r32/eax  # Var-type
     {
-      81 7/subop/compare *(eax+4) 0/imm32
+      81 7/subop/compare *(eax+8) 0/imm32  # Tree-right
       74/jump-if-= break/disp8
-      8b/-> *(eax+4) 0/r32/eax  # Tree-right
-      8b/-> *eax 0/r32/eax  # Tree-left
+      8b/-> *(eax+8) 0/r32/eax  # Tree-right
+      8b/-> *(eax+4) 0/r32/eax  # Tree-left
     }
-    8b/-> *eax 0/r32/eax  # Atom-value
+    8b/-> *(eax+4) 0/r32/eax  # Tree-value
 $container-type:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -6047,8 +6078,9 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice) -> 
       75/jump-if-!= break/disp8
       # var type/eax: (handle tree type-id) = new var("dummy name", constant type, -1 offset)
       (allocate Heap *Tree-size)  # => eax
-      c7 0/subop/copy *eax 6/imm32/constant  # Atom-value
-      c7 0/subop/copy *(eax+4) 0/imm32  # Tree-right
+      (zero-out %eax *Tree-size)
+      c7 0/subop/copy *(eax+4) 6/imm32/constant  # Tree-value
+      c7 0/subop/copy *(eax+8) 0/imm32  # Tree-right
       89/<- %ecx 0/r32/eax
       # eax = result
       (new-var Heap "field")  # => eax
@@ -6402,14 +6434,13 @@ compute-size-of-var:  # in: (handle var) -> result/eax: int
     # var t/ecx: (handle tree type-id) = v->type
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ecx+4) 1/r32/ecx  # Var-type
-    # if (t->left >= *Max-type-id) t = t->left
+    # if (t->left-is-atom == false) t = t->left
     {
-      8b/-> *Max-type-id 0/r32/eax
-      39/compare *ecx 0/r32/eax  # Tree-left
-      72/jump-if-addr< break/disp8
-      8b/-> *ecx 1/r32/ecx  # Tree-left
+      81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
+      75/jump-if-!= break/disp8
+      8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
     }
-    (compute-size-of-type-id *ecx)  # Atom-left => eax
+    (compute-size-of-type-id *(ecx+4))  # Tree-left => eax
 $compute-size-of-var:end:
     # . restore registers
     59/pop-to-ecx
@@ -6588,14 +6619,13 @@ size-of:  # v: (handle var) -> result/eax: int
       (size-of-array %ecx)  # => eax
       eb/jump $size-of:end/disp8
     }
-    # if (t->left >= *Max-type-id) t = t->left
+    # if (t->left-is-atom == false) t = t->left
     {
-      8b/-> *Max-type-id 0/r32/eax
-      39/compare *ecx 0/r32/eax  # Tree-left
-      72/jump-if-addr< break/disp8
-      8b/-> *ecx 1/r32/ecx  # Tree-left
+      81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
+      75/jump-if-!= break/disp8
+      8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
     }
-    (size-of-type-id *ecx)  # Atom-left => eax
+    (size-of-type-id *(ecx+4))  # Tree-left => eax
 $size-of:end:
     # . restore registers
     59/pop-to-ecx
@@ -6614,7 +6644,7 @@ size-of-deref:  # v: (handle var) -> result/eax: int
     8b/-> *(ebp+8) 1/r32/ecx
     8b/-> *(ecx+4) 1/r32/ecx  # Var-type
     # TODO: assert(t is an addr)
-    8b/-> *(ecx+4) 1/r32/ecx  # Tree-right
+    8b/-> *(ecx+8) 1/r32/ecx  # Tree-right
     # if is-mu-array?(t) return size-of-array(t)
     {
       (is-mu-array? %ecx)  # => eax
@@ -6623,14 +6653,13 @@ size-of-deref:  # v: (handle var) -> result/eax: int
       (size-of-array %ecx)  # => eax
       eb/jump $size-of:end/disp8
     }
-    # if (t->left >= *Max-type-id) t = t->left
+    # if (t->left-is-atom == false) t = t->left
     {
-      8b/-> *Max-type-id 0/r32/eax
-      39/compare *ecx 0/r32/eax  # Tree-left
-      72/jump-if-addr< break/disp8
-      8b/-> *ecx 1/r32/ecx  # Tree-left
+      81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
+      75/jump-if-!= break/disp8
+      8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
     }
-    (size-of-type-id *ecx)  # Atom-left => eax
+    (size-of-type-id *(ecx+4))  # Tree-left => eax
 $size-of-deref:end:
     # . restore registers
     59/pop-to-ecx
@@ -6645,17 +6674,20 @@ is-mu-array?:  # t: (handle tree type-id) -> result/eax: boolean
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # ecx = t->left
+    # ecx = t
     8b/-> *(ebp+8) 1/r32/ecx
-    8b/-> *ecx 1/r32/ecx  # Tree-left
-    # if t is an atomic type, return false
-    3b/compare<- *Max-type-id 1/r32/ecx
+    # result = false
     b8/copy-to-eax 0/imm32/false
-    72/jump-if-addr< $is-mu-array?:end/disp8
-    # return ecx->value == array
-    81 7/subop/compare *ecx 3/imm32/array-type-id  # Atom-value
+    # if t->left-is-atom, return false
+    81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
+    75/jump-if-!= $is-mu-array?:end/disp8
+    # if !t->left->left-is-atom, return false
+    8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
+    81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
+    74/jump-if-= $is-mu-array?:end/disp8
+    # return t->left->value == array
+    81 7/subop/compare *(ecx+4) 3/imm32/array-type-id  # Tree-value
     0f 94/set-if-= %al
-    81 4/subop/and %eax 0xff/imm32
 $is-mu-array?:end:
     # . restore registers
     59/pop-to-ecx
@@ -6674,14 +6706,14 @@ size-of-array:  # a: (handle tree type-id) -> result/eax: int
     #
     8b/-> *(ebp+8) 1/r32/ecx
     # TODO: assert that a->left is 'array'
-    8b/-> *(ecx+4) 1/r32/ecx  # Tree-right
+    8b/-> *(ecx+8) 1/r32/ecx  # Tree-right
     # var elem-type/edx: type-id = a->right->value
-    8b/-> *ecx 2/r32/edx  # Atom-value
-    8b/-> *edx 2/r32/edx  # Atom-value
+    8b/-> *(ecx+4) 2/r32/edx  # Tree-value
+    8b/-> *(edx+4) 2/r32/edx  # Tree-value
     # var array-size/ecx: int = a->right->right->left->value
-    8b/-> *(ecx+4) 1/r32/ecx  # Tree-right
-    8b/-> *ecx 1/r32/ecx  # Tree-left
-    8b/-> *ecx 1/r32/ecx  # Atom-value
+    8b/-> *(ecx+8) 1/r32/ecx  # Tree-right
+    8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
+    8b/-> *(ecx+4) 1/r32/ecx  # Tree-value
     # return array-size * size-of(elem-type)
     (size-of-type-id %edx)  # => eax
     f7 4/subop/multiply-into-eax %ecx
@@ -6747,11 +6779,11 @@ type-equal?:  # a: (handle tree type-id), b: (handle tree type-id) -> result/eax
     b8/copy-to-eax 0/imm32/false
     72/jump-if-addr< $type-equal?:end/disp8
     # if (!type-equal?(a->left, b->left)) return false
-    (type-equal? *ecx *edx)  # Tree-left, Tree-left => eax
+    (type-equal? *(ecx+4) *(edx+4))  # Tree-left, Tree-left => eax
     3d/compare-eax-and 0/imm32/false
     74/jump-if-= $type-equal?:end/disp8
     # return type-equal?(a->right, b->right)
-    (type-equal? *(ecx+4) *(edx+4))  # Tree-right, Tree-right => eax
+    (type-equal? *(ecx+8) *(edx+8))  # Tree-right, Tree-right => eax
 $type-equal?:end:
     # . restore registers
     5a/pop-to-edx
@@ -7950,11 +7982,10 @@ $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
       }
       # if index->type is any other atom, abort
       8b/-> *(edx+4) 0/r32/eax  # Var-type
-      8b/-> *eax 0/r32/eax  # Tree-left or Atom-value
-      3b/compare<- *Max-type-id 0/r32/eax
-      0f 82/jump-if-addr< $translate-mu-index-stmt-with-array:error2/disp32
+      81 7/subop/compare *eax 0/imm32/false  # Tree-is-atom
+      0f 85/jump-if-!= $translate-mu-index-stmt-with-array:error2/disp32
       # if index has type (offset ...)
-      (is-simple-mu-type? %eax 7)  # offset => eax
+      (is-simple-mu-type? *(eax+4) 7)  # Tree-left, offset => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
@@ -8060,11 +8091,10 @@ $translate-mu-index-stmt-with-array-on-stack:emit-int-register-index:
       }
       # if index->type is any other atom, abort
       8b/-> *(edx+4) 0/r32/eax  # Var-type
-      8b/-> *eax 0/r32/eax  # Tree-left or Atom-value
-      3b/compare<- *Max-type-id 0/r32/eax
-      0f 82/jump-if-addr< $translate-mu-index-stmt-with-array:error2/disp32
+      81 7/subop/compare *eax 0/imm32/false  # Tree-is-atom
+      0f 85/jump-if-!= $translate-mu-index-stmt-with-array:error2/disp32
       # if index has type (offset ...)
-      (is-simple-mu-type? %eax 7)  # offset => eax
+      (is-simple-mu-type? *(eax+4) 7)  # Tree-left, offset => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
@@ -8233,13 +8263,13 @@ array-element-type-id:  # v: (handle var) -> result/eax: type-id
     8b/-> *(ebp+8) 0/r32/eax
     8b/-> *(eax+4) 0/r32/eax  # Var-type
     # TODO: ensure type->left is 'addr'
-    8b/-> *(eax+4) 0/r32/eax  # Tree-right
+    8b/-> *(eax+8) 0/r32/eax  # Tree-right
     # TODO: ensure that type->right is non-null
     # TODO: ensure that type->right->left is 'array'
-    8b/-> *(eax+4) 0/r32/eax  # Tree-right
+    8b/-> *(eax+8) 0/r32/eax  # Tree-right
     # TODO: ensure that type->right->right is non-null
-    8b/-> *eax 0/r32/eax  # Tree-left
-    8b/-> *eax 0/r32/eax  # Atom-value
+    8b/-> *(eax+4) 0/r32/eax  # Tree-left
+    8b/-> *(eax+4) 0/r32/eax  # Tree-value
 $array-element-type-id:end:
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -9739,14 +9769,17 @@ Lit-var:
     0/imm32/no-register
 
 Type-int:
+    1/imm32/left-is-atom
     1/imm32/left/int
     0/imm32/right/null
 
 Type-literal:
+    1/imm32/left-is-atom
     0/imm32/left/literal
     0/imm32/right/null
 
 Type-addr:
+    1/imm32/left-is-atom
     2/imm32/left/addr
     0/imm32/right/null
 
@@ -10072,7 +10105,7 @@ $emit-subx-call-operand:stack:
     # else if (operand->type == literal) emit "__"
     {
       8b/-> *(esi+4) 0/r32/eax  # Var-type
-      81 7/subop/compare *eax 0/imm32  # Tree-left
+      81 7/subop/compare *(eax+4) 0/imm32  # Tree-left
       75/jump-if-!= break/disp8
 $emit-subx-call-operand:literal:
       (write-buffered *(ebp+8) Space)
@@ -10555,7 +10588,7 @@ is-simple-mu-type?:  # a: (handle tree type-id), n: type-id -> result/eax: boole
     8b/-> *(ebp+0xc) 1/r32/ecx
     # return (a->value == n)
     8b/-> *(ebp+8) 0/r32/eax
-    39/compare *eax 1/r32/ecx  # Atom-type
+    39/compare *(eax+4) 1/r32/ecx  # Tree-value
     0f 94/set-byte-if-= %al
     81 4/subop/and %eax 0xff/imm32
 $is-simple-mu-type?:end:
@@ -10960,6 +10993,7 @@ test-increment-register:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-foo/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11021,6 +11055,7 @@ test-increment-var:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-foo/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11072,6 +11107,7 @@ test-add-reg-to-reg:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11135,6 +11171,7 @@ test-add-reg-to-mem:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var
     68/push 0/imm32/no-register
@@ -11197,6 +11234,7 @@ test-add-mem-to-reg:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11260,6 +11298,7 @@ test-add-literal-to-eax:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11327,6 +11366,7 @@ test-add-literal-to-reg:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var in ecx
     68/push "ecx"/imm32/register
@@ -11394,6 +11434,7 @@ test-add-literal-to-mem:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var
     68/push 0/imm32/no-register
@@ -11461,6 +11502,7 @@ test-compare-mem-with-reg:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var2/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11524,6 +11566,7 @@ test-compare-reg-with-mem:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11587,6 +11630,7 @@ test-compare-mem-with-literal:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var
     68/push 0/imm32/no-register
@@ -11654,6 +11698,7 @@ test-compare-eax-with-literal:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var in eax
     68/push "eax"/imm32/register
@@ -11721,6 +11766,7 @@ test-compare-reg-with-literal:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-var1/ecx: var in ecx
     68/push "ecx"/imm32/register
@@ -11803,6 +11849,7 @@ test-emit-subx-stmt-function-call:
     # var type/ecx: (handle tree type-id) = int
     68/push 0/imm32/right/null
     68/push 1/imm32/left/int
+    68/push 1/imm32/is-atom
     89/<- %ecx 4/r32/esp
     # var var-foo/ecx: var
     68/push 0/imm32/no-register
