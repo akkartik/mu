@@ -243,7 +243,11 @@
 Program:
 _Program-functions:  # (handle function)
   0/imm32
+_Program-functions-payload:
+  0/imm32
 _Program-types:  # (handle typeinfo)
+  0/imm32
+_Program-types->payload:
   0/imm32
 
 # Some constants for simulating the data structures described above.
@@ -259,41 +263,39 @@ _Program-types:  # (handle typeinfo)
 
 Function-name:  # (handle array byte)
   0/imm32
-_Function-unused:
-  4/imm32
 Function-inouts:  # (handle list var)
-  8/imm32
+  0x8/imm32
 Function-outputs:  # (handle list var)
-  0xc/imm32
-Function-body:  # (handle block)
   0x10/imm32
+Function-body:  # (handle block)
+  0x18/imm32
 Function-next:  # (handle function)
-  0x14/imm32
+  0x20/imm32
 Function-size:  # (addr int)
-  0x18/imm32/24
+  0x28/imm32/24
 
 Primitive-name:  # (handle array byte)
   0/imm32
 Primitive-inouts:  # (handle list var)
-  4/imm32
-Primitive-outputs:  # (handle list var)
   8/imm32
-Primitive-subx-name:  # (handle array byte)
-  0xc/imm32
-Primitive-subx-rm32:  # enum arg-location
+Primitive-outputs:  # (handle list var)
   0x10/imm32
-Primitive-subx-r32:  # enum arg-location
-  0x14/imm32
-Primitive-subx-imm32:  # enum arg-location
+Primitive-subx-name:  # (handle array byte)
   0x18/imm32
-Primitive-subx-disp32:  # enum arg-location  -- only for branches
-  0x1c/imm32
-Primitive-output-is-write-only:  # boolean
+Primitive-subx-rm32:  # enum arg-location
   0x20/imm32
-Primitive-next:  # (handle function)
+Primitive-subx-r32:  # enum arg-location
   0x24/imm32
+Primitive-subx-imm32:  # enum arg-location
+  0x28/imm32
+Primitive-subx-disp32:  # enum arg-location  -- only for branches
+  0x2c/imm32
+Primitive-output-is-write-only:  # boolean
+  0x30/imm32
+Primitive-next:  # (handle function)
+  0x34/imm32
 Primitive-size:  # (addr int)
-  0x28/imm32/36
+  0x3c/imm32/36
 
 Stmt-tag:  # int
   0/imm32
@@ -301,14 +303,14 @@ Stmt-tag:  # int
 Block-stmts:  # (handle list stmt)
   4/imm32
 Block-var:  # (handle var)
-  8/imm32
+  0xc/imm32
 
 Stmt1-operation:  # (handle array byte)
   4/imm32
 Stmt1-inouts:  # (handle stmt-var)
-  8/imm32
-Stmt1-outputs:  # (handle stmt-var)
   0xc/imm32
+Stmt1-outputs:  # (handle stmt-var)
+  0x14/imm32
 
 Vardef-var:  # (handle var)
   4/imm32
@@ -316,27 +318,29 @@ Vardef-var:  # (handle var)
 Regvardef-operation:  # (handle array byte)
   4/imm32
 Regvardef-inouts:  # (handle stmt-var)
-  8/imm32
-Regvardef-outputs:  # (handle stmt-var)  # will have exactly one element
   0xc/imm32
+Regvardef-outputs:  # (handle stmt-var)  # will have exactly one element
+  0x14/imm32
 
 Stmt-size:  # (addr int)
-  0x10/imm32
+  0x1c/imm32
 
 Var-name:  # (handle array byte)
   0/imm32
 Var-type:  # (handle tree type-id)
-  4/imm32
-Var-block-depth:  # int -- not available until code-generation time
   8/imm32
-Var-offset:  # int -- not available until code-generation time
-  0xc/imm32
-Var-register:  # (handle array byte) -- name of a register
+Var-block-depth:  # int -- not available until code-generation time
   0x10/imm32
-Var-size:  # (addr int)
+Var-offset:  # int -- not available until code-generation time
   0x14/imm32
+Var-register:  # (handle array byte) -- name of a register
+  0x18/imm32
+Var-size:  # (addr int)
+  0x20/imm32
 
-Any-register:  # wildcard
+Any-register:  # (handle array byte)
+  # alloc-id
+  0x11/imm32
   # size
   1/imm32
   # data
@@ -345,19 +349,19 @@ Any-register:  # wildcard
 List-value:
   0/imm32
 List-next:  # (handle list _)
-  4/imm32
-List-size:  # (addr int)
   8/imm32
+List-size:  # (addr int)
+  0x10/imm32
 
 # A stmt-var is like a list of vars with call-site specific metadata
 Stmt-var-value:  # (handle var)
   0/imm32
 Stmt-var-next:  # (handle stmt-var)
-  4/imm32
-Stmt-var-is-deref:  # boolean
   8/imm32
+Stmt-var-is-deref:  # boolean
+  0x10/imm32
 Stmt-var-size:  # (addr int)
-  0xc/imm32
+  0x14/imm32
 
 # Types are expressed as trees (s-expressions) of type-ids (ints).
 # However, there's no need for singletons, so we can assume (int) == int
@@ -373,10 +377,10 @@ Tree-value:  # type-id
 Tree-left:  # (addr tree type-id)
   4/imm32
 Tree-right:  # (addr tree type-id)
-  8/imm32
+  0xc/imm32
 #
 Tree-size:  # (addr int)
-  0xc/imm32
+  0x14/imm32
 
 # Types
 
@@ -481,7 +485,9 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
     c7 0/subop/copy *Next-block-index 1/imm32
     c7 0/subop/copy *Type-id 0x1c/imm32  # stream-write
     c7 0/subop/copy *_Program-functions 0/imm32
+    c7 0/subop/copy *_Program-functions-payload 0/imm32
     c7 0/subop/copy *_Program-types 0/imm32
+    c7 0/subop/copy *_Program-types->payload 0/imm32
     #
     (parse-mu *(ebp+8))
     (populate-mu-type-sizes)
@@ -3796,7 +3802,6 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     0f 85/jump-if-!= $parse-type:end/disp32
     # var result/edx: (handle tree type-id)
     (allocate *(ebp+8) *Tree-size)  # => eax
-$aa-alloc:
     89/<- %edx 0/r32/eax
     {
       # if (s != "(") break
