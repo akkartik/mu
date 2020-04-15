@@ -243,7 +243,7 @@
 Program:
 _Program-functions:  # (handle function)
   0/imm32
-_Program-functions-payload:
+_Program-functions->payload:
   0/imm32
 _Program-types:  # (handle typeinfo)
   0/imm32
@@ -485,7 +485,7 @@ convert-mu:  # in: (addr buffered-file), out: (addr buffered-file)
     c7 0/subop/copy *Next-block-index 1/imm32
     c7 0/subop/copy *Type-id 0x1c/imm32  # stream-write
     c7 0/subop/copy *_Program-functions 0/imm32
-    c7 0/subop/copy *_Program-functions-payload 0/imm32
+    c7 0/subop/copy *_Program-functions->payload 0/imm32
     c7 0/subop/copy *_Program-types 0/imm32
     c7 0/subop/copy *_Program-types->payload 0/imm32
     #
@@ -3181,9 +3181,9 @@ parse-mu:  # in: (addr buffered-file)
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # var curr-function/edi: (addr (handle function))
+    # var curr-function/edi: (addr handle function)
     bf/copy-to-edi _Program-functions/imm32
-    # var curr-type/esi: (addr (handle typeinfo))
+    # var curr-type/esi: (addr handle typeinfo)
     be/copy-to-esi _Program-types/imm32
     # var vars/ebx: (stack (addr var) 256)
     81 5/subop/subtract %esp 0x400/imm32
@@ -3222,15 +3222,32 @@ $parse-mu:fn:
         (slice-equal? %edx "fn")
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= break/disp32
-        # var new-function/eax: (handle function) = populate-mu-function(line, in, vars)
-        (allocate Heap *Function-size)  # => eax
+        # spill esi
+        56/push-esi
+        # var new-function/esi: (handle function)
+        68/push 0/imm32
+        68/push 0/imm32
+        89/<- %esi 4/r32/esp
+        # populate-mu-function(line, in, vars, new-function)
+        (allocate Heap *Function-size %esi)
         (clear-stack %ebx)
-        (populate-mu-function-header %ecx %eax %ebx)
-        (populate-mu-function-body *(ebp+8) %eax %ebx)
+        (populate-mu-function-header %ecx %esi %ebx)
+        (populate-mu-function-body *(ebp+8) %esi %ebx)
         # *curr-function = new-function
+        8b/-> *esi 0/r32/eax
         89/<- *edi 0/r32/eax
+        8b/-> *(esi+4) 0/r32/eax
+        89/<- *(edi+4) 0/r32/eax
         # curr-function = &new-function->next
-        8d/address-> *(eax+0x14) 7/r32/edi  # Function-next
+        # . var tmp/eax: (addr function) = lookup(new-function)
+        (lookup *esi *(esi+4))  # => eax
+        # . curr-function = &tmp->next
+        8d/copy-address *(eax+0x28) 7/r32/edi  # Function-next
+        # reclaim new-function
+        81 0/subop/add %esp 8/imm32
+        # restore esi
+        5e/pop-to-esi
+        #
         e9/jump $parse-mu:line-loop/disp32
       }
       # if (slice-equal?(word-slice, "type")) parse a type (struct/record) definition
@@ -6773,8 +6790,9 @@ emit-subx:  # out: (addr buffered-file)
     57/push-edi
     # edi = out
     8b/-> *(ebp+8) 7/r32/edi
-    # var curr/ecx: (handle function) = *Program->functions
-    8b/-> *_Program-functions 1/r32/ecx
+    # var curr/ecx: (addr function) = *Program->functions
+    (lookup *_Program-functions *_Program-functions->payload)  # => eax
+    89/<- %ecx 0/r32/eax
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
