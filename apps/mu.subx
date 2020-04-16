@@ -3183,8 +3183,6 @@ parse-mu:  # in: (addr buffered-file)
     89/<- %edx 4/r32/esp
     # var curr-function/edi: (addr handle function)
     bf/copy-to-edi _Program-functions/imm32
-    # var curr-type/esi: (addr handle typeinfo)
-    be/copy-to-esi _Program-types/imm32
     # var vars/ebx: (stack (addr var) 256)
     81 5/subop/subtract %esp 0x400/imm32
     68/push 0x400/imm32/size
@@ -3222,8 +3220,6 @@ $parse-mu:fn:
         (slice-equal? %edx "fn")
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= break/disp32
-        # spill esi
-        56/push-esi
         # var new-function/esi: (handle function)
         68/push 0/imm32
         68/push 0/imm32
@@ -3245,8 +3241,6 @@ $parse-mu:fn:
         8d/copy-address *(eax+0x28) 7/r32/edi  # Function-next
         # reclaim new-function
         81 0/subop/add %esp 8/imm32
-        # restore esi
-        5e/pop-to-esi
         #
         e9/jump $parse-mu:line-loop/disp32
       }
