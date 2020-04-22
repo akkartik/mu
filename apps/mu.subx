@@ -3217,7 +3217,6 @@ $parse-mu:fn:
         0f 84/jump-if-= break/disp32
         # var new-function/eax: (handle function) = populate-mu-function(line, in, vars)
         (allocate Heap *Function-size)  # => eax
-        (zero-out %eax *Function-size)
         (clear-stack %ebx)
         (populate-mu-function-header %ecx %eax %ebx)
         (populate-mu-function-body *(ebp+8) %eax %ebx)
@@ -3796,7 +3795,6 @@ parse-type:  # ad: (address allocation-descriptor), in: (addr stream byte) -> re
     0f 85/jump-if-!= $parse-type:end/disp32
     # var result/edx: (handle tree type-id)
     (allocate *(ebp+8) *Tree-size)  # => eax
-    (zero-out %eax *Tree-size)
 $aa-alloc:
     89/<- %edx 0/r32/eax
     {
@@ -3890,7 +3888,6 @@ parse-type-tree:  # ad: (address allocation-descriptor), in: (addr stream byte) 
     89/<- %ecx 0/r32/eax
     # var result/edx: (handle tree type-id)
     (allocate *(ebp+8) *Tree-size)  # => eax
-    (zero-out %eax *Tree-size)
     89/<- %edx 0/r32/eax
     # result->left = tmp2
     89/<- *(edx+4) 1/r32/ecx  # Tree-left
@@ -4701,7 +4698,6 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     89/<- %edx 4/r32/esp
     # edi = result
     (allocate Heap *Stmt-size)  # => eax
-    (zero-out %eax *Stmt-size)
     89/<- %edi 0/r32/eax
     # set result->tag
     c7 0/subop/copy *edi 0/imm32/block  # Stmt-tag
@@ -5126,7 +5122,6 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn:
     ba/copy-to-edx 0/imm32/false
     # result/edi: (handle stmt)
     (allocate Heap *Stmt-size)  # => eax
-    (zero-out %eax *Stmt-size)
     89/<- %edi 0/r32/eax
     # result->tag = 1/stmt
     c7 0/subop/copy *edi 1/imm32/stmt1  # Stmt-tag
@@ -5646,7 +5641,6 @@ new-var:  # ad: (addr allocation-descriptor), name: (addr array byte) -> result/
     51/push-ecx
     #
     (allocate *(ebp+8) *Var-size)  # => eax
-    (zero-out %eax *Var-size)
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *eax 1/r32/ecx  # Var-name
 $new-var:end:
@@ -5669,7 +5663,7 @@ new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> 
     0f 84/jump-if-= $new-literal-integer:abort/disp32
     # var type/ecx: (handle tree type-id) = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
-    (zero-out %eax *Tree-size)  # default type is 'literal'
+    # nothing else to do; default type is 'literal'
     c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
     89/<- %ecx 0/r32/eax
     # result = new var(s)
@@ -5706,7 +5700,7 @@ new-literal:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/e
     89/<- %ecx 0/r32/eax
     # type = new type()
     (allocate *(ebp+8) *Tree-size)  # => eax
-    (zero-out %eax *Tree-size)  # default type is 'literal'
+    # nothing else to do; default type is 'literal'
     c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
     89/<- %edx 0/r32/eax
     # eax = result
@@ -5747,7 +5741,6 @@ new-block:  # ad: (addr allocation-descriptor), data: (handle list stmt) -> resu
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
-    (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 0/imm32/tag/block  # Stmt-tag
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Block-stmts
@@ -5767,7 +5760,6 @@ new-var-def:  # ad: (addr allocation-descriptor), var: (handle var) -> result/ea
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-size)  # => eax
-    (zero-out %eax *Stmt-size)
     c7 0/subop/copy *eax 2/imm32/tag/var-on-stack  # Stmt-tag
     # result->var = var
     8b/-> *(ebp+0xc) 1/r32/ecx
@@ -5792,7 +5784,6 @@ new-reg-var-def:  # ad: (addr allocation-descriptor), var: (handle var) -> resul
     # edi = result
     (allocate *(ebp+8) *Stmt-size)  # => eax
     89/<- %edi 0/r32/eax
-    (zero-out %edi *Stmt-size)
     # set tag
     c7 0/subop/copy *edi 3/imm32/tag/var-in-register  # Stmt-tag
     # set output
@@ -5816,7 +5807,6 @@ append-list:  # ad: (addr allocation-descriptor), value: _type, list: (handle li
     51/push-ecx
     #
     (allocate *(ebp+8) *List-size)  # => eax
-    (zero-out %eax *List-size)
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *eax 1/r32/ecx  # List-value
     # if (list == null) return result
@@ -5853,7 +5843,6 @@ append-stmt-var:  # ad: (addr allocation-descriptor), v: (handle var), vars: (ha
     51/push-ecx
     #
     (allocate *(ebp+8) *Stmt-var-size)  # => eax
-    (zero-out %eax *Stmt-var-size)
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *eax 1/r32/ecx  # Stmt-var-value
     8b/-> *(ebp+0x14) 1/r32/ecx
@@ -5976,7 +5965,6 @@ find-or-create-typeinfo:  # t: type-id -> result/eax: (handle typeinfo)
       75/jump-if-!= break/disp8
 $find-or-create-typeinfo:create:
       (allocate Heap *Typeinfo-size)  # => eax
-      (zero-out %eax *Typeinfo-size)
       # result->id = t
       8b/-> *(ebp+8) 1/r32/ecx
       89/<- *eax 1/r32/ecx  # Typeinfo-id
@@ -6048,7 +6036,6 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice) -> 
       75/jump-if-!= break/disp8
       # var type/eax: (handle tree type-id) = new var("dummy name", constant type, -1 offset)
       (allocate Heap *Tree-size)  # => eax
-      (zero-out %eax *Tree-size)
       c7 0/subop/copy *(eax+4) 6/imm32/constant  # Tree-value
       c7 0/subop/copy *(eax+8) 0/imm32  # Tree-right
       89/<- %ecx 0/r32/eax
@@ -6089,7 +6076,6 @@ find-or-create-typeinfo-fields:  # T: (handle typeinfo), f: (addr slice) -> resu
       81 7/subop/compare *esi 0/imm32  # output var
       75/jump-if-!= break/disp8
       (allocate Heap *Typeinfo-entry-size)  # => eax
-      (zero-out %eax *Typeinfo-entry-size)
       89/<- *esi 0/r32/eax
     }
     # eax = T->fields[f]->entry
