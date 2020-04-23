@@ -6084,52 +6084,52 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice), ou
     50/push-eax
     51/push-ecx
     52/push-edx
-    56/push-esi
     57/push-edi
-    # edi = out
-    8b/-> *(ebp+0x10) 7/r32/edi
-    # var tmp/ecx: (handle typeinfo-entry)
+    # var tmp-addr/edi: (addr typeinfo-entry) = find-or-create-typeinfo-fields(T, f)
+    # . var tmp/edi: (handle typeinfo-entry)
     68/push 0/imm32
     68/push 0/imm32
-    89/<- %ecx 4/r32/esp
-    # find-or-create-typeinfo-fields(T, f, tmp)
-    (find-or-create-typeinfo-fields *(ebp+8) *(ebp+0xc) %ecx)
+    89/<- %edi 4/r32/esp
+    # . find-or-create-typeinfo-fields(T, f, tmp)
+    (find-or-create-typeinfo-fields *(ebp+8) *(ebp+0xc) %edi)
+    # . tmp-addr = lookup(tmp)
+    (lookup *edi *(edi+4))  # => eax
+    89/<- %edi 0/r32/eax
     # if output var doesn't exist, create it
-    # var tmp-addr/esi: (addr typeinfo-entry)
-    (lookup *ecx *(ecx+4))  # => eax
-    89/<- %esi 0/r32/eax
     {
-      81 7/subop/compare *(esi+8) 0/imm32  # Typeinfo-entry-output-var
+      81 7/subop/compare *(edi+8) 0/imm32  # Typeinfo-entry-output-var
       75/jump-if-!= break/disp8
       # var type/ecx: (handle tree type-id)
       68/push 0/imm32
       68/push 0/imm32
       89/<- %ecx 4/r32/esp
-      # type = new var("dummy name", constant type, -1 offset)
+      # type = new constant type
       (allocate Heap *Tree-size %ecx)
-      # var type-addr/eax: (addr tree type-id)
       (lookup *ecx *(ecx+4))  # => eax
       c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
       c7 0/subop/copy *(eax+4) 6/imm32/constant  # Tree-value
       c7 0/subop/copy *(eax+8) 0/imm32  # Tree-left
       c7 0/subop/copy *(eax+0xc) 0/imm32  # Tree-right
       c7 0/subop/copy *(eax+0x10) 0/imm32  # Tree-right
-      # out = new var
-      (new-var Heap "field" %edi)
-      # var out-addr/eax: (addr var)
-      (lookup *edi *(edi+4))  # => eax
-      # out-addr->type = type
-      8b/-> *ecx 2/r32/edx
-      89/<- *(eax+8) 2/r32/edx  # Var-type
-      8b/-> *(ecx+4) 2/r32/edx
-      89/<- *(eax+0xc) 2/r32/edx  # Var-type
-      # out-addr->offset isn't filled out yet
-      c7 0/subop/copy *(eax+0x14) -1/imm32/uninitialized  # Var-offset
+      # out/edx = new var("dummy name", type, -1 offset)
+      8b/-> *(ebp+0x10) 2/r32/edx
+      (new-var Heap "field" %edx)
       # save out in typeinfo
-      8b/-> *edi 0/r32/eax
-      89/<- *(esi+0xc) 0/r32/eax  # Typeinfo-entry-output-var
-      8b/-> *(edi+4) 0/r32/eax
-      89/<- *(esi+0x10) 0/r32/eax  # Typeinfo-entry-output-var
+      8b/-> *edx 0/r32/eax
+      89/<- *(edi+0xc) 0/r32/eax  # Typeinfo-entry-output-var
+      8b/-> *(edx+4) 0/r32/eax
+      89/<- *(edi+0x10) 0/r32/eax  # Typeinfo-entry-output-var
+      # initialize out
+      # . var out-addr/edx: (addr var) = lookup(out)
+      (lookup *edx *(edx+4))  # => eax
+      89/<- %edx 0/r32/eax
+      # . out-addr->type = type
+      8b/-> *ecx 0/r32/eax
+      89/<- *(edx+8) 0/r32/eax  # Var-type
+      8b/-> *(ecx+4) 0/r32/eax
+      89/<- *(edx+0xc) 0/r32/eax  # Var-type
+      # . out-addr->offset isn't filled out yet
+      c7 0/subop/copy *(edx+0x14) -1/imm32/uninitialized  # Var-offset
       # reclaim type
       81 0/subop/add %esp 8/imm32
     }
@@ -6138,7 +6138,6 @@ $find-or-create-typeinfo-output-var:end:
     81 0/subop/add %esp 8/imm32
     # . restore registers
     5f/pop-to-edi
-    5e/pop-to-esi
     5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
