@@ -3203,7 +3203,7 @@ $parse-mu:line-loop:
 #?       # }}}
       (next-mu-token %ecx %edx)
       # if slice-empty?(word-slice) continue
-      (slice-empty? %edx)
+      (slice-empty? %edx)  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= loop/disp32
       # if (*word-slice->start == "#") continue
@@ -3217,7 +3217,7 @@ $parse-mu:line-loop:
       # if (slice-equal?(word-slice, "fn")) parse a function
       {
 $parse-mu:fn:
-        (slice-equal? %edx "fn")
+        (slice-equal? %edx "fn")  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= break/disp32
         # var new-function/esi: (handle function)
@@ -3226,9 +3226,11 @@ $parse-mu:fn:
         89/<- %esi 4/r32/esp
         # populate-mu-function(line, in, vars, new-function)
         (allocate Heap *Function-size %esi)
+        # var new-function-addr/eax: (addr function)
+        (lookup *esi *(esi+4))  # => eax
         (clear-stack %ebx)
-        (populate-mu-function-header %ecx %esi %ebx)
-        (populate-mu-function-body *(ebp+8) %esi %ebx)
+        (populate-mu-function-header %ecx %eax %ebx)
+        (populate-mu-function-body *(ebp+8) %eax %ebx)
         # *curr-function = new-function
         8b/-> *esi 0/r32/eax
         89/<- *edi 0/r32/eax
@@ -3247,7 +3249,7 @@ $parse-mu:fn:
       # if (slice-equal?(word-slice, "type")) parse a type (struct/record) definition
       {
 $parse-mu:type:
-        (slice-equal? %edx "type")
+        (slice-equal? %edx "type")  # => eax
         3d/compare-eax-and 0/imm32
         0f 84/jump-if-= break/disp32
         (next-mu-token %ecx %edx)
@@ -3313,7 +3315,7 @@ $parse-mu:error2:
 # ✓ fn foo x: int {
 # ✓ fn foo x: int {
 # ✓ fn foo x: int -> y/eax: int {
-populate-mu-function-header:  # first-line: (addr stream byte), out: (handle function), vars: (addr stack (handle var))
+populate-mu-function-header:  # first-line: (addr stream byte), out: (addr function), vars: (addr stack (handle var))
     # pseudocode:
     #   var name: slice
     #   next-mu-token(first-line, name)
@@ -4633,7 +4635,7 @@ test-is-identifier-hyphen:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-function-body:  # in: (addr buffered-file), out: (handle function), vars: (addr stack (handle var))
+populate-mu-function-body:  # in: (addr buffered-file), out: (addr function), vars: (addr stack (handle var))
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
