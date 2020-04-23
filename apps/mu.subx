@@ -6082,7 +6082,6 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice), ou
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    51/push-ecx
     52/push-edx
     57/push-edi
     # var tmp-addr/edi: (addr typeinfo-entry) = find-or-create-typeinfo-fields(T, f)
@@ -6099,18 +6098,6 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice), ou
     {
       81 7/subop/compare *(edi+8) 0/imm32  # Typeinfo-entry-output-var
       75/jump-if-!= break/disp8
-      # var type/ecx: (handle tree type-id)
-      68/push 0/imm32
-      68/push 0/imm32
-      89/<- %ecx 4/r32/esp
-      # type = new constant type
-      (allocate Heap *Tree-size %ecx)
-      (lookup *ecx *(ecx+4))  # => eax
-      c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
-      c7 0/subop/copy *(eax+4) 6/imm32/constant  # Tree-value
-      c7 0/subop/copy *(eax+8) 0/imm32  # Tree-left
-      c7 0/subop/copy *(eax+0xc) 0/imm32  # Tree-right
-      c7 0/subop/copy *(eax+0x10) 0/imm32  # Tree-right
       # out/edx = new var("dummy name", type, -1 offset)
       8b/-> *(ebp+0x10) 2/r32/edx
       (new-var Heap "field" %edx)
@@ -6123,15 +6110,17 @@ find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice), ou
       # . var out-addr/edx: (addr var) = lookup(out)
       (lookup *edx *(edx+4))  # => eax
       89/<- %edx 0/r32/eax
-      # . out-addr->type = type
-      8b/-> *ecx 0/r32/eax
-      89/<- *(edx+8) 0/r32/eax  # Var-type
-      8b/-> *(ecx+4) 0/r32/eax
-      89/<- *(edx+0xc) 0/r32/eax  # Var-type
+      # . out->type = new constant type
+      8d/copy-address *(edx+8) 0/r32/eax
+      (allocate Heap *Tree-size %eax)
+      (lookup *(edx+8) *(edx+0xc))  # => eax
+      c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
+      c7 0/subop/copy *(eax+4) 6/imm32/constant  # Tree-value
+      c7 0/subop/copy *(eax+8) 0/imm32  # Tree-left
+      c7 0/subop/copy *(eax+0xc) 0/imm32  # Tree-right
+      c7 0/subop/copy *(eax+0x10) 0/imm32  # Tree-right
       # . out-addr->offset isn't filled out yet
       c7 0/subop/copy *(edx+0x14) -1/imm32/uninitialized  # Var-offset
-      # reclaim type
-      81 0/subop/add %esp 8/imm32
     }
 $find-or-create-typeinfo-output-var:end:
     # . reclaim locals
@@ -6139,7 +6128,6 @@ $find-or-create-typeinfo-output-var:end:
     # . restore registers
     5f/pop-to-edi
     5a/pop-to-edx
-    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
