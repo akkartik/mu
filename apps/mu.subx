@@ -5647,19 +5647,25 @@ test-parse-mu-stmt-with-comma:
     5d/pop-to-ebp
     c3/return
 
-new-var:  # ad: (addr allocation-descriptor), name: (addr array byte) -> result/eax: (handle var)
+new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
+    # ecx = out
+    8b/-> *(ebp+0x10) 1/r32/ecx
     #
-    (allocate *(ebp+8) *Var-size)  # => eax
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *eax 1/r32/ecx  # Var-name
+    (allocate *(ebp+8) *Var-size %ecx)
+    # var out-addr/eax: (addr var)
+    (lookup *ecx *(ecx+4))  # => eax
+    # out-addr->name = copy-array(name)
+    (copy-array *(ebp+8) *(ebp+0xc) %eax)  # Var-name
 $new-var:end:
     # . restore registers
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6070,69 +6076,110 @@ $find-typeinfo:end:
     5d/pop-to-ebp
     c3/return
 
-find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice) -> result/eax: (handle var)
+find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
+    52/push-edx
     56/push-esi
-    # esi = find-or-create-typeinfo-fields(T, f)
-    (find-or-create-typeinfo-fields *(ebp+8) *(ebp+0xc))  # => eax
-    89/<- %esi 0/r32/eax
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+0x10) 7/r32/edi
+    # var tmp/ecx: (handle typeinfo-entry)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # find-or-create-typeinfo-fields(T, f, tmp)
+    (find-or-create-typeinfo-fields *(ebp+8) *(ebp+0xc) %ecx)
     # if output var doesn't exist, create it
+    # var tmp-addr/esi: (addr typeinfo-entry)
+    (lookup *ecx *(ecx+4))  # => eax
+    89/<- %esi 0/r32/eax
     {
       81 7/subop/compare *(esi+8) 0/imm32  # Typeinfo-entry-output-var
       75/jump-if-!= break/disp8
-      # var type/eax: (handle tree type-id) = new var("dummy name", constant type, -1 offset)
-      (allocate Heap *Tree-size)  # => eax
+      # var type/ecx: (handle tree type-id)
+      68/push 0/imm32
+      68/push 0/imm32
+      89/<- %ecx 4/r32/esp
+      # type = new var("dummy name", constant type, -1 offset)
+      (allocate Heap *Tree-size %ecx)
+      # var type-addr/eax: (addr tree type-id)
+      (lookup *ecx *(ecx+4))  # => eax
+      c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
       c7 0/subop/copy *(eax+4) 6/imm32/constant  # Tree-value
-      c7 0/subop/copy *(eax+8) 0/imm32  # Tree-right
-      89/<- %ecx 0/r32/eax
-      # eax = result
-      (new-var Heap "field")  # => eax
-      # result->type = type
-      89/<- *(eax+4) 1/r32/ecx  # Var-type
-      # result->offset isn't filled out yet
-      c7 0/subop/copy *(eax+0xc) -1/imm32/uninitialized  # Var-offset
-      # save result as output var
-      89/<- *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
+      c7 0/subop/copy *(eax+8) 0/imm32  # Tree-left
+      c7 0/subop/copy *(eax+0xc) 0/imm32  # Tree-right
+      c7 0/subop/copy *(eax+0x10) 0/imm32  # Tree-right
+      # out = new var
+      (new-var Heap "field" %edi)
+      # var out-addr/eax: (addr var)
+      (lookup *edi *(edi+4))  # => eax
+      # out-addr->type = type
+      8b/-> *ecx 2/r32/edx
+      89/<- *(eax+8) 2/r32/edx  # Var-type
+      8b/-> *(ecx+4) 2/r32/edx
+      89/<- *(eax+0xc) 2/r32/edx  # Var-type
+      # out-addr->offset isn't filled out yet
+      c7 0/subop/copy *(eax+0x14) -1/imm32/uninitialized  # Var-offset
+      # save out in typeinfo
+      8b/-> *edi 0/r32/eax
+      89/<- *(esi+0xc) 0/r32/eax  # Typeinfo-entry-output-var
+      8b/-> *(edi+4) 0/r32/eax
+      89/<- *(esi+0x10) 0/r32/eax  # Typeinfo-entry-output-var
+      # reclaim type
+      81 0/subop/add %esp 8/imm32
     }
-    # return the output var
-    8b/-> *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
 $find-or-create-typeinfo-output-var:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
+    5f/pop-to-edi
     5e/pop-to-esi
+    5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
     c3/return
 
-find-or-create-typeinfo-fields:  # T: (handle typeinfo), f: (addr slice) -> result/eax: (handle typeinfo-entry)
+find-or-create-typeinfo-fields:  # T: (addr typeinfo), f: (addr slice), out: (addr handle typeinfo-entry)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     56/push-esi
+    57/push-edi
     # esi = T->fields
     8b/-> *(ebp+8) 6/r32/esi
     8b/-> *(esi+4) 6/r32/esi  # Typeinfo-fields
-    # esi = get-or-insert(T->fields, f)
+    # var src/esi: (addr handle typeinfo-entry) = get-or-insert-slice(T->fields, f)
     (get-or-insert-slice %esi *(ebp+0xc) *Typeinfo-fields-row-size Heap)  # => eax
     89/<- %esi 0/r32/eax
-    # if typeinfo-entry doesn't exist, allocate it
+    # if src doesn't exist, allocate it
     {
-      81 7/subop/compare *esi 0/imm32  # output var
+      81 7/subop/compare *esi 0/imm32
       75/jump-if-!= break/disp8
-      (allocate Heap *Typeinfo-entry-size)  # => eax
-      89/<- *esi 0/r32/eax
+      (allocate Heap *Typeinfo-entry-size *(ebp+0x10))
+      eb/jump $find-or-create-typeinfo-fields:end/disp8
     }
-    # eax = T->fields[f]->entry
+    # otherwise copy it
+    # . edi = out
+    8b/-> *(ebp+0x10) 7/r32/edi
     8b/-> *esi 0/r32/eax
+    89/<- *edi 0/r32/eax
+    8b/-> *(esi+4) 0/r32/eax
+    89/<- *(edi+4) 0/r32/eax
 $find-or-create-typeinfo-fields:end:
     # . restore registers
+    5f/pop-to-edi
     5e/pop-to-esi
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
