@@ -3888,43 +3888,54 @@ $parse-type:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte) -> result/eax: (handle tree type-id)
+parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id)
     # pseudocode:
     #   var tmp: (handle tree type-id) = parse-type(ad, in)
     #   if tmp == 0
     #     return 0
-    #   result = allocate(Tree)
-    #   zero-out(result, *Tree-size)
-    #   result->left = tmp
-    #   result->right = parse-type-tree(ad, in)
+    #   out = allocate(Tree)
+    #   out->left = tmp
+    #   out->right = parse-type-tree(ad, in)
     #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
-    # var tmp/eax: (handle tree type-id) = parse-type(ad, in)
-    (parse-type *(ebp+8) *(ebp+0xc))
-    # if (tmp == 0) return tmp
-    3d/compare-eax-and 0/imm32
+    #
+    (zero-out *(ebp+0x10) *Handle-size)
+    # var tmp/ecx: (handle tree type-id)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # tmp = parse-type(ad, in)
+    (parse-type *(ebp+8) *(ebp+0xc) %ecx)
+    # if (tmp == 0) return
+    81 7/subop/compare *ecx 0/imm32
     74/jump-if-= $parse-type-tree:end/disp8
-    # var tmp2/ecx = tmp
-    89/<- %ecx 0/r32/eax
-    # var result/edx: (handle tree type-id)
-    (allocate *(ebp+8) *Tree-size)  # => eax
+    # out = new tree
+    (allocate *(ebp+8) *Tree-size *(ebp+0x10))
+    # var out-addr/edx: (addr tree) = lookup(out)
+    8b/-> *(ebp+0x10) 2/r32/edx
+    (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
-    # result->left = tmp2
-    89/<- *(edx+4) 1/r32/ecx  # Tree-left
-    # result->right = parse-type-tree(ad, in)
-    (parse-type-tree *(ebp+8) *(ebp+0xc))
-    89/<- *(edx+8) 0/r32/eax  # Tree-right
-$parse-type-tree:return-edx:
-    89/<- %eax 2/r32/edx
+    # out->left = tmp
+    8b/-> *ecx 0/r32/eax
+    89/<- *(edx+4) 0/r32/eax  # Tree-left
+    8b/-> *(ecx+4) 0/r32/eax
+    89/<- *(edx+8) 0/r32/eax  # Tree-left
+    # out->right = parse-type-tree(ad, in)
+    8d/copy-address *(edx+0xc) 0/r32/eax  # Tree-right
+    (parse-type-tree *(ebp+8) *(ebp+0xc) %eax)
 $parse-type-tree:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
