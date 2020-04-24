@@ -5260,8 +5260,8 @@ add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byt
     ba/copy-to-edx 0/imm32/false
 $add-operation-and-inputs-to-stmt:read-operation:
     (next-mu-token *(ebp+0xc) %ecx)
-    (slice-to-string Heap %ecx)  # => eax
-    89/<- *(edi+4) 0/r32/eax  # Stmt1-operation or Regvardef-operation
+    8d/copy-address *(edi+4) 0/r32/eax  # Stmt1-operation or Regvardef-operationStmt1-operation or Regvardef-operation
+    (slice-to-string Heap %ecx %eax)
     # var is-get?/ebx: boolean = (name == "get")
     (slice-equal? %ecx "get")  # => eax
     89/<- %ebx 0/r32/eax
