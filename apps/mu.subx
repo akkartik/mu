@@ -3737,13 +3737,8 @@ $parse-var-with-type:write-register:
       (slice-to-string Heap %ecx %eax)
     }
 $parse-var-with-type:save-type:
-    # TODO: handle from here
-    (parse-type Heap *(ebp+0xc))  # => eax
-#?     (write-buffered Stderr "saving to var ")
-#?     (print-int32-buffered Stderr %edi)
-#?     (write-buffered Stderr Newline)
-#?     (flush Stderr)
-    89/<- *(edi+8) 0/r32/eax  # Var-type
+    8d/copy-address *(edi+8) 0/r32/eax  # Var-type
+    (parse-type Heap *(ebp+0xc) %eax)
 $parse-var-with-type:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
