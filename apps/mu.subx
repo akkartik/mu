@@ -3773,7 +3773,7 @@ $parse-var-with-type:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte) -> result/eax: (handle tree type-id)
+parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (addr handle tree type-id)
     # pseudocode:
     #   var s: slice = next-mu-token(in)
     #   assert s != ""
@@ -3783,8 +3783,8 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte) -> resul
     #   if s == ")"
     #     return 0
     #   result = allocate(Tree)
-    #   zero-out(result, *Tree-size)
     #   if s != "("
+    #     HACK: if s is an int, parse and return it
     #     result->left-is-atom? = true
     #     result->value = pos-or-insert-slice(Type-id, s)
     #     return
@@ -3795,8 +3795,11 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte) -> resul
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
+    # clear out
+    (zero-out *(ebp+0x10) *Handle-size)
     # var s/ecx: slice
     68/push 0/imm32
     68/push 0/imm32
@@ -3808,32 +3811,32 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte) -> resul
 #?     (write-buffered Stderr "$\n")
 #?     (flush Stderr)
     # assert s != ""
-    (slice-equal? %ecx "")
+    (slice-equal? %ecx "")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $parse-type:abort/disp32
     # assert s != "{"
-    (slice-equal? %ecx "{")
+    (slice-equal? %ecx "{")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $parse-type:abort/disp32
     # assert s != "}"
-    (slice-equal? %ecx "}")
+    (slice-equal? %ecx "}")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $parse-type:abort/disp32
     # assert s != "->"
-    (slice-equal? %ecx "->")
+    (slice-equal? %ecx "->")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $parse-type:abort/disp32
     # if (s == ")") return 0
-    (slice-equal? %ecx ")")
+    (slice-equal? %ecx ")")  # => eax
     3d/compare-eax-and 0/imm32/false
-    b8/copy-to-eax 0/imm32
     0f 85/jump-if-!= $parse-type:end/disp32
-    # var result/edx: (handle tree type-id)
-    (allocate *(ebp+8) *Tree-size)  # => eax
-    89/<- %edx 0/r32/eax
+    # edx = out
+    8b/-> *(ebp+0x10) 2/r32/edx
+    # out = new tree
+    (allocate *(ebp+8) *Tree-size %edx)
     {
       # if (s != "(") break
-      (slice-equal? %ecx "(")
+      (slice-equal? %ecx "(")  # => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       # EGREGIOUS HACK for static array sizes: if s is a number, parse it
@@ -3843,43 +3846,31 @@ $parse-type:int:
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
         (parse-hex-int-from-slice %ecx)  # => eax
-        89/<- *(edx+4) 0/r32/eax  # Tree-left
-        e9/jump $parse-type:return-edx/disp32
+        89/<- *(edx+4) 0/r32/eax  # Tree-value
+        e9/jump $parse-type:end/disp32
       }
 $parse-type:atom:
       # result->left-is-atom? = true
       c7 0/subop/copy *edx 1/imm32/true  # Tree-is-atom
       # result->value = pos-or-insert-slice(Type-id, s)
       (pos-or-insert-slice Type-id %ecx)  # => eax
-#?       (write-buffered Stderr "=> {")
-#?       (print-int32-buffered Stderr %eax)
-#?       (write-buffered Stderr ", 0}\n")
-#?       (flush Stderr)
       89/<- *(edx+4) 0/r32/eax  # Tree-value
-      e9/jump $parse-type:return-edx/disp32
+      e9/jump $parse-type:end/disp32
     }
 $parse-type:non-atom:
     # otherwise s == "("
     # result->left = parse-type(ad, in)
-    (parse-type *(ebp+8) *(ebp+0xc))
-#?     (write-buffered Stderr "=> {")
-#?     (print-int32-buffered Stderr %eax)
-    89/<- *(edx+4) 0/r32/eax  # Tree-left
+    (parse-type *(ebp+8) *(ebp+0xc) *(edx+4))  # Tree-left
     # result->right = parse-type-tree(ad, in)
-    (parse-type-tree *(ebp+8) *(ebp+0xc))
-#?     (write-buffered Stderr Space)
-#?     (print-int32-buffered Stderr %eax)
-#?     (write-buffered Stderr "}\n")
-#?     (flush Stderr)
+    (parse-type-tree *(ebp+8) *(ebp+0xc) *(edx+0xc))  # Tree-right
     89/<- *(edx+8) 0/r32/eax  # Tree-right
-$parse-type:return-edx:
-    89/<- %eax 2/r32/edx
 $parse-type:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
