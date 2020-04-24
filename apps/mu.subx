@@ -3386,8 +3386,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
     # save function name
-    (slice-to-string Heap %ecx)  # => eax
-    89/<- *edi 0/r32/eax  # Function-name
+    (slice-to-string Heap %ecx %edi)  # Function-name => eax
     # save function inouts
     {
 $populate-mu-function-header:check-for-inout:
@@ -3732,11 +3731,12 @@ $parse-var-with-type:write-register:
       (slice-empty? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
-      # TODO: handle from here
-      (slice-to-string Heap %ecx)
-      89/<- *(edi+0x18) 0/r32/eax  # Var-register
+      # out->register = slice-to-string(s)
+      8d/copy-address *(edi+0x18) 0/r32/eax  # Var-register
+      (slice-to-string Heap %ecx %eax)
     }
 $parse-var-with-type:save-type:
+    # TODO: handle from here
     (parse-type Heap *(ebp+0xc))  # => eax
 #?     (write-buffered Stderr "saving to var ")
 #?     (print-int32-buffered Stderr %edi)
