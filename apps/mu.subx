@@ -264,7 +264,7 @@ _Program-types->payload:
 Function-name:  # (handle array byte)
   0/imm32
 Function-inouts:  # (handle list var)
-  0x8/imm32
+  8/imm32
 Function-outputs:  # (handle list var)
   0x10/imm32
 Function-body:  # (handle block)
@@ -384,6 +384,7 @@ Tree-size:  # (addr int)
 
 # Types
 
+# TODO: heap allocations here can't be reclaimed
 Type-id:  # (stream (addr array byte))
   0x1c/imm32/write
   0/imm32/read
@@ -4108,7 +4109,7 @@ $next-mu-token:end:
     5d/pop-to-ebp
     c3/return
 
-pos-or-insert-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/eax: int
+pos-or-insert-slice:  # arr: (addr stream (addr array byte)), s: (addr slice) -> index/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -4117,10 +4118,18 @@ pos-or-insert-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) 
     3d/compare-eax-and -1/imm32
     75/jump-if-!= $pos-or-insert-slice:end/disp8
 $pos-or-insert-slice:insert:
-    (slice-to-string Heap *(ebp+0xc))  # => eax
+    # var s2/eax: (handle array byte)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %eax 4/r32/esp
+    (slice-to-string Heap *(ebp+0xc) %eax)
+    # throw away alloc-id
+    (lookup *eax *(eax+4))  # => eax
     (write-int *(ebp+8) %eax)
     (pos-slice *(ebp+8) *(ebp+0xc))  # => eax
 $pos-or-insert-slice:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4128,7 +4137,7 @@ $pos-or-insert-slice:end:
 
 # return the index in an array of strings matching 's', -1 if not found
 # index is denominated in elements, not bytes
-pos-slice:  # arr: (addr stream (handle array byte)), s: (addr slice) -> index/eax: int
+pos-slice:  # arr: (addr stream (addr array byte)), s: (addr slice) -> index/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
