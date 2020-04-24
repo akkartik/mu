@@ -3255,10 +3255,21 @@ $parse-mu:type:
         (next-mu-token %ecx %edx)
         # var type-id/eax: int
         (pos-or-insert-slice Type-id %edx)  # => eax
-        # var new-type/eax: (handle typeinfo)
-        (find-or-create-typeinfo %eax)  # => eax
+        # spill
+        51/push-ecx
+        # var new-type/ecx: (handle typeinfo)
+        68/push 0/imm32
+        68/push 0/imm32
+        89/<- %ecx 4/r32/esp
+        (find-or-create-typeinfo %eax %ecx)
+        #
+        (lookup *ecx *(ecx+4))  # => eax
         # TODO: ensure that 'line' has nothing else but '{'
         (populate-mu-type *(ebp+8) %eax)  # => eax
+        # reclaim new-type
+        81 0/subop/add %esp 8/imm32
+        # restore
+        59/pop-to-ecx
         e9/jump $parse-mu:line-loop/disp32
       }
       # otherwise abort
@@ -6172,7 +6183,7 @@ $find-or-create-typeinfo-fields:end:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-type:  # in: (addr stream byte), t: (handle typeinfo)
+populate-mu-type:  # in: (addr stream byte), t: (addr typeinfo)
     # pseudocode:
     #   var line: (stream byte 512)
     #   curr-index = 0
