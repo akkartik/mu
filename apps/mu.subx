@@ -3146,7 +3146,7 @@ parse-mu:  # in: (addr buffered-file)
     #       continue                                # end of line
     #     else if slice-equal?(word-slice, "fn")
     #       var new-function: (handle function) = allocate(function)
-    #       var vars: (stack (addr var) 256)
+    #       var vars: (stack (handle var) 256)
     #       populate-mu-function-header(line, new-function, vars)
     #       populate-mu-function-body(in, new-function, vars)
     #       assert(vars->top == 0)
@@ -3183,9 +3183,9 @@ parse-mu:  # in: (addr buffered-file)
     89/<- %edx 4/r32/esp
     # var curr-function/edi: (addr handle function)
     bf/copy-to-edi _Program-functions/imm32
-    # var vars/ebx: (stack (addr var) 256)
-    81 5/subop/subtract %esp 0x400/imm32
-    68/push 0x400/imm32/size
+    # var vars/ebx: (stack (handle var) 256)
+    81 5/subop/subtract %esp 0x800/imm32
+    68/push 0x800/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     {
@@ -3515,9 +3515,9 @@ test-function-header-with-arg:
     2b/subtract *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
-    # var vars/ebx: (stack (addr var) 16)
-    81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/size
+    # var vars/ebx: (stack (handle var) 16)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
@@ -3549,9 +3549,9 @@ test-function-header-with-multiple-args:
     2b/subtract *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
-    # var vars/ebx: (stack (addr var) 16)
-    81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/size
+    # var vars/ebx: (stack (handle var) 16)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
@@ -3604,9 +3604,9 @@ test-function-with-multiple-args-and-outputs:
     2b/subtract *Function-size 4/r32/esp
     89/<- %ecx 4/r32/esp
     (zero-out %ecx *Function-size)
-    # var vars/ebx: (stack (addr var) 16)
-    81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/size
+    # var vars/ebx: (stack (handle var) 16)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/size
     68/push 0/imm32/top
     89/<- %ebx 4/r32/esp
     # convert
@@ -5068,9 +5068,9 @@ test-parse-mu-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n: int\n")  # caller has consumed the 'var'
-    # var vars/ecx: (stack (addr var) 4)
-    81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/size
+    # var vars/ecx: (stack (addr var) 16)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -5099,9 +5099,9 @@ test-parse-mu-reg-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n/eax: int <- copy 0\n")  # caller has consumed the 'var'
-    # var vars/ecx: (stack (addr var) 4)
-    81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/size
+    # var vars/ecx: (stack (addr var) 16)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -5593,9 +5593,9 @@ test-parse-mu-stmt:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "increment n\n")
-    # var vars/ecx: (stack (addr var) 4)
-    81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/size
+    # var vars/ecx: (stack (addr var) 16)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -5629,9 +5629,9 @@ test-parse-mu-stmt-with-comma:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "copy-to n, 3\n")
-    # var vars/ecx: (stack (addr var) 4)
-    81 5/subop/subtract %esp 0x10/imm32
-    68/push 0x10/imm32/size
+    # var vars/ecx: (stack (addr var) 16)
+    81 5/subop/subtract %esp 0x80/imm32
+    68/push 0x80/imm32/size
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
@@ -6905,8 +6905,8 @@ emit-subx-function:  # out: (addr buffered-file), f: (handle function)
     # ecx = f
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var vars/edx: (stack (addr var) 256)
-    81 5/subop/subtract %esp 0x400/imm32
-    68/push 0x400/imm32/size
+    81 5/subop/subtract %esp 0x800/imm32
+    68/push 0x800/imm32/size
     68/push 0/imm32/top
     89/<- %edx 4/r32/esp
     #
