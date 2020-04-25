@@ -5951,19 +5951,22 @@ $append-stmt-var:end:
     5d/pop-to-ebp
     c3/return
 
-append-to-block:  # ad: (addr allocation-descriptor), block: (handle block), x: (handle stmt)
+append-to-block:  # ad: (addr allocation-descriptor), block: (addr block), x: (handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     56/push-esi
     # esi = block
     8b/-> *(ebp+0xc) 6/r32/esi
-    (append-list *(ebp+8) *(ebp+0x10) *(esi+4))  # ad, x, Block-stmts
-    89/<- *(esi+4) 0/r32/eax  # Block-stmts
+    # block->stmts = append(x, block->stmts)
+    8d/copy-address *(esi+4) 0/r32/eax
+    (append-list *(ebp+8)  *(ebp+0x10) *(ebp+0x14)  *(esi+4) *(esi+8)  %eax)  # ad, x, x, Block-stmts, Block-stmts
 $append-to-block:end:
     # . restore registers
     5e/pop-to-esi
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
