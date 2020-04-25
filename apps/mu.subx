@@ -346,7 +346,7 @@ Any-register:  # (handle array byte)
   # data
   2a/asterisk
 
-List-value:
+List-value:  # (handle _)
   0/imm32
 List-next:  # (handle list _)
   8/imm32
@@ -3343,7 +3343,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     #     var v: (handle var) = parse-var-with-type(name, first-line)
     #     assert(v->register == null)
     #     # v->block-depth is implicitly 0
-    #     out->inouts = append(out->inouts, v)
+    #     out->inouts = append(v, out->inouts)
     #     push(vars, v)
     #   ## outputs
     #   while true
@@ -3352,7 +3352,7 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     #     assert(name not in '{' '}' '->')
     #     var v: (handle var) = parse-var-with-type(name, first-line)
     #     assert(v->register != null)
-    #     out->outputs = append(out->outputs, v)
+    #     out->outputs = append(v, out->outputs)
     #   done:
     #
     # . prologue
@@ -3370,6 +3370,10 @@ populate-mu-function-header:  # first-line: (addr stream byte), out: (addr funct
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
+    # var v/ebx: (handle var)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ebx 4/r32/esp
     # read function name
     (next-mu-token *(ebp+8) %ecx)
     # error checking
@@ -3404,17 +3408,17 @@ $populate-mu-function-header:check-for-inout:
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
-      # var v/ebx: (handle var) = parse-var-with-type(word-slice, first-line)
-      (parse-var-with-type %ecx *(ebp+8))  # => eax
-      89/<- %ebx 0/r32/eax
+      # v = parse-var-with-type(word-slice, first-line)
+      (parse-var-with-type %ecx *(ebp+8) %ebx)
       # assert(v->register == null)
       81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
       0f 85/jump-if-!= $populate-mu-function-header:error2/disp32
       # v->block-depth is implicitly 0
       #
-      # out->inouts = append(out->inouts, v)
-      (append-list Heap %ebx *(edi+8))  # Function-inouts => eax
-      89/<- *(edi+8) 0/r32/eax  # Function-inouts
+      # out->inouts = append(v, out->inouts)
+      8d/copy-address *(edi+8) 0/r32/eax  # Function-inouts
+      (append-list Heap  *ebx *(ebx+4)  *(edi+8) *(edi+0xc)  %eax)  # Function-inouts, Function-inouts
+      # HERE
       # push(vars, v)
       (push *(ebp+0x10) %ebx)
       #
@@ -3436,14 +3440,16 @@ $populate-mu-function-header:check-for-out:
       (slice-equal? %ecx "}")   # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= $populate-mu-function-header:error1/disp32
-      #
-      (parse-var-with-type %ecx *(ebp+8))  # => eax
+      # v = parse-var-with-type(word-slice, first-line)
+      (parse-var-with-type %ecx *(ebp+8) %ebx)
       89/<- %ebx 0/r32/eax
       # assert(var->register != null)
       81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
       0f 84/jump-if-= $populate-mu-function-header:error3/disp32
-      (append-list Heap %ebx *(edi+0xc))  # Function-outputs => eax
-      89/<- *(edi+0xc) 0/r32/eax  # Function-outputs
+      # out->outputs = append(v, out->outputs)
+      89/copy-address *(edi+0x10) 0/r32/eax  # Function-outputs
+      (append-list Heap  *ebx *(ebx+4)  *(edi+0x10) *(edi+0x14)  %eax)  # Function-outputs, Function-outputs
+      #
       e9/jump loop/disp32
     }
 $populate-mu-function-header:done:
@@ -5143,7 +5149,7 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn:
     #       if (name == '<-') break
     #       assert(is-identifier?(name))
     #       var v: (handle var) = lookup-or-define-var(name, vars, fn)  # regular stmts may define vars in fn outputs
-    #       result->outputs = append(result->outputs, v)
+    #       result->outputs = append(v, result->outputs)
     #   add-operation-and-inputs-to-stmt(result, line, vars)
     #
     # . prologue
@@ -5236,7 +5242,7 @@ add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byt
     #   while true
     #     name = next-mu-token(line)
     #     v = lookup-var-or-literal(name)
-    #     stmt->inouts = append(stmt->inouts, v)
+    #     stmt->inouts = append(v, stmt->inouts)
     #
     # . prologue
     55/push-ebp
@@ -5855,37 +5861,53 @@ $new-reg-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-append-list:  # ad: (addr allocation-descriptor), value: _type, list: (handle list _type) -> result/eax: (handle list _type)
+append-list:  # ad: (addr allocation-descriptor), value: (handle _type), list: (handle list _type), out: (addr handle list _type)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
-    #
-    (allocate *(ebp+8) *List-size)  # => eax
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *eax 1/r32/ecx  # List-value
-    # if (list == null) return result
-    81 7/subop/compare *(ebp+0x10) 0/imm32
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+0x1c) 7/r32/edi
+    # out = new list
+    (allocate *(ebp+8) *List-size %edi)
+    # out->value = value
+    8b/-> *(ebp+0xc) 0/r32/eax
+    89/<- *edi 0/r32/eax  # List-value
+    8b/-> *(ebp+0x10) 0/r32/eax
+    89/<- *(edi+4) 0/r32/eax  # List-value
+    # if (list == null) return
+    81 7/subop/compare *(ebp+0x14) 0/imm32
     74/jump-if-= $append-list:end/disp8
     # otherwise append
-    # var curr/ecx = list
-    8b/-> *(ebp+0x10) 1/r32/ecx
+    # var curr/eax: (handle list _type) = list
+    8d/copy-address *(ebp+0x14) 0/r32/eax
     # while (curr->next != null) curr = curr->next
     {
-      81 7/subop/compare *(ecx+4) 0/imm32  # List-next
+      81 7/subop/compare *(eax+8) 0/imm32  # List-next
       74/jump-if-= break/disp8
       # curr = curr->next
-      8b/-> *(ecx+4) 1/r32/ecx
+      (lookup *(eax+8) *(eax+0xc))  # List-next, List-next => eax
+      #
       eb/jump loop/disp8
     }
-    # curr->next = result
-    89/<- *(ecx+4) 0/r32/eax
-    # return list
-    8b/-> *(ebp+0x10) 0/r32/eax
+    # curr->next = out
+    8b/-> *edi 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx
+    8b/-> *(edi+4) 1/r32/ecx
+    89/<- *(eax+0xc) 1/r32/ecx
+    # out = list
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    89/<- *edi 1/r32/ecx
+    8b/-> *(ebp+0x18) 1/r32/ecx
+    89/<- *(edi+4) 1/r32/ecx
 $append-list:end:
     # . restore registers
+    5f/pop-to-edi
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
