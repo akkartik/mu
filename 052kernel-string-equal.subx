@@ -1,11 +1,12 @@
-# Checking null-terminated ascii strings.
+# Checking null-terminated strings.
 #
 # By default we create strings as arrays of bytes, and all arrays have a 4-byte
 # size prefix.
 #
-# However, we sometimes need to deal with null-prefixed strings when interacting
-# with the Linux kernel. This layer implements a function for comparing a
-# null-terminated 'kernel string' with a size-prefixed 'SubX string'.
+# However, we sometimes need to deal with null-terminated strings when
+# interacting with the Linux kernel. This layer implements a function for
+# comparing a null-terminated 'kernel string' with a size-prefixed 'SubX
+# string'.
 #
 # To run (from the subx directory):
 #   $ ./bootstrap translate 05[0-2]*.subx -o /tmp/tmp52
@@ -28,8 +29,6 @@ Entry:  # run all tests
     b8/copy-to-eax  1/imm32/exit
     cd/syscall  0x80/imm8
 
-# compare a null-terminated ascii string with a more idiomatic size-prefixed byte array
-# reason for the name: the only place we should have null-terminated ascii strings is from commandline args
 kernel-string-equal?:  # s: (addr kernel-string), benchmark: (addr array byte) -> eax: boolean
     # pseudocode:
     #   n = benchmark->size
