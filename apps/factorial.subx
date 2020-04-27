@@ -1,4 +1,4 @@
-## compute the factorial of 5, and return the result in the exit code
+## compute the factorial of 5, and print the result
 #
 # To run:
 #   $ ./bootstrap translate init.linux 0*.subx apps/factorial.subx -o apps/factorial
@@ -54,7 +54,7 @@ Entry:  # run tests if necessary, compute `factorial(5)` if not
     8b/copy                         0/mod/indirect  5/rm32/.disp32            .             .           3/r32/ebx   Num-test-failures/disp32          # copy *Num-test-failures to ebx
     eb/jump  $main:end/disp8
 $run-main:
-    # - otherwise return factorial(5)
+    # - otherwise print factorial(5)
     # eax = factorial(5)
     # . . push args
     68/push  5/imm32
@@ -62,6 +62,36 @@ $run-main:
     e8/call  factorial/disp32
     # . . discard args
     81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               4/imm32           # add to esp
+    # var buffer/ecx: (stream byte 10)  # number of decimal digits a 32-bit number can have
+    81          5/subop/subtract    3/mod/direct    4/rm32/esp    .           .             .           .           .               0xa/imm32         # subtract from esp
+    68/push  0xa/imm32/decimal-digits-in-32bit-number
+    68/push  0/imm32/read
+    68/push  0/imm32/write
+    89/copy                         3/mod/direct    1/rm32/ecx    .           .             .           4/r32/esp   .               .                 # copy esp to ecx
+    # print-int32-decimal(buffer, eax)
+    # . . push args
+    50/push-eax
+    51/push-ecx
+    # . . call
+    e8/call  print-int32-decimal/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write-stream(stderr, buffer)
+    # . . push args
+    51/push-ecx
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  write-stream/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
+    # write(stderr, Newline)
+    # . . push args
+    68/push  Newline/imm32
+    68/push  2/imm32/stderr
+    # . . call
+    e8/call  write/disp32
+    # . . discard args
+    81          0/subop/add         3/mod/direct    4/rm32/esp    .           .             .           .           .               8/imm32           # add to esp
     # syscall(exit, eax)
     89/copy                         3/mod/direct    3/rm32/ebx    .           .             .           0/r32/eax   .               .                 # copy eax to ebx
 $main:end:
