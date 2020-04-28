@@ -3418,9 +3418,9 @@ $populate-mu-function-header:check-for-inout:
       # out->inouts = append(v, out->inouts)
       8d/copy-address *(edi+8) 0/r32/eax  # Function-inouts
       (append-list Heap  *ebx *(ebx+4)  *(edi+8) *(edi+0xc)  %eax)  # Function-inouts, Function-inouts
-      # HERE
       # push(vars, v)
-      (push *(ebp+0x10) %ebx)
+      (push *(ebp+0x10) *ebx)
+      (push *(ebp+0x10) *(ebx+4))
       #
       e9/jump loop/disp32
     }
@@ -4673,10 +4673,9 @@ populate-mu-function-body:  # in: (addr buffered-file), out: (addr function), va
     8b/-> *(ebp+8) 6/r32/esi
     # edi = out
     8b/-> *(ebp+0xc) 7/r32/edi
-    # var eax: (handle block) = parse-mu-block(in, vars, fn)
-    (parse-mu-block %esi *(ebp+0x10) %edi)  # => eax
-    # out->body = eax
-    89/<- *(edi+0x10) 0/r32/eax  # Function-body
+    # parse-mu-block(in, vars, out, out->body)
+    8d/copy-address *(edi+0x18) 0/r32/eax  # Function-body
+    (parse-mu-block %esi *(ebp+0x10) %edi %eax)
 $populate-mu-function-body:end:
     # . restore registers
     5f/pop-to-edi
@@ -4688,13 +4687,14 @@ $populate-mu-function-body:end:
     c3/return
 
 # parses a block, assuming that the leading '{' has already been read by the caller
-parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn: (handle function) -> result/eax: (handle block)
+parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn: (addr function), out: (addr handle block)
     # pseudocode:
     #   var line: (stream byte 512)
     #   var word-slice: slice
-    #   result/eax = allocate(Heap, Stmt-size)
-    #   result->tag = 0/block
-    #   result->name = some unique name
+    #   allocate(Heap, Stmt-size, out)
+    #   var out-addr: (addr block) = lookup(out)
+    #   out-addr->tag = 0/block
+    #   out-addr->name = some unique name
     #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -4707,21 +4707,20 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #     else if slice-equal?(word-slice, "{")
     #       assert(no-tokens-in(line))
     #       block = parse-mu-block(in, vars, fn)
-    #       append-to-block(result, block)
+    #       append-to-block(out-addr, block)
     #     else if slice-equal?(word-slice, "}")
     #       break
     #     else if slice-ends-with?(word-slice, ":")
     #       # TODO: error-check the rest of 'line'
     #       --word-slice->end to skip ':'
     #       named-block = parse-mu-named-block(word-slice, in, vars, fn)
-    #       append-to-block(result, named-block)
+    #       append-to-block(out-addr, named-block)
     #     else if slice-equal?(word-slice, "var")
     #       var-def = parse-mu-var-def(line, vars)
-    #       append-to-block(result, var-def)
+    #       append-to-block(out-addr, var-def)
     #     else
     #       stmt = parse-mu-stmt(line, vars, fn)
-    #       append-to-block(result, stmt)
-    #   return result
+    #       append-to-block(out-addr, stmt)
     #
     # . prologue
     55/push-ebp
@@ -4741,16 +4740,19 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %edx 4/r32/esp
-    # edi = result
-    (allocate Heap *Stmt-size)  # => eax
+    # allocate into out
+    (allocate Heap *Stmt-size *(ebp+0x14))
+    # var out-addr/edi: (addr block) = lookup(out)
+    8b/-> *(ebp+0x14) 7/r32/edi
+    (lookup *edi *(edi+4))  # => eax
     89/<- %edi 0/r32/eax
-    # set result->tag
-    c7 0/subop/copy *edi 0/imm32/block  # Stmt-tag
-    # set result->var
-    (new-block-name *(ebp+0x10))  # => eax
-    89/<- *(edi+8) 0/r32/eax  # Block-var
-    # push result->var to vars
-    (push *(ebp+0xc) %eax)
+    # out-addr->tag is 0 (block) by default
+    # set out-addr->var
+    8d/copy-address *(edi+0xc) 0/r32/eax  # Block-var
+    (new-block-name *(ebp+0x10) %eax)
+    # push(vars, out-addr->var)
+    (push *(ebp+0xc) *(edi+4))  # Block-var
+    (push *(ebp+0xc) *(edi+8))  # Block-var
     {
 $parse-mu-block:line-loop:
       # line = read-line-buffered(in)
@@ -4763,6 +4765,7 @@ $parse-mu-block:line-loop:
       # if (line->write == 0) break
       81 7/subop/compare *ecx 0/imm32
       0f 84/jump-if-= break/disp32
+      # HERE
       # word-slice = next-mu-token(line)
       (next-mu-token %ecx %edx)
 #?       (write-buffered Stderr "word: ")
@@ -4837,8 +4840,6 @@ $parse-mu-block:regular-stmt:
     } # end line loop
     #
     (pop *(ebp+0xc))  # => eax
-    # return result
-    89/<- %eax 7/r32/edi
 $parse-mu-block:end:
     # . reclaim locals
     81 0/subop/add %esp 0x214/imm32
@@ -4865,11 +4866,12 @@ $parse-mu-block:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-new-block-name:  # fn: (handle function) -> result/eax: (handle var)
+new-block-name:  # fn: (addr function), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
     # var n/ecx: int = len(fn->name) + 10 for an int + 2 for '$:'
@@ -4905,8 +4907,8 @@ new-block-name:  # fn: (handle function) -> result/eax: (handle var)
     ff 6/subop/push %eax
     ff 6/subop/push %edx
     89/<- %eax 4/r32/esp
-    # result->var = new literal(s)
-    (new-literal Heap %eax)  # => eax
+    # out = new literal(s)
+    (new-literal Heap %eax *(ebp+0xc))
 $new-block-name:end:
     # . reclaim locals
     81 0/subop/add %ecx 0xc/imm32  # name.{read/write/len}
@@ -4915,6 +4917,7 @@ $new-block-name:end:
     # . restore registers
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
