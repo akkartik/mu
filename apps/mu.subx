@@ -5194,26 +5194,29 @@ test-parse-mu-reg-var-def:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn: (addr function), out: (addr handle stmt)
     # pseudocode:
     #   var name: slice
-    #   result = allocate(Heap, Stmt-size)
+    #   allocate(Heap, Stmt-size, out)
+    #   var out-addr: (addr stmt) = lookup(*out)
+    #   out-addr->tag = stmt
     #   if stmt-has-outputs?(line)
     #     while true
     #       name = next-mu-token(line)
     #       if (name == '<-') break
     #       assert(is-identifier?(name))
     #       var v: (handle var) = lookup-or-define-var(name, vars, fn)  # regular stmts may define vars in fn outputs
-    #       result->outputs = append(v, result->outputs)
-    #   add-operation-and-inputs-to-stmt(result, line, vars)
+    #       out-addr->outputs = append(v, out-addr->outputs)
+    #   add-operation-and-inputs-to-stmt(out-addr, line, vars)
     #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
+    53/push-ebx
     57/push-edi
     # var name/ecx: slice
     68/push 0/imm32/end
@@ -5221,10 +5224,17 @@ parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn:
     89/<- %ecx 4/r32/esp
     # var is-deref?/edx: boolean = false
     ba/copy-to-edx 0/imm32/false
-    # result/edi: (handle stmt)
-    (allocate Heap *Stmt-size)  # => eax
+    # var v: (handle var)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ebx 4/r32/esp
+    #
+    (allocate Heap *Stmt-size *(ebp+0x14))
+    # var out-addr/edi: (addr stmt) = lookup(*out)
+    8b/-> *(ebp+0x14) 7/r32/edi
+    (lookup *edi *(edi+4))  # => eax
     89/<- %edi 0/r32/eax
-    # result->tag = 1/stmt
+    # out-addr->tag = 1/stmt
     c7 0/subop/copy *edi 1/imm32/stmt1  # Stmt-tag
     {
       (stmt-has-outputs? *(ebp+8))
@@ -5258,23 +5268,24 @@ $parse-mu-stmt:read-outputs:
         (is-identifier? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
         0f 84/jump-if-= $parse-mu-stmt:abort/disp32
-        # result->outputs = new stmt-var(lookup(name, vars, fn), result->outputs, is-deref?)
-        (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10))  # => eax
-        (append-stmt-var Heap %eax *(edi+0xc) %edx)  # Stmt1-outputs => eax
-        89/<- *(edi+0xc) 0/r32/eax  # Stmt1-outputs
+        #
+        (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10) %ebx)
+        8d/copy-addr *(edi+0x14) 0/r32/eax  # Stmt1-outputs
+        (append-stmt-var Heap  *ebx *(ebx+4)  *(edi+0x14) *(edi+0x18)  %edx  %eax)  # Stmt1-outputs
+        #
         e9/jump loop/disp32
       }
     }
     (add-operation-and-inputs-to-stmt %edi *(ebp+8) *(ebp+0xc))
 $parse-mu-stmt:end:
-    # return result
-    89/<- %eax 7/r32/edi
     # . reclaim locals
-    81 0/subop/add %esp 8/imm32
+    81 0/subop/add %esp 0x10/imm32
     # . restore registers
     5f/pop-to-edi
+    5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
