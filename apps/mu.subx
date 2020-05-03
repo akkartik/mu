@@ -4694,7 +4694,8 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #   allocate(Heap, Stmt-size, out)
     #   var out-addr: (addr block) = lookup(out)
     #   out-addr->tag = 0/block
-    #   out-addr->name = some unique name
+    #   out-addr->var = some unique name
+    #   push(vars, out-addr->var)
     #   while true                                  # line loop
     #     clear-stream(line)
     #     read-line-buffered(in, line)
@@ -4721,11 +4722,13 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #     else
     #       stmt = parse-mu-stmt(line, vars, fn)
     #       append-to-block(out-addr, stmt)
+    #   pop(vars)
     #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
     53/push-ebx
@@ -4751,8 +4754,8 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     8d/copy-address *(edi+0xc) 0/r32/eax  # Block-var
     (new-block-name *(ebp+0x10) %eax)
     # push(vars, out-addr->var)
-    (push *(ebp+0xc) *(edi+4))  # Block-var
-    (push *(ebp+0xc) *(edi+8))  # Block-var
+    (push *(ebp+0xc) *(edi+0xc))  # Block-var
+    (push *(ebp+0xc) *(edi+0x10))  # Block-var
     {
 $parse-mu-block:line-loop:
       # line = read-line-buffered(in)
@@ -4823,10 +4826,16 @@ $parse-mu-block:check-for-named-block:
         #
         # skip ':'
         ff 1/subop/decrement *(edx+4)  # Slice-end
+        # var tmp/eax: (handle block)
+        68/push 0/imm32
+        68/push 0/imm32
+        89/<- %eax 4/r32/esp
         #
-        # HERE
-        (parse-mu-named-block %edx *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
-        (append-to-block Heap %edi %eax)
+        (parse-mu-named-block %edx *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)
+        (append-to-block Heap %edi  *eax *(eax+4))
+        # reclaim tmp
+        81 0/subop/add %esp 8/imm32
+        #
         e9/jump $parse-mu-block:line-loop/disp32
       }
       # if slice-equal?(word-slice, "var")
@@ -4835,18 +4844,34 @@ $parse-mu-block:check-for-var:
         (slice-equal? %edx "var")
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
+        # var tmp/eax: (handle block)
+        68/push 0/imm32
+        68/push 0/imm32
+        89/<- %eax 4/r32/esp
         #
-        (parse-mu-var-def %ecx *(ebp+0xc))  # => eax
-        (append-to-block Heap %edi %eax)
+        (parse-mu-var-def %ecx *(ebp+0xc) %eax)
+        (append-to-block Heap %edi  *eax *(eax+4))
+        # reclaim tmp
+        81 0/subop/add %esp 8/imm32
+        #
         e9/jump $parse-mu-block:line-loop/disp32
       }
 $parse-mu-block:regular-stmt:
       # otherwise
-      (parse-mu-stmt %ecx *(ebp+0xc) *(ebp+0x10))  # => eax
-      (append-to-block Heap %edi %eax)
+      # var tmp/eax: (handle block)
+      68/push 0/imm32
+      68/push 0/imm32
+      89/<- %eax 4/r32/esp
+      #
+      (parse-mu-stmt %ecx *(ebp+0xc) *(ebp+0x10) %eax)
+      (append-to-block Heap %edi  *eax *(eax+4))
+      # reclaim tmp
+      81 0/subop/add %esp 8/imm32
+      #
       e9/jump loop/disp32
     } # end line loop
-    #
+    # pop(vars)
+    (pop *(ebp+0xc))  # => eax
     (pop *(ebp+0xc))  # => eax
 $parse-mu-block:end:
     # . reclaim locals
@@ -4856,6 +4881,7 @@ $parse-mu-block:end:
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -4986,39 +5012,55 @@ $check-no-tokens-left:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (addr stack (handle var)), fn: (addr function), out: (addr handle stmt)
     # pseudocode:
-    #   var v: (handle var) = new-literal(name)
+    #   var v: (handle var)
+    #   new-literal(name, v)
     #   push(vars, v)
-    #   result = parse-mu-block(in, vars, fn)
+    #   parse-mu-block(in, vars, fn, out)
     #   pop(vars)
-    #   result->name = s
-    #   return result
+    #   out->tag = block
+    #   out->var = v
     #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    51/push-ecx
-    # var v/ecx: (handle var)
-    (new-literal Heap *(ebp+8))  # => eax
-    89/<- %ecx 0/r32/eax
-    # push(vars, v)
-    (push *(ebp+0x10) %ecx)
-    # eax = result
-    (parse-mu-block *(ebp+0xc) *(ebp+0x10) *(ebp+0x14))  # => eax
-    # pop the var
     50/push-eax
+    51/push-ecx
+    57/push-edi
+    # var v/ecx: (handle var)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    #
+    (new-literal Heap *(ebp+8) %ecx)
+    # push(vars, v)
+    (push *(ebp+0x10) *ecx)
+    (push *(ebp+0x10) *(ecx+4))
+    #
+    (parse-mu-block *(ebp+0xc) *(ebp+0x10) *(ebp+0x14) *(ebp+0x18))
+    # pop v off vars
     (pop *(ebp+0x10))  # => eax
-    58/pop-to-eax
-    # result->tag = named-block
-    c7 0/subop/copy *eax 0/imm32/block  # Stmt-tag
-    # result->var = v
-    89/<- *(eax+8) 1/r32/ecx  # Block-var
+    (pop *(ebp+0x10))  # => eax
+    # var out-addr/edi: (addr stmt) = lookup(*out)
+    8b/-> *(ebp+0x18) 7/r32/edi
+    (lookup *edi *(edi+4))  # => eax
+    89/<- %edi 0/r32/eax
+    # out-addr->tag = named-block
+    c7 0/subop/copy *edi 0/imm32/block  # Stmt-tag
+    # out-addr->var = v
+    8b/-> *ecx 0/r32/eax
+    89/<- *(edi+0xc) 0/r32/eax  # Block-var
+    8b/-> *(ecx+4) 0/r32/eax
+    89/<- *(edi+0x10) 0/r32/eax  # Block-var
 $parse-mu-named-block:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
+    5f/pop-to-edi
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
