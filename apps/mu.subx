@@ -4978,7 +4978,8 @@ $check-no-tokens-left:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (addr stack (handle var)), fn: (handle function) -> result/eax: (handle stmt)
+# TODO
+parse-mu-named-block:  # name: (addr slice), in: (addr buffered-file), vars: (addr stack (handle var)), fn: (addr function), out: (addr handle stmt)
     # pseudocode:
     #   var v: (handle var) = new-literal(name)
     #   push(vars, v)
@@ -5015,7 +5016,8 @@ $parse-mu-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)) -> result/eax: (handle stmt)
+# TODO
+parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5142,7 +5144,8 @@ test-parse-mu-reg-var-def:
     5d/pop-to-ebp
     c3/return
 
-parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn: (handle function) -> result/eax: (handle stmt)
+# TODO
+parse-mu-stmt:  # line: (addr stream byte), vars: (addr stack (handle var)), fn: (addr function), out: (addr handle stmt)
     # pseudocode:
     #   var name: slice
     #   result = allocate(Heap, Stmt-size)
@@ -5239,7 +5242,7 @@ $parse-mu-stmt:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-add-operation-and-inputs-to-stmt:  # stmt: (handle stmt), line: (addr stream byte), vars: (addr stack (handle var))
+add-operation-and-inputs-to-stmt:  # stmt: (addr stmt), line: (addr stream byte), vars: (addr stack (handle var))
     # pseudocode:
     #   stmt->name = slice-to-string(next-mu-token(line))
     #   while true
@@ -5391,9 +5394,10 @@ $stmt-has-outputs:end:
     5d/pop-to-ebp
     c3/return
 
+# TODO
 # if 'name' starts with a digit, create a new literal var for it
 # otherwise return first 'name' from the top (back) of 'vars' and abort if not found
-lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)) -> result/eax: (handle var)
+lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5447,8 +5451,9 @@ $lookup-var-or-literal:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+# TODO
 # return first 'name' from the top (back) of 'vars' and abort if not found
-lookup-var:  # name: (addr slice), vars: (addr stack (handle var)) -> result/eax: (handle var)
+lookup-var:  # name: (addr slice), vars: (addr stack (handle var)), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5474,8 +5479,9 @@ $lookup-var:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
+# TODO
 # return first 'name' from the top (back) of 'vars', and 0/null if not found
-lookup-var-helper:  # name: (addr slice), vars: (addr stack (handle var)) -> result/eax: (handle var)
+lookup-var-helper:  # name: (addr slice), vars: (addr stack (handle var)), out: (addr handle var)
     # pseudocode:
     #   var curr: (addr handle var) = &vars->data[vars->top - 4]
     #   var min = vars->data
@@ -5541,8 +5547,9 @@ $lookup-var-helper:error1:
     cd/syscall  0x80/imm8
     # never gets here
 
+# TODO
 # return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found
-lookup-or-define-var:  # name: (addr slice), vars: (addr stack (handle var)), fn: (handle function) -> result/eax: (handle var)
+lookup-or-define-var:  # name: (addr slice), vars: (addr stack (handle var)), fn: (addr function), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5570,7 +5577,8 @@ $lookup-or-define-var:end:
     5d/pop-to-ebp
     c3/return
 
-find-in-function-outputs:  # fn: (handle function), name: (addr slice) -> result/eax: (handle var)
+# TODO
+find-in-function-outputs:  # fn: (addr function), name: (addr slice), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5676,7 +5684,7 @@ test-parse-mu-stmt-with-comma:
     5d/pop-to-ebp
     c3/return
 
-new-var:  # ad: (addr allocation-descriptor), name: (handle array byte), out: (addr handle var)
+new-var:  # ad: (addr allocation-descriptor), name: (addr array byte), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5703,7 +5711,8 @@ $new-var:end:
     5d/pop-to-ebp
     c3/return
 
-new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice) -> result/eax: (handle var)
+# TODO
+new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5798,7 +5807,8 @@ $new-var-from-slice:end:
     5d/pop-to-ebp
     c3/return
 
-new-block:  # ad: (addr allocation-descriptor), data: (handle list stmt) -> result/eax: (handle stmt)
+# TODO
+new-block:  # ad: (addr allocation-descriptor), data: (addr list stmt), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5817,7 +5827,8 @@ $new-block:end:
     5d/pop-to-ebp
     c3/return
 
-new-var-def:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
+# TODO
+new-var-def:  # ad: (addr allocation-descriptor), var: (addr var), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5837,7 +5848,8 @@ $new-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-new-reg-var-def:  # ad: (addr allocation-descriptor), var: (handle var) -> result/eax: (handle stmt)
+# TODO
+new-reg-var-def:  # ad: (addr allocation-descriptor), var: (addr var), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5916,7 +5928,8 @@ $append-list:end:
     5d/pop-to-ebp
     c3/return
 
-append-stmt-var:  # ad: (addr allocation-descriptor), v: (handle var), vars: (handle stmt-var), is-deref?: boolean -> result/eax: (handle stmt-var)
+# TODO
+append-stmt-var:  # ad: (addr allocation-descriptor), v: (handle var), vars: (handle stmt-var), is-deref?: boolean, out: (addr handle stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5981,7 +5994,8 @@ $append-to-block:end:
 # However, we also want to allow types to be used before their definitions.
 # This means we can't ever assume any type data structures exist.
 
-lookup-or-create-constant:  # container: (handle stmt-var), field-name: (addr slice) -> result/eax: (handle var)
+# TODO
+lookup-or-create-constant:  # container: (addr stmt-var), field-name: (addr slice), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6014,7 +6028,7 @@ $lookup-or-create-constant:end:
 #   container->var->type->right->left->value
 # otherwise
 #   container->var->type->value
-container-type:  # container: (handle stmt-var) -> result/eax: type-id
+container-type:  # container: (addr stmt-var) -> result/eax: type-id
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6140,7 +6154,7 @@ $find-typeinfo:end:
     5d/pop-to-ebp
     c3/return
 
-find-or-create-typeinfo-output-var:  # T: (handle typeinfo), f: (addr slice), out: (addr handle var)
+find-or-create-typeinfo-output-var:  # T: (addr typeinfo), f: (addr slice), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6465,7 +6479,7 @@ $populate-mu-type-sizes:end:
 # compute sizes of all fields, recursing as necessary
 # sum up all their sizes to arrive at total size
 # fields may be out of order, but that doesn't affect the answer
-populate-mu-type-sizes-in-type:  # T: (handle typeinfo)
+populate-mu-type-sizes-in-type:  # T: (addr typeinfo)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6537,7 +6551,7 @@ $populate-mu-type-sizes-in-type:abort:
 
 # Analogous to size-of, except we need to compute what size-of can just read
 # off the right data structures.
-compute-size-of-var:  # in: (handle var) -> result/eax: int
+compute-size-of-var:  # in: (addr var) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6592,7 +6606,7 @@ $compute-size-of-type-id:end:
 # at this point we have total sizes for all user-defined types
 # compute offsets for each element
 # complication: fields may be out of order
-populate-mu-type-offsets:  # in: (handle typeinfo)
+populate-mu-type-offsets:  # in: (addr typeinfo)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6644,7 +6658,8 @@ $populate-mu-type-offsets:end:
     5d/pop-to-ebp
     c3/return
 
-locate-typeinfo-entry-with-index:  # table: (handle table string_key (handle typeinfo-entry)), idx: int -> result/eax: (handle typeinfo-entry)
+# TODO
+locate-typeinfo-entry-with-index:  # table: (addr table string_key (handle typeinfo-entry)), idx: int, out: (addr handle typeinfo-entry)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6714,7 +6729,7 @@ $check-mu-types:end:
     5d/pop-to-ebp
     c3/return
 
-size-of:  # v: (handle var) -> result/eax: int
+size-of:  # v: (addr var) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6746,7 +6761,7 @@ $size-of:end:
     5d/pop-to-ebp
     c3/return
 
-size-of-deref:  # v: (handle var) -> result/eax: int
+size-of-deref:  # v: (addr var) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6780,7 +6795,7 @@ $size-of-deref:end:
     5d/pop-to-ebp
     c3/return
 
-is-mu-array?:  # t: (handle tree type-id) -> result/eax: boolean
+is-mu-array?:  # t: (addr tree type-id) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6808,7 +6823,7 @@ $is-mu-array?:end:
     5d/pop-to-ebp
     c3/return
 
-size-of-array:  # a: (handle tree type-id) -> result/eax: int
+size-of-array:  # a: (addr tree type-id) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6866,7 +6881,7 @@ $size-of-type-id:end:
     5d/pop-to-ebp
     c3/return
 
-type-equal?:  # a: (handle tree type-id), b: (handle tree type-id) -> result/eax: boolean
+type-equal?:  # a: (addr tree type-id), b: (addr tree type-id) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6950,7 +6965,7 @@ $emit-subx:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-function:  # out: (addr buffered-file), f: (handle function)
+emit-subx-function:  # out: (addr buffered-file), f: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6995,7 +7010,7 @@ $emit-subx-function:end:
     5d/pop-to-ebp
     c3/return
 
-populate-mu-type-offsets-in-inouts:  # f: (handle function)
+populate-mu-type-offsets-in-inouts:  # f: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7037,7 +7052,7 @@ $populate-mu-type-offsets-in-inouts:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (handle list stmt), vars: (addr stack (handle var))
+emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (addr list stmt), vars: (addr stack (handle var))
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7228,7 +7243,8 @@ $emit-subx-stmt-list:end:
     5d/pop-to-ebp
     c3/return
 
-compute-reg-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (handle reg-var-def), vars: (addr stack (handle var)) -> result/eax: (handle var)
+# TODO
+compute-reg-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var)), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7632,7 +7648,7 @@ $emit-cleanup-code-until-target:end:
 
 # is there already a var with the same block-depth and register as 'v' on the 'vars' stack?
 # v is guaranteed not to be within vars
-already-spilled-this-block?:  # v: (handle var), vars: (addr stack (handle var)) -> result/eax: boolean
+already-spilled-this-block?:  # v: (addr var), vars: (addr stack (handle var)) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7704,7 +7720,7 @@ $already-spilled-this-block?:end:
 # v is guaranteed to be within vars
 # 'start' is provided as an optimization, a pointer within vars
 # *start == v
-same-register-spilled-before?:  # v: (handle var), vars: (addr stack (handle var)), start: (addr handle var) -> result/eax: boolean
+same-register-spilled-before?:  # v: (addr var), vars: (addr stack (handle var)), start: (addr handle var) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7809,7 +7825,7 @@ $clean-up-blocks:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-def:  # out: (addr buffered-file), stmt: (handle stmt)
+emit-subx-var-def:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7870,7 +7886,7 @@ $emit-subx-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-stmt:  # out: (addr buffered-file), stmt: (handle stmt), primitives: (handle primitive)
+emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (addr primitive)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7940,7 +7956,7 @@ $emit-subx-stmt:end:
     c3/return
 
 # TODO: actually return the length in array elements, rather than the size in bytes
-translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (handle stmt)
+translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7987,7 +8003,7 @@ $translate-mu-length-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (handle stmt)
+translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8039,7 +8055,7 @@ $translate-mu-index-stmt-with-array:error2:
     cd/syscall  0x80/imm8
     # never gets here
 
-translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (handle stmt)
+translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8148,7 +8164,7 @@ $translate-mu-index-stmt-with-array-in-register:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (handle stmt)
+translate-mu-index-stmt-with-array-on-stack:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8259,7 +8275,7 @@ $translate-mu-index-stmt-with-array-on-stack:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-compute-index-stmt:  # out: (addr buffered-file), stmt: (handle stmt)
+translate-mu-compute-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8304,7 +8320,7 @@ $translate-mu-compute-index-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-translate-mu-get-stmt:  # out: (addr buffered-file), stmt: (handle stmt)
+translate-mu-get-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8363,7 +8379,7 @@ $translate-mu-get-stmt:end:
     5d/pop-to-ebp
     c3/return
 
-array-element-type-id:  # v: (handle var) -> result/eax: type-id
+array-element-type-id:  # v: (addr var) -> result/eax: type-id
     # precondition: n is positive
     # . prologue
     55/push-ebp
@@ -8412,7 +8428,7 @@ $num-shift-rights:end:
     5d/pop-to-ebp
     c3/return
 
-mu-get-offset:  # stmt: (handle stmt) -> result/eax: int
+mu-get-offset:  # stmt: (addr stmt) -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8430,7 +8446,7 @@ $emit-get-offset:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-block:  # out: (addr buffered-file), block: (handle block), vars: (addr stack (handle var))
+emit-subx-block:  # out: (addr buffered-file), block: (addr block), vars: (addr stack (handle var))
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9893,7 +9909,7 @@ Type-addr:
     0/imm32/right/null
 
 == code
-emit-subx-primitive:  # out: (addr buffered-file), stmt: (handle stmt), primitive: (handle function)
+emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive: (addr function)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9923,7 +9939,7 @@ $emit-subx-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
+emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -9943,7 +9959,7 @@ $emit-subx-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-get-stmt-operand-from-arg-location:  # stmt: (handle stmt), l: arg-location -> var/eax: (handle stmt-var)
+get-stmt-operand-from-arg-location:  # stmt: (addr stmt), l: arg-location -> var/eax: (addr stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10000,7 +10016,7 @@ $get-stmt-operand-from-arg-location:abort:
     cd/syscall  0x80/imm8
     # never gets here
 
-emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
+emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10026,7 +10042,7 @@ $emit-subx-r32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
+emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10051,7 +10067,7 @@ $emit-subx-imm32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (handle stmt)
+emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10093,7 +10109,7 @@ $emit-subx-disp32:end:
     5d/pop-to-ebp
     c3/return
 
-emit-call:  # out: (addr buffered-file), stmt: (handle stmt)
+emit-call:  # out: (addr buffered-file), stmt: (addr stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10129,7 +10145,7 @@ $emit-call:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call-operand:  # out: (addr buffered-file), s: (handle stmt-var)
+emit-subx-call-operand:  # out: (addr buffered-file), s: (addr stmt-var)
     # shares code with emit-subx-var-as-rm32
     # . prologue
     55/push-ebp
@@ -10192,7 +10208,7 @@ $emit-subx-call-operand:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call-operand-register-indirect:  # out: (addr buffered-file), v: (handle var)
+emit-subx-call-operand-register-indirect:  # out: (addr buffered-file), v: (addr var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10234,7 +10250,7 @@ $emit-subx-call-operand-register-indirect:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-call-operand-stack:  # out: (addr buffered-file), v: (handle var)
+emit-subx-call-operand-stack:  # out: (addr buffered-file), v: (addr var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10274,7 +10290,7 @@ $emit-subx-call-operand-stack:end:
     5d/pop-to-ebp
     c3/return
 
-emit-subx-var-as-rm32:  # out: (addr buffered-file), s: (handle stmt-var)
+emit-subx-var-as-rm32:  # out: (addr buffered-file), s: (addr stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10328,7 +10344,8 @@ $emit-subx-var-as-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-find-matching-primitive:  # primitives: (handle primitive), stmt: (handle stmt) -> result/eax: (handle primitive)
+# TODO
+find-matching-primitive:  # primitives: (addr primitive), stmt: (addr stmt), out: (addr handle primitive)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10364,7 +10381,7 @@ $find-matching-primitive:end:
     5d/pop-to-ebp
     c3/return
 
-mu-stmt-matches-primitive?:  # stmt: (handle stmt), primitive: (handle primitive) -> result/eax: boolean
+mu-stmt-matches-primitive?:  # stmt: (addr stmt), primitive: (addr primitive) -> result/eax: boolean
     # A mu stmt matches a primitive if the name matches, all the inout vars
     # match, and all the output vars match.
     # Vars match if types match and registers match.
@@ -10490,7 +10507,7 @@ $mu-stmt-matches-primitive?:end:
     5d/pop-to-ebp
     c3/return
 
-operand-matches-primitive?:  # s: (handle stmt-var), prim-var: (handle var) -> result/eax: boolean
+operand-matches-primitive?:  # s: (addr stmt-var), prim-var: (addr var) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10568,7 +10585,7 @@ $operand-matches-primitive?:end:
     5d/pop-to-ebp
     c3/return
 
-subx-type-equal?:  # a: (handle tree type-id), b: (handle tree type-id) -> result/eax: boolean
+subx-type-equal?:  # a: (addr tree type-id), b: (addr tree type-id) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10591,7 +10608,7 @@ $subx-type-equal?:end:
     5d/pop-to-ebp
     c3/return
 
-is-simple-mu-type?:  # a: (handle tree type-id), n: type-id -> result/eax: boolean
+is-simple-mu-type?:  # a: (addr tree type-id), n: type-id -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
