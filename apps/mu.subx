@@ -4765,7 +4765,6 @@ $parse-mu-block:line-loop:
       # if (line->write == 0) break
       81 7/subop/compare *ecx 0/imm32
       0f 84/jump-if-= break/disp32
-      # HERE
       # word-slice = next-mu-token(line)
       (next-mu-token %ecx %edx)
 #?       (write-buffered Stderr "word: ")
@@ -4792,8 +4791,16 @@ $parse-mu-block:check-for-block:
         74/jump-if-= break/disp8
         (check-no-tokens-left %ecx)
         # parse new block and append
-        (parse-mu-block *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
-        (append-to-block Heap %edi %eax)
+        # . var tmp/eax: (handle block)
+        68/push 0/imm32
+        68/push 0/imm32
+        89/<- %eax 4/r32/esp
+        # .
+        (parse-mu-block *(ebp+8) *(ebp+0xc) *(ebp+0x10) %eax)
+        (append-to-block Heap %edi  *eax *(eax+4))
+        # . reclaim tmp
+        81 0/subop/add %esp 8/imm32
+        # .
         e9/jump $parse-mu-block:line-loop/disp32
       }
       # if slice-equal?(word-slice, "}") break
@@ -4817,6 +4824,7 @@ $parse-mu-block:check-for-named-block:
         # skip ':'
         ff 1/subop/decrement *(edx+4)  # Slice-end
         #
+        # HERE
         (parse-mu-named-block %edx *(ebp+8) *(ebp+0xc) *(ebp+0x10))  # => eax
         (append-to-block Heap %edi %eax)
         e9/jump $parse-mu-block:line-loop/disp32
@@ -5977,7 +5985,7 @@ append-to-block:  # ad: (addr allocation-descriptor), block: (addr block), x: (h
     # esi = block
     8b/-> *(ebp+0xc) 6/r32/esi
     # block->stmts = append(x, block->stmts)
-    8d/copy-address *(esi+4) 0/r32/eax
+    8d/copy-address *(esi+4) 0/r32/eax  # Block-stmts
     (append-list *(ebp+8)  *(ebp+0x10) *(ebp+0x14)  *(esi+4) *(esi+8)  %eax)  # ad, x, x, Block-stmts, Block-stmts
 $append-to-block:end:
     # . restore registers
