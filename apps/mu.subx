@@ -3782,15 +3782,15 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
     #   assert s != "{"
     #   assert s != "}"
     #   if s == ")"
-    #     return 0
-    #   result = allocate(Tree)
+    #     return
+    #   out = allocate(Tree)
     #   if s != "("
     #     HACK: if s is an int, parse and return it
-    #     result->left-is-atom? = true
-    #     result->value = pos-or-insert-slice(Type-id, s)
+    #     out->left-is-atom? = true
+    #     out->value = pos-or-insert-slice(Type-id, s)
     #     return
-    #   result->left = parse-type(ad, in)
-    #   result->right = parse-type-tree(ad, in)
+    #   out->left = parse-type(ad, in)
+    #   out->right = parse-type-tree(ad, in)
     #
     # . prologue
     55/push-ebp
@@ -3827,14 +3827,16 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
     (slice-equal? %ecx "->")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $parse-type:abort/disp32
-    # if (s == ")") return 0
+    # if (s == ")") return
     (slice-equal? %ecx ")")  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 85/jump-if-!= $parse-type:end/disp32
-    # edx = out
-    8b/-> *(ebp+0x10) 2/r32/edx
     # out = new tree
-    (allocate *(ebp+8) *Tree-size %edx)
+    (allocate *(ebp+8) *Tree-size *(ebp+0x10))
+    # var out-addr/edx: (addr tree type-id) = lookup(*out)
+    8b/-> *(ebp+0x10) 2/r32/edx
+    (lookup *edx *(edx+4))  # => eax
+    89/<- %edx 0/r32/eax
     {
       # if (s != "(") break
       (slice-equal? %ecx "(")  # => eax
@@ -3842,29 +3844,31 @@ parse-type:  # ad: (addr allocation-descriptor), in: (addr stream byte), out: (a
       75/jump-if-!= break/disp8
       # EGREGIOUS HACK for static array sizes: if s is a number, parse it
       {
-$parse-type:int:
+$parse-type:check-for-int:
         (is-hex-int? %ecx)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
+$parse-type:int:
         (parse-hex-int-from-slice %ecx)  # => eax
         89/<- *(edx+4) 0/r32/eax  # Tree-value
         e9/jump $parse-type:end/disp32
       }
 $parse-type:atom:
-      # result->left-is-atom? = true
+      # out->left-is-atom? = true
       c7 0/subop/copy *edx 1/imm32/true  # Tree-is-atom
-      # result->value = pos-or-insert-slice(Type-id, s)
+      # out->value = pos-or-insert-slice(Type-id, s)
       (pos-or-insert-slice Type-id %ecx)  # => eax
       89/<- *(edx+4) 0/r32/eax  # Tree-value
       e9/jump $parse-type:end/disp32
     }
 $parse-type:non-atom:
     # otherwise s == "("
-    # result->left = parse-type(ad, in)
-    (parse-type *(ebp+8) *(ebp+0xc) *(edx+4))  # Tree-left
-    # result->right = parse-type-tree(ad, in)
-    (parse-type-tree *(ebp+8) *(ebp+0xc) *(edx+0xc))  # Tree-right
-    89/<- *(edx+8) 0/r32/eax  # Tree-right
+    # out->left = parse-type(ad, in)
+    8d/copy-address *(edx+4) 0/r32/eax  # Tree-left
+    (parse-type *(ebp+8) *(ebp+0xc) %eax)
+    # out->right = parse-type-tree(ad, in)
+    8d/copy-address *(edx+0xc) 0/r32/eax  # Tree-right
+    (parse-type-tree *(ebp+8) *(ebp+0xc) %eax)
 $parse-type:end:
     # . reclaim locals
     81 0/subop/add %esp 8/imm32
@@ -5149,10 +5153,10 @@ test-parse-mu-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n: int\n")  # caller has consumed the 'var'
-    # var out/eax: (handle stmt)
+    # var out/esi: (handle stmt)
     68/push 0/imm32
     68/push 0/imm32
-    89/<- %eax 4/r32/esp
+    89/<- %esi 4/r32/esp
     # var vars/ecx: (stack (addr var) 16)
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/size
@@ -5160,18 +5164,23 @@ test-parse-mu-var-def:
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
     # convert
-    (parse-mu-var-def _test-input-stream %ecx %eax)
-    (lookup *eax *(eax+4))  # => eax
-    # check result
-    (check-ints-equal *eax 2 "F - test-parse-mu-var-def/tag")  # Stmt-tag is var-def
-    8b/-> *(eax+4) 0/r32/eax  # Vardef-var
-    (check-strings-equal *eax "n" "F - test-parse-mu-var-def/var-name")  # Var-name
-    (check-ints-equal *(eax+0x10) 0 "F - test-parse-mu-var-def/var-register")  # Var-register
-    # ensure type is int
-    8b/-> *(eax+4) 0/r32/eax  # Var-type
+    (parse-mu-var-def _test-input-stream %ecx %esi)
+    (lookup *esi *(esi+4))  # => eax
+    89/<- %esi 0/r32/eax
+    (check-ints-equal *esi 2 "F - test-parse-mu-var-def/tag")  # Stmt-tag is var-def
+    # var v/ecx: (addr var) = lookup(out->var)
+    (lookup *(esi+4) *(esi+8))  # Vardef-var => eax
+    89/<- %ecx 0/r32/eax
+    # v->name
+    (lookup *ecx *(ecx+4))  # Var-name => eax
+    (check-strings-equal %eax "n" "F - test-parse-mu-var-def/var-name")
+    # v->register
+    (check-ints-equal *(ecx+0x18) 0 "F - test-parse-mu-var-def/var-register")  # Var-register
+    # v->type == int
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type => eax
     (check-ints-equal *eax 1 "F - test-parse-mu-var-def/var-type:0")  # Tree-is-atom
     (check-ints-equal *(eax+4) 1 "F - test-parse-mu-var-def/var-type:1")  # Tree-value
-    (check-ints-equal *(eax+8) 0 "F - test-parse-mu-var-def/var-type:2")  # Tree-right
+    (check-ints-equal *(eax+0xc) 0 "F - test-parse-mu-var-def/var-type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
