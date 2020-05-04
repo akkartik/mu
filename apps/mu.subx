@@ -5937,29 +5937,26 @@ $new-var-def:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 new-reg-var-def:  # ad: (addr allocation-descriptor), var: (handle var), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    51/push-ecx
-    57/push-edi
-    # ecx = var
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    # edi = result
-    (allocate *(ebp+8) *Stmt-size)  # => eax
-    89/<- %edi 0/r32/eax
+    50/push-eax
+    # eax = out
+    8b/-> *(ebp+0x14) 0/r32/eax
+    #
+    (allocate *(ebp+8) *Stmt-size %eax)
+    # var out-addr/eax: (addr stmt) = lookup(*out)
+    (lookup *eax *(eax+4))  # => eax
     # set tag
-    c7 0/subop/copy *edi 3/imm32/tag/var-in-register  # Stmt-tag
+    c7 0/subop/copy *eax 3/imm32/tag/var-in-register  # Stmt-tag
     # set output
-    (append-stmt-var Heap %ecx *(edi+0xc) 0)  # Regvardef-outputs => eax
-    89/<- *(edi+0xc) 0/r32/eax  # Regvardef-outputs
+    8d/copy-address *(eax+0x14) 0/r32/eax  # Regvardef-outputs
+    (append-stmt-var Heap  *(ebp+0xc) *(ebp+0x10)  0 0  0  %eax)
 $new-reg-var-def:end:
-    89/<- %eax 7/r32/edi
     # . restore registers
-    5f/pop-to-edi
-    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
