@@ -6155,7 +6155,7 @@ find-or-create-typeinfo:  # t: type-id, out: (addr handle typeinfo)
     {
       # if (*out != 0) break
       81 7/subop/compare *edi 0/imm32
-      75/jump-if-!= break/disp8
+      0f 85/jump-if-!= break/disp32
 $find-or-create-typeinfo:create:
       # *out = allocate
       (allocate Heap *Typeinfo-size %edi)
@@ -6261,7 +6261,7 @@ find-or-create-typeinfo-output-var:  # T: (addr typeinfo), f: (addr slice), out:
     # if output var doesn't exist, create it
     {
       81 7/subop/compare *(edi+8) 0/imm32  # Typeinfo-entry-output-var
-      75/jump-if-!= break/disp8
+      0f 85/jump-if-!= break/disp32
       # out/edx = new var(dummy name, type, -1 offset)
       # . var name/eax: (handle array byte) = "field"
       68/push 0/imm32
