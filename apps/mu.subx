@@ -5066,31 +5066,39 @@ $parse-mu-named-block:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     52/push-edx
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+0x10) 7/r32/edi
     # var word-slice/ecx: slice
     68/push 0/imm32/end
     68/push 0/imm32/start
     89/<- %ecx 4/r32/esp
-    # var v/edx: (handle var) = parse-var-with-type(line)
+    # var v/edx: (handle var)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    # v = parse-var-with-type(next-mu-token(line))
     (next-mu-token *(ebp+8) %ecx)
-    (parse-var-with-type %ecx *(ebp+8))  # => eax
-    89/<- %edx 0/r32/eax
+    (parse-var-with-type %ecx *(ebp+8) %edx)
     #
-    (push *(ebp+0xc) %edx)
+    (push *(ebp+0xc) *edx)
+    (push *(ebp+0xc) *(edx+4))
     # either v has no register and there's no more to this line
-    8b/-> *(edx+0x10) 0/r32/eax  # Var-register
+    (lookup *edx *(edx+4))  # => eax
+    8b/-> *(eax+0x18) 0/r32/eax  # Var-register
     3d/compare-eax-and 0/imm32
     {
       75/jump-if-!= break/disp8
       # TODO: ensure that there's nothing else on this line
-      (new-var-def Heap %edx)  # => eax
+      (new-var-def Heap  *edx *(edx+4)  %edi)
       eb/jump $parse-mu-var-def:end/disp8
     }
     # or v has a register and there's more to this line
@@ -5102,15 +5110,18 @@ parse-mu-var-def:  # line: (addr stream byte), vars: (addr stack (handle var)), 
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= $parse-mu-var-def:abort/disp8
       #
-      (new-reg-var-def Heap %edx)  # => eax
+      (new-reg-var-def Heap  *edx *(edx+4)  %edi)
+      (lookup *edi *(edi+4))  # => eax
       (add-operation-and-inputs-to-stmt %eax *(ebp+8) *(ebp+0xc))
     }
 $parse-mu-var-def:end:
     # . reclaim locals
-    81 0/subop/add %esp 8/imm32
+    81 0/subop/add %esp 0x10/imm32
     # . restore registers
+    5f/pop-to-edi
     5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5889,7 +5900,7 @@ $new-block:end:
     c3/return
 
 # TODO
-new-var-def:  # ad: (addr allocation-descriptor), var: (addr var), out: (addr handle stmt)
+new-var-def:  # ad: (addr allocation-descriptor), var: (handle var), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5910,7 +5921,7 @@ $new-var-def:end:
     c3/return
 
 # TODO
-new-reg-var-def:  # ad: (addr allocation-descriptor), var: (addr var), out: (addr handle stmt)
+new-reg-var-def:  # ad: (addr allocation-descriptor), var: (handle var), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
