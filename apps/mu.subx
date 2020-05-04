@@ -5149,6 +5149,10 @@ test-parse-mu-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n: int\n")  # caller has consumed the 'var'
+    # var out/eax: (handle stmt)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %eax 4/r32/esp
     # var vars/ecx: (stack (addr var) 16)
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/size
@@ -5156,7 +5160,8 @@ test-parse-mu-var-def:
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
     # convert
-    (parse-mu-var-def _test-input-stream %ecx)  # => eax
+    (parse-mu-var-def _test-input-stream %ecx %eax)
+    (lookup *eax *(eax+4))  # => eax
     # check result
     (check-ints-equal *eax 2 "F - test-parse-mu-var-def/tag")  # Stmt-tag is var-def
     8b/-> *(eax+4) 0/r32/eax  # Vardef-var
@@ -5180,6 +5185,10 @@ test-parse-mu-reg-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n/eax: int <- copy 0\n")  # caller has consumed the 'var'
+    # var out/eax: (handle stmt)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %eax 4/r32/esp
     # var vars/ecx: (stack (addr var) 16)
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/size
@@ -5187,7 +5196,8 @@ test-parse-mu-reg-var-def:
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
     # convert
-    (parse-mu-var-def _test-input-stream %ecx)  # => eax
+    (parse-mu-var-def _test-input-stream %ecx %eax)
+    (lookup *eax *(eax+4))  # => eax
     # check result
     (check-ints-equal *eax 3 "F - test-parse-mu-reg-var-def/tag")  # Stmt-tag is reg-var-def
     8b/-> *(eax+0xc) 0/r32/eax  # Regvardef-outputs
