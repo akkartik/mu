@@ -3726,7 +3726,7 @@ $parse-var-with-type:create-var:
     (new-var-from-slice Heap %ecx *(ebp+0x10))
     # save out->register
 $parse-var-with-type:save-register:
-    # . var out-addr/edi: (addr var) = lookup(out)
+    # . var out-addr/edi: (addr var) = lookup(*out)
     8b/-> *(ebp+0x10) 7/r32/edi
     (lookup *edi *(edi+4))  # => eax
     89/<- %edi 0/r32/eax
@@ -3918,7 +3918,7 @@ parse-type-tree:  # ad: (addr allocation-descriptor), in: (addr stream byte), ou
     74/jump-if-= $parse-type-tree:end/disp8
     # out = new tree
     (allocate *(ebp+8) *Tree-size *(ebp+0x10))
-    # var out-addr/edx: (addr tree) = lookup(out)
+    # var out-addr/edx: (addr tree) = lookup(*out)
     8b/-> *(ebp+0x10) 2/r32/edx
     (lookup *edx *(edx+4))  # => eax
     89/<- %edx 0/r32/eax
@@ -4692,7 +4692,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     #   var line: (stream byte 512)
     #   var word-slice: slice
     #   allocate(Heap, Stmt-size, out)
-    #   var out-addr: (addr block) = lookup(out)
+    #   var out-addr: (addr block) = lookup(*out)
     #   out-addr->tag = 0/block
     #   out-addr->var = some unique name
     #   push(vars, out-addr->var)
@@ -4745,7 +4745,7 @@ parse-mu-block:  # in: (addr buffered-file), vars: (addr stack (handle var)), fn
     89/<- %edx 4/r32/esp
     # allocate into out
     (allocate Heap *Stmt-size *(ebp+0x14))
-    # var out-addr/edi: (addr block) = lookup(out)
+    # var out-addr/edi: (addr block) = lookup(*out)
     8b/-> *(ebp+0x14) 7/r32/edi
     (lookup *edi *(edi+4))  # => eax
     89/<- %edi 0/r32/eax
@@ -5909,22 +5909,29 @@ $new-block:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 new-var-def:  # ad: (addr allocation-descriptor), var: (handle var), out: (addr handle stmt)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     #
-    (allocate *(ebp+8) *Stmt-size)  # => eax
+    (allocate *(ebp+8) *Stmt-size *(ebp+0x14))
+    # var out-addr/eax: (addr stmt) = lookup(*out)
+    8b/-> *(ebp+0x14) 0/r32/eax
+    (lookup *eax *(eax+4))  # => eax
+    # out-addr->tag = stmt
     c7 0/subop/copy *eax 2/imm32/tag/var-on-stack  # Stmt-tag
     # result->var = var
     8b/-> *(ebp+0xc) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Vardef-var
+    8b/-> *(ebp+0x10) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Vardef-var
 $new-var-def:end:
     # . restore registers
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6212,7 +6219,7 @@ find-typeinfo:  # t: type-id, out: (addr handle typeinfo)
       # if (*out == 0) break
       81 7/subop/compare *edi 0/imm32
       74/jump-if-= break/disp8
-      # var tmp/eax: (addr typeinfo) = lookup(out)
+      # var tmp/eax: (addr typeinfo) = lookup(*out)
       (lookup *edi *(edi+4))  # => eax
       # if (tmp->id == t) break
       39/compare *eax 1/r32/ecx  # Typeinfo-id
@@ -6275,7 +6282,7 @@ find-or-create-typeinfo-output-var:  # T: (addr typeinfo), f: (addr slice), out:
       8b/-> *(edx+4) 0/r32/eax
       89/<- *(edi+0x10) 0/r32/eax  # Typeinfo-entry-output-var
       # initialize out
-      # . var out-addr/edx: (addr var) = lookup(out)
+      # . var out-addr/edx: (addr var) = lookup(*out)
       (lookup *edx *(edx+4))  # => eax
       89/<- %edx 0/r32/eax
       # . out->type = new constant type
