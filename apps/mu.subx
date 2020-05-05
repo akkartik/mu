@@ -5226,7 +5226,8 @@ test-parse-mu-reg-var-def:
     (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
     (check-strings-equal %eax "n" "F - test-parse-mu-reg-var-def/output-name")  # Var-name
     # v->register
-    (check-strings-equal *(eax+0x18) "eax" "F - test-parse-mu-reg-var-def/output-register")  # Var-register
+    (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
+    (check-strings-equal %eax "eax" "F - test-parse-mu-reg-var-def/output-register")
     # v->type == int
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
     (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-is-atom
