@@ -5766,7 +5766,7 @@ test-parse-mu-stmt:
     68/push 0/imm32
     68/push 0/imm32
     89/<- %eax 4/r32/esp
-    #
+    # v = new var("n")
     (copy-array Heap "n" %eax)
     (new-var Heap *eax *(eax+4) %edx)
     #
@@ -5813,24 +5813,43 @@ test-parse-mu-stmt-with-comma:
     68/push 0/imm32/top
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
-    # var v/edx: var
-    81 5/subop/subtract %esp 0x14/imm32  # Var-size
+    # var v/edx: (handle var)
+    68/push 0/imm32
+    68/push 0/imm32
     89/<- %edx 4/r32/esp
-    (zero-out %edx 0x14)  # Var-size
-    # v->name = "n"
-    c7 0/subop/copy *edx "n"/imm32  # Var-name
+    # var s/eax: (handle array byte)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %eax 4/r32/esp
+    # v = new var("n")
+    (copy-array Heap "n" %eax)
+    (new-var Heap *eax *(eax+4) %edx)
     #
-    (push %ecx %edx)
+    (push %ecx *edx)
+    (push %ecx *(edx+4))
+    # var out/eax: (handle stmt)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %eax 4/r32/esp
     # convert
-    (parse-mu-stmt _test-input-stream %ecx 0)  # => eax
-    # check result
-    (check-ints-equal *eax 1 "F - test-parse-mu-stmt-with-comma/tag")  # Stmt-tag is Stmt1
-    (check-strings-equal *(eax+4) "copy-to" "F - test-parse-mu-stmt-with-comma/name")  # Stmt1-operation
-    # edx: (handle list var) = result->inouts
-    8b/-> *(eax+8) 2/r32/edx  # Stmt1-inouts
-    # ebx: (handle var) = result->inouts->value
-    8b/-> *edx 3/r32/ebx  # Stmt-var-value
-    (check-strings-equal *ebx "n" "F - test-parse-mu-stmt-with-comma/inout:0")  # Var-name
+    (parse-mu-stmt _test-input-stream %ecx 0 %eax)
+    # var out-addr/edx: (addr stmt) = lookup(*out)
+    (lookup *eax *(eax+4))  # => eax
+    89/<- %edx 0/r32/eax
+    # out->tag
+    (check-ints-equal *edx 1 "F - test-parse-mu-stmt-with-comma/tag")  # Stmt-tag is Stmt1
+    # out->operation
+    (lookup *(edx+4) *(edx+8))  # Stmt1-operation Stmt1-operation => eax
+    (check-strings-equal %eax "copy-to" "F - test-parse-mu-stmt-with-comma/name")  # Stmt1-operation
+    # out->inouts->value->name
+    # . eax = out->inouts
+    (lookup *(edx+0xc) *(edx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    # . eax = out->inouts->value
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    # . eax = out->inouts->value->name
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
+    # .
+    (check-strings-equal %eax "n" "F - test-parse-mu-stmt-with-comma/inout:0")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
