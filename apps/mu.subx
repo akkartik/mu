@@ -5165,19 +5165,21 @@ test-parse-mu-var-def:
     (clear-stack %ecx)
     # convert
     (parse-mu-var-def _test-input-stream %ecx %esi)
+    # var out-addr/esi: (addr stmt)
     (lookup *esi *(esi+4))  # => eax
     89/<- %esi 0/r32/eax
+    #
     (check-ints-equal *esi 2 "F - test-parse-mu-var-def/tag")  # Stmt-tag is var-def
     # var v/ecx: (addr var) = lookup(out->var)
-    (lookup *(esi+4) *(esi+8))  # Vardef-var => eax
+    (lookup *(esi+4) *(esi+8))  # Vardef-var Vardef-var => eax
     89/<- %ecx 0/r32/eax
     # v->name
-    (lookup *ecx *(ecx+4))  # Var-name => eax
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
     (check-strings-equal %eax "n" "F - test-parse-mu-var-def/var-name")
     # v->register
     (check-ints-equal *(ecx+0x18) 0 "F - test-parse-mu-var-def/var-register")  # Var-register
     # v->type == int
-    (lookup *(ecx+8) *(ecx+0xc))  # Var-type => eax
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
     (check-ints-equal *eax 1 "F - test-parse-mu-var-def/var-type:0")  # Tree-is-atom
     (check-ints-equal *(eax+4) 1 "F - test-parse-mu-var-def/var-type:1")  # Tree-value
     (check-ints-equal *(eax+0xc) 0 "F - test-parse-mu-var-def/var-type:2")  # Tree-right
@@ -5194,10 +5196,10 @@ test-parse-mu-reg-var-def:
     # setup
     (clear-stream _test-input-stream)
     (write _test-input-stream "n/eax: int <- copy 0\n")  # caller has consumed the 'var'
-    # var out/eax: (handle stmt)
+    # var out/esi: (handle stmt)
     68/push 0/imm32
     68/push 0/imm32
-    89/<- %eax 4/r32/esp
+    89/<- %esi 4/r32/esp
     # var vars/ecx: (stack (addr var) 16)
     81 5/subop/subtract %esp 0x80/imm32
     68/push 0x80/imm32/size
@@ -5205,20 +5207,31 @@ test-parse-mu-reg-var-def:
     89/<- %ecx 4/r32/esp
     (clear-stack %ecx)
     # convert
-    (parse-mu-var-def _test-input-stream %ecx %eax)
-    (lookup *eax *(eax+4))  # => eax
-    # check result
-    (check-ints-equal *eax 3 "F - test-parse-mu-reg-var-def/tag")  # Stmt-tag is reg-var-def
-    8b/-> *(eax+0xc) 0/r32/eax  # Regvardef-outputs
-    (check-ints-equal *(eax+4) 0 "F - test-parse-mu-reg-var-def/single-output")  # List-next
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
-    (check-strings-equal *eax "n" "F - test-parse-mu-reg-var-def/output-name")  # Var-name
-    (check-strings-equal *(eax+0x10) "eax" "F - test-parse-mu-reg-var-def/output-register")  # Var-register
-    # ensure type is int
-    8b/-> *(eax+4) 0/r32/eax  # Var-type
-    (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/var-type:0")  # Tree-is-atom
-    (check-ints-equal *(eax+4) 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-value
-    (check-ints-equal *(eax+8) 0 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-right
+    (parse-mu-var-def _test-input-stream %ecx %esi)
+    # var out-addr/esi: (addr stmt)
+    (lookup *esi *(esi+4))  # => eax
+    89/<- %esi 0/r32/eax
+    #
+    (check-ints-equal *esi 3 "F - test-parse-mu-reg-var-def/tag")  # Stmt-tag is reg-var-def
+    # var v/ecx: (addr var) = lookup(out->outputs->value)
+    # . eax: (addr stmt-var) = lookup(out->outputs)
+    (lookup *(esi+0x14) *(esi+0x18))  # Regvardef-outputs Regvardef-outputs => eax
+    # .
+    (check-ints-equal *(eax+8) 0 "F - test-parse-mu-reg-var-def/single-output")  # Stmt-var-next
+    # . eax: (addr var) = lookup(eax->value)
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    # . ecx = eax
+    89/<- %ecx 0/r32/eax
+    # v->name
+    (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+    (check-strings-equal %eax "n" "F - test-parse-mu-reg-var-def/output-name")  # Var-name
+    # v->register
+    (check-strings-equal *(eax+0x18) "eax" "F - test-parse-mu-reg-var-def/output-register")  # Var-register
+    # v->type == int
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+    (check-ints-equal *eax 1 "F - test-parse-mu-reg-var-def/output-type:0")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-parse-mu-reg-var-def/output-type:1")  # Tree-value
+    (check-ints-equal *(eax+0xc) 0 "F - test-parse-mu-reg-var-def/output-type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5405,6 +5418,7 @@ $add-operation-and-inputs-to-stmt:inout-is-deref:
         ff 0/subop/increment *ecx
         ba/copy-to-edx 1/imm32/true
       }
+      # HERE
       (lookup-var-or-literal %ecx *(ebp+0x10))  # => eax
 $add-operation-and-inputs-to-stmt:save-var:
       (append-stmt-var Heap %eax *(edi+8) %edx)  # Stmt1-inouts or Regvardef-inouts => eax
@@ -5485,7 +5499,6 @@ $stmt-has-outputs:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 # if 'name' starts with a digit, create a new literal var for it
 # otherwise return first 'name' from the top (back) of 'vars' and abort if not found
 lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)), out: (addr handle var)
@@ -5493,6 +5506,7 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)), o
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     56/push-esi
     # esi = name
@@ -5510,24 +5524,26 @@ lookup-var-or-literal:  # name: (addr slice), vars: (addr stack (handle var)), o
       (is-decimal-digit? %ecx)  # => eax
       3d/compare-eax-and 0/imm32/false
       74/jump-if-= break/disp8
-      (new-literal-integer Heap %esi)  # => eax
+      (new-literal-integer Heap %esi *(ebp+0x10))
       eb/jump $lookup-var-or-literal:end/disp8
     }
     # else if (c == '"') return new var(name)
     {
       81 7/subop/compare %ecx 0x22/imm32/dquote
       75/jump-if-!= break/disp8
-      (new-literal Heap %esi)  # => eax
+      (new-literal Heap %esi *(ebp+0x10))
       eb/jump $lookup-var-or-literal:end/disp8
     }
     # otherwise return lookup-var(name, vars)
     {
+      # HERE
       (lookup-var %esi *(ebp+0xc))  # => eax
     }
 $lookup-var-or-literal:end:
     # . restore registers
     5e/pop-to-esi
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -5802,28 +5818,44 @@ $new-var:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 new-literal-integer:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
+    52/push-edx
     # if (!is-hex-int?(name)) abort
     (is-hex-int? *(ebp+0xc))  # => eax
     3d/compare-eax-and 0/imm32/false
     0f 84/jump-if-= $new-literal-integer:abort/disp32
-    # var type/ecx: (handle tree type-id) = new type()
-    (allocate *(ebp+8) *Tree-size)  # => eax
+    # var type/ecx: (handle tree type-id)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # type = new tree()
+    (allocate *(ebp+8) *Tree-size %ecx)
+    c7 0/subop/copy *ecx 1/imm32/true  # Tree-is-atom
     # nothing else to do; default type is 'literal'
-    c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
-    89/<- %ecx 0/r32/eax
-    # result = new var(s)
-    (new-var-from-slice *(ebp+8) *(ebp+0xc))  # => eax
-    89/<- *(eax+4) 1/r32/ecx
+    # out = new var(s)
+    (new-var-from-slice *(ebp+8) *(ebp+0xc) *(ebp+0x10))
+    # var out-addr/edx: (addr var) = lookup(*out)
+    8b/-> *(ebp+0x10) 0/r32/eax
+    (lookup *eax *(eax+4))  # => eax
+    89/<- %edx 0/r32/eax
+    # out-addr->type = type
+    8b/-> *ecx 0/r32/eax
+    89/<- *(edx+8) 0/r32/eax  # Var-type
+    8b/-> *(ecx+4) 0/r32/eax
+    89/<- *(edx+0xc) 0/r32/eax  # Var-type
 $new-literal-integer:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
+    5a/pop-to-edx
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
