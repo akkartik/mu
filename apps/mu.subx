@@ -5313,7 +5313,7 @@ $parse-mu-stmt:read-outputs:
         0f 84/jump-if-= $parse-mu-stmt:abort/disp32
         #
         (lookup-or-define-var %ecx *(ebp+0xc) *(ebp+0x10) %ebx)
-        8d/copy-addr *(edi+0x14) 0/r32/eax  # Stmt1-outputs
+        8d/copy-address *(edi+0x14) 0/r32/eax  # Stmt1-outputs
         (append-stmt-var Heap  *ebx *(ebx+4)  *(edi+0x14) *(edi+0x18)  %edx  %eax)  # Stmt1-outputs
         #
         e9/jump loop/disp32
@@ -5425,9 +5425,9 @@ $add-operation-and-inputs-to-stmt:inout-is-deref:
       }
       (lookup-var-or-literal %ecx *(ebp+0x10) %esi)
 $add-operation-and-inputs-to-stmt:save-var:
-      # HERE
-      (append-stmt-var Heap %eax *(edi+8) %edx)  # Stmt1-inouts or Regvardef-inouts => eax
-      89/<- *(edi+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
+      8d/copy-address *(edi+0xc) 0/r32/eax
+      (append-stmt-var Heap  *esi *(esi+4)  *(edi+0xc) *(edi+0x10)  %edx  %eax)  # Stmt1-inouts or Regvardef-inouts
+      #
       e9/jump loop/disp32
     }
 $add-operation-and-inputs-to-stmt:end:
@@ -6026,22 +6026,22 @@ append-list:  # ad: (addr allocation-descriptor), value: (handle _type), list: (
     81 7/subop/compare *(ebp+0x14) 0/imm32
     74/jump-if-= $append-list:end/disp8
     # otherwise append
-    # var curr/eax: (handle list _type) = list
-    8d/copy-address *(ebp+0x14) 0/r32/eax
+    # var curr/eax: (addr list _type) = lookup(list)
+    (lookup *(ebp+0x14) *(ebp+0x18))  # => eax
     # while (curr->next != null) curr = curr->next
     {
       81 7/subop/compare *(eax+8) 0/imm32  # List-next
       74/jump-if-= break/disp8
-      # curr = curr->next
+      # curr = lookup(curr->next)
       (lookup *(eax+8) *(eax+0xc))  # List-next, List-next => eax
       #
       eb/jump loop/disp8
     }
     # curr->next = out
     8b/-> *edi 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # List-next
     8b/-> *(edi+4) 1/r32/ecx
-    89/<- *(eax+0xc) 1/r32/ecx
+    89/<- *(eax+0xc) 1/r32/ecx  # List-next
     # out = list
     8b/-> *(ebp+0x14) 1/r32/ecx
     89/<- *edi 1/r32/ecx
@@ -6057,40 +6057,59 @@ $append-list:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
 append-stmt-var:  # ad: (addr allocation-descriptor), v: (handle var), vars: (handle stmt-var), is-deref?: boolean, out: (addr handle stmt-var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
-    #
-    (allocate *(ebp+8) *Stmt-var-size)  # => eax
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    89/<- *eax 1/r32/ecx  # Stmt-var-value
-    8b/-> *(ebp+0x14) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Stmt-var-is-deref
-    # if (list == null) return result
-    81 7/subop/compare *(ebp+0x10) 0/imm32
+    57/push-edi
+    # edi = out
+    8b/-> *(ebp+0x20) 7/r32/edi
+    # out = new stmt-var
+    (allocate *(ebp+8) *Stmt-var-size %edi)
+    # var out-addr/ecx: (addr stmt-var) = lookup(*out)
+    (lookup *edi *(edi+4))  # => eax
+    89/<- %ecx 0/r32/eax
+    # out-addr->value = v
+    8b/-> *(ebp+0xc) 0/r32/eax
+    89/<- *ecx 0/r32/eax  # Stmt-var-value
+    8b/-> *(ebp+0x10) 0/r32/eax
+    89/<- *(ecx+4) 0/r32/eax  # Stmt-var-value
+    # out-addr->is-deref? = is-deref?
+    8b/-> *(ebp+0x1c) 0/r32/eax
+    89/<- *(ecx+0x10) 0/r32/eax  # Stmt-var-is-deref
+    # if (vars == null) return result
+    81 7/subop/compare *(ebp+0x14) 0/imm32/null
     74/jump-if-= $append-stmt-var:end/disp8
     # otherwise append
-    # var curr/ecx: (handle stmt-var) = vars
-    8b/-> *(ebp+0x10) 1/r32/ecx
+    # var curr/eax: (addr stmt-var) = lookup(vars)
+    (lookup *(ebp+0x14) *(ebp+0x18))  # => eax
     # while (curr->next != null) curr = curr->next
     {
-      81 7/subop/compare *(ecx+4) 0/imm32  # List-next
+      81 7/subop/compare *(eax+8) 0/imm32  # Stmt-var-next
       74/jump-if-= break/disp8
-      # curr = curr->next
-      8b/-> *(ecx+4) 1/r32/ecx
+      # curr = lookup(curr->next)
+      (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next, Stmt-var-next => eax
+      #
       eb/jump loop/disp8
     }
-    # curr->next = result
-    89/<- *(ecx+4) 0/r32/eax
-    # return vars
-    8b/-> *(ebp+0x10) 0/r32/eax
+    # curr->next = out
+    8b/-> *edi 1/r32/ecx
+    89/<- *(eax+8) 1/r32/ecx  # Stmt-var-next
+    8b/-> *(edi+4) 1/r32/ecx
+    89/<- *(eax+0xc) 1/r32/ecx  # Stmt-var-next
+    # out = vars
+    8b/-> *(ebp+0x14) 1/r32/ecx
+    89/<- *edi 1/r32/ecx
+    8b/-> *(ebp+0x18) 1/r32/ecx
+    89/<- *(edi+4) 1/r32/ecx
 $append-stmt-var:end:
     # . restore registers
+    5f/pop-to-edi
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
