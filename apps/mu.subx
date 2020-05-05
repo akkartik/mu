@@ -5405,10 +5405,8 @@ lookup-var:  # name: (addr slice), vars: (addr stack (handle var)) -> result/eax
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    # var target/eax: (handle array byte) = slice-to-string(name)
-    (slice-to-string Heap *(ebp+8))  # => eax
     #
-    (lookup-var-helper %eax *(ebp+0xc))  # => eax
+    (lookup-var-helper *(ebp+8) *(ebp+0xc))  # => eax
     # if (result == 0) abort
     3d/compare-eax-and 0/imm32
     74/jump-if-= $lookup-var:abort/disp8
@@ -5430,7 +5428,7 @@ $lookup-var:abort:
     # never gets here
 
 # return first 'name' from the top (back) of 'vars', and 0/null if not found
-lookup-var-helper:  # name: (addr array byte), vars: (addr stack (handle var)) -> result/eax: (handle var)
+lookup-var-helper:  # name: (addr slice), vars: (addr stack (handle var)) -> result/eax: (handle var)
     # pseudocode:
     #   var curr: (addr handle var) = &vars->data[vars->top - 4]
     #   var min = vars->data
@@ -5467,7 +5465,7 @@ lookup-var-helper:  # name: (addr array byte), vars: (addr stack (handle var)) -
       # var v/eax: (handle var) = *curr
       8b/-> *ebx 0/r32/eax
       # if (v->name == name) return v
-      (string-equal? *eax *(ebp+8))  # Var-name
+      (slice-equal? *(ebp+8) *eax)  # Var-name
       3d/compare-eax-and 0/imm32/false
       8b/-> *ebx 0/r32/eax
       75/jump-if-!= break/disp8
@@ -5503,18 +5501,15 @@ lookup-or-define-var:  # name: (addr slice), vars: (addr stack (handle var)), fn
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var target/ecx: (handle array byte) = slice-to-string(name)
-    (slice-to-string Heap *(ebp+8))  # => eax
-    89/<- %ecx 0/r32/eax
     #
-    (lookup-var-helper %ecx *(ebp+0xc))  # => eax
+    (lookup-var-helper *(ebp+8) *(ebp+0xc))  # => eax
     {
       # if (result != 0) return
       3d/compare-eax-and 0/imm32
       75/jump-if-!= break/disp8
       # if name is one of fn's outputs, return it
       {
-        (find-in-function-outputs *(ebp+0x10) %ecx)  # => eax
+        (find-in-function-outputs *(ebp+0x10) *(ebp+8))  # => eax
         3d/compare-eax-and 0/imm32
         # otherwise abort
         0f 84/jump-if-!= $lookup-var:abort/disp32
@@ -5528,7 +5523,7 @@ $lookup-or-define-var:end:
     5d/pop-to-ebp
     c3/return
 
-find-in-function-outputs:  # fn: (handle function), name: (handle array byte) -> result/eax: (handle var)
+find-in-function-outputs:  # fn: (handle function), name: (addr slice) -> result/eax: (handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5545,7 +5540,7 @@ find-in-function-outputs:  # fn: (handle function), name: (handle array byte) ->
       8b/-> *ecx 0/r32/eax  # List-value
       # if (curr->name == name) return curr
       50/push-eax
-      (string-equal? *eax *(ebp+0xc))
+      (slice-equal? *(ebp+0xc) *eax)  # => eax
       3d/compare-eax-and 0/imm32/false
       58/pop-to-eax
       75/jump-if-!= $find-in-function-outputs:end/disp8
