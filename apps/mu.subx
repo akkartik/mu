@@ -5666,31 +5666,31 @@ $lookup-var-helper:error1:
     cd/syscall  0x80/imm8
     # never gets here
 
-# TODO
 # return first 'name' from the top (back) of 'vars' and create a new var for a fn output if not found
 lookup-or-define-var:  # name: (addr slice), vars: (addr stack (handle var)), fn: (addr function), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    51/push-ecx
+    50/push-eax
     #
-    (lookup-var-helper *(ebp+8) *(ebp+0xc))  # => eax
+    (lookup-var-helper *(ebp+8) *(ebp+0xc) *(ebp+0x14))
     {
-      # if (result != 0) return
-      3d/compare-eax-and 0/imm32
+      # if (out != 0) return
+      8b/-> *(ebp+0x14) 0/r32/eax
+      81 7/subop/compare *eax 0/imm32
       75/jump-if-!= break/disp8
       # if name is one of fn's outputs, return it
       {
-        (find-in-function-outputs *(ebp+0x10) *(ebp+8))  # => eax
-        3d/compare-eax-and 0/imm32
+        (find-in-function-outputs *(ebp+0x10) *(ebp+8) *(ebp+0x14))
+        81 7/subop/compare *eax 0/imm32
         # otherwise abort
-        0f 84/jump-if-!= $lookup-var:abort/disp32
+        0f 84/jump-if-= $lookup-var:abort/disp32
       }
     }
 $lookup-or-define-var:end:
     # . restore registers
-    59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
