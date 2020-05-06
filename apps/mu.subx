@@ -6784,17 +6784,19 @@ compute-size-of-var:  # in: (addr var) -> result/eax: int
     89/<- %ebp 4/r32/esp
     # . push registers
     51/push-ecx
-    # TODO
-    # var t/ecx: (handle tree type-id) = v->type
+    # var t/ecx: (addr tree type-id) = lookup(v->type)
     8b/-> *(ebp+8) 1/r32/ecx
-    8b/-> *(ecx+4) 1/r32/ecx  # Var-type
-    # if (t->left-is-atom == false) t = t->left
+    (lookup *(ecx+8) *(ecx+0xc))  # => eax
+    89/<- %ecx 0/r32/eax
+    # if (t->left-is-atom == false) t = lookup(t->left)
     {
       81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
       75/jump-if-!= break/disp8
-      8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
+      (lookup *(ecx+4) *(ecx+8))  # Tree-left Tree-left => eax
+      89/<- %ecx 0/r32/eax
     }
-    (compute-size-of-type-id *(ecx+4))  # Tree-left => eax
+    # TODO: ensure t is an atom
+    (compute-size-of-type-id *(ecx+4))  # Tree-value => eax
 $compute-size-of-var:end:
     # . restore registers
     59/pop-to-ecx
