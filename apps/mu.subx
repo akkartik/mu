@@ -6221,31 +6221,31 @@ $append-to-block:end:
 # However, we also want to allow types to be used before their definitions.
 # This means we can't ever assume any type data structures exist.
 
-# TODO
 lookup-or-create-constant:  # container: (addr stmt-var), field-name: (addr slice), out: (addr handle var)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     56/push-esi
     # var container-type/esi: type-id
     (container-type *(ebp+8))  # => eax
-#?     (write-buffered Stderr "lookup-or-create-constant: container type-id: ")
-#?     (print-int32-buffered Stderr %eax)
-#?     (write-buffered Stderr Newline)
-#?     (flush Stderr)
     89/<- %esi 0/r32/eax
-    # var typeinfo/eax: (addr typeinfo)
-    (find-or-create-typeinfo %esi)  # => eax
-#?     (write-buffered Stderr "lookup-or-create-constant: typeinfo: ")
-#?     (print-int32-buffered Stderr %eax)
-#?     (write-buffered Stderr Newline)
-#?     (flush Stderr)
+    # var tmp/eax: (handle typeinfo) = find-or-create-typeinfo(container-type)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %eax 4/r32/esp
+    (find-or-create-typeinfo %esi %eax)
+    # var tmp-addr/eax: (addr typeinfo) = lookup(tmp)
+    (lookup *eax *(eax+4))  # => eax
     # result = find-or-create-typeinfo-output-var(typeinfo, field-name)
-    (find-or-create-typeinfo-output-var %eax *(ebp+0xc))  # => eax
+    (find-or-create-typeinfo-output-var %eax *(ebp+0xc) *(ebp+0x10))
 $lookup-or-create-constant:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
     # . restore registers
     5e/pop-to-esi
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
