@@ -6001,36 +6001,6 @@ $new-var-from-slice:end:
     5d/pop-to-ebp
     c3/return
 
-new-block:  # ad: (addr allocation-descriptor), data: (handle list stmt), out: (addr handle stmt)
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # . save registers
-    50/push-eax
-    51/push-ecx
-    #
-    (allocate *(ebp+8) *Stmt-size *(ebp+0x10))
-    # var out-addr/eax: (addr stmt) = lookup(out)
-    8b/-> *(ebp+0x10) 0/r32/eax
-    (lookup *eax *(eax+4))  # => eax
-    # out-addr->tag = block
-    c7 0/subop/copy *eax 0/imm32/tag/block  # Stmt-tag
-    # out-addr->stmts = data
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    8b/-> *ecx 1/r32/ecx
-    89/<- *(eax+4) 1/r32/ecx  # Block-stmts
-    8b/-> *(ebp+0xc) 1/r32/ecx
-    8b/-> *(ecx+4) 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Block-stmts
-$new-block:end:
-    # . restore registers
-    59/pop-to-ecx
-    58/pop-to-eax
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
 new-var-def:  # ad: (addr allocation-descriptor), var: (handle var), out: (addr handle stmt)
     # . prologue
     55/push-ebp
