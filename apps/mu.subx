@@ -6819,26 +6819,30 @@ populate-mu-type-offsets:  # in: (addr typeinfo)
     57/push-edi
     # var curr-offset/edi: int = 0
     bf/copy-to-edi 0/imm32
-    # var table/ecx: (handle table string_key (handle typeinfo-entry)) = T->fields
+    # var table/ecx: (addr table string_key (handle typeinfo-entry)) = lookup(T->fields)
     8b/-> *(ebp+8) 1/r32/ecx
-    8b/-> *(ecx+4) 1/r32/ecx  # Typeinfo-fields
-    # var num-elems/edx: int = table->write / 8
+    (lookup *(ecx+4) *(ecx+8))  # Typeinfo-fields Typeinfo-fields => eax
+    89/<- %ecx 0/r32/eax
+    # var num-elems/edx: int = table->write / Typeinfo-fields-row-size
     8b/-> *ecx 2/r32/edx  # stream-write
-    c1 5/subop/shift-right-logical  %edx 3/imm8
+    c1 5/subop/shift-right-logical  %edx 4/imm8
     # var i/ebx: int = 0
     bb/copy-to-ebx 0/imm32
     {
 $populate-mu-type-offsets:loop:
       39/compare %ebx 2/r32/edx
       7d/jump-if->= break/disp8
-      # var v/esi: (handle typeinfo-entry)
+      # var v/esi: (addr typeinfo-entry)
       (locate-typeinfo-entry-with-index %ecx %ebx)  # => eax
       89/<- %esi 0/r32/eax
       # v->output-var->offset = curr-offset
-      8b/-> *(esi+8) 0/r32/eax  # Typeinfo-entry-output-var
-      89/<- *(eax+0xc) 7/r32/edi  # Var-offset
+      # . eax: (addr var)
+      (lookup *(esi+0xc) *(esi+0x10))  # Typeinfo-entry-output-var Typeinfo-entry-output-var => eax
+      89/<- *(eax+0x14) 7/r32/edi  # Var-offset
       # curr-offset += size-of(v->input-var)
-      8b/-> *esi 0/r32/eax  # Typeinfo-entry-input-var
+      # . eax: (addr var)
+      (lookup *esi *(esi+4))  # Typeinfo-entry-input-var Typeinfo-entry-input-var => eax
+      # .
       (size-of %eax)  # => eax
       01/add-to %edi 0/r32/eax
       # ++i
@@ -6858,8 +6862,7 @@ $populate-mu-type-offsets:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
-locate-typeinfo-entry-with-index:  # table: (addr table string_key (handle typeinfo-entry)), idx: int, out: (addr handle typeinfo-entry)
+locate-typeinfo-entry-with-index:  # table: (addr table (handle array byte) (handle typeinfo-entry)), idx: int -> result/eax: (addr typeinfo-entry)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6871,7 +6874,7 @@ locate-typeinfo-entry-with-index:  # table: (addr table string_key (handle typei
     57/push-edi
     # esi = table
     8b/-> *(ebp+8) 6/r32/esi
-    # var curr/ecx: (addr string_key) = table->data
+    # var curr/ecx: (addr row (handle array byte) (handle typeinfo-entry)) = table->data
     8d/copy-address *(esi+0xc) 1/r32/ecx
     # var max/edx: (addr byte) = &table->data[table->write]
     8b/-> *esi 2/r32/edx
@@ -6880,17 +6883,19 @@ locate-typeinfo-entry-with-index:  # table: (addr table string_key (handle typei
 $locate-typeinfo-entry-with-index:loop:
       39/compare %ecx 2/r32/edx
       73/jump-if-addr>= $locate-typeinfo-entry-with-index:abort/disp8
-      # var v/ebx: (handle typeinfo-entry)
-      8b/-> *(ecx+4) 3/r32/ebx
+      # var v/eax: (addr typeinfo-entry)
+      (lookup *(ecx+8) *(ecx+0xc))  # => eax
       # if (v->index == idx) return v
-      8b/-> *(ebx+4) 0/r32/eax  # Typeinfo-entry-index
-      39/compare *(ebp+0xc) 0/r32/eax
-      89/<- %eax 3/r32/ebx
-      74/jump-if-= break/disp8
-      # curr += 8
-      81 0/subop/add %ecx 8/imm32
+      8b/-> *(eax+8) 3/r32/ebx  # Typeinfo-entry-index
+      39/compare *(ebp+0xc) 3/r32/ebx
+      74/jump-if-= $locate-typeinfo-entry-with-index:end/disp8
+      # curr += Typeinfo-entry-size
+      81 0/subop/add %ecx 0x10/imm32  # Typeinfo-entry-size
+      #
       eb/jump loop/disp8
     }
+    # return 0
+    b8/copy-to-eax 0/imm32
 $locate-typeinfo-entry-with-index:end:
     # . restore registers
     5f/pop-to-edi
