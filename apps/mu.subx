@@ -7426,9 +7426,7 @@ $emit-subx-stmt-list:check-for-reg-var-def:
         0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:reg-var-def:
         # TODO: ensure that there's exactly one output
-        (compute-reg-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10))
-        # register variable definition
-        (push *(ebp+0x10) %eax)
+        (push-output-and-maybe-emit-spill *(ebp+8) %ecx *(ebp+0x10))
         # emit the instruction as usual
         (emit-subx-stmt *(ebp+8) %ecx Primitives)
         # var-seen? = true
@@ -7456,8 +7454,7 @@ $emit-subx-stmt-list:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
-compute-reg-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var)), out: (addr handle var)
+push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-var-def), vars: (addr stack (handle var))
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7465,32 +7462,34 @@ compute-reg-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     51/push-ecx
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # var output/ecx: (handle var) = curr-stmt->outputs->value
-    8b/-> *(ecx+0xc) 1/r32/ecx  # Regvardef-inouts
-    8b/-> *ecx 1/r32/ecx  # List-value
+    # var sv/eax: (addr stmt-var) = lookup(curr-stmt->outputs)
+    (lookup *(ecx+0x14) *(ecx+0x18))  # Regvardef-outputs Regvardef-outputs => eax
+    # push(vars, sv->value)
+    (push *(ebp+0x10) *eax)  # Stmt-var-value
+    (push *(ebp+0x10) *(eax+4))  # Stmt-var-value
+    # var v/ecx: (addr var) = lookup(sv->value)
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %ecx 0/r32/eax
     # v->block-depth = *Curr-block-depth
     8b/-> *Curr-block-depth 0/r32/eax
-    89/<- *(ecx+8) 0/r32/eax  # Var-block-depth
-    # var reg/eax: (handle array byte) = output->register
-    8b/-> *(ecx+0x10) 0/r32/eax  # Var-register
-    # ensure that output is in a register
-    3d/compare-eax-and 0/imm32
-    0f 84/jump-if-= $compute-reg-and-maybe-emit-spill:abort/disp32
+    89/<- *(ecx+0x10) 0/r32/eax  # Var-block-depth
+    # ensure that v is in a register
+    81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
+    0f 84/jump-if-= $push-output-and-maybe-emit-spill:abort/disp32
     # if already-spilled-this-block?(reg, vars) return
     (already-spilled-this-block? %ecx *(ebp+0x10))  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $compute-reg-and-maybe-emit-spill:end/disp8
+    75/jump-if-!= $push-output-and-maybe-emit-spill:end/disp8
     # TODO: assert(size-of(output) == 4)
     # *Curr-local-stack-offset -= 4
     81 5/subop/subtract *Curr-local-stack-offset 4/imm32
     # emit spill
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "ff 6/subop/push %")
-    (write-buffered *(ebp+8) *(ecx+0x10))  # Var-register
+    (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
+    (write-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) Newline)
-$compute-reg-and-maybe-emit-spill:end:
-    # return output
-    89/<- %eax 1/r32/ecx
+$push-output-and-maybe-emit-spill:end:
     # . restore registers
     59/pop-to-ecx
     # . epilogue
@@ -7498,7 +7497,7 @@ $compute-reg-and-maybe-emit-spill:end:
     5d/pop-to-ebp
     c3/return
 
-$compute-reg-and-maybe-emit-spill:abort:
+$push-output-and-maybe-emit-spill:abort:
     # error("var '" var->name "' initialized from an instruction must live in a register\n")
     (write-buffered Stderr "var '")
     (write-buffered Stderr *eax)  # Var-name
