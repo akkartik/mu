@@ -6952,7 +6952,7 @@ size-of:  # v: (addr var) -> result/eax: int
       (size-of-array %ecx)  # => eax
       eb/jump $size-of:end/disp8
     }
-    # if (!t->is-atom?) t = t->left
+    # if (!t->is-atom?) t = lookup(t->left)
     {
       81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
       75/jump-if-!= break/disp8
@@ -6975,12 +6975,14 @@ size-of-deref:  # v: (addr var) -> result/eax: int
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # TODO
-    # var t/ecx: (handle tree type-id) = v->type
+    # var t/ecx: (addr tree type-id) = lookup(v->type)
     8b/-> *(ebp+8) 1/r32/ecx
-    8b/-> *(ecx+4) 1/r32/ecx  # Var-type
+    (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
+    89/<- %ecx 0/r32/eax
     # TODO: assert(t is an addr)
-    8b/-> *(ecx+8) 1/r32/ecx  # Tree-right
+    # t = lookup(t->right)
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Tree-right Tree-right => eax
+    89/<- %ecx 0/r32/eax
     # if is-mu-array?(t) return size-of-array(t)
     {
       (is-mu-array? %ecx)  # => eax
@@ -6989,13 +6991,15 @@ size-of-deref:  # v: (addr var) -> result/eax: int
       (size-of-array %ecx)  # => eax
       eb/jump $size-of:end/disp8
     }
-    # if (t->left-is-atom == false) t = t->left
+    # if (!t->is-atom?) t = lookup(t->left)
     {
       81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
       75/jump-if-!= break/disp8
-      8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
+      (lookup *(ecx+4) *(ecx+8))  # Tree-left Tree-left => eax
+      89/<- %ecx 0/r32/eax
     }
-    (size-of-type-id *(ecx+4))  # Tree-left => eax
+    # TODO: assert t->is-atom?
+    (size-of-type-id *(ecx+4))  # Tree-value => eax
 $size-of-deref:end:
     # . restore registers
     59/pop-to-ecx
