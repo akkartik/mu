@@ -5749,6 +5749,7 @@ find-in-function-outputs:  # fn: (addr function), name: (addr slice), out: (addr
       # curr = curr->next
       (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
       89/<- %ecx 0/r32/eax
+      #
       eb/jump loop/disp8
     }
     b8/copy-to-eax 0/imm32
@@ -10556,14 +10557,14 @@ $emit-subx-var-as-rm32:end:
     5d/pop-to-ebp
     c3/return
 
-# TODO
-find-matching-primitive:  # primitives: (addr primitive), stmt: (addr stmt), out: (addr handle primitive)
+find-matching-primitive:  # primitives: (addr primitive), stmt: (addr stmt) -> result/eax: (addr primitive)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
-    # var curr/ecx: (handle primitive) = primitives
+    # var curr/ecx: (addr primitive) = primitives
     8b/-> *(ebp+8) 1/r32/ecx
     {
 $find-matching-primitive:loop:
@@ -10580,7 +10581,9 @@ $find-matching-primitive:loop:
       }
 $find-matching-primitive:next-primitive:
       # curr = curr->next
-      8b/-> *(ecx+0x24) 1/r32/ecx  # Primitive-next
+      (lookup *(ecx+0x34) *(ecx+0x38))  # Primitive-next Primitive-next => eax
+      89/<- %ecx 0/r32/eax
+      #
       e9/jump loop/disp32
     }
     # return null
@@ -10588,6 +10591,7 @@ $find-matching-primitive:next-primitive:
 $find-matching-primitive:end:
     # . restore registers
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
