@@ -3456,7 +3456,7 @@ $populate-mu-function-header:done:
     (check-no-tokens-left *(ebp+8))
 $populate-mu-function-header:end:
     # . reclaim locals
-    81 0/subop/add %esp 8/imm32
+    81 0/subop/add %esp 0x10/imm32
     # . restore registers
     5f/pop-to-edi
     5b/pop-to-ebx
@@ -3528,17 +3528,21 @@ test-function-header-with-arg:
     89/<- %ebx 4/r32/esp
     # convert
     (populate-mu-function-header _test-input-stream %ecx %ebx)
-    # check result
-    (check-strings-equal *ecx "foo" "F - test-function-header-with-arg/name")  # Function-name
-    # edx: (handle list var) = result->inouts
-    8b/-> *(ecx+8) 2/r32/edx  # Function-inouts
-    # ebx: (handle var) = result->inouts->value
-    8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "n" "F - test-function-header-with-arg/inout:0")  # Var-name
-    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-arg/inout:0/type:0")  # Tree-is-atom
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-arg/inout:0/type:1")  # Tree-value
-    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-arg/inout:0/type:2")  # Tree-right
+    # check result->name
+    (lookup *ecx *(ecx+4))  # Function-name Function-name => eax
+    (check-strings-equal %eax "foo" "F - test-function-header-with-arg/name")
+    # var v/edx: (addr var) = result->inouts->value
+    (lookup *(ecx+8) *(ecx+0xc))  # Function-inouts Function-inouts => eax
+    (lookup *eax *(eax+4))  # List-value List-value => eax
+    89/<- %edx 0/r32/eax
+    # check v->name
+    (lookup *edx *(edx+4))  # Var-name Var-name => eax
+    (check-strings-equal %eax "n" "F - test-function-header-with-arg/inout:0")
+    # check v->type
+    (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
+    (check-ints-equal *eax 1 "F - test-function-header-with-arg/inout:0/type:0")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-function-header-with-arg/inout:0/type:1")  # Tree-value
+    (check-ints-equal *(eax+0xc) 0 "F - test-function-header-with-arg/inout:0/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6065,8 +6069,11 @@ append-list:  # ad: (addr allocation-descriptor), value: (handle _type), list: (
     57/push-edi
     # edi = out
     8b/-> *(ebp+0x1c) 7/r32/edi
-    # out = new list
+    # *out = new list
     (allocate *(ebp+8) *List-size %edi)
+    # var out-addr/edi: (addr list _type) = lookup(*out)
+    (lookup *edi *(edi+4))  # => eax
+    89/<- %edi 0/r32/eax
     # out->value = value
     8b/-> *(ebp+0xc) 0/r32/eax
     89/<- *edi 0/r32/eax  # List-value
