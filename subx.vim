@@ -38,7 +38,7 @@ set cpo&vim
 setlocal formatoptions-=t  " allow long lines
 setlocal formatoptions+=c  " but comments should still wrap
 
-setlocal iskeyword+=-,?,<,>,$
+setlocal iskeyword+=-,?,<,>,$,@
 
 syntax match subxH1Comment /# - .*/ | highlight link subxH1Comment Comment
 syntax match subxComment /#\( \.\| - \|? \)\@!.*/ | highlight link subxComment Comment
