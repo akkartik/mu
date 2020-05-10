@@ -3566,38 +3566,54 @@ test-function-header-with-multiple-args:
     89/<- %ebx 4/r32/esp
     # convert
     (populate-mu-function-header _test-input-stream %ecx %ebx)
-    # check result
-    (check-strings-equal *ecx "foo")  # Function-name
-    # edx: (handle list var) = result->inouts
-    8b/-> *(ecx+8) 2/r32/edx  # Function-inouts
+    # check result->name
+    (lookup *ecx *(ecx+4))  # Function-name Function-name => eax
+    (check-strings-equal %eax "foo" "F - test-function-header-with-multiple-args/name")
+    # var inouts/edx: (addr list var) = lookup(result->inouts)
+    (lookup *(ecx+8) *(ecx+0xc))  # Function-inouts Function-inouts => eax
+    89/<- %edx 0/r32/eax
 $test-function-header-with-multiple-args:inout0:
-    # ebx: (handle var) = result->inouts->value
-    8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
-    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:0/type:0")  # Tree-is-atom
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:0/type:1")  # Tree-value
-    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args/inout:0/type:2")  # Tree-right
-    # edx = result->inouts->next
-    8b/-> *(edx+4) 2/r32/edx  # List-next
+    # var v/ebx: (addr var) = lookup(inouts->value)
+    (lookup *edx *(edx+4))  # List-value List-value => eax
+    89/<- %ebx 0/r32/eax
+    # check v->name
+    (lookup *ebx *(ebx+4))  # Var-name Var-name => eax
+    (check-strings-equal %eax "a" "F - test-function-header-with-multiple-args/inout:0")  # Var-name
+    # check v->type
+    (lookup *(ebx+8) *(ebx+0xc))  # Var-type Var-type => eax
+    (check-ints-equal *eax 1 "F - test-function-header-with-multiple-args/inout:0/type:0")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-function-header-with-multiple-args/inout:0/type:1")  # Tree-value
+    (check-ints-equal *(eax+0xc) 0 "F - test-function-header-with-multiple-args/inout:0/type:2")  # Tree-right
 $test-function-header-with-multiple-args:inout1:
-    # ebx = result->inouts->next->value
-    8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "b" "F - test-function-header-with-multiple-args/inout:1")  # Var-name
-    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:1/type:0")  # Tree-is-atom
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:1/type:1")  # Tree-value
-    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args/inout:1/type:2")  # Tree-right
-    # edx = result->inouts->next->next
-    8b/-> *(edx+4) 2/r32/edx  # List-next
+    # inouts = lookup(inouts->next)
+    (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
+    89/<- %edx 0/r32/eax
+    # v = lookup(inouts->value)
+    (lookup *edx *(edx+4))  # List-value List-value => eax
+    89/<- %ebx 0/r32/eax
+    # check v->name
+    (lookup *ebx *(ebx+4))  # Var-name Var-name => eax
+    (check-strings-equal %eax "b" "F - test-function-header-with-multiple-args/inout:1")  # Var-name
+    # check v->type
+    (lookup *(ebx+8) *(ebx+0xc))  # Var-type Var-type => eax
+    (check-ints-equal *eax 1 "F - test-function-header-with-multiple-args/inout:1/type:0")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-function-header-with-multiple-args/inout:1/type:1")  # Tree-value
+    (check-ints-equal *(eax+0xc) 0 "F - test-function-header-with-multiple-args/inout:1/type:2")  # Tree-right
 $test-function-header-with-multiple-args:inout2:
-    # ebx = result->inouts->next->next->value
-    8b/-> *edx 3/r32/ebx  # List-value
-    (check-strings-equal *ebx "c" "F - test-function-header-with-multiple-args/inout:2")  # Var-name
-    8b/-> *(ebx+4) 3/r32/ebx  # Var-type
-    (check-ints-equal *ebx 1 "F - test-function-header-with-multiple-args/inout:2/type:0")  # Tree-is-atom
-    (check-ints-equal *(ebx+4) 1 "F - test-function-header-with-multiple-args/inout:2/type:1")  # Tree-value
-    (check-ints-equal *(ebx+8) 0 "F - test-function-header-with-multiple-args/inout:2/type:2")  # Tree-right
+    # inouts = lookup(inouts->next)
+    (lookup *(edx+8) *(edx+0xc))  # List-next List-next => eax
+    89/<- %edx 0/r32/eax
+    # v = lookup(inouts->value)
+    (lookup *edx *(edx+4))  # List-value List-value => eax
+    89/<- %ebx 0/r32/eax
+    # check v->name
+    (lookup *ebx *(ebx+4))  # Var-name Var-name => eax
+    (check-strings-equal %eax "c" "F - test-function-header-with-multiple-args/inout:2")  # Var-name
+    # check v->type
+    (lookup *(ebx+8) *(ebx+0xc))  # Var-type Var-type => eax
+    (check-ints-equal *eax 1 "F - test-function-header-with-multiple-args/inout:2/type:0")  # Tree-is-atom
+    (check-ints-equal *(eax+4) 1 "F - test-function-header-with-multiple-args/inout:2/type:1")  # Tree-value
+    (check-ints-equal *(eax+0xc) 0 "F - test-function-header-with-multiple-args/inout:2/type:2")  # Tree-right
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -6074,7 +6090,7 @@ append-list:  # ad: (addr allocation-descriptor), value: (handle _type), list: (
     # var out-addr/edi: (addr list _type) = lookup(*out)
     (lookup *edi *(edi+4))  # => eax
     89/<- %edi 0/r32/eax
-    # out->value = value
+    # out-addr->value = value
     8b/-> *(ebp+0xc) 0/r32/eax
     89/<- *edi 0/r32/eax  # List-value
     8b/-> *(ebp+0x10) 0/r32/eax
@@ -6094,6 +6110,8 @@ append-list:  # ad: (addr allocation-descriptor), value: (handle _type), list: (
       #
       eb/jump loop/disp8
     }
+    # edi = out
+    8b/-> *(ebp+0x1c) 7/r32/edi
     # curr->next = out
     8b/-> *edi 1/r32/ecx
     89/<- *(eax+8) 1/r32/ecx  # List-next
