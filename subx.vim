@@ -7,6 +7,29 @@
 " Copy this into your ftplugin directory, and add the following to your vimrc
 " or to .vim/ftdetect/subx.vim:
 "   autocmd BufReadPost,BufNewFile *.subx set filetype=subx
+"
+" Some highlight groups you might want to select colors for in your vimrc:
+"   subxFunction
+"   subxMinorFunction
+"   subxTest
+"
+" Optionally, devote more colors to different kinds of comments. Some suggestions
+" for 256-color terminals to add to your vimrc:
+"   blue tones:
+"     highlight subxH1Comment cterm=underline ctermfg=27
+"     highlight subxComment ctermfg=27
+"     highlight subxS1Comment ctermfg=19
+"     highlight subxS2Comment ctermfg=245
+"   blue-green tones
+"     highlight subxH1Comment cterm=underline ctermfg=25
+"     highlight subxComment ctermfg=25
+"     highlight subxS1Comment ctermfg=19
+"     highlight subxS2Comment ctermfg=245
+"   grey tones
+"    highlight subxH1Comment cterm=bold,underline
+"    highlight subxComment cterm=bold ctermfg=236
+"    highlight subxS1Comment cterm=bold ctermfg=242
+"    highlight subxS2Comment ctermfg=242
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -17,30 +40,14 @@ setlocal formatoptions+=c  " but comments should still wrap
 
 setlocal iskeyword+=-,?,<,>
 
-" blue tones
-" comment colors for dark terminal: 14, 39, 27, 19
-" comment colors for light terminal: 19, 27, 39, 6
-"? syntax match subxH1Comment /# - .*/ | highlight subxH1Comment cterm=underline ctermfg=27
-"? syntax match subxComment /#[^ ].*\|# [^.-].*\|# \?$/ | highlight subxComment ctermfg=27
-"? syntax match subxS1Comment /# \..*/ | highlight subxS1Comment ctermfg=19
-"? syntax match subxS2Comment /# \. \..*/ | highlight subxS2Comment ctermfg=245
-
-" blue-green tones
-syntax match subxH1Comment /# - .*/ | highlight subxH1Comment cterm=underline ctermfg=25
-syntax match subxComment /#\( \.\| - \|? \)\@!.*/ | highlight subxComment ctermfg=25
-syntax match subxS1Comment /# \..*/ | highlight subxS1Comment ctermfg=19
-syntax match subxS2Comment /# \. \..*/ | highlight subxS2Comment ctermfg=245
-
-" grey tones
-"? syntax match subxH1Comment /# - .*/ | highlight subxH1Comment cterm=bold,underline
-"? syntax match subxComment /#[^ ].*\|# [^.-].*\|# \?$/ | highlight subxComment cterm=bold ctermfg=236
-"? hi Normal ctermfg=236
-"? syntax match subxS1Comment /# \..*/ | highlight subxS1Comment cterm=bold ctermfg=242
-"? syntax match subxS2Comment /# \. \..*/ | highlight subxS2Comment ctermfg=242
+syntax match subxH1Comment /# - .*/ | highlight link subxH1Comment Comment
+syntax match subxComment /#\( \.\| - \|? \)\@!.*/ | highlight link subxComment Comment
+syntax match subxS1Comment /# \..*/ | highlight link subxS1Comment Comment
+syntax match subxS2Comment /# \. \..*/ | highlight link subxS2Comment Comment
 
 set comments-=:#
 set comments+=n:#
-syntax match subxCommentedCode "#? .*"  | highlight link subxCommentedCode CommentedCode
+syntax match subxCommentedCode "#? .*"  | highlight link subxCommentedCode CommentedCode | highlight link CommentedCode Comment
 let b:cmt_head = "#? "
 
 " comment token
@@ -53,15 +60,13 @@ syntax match subxString %"[^"]*"% | highlight link subxString Constant
 " don't match capitalized words in metadata
 " don't match inside strings
 syntax match subxGlobal %\(/\)\@<!\<[A-Z][a-z0-9_-]*\>% | highlight link subxGlobal SpecialChar
-" tweak the red color from the colorscheme just a tad to improve contrast
-highlight SpecialChar ctermfg=160
 
 " functions but not tests, globals or internal functions
-syntax match subxFunction "^\(test_\)\@<![a-z][^ ]*\(:\)\@=" | highlight subxFunction cterm=underline ctermfg=130
+syntax match subxFunction "^\(test_\)\@<![a-z][^ ]*\(:\)\@=" | highlight link subxFunction Function
 " tests starting with 'test-'; dark:34 light:64
-syntax match subxTest "^test-[^ ]*\(:\)\@=" | highlight subxTest ctermfg=64
+syntax match subxTest "^test-[^ ]*\(:\)\@=" | highlight link subxTest Typedef
 " internal functions starting with '_'
-syntax match subxMinorFunction "^_[^ ]*\(:\)\@=" | highlight subxMinorFunction ctermfg=95
+syntax match subxMinorFunction "^_[^ ]*\(:\)\@=" | highlight link subxMinorFunction Ignore
 " other internal labels starting with '$'
 syntax match subxLabel "^\$[^ ]*\(:\)\@=" | highlight link subxLabel Constant
 
