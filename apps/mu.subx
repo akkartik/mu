@@ -11171,56 +11171,124 @@ test-emit-subx-stmt-primitive-register:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
+$test-emit-subx-stmt-primitive-register:initialize-type:
+    # var type/ecx: (handle tree type-id) = new tree(int)
+    68/push 0/imm32
+    68/push 0/imm32
     89/<- %ecx 4/r32/esp
-    # var var-foo/ecx: var in eax
-    68/push "eax"/imm32/register
-    68/push 0/imm32/no-stack-offset
-    68/push 1/imm32/block-depth
-    51/push-ecx
-    68/push "foo"/imm32
+    (allocate Heap *Tree-size %ecx)
+    (lookup *ecx *(ecx+4))  # => eax
+    c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
+    c7 0/subop/copy *(eax+4) 1/imm32/int  # Tree-value
+$test-emit-subx-stmt-primitive-register:initialize-var:
+    # var v/edx: (handle var) = new var(type)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (new-var Heap  0 0  %edx)  # name = null
+    (lookup *edx *(edx+4))  # => eax
+    # v->name = "foo"
+    (copy-array Heap "foo" %eax)  # Var-name
+    # v->type = type
+    8b/-> *ecx 3/r32/ebx
+    89/<- *(eax+8) 3/r32/ebx  # Var-type
+    8b/-> *(ecx+4) 3/r32/ebx
+    89/<- *(eax+0xc) 3/r32/ebx  # Var-type
+    # v->block-depth = 1
+    c7 0/subop/copy *(eax+0x10) 1/imm32
+    # v->register = "eax"
+    8d/copy-address *(eax+0x18) 0/r32/eax  # Var-register
+    (copy-array Heap "eax" %eax)
+$test-emit-subx-stmt-primitive-register:initialize-stmt-var:
+    # var operand/ecx: (handle stmt-var) = new stmt-var(v)
+    68/push 0/imm32
+    68/push 0/imm32
     89/<- %ecx 4/r32/esp
-    # var operand/ebx: (handle stmt-var)
-    68/push 0/imm32/is-deref:false
-    68/push 0/imm32/next
-    51/push-ecx/var-foo
+    (allocate Heap *Stmt-var-size %ecx)
+    (lookup *ecx *(ecx+4))  # => eax
+    8b/-> *edx 3/r32/ebx
+    89/<- *eax 3/r32/ebx  # Stmt-var-value
+    8b/-> *(edx+4) 3/r32/ebx
+    89/<- *(eax+4) 3/r32/ebx  # Stmt-var-value
+$test-emit-subx-stmt-primitive-register:initialize-stmt:
+    # var stmt/ecx: stmt(outputs=operand)
+    # . outputs
+    ff 6/subop/push *(ecx+4)
+    ff 6/subop/push *ecx
+    # . inouts
+    68/push 0/imm32
+    68/push 0/imm32
+    # . operation
+    68/push 0/imm32
+    68/push 0/imm32
+    # . tag
+    68/push 1/imm32/stmt1
+    89/<- %ecx 4/r32/esp
+$test-emit-subx-stmt-primitive-register:initialize-stmt-operation:
+    # stmt->operation = "increment"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "increment" %eax)
+$test-emit-subx-stmt-primitive-register:initialize-formal-var:
+    # var formal-var/edx: (handle var) = new var(type)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (new-var Heap  0 0  %edx)  # name = null
+    (lookup *edx *(edx+4))  # => eax
+    # v->name = "dummy"
+    (copy-array Heap "dummy" %eax)  # Var-name
+    # v->type = type
+    8b/-> *ecx 3/r32/ebx
+    89/<- *(eax+8) 3/r32/ebx  # Var-type
+    8b/-> *(ecx+4) 3/r32/ebx
+    89/<- *(eax+0xc) 3/r32/ebx  # Var-type
+    # v->block-depth = 1
+    c7 0/subop/copy *(eax+0x10) 1/imm32
+    # v->register = "*"
+    8d/copy-address *(eax+0x18) 0/r32/eax  # Var-register
+    (copy-array Heap "*" %eax)
+$test-emit-subx-stmt-primitive-register:initialize-var-list:
+    # var list/ebx: (handle list var) = new list(formal-var, null)
+    68/push 0/imm32
+    68/push 0/imm32
     89/<- %ebx 4/r32/esp
-    # var stmt/esi: statement
-    68/push 0/imm32/next
-    53/push-ebx/outputs
-    68/push 0/imm32/inouts
-    68/push "increment"/imm32/operation
-    68/push 1/imm32
-    89/<- %esi 4/r32/esp
-    # var formal-var/ebx: var in any register
-    68/push Any-register/imm32
-    68/push 0/imm32/no-stack-offset
-    68/push 1/imm32/block-depth
-    ff 6/subop/push *(ecx+4)  # Var-type
-    68/push "dummy"/imm32
-    89/<- %ebx 4/r32/esp
-    # var operand/ebx: (handle stmt-var)
-    68/push 0/imm32/is-deref:false
-    68/push 0/imm32/next
-    53/push-ebx/formal-var
-    89/<- %ebx 4/r32/esp
+    (allocate Heap *List-size %ebx)
+    (lookup *ebx *(ebx+4))  # => eax
+    89/<- %esi 0/r32/eax
+    8b/-> *edx 0/r32/eax
+    89/<- *esi 0/r32/eax  # List-value
+    8b/-> *(edx+4) 0/r32/eax
+    89/<- *(esi+4) 0/r32/eax  # List-value
+$test-emit-subx-stmt-primitive-register:initialize-primitive:
     # var primitives/ebx: primitive
+    68/push 0/imm32/next
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
-    68/push 3/imm32/rm32-in-first-output
-    68/push "ff 0/subop/increment"/imm32/subx-name
-    53/push-ebx/outputs
+    68/push 3/imm32/rm32-is-first-output
+    68/push 0/imm32/subx-name
+    68/push 0/imm32/subx-name
+    # outputs = list
+    ff 6/subop/push *(ebx+4)
+    ff 6/subop/push *ebx
+    #
     68/push 0/imm32/inouts
-    68/push "increment"/imm32/name
+    68/push 0/imm32/inouts
+    68/push 0/imm32/name
+    68/push 0/imm32/name
     89/<- %ebx 4/r32/esp
+$test-emit-subx-stmt-primitive-register:initialize-primitive-name:
+    # primitives->name = "increment"
+    (copy-array Heap "increment" %ebx)  # Primitive-name
+$test-emit-subx-stmt-primitive-register:initialize-primitive-subx-name:
+    # primitives->subx-name = "ff 0/subop/increment"
+    8d/copy-address *(ebx+0x18) 0/r32/eax  # Primitive-subx-name
+    (copy-array Heap "ff 0/subop/increment" %eax)  # Primitive-name
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx)
+    (emit-subx-stmt _test-output-buffered-file %ecx %ebx)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
