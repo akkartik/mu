@@ -67,7 +67,8 @@ command! -nargs=0 L exec "%!grep label |grep -v clear-stream:loop"
 
 " show the call stack for the current line in the trace (by temporarily blowing away all earlier lines)
 "? command! -nargs=0 C 1,.!awk '$4 == "label"{x[$1] = $0; for(i in x){if(i >= $1){delete x[i]}}} END{for (i in x) {if (i < $1) {print x[i]}}}'
-command! -nargs=0 C 1,.!awk '{x[$1] = $0} END{for (i in x) {if (int(i) < int($1)) {print x[i]}}}'
+command! -nargs=0 C 1,.!awk '$4 == "label"{x[$1] = $0} END{for (i in x) {if (i < $1) {print x[i]}}}'
+"? command! -nargs=0 C 1,.!awk '{x[$1] = $0} END{for (i in x) {if (int(i) < int($1)) {print x[i]}}}'
 
 " run test around cursor
 if empty($TMUX)

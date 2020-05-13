@@ -8221,12 +8221,14 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
     50/push-eax
     51/push-ecx
     # - some special-case primitives that don't actually use the 'primitives' data structure
-    # ecx = stmt
+    # var op/ecx: (addr array byte) = lookup(stmt->operation)
     8b/-> *(ebp+0xc) 1/r32/ecx
+    (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+    89/<- %ecx 0/r32/eax
     # array size
     {
       # if (!string-equal?(stmt->operation, "length")) break
-      (string-equal? *(ecx+4) "length")  # Stmt1-operation => eax
+      (string-equal? %ecx "length")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
       (translate-mu-length-stmt *(ebp+8) *(ebp+0xc))
@@ -8234,8 +8236,8 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
     }
     # index into array
     {
-      # if (!string-equal?(var->operation, "index")) break
-      (string-equal? *(ecx+4) "index")  # Stmt1-operation => eax
+      # if (!string-equal?(stmt->operation, "index")) break
+      (string-equal? %ecx "index")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
       (translate-mu-index-stmt *(ebp+8) *(ebp+0xc))
@@ -8243,8 +8245,8 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
     }
     # compute-offset for index into array
     {
-      # if (!string-equal?(var->operation, "compute-offset")) break
-      (string-equal? *(ecx+4) "compute-offset")  # Stmt1-operation => eax
+      # if (!string-equal?(stmt->operation, "compute-offset")) break
+      (string-equal? %ecx "compute-offset")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
       (translate-mu-compute-index-stmt *(ebp+8) *(ebp+0xc))
@@ -8252,8 +8254,8 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
     }
     # get field from record
     {
-      # if (!string-equal?(var->operation, "get")) break
-      (string-equal? *(ecx+4) "get")  # Stmt1-operation => eax
+      # if (!string-equal?(stmt->operation, "get")) break
+      (string-equal? %ecx "get")  # => eax
       3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
       (translate-mu-get-stmt *(ebp+8) *(ebp+0xc))
@@ -8262,7 +8264,8 @@ emit-subx-stmt:  # out: (addr buffered-file), stmt: (addr stmt), primitives: (ad
     # - if stmt matches a primitive, emit it
     {
 $emit-subx-stmt:check-for-primitive:
-      (find-matching-primitive *(ebp+0x10) *(ebp+0xc))  # primitives, stmt => curr/eax
+      # var curr/eax: (addr primitive)
+      (find-matching-primitive *(ebp+0x10) *(ebp+0xc))  # primitives, stmt => eax
       3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
 $emit-subx-stmt:primitive:
@@ -10236,7 +10239,7 @@ Type-addr:
     0/imm32/right/null
 
 == code
-emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive: (addr function)
+emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive: (addr primitive)
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -10247,15 +10250,16 @@ emit-subx-primitive:  # out: (addr buffered-file), stmt: (addr stmt), primitive:
     8b/-> *(ebp+0x10) 1/r32/ecx
     # emit primitive name
     (emit-indent *(ebp+8) *Curr-block-depth)
-    (write-buffered *(ebp+8) *(ecx+0xc))  # Primitive-subx-name
+    (lookup *(ecx+0x18) *(ecx+0x1c))  # Primitive-subx-name Primitive-subx-name => eax
+    (write-buffered *(ebp+8) %eax)
     # emit rm32 if necessary
-    (emit-subx-rm32 *(ebp+8) *(ecx+0x10) *(ebp+0xc))  # out, Primitive-subx-rm32, stmt
+    (emit-subx-rm32 *(ebp+8) *(ecx+0x20) *(ebp+0xc))  # out, Primitive-subx-rm32, stmt
     # emit r32 if necessary
-    (emit-subx-r32 *(ebp+8) *(ecx+0x14) *(ebp+0xc))  # out, Primitive-subx-r32, stmt
+    (emit-subx-r32 *(ebp+8) *(ecx+0x24) *(ebp+0xc))  # out, Primitive-subx-r32, stmt
     # emit imm32 if necessary
-    (emit-subx-imm32 *(ebp+8) *(ecx+0x18) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
+    (emit-subx-imm32 *(ebp+8) *(ecx+0x28) *(ebp+0xc))  # out, Primitive-subx-imm32, stmt
     # emit disp32 if necessary
-    (emit-subx-disp32 *(ebp+8) *(ecx+0x1c) *(ebp+0xc))  # out, Primitive-subx-disp32, stmt
+    (emit-subx-disp32 *(ebp+8) *(ecx+0x2c) *(ebp+0xc))  # out, Primitive-subx-disp32, stmt
     (write-buffered *(ebp+8) Newline)
 $emit-subx-primitive:end:
     # . restore registers
@@ -10301,7 +10305,7 @@ get-stmt-operand-from-arg-location:  # stmt: (addr stmt), l: arg-location -> var
       3d/compare-eax-and 1/imm32
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:1:
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
+      (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
     # if (l == 2) return stmt->inouts->next
@@ -10309,8 +10313,8 @@ $get-stmt-operand-from-arg-location:1:
       3d/compare-eax-and 2/imm32
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:2:
-      8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
-      8b/-> *(eax+4) 0/r32/eax  # Stmt-var-next
+      (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+      (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
     # if (l == 3) return stmt->outputs
@@ -10318,7 +10322,7 @@ $get-stmt-operand-from-arg-location:2:
       3d/compare-eax-and 3/imm32
       75/jump-if-!= break/disp8
 $get-stmt-operand-from-arg-location:3:
-      8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
+      (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
       eb/jump $get-stmt-operand-from-arg-location:end/disp8
     }
     # abort
@@ -10441,6 +10445,7 @@ emit-call:  # out: (addr buffered-file), stmt: (addr stmt)
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     #
     (emit-indent *(ebp+8) *Curr-block-depth)
@@ -10448,10 +10453,12 @@ emit-call:  # out: (addr buffered-file), stmt: (addr stmt)
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
     # - emit function name
-    (write-buffered *(ebp+8) *(ecx+4))  # Stmt1-operation
+    (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+    (write-buffered *(ebp+8) %eax)
     # - emit arguments
-    # var curr/ecx: (handle stmt-var) = stmt->inouts
-    8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
+    # var curr/ecx: (addr stmt-var) = lookup(stmt->inouts)
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %ecx 0/r32/eax
     {
       # if (curr == null) break
       81 7/subop/compare %ecx 0/imm32
@@ -10467,6 +10474,7 @@ emit-call:  # out: (addr buffered-file), stmt: (addr stmt)
 $emit-call:end:
     # . restore registers
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -10483,26 +10491,28 @@ emit-subx-call-operand:  # out: (addr buffered-file), s: (addr stmt-var)
     56/push-esi
     # ecx = s
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # var operand/esi: (handle var) = s->value
-    8b/-> *ecx 6/r32/esi  # Stmt-var-value
+    # var operand/esi: (addr var) = lookup(s->value)
+    (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %esi 0/r32/eax
     # if (operand->register && !s->is-deref?) emit "%__"
     {
 $emit-subx-call-operand:check-for-register-direct:
-      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(esi+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
-      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
       75/jump-if-!= break/disp8
 $emit-subx-call-operand:register-direct:
       (write-buffered *(ebp+8) " %")
-      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
+      (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
+      (write-buffered *(ebp+8) %eax)
       e9/jump $emit-subx-call-operand:end/disp32
     }
     # else if (operand->register && s->is-deref?) emit "*__"
     {
 $emit-subx-call-operand:check-for-register-indirect:
-      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(esi+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
-      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
       74/jump-if-= break/disp8
 $emit-subx-call-operand:register-indirect:
       (emit-subx-call-operand-register-indirect *(ebp+8) %esi)
@@ -10510,7 +10520,7 @@ $emit-subx-call-operand:register-indirect:
     }
     # else if (operand->stack-offset) emit "*(ebp+__)"
     {
-      81 7/subop/compare *(esi+0xc) 0/imm32  # Var-offset
+      81 7/subop/compare *(esi+0x14) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
 $emit-subx-call-operand:stack:
       (emit-subx-call-operand-stack *(ebp+8) %esi)
@@ -10518,7 +10528,7 @@ $emit-subx-call-operand:stack:
     }
     # else if (operand->type == literal) emit "__"
     {
-      8b/-> *(esi+4) 0/r32/eax  # Var-type
+      (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
       81 7/subop/compare *(eax+4) 0/imm32  # Tree-left
       75/jump-if-!= break/disp8
 $emit-subx-call-operand:literal:
@@ -10627,38 +10637,43 @@ emit-subx-var-as-rm32:  # out: (addr buffered-file), s: (addr stmt-var)
     56/push-esi
     # ecx = s
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # var operand/esi: (handle var) = s->value
-    8b/-> *ecx 6/r32/esi  # Stmt-var-value
+    # var operand/esi: (addr var) = lookup(s->value)
+    (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %esi 0/r32/eax
     # if (operand->register && s->is-deref?) emit "*__"
     {
 $emit-subx-var-as-rm32:check-for-register-indirect:
-      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(esi+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
-      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
       74/jump-if-= break/disp8
 $emit-subx-var-as-rm32:register-indirect:
       (write-buffered *(ebp+8) " *")
-      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
+      (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
+      (write-buffered *(ebp+8) %eax)
+      e9/jump $emit-subx-var-as-rm32:end/disp32
     }
     # if (operand->register && !s->is-deref?) emit "%__"
     {
 $emit-subx-var-as-rm32:check-for-register-direct:
-      81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(esi+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
-      81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+      81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
       75/jump-if-!= break/disp8
 $emit-subx-var-as-rm32:register-direct:
       (write-buffered *(ebp+8) " %")
-      (write-buffered *(ebp+8) *(esi+0x10))  # Var-register
+      (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
+      (write-buffered *(ebp+8) %eax)
+      e9/jump $emit-subx-var-as-rm32:end/disp32
     }
     # else if (operand->stack-offset) emit "*(ebp+__)"
     {
-      81 7/subop/compare *(esi+0xc) 0/imm32  # Var-offset
+      81 7/subop/compare *(esi+0x14) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
 $emit-subx-var-as-rm32:stack:
       (write-buffered *(ebp+8) Space)
       (write-buffered *(ebp+8) "*(ebp+")
-      (print-int32-buffered *(ebp+8) *(esi+0xc))  # Var-offset
+      (print-int32-buffered *(ebp+8) *(esi+0x14))  # Var-offset
       (write-buffered *(ebp+8) ")")
     }
 $emit-subx-var-as-rm32:end:
@@ -10676,7 +10691,6 @@ find-matching-primitive:  # primitives: (addr primitive), stmt: (addr stmt) -> r
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
-    50/push-eax
     51/push-ecx
     # var curr/ecx: (addr primitive) = primitives
     8b/-> *(ebp+8) 1/r32/ecx
@@ -10705,7 +10719,6 @@ $find-matching-primitive:next-primitive:
 $find-matching-primitive:end:
     # . restore registers
     59/pop-to-ecx
-    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -10733,23 +10746,32 @@ mu-stmt-matches-primitive?:  # stmt: (addr stmt), primitive: (addr primitive) ->
     {
 $mu-stmt-matches-primitive?:check-name:
       # if (primitive->name != stmt->operation) return false
-      (string-equal? *(ecx+4) *edx)  # Stmt1-operation, Primitive-name => eax
+      # . var esi: (addr array byte) = lookup(stmt->operation)
+      (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+      89/<- %esi 0/r32/eax
+      # . var edi: (addr array byte) = lookup(primitive->name)
+      (lookup *edx *(edx+4))  # Primitive-name Primitive-name => eax
+      89/<- %edi 0/r32/eax
+      (string-equal? %esi %edi)  # => eax
       3d/compare-eax-and 0/imm32/false
       75/jump-if-!= break/disp8
       b8/copy-to-eax 0/imm32
       e9/jump $mu-stmt-matches-primitive?:end/disp32
     }
-$mu-stmt-matches-primitive?:check-inouts:
-    # for (curr/esi in stmt->inouts, curr2/edi in primitive->inouts)
-    8b/-> *(ecx+8) 6/r32/esi  # Stmt1-inouts or Regvardef-inouts
-    8b/-> *(edx+4) 7/r32/edi  # Primitive-inouts
+    # var curr/esi: (addr stmt-var) = lookup(stmt->inouts)
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    89/<- %esi 0/r32/eax
+    # var curr2/edi: (addr list var) = lookup(primitive->inouts)
+    (lookup *(edx+8) *(edx+0xc))  # Primitive-inouts Primitive-inouts => eax
+    89/<- %edi 0/r32/eax
     {
+$mu-stmt-matches-primitive?:check-inouts:
       # if (curr == 0 && curr2 == 0) move on to check outputs
       {
         81 7/subop/compare %esi 0/imm32
         75/jump-if-!= break/disp8
-$mu-stmt-matches-primitive?:stmt-inout-is-null:
         {
+$mu-stmt-matches-primitive?:stmt-inout-is-null:
           81 7/subop/compare %edi 0/imm32
           75/jump-if-!= break/disp8
           #
@@ -10769,29 +10791,39 @@ $mu-stmt-matches-primitive?:prim-inout-is-null:
       }
       # if (curr != curr2) return false
       {
-        (operand-matches-primitive? %esi *edi)  # List-value => eax
+$mu-stmt-matches-primitive?:check-inout-operand-match:
+        (lookup *edi *(edi+4))  # List-value List-value => eax
+        (operand-matches-primitive? %esi %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
-      # curr=curr->next
-      8b/-> *(esi+4) 6/r32/esi  # Stmt-var-next
-      # curr2=curr2->next
-      8b/-> *(edi+4) 7/r32/edi  # Stmt-var-next
-      eb/jump loop/disp8
+$mu-stmt-matches-primitive?:next-inout:
+      # curr = lookup(curr->next)
+      (lookup *(esi+8) *(esi+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %esi 0/r32/eax
+      # curr2 = lookup(curr2->next)
+      (lookup *(edi+8) *(edi+0xc))  # List-next List-next => eax
+      89/<- %edi 0/r32/eax
+      #
+      e9/jump loop/disp32
     }
-$mu-stmt-matches-primitive?:check-outputs:
-    # for (curr/esi in stmt->outputs, curr2/edi in primitive->outputs)
-    8b/-> *(ecx+0xc) 6/r32/esi  # Stmt1-outputs
-    8b/-> *(edx+8) 7/r32/edi  # Primitive-outputs
+    # var curr/esi: (addr stmt-var) = lookup(stmt->outputs)
+    (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    89/<- %esi 0/r32/eax
+    # var curr2/edi: (addr list var) = lookup(primitive->outputs)
+    (lookup *(edx+0x10) *(edx+0x14))  # Primitive-outputs Primitive-outputs => eax
+    89/<- %edi 0/r32/eax
     {
+$mu-stmt-matches-primitive?:check-outputs:
       # if (curr == 0) return (curr2 == 0)
       {
 $mu-stmt-matches-primitive?:check-output:
         81 7/subop/compare %esi 0/imm32
         75/jump-if-!= break/disp8
         {
+$mu-stmt-matches-primitive?:stmt-output-is-null:
           81 7/subop/compare %edi 0/imm32
           75/jump-if-!= break/disp8
           # return true
@@ -10806,22 +10838,29 @@ $mu-stmt-matches-primitive?:check-output:
       {
         81 7/subop/compare %edi 0/imm32
         75/jump-if-!= break/disp8
+$mu-stmt-matches-primitive?:prim-output-is-null:
         b8/copy-to-eax 0/imm32
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # if (curr != curr2) return false
       {
-        (operand-matches-primitive? %esi *edi)  # List-value => eax
+$mu-stmt-matches-primitive?:check-output-operand-match:
+        (lookup *edi *(edi+4))  # List-value List-value => eax
+        (operand-matches-primitive? %esi %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
         b8/copy-to-eax 0/imm32
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
-      # curr=curr->next
-      8b/-> *(esi+4) 6/r32/esi  # Stmt-var-next
-      # curr2=curr2->next
-      8b/-> *(edi+4) 7/r32/edi  # Stmt-var-next
-      eb/jump loop/disp8
+$mu-stmt-matches-primitive?:next-output:
+      # curr = lookup(curr->next)
+      (lookup *(esi+8) *(esi+0xc))  # Stmt-var-next Stmt-var-next => eax
+      89/<- %esi 0/r32/eax
+      # curr2 = lookup(curr2->next)
+      (lookup *(edi+8) *(edi+0xc))  # List-next List-next => eax
+      89/<- %edi 0/r32/eax
+      #
+      e9/jump loop/disp32
     }
 $mu-stmt-matches-primitive?:return-true:
     b8/copy-to-eax 1/imm32
@@ -10843,60 +10882,72 @@ operand-matches-primitive?:  # s: (addr stmt-var), prim-var: (addr var) -> resul
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
+    52/push-edx
+    53/push-ebx
     56/push-esi
     57/push-edi
     # ecx = s
     8b/-> *(ebp+8) 1/r32/ecx
-    # var var/esi : (handle var) = s->value
-    8b/-> *ecx 6/r32/esi  # Stmt-var-value
+    # var var/esi: (addr var) = lookup(s->value)
+    (lookup *ecx *(ecx+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %esi 0/r32/eax
     # edi = prim-var
     8b/-> *(ebp+0xc) 7/r32/edi
 $operand-matches-primitive?:check-type:
     # if (var->type != prim-var->type) return false
-    (subx-type-equal? *(esi+4) *(edi+4))  # Var-type, Var-type => eax
+    # . var vtype/ebx: (addr tree type-id) = lookup(var->type)
+    (lookup *(esi+8) *(esi+0xc))  # Var-type Var-type => eax
+    89/<- %ebx 0/r32/eax
+    # . var ptype/eax: (addr tree type-id) = lookup(prim-var->type)
+    (lookup *(edi+8) *(edi+0xc))  # Var-type Var-type => eax
+    (subx-type-equal? %ebx %eax)  # => eax
     3d/compare-eax-and 0/imm32/false
-    b8/copy-to-eax 0/imm32/false
-    0f 84/jump-if-= $operand-matches-primitive?:end/disp32
+    0f 84/jump-if-= $operand-matches-primitive?:return-false/disp32
     {
 $operand-matches-primitive?:check-register:
       # if prim-var is in memory and var is in register but dereference, match
       {
-        81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
+        81 7/subop/compare *(edi+0x18) 0/imm32  # Var-register
         0f 85/jump-if-!= break/disp32
-        81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+        81 7/subop/compare *(esi+0x18) 0/imm32  # Var-register
         74/jump-if-= break/disp8
-        81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+        81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
         74/jump-if-= break/disp8
         e9/jump $operand-matches-primitive?:return-true/disp32
       }
       # if prim-var is in register and var is in register but dereference, no match
       {
-        81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
+        81 7/subop/compare *(edi+0x18) 0/imm32  # Var-register
         0f 84/jump-if-= break/disp32
-        81 7/subop/compare *(esi+0x10) 0/imm32  # Var-register
+        81 7/subop/compare *(esi+0x18) 0/imm32  # Var-register
         0f 84/jump-if-= break/disp32
-        81 7/subop/compare *(ecx+8) 0/imm32/false  # Stmt-var-is-deref
+        81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
         74/jump-if-= break/disp8
         e9/jump $operand-matches-primitive?:return-false/disp32
       }
       # return false if var->register doesn't match prim-var->register
       {
         # if register addresses are equal, it's a match
-        8b/-> *(esi+0x10) 0/r32/eax  # Var-register
-        39/compare *(edi+0x10) 0/r32/eax  # Var-register
+        # var vreg/ebx: (addr array byte) = lookup(var->register)
+        (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
+        89/<- %ebx 0/r32/eax
+        # var preg/ecx: (addr array byte) = lookup(prim-var->register)
+        (lookup *(edi+0x18) *(edi+0x1c))  # Var-register Var-register => eax
+        89/<- %ecx 0/r32/eax
+        # if (vreg == preg) break
+        39/compare %ecx 3/r32/ebx
         74/jump-if-= break/disp8
         # if either address is 0, return false
-        3d/compare-eax-and 0/imm32
-        74/jump-if-=  $operand-matches-primitive?:end/disp8  # eax goes from meaning var->register to result
-        81 7/subop/compare *(edi+0x10) 0/imm32  # Var-register
+        81 7/subop/compare %ebx 0/imm32
+        74/jump-if-=  $operand-matches-primitive?:return-false/disp8
+        81 7/subop/compare %ecx 0/imm32
         74/jump-if-=  $operand-matches-primitive?:return-false/disp8
         # if prim-var->register is wildcard, it's a match
-        (string-equal? *(edi+0x10) Any-register)  # Var-register => eax
+        (string-equal? %ecx Any-register)  # => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
         # if string contents aren't equal, return false
-        (string-equal? *(esi+0x10) *(edi+0x10))  # Var-register Var-register => eax
-        3d/compare-eax-and 0/imm32/false
+        (string-equal? %ecx %ebx)  # => eax
         74/jump-if-= $operand-matches-primitive?:return-false/disp8
       }
     }
@@ -10909,6 +10960,8 @@ $operand-matches-primitive?:end:
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
+    5b/pop-to-ebx
+    5a/pop-to-edx
     59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -10983,44 +11036,107 @@ test-emit-subx-stmt-primitive:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
+$test-emit-subx-stmt-primitive:initialize-type:
+    # var type/ecx: (handle tree type-id) = new tree(int)
+    68/push 0/imm32
+    68/push 0/imm32
     89/<- %ecx 4/r32/esp
-    # var var-foo/ecx: var
-    68/push 0/imm32/no-register
-    68/push -8/imm32/stack-offset
-    68/push 1/imm32/block-depth
-    51/push-ecx
-    68/push "foo"/imm32
-    89/<- %ecx 4/r32/esp
-    # var operand/ebx: (handle stmt-var)
-    68/push 0/imm32/is-deref:false
-    68/push 0/imm32/next
-    51/push-ecx/var-foo
+    (allocate Heap *Tree-size %ecx)
+    (lookup *ecx *(ecx+4))  # => eax
+    c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
+    c7 0/subop/copy *(eax+4) 1/imm32/int  # Tree-value
+$test-emit-subx-stmt-primitive:initialize-name:
+    # var s/ebx: (handle array byte)
+    68/push 0/imm32
+    68/push 0/imm32
     89/<- %ebx 4/r32/esp
-    # var stmt/esi: statement
-    68/push 0/imm32/next
-    68/push 0/imm32/outputs
-    53/push-ebx/operands
-    68/push "increment"/imm32/operation
-    68/push 1/imm32
-    89/<- %esi 4/r32/esp
+    (copy-array Heap "foo" %ebx)
+$test-emit-subx-stmt-primitive:initialize-var:
+    # var v/edx: (handle var) = new var("foo", type)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %edx 4/r32/esp
+    (new-var Heap *ebx *(ebx+4) %edx)
+    (lookup *edx *(edx+4))  # => eax
+    # v->type = type
+    8b/-> *ecx 3/r32/ebx
+    89/<- *(eax+8) 3/r32/ebx  # Var-type
+    8b/-> *(ecx+4) 3/r32/ebx
+    89/<- *(eax+0xc) 3/r32/ebx  # Var-type
+    # v->block-depth = 1
+    c7 0/subop/copy *(eax+0x10) 1/imm32
+    # v->offset = -8
+    c7 0/subop/copy *(eax+0x14) -8/imm32
+$test-emit-subx-stmt-primitive:initialize-stmt-var:
+    # var operand/ecx: (handle stmt-var) = new stmt-var(v)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    (allocate Heap *Stmt-var-size %ecx)
+    (lookup *ecx *(ecx+4))  # => eax
+    8b/-> *edx 3/r32/ebx
+    89/<- *eax 3/r32/ebx  # Stmt-var-value
+    8b/-> *(edx+4) 3/r32/ebx
+    89/<- *(eax+4) 3/r32/ebx  # Stmt-var-value
+$test-emit-subx-stmt-primitive:initialize-var-list:
+    # var list/ebx: (handle list var) = new list(v, null)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ebx 4/r32/esp
+    (allocate Heap *List-size %ebx)
+    (lookup *ebx *(ebx+4))  # => eax
+    89/<- %esi 0/r32/eax
+    8b/-> *edx 0/r32/eax
+    89/<- *esi 0/r32/eax  # List-value
+    8b/-> *(edx+4) 0/r32/eax
+    89/<- *(esi+4) 0/r32/eax  # List-value
+$test-emit-subx-stmt-primitive:initialize-stmt:
+    # var stmt/ecx: stmt(operand)
+    # . outputs
+    68/push 0/imm32
+    68/push 0/imm32
+    # . inouts
+    ff 6/subop/push *(ecx+4)
+    ff 6/subop/push *ecx
+    # . operation
+    68/push 0/imm32
+    68/push 0/imm32
+    # . tag
+    68/push 1/imm32/stmt1
+    89/<- %ecx 4/r32/esp
+$test-emit-subx-stmt-primitive:initialize-stmt-operation:
+    # stmt->operation = "increment"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "increment" %eax)
+$test-emit-subx-stmt-primitive:initialize-primitive:
     # var primitives/ebx: primitive
+    68/push 0/imm32/next
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 1/imm32/rm32-is-first-inout
-    68/push "ff 0/subop/increment"/imm32/subx-name
+    68/push 0/imm32/subx-name
+    68/push 0/imm32/subx-name
     68/push 0/imm32/outputs
-    53/push-ebx/inouts  # hack; in practice we won't have the same var in function definition and call
-    68/push "increment"/imm32/name
+    68/push 0/imm32/outputs
+    # inouts (in practice we won't have the same var as in the function call above)
+    ff 6/subop/push *(ebx+4)
+    ff 6/subop/push *ebx
+    68/push 0/imm32/name
+    68/push 0/imm32/name
     89/<- %ebx 4/r32/esp
+$test-emit-subx-stmt-primitive:initialize-primitive-name:
+    # primitives->name = "increment"
+    (copy-array Heap "increment" %ebx)  # Primitive-name
+$test-emit-subx-stmt-primitive:initialize-primitive-subx-name:
+    # primitives->subx-name = "ff 0/subop/increment"
+    8d/copy-address *(ebx+0x18) 0/r32/eax  # Primitive-subx-name
+    (copy-array Heap "ff 0/subop/increment" %eax)  # Primitive-name
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi %ebx)
+    (emit-subx-stmt _test-output-buffered-file %ecx %ebx)
     (flush _test-output-buffered-file)
 #?     # dump _test-output-stream {{{
 #?     (write 2 "^")
