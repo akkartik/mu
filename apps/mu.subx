@@ -11045,19 +11045,15 @@ $test-emit-subx-stmt-primitive:initialize-type:
     (lookup *ecx *(ecx+4))  # => eax
     c7 0/subop/copy *eax 1/imm32/true  # Tree-is-atom
     c7 0/subop/copy *(eax+4) 1/imm32/int  # Tree-value
-$test-emit-subx-stmt-primitive:initialize-name:
-    # var s/ebx: (handle array byte)
-    68/push 0/imm32
-    68/push 0/imm32
-    89/<- %ebx 4/r32/esp
-    (copy-array Heap "foo" %ebx)
 $test-emit-subx-stmt-primitive:initialize-var:
-    # var v/edx: (handle var) = new var("foo", type)
+    # var v/edx: (handle var) = new var(type)
     68/push 0/imm32
     68/push 0/imm32
     89/<- %edx 4/r32/esp
-    (new-var Heap *ebx *(ebx+4) %edx)
+    (new-var Heap  0 0  %edx)  # name = null
     (lookup *edx *(edx+4))  # => eax
+    # v->name = "foo"
+    (copy-array Heap "foo" %eax)  # Var-name
     # v->type = type
     8b/-> *ecx 3/r32/ebx
     89/<- *(eax+8) 3/r32/ebx  # Var-type
