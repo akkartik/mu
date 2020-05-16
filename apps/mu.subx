@@ -8826,6 +8826,35 @@ $emit-subx-block:end:
 
 # Primitives supported
 # For each operation, put variants with hard-coded registers before flexible ones.
+#
+# Idea for a notation to simplify such definitions:
+#   _Primitive-inc-eax:
+#     0x11/alloc-id:fake:payload
+#     0x11 @(0x11 "increment")  # name
+#     0 0                       # inouts
+#     0x11 @(0x11/payload
+#            0x11 @(0x11/payload  # List-value
+#                   0 0             # Var-name
+#                   0x11 @(0x11     # Var-type
+#                          1/is-atom
+#                          1/value 0/unused   # Tree-left
+#                          0 0                # Tree-right
+#                         )
+#                   1               # block-depth
+#                   0               # stack-offset
+#                   0x11 @(0x11 "eax")  # Var-register
+#                  )
+#            0 0)                 # List-next
+#     ...
+#     _Primitive-inc-ecx/imm32/next
+#   ...
+# Awfully complex and non-obvious. But also clearly signals there's something
+# to learn here, so may be worth trying.
+#
+# '@' is just an initial thought. Punctuation used so far in Mu: () * % # / "
+#
+# For now we'll continue to just use comments and manually ensure they stay up
+# to date.
 == data
 Primitives:
 # - increment/decrement
@@ -8848,10 +8877,12 @@ _Primitive-inc-eax:
     _Primitive-inc-ecx/imm32/next
 _string-increment:
     0x11/imm32/alloc-id:fake
+    # "increment"
     9/imm32/size
     0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t
 _string_increment_eax:
     0x11/imm32/alloc-id:fake
+    # "40/increment-eax"
     0x10/imm32/size
     0x34/4 0x30/0 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x61/a 0x78/x
 _Primitive-inc-ecx:
