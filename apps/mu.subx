@@ -10765,37 +10765,41 @@ $mu-stmt-matches-primitive?:check-name:
     (lookup *(edx+8) *(edx+0xc))  # Primitive-inouts Primitive-inouts => eax
     89/<- %edi 0/r32/eax
     {
-$mu-stmt-matches-primitive?:check-inouts:
+$mu-stmt-matches-primitive?:inouts-loop:
       # if (curr == 0 && curr2 == 0) move on to check outputs
       {
+$mu-stmt-matches-primitive?:check-both-inouts-null:
         81 7/subop/compare %esi 0/imm32
         75/jump-if-!= break/disp8
         {
-$mu-stmt-matches-primitive?:stmt-inout-is-null:
+$mu-stmt-matches-primitive?:stmt-inout-null:
           81 7/subop/compare %edi 0/imm32
           75/jump-if-!= break/disp8
           #
           e9/jump $mu-stmt-matches-primitive?:check-outputs/disp32
         }
+$mu-stmt-matches-primitive?:stmt-inout-null-and-prim-inout-not-null:
         # return false
         b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # if (curr2 == 0) return false
       {
+$mu-stmt-matches-primitive?:check-prim-inout-null:
         81 7/subop/compare %edi 0/imm32
         75/jump-if-!= break/disp8
-$mu-stmt-matches-primitive?:prim-inout-is-null:
+$mu-stmt-matches-primitive?:prim-inout-null:
         b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # if (curr != curr2) return false
       {
-$mu-stmt-matches-primitive?:check-inout-operand-match:
+$mu-stmt-matches-primitive?:check-inouts-match:
         (lookup *edi *(edi+4))  # List-value List-value => eax
         (operand-matches-primitive? %esi %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
+$mu-stmt-matches-primitive?:inouts-match:
         b8/copy-to-eax 0/imm32/false
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
@@ -10817,25 +10821,29 @@ $mu-stmt-matches-primitive?:check-outputs:
     (lookup *(edx+0x10) *(edx+0x14))  # Primitive-outputs Primitive-outputs => eax
     89/<- %edi 0/r32/eax
     {
+$mu-stmt-matches-primitive?:outputs-loop:
       # if (curr == 0) return (curr2 == 0)
       {
-$mu-stmt-matches-primitive?:check-output:
+$mu-stmt-matches-primitive?:check-both-outputs-null:
         81 7/subop/compare %esi 0/imm32
         75/jump-if-!= break/disp8
         {
-$mu-stmt-matches-primitive?:stmt-output-is-null:
+$mu-stmt-matches-primitive?:stmt-output-null:
           81 7/subop/compare %edi 0/imm32
           75/jump-if-!= break/disp8
+$mu-stmt-matches-primitive?:both-outputs-null:
           # return true
           b8/copy-to-eax 1/imm32
           e9/jump $mu-stmt-matches-primitive?:end/disp32
         }
+$mu-stmt-matches-primitive?:stmt-output-null-and-prim-output-not-null:
         # return false
         b8/copy-to-eax 0/imm32
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
       # if (curr2 == 0) return false
       {
+$mu-stmt-matches-primitive?:check-prim-output-null:
         81 7/subop/compare %edi 0/imm32
         75/jump-if-!= break/disp8
 $mu-stmt-matches-primitive?:prim-output-is-null:
@@ -10844,11 +10852,12 @@ $mu-stmt-matches-primitive?:prim-output-is-null:
       }
       # if (curr != curr2) return false
       {
-$mu-stmt-matches-primitive?:check-output-operand-match:
+$mu-stmt-matches-primitive?:check-outputs-match:
         (lookup *edi *(edi+4))  # List-value List-value => eax
         (operand-matches-primitive? %esi %eax)  # => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
+$mu-stmt-matches-primitive?:outputs-match:
         b8/copy-to-eax 0/imm32
         e9/jump $mu-stmt-matches-primitive?:end/disp32
       }
@@ -11367,7 +11376,7 @@ $test-emit-subx-stmt-select-primitive:initialize-formal-register:
     8d/copy-address *(ebx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "*" %eax)  # Any-register
 $test-emit-subx-stmt-select-primitive:initialize-var-list:
-    # var formal-outputs/ebx: (handle list stmt-var)
+    # var formal-outputs/ebx: (handle list var)
     68/push 0/imm32/next
     68/push 0/imm32/next
     53/push-ebx/formal-var
@@ -11375,7 +11384,7 @@ $test-emit-subx-stmt-select-primitive:initialize-var-list:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ebx 4/r32/esp
 $test-emit-subx-stmt-select-primitive:initialize-primitive2:
-    # var primitive1/edi: (handle primitive)
+    # var primitive2/edi: (handle primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
