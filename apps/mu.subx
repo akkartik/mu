@@ -10809,6 +10809,7 @@ $mu-stmt-matches-primitive?:next-inout:
       #
       e9/jump loop/disp32
     }
+$mu-stmt-matches-primitive?:check-outputs:
     # var curr/esi: (addr stmt-var) = lookup(stmt->outputs)
     (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
     89/<- %esi 0/r32/eax
@@ -10816,7 +10817,6 @@ $mu-stmt-matches-primitive?:next-inout:
     (lookup *(edx+0x10) *(edx+0x14))  # Primitive-outputs Primitive-outputs => eax
     89/<- %edi 0/r32/eax
     {
-$mu-stmt-matches-primitive?:check-outputs:
       # if (curr == 0) return (curr2 == 0)
       {
 $mu-stmt-matches-primitive?:check-output:
@@ -11205,7 +11205,7 @@ $test-emit-subx-stmt-primitive-register:initialize-formal-var:
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    ff 6/subop/push *(ecx+0xc)  # Var-type + 4
+    ff 6/subop/push *(ecx+0x10)  # Var-type + payload alloc id + handle alloc id
     68/push 0x11/imm32/alloc-id:fake
     68/push 0/imm32/name
     68/push 0/imm32/name
@@ -11220,7 +11220,7 @@ $test-emit-subx-stmt-primitive-register:initialize-formal-register:
     8d/copy-address *(ebx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "*" %eax)  # Any-register
 $test-emit-subx-stmt-primitive-register:initialize-var-list:
-    # var formal-outputs/ebx: (handle list stmt-var)
+    # var formal-outputs/ebx: (handle list var)
     68/push 0/imm32/next
     68/push 0/imm32/next
     53/push-ebx/formal-var
@@ -11352,7 +11352,7 @@ $test-emit-subx-stmt-select-primitive:initialize-formal-var:
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    ff 6/subop/push *(ecx+0xc)  # Var-type + 4
+    ff 6/subop/push *(ecx+0x10)  # Var-type + payload alloc id + handle alloc id
     68/push 0x11/imm32/alloc-id:fake
     68/push 0/imm32/name
     68/push 0/imm32/name
