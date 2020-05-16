@@ -11450,7 +11450,7 @@ $test-emit-subx-stmt-select-primitive:initialize-primitive-subx-name:
 
 test-emit-subx-stmt-select-primitive-2:
     # Select the right primitive between overloads.
-    #   foo <- increment
+    #   increment foo
     # =>
     #   ff 0/subop/increment %eax  # sub-optimal, but should suffice
     #
@@ -11473,65 +11473,138 @@ test-emit-subx-stmt-select-primitive-2:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+$test-emit-subx-stmt-select-primitive-2:initialize-type:
     # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 1/imm32/value:int
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var var-foo/ecx: var in eax
-    68/push "eax"/imm32/register
+$test-emit-subx-stmt-select-primitive-2:initialize-var:
+    # var var-foo/ecx: (handle var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     51/push-ecx
-    68/push "foo"/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var inouts/edi: (handle stmt-var)
-    68/push 0/imm32/is-deref:false
-    68/push 0/imm32/next
-    51/push-ecx/var-foo
-    89/<- %edi 4/r32/esp
-    # var stmt/esi: statement
-    68/push 0/imm32/next
-    68/push 0/imm32/outputs
-    57/push-edi/inouts
-    68/push "increment"/imm32/operation
-    68/push 1/imm32
-    89/<- %esi 4/r32/esp
-    # var formal-var/ebx: var in any register
-    68/push Any-register/imm32
-    68/push 0/imm32/no-stack-offset
-    68/push 1/imm32/block-depth
-    ff 6/subop/push *(ecx+4)  # Var-type
-    68/push "dummy"/imm32
-    89/<- %ebx 4/r32/esp
+$test-emit-subx-stmt-select-primitive-2:initialize-var-name:
+    # var-foo->name = "foo"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "foo" %eax)
+$test-emit-subx-stmt-select-primitive-2:initialize-var-register:
+    # var-foo->register = "eax"
+    8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
+    (copy-array Heap "eax" %eax)
+$test-emit-subx-stmt-select-primitive-2:initialize-stmt-var:
     # var operand/ebx: (handle stmt-var)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
-    53/push-ebx/formal-var
+    68/push 0/imm32/next
+    51/push-ecx/var-foo
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ebx 4/r32/esp
-    # var primitive1/ebx: primitive
+$test-emit-subx-stmt-select-primitive-2:initialize-stmt:
+    # var stmt/esi: (addr statement)
+    68/push 0/imm32/outputs
+    68/push 0/imm32/outputs
+    53/push-ebx/inouts
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32
+    89/<- %esi 4/r32/esp
+$test-emit-subx-stmt-select-primitive-2:initialize-stmt-operation:
+    # stmt->operation = "increment"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "increment" %eax)
+$test-emit-subx-stmt-select-primitive-2:initialize-formal-var:
+    # var formal-var/ebx: (handle var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
+    68/push 0/imm32/no-stack-offset
+    68/push 1/imm32/block-depth
+    ff 6/subop/push *(ecx+0x10)  # Var-type + payload alloc id + handle alloc id
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ebx 4/r32/esp
+$test-emit-subx-stmt-select-primitive-2:initialize-formal-var-name:
+    # formal-var->name = "dummy"
+    8d/copy-address *(ebx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "dummy" %eax)
+$test-emit-subx-stmt-select-primitive-2:initialize-formal-register:
+    # formal-var->register = "*"
+    8d/copy-address *(ebx+0x1c) 0/r32/eax  # Var-register + 4
+    (copy-array Heap "*" %eax)  # Any-register
+$test-emit-subx-stmt-select-primitive-2:initialize-var-list:
+    # var formal-outputs/ebx: (handle list stmt-var)
+    68/push 0/imm32/next
+    68/push 0/imm32/next
+    53/push-ebx/formal-var
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ebx 4/r32/esp
+$test-emit-subx-stmt-select-primitive-2:initialize-primitive2:
+    # var primitive2/edi: (handle primitive)
+    68/push 0/imm32/next
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
-    68/push 3/imm32/rm32-in-first-output
-    68/push "ff 0/subop/increment"/imm32/subx-name
-    53/push-ebx/outputs/formal-outputs
+    68/push 3/imm32/rm32-is-first-output
+    68/push 0/imm32/subx-name
+    68/push 0/imm32/subx-name
+    53/push-ebx/outputs
+    68/push 0x11/imm32/alloc-id:fake
     68/push 0/imm32/inouts
-    68/push "increment"/imm32/name
-    89/<- %ebx 4/r32/esp
-    # var primitives/ebx: primitive
-    53/push-ebx/next
+    68/push 0/imm32/inouts
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %edi 4/r32/esp
+$test-emit-subx-stmt-select-primitive-2:initialize-primitive2-name:
+    # primitives->name = "increment"
+    8d/copy-address *(edi+4) 0/r32/eax  # Primitive-name + 4
+    (copy-array Heap "increment" %eax)
+$test-emit-subx-stmt-select-primitive-2:initialize-primitive2-subx-name:
+    # primitives->subx-name = "ff 0/subop/increment"
+    8d/copy-address *(edi+0x1c) 0/r32/eax  # Primitive-subx-name + 4
+    (copy-array Heap "ff 0/subop/increment" %eax)
+$test-emit-subx-stmt-select-primitive-2:initialize-primitive:
+    # var primitives/ebx: (addr primitive)
+    57/push-edi
+    68/push 0x11/imm32/alloc-id:fake
     68/push 0/imm32/output-is-write-only
     68/push 0/imm32/no-disp32
     68/push 0/imm32/no-imm32
     68/push 0/imm32/no-r32
     68/push 1/imm32/rm32-is-first-inout
-    68/push "ff 0/subop/increment"/imm32/subx-name
+    68/push 0/imm32/subx-name
+    68/push 0/imm32/subx-name
     68/push 0/imm32/outputs
-    57/push-edi/inouts/real-outputs  # hack; in practice we won't have the same var in function definition and call
-    68/push "increment"/imm32/name
+    68/push 0/imm32/outputs
+    53/push-ebx/inouts  # hack: reuse stmt-var from call stmt as (list var) in function declaration
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
     89/<- %ebx 4/r32/esp
+$test-emit-subx-stmt-select-primitive-2:initialize-primitive-name:
+    # primitives->name = "increment"
+    (copy-array Heap "increment" %ebx)  # Primitive-name
+$test-emit-subx-stmt-select-primitive-2:initialize-primitive-subx-name:
+    # primitives->subx-name = "ff 0/subop/increment"
+    8d/copy-address *(ebx+0x18) 0/r32/eax  # Primitive-subx-name
+    (copy-array Heap "ff 0/subop/increment" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
     (emit-subx-stmt _test-output-buffered-file %esi %ebx)
