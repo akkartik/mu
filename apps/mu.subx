@@ -8825,7 +8825,25 @@ $emit-subx-block:end:
     c3/return
 
 # Primitives supported
+# See mu_instructions for a summary of this linked-list data structure.
+#
 # For each operation, put variants with hard-coded registers before flexible ones.
+#
+# Unfortunately, our restrictions on addresses require that various fields in
+# primitives be handles, which complicates these definitions.
+#   - we need to insert dummy fields all over the place for fake alloc-ids
+#   - we can't use our syntax sugar of quoted literals for string fields
+#
+# Fake alloc-ids are needed because our type definitions up top require
+# handles but it's clearer to statically allocate these long-lived objects.
+# Fake alloc-ids are perfectly safe, but they can't be reclaimed.
+#
+# Every 'object' below starts with a fake alloc-id. It may also contain other
+# fake alloc-ids for various handle fields.
+#
+# I think of objects starting with a fake alloc-id as having type 'payload'.
+# It's not really intended to be created dynamically; for that use `allocate`
+# as usual.
 #
 # Idea for a notation to simplify such definitions:
 #   _Primitive-increment-eax:
@@ -8856,9 +8874,9 @@ $emit-subx-block:end:
 # For now we'll continue to just use comments and manually ensure they stay up
 # to date.
 == data
-Primitives:
+Primitives:  # (addr primitive)
 # - increment/decrement
-_Primitive-increment-eax:
+_Primitive-increment-eax:  # (addr primitive)
     # var/eax <- increment => 40/increment-eax
     0x11/imm32/alloc-id:fake
     _string-increment/imm32/name
@@ -8875,7 +8893,7 @@ _Primitive-increment-eax:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-increment-ecx/imm32/next
-_Primitive-increment-ecx:
+_Primitive-increment-ecx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/ecx <- increment => 41/increment-ecx
     0x11/imm32/alloc-id:fake
@@ -8893,7 +8911,7 @@ _Primitive-increment-ecx:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-increment-edx/imm32/next
-_Primitive-increment-edx:
+_Primitive-increment-edx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/edx <- increment => 42/increment-edx
     0x11/imm32/alloc-id:fake
@@ -8911,7 +8929,7 @@ _Primitive-increment-edx:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-increment-ebx/imm32/next
-_Primitive-increment-ebx:
+_Primitive-increment-ebx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/ebx <- increment => 43/increment-ebx
     0x11/imm32/alloc-id:fake
@@ -8929,7 +8947,7 @@ _Primitive-increment-ebx:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-increment-esi/imm32/next
-_Primitive-increment-esi:
+_Primitive-increment-esi:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/esi <- increment => 46/increment-esi
     0x11/imm32/alloc-id:fake
@@ -8947,7 +8965,7 @@ _Primitive-increment-esi:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-increment-edi/imm32/next
-_Primitive-increment-edi:
+_Primitive-increment-edi:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/edi <- increment => 47/increment-edi
     0x11/imm32/alloc-id:fake
@@ -8965,7 +8983,7 @@ _Primitive-increment-edi:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-eax/imm32/next
-_Primitive-decrement-eax:
+_Primitive-decrement-eax:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/eax <- decrement => 48/decrement-eax
     0x11/imm32/alloc-id:fake
@@ -8983,7 +9001,7 @@ _Primitive-decrement-eax:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-ecx/imm32/next
-_Primitive-decrement-ecx:
+_Primitive-decrement-ecx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/ecx <- decrement => 49/decrement-ecx
     0x11/imm32/alloc-id:fake
@@ -9001,7 +9019,7 @@ _Primitive-decrement-ecx:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-edx/imm32/next
-_Primitive-decrement-edx:
+_Primitive-decrement-edx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/edx <- decrement => 4a/decrement-edx
     0x11/imm32/alloc-id:fake
@@ -9019,7 +9037,7 @@ _Primitive-decrement-edx:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-ebx/imm32/next
-_Primitive-decrement-ebx:
+_Primitive-decrement-ebx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/ebx <- decrement => 4b/decrement-ebx
     0x11/imm32/alloc-id:fake
@@ -9037,7 +9055,7 @@ _Primitive-decrement-ebx:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-esi/imm32/next
-_Primitive-decrement-esi:
+_Primitive-decrement-esi:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/esi <- decrement => 4e/decrement-esi
     0x11/imm32/alloc-id:fake
@@ -9055,7 +9073,7 @@ _Primitive-decrement-esi:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-edi/imm32/next
-_Primitive-decrement-edi:
+_Primitive-decrement-edi:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/edi <- decrement => 4f/decrement-edi
     0x11/imm32/alloc-id:fake
@@ -9073,7 +9091,7 @@ _Primitive-decrement-edi:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-increment-mem/imm32/next
-_Primitive-increment-mem:
+_Primitive-increment-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # increment var => ff 0/subop/increment *(ebp+__)
     0x11/imm32/alloc-id:fake
@@ -9091,7 +9109,7 @@ _Primitive-increment-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-increment-reg/imm32/next
-_Primitive-increment-reg:
+_Primitive-increment-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/reg <- increment => ff 0/subop/increment %__
     0x11/imm32/alloc-id:fake
@@ -9109,7 +9127,7 @@ _Primitive-increment-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-mem/imm32/next
-_Primitive-decrement-mem:
+_Primitive-decrement-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # decrement var => ff 1/subop/decrement *(ebp+__)
     0x11/imm32/alloc-id:fake
@@ -9127,7 +9145,7 @@ _Primitive-decrement-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-decrement-reg/imm32/next
-_Primitive-decrement-reg:
+_Primitive-decrement-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/reg <- decrement => ff 1/subop/decrement %__
     0x11/imm32/alloc-id:fake
@@ -9146,7 +9164,7 @@ _Primitive-decrement-reg:
     0x11/imm32/alloc-id:fake
     _Primitive-add-to-eax/imm32/next
 # - add
-_Primitive-add-to-eax:
+_Primitive-add-to-eax:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/eax <- add lit => 05/add-to-eax lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9164,7 +9182,7 @@ _Primitive-add-to-eax:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-add-reg-to-reg/imm32/next
-_Primitive-add-reg-to-reg:
+_Primitive-add-reg-to-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- add var2/reg => 01/add-to var1/rm32 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9182,7 +9200,7 @@ _Primitive-add-reg-to-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-add-reg-to-mem/imm32/next
-_Primitive-add-reg-to-mem:
+_Primitive-add-reg-to-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # add-to var1 var2/reg => 01/add-to var1 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9200,7 +9218,7 @@ _Primitive-add-reg-to-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-add-mem-to-reg/imm32/next
-_Primitive-add-mem-to-reg:
+_Primitive-add-mem-to-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- add var2 => 03/add var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9218,7 +9236,7 @@ _Primitive-add-mem-to-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-add-lit-to-reg/imm32/next
-_Primitive-add-lit-to-reg:
+_Primitive-add-lit-to-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- add lit => 81 0/subop/add var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9236,7 +9254,7 @@ _Primitive-add-lit-to-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-add-lit-to-mem/imm32/next
-_Primitive-add-lit-to-mem:
+_Primitive-add-lit-to-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # add-to var1, lit => 81 0/subop/add var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9255,7 +9273,7 @@ _Primitive-add-lit-to-mem:
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-from-eax/imm32/next
 # - subtract
-_Primitive-subtract-from-eax:
+_Primitive-subtract-from-eax:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/eax <- subtract lit => 2d/subtract-from-eax lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9273,7 +9291,7 @@ _Primitive-subtract-from-eax:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-reg-from-reg/imm32/next
-_Primitive-subtract-reg-from-reg:
+_Primitive-subtract-reg-from-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- subtract var2/reg => 29/subtract-from var1/rm32 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9291,7 +9309,7 @@ _Primitive-subtract-reg-from-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-reg-from-mem/imm32/next
-_Primitive-subtract-reg-from-mem:
+_Primitive-subtract-reg-from-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # subtract-from var1 var2/reg => 29/subtract-from var1 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9309,7 +9327,7 @@ _Primitive-subtract-reg-from-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-mem-from-reg/imm32/next
-_Primitive-subtract-mem-from-reg:
+_Primitive-subtract-mem-from-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- subtract var2 => 2b/subtract var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9327,7 +9345,7 @@ _Primitive-subtract-mem-from-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-subtract-lit-from-reg/imm32/next
-_Primitive-subtract-lit-from-reg:
+_Primitive-subtract-lit-from-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- subtract lit => 81 5/subop/subtract var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9344,7 +9362,7 @@ _Primitive-subtract-lit-from-reg:
     0/imm32/no-disp32
     0/imm32/output-is-write-only
     _Primitive-subtract-lit-from-mem/imm32/next
-_Primitive-subtract-lit-from-mem:
+_Primitive-subtract-lit-from-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # subtract-from var1, lit => 81 5/subop/subtract var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9363,7 +9381,7 @@ _Primitive-subtract-lit-from-mem:
     0x11/imm32/alloc-id:fake
     _Primitive-and-with-eax/imm32/next
 # - and
-_Primitive-and-with-eax:
+_Primitive-and-with-eax:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/eax <- and lit => 25/and-with-eax lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9381,7 +9399,7 @@ _Primitive-and-with-eax:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-and-reg-with-reg/imm32/next
-_Primitive-and-reg-with-reg:
+_Primitive-and-reg-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- and var2/reg => 21/and-with var1/rm32 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9399,7 +9417,7 @@ _Primitive-and-reg-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-and-reg-with-mem/imm32/next
-_Primitive-and-reg-with-mem:
+_Primitive-and-reg-with-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # and-with var1 var2/reg => 21/and-with var1 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9417,7 +9435,7 @@ _Primitive-and-reg-with-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-and-mem-with-reg/imm32/next
-_Primitive-and-mem-with-reg:
+_Primitive-and-mem-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- and var2 => 23/and var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9435,7 +9453,7 @@ _Primitive-and-mem-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-and-lit-with-reg/imm32/next
-_Primitive-and-lit-with-reg:
+_Primitive-and-lit-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- and lit => 81 4/subop/and var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9453,7 +9471,7 @@ _Primitive-and-lit-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-and-lit-with-mem/imm32/next
-_Primitive-and-lit-with-mem:
+_Primitive-and-lit-with-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # and-with var1, lit => 81 4/subop/and var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9472,7 +9490,7 @@ _Primitive-and-lit-with-mem:
     0x11/imm32/alloc-id:fake
     _Primitive-or-with-eax/imm32/next
 # - or
-_Primitive-or-with-eax:
+_Primitive-or-with-eax:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/eax <- or lit => 0d/or-with-eax lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9490,7 +9508,7 @@ _Primitive-or-with-eax:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-or-reg-with-reg/imm32/next
-_Primitive-or-reg-with-reg:
+_Primitive-or-reg-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- or var2/reg => 09/or-with var1/rm32 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9508,7 +9526,7 @@ _Primitive-or-reg-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-or-reg-with-mem/imm32/next
-_Primitive-or-reg-with-mem:
+_Primitive-or-reg-with-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # or-with var1 var2/reg => 09/or-with var1 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9526,7 +9544,7 @@ _Primitive-or-reg-with-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-or-mem-with-reg/imm32/next
-_Primitive-or-mem-with-reg:
+_Primitive-or-mem-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- or var2 => 0b/or var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9544,7 +9562,7 @@ _Primitive-or-mem-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-or-lit-with-reg/imm32/next
-_Primitive-or-lit-with-reg:
+_Primitive-or-lit-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- or lit => 81 1/subop/or var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9562,7 +9580,7 @@ _Primitive-or-lit-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-or-lit-with-mem/imm32/next
-_Primitive-or-lit-with-mem:
+_Primitive-or-lit-with-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # or-with var1, lit => 81 1/subop/or var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9581,7 +9599,7 @@ _Primitive-or-lit-with-mem:
     0x11/imm32/alloc-id:fake
     _Primitive-xor-with-eax/imm32/next
 # - xor
-_Primitive-xor-with-eax:
+_Primitive-xor-with-eax:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/eax <- xor lit => 35/xor-with-eax lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9599,7 +9617,7 @@ _Primitive-xor-with-eax:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-xor-reg-with-reg/imm32/next
-_Primitive-xor-reg-with-reg:
+_Primitive-xor-reg-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- xor var2/reg => 31/xor-with var1/rm32 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9617,7 +9635,7 @@ _Primitive-xor-reg-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-xor-reg-with-mem/imm32/next
-_Primitive-xor-reg-with-mem:
+_Primitive-xor-reg-with-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # xor-with var1 var2/reg => 31/xor-with var1 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9635,7 +9653,7 @@ _Primitive-xor-reg-with-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-xor-mem-with-reg/imm32/next
-_Primitive-xor-mem-with-reg:
+_Primitive-xor-mem-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- xor var2 => 33/xor var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9653,7 +9671,7 @@ _Primitive-xor-mem-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-xor-lit-with-reg/imm32/next
-_Primitive-xor-lit-with-reg:
+_Primitive-xor-lit-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- xor lit => 81 6/subop/xor var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9671,7 +9689,7 @@ _Primitive-xor-lit-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-xor-lit-with-mem/imm32/next
-_Primitive-xor-lit-with-mem:
+_Primitive-xor-lit-with-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # xor-with var1, lit => 81 6/subop/xor var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9690,7 +9708,7 @@ _Primitive-xor-lit-with-mem:
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-eax/imm32/next
 # - copy
-_Primitive-copy-to-eax:
+_Primitive-copy-to-eax:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/eax <- copy lit => b8/copy-to-eax lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9708,7 +9726,7 @@ _Primitive-copy-to-eax:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-ecx/imm32/next
-_Primitive-copy-to-ecx:
+_Primitive-copy-to-ecx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/ecx <- copy lit => b9/copy-to-ecx lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9726,7 +9744,7 @@ _Primitive-copy-to-ecx:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-edx/imm32/next
-_Primitive-copy-to-edx:
+_Primitive-copy-to-edx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/edx <- copy lit => ba/copy-to-edx lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9744,7 +9762,7 @@ _Primitive-copy-to-edx:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-ebx/imm32/next
-_Primitive-copy-to-ebx:
+_Primitive-copy-to-ebx:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/ebx <- copy lit => bb/copy-to-ebx lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9762,7 +9780,7 @@ _Primitive-copy-to-ebx:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-esi/imm32/next
-_Primitive-copy-to-esi:
+_Primitive-copy-to-esi:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/esi <- copy lit => be/copy-to-esi lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9780,7 +9798,7 @@ _Primitive-copy-to-esi:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-to-edi/imm32/next
-_Primitive-copy-to-edi:
+_Primitive-copy-to-edi:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var/edi <- copy lit => bf/copy-to-edi lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9798,7 +9816,7 @@ _Primitive-copy-to-edi:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-reg-to-reg/imm32/next
-_Primitive-copy-reg-to-reg:
+_Primitive-copy-reg-to-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- copy var2/reg => 89/<- var1/rm32 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9816,7 +9834,7 @@ _Primitive-copy-reg-to-reg:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-reg-to-mem/imm32/next
-_Primitive-copy-reg-to-mem:
+_Primitive-copy-reg-to-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # copy-to var1 var2/reg => 89/<- var1 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9834,7 +9852,7 @@ _Primitive-copy-reg-to-mem:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-mem-to-reg/imm32/next
-_Primitive-copy-mem-to-reg:
+_Primitive-copy-mem-to-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- copy var2 => 8b/-> var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9852,7 +9870,7 @@ _Primitive-copy-mem-to-reg:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-lit-to-reg/imm32/next
-_Primitive-copy-lit-to-reg:
+_Primitive-copy-lit-to-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- copy lit => c7 0/subop/copy var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9870,7 +9888,7 @@ _Primitive-copy-lit-to-reg:
     1/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-copy-lit-to-mem/imm32/next
-_Primitive-copy-lit-to-mem:
+_Primitive-copy-lit-to-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # copy-to var1, lit => c7 0/subop/copy var1/rm32 lit/imm32
     0x11/imm32/alloc-id:fake
@@ -9889,7 +9907,7 @@ _Primitive-copy-lit-to-mem:
     0x11/imm32/alloc-id:fake
     _Primitive-address/imm32/next
 # - address
-_Primitive-address:
+_Primitive-address:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- address var2 => 8d/copy-address var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9908,7 +9926,7 @@ _Primitive-address:
     0x11/imm32/alloc-id:fake
     _Primitive-compare-mem-with-reg/imm32/next
 # - compare
-_Primitive-compare-mem-with-reg:
+_Primitive-compare-mem-with-reg:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # compare var1 var2/reg => 39/compare var1/rm32 var2/r32
     0x11/imm32/alloc-id:fake
@@ -9926,7 +9944,7 @@ _Primitive-compare-mem-with-reg:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-compare-reg-with-mem/imm32/next
-_Primitive-compare-reg-with-mem:
+_Primitive-compare-reg-with-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # compare var1/reg var2 => 3b/compare<- var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -9944,7 +9962,7 @@ _Primitive-compare-reg-with-mem:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-compare-eax-with-literal/imm32/next
-_Primitive-compare-eax-with-literal:
+_Primitive-compare-eax-with-literal:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # compare var1/eax n => 3d/compare-eax-with n/imm32
     0x11/imm32/alloc-id:fake
@@ -9962,7 +9980,7 @@ _Primitive-compare-eax-with-literal:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-compare-reg-with-literal/imm32/next
-_Primitive-compare-reg-with-literal:
+_Primitive-compare-reg-with-literal:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # compare var1/reg n => 81 7/subop/compare %reg n/imm32
     0x11/imm32/alloc-id:fake
@@ -9980,7 +9998,7 @@ _Primitive-compare-reg-with-literal:
     0/imm32/output-is-write-only
     0x11/imm32/alloc-id:fake
     _Primitive-compare-mem-with-literal/imm32/next
-_Primitive-compare-mem-with-literal:
+_Primitive-compare-mem-with-literal:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # compare var1 n => 81 7/subop/compare *(ebp+___) n/imm32
     0x11/imm32/alloc-id:fake
@@ -9999,7 +10017,7 @@ _Primitive-compare-mem-with-literal:
     0x11/imm32/alloc-id:fake
     _Primitive-multiply-reg-by-mem/imm32/next
 # - multiply
-_Primitive-multiply-reg-by-mem:
+_Primitive-multiply-reg-by-mem:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     # var1/reg <- multiply var2 => 0f af/multiply var2/rm32 var1/r32
     0x11/imm32/alloc-id:fake
@@ -10018,7 +10036,7 @@ _Primitive-multiply-reg-by-mem:
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr</imm32/next
 # - branches
-_Primitive-break-if-addr<:
+_Primitive-break-if-addr<:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr</imm32/name
@@ -10035,7 +10053,7 @@ _Primitive-break-if-addr<:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>=/imm32/next
-_Primitive-break-if-addr>=:
+_Primitive-break-if-addr>=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr>=/imm32/name
@@ -10052,7 +10070,7 @@ _Primitive-break-if-addr>=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-=/imm32/next
-_Primitive-break-if-=:
+_Primitive-break-if-=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-=/imm32/name
@@ -10069,7 +10087,7 @@ _Primitive-break-if-=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-!=/imm32/next
-_Primitive-break-if-!=:
+_Primitive-break-if-!=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-!=/imm32/name
@@ -10086,7 +10104,7 @@ _Primitive-break-if-!=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr<=/imm32/next
-_Primitive-break-if-addr<=:
+_Primitive-break-if-addr<=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr<=/imm32/name
@@ -10103,7 +10121,7 @@ _Primitive-break-if-addr<=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>/imm32/next
-_Primitive-break-if-addr>:
+_Primitive-break-if-addr>:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr>/imm32/name
@@ -10120,7 +10138,7 @@ _Primitive-break-if-addr>:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-</imm32/next
-_Primitive-break-if-<:
+_Primitive-break-if-<:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-</imm32/name
@@ -10137,7 +10155,7 @@ _Primitive-break-if-<:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->=/imm32/next
-_Primitive-break-if->=:
+_Primitive-break-if->=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if->=/imm32/name
@@ -10154,7 +10172,7 @@ _Primitive-break-if->=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-<=/imm32/next
-_Primitive-break-if-<=:
+_Primitive-break-if-<=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-<=/imm32/name
@@ -10171,7 +10189,7 @@ _Primitive-break-if-<=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->/imm32/next
-_Primitive-break-if->:
+_Primitive-break-if->:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if->/imm32/name
@@ -10188,7 +10206,7 @@ _Primitive-break-if->:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break/imm32/next
-_Primitive-break:
+_Primitive-break:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break/imm32/name
@@ -10205,7 +10223,7 @@ _Primitive-break:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr</imm32/next
-_Primitive-loop-if-addr<:
+_Primitive-loop-if-addr<:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr</imm32/name
@@ -10222,7 +10240,7 @@ _Primitive-loop-if-addr<:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>=/imm32/next
-_Primitive-loop-if-addr>=:
+_Primitive-loop-if-addr>=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr>=/imm32/name
@@ -10239,7 +10257,7 @@ _Primitive-loop-if-addr>=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-=/imm32/next
-_Primitive-loop-if-=:
+_Primitive-loop-if-=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-=/imm32/name
@@ -10256,7 +10274,7 @@ _Primitive-loop-if-=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-!=/imm32/next
-_Primitive-loop-if-!=:
+_Primitive-loop-if-!=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-!=/imm32/name
@@ -10273,7 +10291,7 @@ _Primitive-loop-if-!=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr<=/imm32/next
-_Primitive-loop-if-addr<=:
+_Primitive-loop-if-addr<=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr<=/imm32/name
@@ -10290,7 +10308,7 @@ _Primitive-loop-if-addr<=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>/imm32/next
-_Primitive-loop-if-addr>:
+_Primitive-loop-if-addr>:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr>/imm32/name
@@ -10307,7 +10325,7 @@ _Primitive-loop-if-addr>:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-</imm32/next
-_Primitive-loop-if-<:
+_Primitive-loop-if-<:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-</imm32/name
@@ -10324,7 +10342,7 @@ _Primitive-loop-if-<:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->=/imm32/next
-_Primitive-loop-if->=:
+_Primitive-loop-if->=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if->=/imm32/name
@@ -10341,7 +10359,7 @@ _Primitive-loop-if->=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-<=/imm32/next
-_Primitive-loop-if-<=:
+_Primitive-loop-if-<=:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-<=/imm32/name
@@ -10358,7 +10376,7 @@ _Primitive-loop-if-<=:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->/imm32/next
-_Primitive-loop-if->:
+_Primitive-loop-if->:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if->/imm32/name
@@ -10375,7 +10393,7 @@ _Primitive-loop-if->:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop/imm32/next  # we probably don't need an unconditional break
-_Primitive-loop:
+_Primitive-loop:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop/imm32/name
@@ -10393,7 +10411,7 @@ _Primitive-loop:
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr<-named/imm32/next
 # - branches to named blocks
-_Primitive-break-if-addr<-named:
+_Primitive-break-if-addr<-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr</imm32/name
@@ -10410,7 +10428,7 @@ _Primitive-break-if-addr<-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>=-named/imm32/next
-_Primitive-break-if-addr>=-named:
+_Primitive-break-if-addr>=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr>=/imm32/name
@@ -10427,7 +10445,7 @@ _Primitive-break-if-addr>=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-=-named/imm32/next
-_Primitive-break-if-=-named:
+_Primitive-break-if-=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-=/imm32/name
@@ -10444,7 +10462,7 @@ _Primitive-break-if-=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-!=-named/imm32/next
-_Primitive-break-if-!=-named:
+_Primitive-break-if-!=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-!=/imm32/name
@@ -10461,7 +10479,7 @@ _Primitive-break-if-!=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr<=-named/imm32/next
-_Primitive-break-if-addr<=-named:
+_Primitive-break-if-addr<=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr<=/imm32/name
@@ -10478,7 +10496,7 @@ _Primitive-break-if-addr<=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-addr>-named/imm32/next
-_Primitive-break-if-addr>-named:
+_Primitive-break-if-addr>-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-addr>/imm32/name
@@ -10495,7 +10513,7 @@ _Primitive-break-if-addr>-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-<-named/imm32/next
-_Primitive-break-if-<-named:
+_Primitive-break-if-<-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-</imm32/name
@@ -10512,7 +10530,7 @@ _Primitive-break-if-<-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->=-named/imm32/next
-_Primitive-break-if->=-named:
+_Primitive-break-if->=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if->=/imm32/name
@@ -10529,7 +10547,7 @@ _Primitive-break-if->=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if-<=-named/imm32/next
-_Primitive-break-if-<=-named:
+_Primitive-break-if-<=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if-<=/imm32/name
@@ -10546,7 +10564,7 @@ _Primitive-break-if-<=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-if->-named/imm32/next
-_Primitive-break-if->-named:
+_Primitive-break-if->-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break-if->/imm32/name
@@ -10563,7 +10581,7 @@ _Primitive-break-if->-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-break-named/imm32/next
-_Primitive-break-named:
+_Primitive-break-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-break/imm32/name
@@ -10580,7 +10598,7 @@ _Primitive-break-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr<-named/imm32/next
-_Primitive-loop-if-addr<-named:
+_Primitive-loop-if-addr<-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr</imm32/name
@@ -10597,7 +10615,7 @@ _Primitive-loop-if-addr<-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>=-named/imm32/next
-_Primitive-loop-if-addr>=-named:
+_Primitive-loop-if-addr>=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr>=/imm32/name
@@ -10614,7 +10632,7 @@ _Primitive-loop-if-addr>=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-=-named/imm32/next
-_Primitive-loop-if-=-named:
+_Primitive-loop-if-=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-=/imm32/name
@@ -10631,7 +10649,7 @@ _Primitive-loop-if-=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-!=-named/imm32/next
-_Primitive-loop-if-!=-named:
+_Primitive-loop-if-!=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-!=/imm32/name
@@ -10648,7 +10666,7 @@ _Primitive-loop-if-!=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr<=-named/imm32/next
-_Primitive-loop-if-addr<=-named:
+_Primitive-loop-if-addr<=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr<=/imm32/name
@@ -10665,7 +10683,7 @@ _Primitive-loop-if-addr<=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-addr>-named/imm32/next
-_Primitive-loop-if-addr>-named:
+_Primitive-loop-if-addr>-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-addr>/imm32/name
@@ -10682,7 +10700,7 @@ _Primitive-loop-if-addr>-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-<-named/imm32/next
-_Primitive-loop-if-<-named:
+_Primitive-loop-if-<-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-</imm32/name
@@ -10699,7 +10717,7 @@ _Primitive-loop-if-<-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->=-named/imm32/next
-_Primitive-loop-if->=-named:
+_Primitive-loop-if->=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if->=/imm32/name
@@ -10716,7 +10734,7 @@ _Primitive-loop-if->=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if-<=-named/imm32/next
-_Primitive-loop-if-<=-named:
+_Primitive-loop-if-<=-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if-<=/imm32/name
@@ -10733,7 +10751,7 @@ _Primitive-loop-if-<=-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-if->-named/imm32/next
-_Primitive-loop-if->-named:
+_Primitive-loop-if->-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop-if->/imm32/name
@@ -10750,7 +10768,7 @@ _Primitive-loop-if->-named:
     0/imm32/no-output
     0x11/imm32/alloc-id:fake
     _Primitive-loop-named/imm32/next  # we probably don't need an unconditional break
-_Primitive-loop-named:
+_Primitive-loop-named:  # (payload primitive)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     _string-loop/imm32/name
@@ -10769,622 +10787,622 @@ _Primitive-loop-named:
     0/imm32/next
 
 # string literals for Mu instructions
-_string-add:
+_string-add:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "add"
     0x3/imm32/size
     0x61/a 0x64/d 0x64/d
-_string-address:
+_string-address:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "address"
     0x7/imm32/size
     0x61/a 0x64/d 0x64/d 0x72/r 0x65/e 0x73/s 0x73/s
-_string-add-to:
+_string-add-to:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "add-to"
     0x6/imm32/size
     0x61/a 0x64/d 0x64/d 0x2d/dash 0x74/t 0x6f/o
-_string-and:
+_string-and:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "and"
     0x3/imm32/size
     0x61/a 0x6e/n 0x64/d
-_string-and-with:
+_string-and-with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "and-with"
     0x8/imm32/size
     0x61/a 0x6e/n 0x64/d 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h
-_string-break:
+_string-break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break"
     0x5/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k
-_string-break-if-<:
+_string-break-if-<:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-<"
     0xa/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/<
-_string-break-if-<=:
+_string-break-if-<=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-<="
     0xb/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/< 0x3d/=
-_string-break-if-=:
+_string-break-if-=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-="
     0xa/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3d/=
-_string-break-if->:
+_string-break-if->:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if->"
     0xa/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/>
-_string-break-if->=:
+_string-break-if->=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if->="
     0xb/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/> 0x3d/=
-_string-break-if-!=:
+_string-break-if-!=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-!="
     0xb/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x21/! 0x3d/=
-_string-break-if-addr<:
+_string-break-if-addr<:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-addr<"
     0xe/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/<
-_string-break-if-addr<=:
+_string-break-if-addr<=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-addr<="
     0xf/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/< 0x3d/=
-_string-break-if-addr>:
+_string-break-if-addr>:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-addr>"
     0xe/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/>
-_string-break-if-addr>=:
+_string-break-if-addr>=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "break-if-addr>="
     0xf/imm32/size
     0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/> 0x3d/=
-_string-compare:
+_string-compare:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "compare"
     0x7/imm32/size
     0x63/c 0x6f/o 0x6d/m 0x70/p 0x61/a 0x72/r 0x65/e
-_string-copy:
+_string-copy:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "copy"
     0x4/imm32/size
     0x63/c 0x6f/o 0x70/p 0x79/y
-_string-copy-to:
+_string-copy-to:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "copy-to"
     0x7/imm32/size
     0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o
-_string-decrement:
+_string-decrement:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "decrement"
     0x9/imm32/size
     0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t
-_string-increment:
+_string-increment:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "increment"
     0x9/imm32/size
     0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t
-_string-loop:
+_string-loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop"
     0x4/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p
-_string-loop-if-<:
+_string-loop-if-<:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-<"
     0x9/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/<
-_string-loop-if-<=:
+_string-loop-if-<=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-<="
     0xa/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/< 0x3d/=
-_string-loop-if-=:
+_string-loop-if-=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-="
     0x9/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3d/=
-_string-loop-if->:
+_string-loop-if->:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if->"
     0x9/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/>
-_string-loop-if->=:
+_string-loop-if->=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if->="
     0xa/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/> 0x3d/=
-_string-loop-if-!=:
+_string-loop-if-!=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-!="
     0xa/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x21/! 0x3d/=
-_string-loop-if-addr<:
+_string-loop-if-addr<:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-addr<"
     0xd/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/<
-_string-loop-if-addr<=:
+_string-loop-if-addr<=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-addr<="
     0xe/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/< 0x3d/=
-_string-loop-if-addr>:
+_string-loop-if-addr>:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-addr>"
     0xd/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/>
-_string-loop-if-addr>=:
+_string-loop-if-addr>=:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "loop-if-addr>="
     0xe/imm32/size
     0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/> 0x3d/=
-_string-multiply:
+_string-multiply:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "multiply"
     0x8/imm32/size
     0x6d/m 0x75/u 0x6c/l 0x74/t 0x69/i 0x70/p 0x6c/l 0x79/y
-_string-or:
+_string-or:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "or"
     0x2/imm32/size
     0x6f/o 0x72/r
-_string-or-with:
+_string-or-with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "or-with"
     0x7/imm32/size
     0x6f/o 0x72/r 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h
-_string-subtract:
+_string-subtract:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "subtract"
     0x8/imm32/size
     0x73/s 0x75/u 0x62/b 0x74/t 0x72/r 0x61/a 0x63/c 0x74/t
-_string-subtract-from:
+_string-subtract-from:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "subtract-from"
     0xd/imm32/size
     0x73/s 0x75/u 0x62/b 0x74/t 0x72/r 0x61/a 0x63/c 0x74/t 0x2d/dash 0x66/f 0x72/r 0x6f/o 0x6d/m
-_string-xor:
+_string-xor:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "xor"
     0x3/imm32/size
     0x78/x 0x6f/o 0x72/r
-_string-xor-with:
+_string-xor-with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "xor-with"
     0x8/imm32/size
     0x78/x 0x6f/o 0x72/r 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h
 
 # string literals for SubX instructions
-_string_01_add_to:
+_string_01_add_to:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "01/add-to"
     0x9/imm32/size
     0x30/0 0x31/1 0x2f/slash 0x61/a 0x64/d 0x64/d 0x2d/dash 0x74/t 0x6f/o
-_string_03_add:
+_string_03_add:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "03/add"
     0x6/imm32/size
     0x30/0 0x33/3 0x2f/slash 0x61/a 0x64/d 0x64/d
-_string_05_add_to_eax:
+_string_05_add_to_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "05/add-to-eax"
     0xd/imm32/size
     0x30/0 0x35/5 0x2f/slash 0x61/a 0x64/d 0x64/d 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_09_or_with:
+_string_09_or_with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "09/or-with"
     0xa/imm32/size
     0x30/0 0x39/9 0x2f/slash 0x6f/o 0x72/r 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h
-_string_0b_or:
+_string_0b_or:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0b/or"
     0x5/imm32/size
     0x30/0 0x62/b 0x2f/slash 0x6f/o 0x72/r
-_string_0d_or_with_eax:
+_string_0d_or_with_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0d/or-with-eax"
     0xe/imm32/size
     0x30/0 0x64/d 0x2f/slash 0x6f/o 0x72/r 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_0f_82_jump_label:
+_string_0f_82_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 82/jump-if-addr<"
     0x13/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x32/2 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/<
-_string_0f_82_jump_break:
+_string_0f_82_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 82/jump-if-addr< break/disp32"
     0x20/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x32/2 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/< 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_82_jump_loop:
+_string_0f_82_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 82/jump-if-addr< loop/disp32"
     0x1f/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x32/2 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/< 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_83_jump_label:
+_string_0f_83_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 83/jump-if-addr>="
     0x14/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x33/3 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/> 0x3d/=
-_string_0f_83_jump_break:
+_string_0f_83_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 83/jump-if-addr>= break/disp32"
     0x21/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x33/3 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/> 0x3d/= 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_83_jump_loop:
+_string_0f_83_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 83/jump-if-addr>= loop/disp32"
     0x20/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x33/3 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/> 0x3d/= 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_84_jump_label:
+_string_0f_84_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 84/jump-if-="
     0xf/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x34/4 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3d/=
-_string_0f_84_jump_break:
+_string_0f_84_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 84/jump-if-= break/disp32"
     0x1c/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x34/4 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3d/= 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_84_jump_loop:
+_string_0f_84_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 84/jump-if-= loop/disp32"
     0x1b/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x34/4 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3d/= 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_85_jump_label:
+_string_0f_85_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 85/jump-if-!="
     0x10/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x35/5 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x21/! 0x3d/=
-_string_0f_85_jump_break:
+_string_0f_85_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 85/jump-if-!= break/disp32"
     0x1d/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x35/5 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x21/! 0x3d/= 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_85_jump_loop:
+_string_0f_85_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 85/jump-if-!= loop/disp32"
     0x1c/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x35/5 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x21/! 0x3d/= 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_86_jump_label:
+_string_0f_86_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 86/jump-if-addr<="
     0x14/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x36/6 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/< 0x3d/=
-_string_0f_86_jump_break:
+_string_0f_86_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 86/jump-if-addr<= break/disp32"
     0x21/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x36/6 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/< 0x3d/= 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_86_jump_loop:
+_string_0f_86_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 86/jump-if-addr<= loop/disp32"
     0x20/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x36/6 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3c/< 0x3d/= 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_87_jump_label:
+_string_0f_87_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 87/jump-if-addr>"
     0x13/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x37/7 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/>
-_string_0f_87_jump_break:
+_string_0f_87_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 87/jump-if-addr> break/disp32"
     0x20/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x37/7 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/> 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_87_jump_loop:
+_string_0f_87_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 87/jump-if-addr> loop/disp32"
     0x1f/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x37/7 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x3e/> 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8c_jump_label:
+_string_0f_8c_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8c/jump-if-<"
     0xf/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x63/c 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/<
-_string_0f_8c_jump_break:
+_string_0f_8c_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8c/jump-if-< break/disp32"
     0x1c/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x63/c 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/< 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8c_jump_loop:
+_string_0f_8c_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8c/jump-if-< loop/disp32"
     0x1b/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x63/c 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/< 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8d_jump_label:
+_string_0f_8d_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8d/jump-if->="
     0x10/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x64/d 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/> 0x3d/=
-_string_0f_8d_jump_break:
+_string_0f_8d_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8d/jump-if->= break/disp32"
     0x1d/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x64/d 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/> 0x3d/= 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8d_jump_loop:
+_string_0f_8d_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8d/jump-if->= loop/disp32"
     0x1c/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x64/d 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/> 0x3d/= 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8e_jump_label:
+_string_0f_8e_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8e/jump-if-<="
     0x10/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x65/e 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/< 0x3d/=
-_string_0f_8e_jump_break:
+_string_0f_8e_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8e/jump-if-<= break/disp32"
     0x1d/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x65/e 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/< 0x3d/= 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8e_jump_loop:
+_string_0f_8e_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8e/jump-if-<= loop/disp32"
     0x1c/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x65/e 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3c/< 0x3d/= 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8f_jump_label:
+_string_0f_8f_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8f/jump-if->"
     0xf/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x66/f 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/>
-_string_0f_8f_jump_break:
+_string_0f_8f_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8f/jump-if-> break/disp32"
     0x1c/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x66/f 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/> 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_8f_jump_loop:
+_string_0f_8f_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f 8f/jump-if-> loop/disp32"
     0x1b/imm32/size
     0x30/0 0x66/f 0x20/space 0x38/8 0x66/f 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x2d/dash 0x69/i 0x66/f 0x2d/dash 0x3e/> 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_0f_af_multiply:
+_string_0f_af_multiply:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "0f af/multiply"
     0xe/imm32/size
     0x30/0 0x66/f 0x20/space 0x61/a 0x66/f 0x2f/slash 0x6d/m 0x75/u 0x6c/l 0x74/t 0x69/i 0x70/p 0x6c/l 0x79/y
-_string_21_and_with:
+_string_21_and_with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "21/and-with"
     0xb/imm32/size
     0x32/2 0x31/1 0x2f/slash 0x61/a 0x6e/n 0x64/d 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h
-_string_23_and:
+_string_23_and:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "23/and"
     0x6/imm32/size
     0x32/2 0x33/3 0x2f/slash 0x61/a 0x6e/n 0x64/d
-_string_25_and_with_eax:
+_string_25_and_with_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "25/and-with-eax"
     0xf/imm32/size
     0x32/2 0x35/5 0x2f/slash 0x61/a 0x6e/n 0x64/d 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_29_subtract_from:
+_string_29_subtract_from:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "29/subtract-from"
     0x10/imm32/size
     0x32/2 0x39/9 0x2f/slash 0x73/s 0x75/u 0x62/b 0x74/t 0x72/r 0x61/a 0x63/c 0x74/t 0x2d/dash 0x66/f 0x72/r 0x6f/o 0x6d/m
-_string_2b_subtract:
+_string_2b_subtract:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "2b/subtract"
     0xb/imm32/size
     0x32/2 0x62/b 0x2f/slash 0x73/s 0x75/u 0x62/b 0x74/t 0x72/r 0x61/a 0x63/c 0x74/t
-_string_2d_subtract_from_eax:
+_string_2d_subtract_from_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "2d/subtract-from-eax"
     0x14/imm32/size
     0x32/2 0x64/d 0x2f/slash 0x73/s 0x75/u 0x62/b 0x74/t 0x72/r 0x61/a 0x63/c 0x74/t 0x2d/dash 0x66/f 0x72/r 0x6f/o 0x6d/m 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_31_xor_with:
+_string_31_xor_with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "31/xor-with"
     0xb/imm32/size
     0x33/3 0x31/1 0x2f/slash 0x78/x 0x6f/o 0x72/r 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h
-_string_33_xor:
+_string_33_xor:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "33/xor"
     0x6/imm32/size
     0x33/3 0x33/3 0x2f/slash 0x78/x 0x6f/o 0x72/r
-_string_35_xor_with_eax:
+_string_35_xor_with_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "35/xor-with-eax"
     0xf/imm32/size
     0x33/3 0x35/5 0x2f/slash 0x78/x 0x6f/o 0x72/r 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_39_compare->:
+_string_39_compare->:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "39/compare->"
     0xc/imm32/size
     0x33/3 0x39/9 0x2f/slash 0x63/c 0x6f/o 0x6d/m 0x70/p 0x61/a 0x72/r 0x65/e 0x2d/dash 0x3e/>
-_string_3b_compare<-:
+_string_3b_compare<-:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "3b/compare<-"
     0xc/imm32/size
     0x33/3 0x62/b 0x2f/slash 0x63/c 0x6f/o 0x6d/m 0x70/p 0x61/a 0x72/r 0x65/e 0x3c/< 0x2d/dash
-_string_3d_compare_eax_with:
+_string_3d_compare_eax_with:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "3d/compare-eax-with"
     0x13/imm32/size
     0x33/3 0x64/d 0x2f/slash 0x63/c 0x6f/o 0x6d/m 0x70/p 0x61/a 0x72/r 0x65/e 0x2d/dash 0x65/e 0x61/a 0x78/x 0x2d/dash 0x77/w 0x69/i 0x74/t 0x68/h
-_string_40_increment_eax:
+_string_40_increment_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "40/increment-eax"
     0x10/imm32/size
     0x34/4 0x30/0 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_41_increment_ecx:
+_string_41_increment_ecx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "41/increment-ecx"
     0x10/imm32/size
     0x34/4 0x31/1 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x63/c 0x78/x
-_string_42_increment_edx:
+_string_42_increment_edx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "42/increment-edx"
     0x10/imm32/size
     0x34/4 0x32/2 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x64/d 0x78/x
-_string_43_increment_ebx:
+_string_43_increment_ebx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "43/increment-ebx"
     0x10/imm32/size
     0x34/4 0x33/3 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x62/b 0x78/x
-_string_46_increment_esi:
+_string_46_increment_esi:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "46/increment-esi"
     0x10/imm32/size
     0x34/4 0x36/6 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x73/s 0x69/i
-_string_47_increment_edi:
+_string_47_increment_edi:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "47/increment-edi"
     0x10/imm32/size
     0x34/4 0x37/7 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x64/d 0x69/i
-_string_48_decrement_eax:
+_string_48_decrement_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "48/decrement-eax"
     0x10/imm32/size
     0x34/4 0x38/8 0x2f/slash 0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_49_decrement_ecx:
+_string_49_decrement_ecx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "49/decrement-ecx"
     0x10/imm32/size
     0x34/4 0x39/9 0x2f/slash 0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x63/c 0x78/x
-_string_4a_decrement_edx:
+_string_4a_decrement_edx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "4a/decrement-edx"
     0x10/imm32/size
     0x34/4 0x61/a 0x2f/slash 0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x64/d 0x78/x
-_string_4b_decrement_ebx:
+_string_4b_decrement_ebx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "4b/decrement-ebx"
     0x10/imm32/size
     0x34/4 0x62/b 0x2f/slash 0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x62/b 0x78/x
-_string_4e_decrement_esi:
+_string_4e_decrement_esi:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "4e/decrement-esi"
     0x10/imm32/size
     0x34/4 0x65/e 0x2f/slash 0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x73/s 0x69/i
-_string_4f_decrement_edi:
+_string_4f_decrement_edi:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "4f/decrement-edi"
     0x10/imm32/size
     0x34/4 0x66/f 0x2f/slash 0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t 0x2d/dash 0x65/e 0x64/d 0x69/i
-_string_81_subop_add:
+_string_81_subop_add:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "81 0/subop/add"
     0xe/imm32/size
     0x38/8 0x31/1 0x20/space 0x30/0 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x61/a 0x64/d 0x64/d
-_string_81_subop_or:
+_string_81_subop_or:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "81 1/subop/or"
     0xd/imm32/size
     0x38/8 0x31/1 0x20/space 0x31/1 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x6f/o 0x72/r
-_string_81_subop_and:
+_string_81_subop_and:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "81 4/subop/and"
     0xe/imm32/size
     0x38/8 0x31/1 0x20/space 0x34/4 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x61/a 0x6e/n 0x64/d
-_string_81_subop_subtract:
+_string_81_subop_subtract:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "81 5/subop/subtract"
     0x13/imm32/size
     0x38/8 0x31/1 0x20/space 0x35/5 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x73/s 0x75/u 0x62/b 0x74/t 0x72/r 0x61/a 0x63/c 0x74/t
-_string_81_subop_xor:
+_string_81_subop_xor:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "81 6/subop/xor"
     0xe/imm32/size
     0x38/8 0x31/1 0x20/space 0x36/6 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x78/x 0x6f/o 0x72/r
-_string_81_subop_compare:
+_string_81_subop_compare:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "81 7/subop/compare"
     0x12/imm32/size
     0x38/8 0x31/1 0x20/space 0x37/7 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x63/c 0x6f/o 0x6d/m 0x70/p 0x61/a 0x72/r 0x65/e
-_string_89_<-:
+_string_89_<-:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "89/<-"
     0x5/imm32/size
     0x38/8 0x39/9 0x2f/slash 0x3c/< 0x2d/dash
-_string_8b_->:
+_string_8b_->:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "8b/->"
     0x5/imm32/size
     0x38/8 0x62/b 0x2f/slash 0x2d/dash 0x3e/>
-_string_8d_copy_address:
+_string_8d_copy_address:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "8d/copy-address"
     0xf/imm32/size
     0x38/8 0x64/d 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x61/a 0x64/d 0x64/d 0x72/r 0x65/e 0x73/s 0x73/s
-_string_b8_copy_to_eax:
+_string_b8_copy_to_eax:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "b8/copy-to-eax"
     0xe/imm32/size
     0x62/b 0x38/8 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x65/e 0x61/a 0x78/x
-_string_b9_copy_to_ecx:
+_string_b9_copy_to_ecx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "b9/copy-to-ecx"
     0xe/imm32/size
     0x62/b 0x39/9 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x65/e 0x63/c 0x78/x
-_string_ba_copy_to_edx:
+_string_ba_copy_to_edx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "ba/copy-to-edx"
     0xe/imm32/size
     0x62/b 0x61/a 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x65/e 0x64/d 0x78/x
-_string_bb_copy_to_ebx:
+_string_bb_copy_to_ebx:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "bb/copy-to-ebx"
     0xe/imm32/size
     0x62/b 0x62/b 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x65/e 0x62/b 0x78/x
-_string_be_copy_to_esi:
+_string_be_copy_to_esi:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "be/copy-to-esi"
     0xe/imm32/size
     0x62/b 0x65/e 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x65/e 0x73/s 0x69/i
-_string_bf_copy_to_edi:
+_string_bf_copy_to_edi:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "bf/copy-to-edi"
     0xe/imm32/size
     0x62/b 0x66/f 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y 0x2d/dash 0x74/t 0x6f/o 0x2d/dash 0x65/e 0x64/d 0x69/i
-_string_c7_subop_copy:
+_string_c7_subop_copy:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "c7 0/subop/copy"
     0xf/imm32/size
     0x63/c 0x37/7 0x20/space 0x30/0 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x63/c 0x6f/o 0x70/p 0x79/y
-_string_e9_jump_label:
+_string_e9_jump_label:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "e9/jump"
     0x7/imm32/size
     0x65/e 0x39/9 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p
-_string_e9_jump_break:
+_string_e9_jump_break:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "e9/jump break/disp32"
     0x14/imm32/size
     0x65/e 0x39/9 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x20/space 0x62/b 0x72/r 0x65/e 0x61/a 0x6b/k 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_e9_jump_loop:
+_string_e9_jump_loop:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "e9/jump loop/disp32"
     0x13/imm32/size
     0x65/e 0x39/9 0x2f/slash 0x6a/j 0x75/u 0x6d/m 0x70/p 0x20/space 0x6c/l 0x6f/o 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x69/i 0x73/s 0x70/p 0x33/3 0x32/2
-_string_ff_subop_increment:
+_string_ff_subop_increment:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "ff 0/subop/increment"
     0x14/imm32/size
     0x66/f 0x66/f 0x30/0 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t
-_string_ff_subop_decrement:
+_string_ff_subop_decrement:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "ff 1/subop/decrement"
     0x14/imm32/size
     0x66/f 0x66/f 0x31/1 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x64/d 0x65/e 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t
 
-Single-int-var-in-mem:
+Single-int-var-in-mem:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-mem/imm32
     0/imm32/next
     0/imm32/next
 
-Int-var-in-mem:
+Int-var-in-mem:  # (payload var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -11395,49 +11413,49 @@ Int-var-in-mem:
     0/imm32/no-register
     0/imm32/no-register
 
-Two-args-int-stack-int-reg:
+Two-args-int-stack-int-reg:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-mem/imm32
     0x11/imm32/alloc-id:fake
     Single-int-var-in-some-register/imm32/next
 
-Two-args-int-reg-int-stack:
+Two-args-int-reg-int-stack:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-some-register/imm32
     0x11/imm32/alloc-id:fake
     Single-int-var-in-mem/imm32/next
 
-Two-args-int-eax-int-literal:
+Two-args-int-eax-int-literal:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-eax/imm32
     0x11/imm32/alloc-id:fake
     Single-lit-var/imm32/next
 
-Int-var-and-literal:
+Int-var-and-literal:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-mem/imm32
     0x11/imm32/alloc-id:fake
     Single-lit-var/imm32/next
 
-Int-var-in-register-and-literal:
+Int-var-in-register-and-literal:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-some-register/imm32
     0x11/imm32/alloc-id:fake
     Single-lit-var/imm32/next
 
-Single-int-var-in-some-register:
+Single-int-var-in-some-register:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-some-register/imm32
     0/imm32/next
     0/imm32/next
 
-Single-addr-var-in-some-register:
+Single-addr-var-in-some-register:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Addr-var-in-some-register/imm32
@@ -11466,7 +11484,7 @@ Addr-var-in-some-register:
     0x11/imm32/alloc-id:fake
     Any-register/imm32
 
-Single-int-var-in-eax:
+Single-int-var-in-eax:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-eax/imm32
@@ -11484,7 +11502,7 @@ Int-var-in-eax:
     0x11/imm32/alloc-id:fake
     $Register-eax/imm32
 
-Single-int-var-in-ecx:
+Single-int-var-in-ecx:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-ecx/imm32
@@ -11502,14 +11520,14 @@ Int-var-in-ecx:
     0x11/imm32/alloc-id:fake
     $Register-ecx/imm32/register
 
-Single-int-var-in-edx:
+Single-int-var-in-edx:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-edx/imm32
     0/imm32/next
     0/imm32/next
 
-Int-var-in-edx:
+Int-var-in-edx:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -11520,14 +11538,14 @@ Int-var-in-edx:
     0x11/imm32/alloc-id:fake
     $Register-edx/imm32/register
 
-Single-int-var-in-ebx:
+Single-int-var-in-ebx:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-ebx/imm32
     0/imm32/next
     0/imm32/next
 
-Int-var-in-ebx:
+Int-var-in-ebx:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -11538,14 +11556,14 @@ Int-var-in-ebx:
     0x11/imm32/alloc-id:fake
     $Register-ebx/imm32/register
 
-Single-int-var-in-esi:
+Single-int-var-in-esi:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-esi/imm32
     0/imm32/next
     0/imm32/next
 
-Int-var-in-esi:
+Int-var-in-esi:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -11556,14 +11574,14 @@ Int-var-in-esi:
     0x11/imm32/alloc-id:fake
     $Register-esi/imm32/register
 
-Single-int-var-in-edi:
+Single-int-var-in-edi:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-edi/imm32
     0/imm32/next
     0/imm32/next
 
-Int-var-in-edi:
+Int-var-in-edi:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -11574,14 +11592,14 @@ Int-var-in-edi:
     0x11/imm32/alloc-id:fake
     $Register-edi/imm32/register
 
-Single-lit-var:
+Single-lit-var:  # (payload list var)
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Lit-var/imm32
     0/imm32/next
     0/imm32/next
 
-Lit-var:
+Lit-var:  # (payload var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -11592,7 +11610,7 @@ Lit-var:
     0/imm32/no-register
     0/imm32/no-register
 
-Type-int:
+Type-int:  # (payload tree type-id)
     0x11/imm32/alloc-id:fake:payload
     1/imm32/left-is-atom
     1/imm32/value:int
@@ -11600,7 +11618,7 @@ Type-int:
     0/imm32/right:null
     0/imm32/right:null
 
-Type-literal:
+Type-literal:  # (payload tree type-id)
     0x11/imm32/alloc-id:fake:payload
     1/imm32/is-atom
     0/imm32/value:literal
@@ -11608,7 +11626,7 @@ Type-literal:
     0/imm32/right:null
     0/imm32/right:null
 
-Type-addr:
+Type-addr:  # (payload tree type-id)
     0x11/imm32/alloc-id:fake:payload
     1/imm32/is-atom
     2/imm32/value:addr
