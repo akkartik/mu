@@ -9183,6 +9183,7 @@ _Primitive-add-reg-to-reg:
     0x11/imm32/alloc-id:fake
     _Primitive-add-reg-to-mem/imm32/next
 _Primitive-add-reg-to-mem:
+    0x11/imm32/alloc-id:fake:payload
     # add-to var1 var2/reg => 01/add-to var1 var2/r32
     0x11/imm32/alloc-id:fake
     _string-add-to/imm32/name
@@ -13141,11 +13142,11 @@ $test-add-reg-to-reg:initialize-var2:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %edx 4/r32/esp
 $test-add-reg-to-reg:initialize-var2-name:
-    # var1->name = "var1"
+    # var2->name = "var2"
     8d/copy-address *(edx+4) 0/r32/eax  # Var-name + 4
-    (copy-array Heap "var1" %eax)
+    (copy-array Heap "var2" %eax)
 $test-add-reg-to-reg:initialize-var2-register:
-    # var1->register = "ecx"
+    # var2->register = "ecx"
     8d/copy-address *(edx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "ecx" %eax)
 $test-add-reg-to-reg:initialize-inouts:
@@ -13210,41 +13211,84 @@ test-add-reg-to-mem:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
+$test-add-reg-to-mem:initialize-type:
     # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
-    68/push 1/imm32/is-atom
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 1/imm32/value:int
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var var-var1/ecx: var
-    68/push 0/imm32/no-register
+$test-add-reg-to-mem:initialize-var1:
+    # var var1/ecx: (handle var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
     51/push-ecx
-    68/push "var1"/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var var-var2/edx: var in ecx
-    68/push "ecx"/imm32/register
+$test-add-reg-to-mem:initialize-var1-name:
+    # var1->name = "var1"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "var1" %eax)
+$test-add-reg-to-mem:initialize-var2:
+    # var var2/edx: (handle var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
-    ff 6/subop/push *(ecx+4)  # Var-type
-    68/push "var2"/imm32
+    ff 6/subop/push *(ecx+0x10)
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %edx 4/r32/esp
+$test-add-reg-to-mem:initialize-var2-name:
+    # var2->name = "var2"
+    8d/copy-address *(edx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "var2" %eax)
+$test-add-reg-to-mem:initialize-var2-register:
+    # var2->register = "ecx"
+    8d/copy-address *(edx+0x1c) 0/r32/eax  # Var-register + 4
+    (copy-array Heap "ecx" %eax)
+$test-add-reg-to-mem:initialize-inouts:
     # var inouts/esi: (handle stmt-var) = [var2]
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
-    52/push-edx/var-var2
-    89/<- %esi 4/r32/esp
-    # var inouts = (handle stmt-var) = [var1, var2]
-    56/push-esi/next
-    51/push-ecx/var-var1
-    89/<- %esi 4/r32/esp
-    # var stmt/esi: statement
     68/push 0/imm32/next
-    68/push 0/imm32/no-outputs
-    56/push-esi/inouts
-    68/push "add-to"/imm32/operation
-    68/push 1/imm32
+    52/push-edx/var2
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %esi 4/r32/esp
+    # inouts = [var1, var2]
+    68/push 0/imm32/is-deref:false
+    56/push-esi/next
+    68/push 0x11/imm32/alloc-id:fake
+    51/push-ecx/var1
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %esi 4/r32/esp
+$test-add-reg-to-mem:initialize-stmt:
+    # var stmt/esi: (addr statement)
+    68/push 0/imm32/next
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    68/push 0/imm32/outputs
+    56/push-esi/inouts
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32/tag:stmt1
+    89/<- %esi 4/r32/esp
+$test-add-reg-to-mem:initialize-stmt-operation:
+    # stmt->operation = "add"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "add-to" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
     (emit-subx-stmt _test-output-buffered-file %esi Primitives)
