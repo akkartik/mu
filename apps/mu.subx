@@ -11433,14 +11433,14 @@ Single-int-var-in-some-register:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-some-register/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Single-addr-var-in-some-register:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Addr-var-in-some-register/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Int-var-in-some-register:
@@ -11487,7 +11487,7 @@ Single-int-var-in-ecx:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-ecx/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Int-var-in-ecx:
@@ -11505,7 +11505,7 @@ Single-int-var-in-edx:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-edx/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Int-var-in-edx:
@@ -11523,7 +11523,7 @@ Single-int-var-in-ebx:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-ebx/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Int-var-in-ebx:
@@ -11541,7 +11541,7 @@ Single-int-var-in-esi:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-esi/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Int-var-in-esi:
@@ -11559,7 +11559,7 @@ Single-int-var-in-edi:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Int-var-in-edi/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Int-var-in-edi:
@@ -11577,7 +11577,7 @@ Single-lit-var:
     0x11/imm32/alloc-id:fake:payload
     0x11/imm32/alloc-id:fake
     Lit-var/imm32
-    0x11/imm32/alloc-id:fake
+    0/imm32/next
     0/imm32/next
 
 Lit-var:
@@ -11600,6 +11600,7 @@ Type-int:
     0/imm32/right:null
 
 Type-literal:
+    0x11/imm32/alloc-id:fake:payload
     1/imm32/is-atom
     0/imm32/value:literal
     0/imm32/left:unused
@@ -11607,6 +11608,7 @@ Type-literal:
     0/imm32/right:null
 
 Type-addr:
+    0x11/imm32/alloc-id:fake:payload
     1/imm32/is-atom
     2/imm32/value:addr
     0/imm32/left:unused
@@ -11729,13 +11731,14 @@ emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     # . save registers
     50/push-eax
     51/push-ecx
-    # if (location == 0) return
+    # if (l == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     0f 84/jump-if-= $emit-subx-r32:end/disp32
     # var v/eax: (handle var)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
-    (maybe-get Registers *(eax+0x10) 0xc)  # Var-register => eax: (addr register-index)
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    (maybe-get Registers %eax 0xc)  # => eax: (addr register-index)
     (write-buffered *(ebp+8) Space)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32")
@@ -11755,7 +11758,7 @@ emit-subx-imm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt
     # . save registers
     50/push-eax
     51/push-ecx
-    # if (location == 0) return
+    # if (l == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     74/jump-if-= $emit-subx-imm32:end/disp8
     # var v/eax: (handle var)
