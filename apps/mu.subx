@@ -8846,7 +8846,7 @@ $emit-subx-block:end:
 # as usual.
 #
 # Idea for a notation to simplify such definitions:
-#   _Primitive-increment-eax:
+#   _Primitive-increment-eax:  # (payload primitive)
 #     0x11/alloc-id:fake:payload
 #     0x11 @(0x11 "increment")  # name
 #     0 0                       # inouts
@@ -12438,7 +12438,7 @@ test-emit-subx-stmt-primitive:
     (clear-stream $_test-output-buffered-file->buffer)
     # simulate allocated payloads starting with an initial fake alloc-id (0x11)
 $test-emit-subx-stmt-primitive:initialize-type:
-    # var type/ecx: (handle tree type-id) = int
+    # var type/ecx: (payload tree type-id) = int
     68/push 0/imm32/right:null
     68/push 0/imm32/right:null
     68/push 0/imm32/left:unused
@@ -12447,7 +12447,7 @@ $test-emit-subx-stmt-primitive:initialize-type:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
 $test-emit-subx-stmt-primitive:initialize-var:
-    # var var-foo/ecx: (handle var) = var(type)
+    # var var-foo/ecx: (payload var) = var(type)
     68/push 0/imm32/no-register
     68/push 0/imm32/no-register
     68/push -8/imm32/stack-offset
@@ -12463,7 +12463,7 @@ $test-emit-subx-stmt-primitive:initialize-var-name:
     8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
     (copy-array Heap "foo" %eax)
 $test-emit-subx-stmt-primitive:initialize-stmt-var:
-    # var operand/ebx: (handle stmt-var) = stmt-var(var-foo)
+    # var operand/ebx: (payload stmt-var) = stmt-var(var-foo)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
@@ -12550,7 +12550,7 @@ test-emit-subx-stmt-primitive-register:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
 $test-emit-subx-stmt-primitive-register:initialize-type:
-    # var type/ecx: (handle tree type-id) = int
+    # var type/ecx: (payload tree type-id) = int
     68/push 0/imm32/right:null
     68/push 0/imm32/right:null
     68/push 0/imm32/left:unused
@@ -12559,7 +12559,7 @@ $test-emit-subx-stmt-primitive-register:initialize-type:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
 $test-emit-subx-stmt-primitive-register:initialize-var:
-    # var var-foo/ecx: (handle var)
+    # var var-foo/ecx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -12579,7 +12579,7 @@ $test-emit-subx-stmt-primitive-register:initialize-var-register:
     8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "eax" %eax)
 $test-emit-subx-stmt-primitive-register:initialize-stmt-var:
-    # var operand/ebx: (handle stmt-var)
+    # var operand/ebx: (payload stmt-var)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
@@ -12602,7 +12602,7 @@ $test-emit-subx-stmt-primitive-register:initialize-stmt-operation:
     8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
     (copy-array Heap "increment" %eax)
 $test-emit-subx-stmt-primitive-register:initialize-formal-var:
-    # var formal-var/ebx: (handle var)
+    # var formal-var/ebx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -12622,7 +12622,7 @@ $test-emit-subx-stmt-primitive-register:initialize-formal-register:
     8d/copy-address *(ebx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "*" %eax)  # Any-register
 $test-emit-subx-stmt-primitive-register:initialize-var-list:
-    # var formal-outputs/ebx: (handle list var)
+    # var formal-outputs/ebx: (payload list var)
     68/push 0/imm32/next
     68/push 0/imm32/next
     53/push-ebx/formal-var
@@ -12630,7 +12630,7 @@ $test-emit-subx-stmt-primitive-register:initialize-var-list:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ebx 4/r32/esp
 $test-emit-subx-stmt-primitive-register:initialize-primitive:
-    # var primitives/ebx: primitive
+    # var primitives/ebx: (addr primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
@@ -12697,7 +12697,7 @@ test-emit-subx-stmt-select-primitive:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
 $test-emit-subx-stmt-select-primitive:initialize-type:
-    # var type/ecx: (handle tree type-id) = int
+    # var type/ecx: (payload tree type-id) = int
     68/push 0/imm32/right:null
     68/push 0/imm32/right:null
     68/push 0/imm32/left:unused
@@ -12706,7 +12706,7 @@ $test-emit-subx-stmt-select-primitive:initialize-type:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
 $test-emit-subx-stmt-select-primitive:initialize-var:
-    # var var-foo/ecx: (handle var)
+    # var var-foo/ecx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -12726,7 +12726,7 @@ $test-emit-subx-stmt-select-primitive:initialize-var-register:
     8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "eax" %eax)
 $test-emit-subx-stmt-select-primitive:initialize-stmt-var:
-    # var operand/ebx: (handle stmt-var)
+    # var operand/ebx: (payload stmt-var)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
@@ -12749,7 +12749,7 @@ $test-emit-subx-stmt-select-primitive:initialize-stmt-operation:
     8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
     (copy-array Heap "increment" %eax)
 $test-emit-subx-stmt-select-primitive:initialize-formal-var:
-    # var formal-var/ebx: (handle var)
+    # var formal-var/ebx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -12769,7 +12769,7 @@ $test-emit-subx-stmt-select-primitive:initialize-formal-register:
     8d/copy-address *(ebx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "*" %eax)  # Any-register
 $test-emit-subx-stmt-select-primitive:initialize-var-list:
-    # var formal-outputs/ebx: (handle list var)
+    # var formal-outputs/ebx: (payload list var)
     68/push 0/imm32/next
     68/push 0/imm32/next
     53/push-ebx/formal-var
@@ -12777,7 +12777,7 @@ $test-emit-subx-stmt-select-primitive:initialize-var-list:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ebx 4/r32/esp
 $test-emit-subx-stmt-select-primitive:initialize-primitive2:
-    # var primitive2/edi: (handle primitive)
+    # var primitive2/edi: (payload primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
@@ -12871,7 +12871,7 @@ test-emit-subx-stmt-select-primitive-2:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
 $test-emit-subx-stmt-select-primitive-2:initialize-type:
-    # var type/ecx: (handle tree type-id) = int
+    # var type/ecx: (payload tree type-id) = int
     68/push 0/imm32/right:null
     68/push 0/imm32/right:null
     68/push 0/imm32/left:unused
@@ -12880,7 +12880,7 @@ $test-emit-subx-stmt-select-primitive-2:initialize-type:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
 $test-emit-subx-stmt-select-primitive-2:initialize-var:
-    # var var-foo/ecx: (handle var)
+    # var var-foo/ecx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -12900,7 +12900,7 @@ $test-emit-subx-stmt-select-primitive-2:initialize-var-register:
     8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "eax" %eax)
 $test-emit-subx-stmt-select-primitive-2:initialize-stmt-var:
-    # var operand/ebx: (handle stmt-var)
+    # var operand/ebx: (payload stmt-var)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
@@ -12923,7 +12923,7 @@ $test-emit-subx-stmt-select-primitive-2:initialize-stmt-operation:
     8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
     (copy-array Heap "increment" %eax)
 $test-emit-subx-stmt-select-primitive-2:initialize-formal-var:
-    # var formal-var/ebx: (handle var)
+    # var formal-var/ebx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -12943,7 +12943,7 @@ $test-emit-subx-stmt-select-primitive-2:initialize-formal-register:
     8d/copy-address *(ebx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "*" %eax)  # Any-register
 $test-emit-subx-stmt-select-primitive-2:initialize-var-list:
-    # var formal-outputs/ebx: (handle list stmt-var)
+    # var formal-outputs/ebx: (payload list stmt-var)
     68/push 0/imm32/next
     68/push 0/imm32/next
     53/push-ebx/formal-var
@@ -12951,7 +12951,7 @@ $test-emit-subx-stmt-select-primitive-2:initialize-var-list:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ebx 4/r32/esp
 $test-emit-subx-stmt-select-primitive-2:initialize-primitive2:
-    # var primitive2/edi: (handle primitive)
+    # var primitive2/edi: (payload primitive)
     68/push 0/imm32/next
     68/push 0/imm32/next
     68/push 0/imm32/output-is-write-only
@@ -13039,7 +13039,7 @@ test-increment-register:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
 $test-increment-register:initialize-type:
-    # var type/ecx: (handle tree type-id) = int
+    # var type/ecx: (payload tree type-id) = int
     68/push 0/imm32/right:null
     68/push 0/imm32/right:null
     68/push 0/imm32/left:unused
@@ -13048,7 +13048,7 @@ $test-increment-register:initialize-type:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
 $test-increment-register:initialize-var:
-    # var var-foo/ecx: (handle var)
+    # var var-foo/ecx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -13068,7 +13068,7 @@ $test-increment-register:initialize-var-register:
     8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "eax" %eax)
 $test-increment-register:initialize-stmt-var:
-    # var operand/ebx: (handle stmt-var)
+    # var operand/ebx: (payload stmt-var)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
@@ -13119,7 +13119,7 @@ test-add-reg-to-reg:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
 $test-add-reg-to-reg:initialize-type:
-    # var type/ecx: (handle tree type-id) = int
+    # var type/ecx: (payload tree type-id) = int
     68/push 0/imm32/right:null
     68/push 0/imm32/right:null
     68/push 0/imm32/left:unused
@@ -13128,7 +13128,7 @@ $test-add-reg-to-reg:initialize-type:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
 $test-add-reg-to-reg:initialize-var1:
-    # var var1/ecx: (handle var)
+    # var var1/ecx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -13148,7 +13148,7 @@ $test-add-reg-to-reg:initialize-var1-register:
     8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "eax" %eax)
 $test-add-reg-to-reg:initialize-var2:
-    # var var2/edx: (handle var)
+    # var var2/edx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -13168,7 +13168,7 @@ $test-add-reg-to-reg:initialize-var2-register:
     8d/copy-address *(edx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "ecx" %eax)
 $test-add-reg-to-reg:initialize-inouts:
-    # var inouts/esi: (handle stmt-var) = [var2]
+    # var inouts/esi: (payload stmt-var) = [var2]
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
@@ -13177,7 +13177,7 @@ $test-add-reg-to-reg:initialize-inouts:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %esi 4/r32/esp
 $test-add-reg-to-reg:initialize-outputs:
-    # var outputs/edi: (handle stmt-var) = [var1]
+    # var outputs/edi: (payload stmt-var) = [var1]
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
@@ -13230,7 +13230,7 @@ test-add-reg-to-mem:
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
 $test-add-reg-to-mem:initialize-type:
-    # var type/ecx: (handle tree type-id) = int
+    # var type/ecx: (payload tree type-id) = int
     68/push 0/imm32/right:null
     68/push 0/imm32/right:null
     68/push 0/imm32/left:unused
@@ -13239,7 +13239,7 @@ $test-add-reg-to-mem:initialize-type:
     68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
 $test-add-reg-to-mem:initialize-var1:
-    # var var1/ecx: (handle var)
+    # var var1/ecx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 8/imm32/stack-offset
@@ -13255,7 +13255,7 @@ $test-add-reg-to-mem:initialize-var1-name:
     8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
     (copy-array Heap "var1" %eax)
 $test-add-reg-to-mem:initialize-var2:
-    # var var2/edx: (handle var)
+    # var var2/edx: (payload var)
     68/push 0/imm32/register
     68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
@@ -13275,7 +13275,7 @@ $test-add-reg-to-mem:initialize-var2-register:
     8d/copy-address *(edx+0x1c) 0/r32/eax  # Var-register + 4
     (copy-array Heap "ecx" %eax)
 $test-add-reg-to-mem:initialize-inouts:
-    # var inouts/esi: (handle stmt-var) = [var2]
+    # var inouts/esi: (payload stmt-var) = [var2]
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
     68/push 0/imm32/next
