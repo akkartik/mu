@@ -13677,46 +13677,89 @@ test-add-literal-to-mem:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
-    68/push 1/imm32/is-atom
+$test-add-literal-to-mem:initialize-type:
+    # var type/ecx: (payload tree type-id) = int
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 1/imm32/value:int
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var var-var1/ecx: var
-    68/push 0/imm32/no-register
+$test-add-literal-to-mem:initialize-var1:
+    # var var1/ecx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
     68/push 8/imm32/stack-offset
     68/push 1/imm32/block-depth
     51/push-ecx
-    68/push "var1"/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var type/edx: (handle tree type-id) = literal
-    68/push 0/imm32/right/null
-    68/push 0/imm32/left/literal
+$test-add-literal-to-mem:initialize-var1-name:
+    # var1->name = "var1"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "var1" %eax)
+$test-add-literal-to-mem:initialize-literal-type:
+    # var type/edx: (payload tree type-id) = literal
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 0/imm32/value:literal
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %edx 4/r32/esp
-    # var var-var2/edx: var literal
-    68/push 0/imm32/no-register
+$test-add-literal-to-mem:initialize-literal:
+    # var l/edx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     52/push-edx
-    68/push "0x34"/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (handle stmt-var) = [var2]
+$test-add-literal-to-mem:initialize-literal-value:
+    # l->name = "0x34"
+    8d/copy-address *(edx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "0x34" %eax)
+$test-add-literal-to-mem:initialize-inouts:
+    # var inouts/esi: (payload stmt-var) = [l]
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
-    52/push-edx/var-var2
+    68/push 0/imm32/next
+    52/push-edx/l
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %esi 4/r32/esp
     # var inouts = (handle stmt-var) = [var1, var2]
     68/push 0/imm32/is-deref:false
     56/push-esi/next
-    51/push-ecx/var-var1
+    68/push 0x11/imm32/alloc-id:fake
+    51/push-ecx/var1
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %esi 4/r32/esp
-    # var stmt/esi: statement
+$test-add-literal-to-mem:initialize-stmt:
+    # var stmt/esi: (addr statement)
     68/push 0/imm32/next
-    68/push 0/imm32/no-outputs
+    68/push 0/imm32/next
+    68/push 0/imm32/outputs
+    68/push 0/imm32/outputs
     56/push-esi/inouts
-    68/push "add-to"/imm32/operation
-    68/push 1/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32/tag:stmt1
     89/<- %esi 4/r32/esp
+$test-add-literal-to-mem:initialize-stmt-operation:
+    # stmt->operation = "add-to"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "add-to" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
     (emit-subx-stmt _test-output-buffered-file %esi Primitives)
