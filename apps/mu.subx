@@ -12292,8 +12292,6 @@ test-increment-register:
     #
     # Primitives are the global definitions.
     #
-    # There are no functions defined.
-    #
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -12364,68 +12362,6 @@ $test-increment-register:initialize-stmt-operation:
 #?     # }}}
     # check output
     (check-next-stream-line-equal _test-output-stream "40/increment-eax" "F - test-increment-register")
-    # . epilogue
-    89/<- %esp 5/r32/ebp
-    5d/pop-to-ebp
-    c3/return
-
-test-increment-var:
-    # Select the right primitive between overloads.
-    #   foo <- increment
-    # =>
-    #   ff 0/subop/increment %eax  # sub-optimal, but should suffice
-    #
-    # There's a variable on the var stack as follows:
-    #   name: 'foo'
-    #   type: int
-    #   register: 'eax'
-    #
-    # Primitives are the global definitions.
-    #
-    # There are no functions defined.
-    #
-    # . prologue
-    55/push-ebp
-    89/<- %ebp 4/r32/esp
-    # setup
-    (clear-stream _test-output-stream)
-    (clear-stream $_test-output-buffered-file->buffer)
-    # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
-    68/push 1/imm32/is-atom
-    89/<- %ecx 4/r32/esp
-    # var var-foo/ecx: var in eax
-    68/push "eax"/imm32/register
-    68/push 0/imm32/no-stack-offset
-    68/push 1/imm32/block-depth
-    51/push-ecx
-    68/push "foo"/imm32
-    89/<- %ecx 4/r32/esp
-    # var inouts/edi: (handle stmt-var)
-    68/push 0/imm32/is-deref:false
-    68/push 0/imm32/next
-    51/push-ecx/var-foo
-    89/<- %edi 4/r32/esp
-    # var stmt/esi: statement
-    68/push 0/imm32/next
-    57/push-edi/outputs
-    68/push 0/imm32/no-inouts
-    68/push "increment"/imm32/operation
-    68/push 1/imm32
-    89/<- %esi 4/r32/esp
-    # convert
-    c7 0/subop/copy *Curr-block-depth 0/imm32
-    (emit-subx-stmt _test-output-buffered-file %esi Primitives)
-    (flush _test-output-buffered-file)
-#?     # dump _test-output-stream {{{
-#?     (write 2 "^")
-#?     (write-stream 2 _test-output-stream)
-#?     (write 2 "$\n")
-#?     (rewind-stream _test-output-stream)
-#?     # }}}
-    # check output
-    (check-next-stream-line-equal _test-output-stream "40/increment-eax" "F - test-increment-var")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
