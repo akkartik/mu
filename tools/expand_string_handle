@@ -1,0 +1,20 @@
+#!/bin/sh
+# Expand syntax sugar for SubX string literals and show the corresponding handle definition.
+#
+# The handle has a fake alloc-id; we're never going to try to reclaim global
+# variables, we just sometimes need handles in them to satisfy type constraints.
+
+INPUT=$(cat)
+echo "    0x11/imm32/alloc-id:fake:payload"
+echo "    # \"$INPUT\""
+
+# print length in bytes
+printf "    0x%x/imm32/size\n" $(echo -n $INPUT |wc -c)
+
+# print ascii codes for each character in hex
+echo -n "   "
+for c in $(echo "$INPUT" |sed -e 's/./& /g')
+do
+  echo -n " 0x$(printf '%x' "'$c")/$c"
+done
+echo
