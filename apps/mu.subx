@@ -338,14 +338,6 @@ Var-register:  # (handle array byte) -- name of a register
 Var-size:  # (addr int)
   0x20/imm32
 
-Any-register:  # (handle array byte)
-  # alloc-id
-  0x11/imm32
-  # size
-  1/imm32
-  # data
-  2a/asterisk
-
 List-value:  # (handle _)
   0/imm32
 List-next:  # (handle list _)
@@ -11462,7 +11454,7 @@ Single-addr-var-in-some-register:  # (payload list var)
     0/imm32/next
     0/imm32/next
 
-Int-var-in-some-register:
+Int-var-in-some-register:  # (payload var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -11473,7 +11465,13 @@ Int-var-in-some-register:
     0x11/imm32/alloc-id:fake
     Any-register/imm32
 
-Addr-var-in-some-register:
+Any-register:  # (payload array byte)
+  0x11/imm32/alloc-id:fake:payload
+  1/imm32/size
+  # data
+  2a/asterisk
+
+Addr-var-in-some-register:  # (payload var)
     0x11/imm32/alloc-id:fake:payload
     0/imm32/name
     0/imm32/name
@@ -12316,6 +12314,7 @@ $operand-matches-primitive?:check-register:
         74/jump-if-= break/disp8
         81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
         74/jump-if-= break/disp8
+$operand-matches-primitive?:var-deref-match:
         e9/jump $operand-matches-primitive?:return-true/disp32
       }
       # if prim-var is in register and var is in register but dereference, no match
@@ -12326,6 +12325,7 @@ $operand-matches-primitive?:check-register:
         0f 84/jump-if-= break/disp32
         81 7/subop/compare *(ecx+0x10) 0/imm32/false  # Stmt-var-is-deref
         74/jump-if-= break/disp8
+$operand-matches-primitive?:var-deref-no-match:
         e9/jump $operand-matches-primitive?:return-false/disp32
       }
       # return false if var->register doesn't match prim-var->register
@@ -12340,18 +12340,20 @@ $operand-matches-primitive?:check-register:
         # if (vreg == preg) break
         39/compare %ecx 3/r32/ebx
         74/jump-if-= break/disp8
+$operand-matches-primitive?:var-register-no-match:
         # if either address is 0, return false
         81 7/subop/compare %ebx 0/imm32
         74/jump-if-=  $operand-matches-primitive?:return-false/disp8
         81 7/subop/compare %ecx 0/imm32
         74/jump-if-=  $operand-matches-primitive?:return-false/disp8
         # if prim-var->register is wildcard, it's a match
-        (string-equal? %ecx Any-register)  # => eax
+        (string-equal? %ecx "*")  # Any-register => eax
         3d/compare-eax-and 0/imm32/false
         75/jump-if-!= break/disp8
+$operand-matches-primitive?:wildcard-no-match:
         # if string contents aren't equal, return false
         (string-equal? %ecx %ebx)  # => eax
-        74/jump-if-= $operand-matches-primitive?:return-false/disp8
+        75/jump-if-!= $operand-matches-primitive?:return-false/disp8
       }
     }
 $operand-matches-primitive?:return-true:
@@ -13559,46 +13561,94 @@ test-add-literal-to-reg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
-    68/push 1/imm32/is-atom
+$test-add-literal-to-reg:initialize-var-type:
+    # var type/ecx: (payload tree type-id) = int
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 1/imm32/value:int
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var var-var1/ecx: var in ecx
-    68/push "ecx"/imm32/register
+$test-add-literal-to-reg:initialize-var:
+    # var v/ecx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     51/push-ecx
-    68/push "var1"/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var type/edx: (handle tree type-id) = literal
-    68/push 0/imm32/right/null
-    68/push 0/imm32/left/literal
+$test-add-literal-to-reg:initialize-var-name:
+    # v->name = "v"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "v" %eax)
+$test-add-literal-to-reg:initialize-var-register:
+    # v->register = "ecx"
+    8d/copy-address *(ecx+0x1c) 0/r32/eax  # Var-register + 4
+    (copy-array Heap "ecx" %eax)
+$test-add-literal-to-reg:initialize-literal-type:
+    # var type/edx: (payload tree type-id) = literal
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 0/imm32/value:literal
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %edx 4/r32/esp
-    # var var-var2/edx: var literal
-    68/push 0/imm32/no-register
+$test-add-literal-to-reg:initialize-literal:
+    # var l/edx: (payload var)
+    68/push 0/imm32/register
+    68/push 0/imm32/register
     68/push 0/imm32/no-stack-offset
     68/push 1/imm32/block-depth
     52/push-edx
-    68/push "0x34"/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %edx 4/r32/esp
-    # var inouts/esi: (handle stmt-var) = [var2]
+$test-add-literal-to-reg:initialize-literal-value:
+    # l->name = "0x34"
+    8d/copy-address *(edx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "0x34" %eax)
+$test-add-literal-to-reg:initialize-inouts:
+    # var inouts/esi: (payload stmt-var) = [l]
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
-    52/push-edx/var-var2
+    68/push 0/imm32/next
+    52/push-edx/l
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %esi 4/r32/esp
-    # var outputs/edi: (handle stmt-var) = [var1]
+$test-add-literal-to-reg:initialize-outputs:
+    # var outputs/edi: (payload stmt-var) = [v]
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
-    51/push-ecx/var-var1
+    68/push 0/imm32/next
+    51/push-ecx/v
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %edi 4/r32/esp
-    # var stmt/esi: statement
+$test-add-literal-to-reg:initialize-stmt:
+    # var stmt/esi: (addr statement)
+    68/push 0/imm32/next
     68/push 0/imm32/next
     57/push-edi/outputs
+    68/push 0x11/imm32/alloc-id:fake
     56/push-esi/inouts
-    68/push "add"/imm32/operation
-    68/push 1/imm32
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32/tag:stmt1
     89/<- %esi 4/r32/esp
+$test-add-literal-to-reg:initialize-stmt-operation:
+    # stmt->operation = "add"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "add" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
     (emit-subx-stmt _test-output-buffered-file %esi Primitives)
