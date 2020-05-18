@@ -941,7 +941,7 @@ test-convert-function-with-local-var-in-mem:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-local-var-with-compound-type-in-mem:
+test-convert-function-with-local-var-with-compound-type-in-mem:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -985,7 +985,7 @@ _failing-test-convert-function-with-local-var-with-compound-type-in-mem:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-local-var-in-reg:
+test-convert-function-with-local-var-in-reg:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7134,18 +7134,20 @@ is-mu-array?:  # t: (addr tree type-id) -> result/eax: boolean
     51/push-ecx
     # ecx = t
     8b/-> *(ebp+8) 1/r32/ecx
-    # result = false
-    b8/copy-to-eax 0/imm32/false
-    # if t->left-is-atom, return false
+    # if t->is-atom?, return false
     81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
-    75/jump-if-!= $is-mu-array?:end/disp8
-    # if !t->left->left-is-atom, return false
-    8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
-    81 7/subop/compare *ecx 0/imm32/false  # Tree-is-atom
-    74/jump-if-= $is-mu-array?:end/disp8
+    75/jump-if-!= $is-mu-array?:return-false/disp8
+    # if !t->left->is-atom?, return false
+    (lookup *(ecx+4) *(ecx+8))  # Tree-left Tree-left => eax
+    81 7/subop/compare *eax 0/imm32/false  # Tree-is-atom
+    74/jump-if-= $is-mu-array?:return-false/disp8
     # return t->left->value == array
-    81 7/subop/compare *(ecx+4) 3/imm32/array-type-id  # Tree-value
+    81 7/subop/compare *(eax+4) 3/imm32/array-type-id  # Tree-value
     0f 94/set-if-= %al
+    81 4/subop/and %eax 0xff/imm32
+    eb/jump $is-mu-array?:end/disp8
+$is-mu-array?:return-false:
+    b8/copy-to-eax 0/imm32/false
 $is-mu-array?:end:
     # . restore registers
     59/pop-to-ecx
