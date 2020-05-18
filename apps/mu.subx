@@ -5797,6 +5797,7 @@ lookup-or-define-var:  # name: (addr slice), vars: (addr stack (handle var)), fn
       # if name is one of fn's outputs, return it
       {
         (find-in-function-outputs *(ebp+0x10) *(ebp+8) *(ebp+0x14))
+        8b/-> *(ebp+0x14) 0/r32/eax
         81 7/subop/compare *eax 0/imm32
         # otherwise abort
         0f 84/jump-if-= $lookup-var:abort/disp32
@@ -5819,7 +5820,7 @@ find-in-function-outputs:  # fn: (addr function), name: (addr slice), out: (addr
     51/push-ecx
     # var curr/ecx: (addr list var) = lookup(fn->outputs)
     8b/-> *(ebp+8) 1/r32/ecx
-    (lookup *(ecx+0x10) *(ecx+0x14))  # => eax
+    (lookup *(ecx+0x10) *(ecx+0x14))  # Function-outputs Function-outputs => eax
     89/<- %ecx 0/r32/eax
     # while curr != null
     {
@@ -5836,7 +5837,7 @@ find-in-function-outputs:  # fn: (addr function), name: (addr slice), out: (addr
         74/jump-if-= break/disp8
         # var edi = out
         57/push-edi
-        89/<- *(ebp+0x10) 7/r32/edi
+        8b/-> *(ebp+0x10) 7/r32/edi
         # *out = curr->value
         8b/-> *ecx 0/r32/eax
         89/<- *edi 0/r32/eax
