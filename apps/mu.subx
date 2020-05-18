@@ -5014,7 +5014,7 @@ new-block-name:  # fn: (addr function), out: (addr handle var)
     52/push-edx
     # var n/ecx: int = len(fn->name) + 10 for an int + 2 for '$:'
     8b/-> *(ebp+8) 0/r32/eax
-    8b/-> *eax 0/r32/eax  # Function-name
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
     8b/-> *eax 0/r32/eax  # String-size
     05/add-to-eax 0xd/imm32  # 10 + 2 for '$:'
     89/<- %ecx 0/r32/eax
@@ -5027,7 +5027,7 @@ new-block-name:  # fn: (addr function), out: (addr handle var)
     (clear-stream %edx)
     # eax = fn->name
     8b/-> *(ebp+8) 0/r32/eax
-    8b/-> *eax 0/r32/eax  # Function-name
+    (lookup *eax *(eax+4))  # Function-name Function-name => eax
     # construct result using Next-block-index (and increment it)
     (write %edx "$")
     (write %edx %eax)
@@ -7279,26 +7279,19 @@ emit-subx:  # out: (addr buffered-file)
     89/<- %ebp 4/r32/esp
     # . save registers
     50/push-eax
-    51/push-ecx
-    57/push-edi
-    # edi = out
-    8b/-> *(ebp+8) 7/r32/edi
-    # var curr/ecx: (addr function) = *Program->functions
+    # var curr/eax: (addr function) = *Program->functions
     (lookup *_Program-functions *_Program-functions->payload)  # => eax
-    89/<- %ecx 0/r32/eax
     {
       # if (curr == null) break
-      81 7/subop/compare %ecx 0/imm32
+      3d/compare-eax-and 0/imm32
       0f 84/jump-if-= break/disp32
-      (emit-subx-function %edi %ecx)
-      # curr = curr->next
-      8b/-> *(ecx+0x14) 1/r32/ecx  # Function-next
+      (emit-subx-function *(ebp+8) %eax)
+      # curr = lookup(curr->next)
+      (lookup *(eax+0x20) *(eax+0x24))  # Function-next Function-next => eax
       e9/jump loop/disp32
     }
 $emit-subx:end:
     # . restore registers
-    5f/pop-to-edi
-    59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
@@ -7326,20 +7319,22 @@ emit-subx-function:  # out: (addr buffered-file), f: (addr function)
     68/push 0/imm32/top
     89/<- %edx 4/r32/esp
     #
-    (write-buffered %edi *ecx)
+    (lookup *ecx *(ecx+4))  # Function-name Function-name => eax
+    (write-buffered %edi %eax)
     (write-buffered %edi ":\n")
     # initialize some global state
     c7 0/subop/copy *Curr-block-depth 1/imm32
     c7 0/subop/copy *Curr-local-stack-offset 0/imm32
     #
     (emit-subx-prologue %edi)
-    (emit-subx-block %edi *(ecx+0x10) %edx)  # Function-body
+    (lookup *(ecx+0x18) *(ecx+0x1c))  # Function-body Function-body => eax
+    (emit-subx-block %edi %eax %edx)
     (emit-subx-epilogue %edi)
     # TODO: validate that *Curr-block-depth and *Curr-local-stack-offset have
     # been cleaned up
 $emit-subx-function:end:
     # . reclaim locals
-    81 0/subop/add %esp 408/imm32
+    81 0/subop/add %esp 808/imm32
     # . restore registers
     5f/pop-to-edi
     5a/pop-to-edx
@@ -7362,22 +7357,25 @@ populate-mu-type-offsets-in-inouts:  # f: (addr function)
     57/push-edi
     # var next-offset/edx: int = 8
     ba/copy-to-edx 8/imm32
-    # var curr/ecx: (handle list var) = f->inouts
+    # var curr/ecx: (addr list var) = lookup(f->inouts)
     8b/-> *(ebp+8) 1/r32/ecx
-    8b/-> *(ecx+8) 1/r32/ecx  # Function-inouts
+    (lookup *(ecx+8) *(ecx+0xc))  # Function-inouts Function-inouts => eax
+    89/<- %ecx 0/r32/eax
     {
 $populate-mu-type-offsets-in-inouts:loop:
       81 7/subop/compare %ecx 0/imm32
       74/jump-if-= break/disp8
-      # var v/ebx: (handle var) = curr->value
-      8b/-> *ecx 3/r32/ebx  # List-value
+      # var v/ebx: (addr var) = lookup(curr->value)
+      (lookup *ecx *(ecx+4))  # List-value List-value => eax
+      89/<- %ebx 0/r32/eax
       # v->offset = next-offset
       89/<- *(ebx+0xc) 2/r32/edx  # Var-offset
       # next-offset += size-of(v)
       (size-of %ebx)  # => eax
       01/add-to %edx 0/r32/eax
-      # curr = curr->next
-      8b/-> *(ecx+4) 1/r32/ecx  # List-next
+      # curr = lookup(curr->next)
+      (lookup *(ecx+8) *(ecx+0xc))  # List-next List-next => eax
+      #
       eb/jump loop/disp8
     }
 $populate-mu-type-offsets-in-inouts:end:
@@ -8799,11 +8797,11 @@ emit-subx-block:  # out: (addr buffered-file), block: (addr block), vars: (addr 
     # esi = block
     8b/-> *(ebp+0xc) 6/r32/esi
     # block->var->block-depth = *Curr-block-depth
-    8b/-> *(esi+8) 0/r32/eax  # Block-var
+    (lookup *(esi+0xc) *(esi+0x10))  # Block-var Block-var => eax
     8b/-> *Curr-block-depth 1/r32/ecx
-    89/<- *(eax+8) 1/r32/ecx  # Var-block-depth
-    # var stmts/eax: (handle list stmt) = block->statements
-    8b/-> *(esi+4) 0/r32/eax  # Block-stmts
+    89/<- *(eax+0x10) 1/r32/ecx  # Var-block-depth
+    # var stmts/eax: (addr list stmt) = lookup(block->statements)
+    (lookup *(esi+4) *(esi+8))  # Block-stmts Block-stmts => eax
     #
     {
 $emit-subx-block:check-empty:
@@ -8811,14 +8809,18 @@ $emit-subx-block:check-empty:
       0f 84/jump-if-= break/disp32
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "{\n")
-      # var v/ecx: (handle var)
-      8b/-> *(esi+8) 1/r32/ecx  # Block-var
+      # var v/ecx: (addr var) = lookup(block->var)
+      (lookup *(esi+0xc) *(esi+0x10))  # Block-var Block-var => eax
+      89/<- %ecx 0/r32/eax
       #
-      (write-buffered *(ebp+8) *ecx)  # Var-name
+      (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+      (write-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) ":loop:\n")
       ff 0/subop/increment *Curr-block-depth
-      (push *(ebp+0x10) %ecx)
+      (push *(ebp+0x10) *(esi+0xc))  # Block-var
+      (push *(ebp+0x10) *(esi+0x10))  # Block-var
       (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10))
+      (pop *(ebp+0x10))  # => eax
       (pop *(ebp+0x10))  # => eax
       ff 1/subop/decrement *Curr-block-depth
       (emit-indent *(ebp+8) *Curr-block-depth)
