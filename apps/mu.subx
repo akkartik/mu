@@ -7453,13 +7453,13 @@ $emit-subx-stmt-list:zero-arg-unconditional-loop:
               (emit-indent *(ebp+8) *Curr-block-depth)
               (write-buffered *(ebp+8) "e9/jump loop/disp32")
               (write-buffered *(ebp+8) Newline)
-              e9/jump $emit-subx-stmt-list:cleanup/disp32  # skip remaining statements; they're dead code
+              e9/jump $emit-subx-stmt-list:clean-up/disp32  # skip remaining statements; they're dead code
             }
             # unconditional loops with a target
             {
               0f 84/jump-if-= break/disp32
               (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
-              e9/jump $emit-subx-stmt-list:cleanup/disp32
+              e9/jump $emit-subx-stmt-list:clean-up/disp32
             }
           }
           # }}}
@@ -7475,7 +7475,7 @@ $emit-subx-stmt-list:unconditional-break:
             0f 84/jump-if-= $emit-subx-stmt-list:emit-cleanup/disp32  # easy: just skip remaining statements
             # unconditional breaks with a target
             (emit-subx-cleanup-and-unconditional-nonlocal-branch *(ebp+8) %ecx *(ebp+0x10))
-            e9/jump $emit-subx-stmt-list:cleanup/disp32
+            e9/jump $emit-subx-stmt-list:clean-up/disp32
           }
           # }}}
           # simple conditional branches without a target {{{
@@ -7572,7 +7572,7 @@ $emit-subx-stmt-list:continue:
     }
 $emit-subx-stmt-list:emit-cleanup:
     (emit-cleanup-code-until-depth *(ebp+8) *(ebp+0x10) *Curr-block-depth)
-$emit-subx-stmt-list:cleanup:
+$emit-subx-stmt-list:clean-up:
     (clean-up-blocks *(ebp+0x10) *Curr-block-depth)
 $emit-subx-stmt-list:end:
     # . restore registers
