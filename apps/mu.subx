@@ -7018,6 +7018,7 @@ $emit-subx-stmt-list:conditional-branch-with-target:
         }
 $emit-subx-stmt-list:1-to-1:
         (emit-subx-stmt *(ebp+8) %ecx Primitives)
+        e9/jump $emit-subx-stmt-list:continue/disp32
       }
       {
 $emit-subx-stmt-list:check-for-var-def:
@@ -7028,6 +7029,7 @@ $emit-subx-stmt-list:var-def:
         (push *(ebp+0x10) *(ecx+4))  # Vardef-var
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
+        eb/jump $emit-subx-stmt-list:continue/disp8
       }
       {
 $emit-subx-stmt-list:check-for-reg-var-def:
@@ -7042,6 +7044,7 @@ $emit-subx-stmt-list:reg-var-def:
         (emit-subx-stmt *(ebp+8) %ecx Primitives)
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
+        eb/jump $emit-subx-stmt-list:continue/disp8
       }
 $emit-subx-stmt-list:continue:
       # TODO: raise an error on unrecognized Stmt-tag
