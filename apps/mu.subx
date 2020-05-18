@@ -382,13 +382,13 @@ Type-id:  # (stream (addr array byte))
   0/imm32/read
   0x100/imm32/size
   # data
-  "literal"/imm32  # 0
+  "literal"/imm32  # 0: value is just the name
   "int"/imm32  # 1
   "addr"/imm32  # 2
   "array"/imm32  # 3
   "handle"/imm32  # 4
   "boolean"/imm32  # 5
-  "constant"/imm32  # 6: like a literal, but replaced with its value in Var-offset
+  "constant"/imm32  # 6: like a literal, but value is an int in Var-offset
   "offset"/imm32  # 7: (offset T) is guaranteed to be a 32-bit multiple of size-of(T)
   0/imm32
   # 0x20
@@ -6886,16 +6886,22 @@ compute-size-of-type-id:  # t: type-id -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    #
+    # . save registers
+    51/push-ecx
+    # var out/ecx: (handle typeinfo)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # eax = t
     8b/-> *(ebp+8) 0/r32/eax
     # if v is a literal, return 0
     3d/compare-eax-and 0/imm32
     74/jump-if-= $compute-size-of-type-id:end/disp8  # eax changes type from type-id to int
     # if v has a user-defined type, compute its size
     # TODO: support non-atom type
-    (find-typeinfo %eax)  # => eax
+    (find-typeinfo %eax %ecx)
     {
-      3d/compare-eax-and 0/imm32
+      81 7/subop/compare *ecx 0/imm32
       74/jump-if-= break/disp8
 $compute-size-of-type-id:user-defined:
       (populate-mu-type-sizes %eax)
@@ -6905,6 +6911,10 @@ $compute-size-of-type-id:user-defined:
     # otherwise return the word size
     b8/copy-to-eax 4/imm32
 $compute-size-of-type-id:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -7178,16 +7188,22 @@ size-of-type-id:  # t: type-id -> result/eax: int
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
-    #
+    # . save registers
+    51/push-ecx
+    # var out/ecx: (handle typeinfo)
+    68/push 0/imm32
+    68/push 0/imm32
+    89/<- %ecx 4/r32/esp
+    # eax = t
     8b/-> *(ebp+8) 0/r32/eax
     # if v is a literal, return 0
     3d/compare-eax-and 0/imm32
     74/jump-if-= $size-of-type-id:end/disp8  # eax changes type from type-id to int
     # if v has a user-defined type, return its size
     # TODO: support non-atom type
-    (find-typeinfo %eax)  # => eax
+    (find-typeinfo %eax %ecx)
     {
-      3d/compare-eax-and 0/imm32
+      81 7/subop/compare *ecx 0/imm32
       74/jump-if-= break/disp8
 $size-of-type-id:user-defined:
       8b/-> *(eax+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
@@ -7196,6 +7212,10 @@ $size-of-type-id:user-defined:
     # otherwise return the word size
     b8/copy-to-eax 4/imm32
 $size-of-type-id:end:
+    # . reclaim locals
+    81 0/subop/add %esp 8/imm32
+    # . restore registers
+    59/pop-to-ecx
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -11853,17 +11873,16 @@ emit-call:  # out: (addr buffered-file), stmt: (addr stmt)
     (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
     (write-buffered *(ebp+8) %eax)
     # - emit arguments
-    # var curr/ecx: (addr stmt-var) = lookup(stmt->inouts)
+    # var curr/eax: (addr stmt-var) = lookup(stmt->inouts)
     (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
-    89/<- %ecx 0/r32/eax
     {
       # if (curr == null) break
-      81 7/subop/compare %ecx 0/imm32
+      3d/compare-eax-and 0/imm32
       74/jump-if-= break/disp8
       #
-      (emit-subx-call-operand *(ebp+8) %ecx)
-      # curr = curr->next
-      8b/-> *(ecx+4) 1/r32/ecx  # Stmt-var-next
+      (emit-subx-call-operand *(ebp+8) %eax)
+      # curr = lookup(curr->next)
+      (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
       eb/jump loop/disp8
     }
     #
@@ -11995,7 +12014,7 @@ emit-subx-call-operand-stack:  # out: (addr buffered-file), v: (addr var)
     # esi = v
     8b/-> *(ebp+0xc) 6/r32/esi
     # var curr/ecx: int = v->offset
-    8b/-> *(esi+0xc) 1/r32/ecx  # Var-offset
+    8b/-> *(esi+0x14) 1/r32/ecx  # Var-offset
     # var max/eax: int = v->offset + size-of(v)
     (size-of %esi)  # => eax
     # TODO: assert size is a multiple of 4
@@ -14355,30 +14374,54 @@ test-emit-subx-stmt-function-call:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var type/ecx: (handle tree type-id) = int
-    68/push 0/imm32/right/null
-    68/push 1/imm32/left/int
-    68/push 1/imm32/is-atom
+$test-emit-subx-function-call:initialize-type:
+    # var type/ecx: (payload tree type-id) = int
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 1/imm32/value:int
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var var-foo/ecx: var
+$test-emit-subx-function-call:initialize-var:
+    # var var-foo/ecx: (payload var) = var(type)
+    68/push 0/imm32/no-register
     68/push 0/imm32/no-register
     68/push -8/imm32/stack-offset
-    68/push 0/imm32/block-depth
-    51/push-ecx
-    68/push "foo"/imm32
+    68/push 1/imm32/block-depth
+    51/push-ecx/type
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var inouts/esi: (handle stmt-var)
+$test-emit-subx-function-call:initialize-var-name:
+    # var-foo->name = "foo"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "foo" %eax)
+$test-emit-subx-function-call:initialize-stmt-var:
+    # var operand/ebx: (payload stmt-var) = stmt-var(var-foo)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
-    51/push-ecx/var-foo
-    89/<- %esi 4/r32/esp
-    # var stmt/esi: statement
     68/push 0/imm32/next
+    51/push-ecx/var-foo
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ebx 4/r32/esp
+$test-emit-subx-function-call:initialize-stmt:
+    # var stmt/esi: (addr statement)
     68/push 0/imm32/no-outputs
-    56/push-esi/inouts
-    68/push "f"/imm32/operation
-    68/push 1/imm32
+    68/push 0/imm32/no-outputs
+    53/push-ebx/inouts
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32/tag
     89/<- %esi 4/r32/esp
+$test-emit-subx-function-call:initialize-stmt-operation:
+    # stmt->operation = "f"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "f" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
     (emit-subx-stmt _test-output-buffered-file %esi 0)
