@@ -7410,8 +7410,9 @@ emit-subx-stmt-list:  # out: (addr buffered-file), stmts: (addr list stmt), vars
 $emit-subx-stmt-list:loop:
       81 7/subop/compare %esi 0/imm32
       0f 84/jump-if-= break/disp32
-      # var curr-stmt/ecx = stmts->value
-      8b/-> *esi 1/r32/ecx  # List-value
+      # var curr-stmt/ecx: (addr stmt) = lookup(stmts->value)
+      (lookup *esi *(esi+4))  # List-value List-value => eax
+      89/<- %ecx 0/r32/eax
       {
 $emit-subx-stmt-list:check-for-block:
         81 7/subop/compare *ecx 0/imm32/block  # Stmt-tag
@@ -7542,6 +7543,7 @@ $emit-subx-stmt-list:check-for-var-def:
 $emit-subx-stmt-list:var-def:
         (emit-subx-var-def *(ebp+8) %ecx)
         (push *(ebp+0x10) *(ecx+4))  # Vardef-var
+        (push *(ebp+0x10) *(ecx+8))  # Vardef-var
         # var-seen? = true
         ba/copy-to-edx 1/imm32/true
         eb/jump $emit-subx-stmt-list:continue/disp8
@@ -7561,7 +7563,8 @@ $emit-subx-stmt-list:reg-var-def:
       }
 $emit-subx-stmt-list:continue:
       # TODO: raise an error on unrecognized Stmt-tag
-      8b/-> *(esi+4) 6/r32/esi  # List-next
+      (lookup *(esi+8) *(esi+0xc))  # List-next List-next => eax
+      89/<- %esi 0/r32/eax
       e9/jump loop/disp32
     }
 $emit-subx-stmt-list:emit-cleanup:
@@ -7682,14 +7685,16 @@ is-mu-branch?:  # stmt: (addr stmt1) -> result/eax: boolean
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # ecx = stmt
+    # ecx = lookup(stmt->operation)
     8b/-> *(ebp+8) 1/r32/ecx
+    (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+    89/<- %ecx 0/r32/eax
     # if (stmt->operation starts with "loop") return true
-    (string-starts-with? *(ecx+4) "loop")  # Stmt1-operation => eax
+    (string-starts-with? %ecx "loop")  # => eax
     3d/compare-eax-and 0/imm32/false
     75/jump-if-not-equal $is-mu-branch?:end/disp8
     # otherwise return (stmt->operation starts with "break")
-    (string-starts-with? *(ecx+4) "break")  # Stmt1-operation => eax
+    (string-starts-with? %ecx "break")  # => eax
 $is-mu-branch?:end:
     # . restore registers
     59/pop-to-ecx
@@ -8820,13 +8825,16 @@ $emit-subx-block:check-empty:
       ff 0/subop/increment *Curr-block-depth
       (push *(ebp+0x10) *(esi+0xc))  # Block-var
       (push *(ebp+0x10) *(esi+0x10))  # Block-var
+      # emit block->statements
+      (lookup *(esi+4) *(esi+8))  # Block-stmts Block-stmts => eax
       (emit-subx-stmt-list *(ebp+8) %eax *(ebp+0x10))
       (pop *(ebp+0x10))  # => eax
       (pop *(ebp+0x10))  # => eax
       ff 1/subop/decrement *Curr-block-depth
       (emit-indent *(ebp+8) *Curr-block-depth)
       (write-buffered *(ebp+8) "}\n")
-      (write-buffered *(ebp+8) *ecx)  # Var-name
+      (lookup *ecx *(ecx+4))  # Var-name Var-name => eax
+      (write-buffered *(ebp+8) %eax)
       (write-buffered *(ebp+8) ":break:\n")
     }
 $emit-subx-block:end:
@@ -11404,7 +11412,7 @@ _string_ff_subop_increment:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "ff 0/subop/increment"
     0x14/imm32/size
-    0x66/f 0x66/f 0x30/0 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t
+    0x66/f 0x66/f 0x20/space 0x30/0 0x2f/slash 0x73/s 0x75/u 0x62/b 0x6f/o 0x70/p 0x2f/slash 0x69/i 0x6e/n 0x63/c 0x72/r 0x65/e 0x6d/m 0x65/e 0x6e/n 0x74/t
 _string_ff_subop_decrement:  # (payload array byte)
     0x11/imm32/alloc-id:fake:payload
     # "ff 1/subop/decrement"
