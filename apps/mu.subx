@@ -11949,7 +11949,8 @@ $emit-subx-call-operand:stack:
       75/jump-if-!= break/disp8
 $emit-subx-call-operand:literal:
       (write-buffered *(ebp+8) Space)
-      (write-buffered *(ebp+8) *esi)
+      (lookup *esi *(esi+4))  # Var-name Var-name => eax
+      (write-buffered *(ebp+8) %eax)
     }
 $emit-subx-call-operand:end:
     # . restore registers
@@ -14441,9 +14442,9 @@ $test-emit-subx-function-call:initialize-stmt-operation:
 
 test-emit-subx-stmt-function-call-with-literal-arg:
     # Call a function on a literal.
-    #   f 34
+    #   f 0x34
     # =>
-    #   (f2 34)
+    #   (f2 0x34)
     #
     # . prologue
     55/push-ebp
@@ -14451,29 +14452,54 @@ test-emit-subx-stmt-function-call-with-literal-arg:
     # setup
     (clear-stream _test-output-stream)
     (clear-stream $_test-output-buffered-file->buffer)
-    # var type/ecx: (handle tree type-id) = literal
-    68/push 0/imm32/right/null
-    68/push 0/imm32/left/literal
+$test-emit-subx-function-call-with-literal-arg:initialize-type:
+    # var type/ecx: (payload tree type-id) = int
+    68/push 0/imm32/right:null
+    68/push 0/imm32/right:null
+    68/push 0/imm32/left:unused
+    68/push 0/imm32/value:literal
+    68/push 1/imm32/is-atom?:true
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var var-foo/ecx: var literal
+$test-emit-subx-function-call-with-literal-arg:initialize-var:
+    # var var-foo/ecx: (payload var) = var(lit)
+    68/push 0/imm32/no-register
     68/push 0/imm32/no-register
     68/push 0/imm32/no-stack-offset
-    68/push 0/imm32/block-depth
-    51/push-ecx
-    68/push "34"/imm32
+    68/push 1/imm32/block-depth
+    51/push-ecx/type
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/name
+    68/push 0/imm32/name
+    68/push 0x11/imm32/alloc-id:fake:payload
     89/<- %ecx 4/r32/esp
-    # var inouts/esi: (handle stmt-var)
+$test-emit-subx-function-call-with-literal-arg:initialize-var-name:
+    # var-foo->name = "0x34"
+    8d/copy-address *(ecx+4) 0/r32/eax  # Var-name + 4
+    (copy-array Heap "0x34" %eax)
+$test-emit-subx-function-call-with-literal-arg:initialize-stmt-var:
+    # var operand/ebx: (payload stmt-var) = stmt-var(var-foo)
     68/push 0/imm32/is-deref:false
     68/push 0/imm32/next
-    51/push-ecx/var-foo
-    89/<- %esi 4/r32/esp
-    # var stmt/esi: statement
     68/push 0/imm32/next
+    51/push-ecx/var-foo
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0x11/imm32/alloc-id:fake:payload
+    89/<- %ebx 4/r32/esp
+$test-emit-subx-function-call-with-literal-arg:initialize-stmt:
+    # var stmt/esi: (addr statement)
     68/push 0/imm32/no-outputs
-    56/push-esi/inouts
-    68/push "f"/imm32/operation
-    68/push 1/imm32
+    68/push 0/imm32/no-outputs
+    53/push-ebx/inouts
+    68/push 0x11/imm32/alloc-id:fake
+    68/push 0/imm32/operation
+    68/push 0/imm32/operation
+    68/push 1/imm32/tag
     89/<- %esi 4/r32/esp
+$test-emit-subx-function-call-with-literal-arg:initialize-stmt-operation:
+    # stmt->operation = "f"
+    8d/copy-address *(esi+4) 0/r32/eax  # Stmt1-operation
+    (copy-array Heap "f" %eax)
     # convert
     c7 0/subop/copy *Curr-block-depth 0/imm32
     (emit-subx-stmt _test-output-buffered-file %esi 0 %ebx)
@@ -14485,7 +14511,7 @@ test-emit-subx-stmt-function-call-with-literal-arg:
 #?     (rewind-stream _test-output-stream)
 #?     # }}}
     # check output
-    (check-next-stream-line-equal _test-output-stream "(f 34)" "F - test-emit-subx-stmt-function-call-with-literal-arg")
+    (check-next-stream-line-equal _test-output-stream "(f 0x34)" "F - test-emit-subx-stmt-function-call-with-literal-arg")
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
