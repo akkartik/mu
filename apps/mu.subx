@@ -1030,7 +1030,7 @@ test-convert-function-with-local-var-in-reg:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-second-local-var-in-same-reg:
+test-convert-function-with-second-local-var-in-same-reg:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1077,7 +1077,7 @@ _failing-test-convert-function-with-second-local-var-in-same-reg:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-local-var-dereferenced:
+test-convert-function-with-local-var-dereferenced:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1122,7 +1122,7 @@ _failing-test-convert-function-with-local-var-dereferenced:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-compare-register-with-literal:
+test-convert-compare-register-with-literal:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7591,14 +7591,13 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     55/push-ebp
     89/<- %ebp 4/r32/esp
     # . save registers
+    50/push-eax
     51/push-ecx
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var sv/eax: (addr stmt-var) = lookup(curr-stmt->outputs)
     (lookup *(ecx+0x14) *(ecx+0x18))  # Regvardef-outputs Regvardef-outputs => eax
-    # push(vars, sv->value)
-    (push *(ebp+0x10) *eax)  # Stmt-var-value
-    (push *(ebp+0x10) *(eax+4))  # Stmt-var-value
+    # TODO: assert !sv->is-deref?
     # var v/ecx: (addr var) = lookup(sv->value)
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     89/<- %ecx 0/r32/eax
@@ -7608,10 +7607,10 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     # ensure that v is in a register
     81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
     0f 84/jump-if-= $push-output-and-maybe-emit-spill:abort/disp32
-    # if already-spilled-this-block?(reg, vars) return
+    # if !already-spilled-this-block?(reg, vars) emit code to spill reg
     (already-spilled-this-block? %ecx *(ebp+0x10))  # => eax
     3d/compare-eax-and 0/imm32/false
-    75/jump-if-!= $push-output-and-maybe-emit-spill:end/disp8
+    75/jump-if-!= $push-output-and-maybe-emit-spill:push/disp8
     # TODO: assert(size-of(output) == 4)
     # *Curr-local-stack-offset -= 4
     81 5/subop/subtract *Curr-local-stack-offset 4/imm32
@@ -7621,9 +7620,16 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
     (write-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) Newline)
+$push-output-and-maybe-emit-spill:push:
+    8b/-> *(ebp+0xc) 1/r32/ecx
+    (lookup *(ecx+0x14) *(ecx+0x18))  # Regvardef-outputs Regvardef-outputs => eax
+    # push(vars, sv->value)
+    (push *(ebp+0x10) *eax)  # Stmt-var-value
+    (push *(ebp+0x10) *(eax+4))  # Stmt-var-value
 $push-output-and-maybe-emit-spill:end:
     # . restore registers
     59/pop-to-ecx
+    58/pop-to-eax
     # . epilogue
     89/<- %esp 5/r32/ebp
     5d/pop-to-ebp
@@ -7869,7 +7875,7 @@ $emit-cleanup-code-until-depth:loop:
         0f 84/jump-if-= break/disp32
         {
 $emit-cleanup-code-until-depth:check-for-previous-spill:
-          (same-register-spilled-before? %ebx *(ebp+0xc) %eax)  # => eax
+          (same-register-spilled-before? %ebx *(ebp+0xc) %esi)  # => eax
           3d/compare-eax-and 0/imm32/false
           0f 85/jump-if-!= break/disp32
 $emit-cleanup-code-until-depth:reclaim-var-in-register:
@@ -8008,42 +8014,46 @@ already-spilled-this-block?:  # v: (addr var), vars: (addr stack (handle var)) -
     8b/-> *ecx 0/r32/eax
     # var min/ecx: (addr handle var) = vars->data
     81 0/subop/add %ecx 8/imm32
-    # var curr/edx: (addr handle var) = &vars->data[vars->top - 4]
-    81 5/subop/subtract %eax 4/imm32
+    # var curr/edx: (addr handle var) = &vars->data[vars->top - 8]
+    81 5/subop/subtract %eax 8/imm32
     8d/copy-address *(ecx+eax) 2/r32/edx
     # var depth/ebx: int = v->block-depth
     8b/-> *(ebp+8) 3/r32/ebx
-    8b/-> *(ebx+8) 3/r32/ebx  # Var-block-depth
-    # var needle/esi: (handle array byte) = v->register
+    8b/-> *(ebx+0x10) 3/r32/ebx  # Var-block-depth
+    # var needle/esi: (addr array byte) = v->register
     8b/-> *(ebp+8) 6/r32/esi
-    8b/-> *(esi+0x10) 6/r32/esi  # Var-register
+    (lookup *(esi+0x18) *(esi+0x1c))  # Var-register Var-register => eax
+    89/<- %esi 0/r32/eax
     {
 $already-spilled-this-block?:loop:
       # if (curr < min) break
       39/compare %edx 1/r32/ecx
       0f 82/jump-if-addr< break/disp32
-      # var cand/edi: (handle var) = *curr
-      8b/-> *edx 7/r32/edi
+      # var cand/edi: (addr var) = lookup(*curr)
+      (lookup *edx *(edx+4))  # => eax
+      89/<- %edi 0/r32/eax
       # if (cand->block-depth < depth) break
-      39/compare *(edi+8) 3/r32/ebx  # Var-block-depth
+      39/compare *(edi+0x10) 3/r32/ebx  # Var-block-depth
       0f 8c/jump-if-< break/disp32
-      # var cand-reg/edi: (handle array byte) = cand->reg
-      8b/-> *(edi+0x10) 7/r32/edi
+      # var cand-reg/edi: (array array byte) = cand->reg
+      (lookup *(edi+0x18) *(edi+0x1c))  # Var-register Var-register => eax
+      89/<- %edi 0/r32/eax
       # if (cand-reg == null) continue
       {
 $already-spilled-this-block?:check-reg:
         81 7/subop/compare %edi 0/imm32
-        74/jump-if-= break/disp8
+        0f 84/jump-if-= break/disp32
         # if (cand-reg == needle) return true
         (string-equal? %esi %edi)  # => eax
         3d/compare-eax-and 0/imm32/false
         74/jump-if-= break/disp8
+$already-spilled-this-block?:return-true:
         b8/copy-to-eax 1/imm32/true
         eb/jump $already-spilled-this-block?:end/disp8
       }
 $already-spilled-this-block?:continue:
-      # curr -= 4
-      81 5/subop/subtract %edx 4/imm32
+      # curr -= 8
+      81 5/subop/subtract %edx 8/imm32
       e9/jump loop/disp32
     }
     # return false
@@ -8064,7 +8074,7 @@ $already-spilled-this-block?:end:
 # v is guaranteed to be within vars
 # 'start' is provided as an optimization, a pointer within vars
 # *start == v
-same-register-spilled-before?:  # v: (addr var), vars: (addr stack (handle var)), start: (addr handle var) -> result/eax: boolean
+same-register-spilled-before?:  # v: (addr var), vars: (addr stack (handle var)), start: (addr var) -> result/eax: boolean
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8076,10 +8086,11 @@ same-register-spilled-before?:  # v: (addr var), vars: (addr stack (handle var))
     57/push-edi
     # ecx = v
     8b/-> *(ebp+8) 1/r32/ecx
-    # var reg/edx: (handle array byte) = v->register
-    8b/-> *(ecx+0x10) 2/r32/edx  # Var-register
+    # var reg/edx: (addr array byte) = lookup(v->register)
+    (lookup *(ecx+0x18) *(ecx+0x1c))  # Var-register Var-register => eax
+    89/<- %edx 0/r32/eax
     # var depth/ebx: int = v->block-depth
-    8b/-> *(ecx+8) 3/r32/ebx  # Var-block-depth
+    8b/-> *(ecx+0x10) 3/r32/ebx  # Var-block-depth
     # var min/ecx: (addr handle var) = vars->data
     8b/-> *(ebp+0xc) 1/r32/ecx
     81 0/subop/add %ecx 8/imm32
@@ -8087,28 +8098,29 @@ same-register-spilled-before?:  # v: (addr var), vars: (addr stack (handle var))
     # TODO: check that *start == v
     # var curr/esi: (addr handle var) = start
     8b/-> *(ebp+0x10) 6/r32/esi
-    # curr -= 4
-    81 5/subop/subtract %esi 4/imm32
+    # curr -= 8
+    81 5/subop/subtract %esi 8/imm32
     {
 $same-register-spilled-before?:loop:
       # if (curr < min) break
       39/compare %esi 1/r32/ecx
       0f 82/jump-if-addr< break/disp32
-      # var x/eax: (handle var) = *curr
-      8b/-> *esi 0/r32/eax
+      # var x/eax: (addr var) = lookup(*curr)
+      (lookup *esi *(esi+4))  # => eax
       # if (x->block-depth < depth) break
-      39/compare *(eax+8) 3/r32/ebx  # Var-block-depth
+      39/compare *(eax+0x10) 3/r32/ebx  # Var-block-depth
       0f 8c/jump-if-< break/disp32
       # if (x->register == 0) continue
-      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
       74/jump-if-= $same-register-spilled-before?:continue/disp8
       # if (x->register == reg) return true
-      (string-equal? *(eax+0x10) %edx)  # Var-register => eax
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
       3d/compare-eax-and 0/imm32/false
+      b8/copy-to-eax 1/imm32/true
       75/jump-if-!= $same-register-spilled-before?:end/disp8
 $same-register-spilled-before?:continue:
-      # curr -= 4
-      81 5/subop/subtract %esi 4/imm32
+      # curr -= 8
+      81 5/subop/subtract %esi 8/imm32
       e9/jump loop/disp32
     }
 $same-register-spilled-before?:false:
@@ -8156,7 +8168,8 @@ $clean-up-blocks:reclaim-var-on-stack:
         (size-of %eax)  # => eax
         01/add-to *Curr-local-stack-offset 0/r32/eax
       }
-      (pop %esi)
+      (pop %esi)  # => eax
+      (pop %esi)  # => eax
       e9/jump loop/disp32
     }
 $clean-up-blocks:end:
