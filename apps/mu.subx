@@ -1566,7 +1566,7 @@ test-convert-function-with-branches-in-block:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-branches-in-named-block:
+test-convert-function-with-branches-in-named-block:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1619,7 +1619,7 @@ _failing-test-convert-function-with-branches-in-named-block:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-var-in-nested-block:
+test-convert-function-with-var-in-nested-block:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -11746,7 +11746,7 @@ emit-subx-rm32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     # if (l == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     74/jump-if-= $emit-subx-rm32:end/disp8
-    # var v/eax: (handle var)
+    # var v/eax: (addr stmt-var)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
     (emit-subx-var-as-rm32 *(ebp+8) %eax)
 $emit-subx-rm32:end:
@@ -11824,7 +11824,7 @@ emit-subx-r32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stmt)
     # if (l == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     0f 84/jump-if-= $emit-subx-r32:end/disp32
-    # var v/eax: (handle var)
+    # var v/eax: (addr stmt-var)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
     (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
@@ -11877,15 +11877,17 @@ emit-subx-disp32:  # out: (addr buffered-file), l: arg-location, stmt: (addr stm
     # if (location == 0) return
     81 7/subop/compare *(ebp+0xc) 0/imm32
     0f 84/jump-if-= $emit-subx-disp32:end/disp32
-    # var v/eax: (handle var)
+    # var v/eax: (addr stmt-var)
     (get-stmt-operand-from-arg-location *(ebp+0x10) *(ebp+0xc))  # => eax
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
     (write-buffered *(ebp+8) Space)
-    (write-buffered *(ebp+8) *eax)  # Var-name
+    (write-buffered *(ebp+8) %eax)
     # hack: if instruction operation starts with "break", emit ":break"
-    # var name/ecx: (addr array byte) = stmt->operation
+    # var name/ecx: (addr array byte) = lookup(stmt->operation)
     8b/-> *(ebp+0x10) 0/r32/eax
-    8b/-> *(eax+4) 1/r32/ecx
+    (lookup *(eax+4) *(eax+8))  # Stmt1-operation Stmt1-operation => eax
+    89/<- %ecx 0/r32/eax
     {
       (string-starts-with? %ecx "break")  # => eax
       3d/compare-eax-and 0/imm32/false
