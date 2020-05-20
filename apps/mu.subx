@@ -1167,7 +1167,7 @@ test-convert-compare-register-with-literal:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-local-var-in-block:
+test-convert-function-with-local-var-in-block:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1217,7 +1217,7 @@ _failing-test-convert-function-with-local-var-in-block:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-local-var-in-named-block:
+test-convert-function-with-local-var-in-named-block:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1267,7 +1267,7 @@ _failing-test-convert-function-with-local-var-in-named-block:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-always-shadow-outermost-reg-vars-in-function:
+test-always-shadow-outermost-reg-vars-in-function:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1361,7 +1361,7 @@ _pending-test-clobber-dead-local:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-shadow-live-local:
+test-shadow-live-local:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1416,7 +1416,7 @@ _failing-test-shadow-live-local:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-shadow-live-output:
+test-shadow-live-output:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -1513,7 +1513,7 @@ _pending-test-local-clobbered-by-output:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-branches-in-block:
+test-convert-function-with-branches-in-block:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -5047,6 +5047,13 @@ new-block-name:  # fn: (addr function), out: (addr handle var)
     89/<- %eax 4/r32/esp
     # out = new literal(s)
     (new-literal Heap %eax *(ebp+0xc))
+#?     8b/-> *(ebp+0xc) 0/r32/eax
+#?     (write-buffered Stderr "type allocid in caller after new-literal: ")
+#?     (print-int32-buffered Stderr *(eax+8))
+#?     (write-buffered Stderr " for var ")
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
 $new-block-name:end:
     # . reclaim locals
     81 0/subop/add %ecx 0xc/imm32  # name.{read/write/len}
@@ -5991,6 +5998,15 @@ new-var:  # ad: (addr allocation-descriptor), name: (handle array byte), out: (a
     89/<- *eax 1/r32/ecx  # Var-name
     8b/-> *(ebp+0x10) 1/r32/ecx
     89/<- *(eax+4) 1/r32/ecx  # Var-name
+#?     (write-buffered Stderr "var ")
+#?     (lookup *(ebp+0xc) *(ebp+0x10))
+#?     (write-buffered Stderr %eax)
+#?     (write-buffered Stderr " at ")
+#?     8b/-> *(ebp+0x14) 1/r32/ecx
+#?     (lookup *ecx *(ecx+4))  # => eax
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
 $new-var:end:
     # . restore registers
     59/pop-to-ecx
@@ -6060,9 +6076,11 @@ new-literal:  # ad: (addr allocation-descriptor), name: (addr slice), out: (addr
     (slice-to-string Heap *(ebp+0xc) %ecx)
     # allocate to out
     (new-var *(ebp+8) *ecx *(ecx+4) *(ebp+0x10))
-    # ecx = out
+    # var out-addr/ecx: (addr var) = lookup(*out)
     8b/-> *(ebp+0x10) 1/r32/ecx
-    # out->type = new type
+    (lookup *ecx *(ecx+4))  # => eax
+    89/<- %ecx 0/r32/eax
+    # out-addr->type/eax = new type
     8d/copy-address *(ecx+8) 0/r32/eax  # Var-type
     (allocate *(ebp+8) *Tree-size %eax)
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
@@ -7060,6 +7078,13 @@ size-of:  # v: (addr var) -> result/eax: int
     51/push-ecx
     # var t/ecx: (addr tree type-id) = lookup(v->type)
     8b/-> *(ebp+8) 1/r32/ecx
+#?     (write-buffered Stderr "size-of ")
+#?     (print-int32-buffered Stderr %ecx)
+#?     (write-buffered Stderr Newline)
+#?     (write-buffered Stderr "type allocid: ")
+#?     (print-int32-buffered Stderr *(ecx+8))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
     (lookup *(ecx+8) *(ecx+0xc))  # Var-type Var-type => eax
     89/<- %ecx 0/r32/eax
     # if is-mu-array?(t) return size-of-array(t)
@@ -8158,10 +8183,10 @@ $clean-up-blocks:reclaim-loop:
       # var v/eax: (handle var) = top(vars)
       (top %esi)  # => eax
       # if (v->block-depth < until-block-depth) break
-      39/compare *(eax+8) 1/r32/ecx  # Var-block-depth
+      39/compare *(eax+0x10) 1/r32/ecx  # Var-block-depth
       7c/jump-if-< break/disp8
       # if v is on the stack, update Curr-local-stack-offset
-      81 7/subop/compare *(eax+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(eax+0x18) 0/imm32  # Var-register
       {
         75/jump-if-!= break/disp8
 $clean-up-blocks:reclaim-var-on-stack:
