@@ -2403,7 +2403,7 @@ test-convert-address:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-length-of-array:
+test-convert-length-of-array:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2448,7 +2448,7 @@ _failing-test-convert-length-of-array:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-length-of-array-on-stack:
+test-convert-length-of-array-on-stack:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -8473,29 +8473,31 @@ translate-mu-length-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "8b/-> *")
     # var base/eax: (handle var) = inouts[0]
-    8b/-> *(ecx+8) 0/r32/eax  # Stmt1-inouts or Regvardef-inouts
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     # if base is an (addr array ...) in a register
     {
-      81 7/subop/compare *(eax+0x10)) 0/imm32  # Var-register
+      81 7/subop/compare *(eax+0x18)) 0/imm32  # Var-register
       74/jump-if-= break/disp8
-      (write-buffered *(ebp+8) *(eax+0x10))  # Var-register
+      (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      (write-buffered *(ebp+8) %eax)
       eb/jump $translate-mu-length-stmt:emit-output/disp8
     }
     # otherwise if base is an (array ...) on the stack
     {
-      81 7/subop/compare *(eax+0xc)) 0/imm32  # Var-offset
+      81 7/subop/compare *(eax+0x14)) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
       (write-buffered *(ebp+8) "(ebp+")
-      (print-int32-buffered *(ebp+8) *(eax+0xc))  # Var-offset
+      (print-int32-buffered *(ebp+8) *(eax+0x14))  # Var-offset
       (write-buffered *(ebp+8) ")")
     }
 $translate-mu-length-stmt:emit-output:
     (write-buffered *(ebp+8) " ")
     # outputs[0] "/r32"
-    8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
-    (get Registers *(eax+0x10) 0xc "Registers")  # Var-register => eax
+    (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    (get Registers %eax 0xc "Registers")  # => eax
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-length-stmt:end:
