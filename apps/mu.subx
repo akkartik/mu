@@ -2215,7 +2215,7 @@ test-convert-function-with-nonlocal-unconditional-loop-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-local-array-var-in-mem:
+test-convert-function-with-local-array-var-in-mem:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2261,7 +2261,7 @@ _failing-test-convert-function-with-local-array-var-in-mem:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-address:
+test-convert-address:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7191,14 +7191,15 @@ size-of-array:  # a: (addr tree type-id) -> result/eax: int
     #
     8b/-> *(ebp+8) 1/r32/ecx
     # TODO: assert that a->left is 'array'
-    8b/-> *(ecx+8) 1/r32/ecx  # Tree-right
-    # var elem-type/edx: type-id = a->right->value
-    8b/-> *(ecx+4) 2/r32/edx  # Tree-value
-    8b/-> *(edx+4) 2/r32/edx  # Tree-value
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Tree-right Tree-right => eax
+    89/<- %ecx 0/r32/eax
+    # var elem-type/edx: type-id = a->right->left->value
+    (lookup *(ecx+4) *(ecx+8))  # Tree-left Tree-left => eax
+    8b/-> *(eax+4) 2/r32/edx  # Tree-value
     # var array-size/ecx: int = a->right->right->left->value
-    8b/-> *(ecx+8) 1/r32/ecx  # Tree-right
-    8b/-> *(ecx+4) 1/r32/ecx  # Tree-left
-    8b/-> *(ecx+4) 1/r32/ecx  # Tree-value
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Tree-right Tree-right => eax
+    (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
+    8b/-> *(eax+4) 1/r32/ecx  # Tree-value
     # return array-size * size-of(elem-type)
     (size-of-type-id %edx)  # => eax
     f7 4/subop/multiply-into-eax %ecx
