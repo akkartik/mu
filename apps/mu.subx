@@ -1966,7 +1966,7 @@ test-convert-function-with-branches-and-loops-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-nonlocal-branches-and-loops-and-local-vars:
+test-convert-function-with-nonlocal-branches-and-loops-and-local-vars:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2034,7 +2034,7 @@ _failing-test-convert-function-with-nonlocal-branches-and-loops-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-nonlocal-unconditional-break-and-local-vars:
+test-convert-function-with-nonlocal-unconditional-break-and-local-vars:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2095,7 +2095,7 @@ _failing-test-convert-function-with-nonlocal-unconditional-break-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-unconditional-break-and-local-vars:
+test-convert-function-with-unconditional-break-and-local-vars:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2154,7 +2154,7 @@ _failing-test-convert-function-with-unconditional-break-and-local-vars:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-nonlocal-unconditional-loop-and-local-vars:
+test-convert-function-with-nonlocal-unconditional-loop-and-local-vars:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7689,20 +7689,20 @@ emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file
     # . save registers
     50/push-eax
     51/push-ecx
-    52/push-edx
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # var target/edx: (addr array byte) = curr-stmt->inouts->value->name
-    8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
-    8b/-> *edx 2/r32/edx  # Stmt-var-value
-    8b/-> *edx 2/r32/edx  # Var-name
+    # var target/eax: (addr array byte) = curr-stmt->inouts->value->name
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *eax *(eax+4))  # Var-name Var-name => eax
     # clean up until target block
-    (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %edx)
+    (emit-cleanup-code-until-target *(ebp+8) *(ebp+0x10) %eax)
     # emit jump to target block
     (emit-indent *(ebp+8) *Curr-block-depth)
     (write-buffered *(ebp+8) "e9/jump ")
-    (write-buffered *(ebp+8) %edx)
-    (string-starts-with? *(ecx+4) "break")
+    (write-buffered *(ebp+8) %eax)
+    (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+    (string-starts-with? %eax "break")
     3d/compare-eax-and 0/imm32/false
     {
       74/jump-if-= break/disp8
@@ -7715,7 +7715,6 @@ emit-subx-cleanup-and-unconditional-nonlocal-branch:  # out: (addr buffered-file
     }
 $emit-subx-cleanup-and-unconditional-nonlocal-branch:end:
     # . restore registers
-    5a/pop-to-edx
     59/pop-to-ecx
     58/pop-to-eax
     # . epilogue
@@ -7988,13 +7987,14 @@ $emit-cleanup-code-until-target:loop:
       (lookup *edx *(edx+4))  # => eax
       89/<- %ebx 0/r32/eax
       # if (v->name == until-block-label) break
-      (string-equal? *ebx *(ebp+0x10))  # => eax
+      (lookup *ebx *(ebx+4))  # Var-name Var-name => eax
+      (string-equal? %eax *(ebp+0x10))  # => eax
       3d/compare-eax-and 0/imm32/false
       0f 85/jump-if-!= break/disp32
       # if v is in a register
-      81 7/subop/compare *(ebx+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(ebx+0x18) 0/imm32  # Var-register
       {
-        74/jump-if-= break/disp8
+        0f 84/jump-if-= break/disp32
         {
 $emit-cleanup-code-until-target:check-for-previous-spill:
           (same-register-spilled-before? %ebx *(ebp+0xc) %edx)  # => eax
@@ -8003,7 +8003,8 @@ $emit-cleanup-code-until-target:check-for-previous-spill:
 $emit-cleanup-code-until-target:reclaim-var-in-register:
           (emit-indent *(ebp+8) *Curr-block-depth)
           (write-buffered *(ebp+8) "8f 0/subop/pop %")
-          (write-buffered *(ebp+8) *(ebx+0x10))
+          (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
+          (write-buffered *(ebp+8) %eax)
           (write-buffered *(ebp+8) Newline)
         }
         eb/jump $emit-cleanup-code-until-target:continue/disp8
