@@ -2496,7 +2496,7 @@ test-convert-length-of-array-on-stack:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-index-into-array:
+test-convert-index-into-array:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2545,7 +2545,7 @@ _failing-test-convert-index-into-array:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-index-into-array-with-literal:
+test-convert-index-into-array-with-literal:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7331,7 +7331,7 @@ size-of-type-id:  # t: type-id -> result/eax: int
       81 7/subop/compare *ecx 0/imm32
       74/jump-if-= break/disp8
 $size-of-type-id:user-defined:
-      8b/-> *(eax+8) 0/r32/eax  # Typeinfo-total-size-in-bytes
+      8b/-> *(eax+0xc) 0/r32/eax  # Typeinfo-total-size-in-bytes
       eb/jump $size-of-type-id:end/disp8
     }
     # otherwise return the word size
@@ -8515,13 +8515,14 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     89/<- %ebp 4/r32/esp
     # . save registers
     51/push-ecx
-    # var base/ecx: (handle var) = stmt->inouts[0]
+    # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
-    8b/-> *(ecx+8) 1/r32/ecx  # Stmt1-inouts
-    8b/-> *ecx 1/r32/ecx  # Stmt-var-value
+    # var base/ecx: (handle var) = stmt->inouts[0]
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
     # if (var->register) do one thing
     {
-      81 7/subop/compare *(ecx+0x10) 0/imm32  # Var-register
+      81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
       (translate-mu-index-stmt-with-array-in-register *(ebp+8) *(ebp+0xc))
@@ -8529,7 +8530,7 @@ translate-mu-index-stmt:  # out: (addr buffered-file), stmt: (addr stmt)
     }
     # if (var->offset) do a different thing
     {
-      81 7/subop/compare *(ecx+0xc) 0/imm32  # Var-offset
+      81 7/subop/compare *(ecx+0x14) 0/imm32  # Var-offset
       74/jump-if-= break/disp8
       # TODO: ensure there's no dereference
       (translate-mu-index-stmt-with-array-on-stack *(ebp+8) *(ebp+0xc))
@@ -8577,31 +8578,35 @@ translate-mu-index-stmt-with-array-in-register:  # out: (addr buffered-file), st
 $translate-mu-index-stmt-with-array-in-register:emit-base:
     # ecx = stmt
     8b/-> *(ebp+0xc) 1/r32/ecx
-    # var base/ebx: (handle var) = inouts[0]
-    8b/-> *(ecx+8) 3/r32/ebx  # Stmt1-inouts
-    8b/-> *ebx 3/r32/ebx  # Stmt-var-value
+    # var base/ebx: (addr var) = inouts[0]
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %ebx 0/r32/eax
     # print base->register " + "
-    (write-buffered *(ebp+8) *(ebx+0x10))  # Var-register
-    #
+    (lookup *(ebx+0x18) *(ebx+0x1c))  # Var-register Var-register => eax
+    (write-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) " + ")
     # var index/edx: (handle var) = inouts[1]
-    8b/-> *(ecx+8) 2/r32/edx  # Stmt1-inouts
-    8b/-> *(edx+4) 2/r32/edx  # Stmt-var-next
-    8b/-> *edx 2/r32/edx  # Stmt-var-value
+    (lookup *(ecx+0xc) *(ecx+0x10))  # Stmt1-inouts Stmt1-inouts => eax
+    (lookup *(eax+8) *(eax+0xc))  # Stmt-var-next Stmt-var-next => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    89/<- %edx 0/r32/eax
     # if index->register
-    81 7/subop/compare *(edx+0x10) 0/imm32  # Var-register
+    81 7/subop/compare *(edx+0x18) 0/imm32  # Var-register
     {
       0f 84/jump-if-= break/disp32
 $translate-mu-index-stmt-with-array-in-register:emit-register-index:
       # if index is an int
-      (is-simple-mu-type? *(edx+4) 1)  # Var-type, int => eax
+      (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
+      (is-simple-mu-type? %eax 1)  # => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
 $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
         # print index->register "<<" log2(size-of(element(base->type))) " + 4) "
         # . index->register "<<"
-        (write-buffered *(ebp+8) *(edx+0x10))  # Var-register
+        (lookup *(edx+0x18) *(edx+0x1c))  # Var-register Var-register => eax
+        (write-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) "<<")
         # . log2(size-of(element(base->type)))
         # TODO: ensure size is a power of 2
@@ -8616,26 +8621,30 @@ $translate-mu-index-stmt-with-array-in-register:emit-int-register-index:
       81 7/subop/compare *eax 0/imm32/false  # Tree-is-atom
       0f 85/jump-if-!= $translate-mu-index-stmt-with-array:error2/disp32
       # if index has type (offset ...)
-      (is-simple-mu-type? *(eax+4) 7)  # Tree-left, offset => eax
+      (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
+      (is-simple-mu-type? %eax 7)  # => eax
       3d/compare-eax-and 0/imm32/false
       {
         0f 84/jump-if-= break/disp32
         # print index->register " + 4) "
 $translate-mu-index-stmt-with-array-in-register:emit-offset-register-index:
-        (write-buffered *(ebp+8) *(edx+0x10))  # Var-register
+        (lookup *(edx+0x18) *(edx+0x1c))  # Var-register Var-register => eax
+        (write-buffered *(ebp+8) %eax)
       }
 $translate-mu-index-stmt-with-array-in-register:emit-register-index-done:
       (write-buffered *(ebp+8) " + 4) ")
       e9/jump $translate-mu-index-stmt-with-array-in-register:emit-output/disp32
     }
     # otherwise if index is a literal
-    (is-simple-mu-type? *(edx+4) 0)  # Var-type => eax
+    (lookup *(edx+8) *(edx+0xc))  # Var-type Var-type => eax
+    (is-simple-mu-type? %eax 0)  # => eax
     3d/compare-eax-and 0/imm32/false
     {
       0f 84/jump-if-= break/disp32
 $translate-mu-index-stmt-with-array-in-register:emit-literal-index:
       # var index-value/edx: int = parse-hex-int(index->name)
-      (parse-hex-int *edx)  # Var-name => eax
+      (lookup *edx *(edx+4))  # Var-name Var-name => eax
+      (parse-hex-int %eax)  # => eax
       89/<- %edx 0/r32/eax
       # offset = idx-value * size-of(element(base->type))
       (array-element-type-id %ebx)  # => eax
@@ -8654,9 +8663,10 @@ $translate-mu-index-stmt-with-array-in-register:emit-literal-index:
 $translate-mu-index-stmt-with-array-in-register:emit-output:
     # outputs[0] "/r32"
     8b/-> *(ebp+0xc) 1/r32/ecx
-    8b/-> *(ecx+0xc) 0/r32/eax  # Stmt1-outputs
-    8b/-> *eax 0/r32/eax  # Stmt-var-value
-    (get Registers *(eax+0x10) 0xc "Registers")  # Var-register => eax
+    (lookup *(ecx+0x14) *(ecx+0x18))  # Stmt1-outputs Stmt1-outputs => eax
+    (lookup *eax *(eax+4))  # Stmt-var-value Stmt-var-value => eax
+    (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+    (get Registers %eax 0xc "Registers")  # => eax: (addr int)
     (print-int32-buffered *(ebp+8) *eax)
     (write-buffered *(ebp+8) "/r32\n")
 $translate-mu-index-stmt-with-array-in-register:end:
@@ -8892,14 +8902,14 @@ array-element-type-id:  # v: (addr var) -> result/eax: type-id
     89/<- %ebp 4/r32/esp
     #
     8b/-> *(ebp+8) 0/r32/eax
-    8b/-> *(eax+4) 0/r32/eax  # Var-type
+    (lookup *(eax+8) *(eax+0xc))  # Var-type Var-type => eax
     # TODO: ensure type->left is 'addr'
-    8b/-> *(eax+8) 0/r32/eax  # Tree-right
+    (lookup *(eax+0xc) *(eax+0x10))  # Tree-right Tree-right => eax
     # TODO: ensure that type->right is non-null
     # TODO: ensure that type->right->left is 'array'
-    8b/-> *(eax+8) 0/r32/eax  # Tree-right
+    (lookup *(eax+0xc) *(eax+0x10))  # Tree-right Tree-right => eax
     # TODO: ensure that type->right->right is non-null
-    8b/-> *(eax+4) 0/r32/eax  # Tree-left
+    (lookup *(eax+4) *(eax+8))  # Tree-left Tree-left => eax
     8b/-> *(eax+4) 0/r32/eax  # Tree-value
 $array-element-type-id:end:
     # . epilogue
