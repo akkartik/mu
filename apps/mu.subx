@@ -1416,6 +1416,102 @@ test-shadow-live-local:
     5d/pop-to-ebp
     c3/return
 
+test-do-not-spill-same-register-in-block:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/ecx: int <- copy 3\n")
+    (write _test-input-stream "  var y/ecx: int <- copy 4\n")
+    (write _test-input-stream "  y <- increment\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-do-not-spill-same-register-in-block/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-do-not-spill-same-register-in-block/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-do-not-spill-same-register-in-block/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-do-not-spill-same-register-in-block/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-do-not-spill-same-register-in-block/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-do-not-spill-same-register-in-block/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-do-not-spill-same-register-in-block/6")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 3/imm32"  "F - test-do-not-spill-same-register-in-block/7")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 4/imm32"  "F - test-do-not-spill-same-register-in-block/8")
+    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-do-not-spill-same-register-in-block/9")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-do-not-spill-same-register-in-block/10")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-do-not-spill-same-register-in-block/11")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-do-not-spill-same-register-in-block/12")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-do-not-spill-same-register-in-block/13")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-do-not-spill-same-register-in-block/14")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-do-not-spill-same-register-in-block/15")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-do-not-spill-same-register-in-block/16")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
+test-spill-different-register-in-block:
+    # . prologue
+    55/push-ebp
+    89/<- %ebp 4/r32/esp
+    # setup
+    (clear-stream _test-input-stream)
+    (clear-stream $_test-input-buffered-file->buffer)
+    (clear-stream _test-output-stream)
+    (clear-stream $_test-output-buffered-file->buffer)
+    #
+    (write _test-input-stream "fn foo {\n")
+    (write _test-input-stream "  var x/eax: int <- copy 3\n")
+    (write _test-input-stream "  var y/ecx: int <- copy 4\n")
+    (write _test-input-stream "  y <- increment\n")
+    (write _test-input-stream "}\n")
+    # convert
+    (convert-mu _test-input-buffered-file _test-output-buffered-file)
+    (flush _test-output-buffered-file)
+#?     # dump _test-output-stream {{{
+#?     (write 2 "^")
+#?     (write-stream 2 _test-output-stream)
+#?     (write 2 "$\n")
+#?     (rewind-stream _test-output-stream)
+#?     # }}}
+    # check output
+    (check-next-stream-line-equal _test-output-stream "foo:"                    "F - test-spill-different-register-in-block/0")
+    (check-next-stream-line-equal _test-output-stream "  # . prologue"          "F - test-spill-different-register-in-block/1")
+    (check-next-stream-line-equal _test-output-stream "  55/push-ebp"           "F - test-spill-different-register-in-block/2")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %ebp 4/r32/esp"  "F - test-spill-different-register-in-block/3")
+    (check-next-stream-line-equal _test-output-stream "  {"                     "F - test-spill-different-register-in-block/4")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:loop:"   "F - test-spill-different-register-in-block/5")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %eax"  "F - test-spill-different-register-in-block/6")
+    (check-next-stream-line-equal _test-output-stream "    b8/copy-to-eax 3/imm32"  "F - test-spill-different-register-in-block/7")
+    (check-next-stream-line-equal _test-output-stream "    ff 6/subop/push %ecx"  "F - test-spill-different-register-in-block/8")
+    (check-next-stream-line-equal _test-output-stream "    b9/copy-to-ecx 4/imm32"  "F - test-spill-different-register-in-block/9")
+    (check-next-stream-line-equal _test-output-stream "    41/increment-ecx"    "F - test-spill-different-register-in-block/10")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %ecx" "F - test-spill-different-register-in-block/11")
+    (check-next-stream-line-equal _test-output-stream "    8f 0/subop/pop %eax" "F - test-spill-different-register-in-block/12")
+    (check-next-stream-line-equal _test-output-stream "  }"                     "F - test-spill-different-register-in-block/13")
+    (check-next-stream-line-equal _test-output-stream "$foo:0x00000001:break:"  "F - test-spill-different-register-in-block/14")
+    (check-next-stream-line-equal _test-output-stream "  # . epilogue"          "F - test-spill-different-register-in-block/15")
+    (check-next-stream-line-equal _test-output-stream "  89/<- %esp 5/r32/ebp"  "F - test-spill-different-register-in-block/16")
+    (check-next-stream-line-equal _test-output-stream "  5d/pop-to-ebp"         "F - test-spill-different-register-in-block/17")
+    (check-next-stream-line-equal _test-output-stream "  c3/return"             "F - test-spill-different-register-in-block/18")
+    # . epilogue
+    89/<- %esp 5/r32/ebp
+    5d/pop-to-ebp
+    c3/return
+
 test-shadow-live-output:
     # . prologue
     55/push-ebp
@@ -8159,6 +8255,7 @@ $same-register-spilled-before?:loop:
       74/jump-if-= $same-register-spilled-before?:continue/disp8
       # if (x->register == reg) return true
       (lookup *(eax+0x18) *(eax+0x1c))  # Var-register Var-register => eax
+      (string-equal? %eax %edx)  # => eax
       3d/compare-eax-and 0/imm32/false
       b8/copy-to-eax 1/imm32/true
       75/jump-if-!= $same-register-spilled-before?:end/disp8
