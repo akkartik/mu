@@ -1675,7 +1675,7 @@ test-convert-function-with-var-in-nested-block:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-multiple-vars-in-nested-blocks:
+test-convert-function-with-multiple-vars-in-nested-blocks:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -7629,6 +7629,13 @@ push-output-and-maybe-emit-spill:  # out: (addr buffered-file), stmt: (addr reg-
     # v->block-depth = *Curr-block-depth
     8b/-> *Curr-block-depth 0/r32/eax
     89/<- *(ecx+0x10) 0/r32/eax  # Var-block-depth
+#?     (write-buffered Stderr "var ")
+#?     (lookup *ecx *(ecx+4))
+#?     (write-buffered Stderr %eax)
+#?     (write-buffered Stderr " at depth ")
+#?     (print-int32-buffered Stderr *(ecx+0x10))
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
     # ensure that v is in a register
     81 7/subop/compare *(ecx+0x18) 0/imm32  # Var-register
     0f 84/jump-if-= $push-output-and-maybe-emit-spill:abort/disp32
@@ -7872,6 +7879,8 @@ emit-cleanup-code-until-depth:  # out: (addr buffered-file), vars: (addr stack (
     52/push-edx
     53/push-ebx
     56/push-esi
+#?     (write-buffered Stderr "--- cleanup\n")
+#?     (flush Stderr)
     # ecx = vars
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var esi: int = vars->top
@@ -7891,6 +7900,11 @@ $emit-cleanup-code-until-depth:loop:
       # var v/ebx: (addr var) = lookup(*curr)
       (lookup *esi *(esi+4))  # => eax
       89/<- %ebx 0/r32/eax
+#?       (lookup *ebx *(ebx+4))  # Var-name
+#?       (write-buffered Stderr "var ")
+#?       (write-buffered Stderr %eax)
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       # if (v->block-depth < until-block-depth) break
       39/compare *(ebx+0x10) 2/r32/edx  # Var-block-depth
       0f 8c/jump-if-< break/disp32
@@ -7915,12 +7929,12 @@ $emit-cleanup-code-until-depth:reclaim-var-in-register:
       # otherwise v is on the stack
       {
         75/jump-if-!= break/disp8
-$emit-cleanup-code-until-depth:reclaim-var-on-stack:
+$emit-cleanup-code-until-depth:var-on-stack:
         (size-of %ebx)  # => eax
         # don't emit code for labels
         3d/compare-eax-and 0/imm32
         74/jump-if-= break/disp8
-        #
+$emit-cleanup-code-until-depth:reclaim-var-on-stack:
         (emit-indent *(ebp+8) *Curr-block-depth)
         (write-buffered *(ebp+8) "81 0/subop/add %esp ")
         (print-int32-buffered *(ebp+8) %eax)
@@ -8178,10 +8192,11 @@ clean-up-blocks:  # vars: (addr stack (handle var)), until-block-depth: int
     {
 $clean-up-blocks:reclaim-loop:
       # if (vars->top <= 0) break
-      81 7/subop/compare *esi 0/imm32  # Stack-top
+      8b/-> *esi 0/r32/eax  # Stack-top
+      3d/compare-eax-and 0/imm32
       7e/jump-if-<= break/disp8
-      # var v/eax: (handle var) = top(vars)
-      (top %esi)  # => eax
+      # var v/eax: (addr var) = lookup(vars[vars->top-8])
+      (lookup *(esi+eax) *(esi+eax+4))  # vars + 8 + vars->top - 8 => eax
       # if (v->block-depth < until-block-depth) break
       39/compare *(eax+0x10) 1/r32/ecx  # Var-block-depth
       7c/jump-if-< break/disp8
