@@ -1735,7 +1735,7 @@ test-convert-function-with-multiple-vars-in-nested-blocks:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-branches-and-local-vars:
+test-convert-function-with-branches-and-local-vars:
     # A conditional 'break' after a 'var' in a block is converted into a
     # nested block that performs all necessary cleanup before jumping. This
     # results in some ugly code duplication.
@@ -7465,11 +7465,12 @@ $emit-subx-stmt-list:branch-stmt-and-var-seen:
           # unconditional loops {{{
           {
             # if (!string-equal?(var->operation, "loop")) break
-            (string-equal? *(ecx+4) "loop")  # Stmt1-operation => eax
+            (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+            (string-equal? %eax "loop")  # => eax
             3d/compare-eax-and 0/imm32/false
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:unconditional-loop:
-            81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+            81 7/subop/compare *(ecx+0xc) 0/imm32  # Stmt1-inouts
             # simple unconditional loops without a target
             {
               0f 85/jump-if-!= break/disp32
@@ -7491,11 +7492,12 @@ $emit-subx-stmt-list:zero-arg-unconditional-loop:
           # unconditional breaks {{{
           {
             # if (!string-equal?(curr-stmt->operation, "break")) break
-            (string-equal? *(ecx+4) "break")  # Stmt1-operation => eax
+            (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+            (string-equal? %eax "break")  # => eax
             3d/compare-eax-and 0/imm32/false
             0f 84/jump-if-= break/disp32
 $emit-subx-stmt-list:unconditional-break:
-            81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+            81 7/subop/compare *(ecx+0xc) 0/imm32  # Stmt1-inouts
             # simple unconditional breaks without a target
             0f 84/jump-if-= $emit-subx-stmt-list:emit-cleanup/disp32  # easy: just skip remaining statements
             # unconditional breaks with a target
@@ -7504,11 +7506,11 @@ $emit-subx-stmt-list:unconditional-break:
           }
           # }}}
           # simple conditional branches without a target {{{
-          81 7/subop/compare *(ecx+8) 0/imm32  # Stmt1-inouts
+          81 7/subop/compare *(ecx+0xc) 0/imm32  # Stmt1-inouts
           {
             0f 85/jump-if-!= break/disp32
 $emit-subx-stmt-list:zero-arg-conditional-branch:
-            # var old-block-depth/eax: int = Curr-block-depth - 1
+            # var old-block-depth/ebx: int = Curr-block-depth - 1
             8b/-> *Curr-block-depth 3/r32/ebx
             # cleanup prologue
             (emit-indent *(ebp+8) *Curr-block-depth)
@@ -7521,7 +7523,8 @@ $emit-subx-stmt-list:zero-arg-conditional-branch:
             # var target-block-depth/ebx: int = Curr-block-depth - 1
             4b/decrement-ebx
             # emit jump to target block
-            (string-starts-with? *(ecx+4) "break")
+            (lookup *(ecx+4) *(ecx+8))  # Stmt1-operation Stmt1-operation => eax
+            (string-starts-with? %eax "break")  # => eax
             3d/compare-eax-and 0/imm32/false
             {
               74/jump-if-= break/disp8
@@ -7753,9 +7756,11 @@ emit-reverse-break:  # out: (addr buffered-file), stmt: (addr stmt1)
     # eax = stmt
     8b/-> *(ebp+0xc) 0/r32/eax
     #
-    (get Reverse-branch *(eax+4) 8 "reverse-branch: ")  # Stmt1-operation => eax: (addr addr array byte)
+    (lookup *(eax+4) *(eax+8))  # Stmt1-operation Stmt1-operation => eax
+    (get Reverse-branch %eax 0x10 "reverse-branch: ")  # => eax: (addr handle array byte)
     (emit-indent *(ebp+8) *Curr-block-depth)
-    (write-buffered *(ebp+8) *eax)
+    (lookup *eax *(eax+4))  # => eax
+    (write-buffered *(ebp+8) %eax)
     (write-buffered *(ebp+8) " break/disp32\n")
 $emit-reverse-break:end:
     # . restore registers
@@ -7767,32 +7772,33 @@ $emit-reverse-break:end:
 
 == data
 
-Reverse-branch:  # (table string string)
+# Table from Mu branch instructions to the reverse SubX opcodes for them.
+Reverse-branch:  # (table (handle array byte) (handle array byte))
   # a table is a stream
-  0xa0/imm32/write
+  0xb0/imm32/write
   0/imm32/read
-  0xa0/imm32/size
+  0xb0/imm32/size
   # data
-  "break-if-="/imm32      "0f 85/jump-if-!="/imm32
-  "loop-if-="/imm32       "0f 85/jump-if-!="/imm32
-  "break-if-!="/imm32     "0f 84/jump-if-="/imm32
-  "loop-if-!="/imm32      "0f 84/jump-if-="/imm32
-  "break-if-<"/imm32      "0f 8d/jump-if->="/imm32
-  "loop-if-<"/imm32       "0f 8d/jump-if->="/imm32
-  "break-if->"/imm32      "0f 8e/jump-if-<="/imm32
-  "loop-if->"/imm32       "0f 8e/jump-if-<="/imm32
-  "break-if-<="/imm32     "0f 87/jump-if->"/imm32
-  "loop-if-<="/imm32      "0f 87/jump-if->"/imm32
-  "break-if->="/imm32     "0f 8c/jump-if-<"/imm32
-  "loop-if->="/imm32      "0f 8c/jump-if-<"/imm32
-  "break-if-addr<"/imm32  "0f 83/jump-if-addr>="/imm32
-  "loop-if-addr<"/imm32   "0f 83/jump-if-addr>="/imm32
-  "break-if-addr>"/imm32  "0f 86/jump-if-addr<="/imm32
-  "loop-if-addr>"/imm32   "0f 86/jump-if-addr<="/imm32
-  "break-if-addr<="/imm32 "0f 87/jump-if-addr>"/imm32
-  "loop-if-addr<="/imm32  "0f 87/jump-if-addr>"/imm32
-  "break-if-addr>="/imm32 "0f 82/jump-if-addr<"/imm32
-  "loop-if-addr>="/imm32  "0f 82/jump-if-addr<"/imm32
+  0x11/imm32/alloc-id   _string-break-if-=/imm32        . . .   0x11/imm32/alloc-id   _string_0f_85_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-=/imm32         . . .   0x11/imm32/alloc-id   _string_0f_85_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-!=/imm32       . . .   0x11/imm32/alloc-id   _string_0f_84_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-!=/imm32        . . .   0x11/imm32/alloc-id   _string_0f_84_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-</imm32        . . .   0x11/imm32/alloc-id   _string_0f_8d_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-</imm32         . . .   0x11/imm32/alloc-id   _string_0f_8d_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if->/imm32        . . .   0x11/imm32/alloc-id   _string_0f_8e_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if->/imm32         . . .   0x11/imm32/alloc-id   _string_0f_8e_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-<=/imm32       . . .   0x11/imm32/alloc-id   _string_0f_87_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-<=/imm32        . . .   0x11/imm32/alloc-id   _string_0f_87_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if->=/imm32       . . .   0x11/imm32/alloc-id   _string_0f_8c_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if->=/imm32        . . .   0x11/imm32/alloc-id   _string_0f_8c_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-addr</imm32    . . .   0x11/imm32/alloc-id   _string_0f_83_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-addr</imm32     . . .   0x11/imm32/alloc-id   _string_0f_83_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-addr>/imm32    . . .   0x11/imm32/alloc-id   _string_0f_86_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-addr>/imm32     . . .   0x11/imm32/alloc-id   _string_0f_86_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-addr<=/imm32   . . .   0x11/imm32/alloc-id   _string_0f_87_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-addr<=/imm32    . . .   0x11/imm32/alloc-id   _string_0f_87_jump_label/imm32
+  0x11/imm32/alloc-id   _string-break-if-addr>=/imm32   . . .   0x11/imm32/alloc-id   _string_0f_82_jump_label/imm32
+  0x11/imm32/alloc-id   _string-loop-if-addr>=/imm32    . . .   0x11/imm32/alloc-id   _string_0f_82_jump_label/imm32
 
 == code
 
@@ -7805,59 +7811,57 @@ emit-unconditional-jump-to-depth:  # out: (addr buffered-file), vars: (addr stac
     51/push-ecx
     52/push-edx
     53/push-ebx
+    56/push-esi
     # ecx = vars
     8b/-> *(ebp+0xc) 1/r32/ecx
     # var eax: int = vars->top
     8b/-> *ecx 0/r32/eax
+    # var curr/esi: (addr handle var) = &vars->data[vars->top - 8]
+    8d/copy-address *(ecx+eax) 6/r32/esi  # vars + 8 + vars->top - 8
     # var min/ecx: (addr handle var) = vars->data
     81 0/subop/add %ecx 8/imm32
-    # var curr/eax: (addr handle var) = &vars->data[vars->top - 4]
-    81 5/subop/subtract %eax 4/imm32
-    8d/copy-address *(ecx+eax) 0/r32/eax
     # edx = depth
     8b/-> *(ebp+0x10) 2/r32/edx
     {
 $emit-unconditional-jump-to-depth:loop:
       # if (curr < min) break
-      39/compare %eax 1/r32/ecx
+      39/compare %esi 1/r32/ecx
       0f 82/jump-if-addr< break/disp32
-      # var v/ebx: (handle var) = *curr
-      8b/-> *eax 3/r32/ebx
+      # var v/ebx: (addr var) = lookup(*curr)
+      (lookup *esi *(esi+4))  # => eax
+      89/<- %ebx 0/r32/eax
       # if (v->block-depth < until-block-depth) break
-      39/compare *(ebx+8) 2/r32/edx  # Var-block-depth
+      39/compare *(ebx+0x10) 2/r32/edx  # Var-block-depth
       0f 8c/jump-if-< break/disp32
       {
 $emit-unconditional-jump-to-depth:check:
         # if v->block-depth != until-block-depth, continue
-        39/compare *(ebx+8) 2/r32/edx  # Var-block-depth
+        39/compare *(ebx+0x10) 2/r32/edx  # Var-block-depth
         0f 85/jump-if-!= break/disp32
 $emit-unconditional-jump-to-depth:depth-found:
         # if v is not a literal, continue
-        # . var eax: int = size-of(v)
-        50/push-eax
         (size-of %ebx)  # => eax
-        # . if (eax != 0) continue
         3d/compare-eax-and 0/imm32
-        58/pop-to-eax
-        #
         0f 85/jump-if-!= break/disp32
 $emit-unconditional-jump-to-depth:label-found:
         # emit unconditional jump, then return
         (emit-indent *(ebp+8) *Curr-block-depth)
         (write-buffered *(ebp+8) "e9/jump ")
-        (write-buffered *(ebp+8) *ebx)  # Var-name
+        (lookup *ebx *(ebx+4))  # Var-name Var-name => eax
+        (write-buffered *(ebp+8) %eax)
         (write-buffered *(ebp+8) ":")
         (write-buffered *(ebp+8) *(ebp+0x14))
         (write-buffered *(ebp+8) "/disp32\n")
         eb/jump $emit-unconditional-jump-to-depth:end/disp8
       }
-      # curr -= 4
-      2d/subtract-from-eax 4/imm32
+      # curr -= 8
+      81 5/subop/subtract %esi 8/imm32
       e9/jump loop/disp32
     }
     # TODO: error if no label at 'depth' was found
 $emit-unconditional-jump-to-depth:end:
     # . restore registers
+    5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
@@ -7947,6 +7951,7 @@ $emit-cleanup-code-until-depth:continue:
     }
 $emit-cleanup-code-until-depth:end:
     # . restore registers
+    5e/pop-to-esi
     5b/pop-to-ebx
     5a/pop-to-edx
     59/pop-to-ecx
