@@ -2855,7 +2855,7 @@ test-convert-function-and-type-definition:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-with-local-var-with-user-defined-type:
+test-convert-function-with-local-var-with-user-defined-type:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -2902,7 +2902,7 @@ _failing-test-convert-function-with-local-var-with-user-defined-type:
     5d/pop-to-ebp
     c3/return
 
-_failing-test-convert-function-call-with-arg-of-user-defined-type:
+test-convert-function-call-with-arg-of-user-defined-type:
     # . prologue
     55/push-ebp
     89/<- %ebp 4/r32/esp
@@ -6663,7 +6663,7 @@ find-or-create-typeinfo-fields:  # T: (addr typeinfo), f: (addr slice), out: (ad
     # if src doesn't exist, allocate it
     {
       81 7/subop/compare *esi 0/imm32
-      0f 85/jump-if-!= break/disp32
+      75/jump-if-!= break/disp8
       (allocate Heap *Typeinfo-entry-size %esi)
 #?       (write-buffered Stderr "handle at ")
 #?       (print-int32-buffered Stderr %esi)
@@ -6790,6 +6790,12 @@ $populate-mu-type:create-typeinfo-fields:
       # r->index = curr-index
       (lookup *ebx *(ebx+4))  # => eax
       8b/-> *(ebp-4) 1/r32/ecx
+#?       (write-buffered Stderr "saving index ")
+#?       (print-int32-buffered Stderr %ecx)
+#?       (write-buffered Stderr " at ")
+#?       (print-int32-buffered Stderr %edi)
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       89/<- *(eax+8) 1/r32/ecx  # Typeinfo-entry-index
       # ++curr-index
       ff 0/subop/increment *(ebp-4)
@@ -6803,9 +6809,9 @@ $populate-mu-type:set-input-type:
       {
 $populate-mu-type:create-output-type:
         # if (r->output-var == 0) create a new var with some placeholder data
-        81 7/subop/compare *(ebx+0xc) 0/imm32  # Typeinfo-entry-output-var
+        81 7/subop/compare *(eax+0xc) 0/imm32  # Typeinfo-entry-output-var
         75/jump-if-!= break/disp8
-        8d/copy-address *(ebx+0xc) 0/r32/eax  # Typeinfo-entry-output-var
+        8d/copy-address *(eax+0xc) 0/r32/eax  # Typeinfo-entry-output-var
         (new-literal Heap %edx %eax)
       }
       e9/jump loop/disp32
@@ -6907,7 +6913,6 @@ $populate-mu-type-sizes:offsets:
     # curr = *Program->types
     (lookup *_Program-types *_Program-types->payload)  # => eax
     {
-$bb:
       # if (curr == null) break
       3d/compare-eax-and 0/imm32/null
       74/jump-if-= break/disp8
@@ -6961,7 +6966,7 @@ populate-mu-type-sizes-in-type:  # T: (addr typeinfo)
 $populate-mu-type-sizes-in-type:loop:
       # if (curr >= max) break
       39/compare %ecx 2/r32/edx
-      0f 83/jump-if-addr>= break/disp32
+      73/jump-if-addr>= break/disp8
       # var t/eax: (addr typeinfo-entry) = lookup(curr->value)
       (lookup *(ecx+8) *(ecx+0xc))  # => eax
       # compute size of t->input-var
@@ -6972,7 +6977,7 @@ $populate-mu-type-sizes-in-type:loop:
       # curr += row-size
       81 0/subop/add %ecx 0x10/imm32  # Typeinfo-fields-row-size
       #
-      e9/jump loop/disp32
+      eb/jump loop/disp8
     }
     # - save result
     89/<- *(esi+0xc) 7/r32/edi  # Typeinfo-total-size-in-bytes
@@ -7078,9 +7083,10 @@ populate-mu-type-offsets:  # in: (addr typeinfo)
     53/push-ebx
     56/push-esi
     57/push-edi
+#?     (dump-typeinfos "aaa\n")
     # var curr-offset/edi: int = 0
     bf/copy-to-edi 0/imm32
-    # var table/ecx: (addr table string_key (handle typeinfo-entry)) = lookup(T->fields)
+    # var table/ecx: (addr table string_key (handle typeinfo-entry)) = lookup(in->fields)
     8b/-> *(ebp+8) 1/r32/ecx
     (lookup *(ecx+4) *(ecx+8))  # Typeinfo-fields Typeinfo-fields => eax
     89/<- %ecx 0/r32/eax
@@ -7093,6 +7099,12 @@ populate-mu-type-offsets:  # in: (addr typeinfo)
 $populate-mu-type-offsets:loop:
       39/compare %ebx 2/r32/edx
       7d/jump-if->= break/disp8
+#?       (write-buffered Stderr "looking up index ")
+#?       (print-int32-buffered Stderr %ebx)
+#?       (write-buffered Stderr " in ")
+#?       (print-int32-buffered Stderr *(ebp+8))
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       # var v/esi: (addr typeinfo-entry)
       (locate-typeinfo-entry-with-index %ecx %ebx)  # => eax
       89/<- %esi 0/r32/eax
@@ -7146,6 +7158,12 @@ $locate-typeinfo-entry-with-index:loop:
       (lookup *(ecx+8) *(ecx+0xc))  # => eax
       # if (v->index == idx) return v
       8b/-> *(eax+8) 3/r32/ebx  # Typeinfo-entry-index
+#?       (write-buffered Stderr "comparing ")
+#?       (print-int32-buffered Stderr %ebx)
+#?       (write-buffered Stderr " and ")
+#?       (print-int32-buffered Stderr *(ebp+0xc))
+#?       (write-buffered Stderr Newline)
+#?       (flush Stderr)
       39/compare *(ebp+0xc) 3/r32/ebx
       74/jump-if-= $locate-typeinfo-entry-with-index:end/disp8
       # curr += Typeinfo-entry-size
@@ -7156,6 +7174,10 @@ $locate-typeinfo-entry-with-index:loop:
     # return 0
     b8/copy-to-eax 0/imm32
 $locate-typeinfo-entry-with-index:end:
+#?     (write-buffered Stderr "returning ")
+#?     (print-int32-buffered Stderr %eax)
+#?     (write-buffered Stderr Newline)
+#?     (flush Stderr)
     # . restore registers
     5f/pop-to-edi
     5e/pop-to-esi
@@ -7286,17 +7308,20 @@ $dump-typeinfo:loop:
         3d/compare-eax-and 0/imm32
         74/jump-if-= break/disp8
         (write-buffered Stderr " ")
-#?         (
+        # TODO
       }
       (write-buffered Stderr Newline)
       (flush Stderr)
       (lookup *(ecx+8) *(ecx+0xc))
+      (write-buffered Stderr "        index: ")
+      (print-int32-buffered Stderr *(eax+8))
+      (write-buffered Stderr Newline)
+      (flush Stderr)
       (write-buffered Stderr "        output var@")
       (print-int32-buffered Stderr *(eax+0xc))
       (write-buffered Stderr ",")
       (print-int32-buffered Stderr *(eax+0x10))
       (write-buffered Stderr "->")
-      (flush Stderr)
       (lookup *(eax+0xc) *(eax+0x10))  # Typeinfo-entry-output-var
       (print-int32-buffered Stderr %eax)
       (write-buffered Stderr Newline)
@@ -7544,6 +7569,7 @@ size-of-type-id:  # t: type-id -> result/eax: int
       81 7/subop/compare *ecx 0/imm32
       74/jump-if-= break/disp8
 $size-of-type-id:user-defined:
+      (lookup *ecx *(ecx+4))  # => eax
       8b/-> *(eax+0xc) 0/r32/eax  # Typeinfo-total-size-in-bytes
       eb/jump $size-of-type-id:end/disp8
     }
