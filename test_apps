@@ -245,7 +245,7 @@ done
 
 echo sigils
 ./bootstrap translate init.$OS 0*.subx apps/subx-params.subx apps/sigils.subx  -o apps/sigils
-[ "$1" != record ]  &&  git diff --exit-code apps/sigils
+test "$1" = 'record'  ||  git diff --exit-code apps/sigils
 test $EMULATED  &&  {
   ./bootstrap run apps/sigils test
   echo
@@ -260,7 +260,7 @@ test $NATIVE  ||  { echo 'there are more tests, but you need Linux to run them';
 echo calls
 cat init.$OS 0*.subx apps/subx-params.subx apps/calls.subx  |  apps/sigils  > a.sigils
 ./bootstrap translate a.sigils -o apps/calls
-[ "$1" != record ]  &&  git diff --exit-code apps/calls
+test "$1" = 'record'  ||  git diff --exit-code apps/calls
 test $EMULATED  &&  {
   ./bootstrap run apps/calls test
   echo
@@ -273,7 +273,7 @@ test `uname` = 'Linux'  &&  {
 echo braces
 cat init.$OS 0*.subx apps/subx-params.subx apps/braces.subx  |  apps/calls  |  apps/sigils  > a.sigils
 ./bootstrap translate a.sigils -o apps/braces
-[ "$1" != record ]  &&  git diff --exit-code apps/braces
+test "$1" = 'record'  ||  git diff --exit-code apps/braces
 test $EMULATED  &&  {
   ./bootstrap run apps/braces test
   echo
@@ -286,7 +286,7 @@ test `uname` = 'Linux'  &&  {
 echo mu
 cat init.$OS [0-9]*.subx apps/mu.subx  |  apps/braces  |  apps/calls  |  apps/sigils  > a.sigils
 ./bootstrap translate a.sigils -o apps/mu
-[ "$1" != record ]  &&  git diff --exit-code apps/mu
+test "$1" = 'record'  ||  git diff --exit-code apps/mu
 test $EMULATED  &&  {
   ./bootstrap run apps/mu test
   echo
